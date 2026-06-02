@@ -1,30 +1,25 @@
 name: Release signing smoke (Azure OIDC + Key Vault JAR sign)
 
-# Exercises the Azure federated credential AND the Key Vault JCA jarsigner
-# path without dispatching a full release. Triggered by tags matching
-# `eXist-*-oidc-smoke` — a pattern that ci-release.yml does NOT match, so
-# the full release pipeline never starts.
+# Exercises the Azure federated credential, Key Vault JCA jarsigner path,
+# and AzureSignTool Authenticode path without dispatching a full release.
+# Triggered by tags matching `eXist-*-oidc-smoke` — a pattern that
+# ci-release.yml does NOT match, so the full release pipeline never starts.
 #
 # Validates:
-#   1. Federated credential's matching expression accepts eXist-* tag subject
-#      (Azure OIDC login succeeds).
-#   2. Key Vault Crypto User RBAC propagated to the App Registration
-#      (jarsigner can read the cert metadata).
-#   3. Cert is usable for signing (no DigiCert HSM non-exportable key issue
-#      — Azure SDK #44085 — would surface here).
+#   1. Federated credential expression accepts eXist-* tag subject (OIDC login).
+#   2. App Registration can read the signing cert from Key Vault (az CLI check).
+#   3. Key Vault JCA provider initialises + signs a JAR (jarsigner path).
 #   4. TSA timestamping reachable (Sectigo URL responds).
+#   5. AzureSignTool can sign a .exe via DefaultAzureCredential / AzureCliCredential.
 #
 # Usage:
 #   git tag -a eXist-99.0.0-oidc-smoke -m "release signing smoke"
-#   git push origin eXist-99.0.0-oidc-smoke
-#   # watch Actions → Release signing smoke (~2-3 min)
-#   git push origin :eXist-99.0.0-oidc-smoke   # cleanup
+#   git push upstream eXist-99.0.0-oidc-smoke
+#   # watch Actions → Release signing smoke (~5 min)
+#   git push upstream :eXist-99.0.0-oidc-smoke   # cleanup
 #
-# Mirrors ci-release.yml build-windows signing commands. Runs on
-# ubuntu-latest because jarsigner + the Azure JCA library are platform-
-# independent; this catches the same cert/RBAC failures the real Windows
-# job would. Authenticode .exe signing (AzureSignTool) is Windows-only
-# and not exercised here.
+# Runs on windows-latest to mirror ci-release.yml build-windows exactly,
+# including the shell (bash via Git Bash) and Python path behaviour.
 
 on:
   push:
@@ -38,9 +33,12 @@ permissions:
 
 jobs:
   smoke:
-    name: OIDC login + Key Vault JAR sign
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    name: OIDC login + Key Vault JAR + .exe sign
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v6
 
@@ -61,6 +59,20 @@ jobs:
           az account show --query "{tenantId:tenantId,user:user.name}" -o table
           echo "OIDC login succeeded — federated credential expression matches eXist-* tag subject."
 
+      - name: Check Key Vault cert accessible via az CLI
+        env:
+          AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+          AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
+        run: |
+          # Distinct from signing permission: this checks the App Registration
+          # can READ the certificate (needs Key Vault Certificate User or higher).
+          # A failure here means an RBAC problem, not a code problem.
+          az keyvault certificate show \
+            --id "${AZURE_KEYVAULT_URI}certificates/${AZURE_KEYVAULT_CERT_NAME}" \
+            --query "{name:name,enabled:attributes.enabled,thumbprint:x509Thumbprint}" \
+            -o table
+          echo "Key Vault cert is accessible — Certificate read access confirmed."
+
       - name: Build throwaway JAR to sign
         run: |
           mkdir -p /tmp/smoke && cd /tmp/smoke
@@ -68,50 +80,122 @@ jobs:
           jar cf smoke.jar canary.txt
           ls -la smoke.jar
 
-      - name: Write OIDC token for JCA workload identity
+      - name: Start KV token mock IMDS
         run: |
-          # azure-security-keyvault-jca reads workload identity credentials from
-          # env vars: AZURE_FEDERATED_TOKEN_FILE + AZURE_CLIENT_ID + AZURE_TENANT_ID.
-          # azure/login doesn't write the token file, so we do it here.
-          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
-            | jq -r '.value')
-          [ -n "$TOKEN" ] || { echo "Failed to obtain OIDC token"; exit 1; }
-          echo "$TOKEN" > /tmp/azure-oidc-token.txt
-          chmod 600 /tmp/azure-oidc-token.txt
-          echo "AZURE_FEDERATED_TOKEN_FILE=/tmp/azure-oidc-token.txt" >> "$GITHUB_ENV"
+          # azure-security-keyvault-jca 2.10.0 AccessTokenUtil has no workload
+          # identity path — only App Service (MSI_SECRET), Container App
+          # (IDENTITY_ENDPOINT), and bare IMDS (169.254.169.254, unavailable
+          # on GitHub runners). We mock the Container App endpoint using a real
+          # KV token from the az CLI (authenticated via azure/login above).
+          #
+          # Token is passed via env var — NOT written to /tmp — because native
+          # Windows Python open('/tmp/...') fails (no MSYS2 path translation).
+          KV_TOKEN=$(az account get-access-token \
+            --resource https://vault.azure.net --query accessToken -o tsv)
+          [ -n "$KV_TOKEN" ] || { echo "Failed to get Key Vault access token"; exit 1; }
+          export KV_TOKEN_VALUE="$KV_TOKEN"
+          export KV_TOKEN_EXPIRES=$(python3 -c "import time; print(int(time.time()) + 3600)")
+          python3 -c "
+import http.server, os, json
+token_bytes = json.dumps({
+    'access_token': os.environ['KV_TOKEN_VALUE'],
+    'expires_on': os.environ['KV_TOKEN_EXPIRES'],
+    'token_type': 'Bearer',
+    'resource': 'https://vault.azure.net'
+}).encode()
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type','application/json')
+        self.end_headers()
+        self.wfile.write(token_bytes)
+    def log_message(self,*a): pass
+http.server.HTTPServer(('127.0.0.1',19999),H).serve_forever()
+" &
+          echo "MOCK_IMDS_PID=$!" >> "$GITHUB_ENV"
+          echo "IDENTITY_ENDPOINT=http://127.0.0.1:19999/" >> "$GITHUB_ENV"
+          echo "IDENTITY_HEADER=mock-header" >> "$GITHUB_ENV"
+          sleep 1
+          curl -sf http://127.0.0.1:19999/ \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('Mock IMDS OK, token_type:', d.get('token_type'))"
 
       - name: Sign smoke JAR with Azure Key Vault JCA
         env:
           AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
           AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # IDENTITY_ENDPOINT + IDENTITY_HEADER flow in via GITHUB_ENV from prior step
         run: |
-          # -J-cp requires two separate -J tokens: one for the flag, one for the value.
-          # --module-path does NOT work for non-modular JARs (JCA SPI not registered).
-          # Auth via workload identity: AZURE_FEDERATED_TOKEN_FILE + AZURE_CLIENT_ID + AZURE_TENANT_ID.
+          # cygpath -w converts MSYS2 paths to Windows-native paths for the JVM.
+          # On Linux/macOS cygpath is absent so we fall back to the path as-is.
+          native() { command -v cygpath &>/dev/null && cygpath -w "$1" || echo "$1"; }
+
           KV_JCA_JAR="$HOME/.m2/repository/com/azure/azure-security-keyvault-jca/2.10.0/azure-security-keyvault-jca-2.10.0.jar"
           if [ ! -f "$KV_JCA_JAR" ]; then
             mvn -q dependency:get \
               -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar
           fi
-          ls -la "$KV_JCA_JAR"
+
+          echo "=== Path diagnostics ==="
+          echo "KV_JCA_JAR  (bash):   $KV_JCA_JAR"
+          echo "KV_JCA_JAR  (native): $(native "$KV_JCA_JAR")"
+          echo "smoke.jar   (bash):   /tmp/smoke/smoke.jar"
+          echo "smoke.jar   (native): $(native /tmp/smoke/smoke.jar)"
+          echo "IDENTITY_ENDPOINT:    $IDENTITY_ENDPOINT"
+          echo "========================"
+
           jarsigner \
-            -J-cp -J"${KV_JCA_JAR}" \
+            -J-cp -J"$(native "$KV_JCA_JAR")" \
             -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -storepass "" \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
             -tsa http://timestamp.sectigo.com/ \
-            /tmp/smoke/smoke.jar "$AZURE_KEYVAULT_CERT_NAME"
+            "$(native /tmp/smoke/smoke.jar)" "$AZURE_KEYVAULT_CERT_NAME"
 
-      - name: Remove OIDC token file
+      - name: Stop KV token mock IMDS
         if: always()
-        run: rm -f /tmp/azure-oidc-token.txt
-
-      - name: Verify smoke JAR signature
         run: |
-          jarsigner -verify -strict -verbose /tmp/smoke/smoke.jar | tail -20
+          [ -n "$MOCK_IMDS_PID" ] && kill "$MOCK_IMDS_PID" 2>/dev/null || true
+
+      - name: Verify smoke JAR signature + show signing cert
+        run: |
+          native() { command -v cygpath &>/dev/null && cygpath -w "$1" || echo "$1"; }
+          jarsigner -verify -strict -verbose "$(native /tmp/smoke/smoke.jar)" | tail -20
+          echo "--- Signing certificate ---"
+          keytool -printcert -jarfile "$(native /tmp/smoke/smoke.jar)" \
+            | grep -E "(Owner|Issuer|Serial|Valid|SHA)"
           echo "Key Vault JCA signing succeeded — Crypto User RBAC + cert + TSA all working."
+
+      - name: Sign test .exe with AzureSignTool (Authenticode)
+        shell: pwsh
+        env:
+          AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+          AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
+        run: |
+          # AzureSignTool uses DefaultAzureCredential, which includes AzureCliCredential
+          # as a fallback. After azure/login the CLI credential cache is populated,
+          # so no managed identity or service principal secret is needed.
+          dotnet tool install --global AzureSignTool --version 7.0.1
+
+          # Copy a small Windows binary to a temp location as our test target.
+          $testExe = "$env:RUNNER_TEMP\smoke-sign.exe"
+          Copy-Item "$env:SystemRoot\System32\where.exe" $testExe
+
+          AzureSignTool sign `
+            --azure-key-vault-url         $env:AZURE_KEYVAULT_URI `
+            --azure-key-vault-certificate $env:AZURE_KEYVAULT_CERT_NAME `
+            --azure-key-vault-managed-identity `
+            --timestamp-rfc3161           http://timestamp.sectigo.com/ `
+            --description                 "eXist-db signing smoke" `
+            $testExe
+
+          $sig = Get-AuthenticodeSignature $testExe
+          Write-Host "Authenticode status:  $($sig.Status)"
+          Write-Host "Signer subject:       $($sig.SignerCertificate.Subject)"
+          Write-Host "Signer issuer:        $($sig.SignerCertificate.Issuer)"
+          if ($sig.Status -ne 'Valid') {
+            Write-Error "Authenticode signature invalid: $($sig.Status)"
+            exit 1
+          }
+          Write-Host "AzureSignTool succeeded — .exe Authenticode signing works."

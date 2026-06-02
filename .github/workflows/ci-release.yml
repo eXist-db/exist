@@ -221,24 +221,46 @@ jobs:
             -Dlicense.skip=true \
             clean package
 
-      - name: Write OIDC token for JCA workload identity
+      - name: Start KV token mock IMDS
         shell: bash
         run: |
-          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
-            | jq -r '.value')
-          [ -n "$TOKEN" ] || { echo "Failed to obtain OIDC token"; exit 1; }
-          echo "$TOKEN" > /tmp/azure-oidc-token.txt
-          chmod 600 /tmp/azure-oidc-token.txt
-          echo "AZURE_FEDERATED_TOKEN_FILE=/tmp/azure-oidc-token.txt" >> "$GITHUB_ENV"
+          KV_TOKEN=$(az account get-access-token \
+            --resource https://vault.azure.net --query accessToken -o tsv)
+          [ -n "$KV_TOKEN" ] || { echo "Failed to get Key Vault access token"; exit 1; }
+          export KV_TOKEN_VALUE="$KV_TOKEN"
+          export KV_TOKEN_EXPIRES=$(python3 -c "import time; print(int(time.time()) + 3600)")
+          python3 -c "
+import http.server, os, json
+token_bytes = json.dumps({
+    'access_token': os.environ['KV_TOKEN_VALUE'],
+    'expires_on': os.environ['KV_TOKEN_EXPIRES'],
+    'token_type': 'Bearer',
+    'resource': 'https://vault.azure.net'
+}).encode()
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type','application/json')
+        self.end_headers()
+        self.wfile.write(token_bytes)
+    def log_message(self,*a): pass
+http.server.HTTPServer(('127.0.0.1',19999),H).serve_forever()
+" &
+          echo "MOCK_IMDS_PID=$!" >> "$GITHUB_ENV"
+          echo "IDENTITY_ENDPOINT=http://127.0.0.1:19999/" >> "$GITHUB_ENV"
+          echo "IDENTITY_HEADER=mock-header" >> "$GITHUB_ENV"
+          sleep 1
+          curl -sf http://127.0.0.1:19999/ \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('Mock IMDS OK, token_type:', d.get('token_type'))"
 
       - name: Sign installer JAR (Azure Key Vault JCA)
         shell: bash
         env:
           AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # IDENTITY_ENDPOINT + IDENTITY_HEADER flow in via GITHUB_ENV from prior step
         run: |
+          native() { command -v cygpath &>/dev/null && cygpath -w "$1" || echo "$1"; }
+
           JAR=$(find exist-installer/target -name "*.jar" \
             -not -name "*sources*" -not -name "*javadoc*" | head -1)
           [ -n "$JAR" ] || { echo "No installer JAR found in exist-installer/target"; exit 1; }
@@ -249,20 +271,21 @@ jobs:
           fi
           CERT_NAME="${{ vars.AZURE_KEYVAULT_CERT_NAME }}"
           jarsigner \
-            -J-cp -J"${KV_JCA_JAR}" \
+            -J-cp -J"$(native "$KV_JCA_JAR")" \
             -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -storepass "" \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
             -tsa http://timestamp.sectigo.com/ \
-            "$JAR" "$CERT_NAME"
-          jarsigner -verify -strict "$JAR"
+            "$(native "$JAR")" "$CERT_NAME"
+          jarsigner -verify -strict "$(native "$JAR")"
 
-      - name: Remove OIDC token file
+      - name: Stop KV token mock IMDS
         if: always()
         shell: bash
-        run: rm -f /tmp/azure-oidc-token.txt
+        run: |
+          [ -n "$MOCK_IMDS_PID" ] && kill "$MOCK_IMDS_PID" 2>/dev/null || true
 
       - name: Sign .exe with Authenticode (AzureSignTool)
         shell: pwsh
