@@ -329,13 +329,7 @@ jobs:
       - name: Collect installer artifacts
         shell: bash
         env:
-          # Use the runner-provided temp dir rather than `/tmp` directly: on
-          # Windows runners Git Bash resolves `/tmp` to MSYS2's mount point,
-          # but actions/upload-artifact (a Node.js action) resolves the same
-          # `/tmp` to the root of the C drive. Those are different physical
-          # paths, so files staged into Git Bash's `/tmp/release-assets`
-          # were invisible to the upload step and beta3 shipped without the
-          # signed Windows installer JAR.
+          # Use the runner-provided temp dir; Git Bash and Node actions disagree on /tmp.
           RELEASE_ASSETS: ${{ runner.temp }}/release-assets
         run: |
           mkdir -p "$RELEASE_ASSETS"
