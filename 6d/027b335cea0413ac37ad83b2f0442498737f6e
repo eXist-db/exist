@@ -1,0 +1,23 @@
+.github/workflows/ci-oidc-smoke.yml
+  s_17ceee3025628c::t_a913aef53c3ada 89
+  s_17ceee3025628c::t_92be8a9a957846 88
+.github/workflows/ci-release.yml
+  s_17ceee3025628c::t_84e64c598f0463 244
+  s_17ceee3025628c::t_8203889f1dab5c 245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6d027b335cea0413ac37ad83b2f0442498737f6e",
+  "prompts": {},
+  "sessions": {
+    "s_17ceee3025628c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_17cddd26dffejuPN9dOPYk6S8i",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
