@@ -241,6 +241,8 @@ jobs:
             -J--add-modules="com.azure.security.keyvault.jca" \
             -keystore NONE \
             -storetype AzureKeyVault \
+            -storepass "" \
+            -providerName AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
             -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -tsa http://timestamp.sectigo.com/ \
