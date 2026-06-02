@@ -177,6 +177,11 @@ public class Main {
      *                        incompatible Java version, misconfiguration, or failure to
      *                        resolve required resources.
      */
+    // PMD AvoidReassigningParameters: args is shuffled through stripFirstElement / addFirstElement
+    // as part of the launcher's argument-massaging pipeline; refactoring to a local would obscure
+    // the per-mode argument transformations. Suppression is the safer choice in this release-
+    // path code.
+    @SuppressWarnings("PMD.AvoidReassigningParameters")
     public void startExistdb(String[] args) throws StartException {
 
         // Check if the OpenJDK version can corrupt eXist-db
@@ -243,11 +248,17 @@ public class Main {
      * @return a new array containing all elements of the input array except the first one;
      *         if the input array contains no elements or only one element, an empty array is returned
      */
-    private static String[] stripFirstElement(final String[] args) {
-        final String[] newArguments = new String[args.length - 1];
-        if (args.length > 1) {
-            System.arraycopy(args, 1, newArguments, 0, args.length - 1);
+    static String[] stripFirstElement(final String[] args) {
+        // Guard against args.length == 0: `new String[args.length - 1]` would otherwise
+        // allocate `new String[-1]` and throw NegativeArraySizeException. This path is
+        // exercised by the macOS app-bundle launch, which invokes the JVM directly with
+        // no arguments (the appbundler-generated Info.plist passes an empty JVMArguments
+        // array). Reported in 7.0.0-beta3 dock-launch failure.
+        if (args.length <= 1) {
+            return new String[0];
         }
+        final String[] newArguments = new String[args.length - 1];
+        System.arraycopy(args, 1, newArguments, 0, args.length - 1);
         return newArguments;
     }
 
@@ -433,6 +444,7 @@ public class Main {
      *
      * @throws StopException if the shutdown process encounters an error
      */
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration") // intentional: BrokerPools.stopAll is package-private and invoked reflectively from test infrastructure (see method javadoc)
     public void shutdownExistdb() throws StopException {
         // only used in test suite
         try {
