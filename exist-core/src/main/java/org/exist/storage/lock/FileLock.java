@@ -86,11 +86,15 @@ public class FileLock {
     /** An open channel to the lock file */
     private SeekableByteChannel channel = null;
 
-    /** Temporary buffer used for writing */
-    private final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
-
-    /** The time (in milliseconds) of the last heartbeat written to the lock file */
-    private long lastHeartbeat = -1L;
+    /**
+     * The time (in milliseconds) of the last heartbeat written to the lock file.
+     * Marked {@code volatile} so the Quartz scheduler thread that calls
+     * {@link #save()} every {@link #HEARTBEAT} ms publishes its writes
+     * visibly to the main thread, which reads the value during
+     * {@link #checkHeartbeat()} when deciding whether to take over a stale
+     * lock file.
+     */
+    private volatile long lastHeartbeat = -1L;
 
     public FileLock(final BrokerPool pool, final Path path) {
         this.pool = pool;
@@ -229,14 +233,22 @@ public class FileLock {
         this.channel = Files.newByteChannel(lockFile, READ, WRITE, SYNC);
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
     protected void save() throws IOException {
         try {
             if (channel == null) {
                 open();
             }
-            
-            long now = System.currentTimeMillis();
-            buf.clear();
+
+            // Allocate per-call rather than reusing a shared instance field:
+            // save() and read() ran concurrently from the Quartz heartbeat
+            // worker thread and the main startup thread without
+            // synchronization, so a shared ByteBuffer's position/limit could
+            // be clobbered mid-write -- the source of the
+            // BufferOverflowException / IllegalArgumentException reported in
+            // issue #4334.
+            final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
+            final long now = System.currentTimeMillis();
             buf.put(MAGIC);
             buf.putLong(now);
             buf.flip();
@@ -244,8 +256,15 @@ public class FileLock {
             channel.write(buf);
             //channel.force(true); //handled by SYNC on open option
             lastHeartbeat = now;
-            
+
         } catch(final NullPointerException npe) {
+            // PMD: this catch-and-rethrow preserves the original NPE rather
+            // than constructing a new one — the rule that flagged the throw
+            // is meant for new NullPointerException() construction. The NPE
+            // here is the symptom of release() nullifying `channel` between
+            // our null-check and the channel.write() call; if the pool is
+            // shutting down that race is expected and silenced, otherwise
+            // the original NPE is propagated for diagnosis.
             if(pool.isShuttingDown()) {
                 LOG.info("No need to save FileLock, database is shutting down");
             } else {
@@ -258,39 +277,40 @@ public class FileLock {
         if (channel == null) {
             open();
         }
-        
+
+        // See save() for why this is a per-call local rather than a
+        // shared instance field (issue #4334).
+        final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
         channel.read(buf);
         buf.flip();
         if (buf.limit() < 16) {
-            buf.clear();
             throw new IOException(message("Could not read file lock.", null));
         }
-        
+
         final byte[] magic = new byte[8];
         buf.get(magic);
         if (!Arrays.equals(magic, MAGIC)) {
             throw new IOException(message("Bad signature in lock file. It does not seem to be an eXist lock file", null));
         }
-        
+
         lastHeartbeat = buf.getLong();
-        buf.clear();
-        
+
         final DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
 
-    protected String message(String message, final Exception e) {
+    protected String message(final String message, final Exception e) {
         final StringBuilder str = new StringBuilder(message);
         str.append(' ').append(lockFile.toAbsolutePath());
         if (e != null) {
             str.append(": ").append(e.getMessage());
         }
-        
-        message = str.toString();
+
+        final String formatted = str.toString();
         if (LOG.isInfoEnabled()) {
-            LOG.info(message);
+            LOG.info(formatted);
         }
 
-        return message;
+        return formatted;
     }
 }
