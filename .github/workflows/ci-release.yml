@@ -241,7 +241,7 @@ jobs:
             -storetype AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
             -providerArg "-J-Dazure.keyvault.uri=${AZURE_KEYVAULT_URI}" \
-            -J-cp "$KV_JCA_JAR" \
+            -J-cp -J"$KV_JCA_JAR" \
             -tsa http://timestamp.sectigo.com/ \
             "$JAR" "$CERT_NAME"
           jarsigner -verify -strict "$JAR"
