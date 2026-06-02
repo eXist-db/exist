@@ -74,11 +74,10 @@ jobs:
           AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
         run: |
           # Mirrors ci-release.yml:223-247 (Sign installer JAR step)
-          KV_JCA_JAR="$HOME/.m2/azure-keyvault-jca.jar"
+          KV_JCA_JAR="$HOME/.m2/repository/com/azure/azure-security-keyvault-jca/2.10.0/azure-security-keyvault-jca-2.10.0.jar"
           if [ ! -f "$KV_JCA_JAR" ]; then
             mvn -q dependency:get \
-              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar \
-              -Ddest="$KV_JCA_JAR"
+              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar
           fi
           ls -la "$KV_JCA_JAR"
           jarsigner \

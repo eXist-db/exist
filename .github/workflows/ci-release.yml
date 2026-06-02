@@ -230,11 +230,10 @@ jobs:
             -not -name "*sources*" -not -name "*javadoc*" | head -1)
           [ -n "$JAR" ] || { echo "No installer JAR found in exist-installer/target"; exit 1; }
           # Download Azure Key Vault JCA provider to classpath
-          KV_JCA_JAR="$HOME/.m2/azure-keyvault-jca.jar"
+          KV_JCA_JAR="$HOME/.m2/repository/com/azure/azure-security-keyvault-jca/2.10.0/azure-security-keyvault-jca-2.10.0.jar"
           if [ ! -f "$KV_JCA_JAR" ]; then
             mvn -q dependency:get \
-              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar \
-              -Ddest="$KV_JCA_JAR"
+              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar
           fi
           CERT_NAME="${{ vars.AZURE_KEYVAULT_CERT_NAME }}"
           jarsigner \
