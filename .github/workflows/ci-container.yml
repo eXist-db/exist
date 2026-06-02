@@ -6,6 +6,7 @@ on:
       - master
     tags:
       - 'eXist-*'
+      - '!eXist-*-oidc-smoke'
   pull_request:
   schedule:
       - cron: "0 6 * * *"

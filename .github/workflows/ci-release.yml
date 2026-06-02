@@ -11,6 +11,7 @@ on:
   push:
     tags:
       - 'eXist-*'
+      - '!eXist-*-oidc-smoke'
   workflow_dispatch:
     inputs:
       tag:
