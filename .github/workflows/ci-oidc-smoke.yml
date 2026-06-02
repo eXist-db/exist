@@ -119,6 +119,13 @@ jobs:
           curl -sf http://127.0.0.1:19999/ \
             | python3 -c "import sys,json; d=json.load(sys.stdin); print('Mock IMDS OK, token_type:', d.get('token_type'))"
 
+      - name: Write signing cert chain
+        env:
+          EXISTDB_WIN_SIGNING_CERTCHAIN: ${{ secrets.EXISTDB_WIN_SIGNING_CERTCHAIN }}
+        run: |
+          echo "$EXISTDB_WIN_SIGNING_CERTCHAIN" | base64 --decode > /tmp/certchain.pem
+          chmod 600 /tmp/certchain.pem
+
       - name: Sign smoke JAR with Azure Key Vault JCA
         env:
           AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
@@ -150,6 +157,7 @@ jobs:
             -storetype AzureKeyVault \
             -storepass "" \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
+            -certchain "$(native /tmp/certchain.pem)" \
             -tsa http://timestamp.sectigo.com/ \
             "$(native /tmp/smoke/smoke.jar)" "$AZURE_KEYVAULT_CERT_NAME"
 
@@ -157,6 +165,7 @@ jobs:
         if: always()
         run: |
           [ -n "$MOCK_IMDS_PID" ] && kill "$MOCK_IMDS_PID" 2>/dev/null || true
+          rm -f /tmp/certchain.pem
 
       - name: Verify smoke JAR signature + show signing cert
         run: |
