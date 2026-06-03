@@ -214,47 +214,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <!--
-          Diagnostic profile: roll IzPack back to 5.2.4 to verify it fixes the
-          console-mode regression in the assembled installer JAR.
-
-          Symptom on develop (IzPack 5.2.5): `java -jar exist-installer-*.jar -console`
-          crashes on the first HTMLInfoPanel with `NoClassDefFoundError: org.jsoup.nodes.Node`.
-
-          Cause: IzPack 5.2.5 rewrote `AbstractTextConsolePanel`'s HTML extraction to use
-          jsoup (`Jsoup.parse` / `Document.selectFirst` / `Element.text` / `Document.body`)
-          and `izpack-installer-5.2.5.pom` declares `org.jsoup:jsoup:1.18.3` as a dependency,
-          but the izpack-maven-plugin's installer-jar assembly does not pull jsoup into the
-          output. Only one stray multi-release shadow class (`META-INF/versions/9/org/jsoup/
-          helper/RequestAuthHandler.class`) ends up in the JAR; nothing at the standard
-          classpath root.
-
-          Disassembly of `com.izforge.izpack.installer.console.AbstractTextConsolePanel`:
-          - 5.2.4: no jsoup bytecode references at all.
-          - 5.2.5: invokestatic `org/jsoup/Jsoup.parse` and four other jsoup calls.
-
-          IzPack 5.2.4 is the last release without the jsoup-on-installer-classpath
-          requirement, so pinning back to 5.2.4 sidesteps the regression entirely until
-          upstream izpack-maven-plugin learns to bundle jsoup in the assembled installer.
-
-          To A/B locally:
-            mvn -Prelease-build clean package -pl exist-installer -am  # broken in console mode
-            mvn -Prelease-build,izpack-rollback-5.2.4 clean package -pl exist-installer -am  # works
-
-          Try the resulting JAR with `java -jar exist-installer/target/exist-installer-*.jar -console`.
-
-          Note: an explicit `<dependency>org.jsoup:jsoup</dependency>` on exist-installer is
-          NOT sufficient to fix the 5.2.5 build; the dep gets resolved to ~/.m2 but the
-          izpack-maven-plugin doesn't include it in the assembled JAR, and the plugin has no
-          public parameter for injecting extra runtime jars. Confirmed locally.
-        -->
-        <profile>
-            <id>izpack-rollback-5.2.4</id>
-            <properties>
-                <izpack.version>5.2.4</izpack.version>
-            </properties>
-        </profile>
     </profiles>
 
 </project>
