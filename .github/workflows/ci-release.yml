@@ -328,18 +328,22 @@ jobs:
 
       - name: Collect installer artifacts
         shell: bash
+        env:
+          # Use the runner-provided temp dir; Git Bash and Node actions disagree on /tmp.
+          RELEASE_ASSETS: ${{ runner.temp }}/release-assets
         run: |
-          mkdir -p /tmp/release-assets
+          mkdir -p "$RELEASE_ASSETS"
           find exist-installer/target \
             -name "*.jar" -not -name "*sources*" -not -name "*javadoc*" \
-            -exec cp {} /tmp/release-assets/ \;
+            -exec cp {} "$RELEASE_ASSETS/" \;
           find exist-installer/target -name "*.exe" \
-            -exec cp {} /tmp/release-assets/ \; 2>/dev/null || true
+            -exec cp {} "$RELEASE_ASSETS/" \; 2>/dev/null || true
+          ls -lh "$RELEASE_ASSETS/"
 
       - uses: actions/upload-artifact@v7
         with:
           name: release-windows
-          path: /tmp/release-assets/
+          path: ${{ runner.temp }}/release-assets/
           retention-days: 3
 
   # ── Job 4: Publish GitHub Release ───────────────────────────────────────────
