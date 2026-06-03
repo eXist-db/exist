@@ -79,7 +79,7 @@
 
     <variables>
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>
-        <variable name="JDKPathPanel.minVersion" value="1.8"/>
+        <variable name="JDKPathPanel.minVersion" value="@{maven.compiler.release}"/>
         <variable name="ShowCreateDirectoryMessage" value="false"/>
         <variable name="TargetPanel.dir.windows" value="${ENV[SystemDrive]}\${APP_NAME}"/>
     </variables>
