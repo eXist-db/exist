@@ -38,7 +38,7 @@
         <os family="windows"/>
         <executefile name="java">
             <arg>-cp</arg>
-            <arg>$INSTALL_PATH\lib\Saxon-HE-${saxon.version}.jar</arg>
+            <arg>$INSTALL_PATH\lib\Saxon-HE-${saxon.version}.jar;$INSTALL_PATH/lib/xmlresolver-${xmlresolver.version}.jar</arg>
             <arg>net.sf.saxon.Transform</arg>
             <arg>-s:$INSTALL_PATH\etc\conf.xml</arg>
             <arg>-xsl:$tmpdir\conf.xslt</arg>
@@ -51,7 +51,7 @@
         <os family="unix"/>
         <executefile name="java">
             <arg>-cp</arg>
-            <arg>$INSTALL_PATH/lib/Saxon-HE-${saxon.version}.jar</arg>
+            <arg>$INSTALL_PATH/lib/Saxon-HE-${saxon.version}.jar:$INSTALL_PATH/lib/xmlresolver-${xmlresolver.version}.jar</arg>
             <arg>net.sf.saxon.Transform</arg>
             <arg>-s:$INSTALL_PATH/etc/conf.xml</arg>
             <arg>-xsl:$tmpdir/conf.xslt</arg>
