@@ -47,42 +47,45 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  * @author ljo
  */
 public class RemoveFunction extends BasicFunction {
-    @SuppressWarnings("unused")
-	private final static Logger logger = LogManager.getLogger(RemoveFunction.class);
+    private final static Logger LOG = LogManager.getLogger(RemoveFunction.class);
 
     public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("remove", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
-			"Remove package, pkgName, from repository.",
-			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
+            new FunctionSignature(
+                    new QName("remove", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+                    "Remove package, pkgName, from repository. Throws EXPATH007 with the underlying cause on failure (e.g. package not found, dependent packages still installed, filesystem permission error).",
+                    new SequenceType[]{new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the package was removed"));
 
-	public RemoveFunction(XQueryContext context) {
-		super(context, signature);
- 	}
+    public RemoveFunction(final XQueryContext context) {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-	    Sequence removed = BooleanValue.TRUE;
-	    boolean force = false;
-	    UserInteractionStrategy interact = new BatchUserInteraction();
-	    String pkg = args[0].getStringValue();
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final boolean force = false;
+        final UserInteractionStrategy interact = new BatchUserInteraction();
+        final String pkg = args[0].getStringValue();
 
-	    try {
-		Optional<ExistRepository> repo = getContext().getRepository();
-		if (repo.isPresent()) {
-		    Repository parent_repo = repo.get().getParentRepo();
-		    parent_repo.removePackage(pkg, force, interact);
-		    repo.get().reportAction(ExistRepository.Action.UNINSTALL, pkg);
-		    context.getBroker().getBrokerPool().getXQueryPool().clear();
-		} else {
-		    throw new XPathException(this, "expath repository not available");
-		}
-	    } catch (PackageException | XPathException pe) {
-		return BooleanValue.FALSE;
-		// /TODO: _repo.removePackage seems to throw PackageException
-		// throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", pe);
-	    }
-        return removed;
-	}
+        final Optional<ExistRepository> repo = getContext().getRepository();
+        if (repo.isEmpty()) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, "expath repository not available");
+        }
+
+        try {
+            final Repository parentRepo = repo.get().getParentRepo();
+            parentRepo.removePackage(pkg, force, interact);
+            repo.get().reportAction(ExistRepository.Action.UNINSTALL, pkg);
+            context.getBroker().getBrokerPool().getXQueryPool().clear();
+        } catch (final PackageException pe) {
+            // Previously this catch returned BooleanValue.FALSE and swallowed the exception
+            // (with a TODO from the previous author noting this should throw with the
+            // underlying cause). The silent false offered no diagnostic, and downstream
+            // tooling had no way to surface the actual failure to the user. Now we log and
+            // rethrow so both the eXist log and the caller see the original cause.
+            LOG.warn("Failed to remove package {}: {}", pkg, pe.getMessage(), pe);
+            throw new XPathException(this, EXPathErrorCode.EXPDY007,
+                    "Failed to remove package " + pkg + ": " + pe.getMessage(), pe);
+        }
+        return BooleanValue.TRUE;
+    }
 }
