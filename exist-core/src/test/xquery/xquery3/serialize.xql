@@ -785,6 +785,95 @@ function ser:exist-process-xsl-pi-string($value as xs:boolean) {
         map { "exist:process-xsl-pi": $value })
 };
 
+(: ======================================================================= :)
+(: eXist serializer extensions through the standard W3C output: namespace.  :)
+(: Mirrors BaseX: the EXistOutputKeys extensions are settable uniformly via  :)
+(: the output: namespace and as plain map keys, alongside the W3C            :)
+(: parameters. The legacy exist:-namespace forms above remain supported      :)
+(: (deprecated, retained for backward compatibility).                        :)
+(: ======================================================================= :)
+
+(: default (no params) expands XIncludes, preserving eXist's existing behavior :)
+declare
+    %test:assertXPath("contains($result, 'comment')")
+function ser:output-expand-xinclude-default-expands() {
+    serialize($ser:xi-doc)
+};
+
+(: output:-namespaced map key (xs:QName) :)
+declare
+    %test:args("true")
+    %test:assertXPath("contains($result, 'comment')")
+    %test:args("false")
+    %test:assertXPath("contains($result, 'include')")
+function ser:output-expand-xinclude-QName($value as xs:boolean) {
+    serialize($ser:xi-doc,
+        map { xs:QName("output:expand-xincludes"): $value })
+};
+
+(: plain (un-prefixed) map key, boolean value :)
+declare
+    %test:args("true")
+    %test:assertXPath("contains($result, 'comment')")
+    %test:args("false")
+    %test:assertXPath("contains($result, 'include')")
+function ser:output-expand-xinclude-plain-key-boolean($value as xs:boolean) {
+    serialize($ser:xi-doc,
+        map { "expand-xincludes": $value })
+};
+
+(: plain map key, string value ("yes"/"no") :)
+declare
+    %test:args("yes")
+    %test:assertXPath("contains($result, 'comment')")
+    %test:args("no")
+    %test:assertXPath("contains($result, 'include')")
+function ser:output-expand-xinclude-plain-key-string($value as xs:string) {
+    serialize($ser:xi-doc,
+        map { "expand-xincludes": $value })
+};
+
+(: output: serialization-parameters element child :)
+declare
+    %test:args("yes")
+    %test:assertXPath("contains($result, 'comment')")
+    %test:args("no")
+    %test:assertXPath("contains($result, 'include')")
+function ser:output-expand-xinclude-element($value as xs:string) {
+    serialize($ser:xi-doc,
+        <output:serialization-parameters>
+            <output:expand-xincludes value="{$value}"/>
+        </output:serialization-parameters>)
+};
+
+(: Mixed standard + eXist-extension parameters in ONE string-keyed map.       :)
+(: The exact expected output proves all four took effect simultaneously:      :)
+(: method=xml, indent=no (no pretty-print whitespace), omit-xml-declaration=   :)
+(: yes (no XML declaration), and expand-xincludes=no (xi:include preserved).   :)
+declare
+    %test:assertEquals('&lt;article xmlns:xi="http://www.w3.org/2001/XInclude"&gt;&lt;title&gt;My Title&lt;/title&gt;&lt;xi:include href="/db/serialization-test/test.xml"/&gt;&lt;/article&gt;')
+function ser:output-mixed-standard-and-extension() {
+    serialize($ser:xi-doc,
+        map {
+            "method": "xml",
+            "indent": false(),
+            "omit-xml-declaration": true(),
+            "expand-xincludes": "no"
+        })
+};
+
+(: another extension (add-exist-id) through a plain map key, proving it is    :)
+(: the whole EXistOutputKeys family, not just expand-xincludes :)
+declare
+    %test:args("none")
+    %test:assertXPath("not(contains($result, 'exist:id'))")
+    %test:args("all")
+    %test:assertXPath("contains($result, 'exist:id')")
+function ser:output-add-exist-id-plain-key($value as xs:string) {
+    serialize(doc($ser:collection || "/test.xml"),
+        map { "add-exist-id": $value })
+};
+
 declare
     %test:args("text")
     %test:assertEquals("1--2")

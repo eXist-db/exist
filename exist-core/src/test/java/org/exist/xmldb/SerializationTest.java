@@ -50,6 +50,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class SerializationTest {
@@ -103,6 +104,17 @@ public class SerializationTest {
 			"""
             <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
             <bookmap id="bookmap-2"/>""";
+
+	private static final XmldbURI TEST_XINCLUDE_TARGET_URI = XmldbURI.create("xi-target.xml");
+
+	private static final String XINCLUDE_TARGET = "<p>INCLUDED</p>";
+
+	private static final XmldbURI TEST_XINCLUDE_MAIN_URI = XmldbURI.create("xi-main.xml");
+
+	private static final String XINCLUDE_MAIN =
+			"<doc xmlns:xi=\"http://www.w3.org/2001/XInclude\">"
+					+ "<xi:include href=\"/db/" + TEST_COLLECTION_NAME + "/xi-target.xml\"/>"
+					+ "</doc>";
 
 	@Parameterized.Parameters(name = "{0}")
 	public static java.util.Collection<Object[]> data() {
@@ -244,6 +256,38 @@ public class SerializationTest {
 		}
 	}
 
+	/**
+	 * The eXist serializer extension expand-xincludes is settable through the standard
+	 * W3C output: namespace as a prolog option, applied to the query result serialization.
+	 */
+	@Test
+	public void prologOutputExpandXincludesNo() throws XMLDBException {
+		final XQueryService service = testCollection.getService(XQueryService.class);
+		final ResourceSet result = service.query(
+				"declare namespace output=\"http://www.w3.org/2010/xslt-xquery-serialization\";\n"
+						+ "declare option output:expand-xincludes \"no\";\n"
+						+ "doc(\"/db/" + TEST_COLLECTION_NAME + "/xi-main.xml\")");
+		final String serialized = result.getResource(0).getContent().toString();
+		assertTrue("xi:include should be preserved when expand-xincludes=no, was: " + serialized,
+				serialized.contains("xi:include"));
+		assertFalse("target content should not be expanded, was: " + serialized,
+				serialized.contains("INCLUDED"));
+	}
+
+	@Test
+	public void prologOutputExpandXincludesYes() throws XMLDBException {
+		final XQueryService service = testCollection.getService(XQueryService.class);
+		final ResourceSet result = service.query(
+				"declare namespace output=\"http://www.w3.org/2010/xslt-xquery-serialization\";\n"
+						+ "declare option output:expand-xincludes \"yes\";\n"
+						+ "doc(\"/db/" + TEST_COLLECTION_NAME + "/xi-main.xml\")");
+		final String serialized = result.getResource(0).getContent().toString();
+		assertTrue("target content should be expanded when expand-xincludes=yes, was: " + serialized,
+				serialized.contains("INCLUDED"));
+		assertFalse("xi:include should be replaced when expanded, was: " + serialized,
+				serialized.contains("xi:include"));
+	}
+
 	private static void assertXMLEquals(final String expected, final Resource actual) throws XMLDBException {
 		final Source srcExpected = Input.fromString(expected).build();
 		final Source srcActual = Input.fromString(actual.getContent().toString()).build();
@@ -273,6 +317,14 @@ public class SerializationTest {
 		final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
 		res2.setContent(XML_WITH_XMLDECL);
 		testCollection.storeResource(res2);
+
+		final XMLResource res3 = testCollection.createResource(TEST_XINCLUDE_TARGET_URI.lastSegmentString(), XMLResource.class);
+		res3.setContent(XINCLUDE_TARGET);
+		testCollection.storeResource(res3);
+
+		final XMLResource res4 = testCollection.createResource(TEST_XINCLUDE_MAIN_URI.lastSegmentString(), XMLResource.class);
+		res4.setContent(XINCLUDE_MAIN);
+		testCollection.storeResource(res4);
     }
 
     @After

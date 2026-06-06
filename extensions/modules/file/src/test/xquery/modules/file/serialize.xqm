@@ -127,6 +127,30 @@ function serialize:xml-final-newline() {
         "</root>" || $fixtures:NL
 };
 
+(: eXist extension (insert-final-newline) supplied through the standard W3C output:    :)
+(: namespace rather than the legacy exist: namespace; same result as xml-final-newline :)
+declare
+    %test:assertTrue
+function serialize:xml-final-newline-output-ns() {
+    let $directory := helper:get-test-directory($serialize:suite)
+    let $_ := file:mkdirs($directory)
+
+    let $path := $directory || "/xml-final-newline-output-ns.xml"
+    let $_ := file:serialize($serialize:xml, $path,
+    <output:serialization-parameters
+            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+          <output:insert-final-newline value="yes" />
+        </output:serialization-parameters>)
+
+    return file:read($path) eq
+        "<root>" || $fixtures:NL ||
+        "    <unary attribute=""value""/>" || $fixtures:NL ||
+        "    <nested>" || $fixtures:NL ||
+        "        text" || $fixtures:NL ||
+        "    </nested>" || $fixtures:NL ||
+        "</root>" || $fixtures:NL
+};
+
 declare
     %test:assertTrue
 function serialize:xml-minified() {

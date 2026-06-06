@@ -81,6 +81,19 @@ public class SerializerUtils {
         }
     }
 
+    /**
+     * The local names of eXist's implementation-specific serialization parameters
+     * (e.g. {@code expand-xincludes}, {@code highlight-matches}). These are accepted
+     * in the standard W3C serialization namespace and as plain map keys, mirroring BaseX,
+     * so that eXist extensions can be set uniformly alongside the W3C parameters.
+     */
+    private static final Set<String> ExistParameterConventionLocalNames = new HashSet<>();
+    static {
+        for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
+            ExistParameterConventionLocalNames.add(existParameterConvention.getLocalParameterName());
+        }
+    }
+
     public interface ParameterConvention<T> {
 
         /**
@@ -298,7 +311,12 @@ public class SerializerUtils {
         if (properties.containsKey(local)) {
             throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
         }
-        if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI) && !W3CParameterConventionKeys.contains(local)) {
+        // A parameter in the W3C serialization namespace must be either a known W3C parameter or
+        // a known eXist extension (e.g. output:expand-xincludes). eXist extensions are accepted in
+        // the standard namespace, mirroring BaseX, so they can be set uniformly with the W3C ones.
+        if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI)
+                && !W3CParameterConventionKeys.contains(local)
+                && !ExistParameterConventionLocalNames.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
         }
 
@@ -308,8 +326,10 @@ public class SerializerUtils {
                     "serialization parameter element must be in a namespace: " + local);
         }
 
-        // Accept eXist-specific parameters from the exist: namespace (issue #3446)
-        // These include expand-xincludes, highlight-matches, process-xsl-pi, add-exist-id, jsonp, etc.
+        // Accept eXist-specific parameters from the legacy exist: namespace (issue #3446).
+        // Deprecated: the recommended form is the standard W3C serialization namespace
+        // (e.g. output:expand-xincludes). The exist: namespace is kept for backward
+        // compatibility and may be removed in a future major release.
         if (Namespaces.EXIST_NS.equals(nsURI)) {
             readSerializationProperty(reader, local, properties);
             return;
@@ -471,8 +491,8 @@ public class SerializerUtils {
             }
 
             for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
-                final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention,
-                        new QNameValue(null, existParameterConvention.getParameterName()));
+                final AtomicValue entryKey = chooseExistParameterMapKey(entries, existParameterConvention);
+                final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention, entryKey);
                 setPropertyForMap(properties, existParameterConvention, parameterValue);
             }
 
@@ -480,6 +500,46 @@ public class SerializerUtils {
         } catch (final UnsupportedOperationException e) {
             throw new XPathException(parent, FnModule.SENR0001, e.getMessage());
         }
+    }
+
+    /**
+     * Determines which map key supplies an eXist implementation-specific serialization parameter.
+     *
+     * eXist extensions may be given in a serialization options map under any of three key forms,
+     * checked here in order of preference:
+     * <ol>
+     *   <li>the standard W3C serialization namespace, e.g.
+     *       {@code Q{http://www.w3.org/2010/xslt-xquery-serialization}expand-xincludes}
+     *       (the recommended, BaseX-compatible form);</li>
+     *   <li>a plain string key, e.g. {@code "expand-xincludes"} (also recommended, and the form
+     *       used when standard and extension parameters are set together in one string-keyed map);</li>
+     *   <li>the legacy eXist namespace, e.g.
+     *       {@code Q{http://exist.sourceforge.net/NS/exist}expand-xincludes} (deprecated, retained
+     *       for backward compatibility).</li>
+     * </ol>
+     *
+     * @param entries the serialization options map
+     * @param convention the eXist parameter convention to look up
+     * @return the key actually present in the map, preferring forms (1) then (2) then (3); if none
+     *     is present, the legacy key is returned so that the caller applies the parameter's default value
+     */
+    private static AtomicValue chooseExistParameterMapKey(final AbstractMapType entries, final ExistParameterConvention convention) {
+        final String local = convention.getLocalParameterName();
+
+        final AtomicValue outputNsKey = new QNameValue(null,
+                new QName(local, Namespaces.XSLT_XQUERY_SERIALIZATION_NS, OUTPUT_NAMESPACE));
+        if (entries.contains(outputNsKey)) {
+            return outputNsKey;
+        }
+
+        final AtomicValue stringKey = new StringValue(local);
+        if (entries.contains(stringKey)) {
+            return stringKey;
+        }
+
+        // legacy exist: namespace (deprecated); also the fallback when no key is present, so that
+        // getParameterValue() supplies the parameter's default value
+        return new QNameValue(null, convention.getParameterName());
     }
 
     private static Sequence getParameterValue(final Expression parent, final AbstractMapType entries, final ParameterConvention<?> parameterConvention, final AtomicValue parameterConventionEntryKey)
@@ -555,9 +615,14 @@ public class SerializerUtils {
                 final Item item = iterator.nextItem();
                 // Use subtype check: xs:integer is a valid xs:decimal, xs:string subtypes are valid xs:string, etc.
                 // Also accept xs:untypedAtomic — the W3C spec allows untypedAtomic values to be cast
-                // to the required type for serialization parameters
+                // to the required type for serialization parameters.
+                // For eXist extension parameters (e.g. expand-xincludes), additionally accept an
+                // xs:string value (e.g. "no") so they can be supplied alongside standard parameters in
+                // a string-keyed options map; their string form is normalized in setPropertyForMap.
                 if (!Type.subTypeOf(item.getType(), parameterConvention.getType())
-                        && item.getType() != Type.UNTYPED_ATOMIC) {
+                        && item.getType() != Type.UNTYPED_ATOMIC
+                        && !(parameterConvention instanceof ExistParameterConvention
+                                && Type.subTypeOf(item.getType(), Type.STRING))) {
                     return false;
                 }
             }
@@ -583,8 +648,12 @@ public class SerializerUtils {
                 if (boolItem instanceof BooleanValue bv) {
                     value = bv.getValue() ? "yes" : "no";
                 } else {
+                    // Accept the same case-insensitive true-set as BaseX (1/true/yes/on); any other
+                    // value (including false/no/off/0) maps to "no", preserving eXist's lenient,
+                    // non-throwing handling of this shared boolean branch.
                     final String boolStr = boolItem.getStringValue().trim();
-                    value = ("true".equals(boolStr) || "1".equals(boolStr)) ? "yes" : "no";
+                    value = (boolStr.equalsIgnoreCase("true") || boolStr.equalsIgnoreCase("yes")
+                            || boolStr.equalsIgnoreCase("on") || "1".equals(boolStr)) ? "yes" : "no";
                 }
                 properties.setProperty(localParameterName, value);
             }
