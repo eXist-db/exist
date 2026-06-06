@@ -379,7 +379,19 @@ enum RESTServerParameter {
      *
      * The value of the parameter should be either "yes" or "no".
      */
-    Omit_Original_Xml_Declaration;
+    Omit_Original_Xml_Declaration,
+
+    /**
+     * Can be used in the Query String of a GET request to control whether
+     * XInclude elements are expanded during serialization. When set to "no",
+     * {@code <xi:include>} elements are preserved verbatim rather than expanded,
+     * which is required for a non-destructive open/edit/save round-trip.
+     *
+     * Contexts: GET
+     *
+     * The value of the parameter should be either "yes" or "no".
+     */
+    Expand_Xincludes;
 
     /**
      * Get the parameter key that is

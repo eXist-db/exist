@@ -404,6 +404,11 @@ public class RESTServer {
             final String omitOriginalXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, "no");
             outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
         }
+        if ((option = getParameter(request, Expand_Xincludes)) != null) {
+            // take user query-string specified expand-xincludes setting; when absent the
+            // serializer default (expand) applies, so existing requests are unchanged
+            outputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
+        }
         if ((option = getParameter(request, Source)) != null && !safeMode) {
             source = "yes".equals(option);
         }

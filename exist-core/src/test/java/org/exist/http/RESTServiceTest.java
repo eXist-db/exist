@@ -220,6 +220,15 @@ public class RESTServiceTest {
     private static final XmldbURI TEST_XMLDECL_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xmldecl");
     private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
+    private static final XmldbURI TEST_XINCLUDE_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xinclude");
+    private static final XmldbURI TEST_XINCLUDE_TARGET_URI = XmldbURI.create("xi-target.xml");
+    private static final String XINCLUDE_TARGET = "<p>INCLUDED</p>";
+    private static final XmldbURI TEST_XINCLUDE_MAIN_URI = XmldbURI.create("xi-main.xml");
+    private static final String XINCLUDE_MAIN =
+            "<doc xmlns:xi=\"http://www.w3.org/2001/XInclude\">"
+                    + "<xi:include href=\"" + TEST_XINCLUDE_COLLECTION_URI.append("xi-target.xml") + "\"/>"
+                    + "</doc>";
+
     private static String credentials;
     private static String badCredentials;
 
@@ -352,6 +361,12 @@ public class RESTServiceTest {
 
             try (final Collection col = broker.getOrCreateCollection(transaction, TEST_XMLDECL_COLLECTION_URI)) {
                 broker.storeDocument(transaction, TEST_XML_DOC_WITH_XMLDECL_URI, new StringInputSource(XML_WITH_XMLDECL), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_XINCLUDE_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XINCLUDE_TARGET_URI, new StringInputSource(XINCLUDE_TARGET), MimeType.XML_TYPE, col);
+                broker.storeDocument(transaction, TEST_XINCLUDE_MAIN_URI, new StringInputSource(XINCLUDE_MAIN), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 
@@ -714,6 +729,55 @@ try {
         } finally {
             connect.disconnect();
         }
+    }
+
+    private String getXIncludeMain(final String queryString) throws IOException {
+        final String uri = getServerUri() + TEST_XINCLUDE_COLLECTION_URI.append(TEST_XINCLUDE_MAIN_URI) + queryString;
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            return readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void getExpandXincludesDefault() throws IOException {
+        // default: XIncludes are expanded (unchanged behavior)
+        final String response = getXIncludeMain("");
+        assertTrue("default GET should expand XIncludes, was: " + response, response.contains("INCLUDED"));
+        assertFalse("default GET should not retain xi:include, was: " + response, response.contains("xi:include"));
+    }
+
+    @Test
+    public void getExpandXincludesNo() throws IOException {
+        // _expand-xincludes=no preserves xi:include for a non-destructive round-trip
+        final String response = getXIncludeMain("?_expand-xincludes=no");
+        assertTrue("xi:include should be preserved, was: " + response, response.contains("xi:include"));
+        assertFalse("target content should not be expanded, was: " + response, response.contains("INCLUDED"));
+    }
+
+    @Test
+    public void getExpandXincludesYes() throws IOException {
+        final String response = getXIncludeMain("?_expand-xincludes=yes");
+        assertTrue("target content should be expanded, was: " + response, response.contains("INCLUDED"));
+        assertFalse("xi:include should be replaced, was: " + response, response.contains("xi:include"));
+    }
+
+    @Test
+    public void getMixedStandardAndExpandXincludes() throws IOException {
+        // standard params (indent, omit-xml-declaration) and the extension (expand-xincludes)
+        // are honored together in a single request without disturbing one another
+        final String response = getXIncludeMain("?_indent=no&_omit-xml-declaration=yes&_expand-xincludes=no");
+        assertTrue("xi:include should be preserved, was: " + response, response.contains("xi:include"));
+        assertFalse("target content should not be expanded, was: " + response, response.contains("INCLUDED"));
+        assertFalse("omit-xml-declaration=yes should suppress the XML declaration, was: " + response,
+                response.contains("<?xml"));
     }
 
     @Test
