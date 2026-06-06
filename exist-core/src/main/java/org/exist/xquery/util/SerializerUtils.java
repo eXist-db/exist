@@ -48,6 +48,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -87,12 +88,9 @@ public class SerializerUtils {
      * in the standard W3C serialization namespace and as plain map keys, mirroring BaseX,
      * so that eXist extensions can be set uniformly alongside the W3C parameters.
      */
-    private static final Set<String> ExistParameterConventionLocalNames = new HashSet<>();
-    static {
-        for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
-            ExistParameterConventionLocalNames.add(existParameterConvention.getLocalParameterName());
-        }
-    }
+    private static final Set<String> EXIST_PARAMETER_CONVENTION_LOCAL_NAMES = Arrays.stream(ExistParameterConvention.values())
+            .map(ExistParameterConvention::getLocalParameterName)
+            .collect(Collectors.toUnmodifiableSet());
 
     public interface ParameterConvention<T> {
 
@@ -316,7 +314,7 @@ public class SerializerUtils {
         // the standard namespace, mirroring BaseX, so they can be set uniformly with the W3C ones.
         if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI)
                 && !W3CParameterConventionKeys.contains(local)
-                && !ExistParameterConventionLocalNames.contains(local)) {
+                && !EXIST_PARAMETER_CONVENTION_LOCAL_NAMES.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
         }
 
