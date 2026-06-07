@@ -256,4 +256,35 @@ class URIUtilsTest {
                     "encode/decode round-trip failed for: " + name);
         }
     }
+
+    /**
+     * decodeForURI must never throw and never truncate, even on input that is not the output of
+     * encodeForURI — xmldb:decode/xmldb:decode-uri accept arbitrary user strings. Each case here
+     * is one that {@code new java.net.URI(s).getPath()} mishandles (throws URISyntaxException, or
+     * silently drops everything from a '?' or '#' onward), which is why this is a standalone decoder.
+     */
+    @Test
+    void decodeForURIRobustOnMalformedAndReservedInput() {
+        // a lone '%' not followed by two hex digits is preserved verbatim (URI: throws)
+        assertEquals("100%", URIUtils.decodeForURI("100%"));
+
+        // a truncated escape is preserved verbatim (URI: throws)
+        assertEquals("a%2", URIUtils.decodeForURI("a%2"));
+
+        // a '%' followed by non-hex is preserved verbatim (URI: throws)
+        assertEquals("a%ZZb", URIUtils.decodeForURI("a%ZZb"));
+
+        // a literal space is left as-is (URI: throws on an unencoded space)
+        assertEquals("a b", URIUtils.decodeForURI("a b"));
+
+        // '?' and '#' are ordinary characters here, not query/fragment delimiters (URI: truncates to "a")
+        assertEquals("a?b", URIUtils.decodeForURI("a?b"));
+        assertEquals("a#b", URIUtils.decodeForURI("a#b"));
+
+        // braces are ordinary characters (URI: throws)
+        assertEquals("a{b}c", URIUtils.decodeForURI("a{b}c"));
+
+        // valid escapes still decode even when mixed with characters URI would reject
+        assertEquals("a b?c", URIUtils.decodeForURI("a%20b?c"));
+    }
 }
