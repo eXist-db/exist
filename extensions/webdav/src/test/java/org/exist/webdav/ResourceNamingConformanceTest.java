@@ -89,7 +89,7 @@ public class ResourceNamingConformanceTest {
     private static final String MARKER = "naming-probe-content";
     private static final String CONTENT = "<probe>" + MARKER + "</probe>";
 
-    private static final HttpClient HTTP = HttpClient.newHttpClient();
+    private static HttpClient http;
 
     /**
      * The corpus of "awkward" leaf resource names. Each is the human-intended name the user
@@ -137,12 +137,15 @@ public class ResourceNamingConformanceTest {
 
     @BeforeClass
     public static void createTestCollection() {
+        // HttpClient is AutoCloseable (Java 21); created here and closed in @AfterClass below.
+        http = HttpClient.newHttpClient();
         freshCollection();
     }
 
     @AfterClass
     public static void removeTestCollection() {
         restDelete(TEST_COLLECTION);
+        http.close();
     }
 
     /**
@@ -251,7 +254,7 @@ public class ResourceNamingConformanceTest {
                     .header("Content-Type", "application/xml")
                     .PUT(HttpRequest.BodyPublishers.ofString(content, UTF_8))
                     .build();
-            final HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+            final HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
             if (bodyOut != null) {
                 bodyOut.append(resp.body());
             }
@@ -284,7 +287,7 @@ public class ResourceNamingConformanceTest {
                     .header("Content-Type", "application/xml")
                     .PUT(HttpRequest.BodyPublishers.ofString(content, UTF_8))
                     .build();
-            return HTTP.send(req, HttpResponse.BodyHandlers.discarding()).statusCode();
+            return http.send(req, HttpResponse.BodyHandlers.discarding()).statusCode();
         } catch (final Exception e) {
             restoreInterrupt(e);
             return -1;
@@ -312,7 +315,7 @@ public class ResourceNamingConformanceTest {
         final List<String> names = new ArrayList<>();
         try {
             final HttpRequest req = authed(endpointUri("/rest", collection)).GET().build();
-            final String body = HTTP.send(req, HttpResponse.BodyHandlers.ofString(UTF_8)).body();
+            final String body = http.send(req, HttpResponse.BodyHandlers.ofString(UTF_8)).body();
             final Matcher m = Pattern.compile("<exist:resource[^>]*\\sname=\"([^\"]*)\"").matcher(body);
             while (m.find()) {
                 names.add(unescapeXml(m.group(1)));
@@ -328,7 +331,7 @@ public class ResourceNamingConformanceTest {
     private static void restDelete(final String dbPath) {
         try {
             final HttpRequest req = authed(endpointUri("/rest", dbPath)).DELETE().build();
-            HTTP.send(req, HttpResponse.BodyHandlers.discarding());
+            http.send(req, HttpResponse.BodyHandlers.discarding());
         } catch (final Exception e) {
             restoreInterrupt(e);
             // best-effort cleanup
@@ -338,7 +341,7 @@ public class ResourceNamingConformanceTest {
     /** Send a GET and report whether the response is 200 and its body contains the probe marker. */
     private static Boolean getMatchesMarker(final URI uri) {
         try {
-            final HttpResponse<String> resp = HTTP.send(authed(uri).GET().build(),
+            final HttpResponse<String> resp = http.send(authed(uri).GET().build(),
                     HttpResponse.BodyHandlers.ofString(UTF_8));
             return resp.statusCode() == 200 && resp.body().contains(MARKER);
         } catch (final Exception e) {
