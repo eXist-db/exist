@@ -258,6 +258,15 @@ public class URIUtils {
 	 * functions (see eXist-db/exist#1824, #44): {@code decodeForURI(encodeForURI(s))} equals
 	 * {@code s} for every {@code s}.
 	 *
+	 * <p>This is deliberately a standalone percent-decoder rather than a call to
+	 * {@link java.net.URI#getPath()}. {@code java.net.URI} is unsuitable as a general decoder for the
+	 * arbitrary strings that {@code xmldb:decode}/{@code xmldb:decode-uri} accept: it throws
+	 * {@code URISyntaxException} on inputs that are perfectly valid here (a literal space, a trailing
+	 * or malformed {@code %}, characters such as <code>{</code> or <code>}</code>), and worse, it
+	 * <em>silently truncates</em> at {@code '?'} and {@code '#'} (parsing the remainder as a query or
+	 * fragment) — losing data with no error. This decoder never throws and never truncates: any
+	 * {@code '%'} not followed by two hex digits is preserved verbatim. See {@code URIUtilsTest}.</p>
+	 *
 	 * @param uriComponent the percent-encoded path component to decode.
 	 *
 	 * @return the decoded path component.
