@@ -29,6 +29,7 @@ xquery version "3.1";
 module namespace ss = "http://exist-db.org/xquery/lucene/test/search-scope";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
+declare namespace exist = "http://exist.sourceforge.net/NS/exist";
 
 import module namespace ft = "http://exist-db.org/xquery/lucene";
 
@@ -195,4 +196,42 @@ declare
     %test:assertTrue
 function ss:empty-query-matches-all() {
     ft:search-scope($ss:COLLECTION, ())?total ge 4
+};
+
+(: highlight: a requested field comes back as exist:field/exist:match markup per hit :)
+declare
+    %test:assertTrue
+function ss:highlight-marks-matches() {
+    let $hits := ft:search-scope($ss:COLLECTION, "content:(install)", map { "highlight": "content" })?hits
+    return exists($hits(1)?highlight?content//exist:match)
+};
+
+(: offset skips ranked hits: with 3 element hits, offset 1 returns 2 :)
+declare
+    %test:assertEquals(2)
+function ss:offset-skips-hits() {
+    array:size(ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 1 })?hits)
+};
+
+(: offset + limit page: skip 1, take 1 :)
+declare
+    %test:assertEquals(1)
+function ss:offset-with-limit() {
+    array:size(ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 1, "limit": 1 })?hits)
+};
+
+(: offset beyond the result size yields no hits (total still reports the full count) :)
+declare
+    %test:assertEquals(0)
+function ss:offset-beyond-end() {
+    array:size(ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 99 })?hits)
+};
+
+(: paging covers the whole result: page 1 (limit 2) + page 2 (offset 2) = all 3 hits :)
+declare
+    %test:assertEquals(3)
+function ss:offset-paging-covers-all() {
+    let $p1 := ft:search-scope($ss:COLLECTION, "content:(array)", map { "limit": 2 })?hits
+    let $p2 := ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 2 })?hits
+    return array:size($p1) + array:size($p2)
 };
