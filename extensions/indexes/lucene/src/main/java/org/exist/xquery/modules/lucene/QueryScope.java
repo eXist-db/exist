@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 
 /**
- * {@code ft:search-index($scope, $query, $options?)} — an <em>index-first</em> Lucene search.
+ * {@code ft:query-scope($scope, $query, $options?)} — an <em>index-first</em> Lucene search.
  *
  * Unlike {@code ft:query}, which evaluates relative to an XPath context node set, this function
  * queries the Lucene index directly over the documents in {@code $scope} and returns <em>all</em>
@@ -71,7 +71,7 @@ import java.io.IOException;
  * underpinning the "eXlasticSearch" field-first search design; the ES {@code _search}-style result
  * map (hits/fields/facets/highlights/live-node) is assembled in XQuery on top of this node set.
  */
-public class SearchIndex extends BasicFunction {
+public class QueryScope extends BasicFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_SCOPE =
             new FunctionParameterSequenceType("scope", Type.STRING, Cardinality.ZERO_OR_MORE,
@@ -90,21 +90,21 @@ public class SearchIndex extends BasicFunction {
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
-                    new QName("search-index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    new QName("query-scope", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Index-first Lucene search over a scope of collections/documents. Returns all matching "
                             + "indexed nodes (any element type) with scores attached, avoiding the XPath node-set "
                             + "scoring artifacts of ft:query over a descendant-axis wildcard.",
                     new SequenceType[]{FS_PARAM_SCOPE, FS_PARAM_QUERY},
                     FS_RETURN),
             new FunctionSignature(
-                    new QName("search-index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    new QName("query-scope", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Index-first Lucene search over a scope of collections/documents, with query options. "
                             + "Returns all matching indexed nodes (any element type) with scores attached.",
                     new SequenceType[]{FS_PARAM_SCOPE, FS_PARAM_QUERY, FS_PARAM_OPTIONS},
                     FS_RETURN)
     };
 
-    public SearchIndex(final XQueryContext context, final FunctionSignature signature) {
+    public QueryScope(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
