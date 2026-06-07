@@ -85,8 +85,12 @@ import java.util.Map;
  * }
  * </pre>
  *
- * <p>{@code $options} (all optional) shapes the result:</p>
+ * <p>{@code $options} (all optional). {@code "filter"} restricts the <em>query</em>; the rest shape the
+ * <em>result</em>:</p>
  * <ul>
+ *   <li>{@code "filter"} (map(*)) — a {@code { dimension: value(s) }} facet drill-down restricting the
+ *       search to documents with those facet values (the ES post-filter analog; keeps {@code total}/paging
+ *       consistent, which caller-side filtering cannot);</li>
  *   <li>{@code "fields"} (xs:string*) — stored fields to include in each hit's {@code source};</li>
  *   <li>{@code "highlight"} (xs:string*) — fields to highlight; adds a {@code highlight} key per hit whose
  *       values are {@code exist:field} elements with matches in {@code exist:match} (the
@@ -103,9 +107,10 @@ import java.util.Map;
  * view: group element hits by document, keep the best-scoring element, and report {@code total} as the
  * distinct-document count. Facets are always aggregated over the full element-hit set.</p>
  *
- * <p>This runs the index-first query with default options (the {@code $options} map shapes the
- * <em>result</em>, not the Lucene query). A stored-fields-only fast path (building the map without
- * materializing nodes) is a follow-up; highlighting reuses the live node it currently materializes.</p>
+ * <p>The query runs with default options except for the {@code "filter"} drill-down above (other Lucene
+ * query options such as {@code default-operator} are not yet threaded through). A stored-fields-only fast
+ * path (building the map without materializing nodes) is a follow-up; highlighting reuses the live node
+ * it currently materializes.</p>
  */
 public class SearchScope extends BasicFunction {
 
@@ -159,8 +164,32 @@ public class SearchScope extends BasicFunction {
             return emptyResult(spec);
         }
 
-        final NodeSet hits = LuceneScope.query(this, contextSequence, docs, args[1], new QueryOptions());
+        final NodeSet hits = LuceneScope.query(this, contextSequence, docs, args[1], buildQueryOptions(args));
         return buildResult(hits, spec);
+    }
+
+    /**
+     * Build the Lucene {@link QueryOptions} for the search from the {@code "filter"} option: a
+     * {@code map { dimension: value(s) }} that becomes a facet drill-down, restricting the search to
+     * documents carrying those facet values (e.g. {@code "filter": map { "site-section": "functions" }}).
+     * This is the ES post-filter analog, and the reason it must live in the query (not be applied
+     * caller-side): filtering here keeps {@code total}/{@code limit}/paging consistent. Everything else
+     * in {@code $options} shapes the result, not the query.
+     */
+    private QueryOptions buildQueryOptions(final Sequence[] args) throws XPathException {
+        if (getArgumentCount() < 3 || args[2].isEmpty()
+                || !Type.subTypeOf(args[2].itemAt(0).getType(), Type.MAP_ITEM)) {
+            return new QueryOptions();
+        }
+        final AbstractMapType options = (AbstractMapType) args[2].itemAt(0);
+        final Sequence filter = options.get(new StringValue(this, "filter"));
+        if (filter == null || filter.isEmpty() || !Type.subTypeOf(filter.itemAt(0).getType(), Type.MAP_ITEM)) {
+            return new QueryOptions();
+        }
+        // QueryOptions reads a facet drill-down from a "facets" -> { dimension: value(s) } map; wrap the filter.
+        final MapType queryOptionsMap = new MapType(this, context);
+        queryOptionsMap.add(new StringValue(this, "facets"), filter);
+        return new QueryOptions(queryOptionsMap);
     }
 
     private Sequence buildResult(final NodeSet hits, final ResultSpec spec) throws XPathException {
