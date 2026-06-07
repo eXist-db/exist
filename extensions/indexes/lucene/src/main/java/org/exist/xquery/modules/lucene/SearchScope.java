@@ -77,8 +77,9 @@ import java.util.Map;
  *     map {
  *       "uri":     xs:string,  (: the eXist document URI :)
  *       "node-id": xs:string,  (: the indexed element within that document :)
- *       "score":   xs:double,  (: _score :)
- *       "source":  map(*)      (: _source -- requested stored fields :)
+ *       "score":     xs:double,  (: _score :)
+ *       "source":    map(*),     (: _source -- requested stored fields :)
+ *       "highlight": map(*)      (: highlight -- per requested field, exist:field/exist:match nodes :)
  *     }* },
  *   "facets": map(*)           (: aggregations -- requested dimensions, value -> count :)
  * }
@@ -87,8 +88,12 @@ import java.util.Map;
  * <p>{@code $options} (all optional) shapes the result:</p>
  * <ul>
  *   <li>{@code "fields"} (xs:string*) — stored fields to include in each hit's {@code source};</li>
+ *   <li>{@code "highlight"} (xs:string*) — fields to highlight; adds a {@code highlight} key per hit whose
+ *       values are {@code exist:field} elements with matches in {@code exist:match} (the
+ *       {@code ft:highlight-field-matches} form);</li>
  *   <li>{@code "facets"} (xs:string*) — facet dimensions to aggregate, over the full element-hit set;</li>
  *   <li>{@code "collapse"} (xs:boolean) — group hits to one-per-document (see granularity);</li>
+ *   <li>{@code "offset"} (xs:integer, alias {@code "from"}) — skip this many ranked hits before the page;</li>
  *   <li>{@code "limit"} (xs:integer) — cap the number of returned hits (the page), not {@code total}.</li>
  * </ul>
  *
@@ -98,9 +103,9 @@ import java.util.Map;
  * view: group element hits by document, keep the best-scoring element, and report {@code total} as the
  * distinct-document count. Facets are always aggregated over the full element-hit set.</p>
  *
- * <p>This first cut runs the index-first query with default options (the {@code $options} map shapes the
- * <em>result</em>, not the Lucene query). Highlighting and a stored-fields-only fast path (building the map
- * without materializing nodes) are follow-ups.</p>
+ * <p>This runs the index-first query with default options (the {@code $options} map shapes the
+ * <em>result</em>, not the Lucene query). A stored-fields-only fast path (building the map without
+ * materializing nodes) is a follow-up; highlighting reuses the live node it currently materializes.</p>
  */
 public class SearchScope extends BasicFunction {
 
@@ -188,12 +193,14 @@ public class SearchScope extends BasicFunction {
         }
         ranked.sort((a, b) -> Double.compare(b.score(), a.score()));
 
-        final List<Hit> page = (spec.limit() >= 0 && spec.limit() < ranked.size())
-                ? ranked.subList(0, spec.limit()) : ranked;
+        // page the ranked list: skip $offset, then take at most $limit
+        final int from = Math.min(spec.offset(), ranked.size());
+        final int to = (spec.limit() >= 0) ? Math.min(ranked.size(), from + spec.limit()) : ranked.size();
+        final List<Hit> page = ranked.subList(from, to);
 
         final List<Sequence> hitMaps = new ArrayList<>(page.size());
         for (final Hit h : page) {
-            hitMaps.add(buildHit(h, spec.fields(), index));
+            hitMaps.add(buildHit(h, spec, index));
         }
 
         final MapType facets = new MapType(this, context);
@@ -209,7 +216,7 @@ public class SearchScope extends BasicFunction {
         return result;
     }
 
-    private MapType buildHit(final Hit hit, final List<String> fields, final LuceneIndexWorker index)
+    private MapType buildHit(final Hit hit, final ResultSpec spec, final LuceneIndexWorker index)
             throws XPathException {
         final NodeProxy proxy = hit.proxy();
         final DocumentImpl doc = proxy.getOwnerDocument();
@@ -219,11 +226,39 @@ public class SearchScope extends BasicFunction {
         hitMap.add(new StringValue(this, "score"), new DoubleValue(this, hit.score()));
 
         final MapType source = new MapType(this, context);
-        for (final String field : fields) {
+        for (final String field : spec.fields()) {
             source.add(new StringValue(this, field), fieldValues(index, doc.getDocId(), proxy.getNodeId(), field));
         }
         hitMap.add(new StringValue(this, "source"), source);
+
+        if (!spec.highlight().isEmpty()) {
+            final LuceneMatch match = Field.getMatch(proxy);
+            final MapType highlight = new MapType(this, context);
+            for (final String field : spec.highlight()) {
+                highlight.add(new StringValue(this, field), highlightField(index, proxy, match, doc.getDocId(), field));
+            }
+            hitMap.add(new StringValue(this, "highlight"), highlight);
+        }
         return hitMap;
+    }
+
+    /**
+     * Highlight a stored field's content for one hit, reusing the {@code ft:highlight-field-matches}
+     * engine ({@link Field#highlightMatches}). Returns {@code exist:field} element(s) with matched terms
+     * enclosed in {@code exist:match} (the same form {@code ft:highlight-field-matches} produces), or the
+     * empty sequence if the hit has no Lucene match.
+     */
+    private Sequence highlightField(final LuceneIndexWorker index, final NodeProxy proxy, final LuceneMatch match,
+                                    final int docId, final String field) throws XPathException {
+        if (match == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final Sequence text = fieldValues(index, docId, proxy.getNodeId(), field);
+        try {
+            return Field.highlightMatches(context, field, proxy, match, text);
+        } catch (final IOException e) {
+            throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error highlighting field '" + field + "': " + e.getMessage());
+        }
     }
 
     private Sequence fieldValues(final LuceneIndexWorker index, final int docId, final NodeId nodeId,
@@ -312,19 +347,26 @@ public class SearchScope extends BasicFunction {
     // ---- options ----
 
     /** The parsed result-shaping options. */
-    private record ResultSpec(List<String> fields, List<String> facets, boolean collapse, int limit) {
+    private record ResultSpec(List<String> fields, List<String> highlight, List<String> facets,
+                              boolean collapse, int offset, int limit) {
     }
 
     private ResultSpec parseSpec(final Sequence[] args) throws XPathException {
         if (getArgumentCount() < 3 || args[2].isEmpty()
                 || !Type.subTypeOf(args[2].itemAt(0).getType(), Type.MAP_ITEM)) {
-            return new ResultSpec(List.of(), List.of(), false, -1);
+            return new ResultSpec(List.of(), List.of(), List.of(), false, 0, -1);
         }
         final AbstractMapType options = (AbstractMapType) args[2].itemAt(0);
+        int offset = intOption(options, "offset");
+        if (offset < 0) {
+            offset = intOption(options, "from");
+        }
         return new ResultSpec(
                 stringList(options, "fields"),
+                stringList(options, "highlight"),
                 stringList(options, "facets"),
                 booleanOption(options, "collapse"),
+                Math.max(0, offset),
                 intOption(options, "limit"));
     }
 
