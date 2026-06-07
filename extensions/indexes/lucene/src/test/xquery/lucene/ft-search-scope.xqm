@@ -198,6 +198,27 @@ function ss:empty-query-matches-all() {
     ft:search-scope($ss:COLLECTION, ())?total ge 4
 };
 
+(: filter (facet drill-down) restricts the query: kind=para drops the caption hit (3 -> 2) :)
+declare
+    %test:assertEquals(2)
+function ss:filter-drilldown-restricts() {
+    ft:search-scope($ss:COLLECTION, "content:(array)", map { "filter": map { "kind": "para" } })?total
+};
+
+(: filter kind=caption keeps only the caption hit :)
+declare
+    %test:assertEquals(1)
+function ss:filter-drilldown-caption() {
+    ft:search-scope($ss:COLLECTION, "content:(array)", map { "filter": map { "kind": "caption" } })?total
+};
+
+(: filter restricts the hits array too, not just total :)
+declare
+    %test:assertEquals(2)
+function ss:filter-restricts-hits() {
+    array:size(ft:search-scope($ss:COLLECTION, "content:(array)", map { "filter": map { "kind": "para" } })?hits)
+};
+
 (: highlight: a requested field comes back as exist:field/exist:match markup per hit :)
 declare
     %test:assertTrue
