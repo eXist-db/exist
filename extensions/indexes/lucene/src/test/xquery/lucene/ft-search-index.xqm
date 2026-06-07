@@ -165,6 +165,42 @@ function si:empty-query-matches-all() {
     count(ft:search-index($si:COLLECTION, ())) ge 4
 };
 
+(: ---- 3-arg form: the $options argument (facet drill-down, default-operator) ---- :)
+
+(: facet drill-down via the options map restricts the "content:(array)" hits (2 paras + 1 caption)
+   to the "para" facet value -> the 2 paras only. Exercises the 3-arg path and OPTION_FACETS. :)
+declare
+    %test:assertEquals(2)
+function si:options-facet-drilldown-para() {
+    count(ft:search-index($si:COLLECTION, "content:(array)",
+        map { "facets": map { "kind": "para" } }))
+};
+
+(: same drill-down to the other facet value -> the single caption hit. :)
+declare
+    %test:assertEquals(1)
+function si:options-facet-drilldown-caption() {
+    count(ft:search-index($si:COLLECTION, "content:(array)",
+        map { "facets": map { "kind": "caption" } }))
+};
+
+(: control (2-arg): eXist's default operator is AND, so "array map" matches only the two
+   nodes containing BOTH terms (doc1/para, doc2/para) -- not the array-only caption. :)
+declare
+    %test:assertEquals(2)
+function si:default-operator-is-and-by-default() {
+    count(ft:search-index($si:COLLECTION, "content:(array map)"))
+};
+
+(: 3-arg form: the default-operator option is honored. Flipping to OR widens the AND-default
+   above (2) to 3 by also matching the array-only caption -- proving the options arg passes through. :)
+declare
+    %test:assertEquals(3)
+function si:options-default-operator-or() {
+    count(ft:search-index($si:COLLECTION, "content:(array map)",
+        map { "default-operator": "or" }))
+};
+
 (: results are sortable by score (relevance ranking left to the caller) :)
 declare
     %test:assertTrue
