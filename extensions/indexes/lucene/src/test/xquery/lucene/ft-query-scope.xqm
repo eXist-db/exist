@@ -22,10 +22,10 @@
 xquery version "3.1";
 
 (:~
- : Tests for ft:search-index — index-first Lucene search that returns all matching nodes
+ : Tests for ft:query-scope — index-first Lucene search that returns all matching nodes
  : (any element type) with scores attached, avoiding ft:query's descendant-wildcard score loss.
  :)
-module namespace si = "http://exist-db.org/xquery/lucene/test/search-index";
+module namespace si = "http://exist-db.org/xquery/lucene/test/query-scope";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 declare namespace exist = "http://exist.sourceforge.net/NS/exist";
@@ -100,7 +100,7 @@ function si:tearDown() {
 declare
     %test:assertEquals(3)
 function si:finds-nested-across-element-types() {
-    count(ft:search-index($si:COLLECTION, "content:(array)"))
+    count(ft:query-scope($si:COLLECTION, "content:(array)"))
 };
 
 (: THE KEY PROOF: every hit is scored > 0, even though the matched elements are NESTED
@@ -108,7 +108,7 @@ function si:finds-nested-across-element-types() {
 declare
     %test:assertTrue
 function si:scores-nested-elements() {
-    let $hits := ft:search-index($si:COLLECTION, "content:(array)")
+    let $hits := ft:query-scope($si:COLLECTION, "content:(array)")
     return
         exists($hits) and (every $h in $hits satisfies ft:score($h) gt 0)
 };
@@ -118,7 +118,7 @@ declare
     %test:assertEquals(2)
 function si:name-independent-multiple-element-types() {
     count(distinct-values(
-        for $h in ft:search-index($si:COLLECTION, "content:(array)")
+        for $h in ft:query-scope($si:COLLECTION, "content:(array)")
         return local-name($h)
     ))
 };
@@ -127,7 +127,7 @@ function si:name-independent-multiple-element-types() {
 declare
     %test:assertEquals(2, 1)
 function si:composes-with-facets() {
-    let $hits := ft:search-index($si:COLLECTION, "content:(array)")
+    let $hits := ft:query-scope($si:COLLECTION, "content:(array)")
     let $kinds := ft:facets($hits, "kind", ())
     return ($kinds?para, $kinds?caption)
 };
@@ -136,7 +136,7 @@ function si:composes-with-facets() {
 declare
     %test:assertTrue
 function si:composes-with-field() {
-    let $hit := ft:search-index($si:COLLECTION, "content:(filter)")[1]
+    let $hit := ft:query-scope($si:COLLECTION, "content:(filter)")[1]
     return ft:field($hit, "heading") = "Working with arrays"
 };
 
@@ -144,7 +144,7 @@ function si:composes-with-field() {
 declare
     %test:assertTrue
 function si:composes-with-highlight() {
-    let $hit := ft:search-index($si:COLLECTION, "content:(install)")[1]
+    let $hit := ft:query-scope($si:COLLECTION, "content:(install)")[1]
     return exists(ft:highlight-field-matches($hit, "content")//exist:match)
 };
 
@@ -152,7 +152,7 @@ function si:composes-with-highlight() {
 declare
     %test:assertTrue
 function si:returns-live-nodes() {
-    let $hit := ft:search-index($si:COLLECTION, "content:(install)")[1]
+    let $hit := ft:query-scope($si:COLLECTION, "content:(install)")[1]
     return
         $hit/ancestor::article/title = "Installation"
         and root($hit) instance of document-node()
@@ -162,7 +162,7 @@ function si:returns-live-nodes() {
 declare
     %test:assertTrue
 function si:empty-query-matches-all() {
-    count(ft:search-index($si:COLLECTION, ())) ge 4
+    count(ft:query-scope($si:COLLECTION, ())) ge 4
 };
 
 (: ---- 3-arg form: the $options argument (facet drill-down, default-operator) ---- :)
@@ -172,7 +172,7 @@ function si:empty-query-matches-all() {
 declare
     %test:assertEquals(2)
 function si:options-facet-drilldown-para() {
-    count(ft:search-index($si:COLLECTION, "content:(array)",
+    count(ft:query-scope($si:COLLECTION, "content:(array)",
         map { "facets": map { "kind": "para" } }))
 };
 
@@ -180,7 +180,7 @@ function si:options-facet-drilldown-para() {
 declare
     %test:assertEquals(1)
 function si:options-facet-drilldown-caption() {
-    count(ft:search-index($si:COLLECTION, "content:(array)",
+    count(ft:query-scope($si:COLLECTION, "content:(array)",
         map { "facets": map { "kind": "caption" } }))
 };
 
@@ -189,7 +189,7 @@ function si:options-facet-drilldown-caption() {
 declare
     %test:assertEquals(2)
 function si:default-operator-is-and-by-default() {
-    count(ft:search-index($si:COLLECTION, "content:(array map)"))
+    count(ft:query-scope($si:COLLECTION, "content:(array map)"))
 };
 
 (: 3-arg form: the default-operator option is honored. Flipping to OR widens the AND-default
@@ -197,7 +197,7 @@ function si:default-operator-is-and-by-default() {
 declare
     %test:assertEquals(3)
 function si:options-default-operator-or() {
-    count(ft:search-index($si:COLLECTION, "content:(array map)",
+    count(ft:query-scope($si:COLLECTION, "content:(array map)",
         map { "default-operator": "or" }))
 };
 
@@ -206,7 +206,7 @@ declare
     %test:assertTrue
 function si:sortable-by-score() {
     let $ranked :=
-        for $h in ft:search-index($si:COLLECTION, "content:(array)")
+        for $h in ft:query-scope($si:COLLECTION, "content:(array)")
         order by ft:score($h) descending
         return ft:score($h)
     return
