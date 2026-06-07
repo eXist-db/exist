@@ -245,7 +245,68 @@ public class URIUtils {
 
 		return new String(buf.buf, 0, buf.count);
 	}
-	
+
+	/**
+	 * Decodes a percent-encoded URI path component back to its literal form, the inverse of
+	 * {@link #encodeForURI(String)}. Each {@code %XX} escape is decoded to a byte; consecutive
+	 * escapes are interpreted together as a UTF-8 byte sequence. Every other character is left
+	 * unchanged.
+	 *
+	 * Unlike {@link #urlDecodeUtf8(String)} (which wraps {@link java.net.URLDecoder} and therefore
+	 * follows application/x-www-form-urlencoded rules), this method treats {@code '+'} as a literal
+	 * plus sign, per RFC 3986. This is required for round-tripping names through the xmldb URI
+	 * functions (see eXist-db/exist#1824, #44): {@code decodeForURI(encodeForURI(s))} equals
+	 * {@code s} for every {@code s}.
+	 *
+	 * @param uriComponent the percent-encoded path component to decode.
+	 *
+	 * @return the decoded path component.
+	 */
+	public static String decodeForURI(final String uriComponent) {
+		if (uriComponent.indexOf('%') == -1) {
+			// fast path: nothing percent-encoded, nothing to decode
+			return uriComponent;
+		}
+
+		final int len = uriComponent.length();
+		final StringBuilder out = new StringBuilder(len);
+		final java.io.ByteArrayOutputStream pending = new java.io.ByteArrayOutputStream();
+
+		int i = 0;
+		while (i < len) {
+			final char c = uriComponent.charAt(i);
+			if (c == '%' && i + 2 < len && isHexDigit(uriComponent.charAt(i + 1)) && isHexDigit(uriComponent.charAt(i + 2))) {
+				pending.write((hexValue(uriComponent.charAt(i + 1)) << 4) | hexValue(uriComponent.charAt(i + 2)));
+				i += 3;
+			} else {
+				if (pending.size() > 0) {
+					out.append(pending.toString(UTF_8));
+					pending.reset();
+				}
+				out.append(c);
+				i++;
+			}
+		}
+		if (pending.size() > 0) {
+			out.append(pending.toString(UTF_8));
+		}
+		return out.toString();
+	}
+
+	private static boolean isHexDigit(final char c) {
+		return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+	}
+
+	private static int hexValue(final char c) {
+		if (c >= '0' && c <= '9') {
+			return c - '0';
+		}
+		if (c >= 'A' && c <= 'F') {
+			return c - 'A' + 10;
+		}
+		return c - 'a' + 10;
+	}
+
 	public static String iriToURI(String uriPart) {
 		String result = urlEncodeUtf8(uriPart);
 		result = result.replaceAll("%23", "#");
