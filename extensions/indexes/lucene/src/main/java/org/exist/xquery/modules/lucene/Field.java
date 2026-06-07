@@ -185,7 +185,7 @@ public class Field extends BasicFunction {
                     continue;
                 }
                 final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
-                final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
+                final Sequence highlighted = highlightMatches(context, fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
                 }
@@ -220,6 +220,7 @@ public class Field extends BasicFunction {
     /**
      * Highlight matches in field content using the analyzer defined for the field.
      *
+     * @param context the query context (for the broker and the in-memory result builder)
      * @param fieldName the name of the field
      * @param proxy node on which the field is defined
      * @param match the lucene match attached to the node
@@ -228,7 +229,7 @@ public class Field extends BasicFunction {
      * @throws XPathException in case of error
      * @throws IOException in case of a lucene error
      */
-    private Sequence highlightMatches(final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
+    static Sequence highlightMatches(final XQueryContext context, final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final Map<Object, Query> terms = index.getTerms(match.getQuery());
         final NodePath path = LuceneMatchListener.getPath(proxy);
