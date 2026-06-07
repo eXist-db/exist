@@ -28,12 +28,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -59,17 +58,19 @@ import static org.junit.Assert.fail;
  *
  * Surfaces covered in this first increment:
  * <ul>
- *   <li><b>WebDAV</b> (Apache Jackrabbit server since PR #6364) — probed via raw HTTP PUT/GET so the
- *       on-the-wire encoding is explicit.</li>
- *   <li><b>REST</b> — via {@link HttpURLConnection}.</li>
+ *   <li><b>WebDAV</b> (Apache Jackrabbit server since PR #6364) — probed via {@link HttpClient}.</li>
+ *   <li><b>REST</b> — via {@link HttpClient}.</li>
  *   <li>an <b>oracle</b> for the stored name — eXist's native REST collection listing (no XQuery module
  *       needed; the WebDAV module's test conf.xml registers no XQuery builtin-modules), reporting what
  *       name actually got stored under the test collection.</li>
  * </ul>
  *
  * <p>The harness is module- and WebDAV-client-independent: the test collection is created by a REST PUT
- * (which auto-creates it), and all probes are raw HTTP. Probe content is valid XML because the corpus
- * names end in {@code .xml} and eXist parses {@code .xml} resources on store.</p>
+ * (which auto-creates it), and all probes go over {@link HttpClient}. Request URLs are built with the
+ * multi-argument {@link URI} constructor, which percent-encodes the path; note this leaves RFC 3986
+ * sub-delimiters ({@code + @ & ( ) '}) literal on the wire, which is itself part of the encoding
+ * behavior this harness characterizes. Probe content is valid XML because the corpus names end in
+ * {@code .xml} and eXist parses {@code .xml} resources on store.</p>
  *
  * TODO (follow-up increments, see the resource-naming tasking):
  * <ul>
@@ -87,6 +88,8 @@ public class ResourceNamingConformanceTest {
     // valid XML, because the corpus names end in .xml and eXist parses .xml resources on store
     private static final String MARKER = "naming-probe-content";
     private static final String CONTENT = "<probe>" + MARKER + "</probe>";
+
+    private static final HttpClient HTTP = HttpClient.newHttpClient();
 
     /**
      * The corpus of "awkward" leaf resource names. Each is the human-intended name the user
@@ -111,23 +114,26 @@ public class ResourceNamingConformanceTest {
     }
 
     /**
-     * The ratchet allowlist: corpus labels that do NOT yet round-trip cross-surface (stored via
-     * WebDAV, then read back by the requested name via both WebDAV and REST). This set must match
-     * the names that currently fail exactly.
+     * The ratchet allowlist: corpus labels that do NOT round-trip cross-surface (stored via WebDAV,
+     * then read back by the requested name via both WebDAV and REST). The set of names that currently
+     * fail must equal this set exactly.
      *
-     * <p>When a naming fix lands and one of these starts round-tripping, the test fails and tells you
-     * to <b>remove</b> it from this set — at which point that name becomes regression-guarded. If a
-     * name that is <em>not</em> listed here ever stops round-tripping, the test fails as a regression.
-     * So the matrix can neither silently drift nor silently regress. See the resource-naming tasking
+     * <p>It is <b>empty</b>: with request URLs built the standard way (the multi-argument
+     * {@link URI} constructor, which leaves RFC 3986 sub-delimiters such as {@code + @ & ( ) '} literal
+     * in the path, exactly as a browser or {@code curl} sends them), every corpus name — including
+     * those with sub-delimiters and non-ASCII characters — round-trips between WebDAV and REST. eXist
+     * may store a percent-encoded form (e.g. a space as {@code %20}; see the {@code (≠)} markers in the
+     * printed matrix), but both surfaces agree on read, so the content is reachable by the requested
+     * name. An earlier revision of this harness percent-encoded sub-delimiters in the request URL and
+     * saw five "failures" ({@code + @ & ( ) '}); those were artifacts of that encoding choice, not of
+     * eXist's storage, and disappear once the URL is encoded conventionally.</p>
+     *
+     * <p>The ratchet therefore guards the <em>good</em> state: if any corpus name ever stops
+     * round-tripping cross-surface, the test fails as a regression. If a future change makes a new,
+     * not-yet-covered name fail, add it here with a comment. See the resource-naming tasking
      * (issues #3795, #3665, #1824, #5299, #1612).</p>
      */
-    private static final Set<String> KNOWN_FAILURES = Set.of(
-            "plus",        // a+b.xml         — '+' stored as %2B; REST read by requested name misses
-            "at",          // a@b.xml
-            "ampersand",   // a&b.xml
-            "parens",      // report(2024).xml
-            "apostrophe"   // o'brien.xml
-    );
+    private static final Set<String> KNOWN_FAILURES = Set.of();
 
     @BeforeClass
     public static void createTestCollection() {
@@ -164,8 +170,7 @@ public class ResourceNamingConformanceTest {
             freshCollection();
 
             try {
-                // CREATE via WebDAV — raw HTTP PUT with RFC 3986 path-segment encoding, so the
-                // test controls exactly what is on the wire (no client library obscuring it)
+                // CREATE via WebDAV — HTTP PUT with the URI constructor encoding the path
                 final StringBuilder putBody = new StringBuilder();
                 final int putCode = webdavPut(TEST_COLLECTION + "/" + name, CONTENT, putBody);
                 row.created = putCode == 200 || putCode == 201 || putCode == 204;
@@ -176,7 +181,7 @@ public class ResourceNamingConformanceTest {
                 // ORACLE: what name actually landed in storage?
                 row.storedName = soleStoredName();
 
-                // READ-BACK via WebDAV (self round-trip, raw HTTP GET) — by the name the user PUT
+                // READ-BACK via WebDAV (self round-trip, HTTP GET) — by the name the user PUT
                 row.webdavReadBack = webdavGet(TEST_COLLECTION + "/" + name);
 
                 // READ via REST by the name the user PUT (cross-surface WebDAV -> REST): can a REST
@@ -237,27 +242,22 @@ public class ResourceNamingConformanceTest {
         return sb.toString();
     }
 
-    // ---- WebDAV helpers (raw HTTP, so the on-the-wire encoding is explicit) ----
+    // ---- WebDAV helpers (java.net.http.HttpClient; the multi-arg URI constructor encodes the path) ----
 
-    /** Raw HTTP PUT to the WebDAV endpoint; returns the HTTP status (or -1), appending any body. */
+    /** HTTP PUT to the WebDAV endpoint; returns the HTTP status (or -1), appending any body. */
     private static int webdavPut(final String dbPath, final String content, final StringBuilder bodyOut) {
         try {
-            final URL url = URI.create(webdavBase() + encodePathSegments(dbPath)).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("PUT");
-            conn.setRequestProperty("Content-Type", "application/xml");
-            conn.setDoOutput(true);
-            try (final OutputStream os = conn.getOutputStream()) {
-                os.write(content.getBytes(UTF_8));
-            }
-            final int code = conn.getResponseCode();
+            final HttpRequest req = authed(endpointUri("/webdav", dbPath))
+                    .header("Content-Type", "application/xml")
+                    .PUT(HttpRequest.BodyPublishers.ofString(content, UTF_8))
+                    .build();
+            final HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
             if (bodyOut != null) {
-                bodyOut.append(readBody(conn));
+                bodyOut.append(resp.body());
             }
-            conn.disconnect();
-            return code;
+            return resp.statusCode();
         } catch (final Exception e) {
+            restoreInterrupt(e);
             if (bodyOut != null) {
                 bodyOut.append(e);
             }
@@ -265,69 +265,28 @@ public class ResourceNamingConformanceTest {
         }
     }
 
-    /** Raw HTTP GET from the WebDAV endpoint; true if 200 and content matches. */
+    /** HTTP GET from the WebDAV endpoint; true if 200 and content matches. */
     private static Boolean webdavGet(final String dbPath) {
-        try {
-            final URL url = URI.create(webdavBase() + encodePathSegments(dbPath)).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("GET");
-            conn.connect();
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                conn.disconnect();
-                return false;
-            }
-            final String body = readBody(conn);
-            conn.disconnect();
-            return body.contains(MARKER);
-        } catch (final Exception e) {
-            return false;
-        }
-    }
-
-    private static String webdavBase() {
-        return "http://localhost:" + existWebServer.getPort() + "/webdav";
+        return getMatchesMarker(endpointUri("/webdav", dbPath));
     }
 
     // ---- REST helpers ----
 
     /** GET a db path via the REST interface; returns true if 200 and content matches. */
     private Boolean restGet(final String dbPath) {
-        try {
-            final String encoded = encodePathSegments(dbPath);
-            final URL url = URI.create(restBase() + encoded).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("GET");
-            conn.connect();
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                conn.disconnect();
-                return false;
-            }
-            final String body = readBody(conn);
-            conn.disconnect();
-            return body.contains(MARKER);
-        } catch (final Exception e) {
-            return false;
-        }
+        return getMatchesMarker(endpointUri("/rest", dbPath));
     }
 
-    /** Raw HTTP PUT to the REST endpoint (auto-creates parent collections); returns the HTTP status. */
+    /** HTTP PUT to the REST endpoint (auto-creates parent collections); returns the HTTP status. */
     private static int restPut(final String dbPath, final String content) {
         try {
-            final URL url = URI.create(restBase() + encodePathSegments(dbPath)).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("PUT");
-            conn.setRequestProperty("Content-Type", "application/xml");
-            conn.setDoOutput(true);
-            try (final OutputStream os = conn.getOutputStream()) {
-                os.write(content.getBytes(UTF_8));
-            }
-            final int code = conn.getResponseCode();
-            conn.disconnect();
-            return code;
+            final HttpRequest req = authed(endpointUri("/rest", dbPath))
+                    .header("Content-Type", "application/xml")
+                    .PUT(HttpRequest.BodyPublishers.ofString(content, UTF_8))
+                    .build();
+            return HTTP.send(req, HttpResponse.BodyHandlers.discarding()).statusCode();
         } catch (final Exception e) {
+            restoreInterrupt(e);
             return -1;
         }
     }
@@ -352,35 +311,63 @@ public class ResourceNamingConformanceTest {
     private List<String> restListChildResources(final String collection) {
         final List<String> names = new ArrayList<>();
         try {
-            final URL url = URI.create(restBase() + encodePathSegments(collection)).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("GET");
-            conn.connect();
-            final String body = readBody(conn);
-            conn.disconnect();
+            final HttpRequest req = authed(endpointUri("/rest", collection)).GET().build();
+            final String body = HTTP.send(req, HttpResponse.BodyHandlers.ofString(UTF_8)).body();
             final Matcher m = Pattern.compile("<exist:resource[^>]*\\sname=\"([^\"]*)\"").matcher(body);
             while (m.find()) {
                 names.add(unescapeXml(m.group(1)));
             }
-        } catch (final Exception ignored) {
+        } catch (final Exception e) {
+            restoreInterrupt(e);
             // treat as empty listing
         }
         return names;
     }
 
-    /** Raw HTTP DELETE against the REST endpoint (built-in; needs no XQuery module). */
+    /** HTTP DELETE against the REST endpoint (built-in; needs no XQuery module). */
     private static void restDelete(final String dbPath) {
         try {
-            final URL url = URI.create(restBase() + encodePathSegments(dbPath)).toURL();
-            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", basicAuth());
-            conn.setRequestMethod("DELETE");
-            conn.connect();
-            conn.getResponseCode();
-            conn.disconnect();
-        } catch (final Exception ignored) {
+            final HttpRequest req = authed(endpointUri("/rest", dbPath)).DELETE().build();
+            HTTP.send(req, HttpResponse.BodyHandlers.discarding());
+        } catch (final Exception e) {
+            restoreInterrupt(e);
             // best-effort cleanup
+        }
+    }
+
+    /** Send a GET and report whether the response is 200 and its body contains the probe marker. */
+    private static Boolean getMatchesMarker(final URI uri) {
+        try {
+            final HttpResponse<String> resp = HTTP.send(authed(uri).GET().build(),
+                    HttpResponse.BodyHandlers.ofString(UTF_8));
+            return resp.statusCode() == 200 && resp.body().contains(MARKER);
+        } catch (final Exception e) {
+            restoreInterrupt(e);
+            return false;
+        }
+    }
+
+    /**
+     * Build the request URI for an endpoint and db path. The multi-argument {@link URI} constructor
+     * percent-encodes the path component (and, per RFC 3986, leaves sub-delimiters such as
+     * {@code + @ & ( ) '} literal — which is itself part of what this harness characterizes).
+     */
+    private static URI endpointUri(final String endpoint, final String dbPath) {
+        try {
+            return new URI("http", null, "localhost", existWebServer.getPort(), endpoint + dbPath, null, null);
+        } catch (final URISyntaxException e) {
+            throw new IllegalArgumentException("cannot build URI for " + endpoint + dbPath, e);
+        }
+    }
+
+    private static HttpRequest.Builder authed(final URI uri) {
+        return HttpRequest.newBuilder(uri).header("Authorization", basicAuth());
+    }
+
+    /** Re-assert the interrupt flag if a blocking HttpClient call was interrupted. */
+    private static void restoreInterrupt(final Exception e) {
+        if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -389,38 +376,9 @@ public class ResourceNamingConformanceTest {
                 .replace("&quot;", "\"").replace("&apos;", "'");
     }
 
-    private static String restBase() {
-        return "http://localhost:" + existWebServer.getPort() + "/rest";
-    }
-
     private static String basicAuth() {
         return "Basic " + java.util.Base64.getEncoder().encodeToString(
                 (TestUtils.ADMIN_DB_USER + ":" + TestUtils.ADMIN_DB_PWD).getBytes(UTF_8));
-    }
-
-    private static String readBody(final HttpURLConnection conn) throws IOException {
-        final java.io.InputStream is = conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
-        if (is == null) {
-            return "";
-        }
-        try (is; final OutputStream baos = new ByteArrayOutputStream()) {
-            is.transferTo(baos);
-            return baos.toString();
-        }
-    }
-
-    /** Percent-encode each path segment (between slashes) per RFC 3986, leaving '/' as separators. */
-    private static String encodePathSegments(final String path) {
-        final String[] segs = path.split("/", -1);
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < segs.length; i++) {
-            if (i > 0) {
-                sb.append('/');
-            }
-            // URLEncoder is form-encoding; convert '+' to %20 to get RFC 3986 path-segment encoding
-            sb.append(java.net.URLEncoder.encode(segs[i], UTF_8).replace("+", "%20"));
-        }
-        return sb.toString();
     }
 
     // ---- matrix rendering ----
