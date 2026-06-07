@@ -122,6 +122,9 @@ public class SearchIndex extends BasicFunction {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker()
                 .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 
+        // options is the 3rd argument (1-based position 3: scope, query, options), as in ft:query.
+        // parseOptions short-circuits to default QueryOptions when getArgumentCount() < 3, so the
+        // 2-argument form never dereferences a missing argument.
         final QueryOptions options = Query.parseOptions(this, contextSequence, null, 3);
 
         try {
