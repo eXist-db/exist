@@ -55,6 +55,8 @@
         <mac.bundle.java.dir>${mac.bundle.dir}/Contents/Java</mac.bundle.java.dir>
         <mac.dmg>${project.build.directory}/eXist-db-${project.version}.dmg</mac.dmg>
         <mac.codesign.identity></mac.codesign.identity>
+        <!-- Set to true to suppress .app bundle and DMG creation (e.g. skip-build-dist-archives profile). -->
+        <skip.mac.dist>false</skip.mac.dist>
     </properties>
 
     <dependencies>
@@ -907,74 +909,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>com.evolvedbinary.appbundler</groupId>
-                <artifactId>appbundler-maven-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>exist-db-mac-app</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                        <configuration>
-                            <displayName>eXist-db</displayName>
-                            <identifier>org.exist.start.Main</identifier>
-                            <mainClassName>org.exist.start.Main</mainClassName>
-                            <executableName>eXist-JavaAppLauncher</executableName>
-                            <jvmRequired>21</jvmRequired>
-                            <minimumSystemVersion>11.0</minimumSystemVersion>
-                            <!-- Populate LSArchitecturePriority so macOS LaunchServices
-                                 will launch the .app. The plugin emits an empty
-                                 LSArchitecturePriority array if this is unset, which
-                                 LaunchServices reads as "no architectures supported"
-                                 and refuses to launch (silent failure in the Dock,
-                                 surfaced in Console.app as:
-                                 "LAUNCH: No architectures specified in launch architectures [ NULL ]").
-                                 The eXist-JavaAppLauncher native binary is built as
-                                 a universal binary carrying x86_64 + arm64 slices. -->
-                            <architectures>
-                                <architecture>arm64</architecture>
-                                <architecture>x86_64</architecture>
-                            </architectures>
-                            <version>${project.version}</version>
-                            <shortVersion>${project.version}</shortVersion>
-                            <icon>icon.icns</icon>
-                            <copyright>${project.inceptionYear} The eXist-db Project</copyright>
-                            <applicationCategory>public.app-category.developer-tools</applicationCategory>
-                            <additionalResourcePaths>
-                                <fileSet>
-                                    <directory>${project.basedir}/src/main/config</directory>
-                                    <outputDirectory>etc</outputDirectory>
-                                </fileSet>
-                            </additionalResourcePaths>
-                            <options>
-                                <!-- Option to generate JDWP debuggable App Bundle -->
-                                <!-- option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</option -->
-
-                                <!-- Option to cause org.exist.launcher.Launcher to wait for JDWP on port 5006 -->
-                                <!-- option>-Dexist.debug.launcher=true</option -->
-
-                                <!-- FIXME: Add jdk.incubator.vector for optimal Lucene 10 SIMD and
-                                     enable-native-access=ALL-UNNAMED for JDK 24+ restricted native access -->
-                                <option>-Xms128m</option>
-                                <option>-Dfile.encoding=UTF-8</option>
-                                <option>-Dlog4j.configurationFile=$APP_ROOT/Contents/Resources/etc/log4j2.xml</option>
-                                <option>-Dapp.repo=$APP_ROOT/Contents/Java</option>
-                                <option>-Dexist.home=$APP_ROOT/Contents/Resources</option>
-                                <option>-Dexist.configurationFile=$APP_ROOT/Contents/Resources/etc/conf.xml</option>
-                                <option>-Djetty.home=$APP_ROOT/Contents/Resources</option>
-                                <option>-Dexist.jetty.config=$APP_ROOT/Contents/Resources/etc/jetty/standard.enabled-jetty-configs</option>
-                                <option>-Xdock:name=eXist-db</option>
-                                <option>-Dapple.laf.useScreenMenuBar=true</option>
-                            </options>
-                            <explicitClassPath>false</explicitClassPath>
-                            <isDebug>true</isDebug>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -996,6 +930,9 @@
         </profile>
         <profile>
             <id>skip-build-dist-archives</id>
+            <properties>
+                <skip.mac.dist>true</skip.mac.dist>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1100,11 +1037,83 @@
                 <os>
                     <family>mac</family>
                 </os>
-                <!-- Active on any macOS build. Negate with !mac-dmg-on-mac for quick builds.
+                <!-- Active on any macOS build. skip.mac.dist=true (set by skip-build-dist-archives)
+                     suppresses executions via <skip> inside each plugin rather than here, because
+                     Maven profile activation is evaluated before profile properties are fully resolved.
+                     Negate with !mac-dmg-on-mac for quick local builds.
                      Signing and notarization are gated separately by codesign-mac-dmg (mac-signing=true). -->
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>com.evolvedbinary.appbundler</groupId>
+                        <artifactId>appbundler-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>exist-db-mac-app</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>bundle</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skip.mac.dist}</skip>
+                                    <displayName>eXist-db</displayName>
+                                    <identifier>org.exist.start.Main</identifier>
+                                    <mainClassName>org.exist.start.Main</mainClassName>
+                                    <executableName>eXist-JavaAppLauncher</executableName>
+                                    <jvmRequired>21</jvmRequired>
+                                    <minimumSystemVersion>11.0</minimumSystemVersion>
+                                    <!-- Populate LSArchitecturePriority so macOS LaunchServices
+                                         will launch the .app. The plugin emits an empty
+                                         LSArchitecturePriority array if this is unset, which
+                                         LaunchServices reads as "no architectures supported"
+                                         and refuses to launch (silent failure in the Dock,
+                                         surfaced in Console.app as:
+                                         "LAUNCH: No architectures specified in launch architectures [ NULL ]").
+                                         The eXist-JavaAppLauncher native binary is built as
+                                         a universal binary carrying x86_64 + arm64 slices. -->
+                                    <architectures>
+                                        <architecture>arm64</architecture>
+                                        <architecture>x86_64</architecture>
+                                    </architectures>
+                                    <version>${project.version}</version>
+                                    <shortVersion>${project.version}</shortVersion>
+                                    <icon>icon.icns</icon>
+                                    <copyright>${project.inceptionYear} The eXist-db Project</copyright>
+                                    <applicationCategory>public.app-category.developer-tools</applicationCategory>
+                                    <additionalResourcePaths>
+                                        <fileSet>
+                                            <directory>${project.basedir}/src/main/config</directory>
+                                            <outputDirectory>etc</outputDirectory>
+                                        </fileSet>
+                                    </additionalResourcePaths>
+                                    <options>
+                                        <!-- Option to generate JDWP debuggable App Bundle -->
+                                        <!-- option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</option -->
+
+                                        <!-- Option to cause org.exist.launcher.Launcher to wait for JDWP on port 5006 -->
+                                        <!-- option>-Dexist.debug.launcher=true</option -->
+
+                                        <!-- FIXME: Add jdk.incubator.vector for optimal Lucene 10 SIMD and
+                                             enable-native-access=ALL-UNNAMED for JDK 24+ restricted native access -->
+                                        <option>-Xms128m</option>
+                                        <option>-Dfile.encoding=UTF-8</option>
+                                        <option>-Dlog4j.configurationFile=$APP_ROOT/Contents/Resources/etc/log4j2.xml</option>
+                                        <option>-Dapp.repo=$APP_ROOT/Contents/Java</option>
+                                        <option>-Dexist.home=$APP_ROOT/Contents/Resources</option>
+                                        <option>-Dexist.configurationFile=$APP_ROOT/Contents/Resources/etc/conf.xml</option>
+                                        <option>-Djetty.home=$APP_ROOT/Contents/Resources</option>
+                                        <option>-Dexist.jetty.config=$APP_ROOT/Contents/Resources/etc/jetty/standard.enabled-jetty-configs</option>
+                                        <option>-Xdock:name=eXist-db</option>
+                                        <option>-Dapple.laf.useScreenMenuBar=true</option>
+                                    </options>
+                                    <explicitClassPath>false</explicitClassPath>
+                                    <isDebug>true</isDebug>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -1116,6 +1125,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
+                                    <skip>${skip.mac.dist}</skip>
                                     <executable>${project.basedir}/src/main/scripts/create-dmg-mac.sh</executable>
                                     <arguments>
                                         <argument>${mac.bundle.dir}</argument>
@@ -1141,7 +1151,9 @@
                     <family>unix</family>
                     <name>Linux</name>
                 </os>
-                <!-- Note: Travis and AppVeyor etc don't support the loopback filesystem required by create-dmg-unix.sh -->
+                <!-- Suppressed on CI (env.CI=true). skip.mac.dist=true (set by skip-build-dist-archives)
+                     suppresses the execution via <skip> inside the plugin rather than here.
+                     Requires hfsplus-tools locally; script warns and skips gracefully if missing. -->
                 <property>
                     <name>env.CI</name>
                     <value>!true</value>
@@ -1160,6 +1172,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
+                                    <skip>${skip.mac.dist}</skip>
                                     <executable>${project.basedir}/src/main/scripts/create-dmg-unix.sh</executable>
                                     <arguments>
                                         <argument>${mac.bundle.dir}</argument>

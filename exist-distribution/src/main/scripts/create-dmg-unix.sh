@@ -34,11 +34,11 @@ set -x
 
 if [ ! -e /sbin/mkfs.hfsplus ]
 then
-	>&2 echo "ERROR: Skipping DMG creation because /sbin/mkfs.hfsplus is missing!"
-	>&2 echo "       To install it, you might run:"
-	>&2 echo "       * CentOS & co.: sudo yum install hfsutils hfsplus-tools"
-	>&2 echo "       * Debian, Ubuntu & co.: sudo apt-get install hfsprogs hfsplus"
-	exit 1
+	>&2 echo "WARNING: Skipping DMG creation because /sbin/mkfs.hfsplus is missing."
+	>&2 echo "         To install it, you might run:"
+	>&2 echo "         * CentOS & co.: sudo yum install hfsutils hfsplus-tools"
+	>&2 echo "         * Debian, Ubuntu & co.: sudo apt-get install hfsprogs hfsplus"
+	exit 0
 fi
 
 # cleanup any previous DMG before creating a new DMG

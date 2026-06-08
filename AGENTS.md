@@ -20,7 +20,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   -Pskip-build-dist-archives
 ```
 
-On macOS this still produces an unsigned DMG (`mac-dmg-on-mac` is active by default on Mac runners). Add `-P '!mac-dmg-on-mac'` to skip it.
+On macOS, `-P skip-build-dist-archives` also suppresses the `.app` bundle and DMG (sets `skip.mac.dist=true` internally). Use `-P '!mac-dmg-on-mac'` only if you want the archives but not the DMG.
 
 ### Build a single module
 
@@ -45,8 +45,7 @@ mvn test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-ch
 
 ### Distribution artifacts (zip, tar.bz2, DMG)
 
-Produces release archives and, on macOS, an unsigned DMG suitable for local testing.
-Output lands in `exist-distribution/target/`.
+Produces release archives and platform-specific packages. Output lands in `exist-distribution/target/`.
 
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
@@ -58,7 +57,11 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   -Drevision=7.0.0-SNAPSHOT
 ```
 
-The DMG is unsigned. For the fully signed and notarized DMG used in releases, see `exist-versioning-release.md`.
+**macOS**: the `mac-dmg-on-mac` profile is active by default and produces an unsigned `.app` bundle and DMG. Suppress both with `-P '!mac-dmg-on-mac'`. For the fully signed and notarized DMG used in releases, see `exist-versioning-release.md`.
+
+**Linux**: the `mac-dmg-on-unix` profile is active by default on non-CI Linux machines (suppressed when `env.CI=true`) and produces an unsigned DMG. Requires `hfsplus-tools` (`apt-get install hfsprogs hfsplus` / `yum install hfsutils hfsplus-tools`); warns and skips gracefully if missing. Suppress with `-P '!mac-dmg-on-unix'`.
+
+Both DMG profiles are suppressed automatically by `-P skip-build-dist-archives` via the `skip.mac.dist` property.
 
 ### IzPack installer JAR
 
