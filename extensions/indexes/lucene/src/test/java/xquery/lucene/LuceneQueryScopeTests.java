@@ -25,7 +25,8 @@ import org.junit.runner.RunWith;
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
     "src/test/xquery/lucene/ft-query-scope.xqm",
-    "src/test/xquery/lucene/ft-search-scope.xqm"
+    "src/test/xquery/lucene/ft-search-scope.xqm",
+    "src/test/xquery/lucene/scope-dls.xqm"
 })
 public class LuceneQueryScopeTests {
 }
