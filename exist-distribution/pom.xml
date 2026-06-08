@@ -57,6 +57,10 @@
         <mac.codesign.identity></mac.codesign.identity>
         <!-- Set to true to suppress .app bundle and DMG creation (e.g. skip-build-dist-archives profile). -->
         <skip.mac.dist>false</skip.mac.dist>
+        <!-- Phase for mac-bundle population tasks. Bound to 'none' by default so they are skipped on
+             Linux CI, Windows, and any build that does not activate a DMG profile. The mac-dmg-on-mac
+             and mac-dmg-on-unix profiles override this to 'package'. -->
+        <mac.bundle.phase>none</mac.bundle.phase>
     </properties>
 
     <dependencies>
@@ -441,7 +445,7 @@
 
                     <execution>
                         <id>unpack-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
@@ -487,6 +491,17 @@
                         <configuration>
                             <target>
                                 <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>delete-mac-bundle-jetty-dest-before-rename</id>
+                        <phase>${mac.bundle.phase}</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
                                 <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
                             </target>
                         </configuration>
@@ -580,7 +595,7 @@
 
                     <execution>
                         <id>rename-jetty-etc-dir-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>rename</goal>
                         </goals>
@@ -617,7 +632,7 @@
 
                     <execution>
                         <id>copy-readme-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -695,7 +710,7 @@
                     </execution>
                     <execution>
                         <id>adjust-jetty-deploy-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
@@ -718,7 +733,7 @@
                     </execution>
                     <execution>
                         <id>adjust-web-xml-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
@@ -759,7 +774,7 @@
                     </execution>
                     <execution>
                         <id>clean-etc-dir-unpacked-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
@@ -863,7 +878,7 @@
                     </execution>
                     <execution>
                         <id>autodeploy-expath-pkgs-for-mac-bundle</id>
-                        <phase>package</phase>
+                        <phase>${mac.bundle.phase}</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -1033,6 +1048,9 @@
 
         <profile>
             <id>mac-dmg-on-mac</id>
+            <properties>
+                <mac.bundle.phase>package</mac.bundle.phase>
+            </properties>
             <activation>
                 <os>
                     <family>mac</family>
@@ -1146,6 +1164,9 @@
 
         <profile>
             <id>mac-dmg-on-unix</id>
+            <properties>
+                <mac.bundle.phase>package</mac.bundle.phase>
+            </properties>
             <activation>
                 <os>
                     <family>unix</family>

@@ -2,8 +2,8 @@ name: Release
 
 # Triggered by an eXist-* tag (created by ci-release-prepare.yml).
 # Four jobs run in parallel then converge on a single GitHub Release:
-#   build-linux   — Maven Central deploy + zip/tar archives (Ubuntu)
-#   build-mac     — signed + notarized DMG (macOS)
+#   build-linux   — Maven Central deploy + zip/tar archives (Ubuntu; installer excluded)
+#   build-mac     — signed + notarized DMG (macOS; installer excluded)
 #   build-windows — signed installer JAR + Authenticode .exe (Windows)
 #   publish-github-release — collects all artifacts, creates the GitHub Release
 
@@ -78,6 +78,7 @@ jobs:
             -Ddependency-check.skip=true \
             -Dlicense.skip=true \
             -Dexistdb.release.key="$EXISTDB_RELEASE_KEY_ID" \
+            --projects '!exist-installer' \
             clean deploy
 
       - name: Collect distribution archives
@@ -155,6 +156,7 @@ jobs:
             -Dexistdb.release.notarize.key-path=/tmp/notarytool.p8 \
             -Dexistdb.release.notarize.key-id="$EXISTDB_APPLE_API_KEY_ID" \
             -Dexistdb.release.notarize.issuer-id="$EXISTDB_APPLE_API_ISSUER_ID" \
+            --projects '!exist-installer' \
             clean package
 
       - name: Remove Apple API key
