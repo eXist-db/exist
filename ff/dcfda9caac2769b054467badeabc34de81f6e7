@@ -1,0 +1,33 @@
+exist-distribution/pom.xml
+  s_e13ac5be3246f1::t_78c44b7a60cdd6 1175
+  s_e13ac5be3246f1::t_6c461ffa6139db 1154-1155
+  s_e13ac5be3246f1::t_50de350374e559 1156
+  s_e13ac5be3246f1::t_5437565de8e0bf 1128
+  s_e13ac5be3246f1::t_d8bd34fd7e4f1f 1040-1042
+  s_e13ac5be3246f1::t_76a30841541ee4 933-935
+  s_e13ac5be3246f1::t_36a204a7bb17c9 1112
+  s_e13ac5be3246f1::t_80d79f28bfd753 1060
+  s_e13ac5be3246f1::t_365831d31edbe2 58-59
+  s_e13ac5be3246f1::t_d03f75419ba385 1043,1048-1059,1061-1111,1113-1116
+AGENTS.md
+  s_e13ac5be3246f1::t_908ba8adfe69bb 48,60-64
+  s_e13ac5be3246f1::t_45bf4974ca7b6b 23
+exist-distribution/src/main/scripts/create-dmg-unix.sh
+  s_e13ac5be3246f1::t_cc322d5cd8c4ec 37-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "ffdcfda9caac2769b054467badeabc34de81f6e7",
+  "prompts": {},
+  "sessions": {
+    "s_e13ac5be3246f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68dcd257-670e-4a1c-9f2f-788614bb4de6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
