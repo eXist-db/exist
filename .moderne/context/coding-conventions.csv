@@ -8,8 +8,8 @@ naming,Exception suffix for classes,StopException,,project-wide
 naming,get* method naming pattern,getErrorCode,,project-wide
 naming,set* method naming pattern,setMode,,project-wide
 naming,Utils suffix for classes,ReflectionUtils,,project-wide
-imports,Static imports from org.junit,org.junit.Assert.*,,project-wide
-naming,Test suffix for classes,CompatibleJavaVersionCheckTest,,project-wide
+imports,Static imports from org.junit,org.junit.Assert.assertArrayEquals,,project-wide
+naming,Test suffix for classes,MainTest,,project-wide
 naming,camelCase for constants,serialVersionUID,,project-wide
 naming,save* method naming pattern,saveChanges,,project-wide
 naming,is* method naming pattern,isCellEditable,,project-wide

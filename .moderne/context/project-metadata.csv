@@ -52,11 +52,11 @@ extensions/security/iprange/pom.xml,exist-security-iprange,,eXist-db IP Range Se
 extensions/security/pom.xml,exist-security,,eXist-db Extension Security Modules,eXist-db Extension Security Modules,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,3
 extensions/pom.xml,exist-extensions,,eXist-db Extensions,eXist-db NoSQL Database Extensions,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,10
 exist-xqts/pom.xml,exist-xqts,,eXist-db W3C XQTS,eXist-db W3C XQuery Test Suite,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
-exist-installer/pom.xml,exist-installer,,eXist-db IzPack Installer,IzPack Installer for eXist-db NoSQL Database Client/Server,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
-exist-core-jcstress/pom.xml,exist-core-jcstress,,eXist-db Core JCStress Tests,,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
-exist-core-jmh/pom.xml,exist-core-jmh,,eXist-db Core JMH benchmarks,JMH Benchmarks for exist-core,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
-exist-indexes-jmh/pom.xml,exist-indexes-jmh,,eXist-db Indexes JMH benchmarks,"JMH Benchmarks for eXist-db index modules (ngram, range, lucene)",,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 pom.xml,exist,,eXist-db,eXist-db multi-module project,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,10
+exist-core-jcstress/pom.xml,exist-core-jcstress,,eXist-db Core JCStress Tests,,,,
+exist-core-jmh/pom.xml,exist-core-jmh,,eXist-db Core JMH benchmarks,JMH Benchmarks for exist-core,,,
 exist-docker/pom.xml,exist-docker,,eXist-db Docker Image,Minimal Docker Image of eXist-db NoSQL Database Client/Server with FO support,,,
+exist-indexes-jmh/pom.xml,exist-indexes-jmh,,eXist-db Indexes JMH benchmarks,"JMH Benchmarks for eXist-db index modules (ngram, range, lucene)",,,
+exist-installer/pom.xml,exist-installer,,eXist-db IzPack Installer,IzPack Installer for eXist-db NoSQL Database Client/Server,,,
 extensions/debuggee/pom.xml,exist-debuggee,,eXist-db XQuery Debugger Extension,eXist-db NoSQL Database XQuery Debugger Extension,,,
 extensions/images/pom.xml,exist-images,,eXist-db Images Extension,eXist-db NoSQL Database Images Extension,,,
