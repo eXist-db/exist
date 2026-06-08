@@ -9,7 +9,7 @@ unzip commons-daemon-1.6.0-bin-windows.zip
 
 ## macOS Binary
 The macOS Binary is compiled as a Universal Binary for x86_64 and arm64 from the native source code for unix provided by the Apache Commons Daemon project.
-It is compiled for a minimum version of 10.13 of macOS so as to provide some backwards compatibility.
+It is compiled for a minimum version of 11.0 of macOS, matching the minimum required by Java 21.
 
 For example:
 
@@ -18,8 +18,8 @@ wget https://dlcdn.apache.org/commons/daemon/source/commons-daemon-1.6.0-native-
 tar zxvf commons-daemon-1.6.0-native-src.tar.gz
 
 cd commons-daemon-1.6.0-native-src/unix
-export CFLAGS="-mmacosx-version-min=10.13 -arch x86_64 -arch arm64"
-export LDFLAGS="-mmacosx-version-min=10.13 -arch x86_64 -arch arm64"
+export CFLAGS="-mmacosx-version-min=11.0 -arch x86_64 -arch arm64"
+export LDFLAGS="-mmacosx-version-min=11.0 -arch x86_64 -arch arm64"
 sh support/buildconf.sh
 ./configure
 make

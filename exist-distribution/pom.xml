@@ -924,7 +924,7 @@
                             <mainClassName>org.exist.start.Main</mainClassName>
                             <executableName>eXist-JavaAppLauncher</executableName>
                             <jvmRequired>21</jvmRequired>
-                            <minimumSystemVersion>10.9</minimumSystemVersion>
+                            <minimumSystemVersion>11.0</minimumSystemVersion>
                             <!-- Populate LSArchitecturePriority so macOS LaunchServices
                                  will launch the .app. The plugin emits an empty
                                  LSArchitecturePriority array if this is unset, which

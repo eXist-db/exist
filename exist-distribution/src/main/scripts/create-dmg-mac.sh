@@ -44,41 +44,41 @@ tmp_dmg_mount=$tmp_dmg-mount
 final_app_dir="$(dirname "$1")/$2.app"
 
 # Copy the produced .app to `volname`.app
-cp -r $1 $final_app_dir
+cp -r "$1" "$final_app_dir"
 
 # Create a temporary Disk Image
-/usr/bin/hdiutil create -fs HFS+ -srcfolder $final_app_dir -volname $2 -ov $tmp_dmg -format UDRW
+/usr/bin/hdiutil create -fs HFS+ -srcfolder "$final_app_dir" -volname "$2" -ov "$tmp_dmg" -format UDRW
 
 # Attach the temporary image
-/usr/bin/hdiutil attach $tmp_dmg.dmg -mountroot $tmp_dmg_mount
+/usr/bin/hdiutil attach "$tmp_dmg.dmg" -mountroot "$tmp_dmg_mount"
 
 # Copy the background, the volume icon and DS_Store files
-mkdir -p $tmp_dmg_mount/$2/.DropDMGBackground
-cp $3 $tmp_dmg_mount/$2/.DropDMGBackground/
-cp $4 $tmp_dmg_mount/$2/.VolumeIcon.icns
-cp $5 $tmp_dmg_mount/$2/.DS_Store
+mkdir -p "$tmp_dmg_mount/$2/.DropDMGBackground"
+cp "$3" "$tmp_dmg_mount/$2/.DropDMGBackground/"
+cp "$4" "$tmp_dmg_mount/$2/.VolumeIcon.icns"
+cp "$5" "$tmp_dmg_mount/$2/.DS_Store"
 
-# Indicate that we want a custom icon
-if [[ -f "/Applications/Xcode.app/Contents/Developer/Tools/SetFile" ]]; then
-    /Applications/Xcode.app/Contents/Developer/Tools/SetFile -a -c $tmp_dmg_mount/$2
-else
-    /usr/bin/SetFile -a -c $tmp_dmg_mount/$2
-fi
+# Set the kHasCustomIcon (0x0400) Finder flag so Finder uses .VolumeIcon.icns.
+# Uses xattr to write the 32-byte com.apple.FinderInfo blob directly, replacing
+# the SetFile tool that was removed in Xcode 12.
+xattr -wx com.apple.FinderInfo \
+    "0000000000000000040000000000000000000000000000000000000000000000" \
+    "$tmp_dmg_mount/$2"
 
 # Add a symbolic link to the Applications directory
-ln -s /Applications $tmp_dmg_mount/$2/Applications
+ln -s /Applications "$tmp_dmg_mount/$2/Applications"
 
 # Detach the temporary image
-/usr/bin/hdiutil detach $tmp_dmg_mount/$2
+/usr/bin/hdiutil detach "$tmp_dmg_mount/$2"
 
 # Compress it to a new image
-/usr/bin/hdiutil convert $tmp_dmg.dmg -format UDZO -o $6
+/usr/bin/hdiutil convert "$tmp_dmg.dmg" -format UDZO -o "$6"
 
 # Delete the temporary image
-rm $tmp_dmg.dmg
+rm "$tmp_dmg.dmg"
 
 # Delete the mount point
-rm -r $tmp_dmg_mount
+rm -r "$tmp_dmg_mount"
 
 # Delete the copied `volname`.app used for the DMG
-rm -r $final_app_dir
+rm -r "$final_app_dir"
