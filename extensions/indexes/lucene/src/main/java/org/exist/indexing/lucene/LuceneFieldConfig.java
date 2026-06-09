@@ -122,6 +122,21 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         return analyzer;
     }
 
+    /** The declared XDM type of the field's values (defaults to {@link Type#STRING}). */
+    public int getType() {
+        return type;
+    }
+
+    /** Whether the field value is stored (and therefore retrievable, e.g. via ft:field). */
+    public boolean isStore() {
+        return store;
+    }
+
+    /** Whether the field is configured as a binary field. */
+    public boolean isBinary() {
+        return binary;
+    }
+
     @Override
     protected void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
         try {
