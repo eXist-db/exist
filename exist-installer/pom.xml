@@ -180,34 +180,25 @@
             <id>exist-release</id>
             <build>
                 <plugins>
-                    <!-- This is needed in a profile to workaround https://github.com/jutzig/github-release-plugin/issues/50 -->
                     <plugin>
-                        <groupId>de.jutzig</groupId>
-                        <artifactId>github-release-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>github-upload</id>
                                 <phase>deploy</phase>
                                 <goals>
-                                    <goal>release</goal>
+                                    <goal>exec</goal>
                                 </goals>
-                                <inherited>true</inherited>
                                 <configuration>
-                                    <description>
-                                        Release Notes: https://exist-db.org/exist/apps/wiki/blogs/eXist/exist${project.version}
-
-                                        Maven Central: https://search.maven.org/search?q=g:org.exist-db
-                                    </description>
-                                    <releaseName>eXist-db ${project.version}</releaseName>
-                                    <tag>eXist-${project.version}</tag>
-                                    <fileSets>
-                                        <fileSet>
-                                            <directory>${project.build.directory}</directory>
-                                            <includes>
-                                                <include>${project.artifactId}-${project.version}.jar</include>
-                                            </includes>
-                                        </fileSet>
-                                    </fileSets>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <!-- Create the GitHub release if it does not yet exist (e.g. local
+                                             release with CI unavailable), otherwise upload into the existing
+                                             one (e.g. CI already created it from the tag push). -->
+                                        <argument>file="${project.build.directory}/${project.artifactId}-${project.version}.jar"; gh release create "eXist-${project.version}" --title "eXist-db ${project.version}" --generate-notes "$file" || gh release upload "eXist-${project.version}" "$file" --clobber</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>

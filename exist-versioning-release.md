@@ -110,9 +110,9 @@ The `ci-release.yml` workflow runs four jobs in parallel then converges:
 
 | Job | Runner | Output |
 |-----|--------|--------|
-| `build-linux` | ubuntu-latest | zip + tar.bz2 archives; deploy to Maven Central |
-| `build-mac` | macos-latest | signed + notarized DMG |
-| `build-windows` | windows-latest | signed installer JAR + Authenticode `.exe` |
+| `build-linux` | ubuntu-latest | zip + tar.bz2 archives + installer JAR; deploy all to Maven Central (GPG-signed) |
+| `build-mac` | macos-latest | signed + notarized DMG; installer JAR built (not deployed) |
+| `build-windows` | windows-latest | jarsigner + Authenticode signed installer JAR + `.exe` for GitHub Release |
 | `publish-github-release` | ubuntu-latest | GitHub Release with all assets attached |
 
 ### Prerequisites: required GitHub secrets and repository rules
@@ -239,7 +239,7 @@ For purposes of illustration, we will assume we are preparing the stable release
 
 ### Manual fallback (CI unavailable)
 
-If the CI release workflow is unavailable, the `exist-release` Maven profile (backed by `maven-release-plugin`) remains usable for emergency releases. This path requires a local macOS machine with valid Apple credentials, GnuPG, and all signing keys available in `~/.m2/settings.xml`. See `plans/internal-release-runbook.template.md` §9 for the full procedure and required properties.
+If the CI release workflow is unavailable, the `exist-release` Maven profile (backed by `maven-release-plugin`) remains usable for emergency releases. This path requires a local macOS machine with valid Apple credentials, GnuPG, and all signing keys available in `~/.m2/settings.xml`. GitHub Release assets are uploaded via `gh release create` / `gh release upload` (the `exec-maven-plugin` execution in the `exist-release` profile creates the GitHub release from the tag if CI has not already done so, then falls back to uploading into an existing one). The installer JAR is signed locally via the `codesign-izpack-jar` profile (`-Dizpack-signing=true`) using a local keystore — the required `~/.m2/settings.xml` properties are `existdb.release.keystore`, `existdb.release.keystore.pass`, `existdb.release.keystore.key.alias`, and `existdb.release.keystore.key.pass`.
 
 Tag naming must still follow the `eXist-X.Y.Z` convention. After a manual tag push, re-run **Actions → Release** via `workflow_dispatch` with the tag name to produce platform artifacts that were skipped locally.
 
