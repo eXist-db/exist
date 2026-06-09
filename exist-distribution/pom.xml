@@ -1137,6 +1137,27 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <!-- Remove the i386 (Mac/x86) libjlinenative.jnilib slice from the
+                                     jline and jansi JARs. macOS dropped i386 support in 10.15 (Catalina)
+                                     so the slice is dead weight and triggers codesign warnings.
+                                     On signed builds codesign-jansi-mac.sh already strips it before
+                                     this runs, making this a no-op (zip -d exits 12 when entry is
+                                     absent — the || true swallows that without modifying the JAR). -->
+                                <id>strip-i386-jline-jars</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skip.mac.dist}</skip>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>for jar in "${mac.bundle.java.dir}"/jline-*.jar "${mac.bundle.java.dir}"/jansi-*.jar; do [ -f "$jar" ] &amp;&amp; zip -d "$jar" "org/jline/nativ/Mac/x86/libjlinenative.jnilib" || true; done</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>mac-app-dmg-on-mac</id>
                                 <phase>package</phase>
                                 <goals>

@@ -46,14 +46,18 @@ set -e
 # for each jar file
 for jar in "${1}/jansi-${2}.jar" "${1}/jline-${2}-${5}.jar"
 do
+  # macOS dropped i386 support in 10.15 (Catalina). Remove the dead Mac/x86 slice
+  # from the JAR before codesigning so it does not trigger signing warnings.
+  zip -d "${jar}" "org/jline/nativ/Mac/x86/libjlinenative.jnilib" || true
+
   # ensure a clean temp work directory for each jar
   if [ -d "${3}/org" ]
   then
     rm -rf "${3}/org"
   fi
 
-  # for each native arch
-  archs=('arm64' 'x86' 'x86_64')
+  # for each supported native arch (i386/x86 intentionally excluded — see above)
+  archs=('arm64' 'x86_64')
   for arch in "${archs[@]}"
   do
     # create the temp output dirs
