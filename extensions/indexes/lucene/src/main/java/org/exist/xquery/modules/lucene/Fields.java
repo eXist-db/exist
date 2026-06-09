@@ -22,15 +22,18 @@
 package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.indexing.lucene.AbstractFieldConfig;
 import org.exist.indexing.lucene.LuceneConfig;
 import org.exist.indexing.lucene.LuceneFacetConfig;
 import org.exist.indexing.lucene.LuceneFieldConfig;
+import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexConfig;
-import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.indexing.lucene.LuceneVectorFieldConfig;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
+import org.exist.storage.IndexSpec;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -45,6 +48,11 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * {@code ft:fields($scope)} — introspects the Lucene index configuration in scope and returns the
@@ -61,10 +69,11 @@ import org.exist.xquery.value.ValueSequence;
  *       "returnable": xs:boolean }          (: whether the field value is stored (fields only) :)
  * </pre>
  *
- * <p>It reflects the <em>resolved</em> configuration for {@code $scope} (the same scope-to-config
- * resolution {@code ft:query-scope}/{@code ft:search-scope} use, handling collection inheritance,
+ * <p>It reflects the <em>resolved</em> configuration for {@code $scope} (handling collection inheritance,
  * analyzer-id resolution, and merged qname/wildcard/named indexes), so callers do not have to parse
- * {@code collection.xconf} themselves.</p>
+ * {@code collection.xconf} themselves. It <b>aggregates across every collection in scope</b> the way
+ * {@code ft:search-scope} aggregates documents: a scope spanning several producer collections returns
+ * the union of their configured fields/facets (one record per occurrence; the caller dedups).</p>
  *
  * <p>It is <b>permission-agnostic</b>: it returns the full configured field set. Any per-caller field
  * visibility policy (e.g. exposing some fields only to certain groups) is the application layer's job.</p>
@@ -102,12 +111,29 @@ public class Fields extends BasicFunction {
         if (docs.getDocumentCount() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final LuceneConfig config = LuceneIndexWorker.getLuceneConfig(context.getBroker(), docs);
-        if (config == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
 
+        // Aggregate across every collection in scope. A $scope can span collections with different (or
+        // no) configs — and LuceneIndexWorker.getLuceneConfig() returns only the first one it finds, so
+        // it would silently drop the rest. Union each distinct collection config so ft:fields($scope)
+        // discovers the full field set, the way ft:search-scope aggregates documents across the scope.
         final ValueSequence result = new ValueSequence();
+        final Set<LuceneConfig> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            try (final Collection collection = i.next()) {
+                final IndexSpec indexSpec = collection.getIndexConfiguration(context.getBroker());
+                if (indexSpec == null) {
+                    continue;
+                }
+                final LuceneConfig config = (LuceneConfig) indexSpec.getCustomIndexSpec(LuceneIndex.ID);
+                if (config != null && seen.add(config)) {
+                    appendFields(result, config);
+                }
+            }
+        }
+        return result;
+    }
+
+    private void appendFields(final ValueSequence result, final LuceneConfig config) throws XPathException {
         for (final LuceneIndexConfig head : config.getAllIndexConfigurations()) {
             for (LuceneIndexConfig ic = head; ic != null; ic = ic.getNext()) {
                 final String element = ic.isNamed() ? ic.getName() : qnameString(ic.getQName());
@@ -116,7 +142,6 @@ public class Fields extends BasicFunction {
                 }
             }
         }
-        return result;
     }
 
     private MapType describe(final LuceneConfig config, final AbstractFieldConfig fc, final LuceneIndexConfig ic,
@@ -132,6 +157,14 @@ public class Fields extends BasicFunction {
         } else if (fc instanceof LuceneFacetConfig facet) {
             map.add(new StringValue(this, "field"), new StringValue(this, facet.getDimension()));
             map.add(new StringValue(this, "kind"), new StringValue(this, "facet"));
+        } else if (fc instanceof LuceneVectorFieldConfig vector) {
+            map.add(new StringValue(this, "field"), new StringValue(this, vector.getName()));
+            map.add(new StringValue(this, "kind"), new StringValue(this, "vector"));
+        } else {
+            // any other configured index entry (e.g. an element index with no named field): make it
+            // self-distinguishing so every map carries field + kind, keyed by the element name.
+            map.add(new StringValue(this, "field"), new StringValue(this, element));
+            map.add(new StringValue(this, "kind"), new StringValue(this, "index"));
         }
         return map;
     }
