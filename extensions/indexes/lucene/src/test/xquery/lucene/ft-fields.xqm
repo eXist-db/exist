@@ -50,6 +50,7 @@ declare variable $ff:XCONF :=
                     <field name="content" expression="."/>
                     <facet dimension="kind" expression="'caption'"/>
                 </text>
+                <text qname="bare"/>
             </lucene>
         </index>
     </collection>;
@@ -61,16 +62,43 @@ declare variable $ff:DOC :=
         <figure><caption>a caption</caption></figure>
     </article>;
 
+(: two sub-collections, each with its OWN config on its own data collection (the real producer layout),
+   to exercise cross-collection aggregation of ft:fields over a parent scope. :)
+declare variable $ff:MULTI := "/db/lucene-test-fields-multi";
+declare variable $ff:MULTI_CONFIG := "/db/system/config/db/lucene-test-fields-multi";
+
+declare variable $ff:XCONF_A :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index><lucene><text qname="row"><field name="alpha-field" expression="."/></text></lucene></index>
+    </collection>;
+declare variable $ff:XCONF_B :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index><lucene><text qname="row"><field name="beta-field" expression="."/></text></lucene></index>
+    </collection>;
+
 declare
     %test:setUp
 function ff:setup() {
     let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
     let $conf := xmldb:create-collection("/db/system/config/db", "lucene-test-fields")
     let $col := xmldb:create-collection("/db", "lucene-test-fields")
+    (: multi-collection fixture :)
+    let $mConfRoot := xmldb:create-collection("/db/system/config/db", "lucene-test-fields-multi")
+    let $mConfA := xmldb:create-collection($ff:MULTI_CONFIG, "a")
+    let $mConfB := xmldb:create-collection($ff:MULTI_CONFIG, "b")
+    let $mRoot := xmldb:create-collection("/db", "lucene-test-fields-multi")
+    let $mA := xmldb:create-collection($ff:MULTI, "a")
+    let $mB := xmldb:create-collection($ff:MULTI, "b")
     return (
         xmldb:store($conf, "collection.xconf", $ff:XCONF),
         xmldb:store($col, "doc.xml", $ff:DOC),
-        xmldb:reindex($col)
+        xmldb:reindex($col),
+        xmldb:store($mConfA, "collection.xconf", $ff:XCONF_A),
+        xmldb:store($mConfB, "collection.xconf", $ff:XCONF_B),
+        xmldb:store($ff:MULTI || "/a", "a.xml", <rows><row>alpha content</row></rows>),
+        xmldb:store($ff:MULTI || "/b", "b.xml", <rows><row>beta content</row></rows>),
+        xmldb:reindex($ff:MULTI || "/a"),
+        xmldb:reindex($ff:MULTI || "/b")
     )
 };
 
@@ -78,7 +106,9 @@ declare
     %test:tearDown
 function ff:tearDown() {
     if (xmldb:collection-available($ff:COLLECTION)) then xmldb:remove($ff:COLLECTION) else (),
-    if (xmldb:collection-available($ff:CONFIG)) then xmldb:remove($ff:CONFIG) else ()
+    if (xmldb:collection-available($ff:CONFIG)) then xmldb:remove($ff:CONFIG) else (),
+    if (xmldb:collection-available($ff:MULTI)) then xmldb:remove($ff:MULTI) else (),
+    if (xmldb:collection-available($ff:MULTI_CONFIG)) then xmldb:remove($ff:MULTI_CONFIG) else ()
 };
 
 (: every entry is a map carrying at least field/element/kind :)
@@ -155,12 +185,38 @@ function ff:facet-entry-shape() {
 };
 
 (: R1: permission-agnostic. The config lives under admin-only /db/system/config, but ft:fields reads
-   the resolved config via the broker, so a non-dba (guest) gets the FULL catalog (5 fields + 2 facets)
+   the resolved config via the broker, so a non-dba (guest) sees the configured fields
    — existdb-openapi applies field-level security on top. :)
 declare
-    %test:assertEquals(7)
+    %test:assertEquals(5)
 function ff:permission-agnostic-guest() {
-    system:as-user("guest", "guest", count(ft:fields($ff:COLLECTION)))
+    system:as-user("guest", "guest", count(ft:fields($ff:COLLECTION)[?kind = "field"]))
+};
+
+(: follow-up 1: ft:fields aggregates across every collection in scope — a parent scope returns the
+   UNION of each sub-collection's own config (alpha-field from a/, beta-field from b/) :)
+declare
+    %test:assertTrue
+function ff:cross-collection-union() {
+    let $fields := ft:fields($ff:MULTI)[?kind = "field"]?field
+    return ("alpha-field" = $fields) and ("beta-field" = $fields)
+};
+
+(: follow-up 2: a plain <text qname="bare"/> with no named field/facet contributes NO ft:fields record
+   — it indexes the element content but exposes no named, queryable field. (Non-field/facet config
+   entries that DO exist, e.g. vector fields, are emitted and self-distinguished by kind, so every
+   emitted map carries field + kind — no consumer special-casing of a missing key.) :)
+declare
+    %test:assertEquals(0)
+function ff:bare-text-no-record() {
+    count(ft:fields($ff:COLLECTION)[?element = "bare"])
+};
+
+(: every emitted map carries both field and kind (no "absence of a key" to special-case) :)
+declare
+    %test:assertTrue
+function ff:every-map-has-field-and-kind() {
+    every $e in ft:fields($ff:COLLECTION) satisfies map:contains($e, "field") and map:contains($e, "kind")
 };
 
 (: empty/unknown scope yields no entries (no error) :)
