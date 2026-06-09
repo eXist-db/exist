@@ -24,9 +24,7 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -123,10 +121,10 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     @Override
-    protected void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
+    protected void build(DBBroker broker, NodeProxy contextNode, Document luceneDoc, CharSequence text) {
         try {
-            if (checkCondition(broker, document, nodeId)) {
-                doBuild(broker, document, nodeId, luceneDoc, text);
+            if (checkCondition(broker, contextNode)) {
+                doBuild(broker, contextNode, luceneDoc, text);
             }
         } catch (XPathException e) {
             LOG.warn("XPath error while evaluating expression for field named '{}': {}: {}", fieldName, expression, e.getMessage(), e);
@@ -135,7 +133,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
     }
 
-    private boolean checkCondition(DBBroker broker, DocumentImpl document, NodeId nodeId) throws PermissionDeniedException, XPathException {
+    private boolean checkCondition(DBBroker broker, NodeProxy contextNode) throws PermissionDeniedException, XPathException {
         if (condition.isEmpty()) {
             return true;
         }
@@ -148,9 +146,8 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
 
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final NodeProxy currentNode = new NodeProxy(null, document, nodeId);
         try {
-            Sequence result = xquery.execute(broker, compiledCondition, currentNode);
+            Sequence result = xquery.execute(broker, compiledCondition, contextNode);
             return result != null && result.effectiveBooleanValue();
         } catch (PermissionDeniedException | XPathException e) {
             isValid = false;
