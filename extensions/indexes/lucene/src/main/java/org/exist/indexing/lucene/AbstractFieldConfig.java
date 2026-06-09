@@ -122,11 +122,9 @@ public abstract class AbstractFieldConfig {
                 processResult(result, luceneDoc);
             }
         } catch (PermissionDeniedException | XPathException e) {
-            isValid = false;
             throw e;
         } finally {
-            compiled.reset();
-            compiled.getContext().reset();
+            try { compiled.reset(); } finally { compiled.getContext().reset(); }
         }
     }
 

@@ -150,11 +150,9 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             Sequence result = xquery.execute(broker, compiledCondition, contextNode);
             return result != null && result.effectiveBooleanValue();
         } catch (PermissionDeniedException | XPathException e) {
-            isValid = false;
             throw e;
         } finally {
-            compiledCondition.reset();
-            compiledCondition.getContext().reset();
+            try { compiledCondition.reset(); } finally { compiledCondition.getContext().reset(); }
         }
     }
 
