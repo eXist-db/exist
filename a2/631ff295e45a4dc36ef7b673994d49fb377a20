@@ -1,0 +1,27 @@
+exist-versioning-release.md
+  s_83fc5f0afd32a2::t_8d23a2f7e73402 114
+exist-installer/pom.xml
+  s_83fc5f0afd32a2::t_fb845775c11af1 148,159
+  s_83fc5f0afd32a2::t_faf94fa7241e70 56-61
+  s_83fc5f0afd32a2::t_0a0795e88f22a6 133-135,138-147,149-158,160-162
+AGENTS.md
+  s_83fc5f0afd32a2::t_21499a4f2e700c 73
+.github/workflows/ci-release.yml
+  s_83fc5f0afd32a2::t_05a3e3f6de1cd6 5,7,9-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a2631ff295e45a4dc36ef7b673994d49fb377a20",
+  "prompts": {},
+  "sessions": {
+    "s_83fc5f0afd32a2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a5b8fe4-be25-4eba-9b97-cb21147178a6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
