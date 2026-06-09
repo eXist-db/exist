@@ -53,6 +53,12 @@
         <izpack.installation.info.appversion>${project.version}</izpack.installation.info.appversion>
         <izpack.installation.info.author.name>${project.organization.name}</izpack.installation.info.author.name>
         <izpack.installation.info.author.email>${contact.email}</izpack.installation.info.author.email>
+
+        <!-- This module has no Java sources. Suppress the real source/javadoc plugins
+             activated by the release-build profile; placeholder JARs are produced
+             instead to satisfy Maven Central requirements. -->
+        <maven.source.skip>true</maven.source.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencies>
@@ -124,20 +130,36 @@
                 </configuration>
             </plugin>
 
+            <!-- Produce placeholder -sources.jar and -javadoc.jar for Maven Central.
+                 Central requires these for all non-pom artifacts; a README is
+                 sufficient when there are no Java sources to document. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>placeholder-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>sources</classifier>
+                            <classesDirectory>${project.basedir}/src/main/resources</classesDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>placeholder-javadoc</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/src/main/resources</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

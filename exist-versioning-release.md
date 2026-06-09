@@ -111,7 +111,7 @@ The `ci-release.yml` workflow runs four jobs in parallel then converges:
 | Job | Runner | Output |
 |-----|--------|--------|
 | `build-linux` | ubuntu-latest | zip + tar.bz2 archives + installer JAR; deploy all to Maven Central (GPG-signed) |
-| `build-mac` | macos-latest | signed + notarized DMG; installer JAR built (not deployed) |
+| `build-mac` | macos-latest | signed + notarized DMG (installer excluded) |
 | `build-windows` | windows-latest | jarsigner + Authenticode signed installer JAR + `.exe` for GitHub Release |
 | `publish-github-release` | ubuntu-latest | GitHub Release with all assets attached |
 

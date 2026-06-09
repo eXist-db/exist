@@ -2,10 +2,13 @@ name: Release
 
 # Triggered by an eXist-* tag (created by ci-release-prepare.yml).
 # Four jobs run in parallel then converge on a single GitHub Release:
-#   build-linux   — Maven Central deploy + zip/tar archives (Ubuntu; installer excluded)
+#   build-linux   — Maven Central deploy + zip/tar archives (Ubuntu)
 #   build-mac     — signed + notarized DMG (macOS; installer excluded)
-#   build-windows — signed installer JAR + Authenticode .exe (Windows)
+#   build-windows — jarsigner + Authenticode signed installer JAR + .exe (Windows)
 #   publish-github-release — collects all artifacts, creates the GitHub Release
+#
+# The installer JAR is built and deployed to Maven Central from build-linux (GPG-signed).
+# The Windows job re-builds and jarsigner-signs it for the GitHub Release download.
 
 on:
   push:
@@ -78,7 +81,6 @@ jobs:
             -Ddependency-check.skip=true \
             -Dlicense.skip=true \
             -Dexistdb.release.key="$EXISTDB_RELEASE_KEY_ID" \
-            --projects '!exist-installer' \
             clean deploy
 
       - name: Collect distribution archives

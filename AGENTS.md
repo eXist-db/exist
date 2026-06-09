@@ -70,6 +70,7 @@ Produces the cross-platform installer JAR in `exist-installer/target/`.
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   mvn -T1.5C clean package \
+  -Prelease-build \
   -pl exist-installer -am \
   -DskipTests \
   -Ddependency-check.skip=true \
