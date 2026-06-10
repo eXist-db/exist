@@ -2084,26 +2084,28 @@ public class InteractiveClient {
     private void connectToDatabase() throws XMLDBException {
         try {
             connect();
+        } catch (final XMLDBException ex) {
+            handleConnectException(ex, ex);
         } catch (final Exception ex) {
-            final String message = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName();
-            if (options.startGUI && isRetryableError(message)) {
-                if (frame != null) {
-                    frame.setStatus("Connection to database failed; message: " + message);
-                }
-                if (ex instanceof XMLDBException xe) {
-                    throw xe;
-                } else {
-                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, ex);
-                }
-
-            }
-            if (options.startGUI && frame != null) {
-                frame.setStatus("Connection to database failed; message: " + message);
-            } else {
-                consoleErr("Connection to database failed; message: " + message, ex);
-            }
-            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
+            handleConnectException(new XMLDBException(ErrorCodes.VENDOR_ERROR, ex.getMessage(), ex), ex);
         }
+    }
+
+    private void handleConnectException(final XMLDBException toThrow, final Exception original) throws XMLDBException {
+        final String message = original.getMessage() != null ? original.getMessage() : original.getClass().getName();
+        if (options.startGUI && isRetryableError(message)) {
+            if (frame != null) {
+                frame.setStatus("Connection to database failed; message: " + message);
+            }
+            throw toThrow;
+        }
+
+        if (options.startGUI && frame != null) {
+            frame.setStatus("Connection to database failed; message: " + message);
+        } else {
+            consoleErr("Connection to database failed; message: " + message, original);
+        }
+        System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
     }
 
     /**
