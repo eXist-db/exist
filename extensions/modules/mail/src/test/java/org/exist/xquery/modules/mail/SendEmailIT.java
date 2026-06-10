@@ -73,7 +73,6 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.util.IPUtil.nextFreePort;
 import static org.exist.xquery.modules.mail.Util.executeQuery;
 import static org.exist.xquery.modules.mail.Util.withCompiledQuery;
 import static org.junit.Assert.*;
@@ -123,10 +122,8 @@ public class SendEmailIT {
     private static final String EMAIL_UID = "emailuid";
     private static final String EMAIL_PWD = "emailpwd";
 
-    private final int smtpPort = nextFreePort(2525, 2599, 10);
-
     @Rule
-    public final GreenMailRule greenMail = new GreenMailRule(new ServerSetup(smtpPort, "127.0.0.1", "smtp"));
+    public final GreenMailRule greenMail = new GreenMailRule(new ServerSetup(0, "127.0.0.1", "smtp"));
 
     @BeforeClass
     public static void setup() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
@@ -576,7 +573,7 @@ public class SendEmailIT {
                         "return\n" +
                         "  mail:send-email(\n" +
                         "      <mail><from>" + from + "</from><to>" + to + "</to><subject>" + subject + "</subject><message>" + message + "</message>{$attachments}</mail>,\n" +
-                        "      '127.0.0.1:" + smtpPort + "',\n" +
+                        "      '127.0.0.1:" + greenMail.getSmtp().getPort() + "',\n" +
                         "      ()\n" +
                         "  )";
 
@@ -640,7 +637,7 @@ public class SendEmailIT {
                         "  let $session := mail:get-mail-session(\n" +
                         "      <properties>\n" +
                         "          <property name=\"mail.transport.protocol\" value=\"smtp\"/>\n" +
-                        "          <property name=\"mail.smtp.port\" value=\"" + smtpPort + "\"/>\n" +
+                        "          <property name=\"mail.smtp.port\" value=\"" + greenMail.getSmtp().getPort() + "\"/>\n" +
                         "          <property name=\"mail.smtp.host\" value=\"127.0.0.1\"/>\n";
 
         if (authenticationOption == AuthenticationOption.AUTHENTICATED) {

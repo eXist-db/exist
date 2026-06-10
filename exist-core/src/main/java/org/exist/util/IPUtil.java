@@ -51,15 +51,26 @@ public class IPUtil {
     /**
      * Attempts to get the next random free IP port in the range {@code from} and {@code to}.
      *
+     * <p><strong>Deprecated — TOCTOU race:</strong> this method probes a port by opening and
+     * immediately closing a {@link ServerSocket}.  The port is free at the moment of the probe but
+     * can be claimed by another process before the caller binds to it.  Under concurrent test
+     * execution (e.g. {@code forkCount &gt; 1}) this race reliably causes "Failed to bind" failures.
+     *
+     * <p>Prefer passing port {@code 0} directly to the server being started (Jetty, GreenMail, …)
+     * so that the OS allocates an ephemeral port atomically at bind time, then read back the
+     * actual port from the bound socket after startup.
+     *
      * @param from start of the port range
      * @param to end of the port range
      * @param maxAttempts the number of attempts to make to find a free port
      *
-     * @return a potentially free IP port. This is done on a best effort basis! It is possible that the port returned
-     *     is free, but by time you come to use it, it is then in-use; if so, just try calling this again.
+     * @return a potentially free IP port. This is done on a best effort basis — the port may be
+     *     taken by the time the caller tries to bind.
      *
      * @throws IllegalStateException if maxAttempts is exceeded
+     * @deprecated use port {@code 0} and read the bound port from the server after startup
      */
+    @Deprecated
     public static int nextFreePort(final int from, final int to, final int maxAttempts) {
         for (int attempts = 0; attempts < maxAttempts; attempts++) {
             final int port = random(from, to);
@@ -76,8 +87,7 @@ public class IPUtil {
     }
 
     private static boolean isLocalPortFree(final int port) {
-        try {
-            new ServerSocket(port).close();
+        try (final ServerSocket ignored = new ServerSocket(port)) {
             return true;
         } catch (final IOException e) {
             return false;
