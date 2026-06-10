@@ -360,6 +360,36 @@ declare variable $vs:COLLECTION_ORDER_SINGLE := "/db/" || $vs:COLLECTION_ORDER_S
 declare variable $vs:COLLECTION_ORDER_MULTI_NAME := "lucene-test-vector-order-multi";
 declare variable $vs:COLLECTION_ORDER_MULTI := "/db/" || $vs:COLLECTION_ORDER_MULTI_NAME;
 
+(:~
+ : Data for runtime-expression-error test.
+ : Valid1 (before) and Valid2 (after) should both get vectors; BadExpr triggers error() in the
+ : expression, which before the isValid fix would permanently disable the field for all
+ : subsequent documents in the same indexing run.
+ :)
+declare variable $vs:DATA_EXPR_ERROR :=
+    <articles>
+        <article><title>Valid1</title><embedding>{$vs:EMB_TEXT_A}</embedding></article>
+        <article><title>BadExpr</title><embedding>{$vs:EMB_TEXT_B}</embedding></article>
+        <article><title>Valid2</title><embedding>{$vs:EMB_TEXT_C}</embedding></article>
+    </articles>;
+
+declare variable $vs:XCONF_EXPR_ERROR :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <field name="title" expression="title"/>
+                    <vector-field name="embedding"
+                        expression="if (title = 'BadExpr') then error() else embedding"
+                        dimension="4" similarity="cosine" encoding="text"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $vs:COLLECTION_EXPR_ERROR_NAME := "lucene-test-vector-expr-error";
+declare variable $vs:COLLECTION_EXPR_ERROR := "/db/" || $vs:COLLECTION_EXPR_ERROR_NAME;
+
 (:~ Lucene fulltext only — no vector-field (profiler NONE tests). :)
 declare variable $vs:DATA_NO_VECTOR :=
     <articles>
@@ -484,7 +514,13 @@ function vs:setup() {
       xmldb:store($vs:COLLECTION_ORDER_MULTI, "b.xml", $vs:DATA_ORDER_B),
       xmldb:store($vs:COLLECTION_ORDER_MULTI, "c.xml", $vs:DATA_ORDER_C),
       xmldb:store("/db/system/config/db/" || $vs:COLLECTION_ORDER_MULTI_NAME, "collection.xconf", $vs:XCONF_ORDER),
-      xmldb:reindex($vs:COLLECTION_ORDER_MULTI) )
+      xmldb:reindex($vs:COLLECTION_ORDER_MULTI),
+      (: Runtime expression error: field must survive for subsequent docs. :)
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_EXPR_ERROR_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_EXPR_ERROR_NAME),
+      xmldb:store($vs:COLLECTION_EXPR_ERROR, "test.xml", $vs:DATA_EXPR_ERROR),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_EXPR_ERROR_NAME, "collection.xconf", $vs:XCONF_EXPR_ERROR),
+      xmldb:reindex($vs:COLLECTION_EXPR_ERROR) )
 };
 
 (:~
@@ -528,7 +564,9 @@ function vs:tearDown() {
     xmldb:remove($vs:COLLECTION_ORDER_SINGLE),
     xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_ORDER_SINGLE_NAME),
     xmldb:remove($vs:COLLECTION_ORDER_MULTI),
-    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_ORDER_MULTI_NAME)
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_ORDER_MULTI_NAME),
+    xmldb:remove($vs:COLLECTION_EXPR_ERROR),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_EXPR_ERROR_NAME)
 };
 
 (:~
@@ -672,6 +710,18 @@ declare
     %test:assertEquals(1)
 function vs:non-finite-doc-still-text-searchable() {
     count(collection($vs:COLLECTION_NON_FINITE)//article[ft:query(., "NonFinite")])
+};
+
+(:~
+ : (8f) runtime expression error does not permanently disable the vector field.
+ : DATA_EXPR_ERROR: Valid1, BadExpr (throws error()), Valid2 — all in one document.
+ : Before the isValid fix, BadExpr's XPathException set isValid=false, silently dropping
+ : Valid2's vector. After the fix both Valid1 and Valid2 are indexed; count must be 2.
+ :)
+declare
+    %test:assertEquals(2)
+function vs:runtime-expr-error-does-not-disable-subsequent-docs() {
+    count(collection($vs:COLLECTION_EXPR_ERROR)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 5)])
 };
 
 (:~

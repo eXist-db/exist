@@ -45,7 +45,13 @@ declare function idx:get-metadata($root as element(), $field as xs:string) as xs
 };
 ]``;
 
-declare variable $t:XML := document { <entry><form><orth>hello</orth></form></entry> };
+(:~
+ : vec attribute carries a dim=4 text-encoded float vector on the entry element.
+ : Using an attribute rather than a child element means XPath axes * and ./* still
+ : return only <form>, so module-call fields (mchildren, mdotchildren) are unaffected,
+ : and string(<entry>) remains "hello" so all text-field query assertions still hold.
+ :)
+declare variable $t:XML := document { <entry vec="1.0 0.0 0.0 0.0"><form><orth>hello</orth></form></entry> };
 
 declare variable $t:xconf :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -71,6 +77,13 @@ declare variable $t:xconf :=
                     <field name="mdotselfchild"      expression="idx:get-metadata(./self::*/form, 'x')"/>
                     <field name="mchildren"          expression="idx:get-metadata(*, 'x')"/>
                     <field name="mdotchildren"       expression="idx:get-metadata(./*, 'x')"/>
+                    <!-- vector-field expression context regressions (#6446) -->
+                    <!-- @vec is a dim=4 float attribute; self::*/@vec exercises the element-type
+                         check that was broken: if the context NodeProxy had UNKNOWN_NODE_TYPE,
+                         self::* returned empty, the attribute step had no context, and no vector
+                         was indexed. -->
+                    <vector-field name="v_baseline" expression="@vec"        dimension="4" similarity="cosine" encoding="text"/>
+                    <vector-field name="v_self"     expression="self::*/@vec" dimension="4" similarity="cosine" encoding="text"/>
                 </text>
             </lucene>
         </index>
@@ -117,3 +130,11 @@ declare %test:assertTrue function t:mdotself()      { t:indexed("mdotself") };
 declare %test:assertTrue function t:mdotselfchild() { t:indexed("mdotselfchild") };
 declare %test:assertTrue function t:mchildren()     { t:indexed("mchildren") };
 declare %test:assertTrue function t:mdotchildren()  { t:indexed("mdotchildren") };
+
+(:~ --- vector-field expression context regressions (#6446) --- :)
+declare function t:vector-indexed($field as xs:string) as xs:boolean {
+    exists(collection($t:COLL)//entry[ft:query-field-vector($field, [1.0, 0.0, 0.0, 0.0], 1)])
+};
+
+declare %test:assertTrue function t:vector-baseline() { t:vector-indexed("v_baseline") };
+declare %test:assertTrue function t:vector-xself()    { t:vector-indexed("v_self") };
