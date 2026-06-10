@@ -37,7 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.exist.util.IPUtil.nextFreePort;
 import static org.junit.Assert.fail;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
@@ -62,10 +61,16 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * <ul>
  *   <li>{@code exist.jetty.standalone.webapp.dir} — exploded standalone test webapp root</li>
  *   <li>{@code exist.jetty.portal.dir} — portal webapp for distribution-mode tests</li>
- *   <li>{@code jetty.port}, {@code jetty.secure.port}, {@code jetty.ssl.port} — set automatically when
- *       {@code useRandomPort} is {@code true}</li>
+ *   <li>{@code jetty.port}, {@code jetty.secure.port}, {@code jetty.ssl.port} — set to {@code 0} when
+ *       {@code useRandomPort} is {@code true}, causing the OS to assign ephemeral ports at bind time.
+ *       Call {@link #getPort()} after startup to obtain the actual bound port.</li>
  *   <li>{@code jetty.home} — Jetty configuration directory ({@code exist-jetty-config/target/classes/...})</li>
  * </ul>
+ * <p>
+ * <strong>Note on naming:</strong> {@code useRandomPort} (and the corresponding builder method) are named
+ * for historical compatibility. The underlying mechanism is OS ephemeral port allocation (port {@code 0}),
+ * not random selection from a range — which eliminates the TOCTOU bind-failure race that affected
+ * concurrent {@code forkCount &gt; 1} test runs.
  * Startup failures throw {@link IllegalStateException} with detail from {@link org.exist.jetty.JettyStart}
  * ({@code webAppStartupFailureDetail} is included in the exception message).
  * <p>
@@ -81,10 +86,6 @@ public class ExistWebServer extends ExternalResource {
     private static final String PROP_JETTY_PORT = "jetty.port";
     private static final String PROP_JETTY_SECURE_PORT = "jetty.secure.port";
     private static final String PROP_JETTY_SSL_PORT = "jetty.ssl.port";
-
-    private static final int MIN_RANDOM_PORT = 49152;
-    private static final int MAX_RANDOM_PORT = 65535;
-    private static final int MAX_RANDOM_PORT_ATTEMPTS = 10;
 
     private JettyStart server = null;
     private String prevAutoDeploy = "off";
@@ -216,33 +217,26 @@ public class ExistWebServer extends ExternalResource {
                 LOG.info("Using temporary storage location: {}", absTemporaryStorage);
             }
 
-            if(useRandomPort) {
-                synchronized(ExistWebServer.class) {
-                    startJettyServer();
-                }
-            } else {
-                startJettyServer();
-            }
+            startJettyServer();
         } else {
             throw new IllegalStateException("ExistWebServer already running");
         }
         super.before();
     }
 
+    /**
+     * Shuts down and restarts the embedded Jetty server.
+     * <p>
+     * When {@code useRandomPort} is {@code true}, the restarted server binds to a new OS-assigned
+     * ephemeral port. Callers that cached the value of {@link #getPort()} before the restart must
+     * re-read it afterwards.
+     */
     public void restart() {
         if(server != null) {
             try {
-                if (useRandomPort) {
-                    synchronized (ExistWebServer.class) {
-                        server.shutdown();
-                        server.run(jettyStandaloneMode);
-                        awaitJettyReadyAfterRun();
-                    }
-                } else {
-                    server.shutdown();
-                    server.run(jettyStandaloneMode);
-                    awaitJettyReadyAfterRun();
-                }
+                server.shutdown();
+                server.run(jettyStandaloneMode);
+                awaitJettyReadyAfterRun();
             } catch (final Exception e) {
                 throw new IllegalStateException("Failed to restart ExistWebServer", e);
             }
@@ -254,15 +248,8 @@ public class ExistWebServer extends ExternalResource {
     @Override
     protected void after() {
         if(server != null) {
-            if (useRandomPort) {
-                synchronized (ExistWebServer.class) {
-                    shutdownJettyServer();
-                    disposeTemporaryStorage();
-                }
-            } else {
-                shutdownJettyServer();
-                disposeTemporaryStorage();
-            }
+            shutdownJettyServer();
+            disposeTemporaryStorage();
         } else {
             throw new IllegalStateException("ExistWebServer already stopped");
         }
@@ -277,9 +264,9 @@ public class ExistWebServer extends ExternalResource {
 
     private void startJettyServer() {
         if (useRandomPort) {
-            System.setProperty(PROP_JETTY_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
-            System.setProperty(PROP_JETTY_SECURE_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
-            System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
+            System.setProperty(PROP_JETTY_PORT, "0");
+            System.setProperty(PROP_JETTY_SECURE_PORT, "0");
+            System.setProperty(PROP_JETTY_SSL_PORT, "0");
         }
         server = new JettyStart();
         server.run(jettyStandaloneMode);
