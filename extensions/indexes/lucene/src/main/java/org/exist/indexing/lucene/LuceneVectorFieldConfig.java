@@ -226,6 +226,17 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         return similarity;
     }
 
+    /**
+     * Returns the embedding model id when this field embeds text
+     * (embedding="local" or "http"), or null for a raw-vector field.
+     *
+     * @return the model id, or null
+     */
+    @Nullable
+    public String getModelId() {
+        return modelId;
+    }
+
     /** Evaluates the expression, parses vectors (or embeds text when embedding=local), and adds to the Lucene document. */
     @Override
     protected void processResult(final Sequence result, final Document luceneDoc) throws XPathException {

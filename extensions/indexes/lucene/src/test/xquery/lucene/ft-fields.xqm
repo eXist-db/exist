@@ -51,6 +51,13 @@ declare variable $ff:XCONF :=
                     <facet dimension="kind" expression="'caption'"/>
                 </text>
                 <text qname="bare"/>
+                <!-- a vector field: ft:fields reports dimension/similarity/model from the resolved config.
+                     Placed on an element absent from the test doc so reindex never invokes the embedding
+                     provider (which lives in the separate vector extension). -->
+                <text qname="chunk">
+                    <vector-field name="embedding" dimension="384" similarity="cosine"
+                                  embedding="local" model="all-MiniLM-L6-v2"/>
+                </text>
             </lucene>
         </index>
     </collection>;
@@ -182,6 +189,41 @@ declare
 function ff:facet-entry-shape() {
     let $facet := ft:fields($ff:COLLECTION)[?kind = "facet" and ?element = "para"]
     return $facet?field = "kind" and not(map:contains($facet, "type"))
+};
+
+(: a vector field is reported with kind=vector and its name as the field :)
+declare
+    %test:assertEquals(1)
+function ff:vector-count() {
+    count(ft:fields($ff:COLLECTION)[?kind = "vector"])
+};
+
+(: a vector field carries its dimension as an xs:integer :)
+declare
+    %test:assertEquals(384)
+function ff:vector-dimension() {
+    ft:fields($ff:COLLECTION)[?kind = "vector" and ?field = "embedding"]?dimension
+};
+
+declare
+    %test:assertTrue
+function ff:vector-dimension-is-integer() {
+    ft:fields($ff:COLLECTION)[?kind = "vector"]?dimension instance of xs:integer
+};
+
+(: a vector field reports its similarity metric (lower-cased, matching the config vocabulary) :)
+declare
+    %test:assertEquals("cosine")
+function ff:vector-similarity() {
+    ft:fields($ff:COLLECTION)[?kind = "vector" and ?field = "embedding"]?similarity
+};
+
+(: a text-embedding vector field reports the embedding model id, so a client can resolve the model
+   for query-time embedding from discovery alone (existdb-openapi vector endpoint) :)
+declare
+    %test:assertEquals("all-MiniLM-L6-v2")
+function ff:vector-model() {
+    ft:fields($ff:COLLECTION)[?kind = "vector" and ?field = "embedding"]?model
 };
 
 (: R1: permission-agnostic. The config lives under admin-only /db/system/config, but ft:fields reads
