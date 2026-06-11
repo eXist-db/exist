@@ -108,7 +108,7 @@ public class StreamBinaryResource extends StrictResponseFunction {
         try {
             uri = XmldbURI.xmldbUriFor(path);
         } catch (final URISyntaxException e) {
-            throw new XPathException(this, "Invalid binary resource path: " + path, e);
+            throw new XPathException(this, ErrorCodes.FODC0002, "Invalid binary resource path: " + path, e);
         }
 
         streamResource(uri, path, contentType, filename, response);
@@ -125,7 +125,7 @@ public class StreamBinaryResource extends StrictResponseFunction {
 
             final DocumentImpl doc = lockedDoc.getDocument();
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
-                throw new XPathException(this, "Resource is not a binary document: " + path);
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Resource is not a binary document: " + path);
             }
 
             response.setHeader("Content-Type", contentType);
@@ -145,11 +145,11 @@ public class StreamBinaryResource extends StrictResponseFunction {
             // commit the response
             response.flushBuffer();
         } catch (final PermissionDeniedException e) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Permission denied to read binary resource '" + path + "': " + e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.FODC0002, "Permission denied to read binary resource '" + path + "': " + e.getMessage(), e);
         } catch (final TransactionException e) {
-            throw new XPathException(this, "Transaction error while streaming binary resource '" + path + "': " + e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.EXXQDY0007, "Transaction error while streaming binary resource '" + path + "': " + e.getMessage(), e);
         } catch (final IOException e) {
-            throw new XPathException(this, "IO exception while streaming binary resource '" + path + "': " + e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.EXXQDY0007, "IO exception while streaming binary resource '" + path + "': " + e.getMessage(), e);
         }
     }
 }

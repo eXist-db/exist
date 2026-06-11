@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -52,6 +53,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -125,6 +128,29 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
                 "response:stream-binary-resource('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "', 'application/octet-stream', ())";
 
         final HttpResponse response = postXquery(query);
+
+        final HttpEntity entity = response.getEntity();
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+            entity.writeTo(baos);
+
+            assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
+        }
+    }
+
+    /**
+     * The 3-arg form response:stream-binary-resource#3 sets a Content-Disposition header from the
+     * filename argument (while still streaming the byte-identical body).
+     */
+    @Test
+    public void streamBinaryResourceWithFilename() throws JAXBException, IOException {
+        final String query = "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
+                "response:stream-binary-resource('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "', 'application/octet-stream', 'download.bin')";
+
+        final HttpResponse response = postXquery(query);
+
+        final Header contentDisposition = response.getFirstHeader("Content-Disposition");
+        assertNotNull("Content-Disposition header should be sent for the 3-arg form", contentDisposition);
+        assertEquals("inline; filename=\"download.bin\"", contentDisposition.getValue());
 
         final HttpEntity entity = response.getEntity();
         try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
