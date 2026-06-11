@@ -46,7 +46,7 @@
     </scm>
 
     <properties>
-        <geotools.version>34.4</geotools.version>
+        <geotools.version>35.0</geotools.version>
     </properties>
     
     <dependencies>
