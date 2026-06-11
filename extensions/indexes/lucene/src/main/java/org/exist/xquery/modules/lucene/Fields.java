@@ -43,6 +43,7 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -52,6 +53,7 @@ import org.exist.xquery.value.ValueSequence;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -59,14 +61,17 @@ import java.util.Set;
  * configured fields and facets, one {@code map} per entry. It is the schema-discovery companion to
  * {@code ft:query-scope}/{@code ft:search-scope}: where they search, this describes what is searchable.
  *
- * <p>Each result map describes a configured field or facet:</p>
+ * <p>Each result map describes a configured field, facet, or vector field:</p>
  * <pre>
- * map { "field": xs:string,                 (: the field name / facet dimension :)
+ * map { "field": xs:string,                 (: the field name / facet dimension / vector field name :)
  *       "element": xs:string,               (: the element the index is defined on (or named-index name) :)
- *       "kind": "field" | "facet",
+ *       "kind": "field" | "facet" | "vector",
  *       "analyzer": xs:string,              (: effective analyzer (fields only) :)
  *       "type": xs:string,                  (: declared XDM type, e.g. "xs:string" (fields only) :)
- *       "returnable": xs:boolean }          (: whether the field value is stored (fields only) :)
+ *       "returnable": xs:boolean,           (: whether the field value is stored (fields only) :)
+ *       "dimension": xs:integer,            (: vector dimension (vector fields only) :)
+ *       "similarity": xs:string,            (: "cosine" | "euclidean" | "dot_product" (vector fields only) :)
+ *       "model": xs:string }                (: embedding model id, when the vector field embeds text :)
  * </pre>
  *
  * <p>It reflects the <em>resolved</em> configuration for {@code $scope} (handling collection inheritance,
@@ -86,13 +91,16 @@ public class Fields extends BasicFunction {
                             + "Collection URIs are resolved recursively.");
     private static final FunctionReturnSequenceType FS_RETURN =
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
-                    "One map per configured field or facet in scope: { field, element, kind, analyzer, type, returnable }.");
+                    "One map per configured field, facet, or vector field in scope: "
+                            + "{ field, element, kind, analyzer, type, returnable } for fields/facets, plus "
+                            + "{ dimension, similarity, model } for vector fields.");
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("fields", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                    "Returns the configured Lucene fields and facets in scope, one map per entry "
-                            + "(field name, element, kind, analyzer, type, returnable). The full set is returned; "
+                    "Returns the configured Lucene fields, facets, and vector fields in scope, one map per entry "
+                            + "(field name, element, kind, analyzer, type, returnable; vector fields also carry "
+                            + "dimension, similarity, and model). The full set is returned; "
                             + "any per-caller field visibility policy is the application's responsibility.",
                     new SequenceType[]{FS_PARAM_SCOPE},
                     FS_RETURN)
@@ -160,6 +168,13 @@ public class Fields extends BasicFunction {
         } else if (fc instanceof LuceneVectorFieldConfig vector) {
             map.add(new StringValue(this, "field"), new StringValue(this, vector.getName()));
             map.add(new StringValue(this, "kind"), new StringValue(this, "vector"));
+            map.add(new StringValue(this, "dimension"), new IntegerValue(this, vector.getDimension()));
+            map.add(new StringValue(this, "similarity"),
+                    new StringValue(this, vector.getSimilarity().name().toLowerCase(Locale.ROOT)));
+            final String model = vector.getModelId();
+            if (model != null) {
+                map.add(new StringValue(this, "model"), new StringValue(this, model));
+            }
         } else {
             // any other configured index entry (e.g. an element index with no named field): make it
             // self-distinguishing so every map carries field + kind, keyed by the element name.
