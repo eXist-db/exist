@@ -53,6 +53,8 @@ public class ResponseModule extends AbstractInternalModule {
             new FunctionDef(SetHeader.signature, SetHeader.class),
             new FunctionDef(SetStatusCode.signature, SetStatusCode.class),
             new FunctionDef(StreamBinary.signature, StreamBinary.class),
+            new FunctionDef(StreamBinaryResource.signatures[0], StreamBinaryResource.class),
+            new FunctionDef(StreamBinaryResource.signatures[1], StreamBinaryResource.class),
             new FunctionDef(Stream.signature, Stream.class),
             new FunctionDef(GetExists.signature, GetExists.class)
     };

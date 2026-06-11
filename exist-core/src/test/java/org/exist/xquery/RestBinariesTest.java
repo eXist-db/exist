@@ -114,6 +114,26 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         }
     }
 
+    /**
+     * response:stream-binary-resource streams a stored binary by path, without materializing it
+     * (unlike response:stream-binary which takes a fully-loaded xs:base64Binary). The wire result
+     * is byte-identical.
+     */
+    @Test
+    public void streamBinaryResourceRaw() throws JAXBException, IOException {
+        final String query = "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
+                "response:stream-binary-resource('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "', 'application/octet-stream', ())";
+
+        final HttpResponse response = postXquery(query);
+
+        final HttpEntity entity = response.getEntity();
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+            entity.writeTo(baos);
+
+            assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
+        }
+    }
+
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception {
         final HttpResponse response = executor.execute(Request.Put(getRestUrl() + filePath.toString())
