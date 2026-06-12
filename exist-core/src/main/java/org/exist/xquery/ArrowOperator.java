@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
@@ -41,7 +42,7 @@ public class ArrowOperator extends AbstractExpression {
 
     private QName qname = null;
     private Expression leftExpr;
-    private FunctionCall fcall = null;
+    private Expression namedCall = null;
     private Expression funcSpec = null;
     private List<Expression> parameters;
     private AnalyzeContextInfo cachedContextInfo;
@@ -74,45 +75,91 @@ public class ArrowOperator extends AbstractExpression {
                 ErrorCodes.EXXQDY0003,
                 "arrow operator is not available before XQuery 3.1");
         }
-        if (qname != null) {
-            fcall = NamedFunctionReference.lookupFunction(this, context, qname, parameters.size() + 1);
-        }
         this.cachedContextInfo = contextInfo;
-        leftExpr.analyze(contextInfo);
-        if (fcall != null) {
-            fcall.analyze(contextInfo);
-        }
-        if (funcSpec != null) {
+        if (qname != null) {
+            // Statically-named function: compile the arrow to the equivalent call
+            // f(leftExpr, parameters...), exactly as the parser builds a normal function call (the
+            // functionCall rule in XQueryTree.g). The left-hand side becomes a real argument
+            // expression — so it keeps its static context (fixing the lost-variable-scope bug, e.g.
+            // EXPR => util:eval()) — and a '?' placeholder yields a partial function application
+            // (fixing the placeholder arity bug). This replaces the previous dynamic FunctionReference
+            // dispatch, which pre-evaluated the left-hand side and modelled it as a placeholder.
+            final XQueryAST ast = new XQueryAST();
+            ast.setLine(getLine());
+            ast.setColumn(getColumn());
+            final List<Expression> callArgs = new ArrayList<>(parameters.size() + 1);
+            callArgs.add(toArgument(leftExpr));
+            boolean partial = false;
+            for (final Expression param : parameters) {
+                if (param instanceof Function.Placeholder) {
+                    partial = true;
+                    callArgs.add(param);
+                } else {
+                    callArgs.add(toArgument(param));
+                }
+            }
+            Expression call = FunctionFactory.createFunction(context, qname, ast, null, callArgs);
+            if (partial) {
+                // mirror the functionCall rule: a '?' placeholder turns the call into a partial
+                // function application yielding a function item of the remaining arity.
+                if (!(call instanceof FunctionCall)) {
+                    if (call instanceof CastExpression) {
+                        call = ((CastExpression) call).toFunction();
+                    }
+                    call = FunctionFactory.wrap(context, (Function) call);
+                }
+                call = new PartialFunctionApplication(context, (FunctionCall) call);
+            }
+            namedCall = call;
+            namedCall.analyze(contextInfo);
+        } else {
+            leftExpr.analyze(contextInfo);
             funcSpec.analyze(contextInfo);
         }
     }
 
+    /**
+     * Wraps an argument expression in a {@link PathExpr} when it is not already one, matching how the
+     * parser supplies function-call arguments (so {@link FunctionFactory#createFunction} optimizations
+     * that expect {@code PathExpr} arguments behave identically to a normal call). Placeholders are
+     * passed through unchanged by the caller.
+     */
+    private Expression toArgument(final Expression expr) {
+        if (expr instanceof PathExpr) {
+            return expr;
+        }
+        final PathExpr wrapped = new PathExpr(context);
+        wrapped.add(expr);
+        return wrapped;
+    }
+
     @Override
     public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
+        if (namedCall != null) {
+            // Statically-named arrow, compiled to f(leftExpr, parameters...): evaluate it directly,
+            // so the left-hand side is evaluated as an ordinary argument in this call's context.
+            return namedCall.eval(contextSequence, contextItem);
         }
-        contextSequence = leftExpr.eval(contextSequence, null);
 
-        final FunctionReference fref;
-        if (fcall != null) {
-            fref = new FunctionReference(this, fcall);
-        } else {
-            final Sequence funcSeq = funcSpec.eval(contextSequence, contextItem);
-            if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
-            {throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
-                            ". Expression: " + ExpressionDumper.dump(funcSpec));}
-            final Item item0 = funcSeq.itemAt(0);
-            if (!Type.subTypeOf(item0.getType(), Type.FUNCTION)) {
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Type error: expected function, got " + Type.getTypeName(item0.getType()));
-            }
-            fref = (FunctionReference)item0;
+        // Dynamic (higher-order) right-hand side: the function to call is obtained by evaluating
+        // funcSpec, so the left-hand side value is captured and supplied as the first argument.
+        final Sequence focus = contextItem != null ? contextItem.toSequence() : contextSequence;
+        final Sequence leftValue = leftExpr.eval(focus, null);
+
+        final Sequence funcSeq = funcSpec.eval(leftValue, contextItem);
+        if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
+        {throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
+                        ". Expression: " + ExpressionDumper.dump(funcSpec));}
+        final Item item0 = funcSeq.itemAt(0);
+        if (!Type.subTypeOf(item0.getType(), Type.FUNCTION)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         }
+        final FunctionReference fref = (FunctionReference) item0;
         try {
             final List<Expression> fparams = new ArrayList<>(parameters.size() + 1);
-            fparams.add(new ContextParam(context, contextSequence));
+            fparams.add(new ContextParam(context, leftValue));
             fparams.addAll(parameters);
 
             fref.setArguments(fparams);
@@ -128,28 +175,29 @@ public class ArrowOperator extends AbstractExpression {
 
     @Override
     public int returnsType() {
-        return fcall == null ? Type.ITEM : fcall.returnsType();
+        return namedCall == null ? Type.ITEM : namedCall.returnsType();
     }
 
     @Override
     public Cardinality getCardinality() {
-        return fcall == null ? super.getCardinality() : fcall.getCardinality();
+        return namedCall == null ? super.getCardinality() : namedCall.getCardinality();
     }
 
     @Override
     public void dump(final ExpressionDumper dumper) {
         leftExpr.dump(dumper);
         dumper.display(" => ");
-        if (fcall != null) {
-            dumper.display(fcall.getFunction().getName()).display('(');
+        if (qname != null) {
+            dumper.display(qname.getStringValue());
         } else {
             funcSpec.dump(dumper);
         }
+        dumper.display('(');
         for (int i = 0; i < parameters.size(); i++) {
             if (i > 0) {
                 dumper.display(", ");
-                parameters.get(i).dump(dumper);
             }
+            parameters.get(i).dump(dumper);
         }
         dumper.display(')');
     }
@@ -157,15 +205,17 @@ public class ArrowOperator extends AbstractExpression {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        leftExpr.resetState(postOptimization);
-        if (fcall != null) {
-            fcall.resetState(postOptimization);
-        }
-        if (funcSpec != null) {
-            funcSpec.resetState(postOptimization);
-        }
-        for (Expression param: parameters) {
-            param.resetState(postOptimization);
+        if (namedCall != null) {
+            // namedCall owns leftExpr and parameters as its arguments.
+            namedCall.resetState(postOptimization);
+        } else {
+            leftExpr.resetState(postOptimization);
+            if (funcSpec != null) {
+                funcSpec.resetState(postOptimization);
+            }
+            for (Expression param : parameters) {
+                param.resetState(postOptimization);
+            }
         }
     }
 
@@ -180,6 +230,7 @@ public class ArrowOperator extends AbstractExpression {
 
         @Override
         public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+            // nothing to analyze: the captured left-hand-side value is already evaluated
         }
 
         @Override
@@ -194,7 +245,7 @@ public class ArrowOperator extends AbstractExpression {
 
         @Override
         public void dump(ExpressionDumper dumper) {
-
+            // the captured value has no source representation to display
         }
     }
 }

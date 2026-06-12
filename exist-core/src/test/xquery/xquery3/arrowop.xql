@@ -25,6 +25,8 @@ module namespace ao="http://exist-db.org/xquery/test/arrowop";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+import module namespace util="http://exist-db.org/xquery/util";
+
 declare
     %test:assertEquals("Hello world")
 function ao:func-by-name1() {
@@ -149,8 +151,13 @@ declare %private function ao:string-join($s as xs:string*, $sep as xs:string) {
     string-join($s, $sep)
 };
 
+(: EXPR => f(args) is exactly the call f(EXPR, args) and applies the same function conversion
+   rules: xs:integer items do not convert to a declared xs:string* parameter, so this raises
+   XPTY0004 — identical to the direct call ao:string-join((1,2,3), "-") and to Saxon. (Before the
+   arrow was compiled to a direct call, the dynamic FunctionReference path was wrongly lenient here
+   and returned "1-2-3", which a normal call never would.) :)
 declare
-    %test:assertEquals("1-2-3")
+    %test:assertError("XPTY0004")
 function ao:type-checks-user-func() {
     (1, 2, 3) => ao:string-join("-")
 };
@@ -276,4 +283,47 @@ function ao:for-each-pair-with-contextitem () {
     (<a/>,<b/>,<a/>,<b/>)
         => for-each-pair((<a/>,<b/>,<a/>,<b/>), function ($a, $b) { node-name($a) || node-name($b) })
         => string-join()
+};
+
+(:~
+    closes https://github.com/eXist-db/exist/issues/3336
+    EXPR => f(?) is f(EXPR, ?): the left-hand side fills the first argument and the placeholder
+    leaves the second open, yielding an arity-1 partial application. Previously the LHS was modelled
+    as a placeholder too, so both slots were left open and applying one argument raised XPST0017.
+ ~:)
+declare
+    %test:assertEquals("ello")
+function ao:placeholder-partial-application() {
+    ("hello" => substring(?))(2)
+};
+
+(:~
+    closes https://github.com/eXist-db/exist/issues/3887
+    The arrow left-hand side is passed as a real argument expression, so a context-sensitive callee
+    (here util:eval) sees the in-scope variables exactly as the direct call util:eval(concat(...))
+    does. Previously the LHS was pre-evaluated and injected via a dynamic FunctionReference, and the
+    variable $v was not visible, raising XPST0008.
+ ~:)
+declare
+    %test:assertEquals(2)
+function ao:context-sensitive-callee-sees-scope() {
+    let $v := 1
+    return concat("$v", "+1") => util:eval()
+};
+
+declare %private function ao:npe-map2($a) { $a };
+
+declare %private function ao:npe-map1($a as xs:string) {
+    tokenize($a, "\|") => for-each(ao:npe-map2(?))
+};
+
+(:~
+    closes https://github.com/eXist-db/exist/issues/3885
+    A named arrow function whose argument is itself a partial application (a '?' placeholder nested
+    inside a call after the arrow) no longer raises a NullPointerException.
+ ~:)
+declare
+    %test:assertEquals("a", "b", "c", "d", "e")
+function ao:nested-partial-after-arrow() {
+    ("a|b", "c", "d|e") => for-each(ao:npe-map1(?))
 };
