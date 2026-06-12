@@ -185,7 +185,11 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                     if (Type.subTypeOf(item.getType(), Type.STRING)) {
                         resource.setContent(item.getStringValue());
                     } else if (item.getType() == Type.BASE64_BINARY) {
-                        resource.setContent(((BinaryValue) item).toJavaObject());
+                        // Pass the BinaryValue through rather than .toJavaObject(), which reads the
+                        // whole value into a heap byte[] (a multi-GB upload would OOM). The local
+                        // resource keeps the BinaryValue and the store streams it via the
+                        // (disk-backed by default) binary cache instead of materializing it.
+                        resource.setContent((BinaryValue) item);
                     } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
                         if (mimeType.isXMLType()) {
                             final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
