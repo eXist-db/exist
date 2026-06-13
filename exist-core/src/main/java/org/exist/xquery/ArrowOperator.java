@@ -70,7 +70,7 @@ public class ArrowOperator extends AbstractExpression {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        if(getContext().getXQueryVersion() < 31) {
+        if (getContext().getXQueryVersion() < 31) {
             throw new XPathException(this,
                 ErrorCodes.EXXQDY0003,
                 "arrow operator is not available before XQuery 3.1");
@@ -84,16 +84,24 @@ public class ArrowOperator extends AbstractExpression {
             return;
         }
 
-        // Statically-named function: compile the arrow to the equivalent call
-        // f(leftExpr, parameters...), exactly as the parser builds a normal function call (the
-        // functionCall rule in XQueryTree.g). The left-hand side becomes a real argument
-        // expression — so it keeps its static context (fixing the lost-variable-scope bug, e.g.
-        // EXPR => util:eval()) — and a '?' placeholder yields a partial function application
-        // (fixing the placeholder arity bug). This replaces the previous dynamic FunctionReference
-        // dispatch, which pre-evaluated the left-hand side and modelled it as a placeholder.
+        namedCall = getNamedFunctionCall();
+        namedCall.analyze(contextInfo);
+    }
+
+    /**
+     * Statically-named function: compile the arrow to the equivalent call f(leftExpr, parameters...),
+     * exactly as the parser builds a normal function call (the functionCall rule in XQueryTree.g).
+     * The left-hand side becomes a real argument expression
+     * — so it keeps its static context (fixing the lost-variable-scope bug, e.g. EXPR => util:eval())
+     * — and a '?' placeholder yields a partial function application (fixing the placeholder arity bug).
+     * This replaces the previous dynamic FunctionReference dispatch, which pre-evaluated the left-hand side and
+     * modeled it as a placeholder.
+     */
+    private Expression getNamedFunctionCall() throws XPathException {
         final XQueryAST ast = new XQueryAST();
         ast.setLine(getLine());
         ast.setColumn(getColumn());
+
         final List<Expression> callArgs = new ArrayList<>(parameters.size() + 1);
         callArgs.add(toArgument(leftExpr));
         boolean partial = false;
@@ -105,20 +113,22 @@ public class ArrowOperator extends AbstractExpression {
                 callArgs.add(toArgument(param));
             }
         }
+
         Expression call = FunctionFactory.createFunction(context, qname, ast, null, callArgs);
         if (partial) {
             // mirror the functionCall rule: a '?' placeholder turns the call into a partial
             // function application yielding a function item of the remaining arity.
             if (!(call instanceof FunctionCall)) {
+                // => xs:string(?) is treated as a cast expression
                 if (call instanceof CastExpression) {
                     call = ((CastExpression) call).toFunction();
                 }
                 call = FunctionFactory.wrap(context, (Function) call);
             }
-            call = new PartialFunctionApplication(context, (FunctionCall) call);
+            return new PartialFunctionApplication(context, (FunctionCall) call);
         }
-        namedCall = call;
-        namedCall.analyze(contextInfo);
+
+        return call;
     }
 
     /**
