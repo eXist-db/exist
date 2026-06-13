@@ -162,6 +162,27 @@ function ao:type-checks-user-func() {
     (1, 2, 3) => ao:string-join("-")
 };
 
+(: companion to ao:type-checks-user-func: when the left-hand operand already matches the declared
+   xs:string* parameter, the same arrow succeeds — confirming the XPTY0004 above is a type mismatch,
+   not a defect in the arrow itself. Identical to the direct call ao:string-join(("1","2","3"), "-"). :)
+declare
+    %test:assertEquals("1-2-3")
+function ao:type-checks-user-func-strings() {
+    ("1", "2", "3") => ao:string-join("-")
+};
+
+(: the other way to make it type-check: keep integer input but cast to string inside the RHS
+   function, whose parameter then accepts xs:anyAtomicType*. EXPR => f(args) still equals f(EXPR, args). :)
+declare %private function ao:string-join-atomic($s as xs:anyAtomicType*, $sep as xs:string) {
+    string-join($s ! string(.), $sep)
+};
+
+declare
+    %test:assertEquals("1-2-3")
+function ao:type-checks-user-func-cast-inside() {
+    (1, 2, 3) => ao:string-join-atomic("-")
+};
+
 declare function ao:A($x) { 
     let $y := $x || $x 
     return 
