@@ -120,7 +120,6 @@
         <contact.email>info@exist-db.org</contact.email>
 
         <ant.version>1.10.17</ant.version>
-        <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
         <apache.httpcomponents.client5.version>5.6.1</apache.httpcomponents.client5.version>
         <apache.httpcomponents.core5.version>5.4</apache.httpcomponents.core5.version>
@@ -319,25 +318,15 @@
                 </exclusions>
             </dependency>
 
+            <!--
+                HttpClient 4.x (HC4): only httpcore remains, for extensions/expath's EXistTreeBuilder,
+                which iterates org.apache.http.Header exposed by the EXPath http-client-java library
+                (still HC4 as of 1.5.2). Everything else in the code base uses HttpClient 5 (below).
+            -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
                 <version>${apache.httpcomponents.core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpmime</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>fluent-hc</artifactId>
-                <version>${apache.httpcomponents.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents.core5</groupId>

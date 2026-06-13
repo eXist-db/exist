@@ -209,11 +209,6 @@
             <AppenderRef ref="exist.xmlrpc"/>
         </Logger>
 
-        <!-- Milton WebDAV framework -->
-        <Logger name="com.bradmcevoy" additivity="false" level="info">
-            <AppenderRef ref="exist.core"/>
-        </Logger>
-
         <!-- Quartz scheduler -->
         <Logger name="org.quartz" additivity="false" level="info">
             <AppenderRef ref="exist.scheduler"/>
