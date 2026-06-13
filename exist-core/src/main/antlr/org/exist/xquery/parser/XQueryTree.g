@@ -4056,6 +4056,8 @@ throws PermissionDeniedException, EXistException, XPathException
         )
         { List<Expression> params = new ArrayList<Expression>(5); }
         (
+            QUESTION { params.add(new Function.Placeholder(context)); }
+            |
             {
                 PathExpr pathExpr = new PathExpr(context);
                 pathExpr.setASTNode(arrowOp_AST_in);
