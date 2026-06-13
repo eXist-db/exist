@@ -76,46 +76,49 @@ public class ArrowOperator extends AbstractExpression {
                 "arrow operator is not available before XQuery 3.1");
         }
         this.cachedContextInfo = contextInfo;
-        if (qname != null) {
-            // Statically-named function: compile the arrow to the equivalent call
-            // f(leftExpr, parameters...), exactly as the parser builds a normal function call (the
-            // functionCall rule in XQueryTree.g). The left-hand side becomes a real argument
-            // expression — so it keeps its static context (fixing the lost-variable-scope bug, e.g.
-            // EXPR => util:eval()) — and a '?' placeholder yields a partial function application
-            // (fixing the placeholder arity bug). This replaces the previous dynamic FunctionReference
-            // dispatch, which pre-evaluated the left-hand side and modelled it as a placeholder.
-            final XQueryAST ast = new XQueryAST();
-            ast.setLine(getLine());
-            ast.setColumn(getColumn());
-            final List<Expression> callArgs = new ArrayList<>(parameters.size() + 1);
-            callArgs.add(toArgument(leftExpr));
-            boolean partial = false;
-            for (final Expression param : parameters) {
-                if (param instanceof Function.Placeholder) {
-                    partial = true;
-                    callArgs.add(param);
-                } else {
-                    callArgs.add(toArgument(param));
-                }
-            }
-            Expression call = FunctionFactory.createFunction(context, qname, ast, null, callArgs);
-            if (partial) {
-                // mirror the functionCall rule: a '?' placeholder turns the call into a partial
-                // function application yielding a function item of the remaining arity.
-                if (!(call instanceof FunctionCall)) {
-                    if (call instanceof CastExpression) {
-                        call = ((CastExpression) call).toFunction();
-                    }
-                    call = FunctionFactory.wrap(context, (Function) call);
-                }
-                call = new PartialFunctionApplication(context, (FunctionCall) call);
-            }
-            namedCall = call;
-            namedCall.analyze(contextInfo);
-        } else {
+        if (qname == null) {
+            // Dynamic (higher-order) right-hand side: analyze the operands as they are. The function
+            // to call is resolved at evaluation time by evaluating funcSpec.
             leftExpr.analyze(contextInfo);
             funcSpec.analyze(contextInfo);
+            return;
         }
+
+        // Statically-named function: compile the arrow to the equivalent call
+        // f(leftExpr, parameters...), exactly as the parser builds a normal function call (the
+        // functionCall rule in XQueryTree.g). The left-hand side becomes a real argument
+        // expression — so it keeps its static context (fixing the lost-variable-scope bug, e.g.
+        // EXPR => util:eval()) — and a '?' placeholder yields a partial function application
+        // (fixing the placeholder arity bug). This replaces the previous dynamic FunctionReference
+        // dispatch, which pre-evaluated the left-hand side and modelled it as a placeholder.
+        final XQueryAST ast = new XQueryAST();
+        ast.setLine(getLine());
+        ast.setColumn(getColumn());
+        final List<Expression> callArgs = new ArrayList<>(parameters.size() + 1);
+        callArgs.add(toArgument(leftExpr));
+        boolean partial = false;
+        for (final Expression param : parameters) {
+            if (param instanceof Function.Placeholder) {
+                partial = true;
+                callArgs.add(param);
+            } else {
+                callArgs.add(toArgument(param));
+            }
+        }
+        Expression call = FunctionFactory.createFunction(context, qname, ast, null, callArgs);
+        if (partial) {
+            // mirror the functionCall rule: a '?' placeholder turns the call into a partial
+            // function application yielding a function item of the remaining arity.
+            if (!(call instanceof FunctionCall)) {
+                if (call instanceof CastExpression) {
+                    call = ((CastExpression) call).toFunction();
+                }
+                call = FunctionFactory.wrap(context, (Function) call);
+            }
+            call = new PartialFunctionApplication(context, (FunctionCall) call);
+        }
+        namedCall = call;
+        namedCall.analyze(contextInfo);
     }
 
     /**
@@ -147,10 +150,11 @@ public class ArrowOperator extends AbstractExpression {
         final Sequence leftValue = leftExpr.eval(focus, null);
 
         final Sequence funcSeq = funcSpec.eval(leftValue, contextItem);
-        if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
-        {throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
-                        ". Expression: " + ExpressionDumper.dump(funcSpec));}
+        if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
+                            ". Expression: " + ExpressionDumper.dump(funcSpec));
+        }
         final Item item0 = funcSeq.itemAt(0);
         if (!Type.subTypeOf(item0.getType(), Type.FUNCTION)) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
@@ -208,14 +212,14 @@ public class ArrowOperator extends AbstractExpression {
         if (namedCall != null) {
             // namedCall owns leftExpr and parameters as its arguments.
             namedCall.resetState(postOptimization);
-        } else {
-            leftExpr.resetState(postOptimization);
-            if (funcSpec != null) {
-                funcSpec.resetState(postOptimization);
-            }
-            for (Expression param : parameters) {
-                param.resetState(postOptimization);
-            }
+            return;
+        }
+        leftExpr.resetState(postOptimization);
+        if (funcSpec != null) {
+            funcSpec.resetState(postOptimization);
+        }
+        for (Expression param : parameters) {
+            param.resetState(postOptimization);
         }
     }
 
