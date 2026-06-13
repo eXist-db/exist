@@ -186,7 +186,12 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         }
     }
 
-    private byte[] postXqueryBody(final String xquery) throws JAXBException, IOException {
+    /**
+     * POSTs the XQuery to the REST endpoint and returns the (fully buffered) HTTP response, so callers
+     * can inspect status, headers, and the body. The HC5 fluent {@code returnResponse()} buffers the
+     * entity in memory and releases the connection, so the returned response carries no live resources.
+     */
+    private ClassicHttpResponse postXquery(final String xquery) throws JAXBException, IOException {
         final Query query = new Query();
         query.setText(xquery);
 
@@ -195,19 +200,22 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
         try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             marshaller.marshal(query, baos);
-            try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.post(getRestUrl() + "/db/")
+            return (ClassicHttpResponse) executor.execute(Request.post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)
-            ).returnResponse()) {
+            ).returnResponse();
+        }
+    }
 
-                if (response.getCode() != SC_OK) {
-                    throw new IOException("Unable to query, HTTP response code: " + response.getCode());
-                }
-                if (response.getEntity() == null) {
-                    return new byte[0];
-                }
-                try (final InputStream is = response.getEntity().getContent()) {
-                    return is.readAllBytes();
-                }
+    private byte[] postXqueryBody(final String xquery) throws JAXBException, IOException {
+        try (final ClassicHttpResponse response = postXquery(xquery)) {
+            if (response.getCode() != SC_OK) {
+                throw new IOException("Unable to query, HTTP response code: " + response.getCode());
+            }
+            if (response.getEntity() == null) {
+                return new byte[0];
+            }
+            try (final InputStream is = response.getEntity().getContent()) {
+                return is.readAllBytes();
             }
         }
     }

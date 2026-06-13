@@ -101,7 +101,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
 
     @Test
     public void vectorCategoryIncludesVectorStore() throws IOException {
-        final Request request = Request.Get(getServerUri() + "?c=vector");
+        final Request request = Request.get(getServerUri() + "?c=vector");
         final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
 
         final Map<String, String> prefix2Uri = new HashMap<>();
@@ -119,7 +119,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
     public void vectorCategoryIncludesVectorEmbeddingWhenExtensionPresent() throws IOException {
         assumeTrue("Vector extension not on classpath", isVectorExtensionPresent());
 
-        final Request request = Request.Get(getServerUri() + "?c=vector");
+        final Request request = Request.get(getServerUri() + "?c=vector");
         final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
 
         final Map<String, String> prefix2Uri = new HashMap<>();

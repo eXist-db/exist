@@ -21,10 +21,10 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.test.ExistWebServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -122,7 +122,7 @@ public class URLRewriteViewPipelineTest {
         // Set execute permissions on XQuery files
         final String chmod = "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/controller.xq'), 'rwxr-xr-x')," +
                 "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/view.xq'), 'rwxr-xr-x')";
-        Request.Get("http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
+        Request.get("http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
                 java.net.URLEncoder.encode(chmod, "UTF-8") + "&_wrap=no")
                 .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
                 .execute();
@@ -131,7 +131,7 @@ public class URLRewriteViewPipelineTest {
     @AfterClass
     public static void teardown() throws Exception {
         // Remove test collection via REST
-        Request.Delete("http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION)
+        Request.delete("http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION)
                 .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
                 .execute();
     }
@@ -146,8 +146,8 @@ public class URLRewriteViewPipelineTest {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/with-head.html";
 
-        final HttpResponse response = Request.Get(url).execute().returnResponse();
-        final int status = response.getStatusLine().getStatusCode();
+        final ClassicHttpResponse response = (ClassicHttpResponse) Request.get(url).execute().returnResponse();
+        final int status = response.getCode();
         final String body = new String(
                 response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
 
@@ -180,8 +180,8 @@ public class URLRewriteViewPipelineTest {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/no-head.html";
 
-        final HttpResponse response = Request.Get(url).execute().returnResponse();
-        final int status = response.getStatusLine().getStatusCode();
+        final ClassicHttpResponse response = (ClassicHttpResponse) Request.get(url).execute().returnResponse();
+        final int status = response.getCode();
 
         assertEquals(HttpStatus.SC_OK, status);
 
@@ -193,7 +193,7 @@ public class URLRewriteViewPipelineTest {
 
     private static void storeViaRest(final String url, final String content, final String contentType)
             throws IOException {
-        Request.Put(url)
+        Request.put(url)
                 .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
                 .bodyString(content, ContentType.create(contentType, StandardCharsets.UTF_8))
                 .execute();
