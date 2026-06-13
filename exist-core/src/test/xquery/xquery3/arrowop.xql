@@ -348,3 +348,28 @@ declare
 function ao:nested-partial-after-arrow() {
     ("a|b", "c", "d|e") => for-each(ao:npe-map1(?))
 };
+
+(:~
+    https://github.com/eXist-db/exist/issues/6471
+    EXPR => f(args) is the call f(EXPR, args), with any argument placeholder following the prepended
+    left operand. A placeholder that pushes the arity past the function's maximum is therefore an
+    unknown-function error: here xs:string has only arity 1, so 1 => xs:string(?) is xs:string(1, ?),
+    and xs:string#2 does not exist (XPST0017).
+ ~:)
+declare
+    %test:assertError("XPST0017")
+function ao:placeholder-exceeds-arity() {
+    1 => xs:string(?)
+};
+
+(:~
+    https://github.com/eXist-db/exist/issues/6471
+    A placeholder on the RHS of the arrow yields a partial function application of f(EXPR, ?). This
+    exercises the variadic fn:concat (the existing ao:placeholder-partial-application covers a fixed
+    arity via fn:substring): ("1" => concat(?)) is concat("1", ?), applied to "1" giving "11".
+ ~:)
+declare
+    %test:assertEquals("11")
+function ao:placeholder-partial-application-variadic() {
+    ("1" => concat(?))("1")
+};
