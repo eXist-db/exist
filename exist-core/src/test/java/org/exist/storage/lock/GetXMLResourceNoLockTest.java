@@ -55,7 +55,7 @@ import static org.junit.Assert.*;
 public class GetXMLResourceNoLockTest {
 
 	@ClassRule
-	public static final ExistWebServer existWebServer = new ExistWebServer(false, false, false, true);
+	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, false, true);
 
     private static String EMPTY_BINARY_FILE = "What's an up dog?";
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
