@@ -748,6 +748,7 @@ throws PermissionDeniedException, EXistException, XPathException
                     final VariableDeclaration decl = new VariableDeclaration(context, qn, defaultValue);
                     decl.setSequenceType(type);
                     decl.setASTNode(ext);
+                    decl.setExternal(true);
                     if (external == null) {
                         path.add(decl);
                     }

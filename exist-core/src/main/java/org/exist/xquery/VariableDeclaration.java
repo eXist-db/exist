@@ -44,6 +44,10 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     Optional<Expression> expression;
     SequenceType sequenceType = null;
     boolean analyzeDone = false;
+    /** True for an external variable declaration ({@code declare variable $x external [:= ...]}). When
+     *  it carries a default value, eval() prefers a value supplied by the external environment over
+     *  that default, per XQuery 3.1 §4.15. */
+    private boolean external = false;
 
     public VariableDeclaration(final XQueryContext context, final QName qname, final Expression expr) {
         super(context);
@@ -53,6 +57,16 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
     public QName getName() {
         return qname;
+    }
+
+    /**
+     * Marks this as an external variable declaration. Set by the parser for
+     * {@code declare variable $x external} (with or without a default value).
+     *
+     * @param external whether this declaration is external
+     */
+    public void setExternal(final boolean external) {
+        this.external = external;
     }
 
     /**
@@ -91,6 +105,18 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         }
         analyzeExpression(contextInfo);
         var.setIsInitialized(true);
+    }
+
+    /**
+     * The global variable for this declaration if the external environment has already supplied it a
+     * value (i.e. it was bound before execution), otherwise {@code null}. Lets an external variable's
+     * supplied value take precedence over its declared default.
+     *
+     * @return the supplied variable, or {@code null} if none was supplied
+     */
+    private @Nullable Variable suppliedExternalValue() {
+        final Variable existing = context.resolveGlobalVariable(qname);
+        return existing != null && existing.getValue() != null ? existing : null;
     }
 
     private @Nullable Module findDeclaringModule(@Nullable final Module[] modules) {
@@ -142,24 +168,34 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             try {
                 context.prologEnter(this);
                 if (expression.isPresent()) {
-                    // normal variable declaration or external var with default value
-                    final Sequence seq = expression.get().eval(contextSequence, null);
-                    final Variable var;
-                    if (myModule != null) {
-                        var = myModule.declareVariable(qname, seq);
-                        var.setSequenceType(sequenceType);
-                        var.checkType();
+                    // An external variable declared *with* a default value: a value supplied by the
+                    // external environment takes precedence over the default (XQuery 3.1 §4.15). A
+                    // plain (non-external) global declaration always evaluates its expression.
+                    final Variable supplied = external && myModule == null
+                            ? suppliedExternalValue() : null;
+                    if (supplied != null) {
+                        supplied.setSequenceType(sequenceType);
+                        supplied.checkType();
                     } else {
-                        var = new VariableImpl(qname);
-                        var.setValue(seq);
-                        var.setSequenceType(sequenceType);
-                        var.checkType();
-                        context.declareGlobalVariable(var);
-                    }
+                        // normal variable declaration, or external var falling back to its default
+                        final Sequence seq = expression.get().eval(contextSequence, null);
+                        final Variable var;
+                        if (myModule != null) {
+                            var = myModule.declareVariable(qname, seq);
+                            var.setSequenceType(sequenceType);
+                            var.checkType();
+                        } else {
+                            var = new VariableImpl(qname);
+                            var.setValue(seq);
+                            var.setSequenceType(sequenceType);
+                            var.checkType();
+                            context.declareGlobalVariable(var);
+                        }
 
-                    if (context.getProfiler().isEnabled()) {
-                        //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
-                        context.getProfiler().end(this, "", seq);
+                        if (context.getProfiler().isEnabled()) {
+                            //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
+                            context.getProfiler().end(this, "", seq);
+                        }
                     }
                 } else {
                     // external variable without default
