@@ -2986,48 +2986,57 @@ public class XQueryContext implements BinaryValueManager, Context {
             final UserDefinedFunction func = call.getContext().resolveFunction(call.getQName(), call.getArgumentCount());
 
             if (func == null) {
-                // Check if function exists at other arities to give a better error message
-                final QName qname = call.getQName();
-                final int argCount = call.getArgumentCount();
-                final XQueryContext callContext = call.getContext();
-
-                // Check local declared functions
-                final Iterator<FunctionSignature> localSigs = callContext.getSignaturesForFunction(qname);
-
-                // Also check external modules
-                final List<FunctionSignature> allSignatures = new ArrayList<>();
-                while (localSigs.hasNext()) {
-                    allSignatures.add(localSigs.next());
-                }
-
-                final Module[] modules = callContext.getModules(qname.getNamespaceURI());
-                if (modules != null) {
-                    for (final Module module : modules) {
-                        if (module != null) {
-                            final Iterator<FunctionSignature> modSigs = module.getSignaturesForFunction(qname);
-                            while (modSigs.hasNext()) {
-                                allSignatures.add(modSigs.next());
-                            }
-                        }
-                    }
-                }
-
-                if (!allSignatures.isEmpty()) {
-                    final StringBuilder msg = new StringBuilder();
-                    msg.append("Unexpectedly received ").append(argCount)
-                       .append(" parameter(s) in call to function '")
-                       .append(qname.getStringValue()).append("()'. ");
-                    msg.append("Defined function signatures are:\r\n");
-                    for (final FunctionSignature sig : allSignatures) {
-                        msg.append(sig.toString()).append("\r\n");
-                    }
-                    throw new XPathException(call, ErrorCodes.XPST0017, msg.toString());
-                }
-
-                throw new XPathException(call, ErrorCodes.XPST0017, "Call to undeclared function: " + qname.getStringValue());
+                throw new XPathException(call, ErrorCodes.XPST0017, functionNotFoundErrorDescription(call));
             }
             call.resolveForwardReference(func);
         }
+    }
+
+    /**
+     * Raise an error with an actionable description for a function that could not be resolved
+     * Checks if a function with the same name exists at other arities
+     *
+     * @param call FunctionCall that could not be resolved
+     */
+    private static String functionNotFoundErrorDescription(FunctionCall call) {
+        final QName qname = call.getQName();
+        final int argCount = call.getArgumentCount();
+        final XQueryContext callContext = call.getContext();
+
+        // Check local declared functions
+        final Iterator<FunctionSignature> localSigs = callContext.getSignaturesForFunction(qname);
+
+        // Also check external modules
+        final List<FunctionSignature> allSignatures = new ArrayList<>();
+        while (localSigs.hasNext()) {
+            allSignatures.add(localSigs.next());
+        }
+
+        final Module[] modules = callContext.getModules(qname.getNamespaceURI());
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module != null) {
+                    final Iterator<FunctionSignature> modSigs = module.getSignaturesForFunction(qname);
+                    while (modSigs.hasNext()) {
+                        allSignatures.add(modSigs.next());
+                    }
+                }
+            }
+        }
+
+        if (!allSignatures.isEmpty()) {
+            final StringBuilder msg = new StringBuilder();
+            msg.append("Unexpectedly received ").append(argCount)
+               .append(" parameter(s) in call to function '")
+               .append(qname.getStringValue()).append("()'. ");
+            msg.append("Defined function signatures are:\r\n");
+            for (final FunctionSignature sig : allSignatures) {
+                msg.append(sig.toString()).append("\r\n");
+            }
+            return msg.toString();
+        }
+
+        return "Call to undeclared function: " + qname.getStringValue();
     }
 
     /**
