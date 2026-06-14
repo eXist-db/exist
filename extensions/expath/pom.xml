@@ -57,19 +57,6 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <!--
-            HC4 httpcore is required only by EXistTreeBuilder, which iterates org.apache.http.Header
-            exposed by the EXPath http-client-java library. That library is still HC4 even at its latest
-            release: http-client-java 1.5.2's HeaderSet implements Iterable<org.apache.http.Header>. So
-            httpcore (HC4) cannot be dropped here until http-client-java itself migrates to HC5.
-            Everything else - SendRequestFunction in this module and HTTP usage across the code base -
-            is on HttpClient 5 (httpcore5 / httpclient5).
-        -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents.core5</groupId>
             <artifactId>httpcore5</artifactId>
@@ -93,7 +80,7 @@
         <dependency>
             <groupId>org.expath.http.client</groupId>
             <artifactId>http-client-java</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>

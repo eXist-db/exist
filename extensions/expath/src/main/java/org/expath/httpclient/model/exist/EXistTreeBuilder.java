@@ -22,7 +22,7 @@
 package org.expath.httpclient.model.exist;
 
 // http-client-java 1.4.2 API; remove when PR #5346 (http-client-java 1.5.2) lands
-import org.apache.http.Header;
+import org.apache.hc.core5.http.Header;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;

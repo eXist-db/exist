@@ -1,6 +1,7 @@
 # Creates Maven settings.xml with auth for the eXist-db org's GitHub Packages repos
 # and optionally for Sonatype Central Portal publishing.
-# Required for resolving artifacts from maven.pkg.github.com/eXist-db/{exist, exist-xqts-runner, jackrabbit-webdav-jakarta}.
+# Required for resolving artifacts from maven.pkg.github.com/eXist-db/{exist, exist-xqts-runner, jackrabbit-webdav-jakarta}
+# and the temporary HttpClient 5 prerelease at maven.pkg.github.com/joewiz/expath-http-client-java (see extensions/expath).
 name: Maven GitHub Packages settings
 description: Create settings.xml with GitHub Packages and (optionally) Sonatype Central Portal servers
 inputs:
@@ -53,6 +54,11 @@ runs:
             </server>
             <server>
               <id>github-jackrabbit-webdav-jakarta</id>
+              <username>${OWNER}</username>
+              <password>${{ inputs.token }}</password>
+            </server>
+            <server>
+              <id>github-expath-http-client</id>
               <username>${OWNER}</username>
               <password>${{ inputs.token }}</password>
             </server>${CENTRAL_SERVER}

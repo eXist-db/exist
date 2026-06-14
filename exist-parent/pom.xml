@@ -680,6 +680,24 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <!--
+            TEMPORARY (draft): the HttpClient 5 build of the EXPath HTTP Client lives only on `main`
+            upstream and has not yet been released (see expath/expath-http-client-java#59). This points
+            at an experimental prerelease published to GitHub Packages so eXist can drop Apache HttpClient
+            4 entirely. Remove this repository and switch extensions/expath to the official release once
+            the upstream issue is resolved.
+        -->
+        <repository>
+            <id>github-expath-http-client</id>
+            <name>GitHub Registry - expath-http-client-java (HC5 prerelease)</name>
+            <url>https://maven.pkg.github.com/joewiz/expath-http-client-java</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>exist-db-snapshots</id>
             <name>eXist-db Snapshots</name>

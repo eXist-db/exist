@@ -39,6 +39,7 @@ When building from `develop` (or any SNAPSHOT version), Maven resolves several a
 | `github` | `https://maven.pkg.github.com/eXist-db/exist` | eXist-db inter-module SNAPSHOTs |
 | `github-xqts-runner` | `https://maven.pkg.github.com/eXist-db/exist-xqts-runner` | `exist-xqts-runner` (used by the `exist-xqts` module) |
 | `github-jackrabbit-webdav-jakarta` | `https://maven.pkg.github.com/eXist-db/jackrabbit-webdav-jakarta` | `org.exist-db.thirdparty.org.apache.jackrabbit:jackrabbit-webdav:2.22.3-jakarta-ee10` (used by `extensions/webdav`) |
+| `github-expath-http-client` | `https://maven.pkg.github.com/joewiz/expath-http-client-java` | **temporary (draft):** HttpClient 5 prerelease of `org.expath.http.client:http-client-java` (used by `extensions/expath`); removed once [expath/expath-http-client-java#59](https://github.com/expath/expath-http-client-java/issues/59) ships an official release |
 
 Add all three to `~/.m2/settings.xml`. **The same GitHub PAT (with the `read:packages` scope) can be reused across all three server entries** — Maven matches the `<id>` of a `<server>` to the matching `<repository>` declared in the pom, so each repo needs its own `<server>` block even though the credentials are identical:
 
