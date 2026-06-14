@@ -1303,6 +1303,81 @@ try {
     }
 
     /**
+     * A POST query requesting JSON serialization (method="json") must return an
+     * application/json Content-Type. Regression test: writeResultJSON previously
+     * never called response.setContentType(), so the JSON result was emitted with
+     * the wrong (or no) media type and output:media-type was silently ignored.
+     */
+    @Test
+    public void postQueryJsonContentType() throws IOException {
+        final String queryJson = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
+                    <text>1 + 1</text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(queryJson);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/json", contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * An explicit media-type must be honored for JSON results rather than being
+     * overridden by the application/json default.
+     */
+    @Test
+    public void postQueryJsonExplicitMediaType() throws IOException {
+        final String queryJson = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
+                    <properties>
+                        <property name="media-type" value="application/vnd.api+json"/>
+                    </properties>
+                    <text>1 + 1</text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(queryJson);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/vnd.api+json", contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
      * By default there should be NO doctype serialized.
      */
     @Test

@@ -2221,6 +2221,32 @@ public class RESTServer {
         }
     }
 
+    /**
+     * Set the response Content-Type for a JSON REST result, unless one has
+     * already been set. The default media-type carried in the serialization
+     * properties is the XML type, so for a JSON result fall back to
+     * application/json unless the query requested a different (non-XML-default)
+     * media-type via output:media-type.
+     *
+     * @param response the HTTP response
+     * @param outputProperties the serialization properties
+     */
+    private static void setJsonResponseContentType(final HttpServletResponse response, final Properties outputProperties) {
+        if (response.containsHeader("Content-Type")) {
+            return;
+        }
+        String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+        if (mimeType == null || MimeType.XML_TYPE.getName().equals(mimeType)) {
+            mimeType = MimeType.JSON_TYPE.getName();
+        } else {
+            final int semicolon = mimeType.indexOf(';');
+            if (semicolon != Constants.STRING_NOT_FOUND) {
+                mimeType = mimeType.substring(0, semicolon);
+            }
+        }
+        response.setContentType(mimeType + "; charset=" + getEncoding(outputProperties));
+    }
+
     private void writeResultJSON(final HttpServletResponse response,
         final DBBroker broker, final Txn transaction, final Sequence results, int howmany,
         int start, final Properties outputProperties, final boolean wrap, final long compilationTime, final long executionTime)
@@ -2239,6 +2265,11 @@ public class RESTServer {
         } else {
             howmany = 0;
         }
+
+        // The XML path honors output:media-type, but the JSON path historically
+        // left Content-Type unset, so output:media-type was silently ignored for
+        // JSON results. Set it here, before the output stream is opened.
+        setJsonResponseContentType(response, outputProperties);
 
         final Serializer serializer = broker.borrowSerializer();
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
