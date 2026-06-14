@@ -29,6 +29,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * A value supplied for an external variable by the external environment must take precedence over the
@@ -74,7 +75,7 @@ public class ExternalVariableDefaultOverrideTest {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         try {
             service.query("declare variable $required external; $required");
-            org.junit.Assert.fail("expected XPDY0002 for an unbound external variable with no default");
+            fail("expected XPDY0002 for an unbound external variable with no default");
         } catch (final XMLDBException expected) {
             // XPDY0002: no value specified for external variable
         }
