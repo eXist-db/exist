@@ -291,11 +291,11 @@ public class FunctionFactory {
 
     private static JavaCall javaFunctionBinding(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-        //Only allow java binding if specified in config file <xquery enable-java-binding="yes">
-        final String javabinding = (String) context.getBroker().getConfiguration()
+        // Only allow java binding if specified in config file <xquery enable-java-binding="yes">
+        final String javaBinding = (String) context.getBroker().getConfiguration()
             .getProperty(PROPERTY_ENABLE_JAVA_BINDING);
-        if(javabinding == null || !"yes".equals(javabinding)) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
+        if (!"yes".equals(javaBinding)) {
+            throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
                 "Java binding is disabled in the current configuration (see conf.xml)." +
                 " Call to " + qname.getStringValue() + " denied.");
         }
@@ -307,45 +307,45 @@ public class FunctionFactory {
 
     private static Function functionCall(final XQueryContext context,
             final XQueryAST ast, final List<Expression> params, final QName qname) throws XPathException {
-        Function fn = null;
+
         final String uri = qname.getNamespaceURI();
         final Module[] modules = context.getModules(uri);
-        if (modules != null) {
-            // Function might belongs to a module
-            for (int i = 0; i < modules.length; i++) {
-                final Module module = modules[i];
-                final boolean throwOnNotFound = i == modules.length - 1;
-                if (module.isInternalModule()) {
-                    // Function is from an Internal Module
-                    fn = getInternalModuleFunction(context, ast, params, qname, module, throwOnNotFound);
-                } else {
-                    // Function is from an imported XQuery module
-                    fn = getXQueryModuleFunction(context, ast, params, qname, module, throwOnNotFound);
-                }
 
-                if (fn != null) {
-                    break;
-                }
+        if (modules == null) {
+            return getUserDefinedFunction(context, ast, params, qname);
+        }
+
+        // Function might belong to a module
+        for (final Module module : modules) {
+            final Function fn;
+
+            if (module.isInternalModule()) {
+                // Function is from an Internal Module
+                fn = getInternalModuleFunction(context, ast, params, qname, module, false);
+            } else {
+                // Function is from an imported XQuery module
+                fn = getXQueryModuleFunction(context, ast, params, qname, module, false);
+            }
+            // return early on first match
+            if (fn != null) {
+                return fn;
             }
         }
 
-        if (fn == null) {
-            // Function is a user-defined XQuery function in the same module as the caller
-            fn = getUserDefinedFunction(context, ast, params, qname);
-        }
-
-        return fn;
+        throw new XPathException(ast.getLine(), ast.getColumn(),
+                ErrorCodes.XPST0017, "Function " + qname.getStringValue() + "() " +
+                " is not defined in module namespace: " + qname.getNamespaceURI());
     }
 
     /**
-     * Gets a Java function from an Java XQuery Extension Module
+     * Get a function implemented in Java from an XQuery Extension Module
      *
      * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
     private static @Nullable Function getInternalModuleFunction(final XQueryContext context,
             final XQueryAST ast, final List<Expression> params, QName qname, Module module,
             final boolean throwOnNotFound) throws XPathException {
-        //For internal modules: create a new function instance from the class
+        // For internal modules: create a new function instance from the class
         FunctionDef def = ((InternalModule) module).getFunctionDef(qname, params.size());
         //TODO: rethink: xsl namespace function should search xpath one too
         if (def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
@@ -404,22 +404,23 @@ public class FunctionFactory {
     }
 
     /**
-     * Gets an user defined function from the XQuery
+     * Get a user-defined function from the XQuery context
      */
     private static FunctionCall getUserDefinedFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-        final FunctionCall fc;
         final UserDefinedFunction func = context.resolveFunction(qname, params.size());
-        if (func != null) {
-            fc = new FunctionCall(context, func);
-            fc.setLocation(ast.getLine(), ast.getColumn());
-            fc.setArguments(params);
-        } else {
-            //Create a forward reference which will be resolved later
-            fc = new FunctionCall(context, qname, params);
-            fc.setLocation(ast.getLine(), ast.getColumn());
-            context.addForwardReference(fc);
+
+        if (func == null) {
+            // Create a forward reference which will be resolved later
+            final FunctionCall forwardReference = new FunctionCall(context, qname, params);
+            forwardReference.setLocation(ast.getLine(), ast.getColumn());
+            context.addForwardReference(forwardReference);
+            return forwardReference;
         }
-        return fc;
+
+        final FunctionCall functionCall = new FunctionCall(context, func);
+        functionCall.setLocation(ast.getLine(), ast.getColumn());
+        functionCall.setArguments(params);
+        return functionCall;
     }
 
     /**
@@ -478,7 +479,7 @@ public class FunctionFactory {
             } else {
                 fc = new FunctionCall(((ExternalModule) module).getContext(), qname, params);
                 fc.setLocation(ast.getLine(), ast.getColumn());
-                if(((ExternalModule) module).getContext() == context) {
+                if (((ExternalModule) module).getContext() == context) {
                     context.addForwardReference(fc);
                 } else {
                     context.getRootContext().addForwardReference(fc);
@@ -495,7 +496,7 @@ public class FunctionFactory {
     /**
      * Wrap a function call into a user defined function.
      * This is used to handle dynamic function calls or partial
-     * function applications on built in functions.
+     * function applications on built-in functions.
      * 
      * @param context current context
      * @param call the function call to be wrapped
