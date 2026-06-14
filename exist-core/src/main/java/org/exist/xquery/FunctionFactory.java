@@ -89,7 +89,7 @@ public class FunctionFactory {
 
     /**
      * Create a function call.
-     *
+     * <p>
      * This method handles all calls to built-in or user-defined
      * functions. It also deals with constructor functions and
      * optimizes some function calls like starts-with, ends-with or
@@ -100,43 +100,42 @@ public class FunctionFactory {
      * @param ast the AST node of the function
      * @param parent the parent expression of the function
      * @param params the parameters to the function
-     * @param optimizeStrFuncs true if string functions be optimized
+     * @param optimizeStringFunctions true if string functions be optimized
      *
      * @return the function expression
      *
      * @throws XPathException if an error occurs creating the function
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
-        boolean optimizeStrFuncs) throws XPathException {
+        boolean optimizeStringFunctions) throws XPathException {
         final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
-        Expression step = null;
-        if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
-            if("starts-with".equals(local)) {
-                step = startsWith(context, ast, parent, params);
-            } else if("ends-with".equals(local)) {
-                step = endsWith(context, ast, parent, params);
-            } else if("contains".equals(local)) {
-                step = contains(context, ast, parent, params);
-            } else if("equals".equals(local)) {
-                step = equals(context, ast, parent, params);
-            }
+
+        if (optimizeStringFunctions && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
+            return switch (local)  {
+                case "starts-with" -> startsWith(context, ast, parent, params);
+                case "ends-with" -> endsWith(context, ast, parent, params);
+                case "contains" -> contains(context, ast, parent, params);
+                case "equals" -> equals(context, ast, parent, params);
+                default -> functionCall(context, ast, params, qname);
+            };
+        }
+
         //Check if the namespace belongs to one of the schema namespaces.
         //If yes, the function is a constructor function
-        } else if (uri.equals(Namespaces.SCHEMA_NS) ||
-                uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
-            step = castExpression(context, ast, params, qname);
+        if (uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
+            return castExpression(context, ast, params, qname);
+        }
+
         //Check if the namespace URI starts with "java:". If yes, treat
         //the function call as a call to an arbitrary Java function.
-        } else if (uri.startsWith("java:")) {
-            step = javaFunctionBinding(context, ast, params, qname);
+        if (uri.startsWith("java:")) {
+            return javaFunctionBinding(context, ast, params, qname);
         }
+
         //None of the above matched: function is either a built-in function or
         //a user-defined function
-        if (step == null) {
-            step = functionCall(context, ast, params, qname);
-        }
-        return step;
+        return functionCall(context, ast, params, qname);
     }
 
     /**
