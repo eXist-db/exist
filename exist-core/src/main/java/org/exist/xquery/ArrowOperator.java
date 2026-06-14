@@ -77,8 +77,7 @@ public class ArrowOperator extends AbstractExpression {
         }
         this.cachedContextInfo = contextInfo;
         if (qname == null) {
-            // Dynamic (higher-order) right-hand side: analyze the operands as they are. The function
-            // to call is resolved at evaluation time by evaluating funcSpec.
+            // The function call on the right hand side is resolved at evaluation time by evaluating funcSpec.
             leftExpr.analyze(contextInfo);
             funcSpec.analyze(contextInfo);
             return;
@@ -114,21 +113,7 @@ public class ArrowOperator extends AbstractExpression {
             }
         }
 
-        Expression call = FunctionFactory.createFunction(context, qname, ast, null, callArgs);
-        if (partial) {
-            // mirror the functionCall rule: a '?' placeholder turns the call into a partial
-            // function application yielding a function item of the remaining arity.
-            if (!(call instanceof FunctionCall)) {
-                // => xs:string(?) is treated as a cast expression
-                if (call instanceof CastExpression) {
-                    call = ((CastExpression) call).toFunction();
-                }
-                call = FunctionFactory.wrap(context, (Function) call);
-            }
-            return new PartialFunctionApplication(context, (FunctionCall) call);
-        }
-
-        return call;
+        return FunctionFactory.createFunctionCall(context, qname, ast, null, callArgs, partial);
     }
 
     /**

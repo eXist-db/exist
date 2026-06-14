@@ -60,18 +60,23 @@ public class FunctionFactory {
         "switch", "text", "typeswitch"
     );
 
-    public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-    	QName qname = null;
+    public static Expression createFunction(final XQueryContext context,final  XQueryAST ast, final PathExpr parent, final List<Expression> params) throws XPathException {
+        final QName qname = getQName(context, ast);
+        return createFunction(context, qname, ast, parent, params);
+    }
+
+    private static QName getQName(final XQueryContext context, final XQueryAST ast) throws XPathException {
+        final String rawName = ast.getText();
+        final QName qname;
         try {
-            qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
+            qname = QName.parse(context, rawName, context.getDefaultFunctionNamespace());
         } catch(final QName.IllegalQNameException xpe) {
-            throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
+            throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  rawName + ". " + xpe.getMessage());
         }
 
         // Check for reserved function names — unprefixed reserved names cannot be
         // used as function calls (XPST0003). Prefixed names like fn:item() are not
         // subject to the reserved name restriction (they just won't be found → XPST0017).
-        final String rawName = ast.getText();
         if (rawName != null && !rawName.contains(":") && !rawName.contains("{")) {
             final String local = qname.getLocalPart();
             if (RESERVED_FUNCTION_NAMES.contains(local)) {
@@ -79,12 +84,53 @@ public class FunctionFactory {
                     "'" + local + "' is a reserved function name and cannot be used as a function call");
             }
         }
-
-        return createFunction(context, qname, ast, parent, params);
+        return qname;
     }
 
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
         return createFunction(context, qname, ast, parent, params, true);
+    }
+
+    /**
+     * Make sure that partially applied functions are wrapped correctly
+     * the QName is read from the given AST
+     *
+     * @param context the XQuery context
+     * @param ast the AST node of the function
+     * @param parent the parent expression of the function
+     * @param params the parameters to the function
+     * @param isPartial is this a partially applied function with placeholders?
+     * @return either a FunctionCall or a PartialFunctionApplication
+     * @throws XPathException if an error occurs creating the function
+     */
+    public static Expression createFunctionCall(final XQueryContext context, final XQueryAST ast, final PathExpr parent, final List<Expression> params, final boolean isPartial) throws XPathException {
+        return createFunctionCall(context, getQName(context, ast), ast, parent, params, isPartial);
+    }
+
+    /**
+     * Make sure that partially applied functions are wrapped correctly
+     *
+     * @param context the XQuery context
+     * @param qname the name of the function
+     * @param ast the AST node of the function
+     * @param parent the parent expression of the function
+     * @param params the parameters to the function
+     * @param isPartial is this a partially applied function with placeholders?
+     * @return either a FunctionCall or a PartialFunctionApplication
+     * @throws XPathException if an error occurs creating the function
+     */
+    public static Expression createFunctionCall(final XQueryContext context, final QName qname, final XQueryAST ast, final PathExpr parent, final List<Expression> params, final boolean isPartial) throws XPathException {
+        Expression fc = createFunction(context, qname, ast, parent, params);
+        if (!isPartial) {
+            return fc;
+        }
+        if (fc instanceof CastExpression) {
+            fc = ((CastExpression) fc).toFunction();
+        }
+        if (!(fc instanceof FunctionCall)) {
+            fc = FunctionFactory.wrap(context, (Function) fc);
+        }
+        return new PartialFunctionApplication(context, (FunctionCall) fc);
     }
 
     /**
