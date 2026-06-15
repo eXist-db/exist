@@ -29,6 +29,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -142,7 +143,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
             return Tuple(response.statusCode(), response.headers().firstValue("Content-Type").orElse(null));
         });
 
-        assertEquals(Tuple(200, "application/xml"), codeAndMediaType);
+        assertEquals(Tuple(HttpURLConnection.HTTP_OK, "application/xml"), codeAndMediaType);
     }
 
     private static <T> HttpResponse<T> send(final HttpClient client, final HttpRequest request,

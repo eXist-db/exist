@@ -30,6 +30,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpRequest;
 
@@ -59,7 +60,7 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the legacy controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(200, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(LEGACY_CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
@@ -72,7 +73,7 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(200, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
@@ -86,7 +87,7 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the (non-legacy) controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(200, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
@@ -98,7 +99,7 @@ public class ControllerTest extends AbstractHttpTest {
                 .PUT(HttpRequest.BodyPublishers.ofString(documentContent))
                 .build();
         int statusCode = withHttpClient(client -> executeForStatus(client, request));
-        assertEquals(201, statusCode);
+        assertEquals(HttpURLConnection.HTTP_CREATED, statusCode);
     }
 
     private Tuple2<Integer, String> get(final String testCollectionName, final String documentName) throws IOException {

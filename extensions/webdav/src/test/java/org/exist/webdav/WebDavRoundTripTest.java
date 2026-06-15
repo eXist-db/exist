@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,10 +122,10 @@ public class WebDavRoundTripTest {
                 EXIST_WEB_SERVER.getPort(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         final int putStatus = webDav.putDocument(docName, content, expectedMediaType);
-        assertEquals("PUT " + docName + " failed with status " + putStatus, 201, putStatus);
+        assertEquals("PUT " + docName + " failed with status " + putStatus, HttpURLConnection.HTTP_CREATED, putStatus);
 
         final HttpResponse<String> getResponse = webDav.getDocument(docName);
-        assertEquals("GET " + docName + " failed", 200, getResponse.statusCode());
+        assertEquals("GET " + docName + " failed", HttpURLConnection.HTTP_OK, getResponse.statusCode());
         final String contentType = getResponse.headers().firstValue("Content-Type").orElse("");
         assertTrue("Unexpected Content-Type: " + contentType, contentType.startsWith(expectedMediaType));
         return getResponse.body();
