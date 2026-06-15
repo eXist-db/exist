@@ -19,42 +19,41 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 package org.exist.http;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
- * Distribution-mode portal at {@code /} — landing page and redirect target to {@code /exist}.
+ * Regression test for preemptive HTTP Basic authentication against the eXist-db REST end-point.
+ *
+ * <p>Credentials must reliably attach to requests routed through Jetty's {@code /exist/...} context
+ * path. {@link AbstractHttpTest#authenticatedRequest} sets a preemptive {@code Authorization}
+ * request header; this test guards that an authenticated REST request still succeeds.</p>
  */
-public class PortalRedirectTest extends AbstractHttpTest {
+public class AuthenticatedHttpClientTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
-    public void portalRootServesLandingPageWithExistRedirect() throws IOException {
-        final HttpRequest request = HttpRequest.newBuilder(URI.create(portalUri(existWebServer))).GET().build();
-        final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, request));
-
-        assertEquals(HTTP_OK, result.statusCode());
-
-        final String body = result.body();
-        assertTrue("Expected portal title", body.contains("Open Source Native XML Database"));
-        assertTrue("Expected JS redirect to /exist", body.contains("window.location.replace(\"/exist\")"));
-        assertTrue("Expected noscript fallback link to /exist", body.contains("href=\"/exist\""));
-    }
-
-    private static String portalUri(final ExistWebServer existWebServer) {
-        return "http://localhost:" + existWebServer.getPort() + "/";
+    public void authenticatedRestRequestSucceeds() throws IOException {
+        final String url = getRestUri(existWebServer) + "/db/";
+        final HttpClient client = newHttpClient();
+        final HttpRequest request = authenticatedRequest(URI.create(url), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .GET()
+                .build();
+        assertEquals(HTTP_OK, executeForStatus(client, request));
     }
 }

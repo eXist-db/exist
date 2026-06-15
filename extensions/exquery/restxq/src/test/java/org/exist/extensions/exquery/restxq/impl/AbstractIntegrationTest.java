@@ -26,13 +26,10 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.exist.util.ExistSAXParserFactory;
 import org.exquery.restxq.Namespace;
@@ -50,7 +47,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,8 +69,14 @@ public abstract class AbstractIntegrationTest {
                 </triggers>
             </collection>""";
 
-    private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
+    private static String COLLECTION_CONFIG_CONTENT_TYPE = "application/xml; charset=utf-8";
 
+    private static String XQUERY_CONTENT_TYPE = "application/xquery; charset=utf-8";
+
+    /**
+     * Standalone test webapp is mounted at {@code /} (see {@code exist.jetty.standalone.webapp.dir}),
+     * not at {@code /exist} like {@link AbstractHttpTest#getServerUri(ExistWebServer)} in exist-core tests.
+     */
     protected static String getServerUri(final ExistWebServer existWebServer) {
         return "http://localhost:" + existWebServer.getPort();
     }
@@ -80,41 +89,50 @@ public abstract class AbstractIntegrationTest {
         return getServerUri(existWebServer) + "/restxq";
     }
 
-    protected static void enableRestXqTrigger(final ExistWebServer existWebServer, final Executor executor, final String collectionPath) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
-                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+    /**
+     * Build a request to the given URI with a preemptive HTTP Basic {@code Authorization} header for
+     * the eXist-db admin user.
+     */
+    protected static HttpRequest.Builder authenticatedAdminRequest(final String uri) {
+        return AbstractHttpTest.authenticatedRequest(URI.create(uri), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
     }
 
-    protected static void storeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
-                .bodyString(xquery, XQUERY_CONTENT_TYPE)
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+    protected static void enableRestXqTrigger(final ExistWebServer existWebServer, final HttpClient httpClient, final String collectionPath) throws IOException {
+        final HttpRequest request = authenticatedAdminRequest(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+                .header("Content-Type", COLLECTION_CONFIG_CONTENT_TYPE)
+                .PUT(HttpRequest.BodyPublishers.ofString(COLLECTION_CONFIG, UTF_8))
+                .build();
+        assertEquals(HTTP_CREATED, AbstractHttpTest.executeForStatus(httpClient, request));
     }
 
-    protected static void removeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+    protected static void storeXquery(final ExistWebServer existWebServer, final HttpClient httpClient, final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
+        final HttpRequest request = authenticatedAdminRequest(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+                .header("Content-Type", XQUERY_CONTENT_TYPE)
+                .PUT(HttpRequest.BodyPublishers.ofString(xquery, UTF_8))
+                .build();
+        assertEquals(HTTP_CREATED, AbstractHttpTest.executeForStatus(httpClient, request));
     }
 
-    protected static void assertRestXqResourceFunctionsCount(final ExistWebServer existWebServer, final Executor executor, final int expectedCount) throws IOException {
-        assertEquals(expectedCount, getRestXqResourceFunctions(existWebServer, executor).getLength());
+    protected static void removeXquery(final ExistWebServer existWebServer, final HttpClient httpClient, final String collectionPath, final String xqueryFilename) throws IOException {
+        final HttpRequest request = authenticatedAdminRequest(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+                .DELETE()
+                .build();
+        assertEquals(HTTP_OK, AbstractHttpTest.executeForStatus(httpClient, request));
     }
 
-    protected static NodeList getRestXqResourceFunctions(final ExistWebServer existWebServer, final Executor executor) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+    protected static void assertRestXqResourceFunctionsCount(final ExistWebServer existWebServer, final HttpClient httpClient, final int expectedCount) throws IOException {
+        assertEquals(expectedCount, getRestXqResourceFunctions(existWebServer, httpClient).getLength());
+    }
+
+    protected static NodeList getRestXqResourceFunctions(final ExistWebServer existWebServer, final HttpClient httpClient) throws IOException {
+        final HttpRequest request = authenticatedAdminRequest(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
+                .GET()
+                .build();
+        final HttpResponse<InputStream> response = send(httpClient, request);
+        assertEquals(HTTP_OK, response.statusCode());
 
         final Document doc;
-        try (final InputStream is = response.getEntity().getContent()) {
+        try (final InputStream is = response.body()) {
             assertNotNull(is);
             doc = parseXml(is);
         }
@@ -127,6 +145,19 @@ public abstract class AbstractIntegrationTest {
 
         final Element resourceFunctionsElem = (Element) resourceFunctionsList.item(0);
         return resourceFunctionsElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-function");
+    }
+
+    /**
+     * Send a request reading the body as an {@link InputStream}, translating the checked
+     * {@link InterruptedException} thrown by {@link HttpClient#send} into an {@link IOException}.
+     */
+    private static HttpResponse<InputStream> send(final HttpClient httpClient, final HttpRequest request) throws IOException {
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting HTTP response", e);
+        }
     }
 
     protected static Document parseXml(final InputStream inputStream) throws IOException {

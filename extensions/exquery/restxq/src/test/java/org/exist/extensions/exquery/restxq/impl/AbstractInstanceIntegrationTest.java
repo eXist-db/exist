@@ -26,28 +26,25 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.fluent.Executor;
-import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 
 public abstract class AbstractInstanceIntegrationTest extends AbstractIntegrationTest {
 
     @Rule
     public ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    protected Executor executor = null;
+    protected HttpClient httpClient = null;
 
     @Before
     public void setupExecutor() {
-        executor = Executor.newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+        httpClient = AbstractHttpTest.newHttpClient();
     }
 
     protected String getServerUri() {
@@ -63,22 +60,22 @@ public abstract class AbstractInstanceIntegrationTest extends AbstractIntegratio
     }
 
     protected void enableRestXqTrigger(final String collectionPath) throws IOException {
-        enableRestXqTrigger(existWebServer, executor, collectionPath);
+        enableRestXqTrigger(existWebServer, httpClient, collectionPath);
     }
 
     protected void storeXquery(final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
-        storeXquery(existWebServer, executor, collectionPath, xqueryFilename, xquery);
+        storeXquery(existWebServer, httpClient, collectionPath, xqueryFilename, xquery);
     }
 
     protected void removeXquery(final String collectionPath, final String xqueryFilename) throws IOException {
-        removeXquery(existWebServer, executor, collectionPath, xqueryFilename);
+        removeXquery(existWebServer, httpClient, collectionPath, xqueryFilename);
     }
 
     protected void assertRestXqResourceFunctionsCount(final int expectedCount) throws IOException {
-        assertRestXqResourceFunctionsCount(existWebServer, executor, expectedCount);
+        assertRestXqResourceFunctionsCount(existWebServer, httpClient, expectedCount);
     }
 
     protected NodeList getRestXqResourceFunctions() throws IOException {
-        return getRestXqResourceFunctions(existWebServer, executor);
+        return getRestXqResourceFunctions(existWebServer, httpClient);
     }
 }

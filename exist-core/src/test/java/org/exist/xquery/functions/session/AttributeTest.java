@@ -32,209 +32,145 @@
  */
 package org.exist.xquery.functions.session;
 
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
 import org.exist.util.UUIDGenerator;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
+import static org.exist.http.AbstractHttpTest.assertRequestResponse;
 
 public class AttributeTest extends AbstractSessionTest {
 
     @Test
     public void getSetAttributeExplicitSessionCreation() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the empty sequence
-        final Request requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, "");
 
         // set the value of the attribute named "attr1" to a random UUID
         final String attr1Value = UUIDGenerator.getUUIDversion4();
-        final Request requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(setResponse1.getEntity()));
+        final HttpRequest requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
+        assertRequestResponse(client, requestSetAttr1, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the UUID
-        final HttpResponse getResponse2 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse2.getStatusLine().getStatusCode());
-        assertEquals(attr1Value, readEntityAsString(getResponse2.getEntity()));
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, attr1Value);
     }
 
     @Test
     public void getSetAttributeImplicitSessionCreation() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // get the value of the attribute named "attr1", and check its value is the empty sequence
-        final Request requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, "");
 
         // set the value of the attribute named "attr1" to a random UUID
         final String attr1Value = UUIDGenerator.getUUIDversion4();
-        final Request requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(setResponse1.getEntity()));
+        final HttpRequest requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
+        assertRequestResponse(client, requestSetAttr1, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the UUID
-        final HttpResponse getResponse2 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse2.getStatusLine().getStatusCode());
-        assertEquals(attr1Value, readEntityAsString(getResponse2.getEntity()));
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, attr1Value);
     }
 
     @Test
     public void getAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HTTP_OK, "");
 
         // invalidate the session
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate()");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(invalidateSessionResponse.getEntity()));
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate()");
+        assertRequestResponse(client, requestInvalidateSession, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the empty sequence
-        final Request requestGetAttr1 = xqueryRequest("session:get-attribute('attr1')");
-        final HttpResponse getResponse1 = requestGetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr1 = xqueryRequest("session:get-attribute('attr1')");
+        assertRequestResponse(client, requestGetAttr1, HTTP_OK, "");
     }
 
     @Test
     public void getAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HTTP_OK, "");
 
         // invalidate the session and call get-attribute
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate(), session:get-attribute('attr1')");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(invalidateSessionResponse.getEntity()));
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate(), session:get-attribute('attr1')");
+        assertRequestResponse(client, requestInvalidateSession, HTTP_OK, "");
     }
 
     @Test
     public void setAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HTTP_OK, "");
 
         // invalidate the session
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate()");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(invalidateSessionResponse.getEntity()));
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate()");
+        assertRequestResponse(client, requestInvalidateSession, HTTP_OK, "");
 
         // set the value of the attribute named "attr1" to a random UUID
         final String attr1Value = UUIDGenerator.getUUIDversion4();
-        final Request requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        final String responseBody = readEntityAsString(setResponse1.getEntity());
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
-        assertEquals("", responseBody);
+        final HttpRequest requestSetAttr1 = xqueryRequest("session:set-attribute('attr1', '" + attr1Value + "')");
+        assertRequestResponse(client, requestSetAttr1, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the UUID
-        final Request requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
-        final HttpResponse getResponse2 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse2.getStatusLine().getStatusCode());
-        assertEquals(attr1Value, readEntityAsString(getResponse2.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, attr1Value);
     }
 
     @Test
     public void setAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
+        final HttpClient client = newSessionHttpClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HTTP_OK, "");
 
         // invalidate the session and call set-attribute
         final String attr1Value = UUIDGenerator.getUUIDversion4();
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate(), session:set-attribute('attr1', '" + attr1Value + "')");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        final String responseBody = readEntityAsString(invalidateSessionResponse.getEntity());
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", responseBody);
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate(), session:set-attribute('attr1', '" + attr1Value + "')");
+        assertRequestResponse(client, requestInvalidateSession, HTTP_OK, "");
 
         // get the value of the attribute named "attr1", and check its value is the UUID
-        final Request requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
-        final HttpResponse getResponse2 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse2.getStatusLine().getStatusCode());
-        assertEquals(attr1Value, readEntityAsString(getResponse2.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("session:get-attribute('attr1')");
+        assertRequestResponse(client, requestGetAttr, HTTP_OK, attr1Value);
     }
 
-    public Request xqueryRequest(final String xquery) throws UnsupportedEncodingException {
-        return Request.Get(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8.name()) + "&_wrap=no");
+    /**
+     * Create an HTTP client that follows redirects and retains cookies across requests, so that the
+     * HTTP session (JSESSIONID) established by one request is carried to subsequent requests within
+     * the same test. The previous Apache HttpClient fluent API used a shared default cookie store for
+     * this; the JDK {@link HttpClient} requires an explicit {@link CookieManager}.
+     */
+    private static HttpClient newSessionHttpClient() {
+        return HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .cookieHandler(new CookieManager())
+                .build();
     }
 
-    private static String readEntityAsString(final HttpEntity entity) throws IOException {
-        return new String(readEntity(entity), UTF_8);
-    }
-
-    private static byte[] readEntity(final HttpEntity entity) throws IOException {
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            entity.writeTo(os);
-            return os.toByteArray();
-        }
+    public HttpRequest xqueryRequest(final String xquery) {
+        final URI uri = URI.create(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8) + "&_wrap=no");
+        return HttpRequest.newBuilder(uri).GET().build();
     }
 }

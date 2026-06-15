@@ -32,12 +32,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
 import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
@@ -52,10 +48,16 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.http.AbstractHttpTest.assertRequestResponse;
+import static org.exist.http.AbstractHttpTest.executeForStatusAndBody;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -79,28 +81,20 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginExplicitSessionCreation() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HttpURLConnection.HTTP_OK, "");
 
         // login to the database
-        final Request requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "')");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("true", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "')");
+        assertRequestResponse(client, requestGetAttr, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -112,7 +106,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -122,20 +116,16 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginImplicitSessionCreateSessionFalse() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // login to the database
-        final Request requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("true", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
+        assertRequestResponse(client, requestGetAttr, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -147,7 +137,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -157,20 +147,16 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginImplicitSessionCreateSessionTrue() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // login to the database
-        final Request requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("true", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
+        assertRequestResponse(client, requestGetAttr, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -182,7 +168,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -192,36 +178,24 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginOnInvalidatedSessionCreateSessionFalseSeparateHttpCalls() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HttpURLConnection.HTTP_OK, "");
 
         // invalidate the session
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate()");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(invalidateSessionResponse.getEntity()));
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate()");
+        assertRequestResponse(client, requestInvalidateSession, HttpURLConnection.HTTP_OK, "");
 
         // login to the database
-        final Request requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("true", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
+        assertRequestResponse(client, requestGetAttr, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -233,7 +207,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -243,36 +217,24 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginOnInvalidatedSessionCreateSessionTrueSeparateHttpCalls() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HttpURLConnection.HTTP_OK, "");
 
         // invalidate the session
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate()");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(invalidateSessionResponse.getEntity()));
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate()");
+        assertRequestResponse(client, requestInvalidateSession, HttpURLConnection.HTTP_OK, "");
 
         // login to the database
-        final Request requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
-        final HttpResponse getResponse1 = requestGetAttr
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, getResponse1.getStatusLine().getStatusCode());
-        assertEquals("true", readEntityAsString(getResponse1.getEntity()));
+        final HttpRequest requestGetAttr = xqueryRequest("xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
+        assertRequestResponse(client, requestGetAttr, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -284,7 +246,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -294,29 +256,20 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginOnInvalidatedSessionCreateSessionFalseSameHttpCall() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HttpURLConnection.HTTP_OK, "");
 
         // invalidate the session and login to the database
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate(), xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        final String responseBody = readEntityAsString(invalidateSessionResponse.getEntity());
-        assertEquals(responseBody, HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("true", responseBody);
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate(), xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', false())");
+        assertRequestResponse(client, requestInvalidateSession, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -328,7 +281,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -338,29 +291,20 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     @Test
     public void loginOnInvalidatedSessionCreateSessionTrueSameHttpCall() throws IOException {
+        final HttpClient client = newSessionClient();
+
         // explicitly create a new session
-        final Request requestCreateSession = xqueryRequest("session:create()");
-        final HttpResponse createSessionResponse = requestCreateSession
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, createSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("", readEntityAsString(createSessionResponse.getEntity()));
+        final HttpRequest requestCreateSession = xqueryRequest("session:create()");
+        assertRequestResponse(client, requestCreateSession, HttpURLConnection.HTTP_OK, "");
 
         // invalidate the session and login to the database
-        final Request requestInvalidateSession = xqueryRequest("session:invalidate(), xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
-        final HttpResponse invalidateSessionResponse = requestInvalidateSession
-                .execute()
-                .returnResponse();
-        final String responseBody = readEntityAsString(invalidateSessionResponse.getEntity());
-        assertEquals(responseBody, HttpStatus.SC_OK, invalidateSessionResponse.getStatusLine().getStatusCode());
-        assertEquals("true", responseBody);
+        final HttpRequest requestInvalidateSession = xqueryRequest("session:invalidate(), xmldb:login('/db', '" + USER1_UID + "', '" + USER1_PWD + "', true())");
+        assertRequestResponse(client, requestInvalidateSession, HttpURLConnection.HTTP_OK, "true");
 
         // get the identity of the current user
-        final Request requestSetAttr1 = xqueryRequest("sm:id()");
-        final HttpResponse setResponse1 = requestSetAttr1
-                .execute()
-                .returnResponse();
-        assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
+        final HttpRequest requestSetAttr1 = xqueryRequest("sm:id()");
+        final HttpResponseResult result = executeForStatusAndBody(client, requestSetAttr1);
+        assertEquals(HttpURLConnection.HTTP_OK, result.statusCode());
 
         final Source expected = Input.fromString(
                 """
@@ -372,7 +316,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                         </sm:groups>
                     </sm:real>
                 </sm:id>""").build();
-        final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
+        final Source actual = Input.fromString(result.body()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
                 .checkForSimilar()
@@ -380,18 +324,22 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertFalse(diff.toString(), diff.hasDifferences());
     }
 
-    public Request xqueryRequest(final String xquery) throws UnsupportedEncodingException {
-        return Request.Get(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8.name()) + "&_wrap=no");
+    /**
+     * Create an HTTP client that retains cookies across requests, so the HTTP session
+     * (JSESSIONID) is preserved across the sequential calls within a single test.
+     *
+     * @return a new session-aware {@link HttpClient}.
+     */
+    private static HttpClient newSessionClient() {
+        return HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .cookieHandler(new CookieManager())
+                .build();
     }
 
-    private static String readEntityAsString(final HttpEntity entity) throws IOException {
-        return new String(readEntity(entity), UTF_8);
-    }
-
-    private static byte[] readEntity(final HttpEntity entity) throws IOException {
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            entity.writeTo(os);
-            return os.toByteArray();
-        }
+    public HttpRequest xqueryRequest(final String xquery) {
+        return HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8) + "&_wrap=no"))
+                .GET()
+                .build();
     }
 }

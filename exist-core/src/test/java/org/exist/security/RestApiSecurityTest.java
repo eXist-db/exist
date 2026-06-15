@@ -22,18 +22,19 @@
 package org.exist.security;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
+import org.exist.http.AbstractHttpTest;
+import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
+
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  *
@@ -58,15 +59,16 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     @Override
     protected void removeCol(final String collectionName, final String uid, final String pwd) throws ApiException {
         final String collectionUri = getServerUri() + baseUri + "/" + collectionName;
-        
-        final Executor exec = getExecutor(uid, pwd);
+
         try {
-            final HttpResponse resp = exec.execute(Request.Delete(collectionUri)).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new ApiException("Could not remove collection: " + collectionUri + ". " + getResponseBody(resp.getEntity()));
+            final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(collectionUri), uid, pwd)
+                    .DELETE()
+                    .build();
+            final HttpResponseResult result = AbstractHttpTest.executeForStatusAndBody(newHttpClient(), request);
+            if (result.statusCode() != HTTP_OK) {
+                throw new ApiException("Could not remove collection: " + collectionUri + ". " + result.body());
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ApiException(ioe);
         }
     }
@@ -101,16 +103,18 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @Override
     protected String getXmlResourceContent(final String resourceUri, final String uid, final String pwd) throws ApiException {
-        final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(Request.Get(getServerUri() + resourceUri)).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new ApiException("Could not get XML resource from uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+            final String uri = getServerUri() + resourceUri;
+            final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(uri), uid, pwd)
+                    .GET()
+                    .build();
+            final HttpResponseResult result = AbstractHttpTest.executeForStatusAndBody(newHttpClient(), request);
+            if (result.statusCode() != HTTP_OK) {
+                throw new ApiException("Could not get XML resource from uri: " + resourceUri + ". " + result.body());
             } else {
-                return getResponseBody(resp.getEntity());
+                return result.body();
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ApiException(ioe);
         }
     }
@@ -137,68 +141,60 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @Override
     protected void createXmlResource(final String resourceUri, final String content, final String uid, final String pwd) throws ApiException {
-        final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(
-                    Request.Put(getServerUri() + resourceUri)
-                    .addHeader("Content-Type", "application/xml")
-                    .bodyByteArray(content.getBytes())
-            ).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED) {
-                throw new ApiException("Could not store XML resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+            final String uri = getServerUri() + resourceUri;
+            final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(uri), uid, pwd)
+                    .header("Content-Type", "application/xml")
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(content.getBytes()))
+                    .build();
+            final HttpResponseResult result = AbstractHttpTest.executeForStatusAndBody(newHttpClient(), request);
+            if (result.statusCode() != HTTP_CREATED) {
+                throw new ApiException("Could not store XML resource to uri: " + resourceUri + ". " + result.body());
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ApiException(ioe);
         }
     }
 
     @Override
     protected void createBinResource(final String resourceUri, final byte[] content, final String uid, final String pwd) throws ApiException {
-         final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(
-                    Request.Put(getServerUri() + resourceUri)
-                    .addHeader("Content-Type", "application/octet-stream")
-                    .bodyByteArray(content)
-            ).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED) {
-                throw new ApiException("Could not store Binary resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+            final String uri = getServerUri() + resourceUri;
+            final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(uri), uid, pwd)
+                    .header("Content-Type", "application/octet-stream")
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(content))
+                    .build();
+            final HttpResponseResult result = AbstractHttpTest.executeForStatusAndBody(newHttpClient(), request);
+            if (result.statusCode() != HTTP_CREATED) {
+                throw new ApiException("Could not store Binary resource to uri: " + resourceUri + ". " + result.body());
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ApiException(ioe);
         }
     }
 
     private void executeQuery(final String xquery, final String uid, final String pwd) throws ApiException {
-        final Executor exec = getExecutor(uid, pwd);
         try {
             final String queryUri = createQueryUri(xquery);
-            
-            final HttpResponse resp = exec.execute(Request.Get(queryUri)).returnResponse();
 
-            final int status = resp.getStatusLine().getStatusCode();
-            if(status != HttpStatus.SC_OK) {
-                throw new ApiException("HTTP " + status + " could not execute query uri: " + queryUri + ". " + getResponseBody(resp.getEntity()));
+            final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(queryUri), uid, pwd)
+                    .GET()
+                    .build();
+            final HttpResponseResult result = AbstractHttpTest.executeForStatusAndBody(newHttpClient(), request);
+            final int status = result.statusCode();
+            if (status != HTTP_OK) {
+                throw new ApiException("HTTP " + status + " could not execute query uri: " + queryUri + ". " + result.body());
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ApiException(ioe);
         }
     }
-    
-    private Executor getExecutor(final String uid, String pwd) {
-        return Executor.newInstance().authPreemptive(new HttpHost("localhost", existWebServer.getPort())).auth(uid, pwd);
+
+    private static HttpClient newHttpClient() {
+        return AbstractHttpTest.newHttpClient();
     }
-    
-    private String createQueryUri(final String xquery) throws UnsupportedEncodingException {
-        return getServerUri() + baseUri + "/?_query=" + URLEncoder.encode(xquery, "UTF-8");
-    }
-    
-    private String getResponseBody(final HttpEntity entity) throws IOException {
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(256)) {
-            entity.writeTo(baos);
-            return new String(baos.toByteArray());
-        }
+
+    private String createQueryUri(final String xquery) {
+        return getServerUri() + baseUri + "/?_query=" + URLEncoder.encode(xquery, StandardCharsets.UTF_8);
     }
 }

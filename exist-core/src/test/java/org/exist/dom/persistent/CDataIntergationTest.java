@@ -22,13 +22,9 @@
 
 package org.exist.dom.persistent;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
 import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
@@ -42,16 +38,20 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.junit.Assert.*;
 
 /**
  * Tests for retrieving a document containing CDATA via
  * various APIs.
  */
-public class CDataIntergationTest {
+public class CDataIntergationTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
@@ -67,29 +67,22 @@ public class CDataIntergationTest {
         final String uri = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db";
         final String docUri = uri + "/rest-cdata-test.xml";
 
-        final Executor executor = Executor
-                .newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+        final HttpClient client = newHttpClient();
 
         // store document
-        final HttpResponse storeResponse = executor.execute(
-                Request
-                        .Put(docUri)
-                        .addHeader("Content-Type", "application/xml")
-                        .bodyByteArray(cdata_xml.getBytes(UTF_8))
-                ).returnResponse();
-        assertEquals(SC_CREATED, storeResponse.getStatusLine().getStatusCode());
+        final HttpRequest putRequest = authenticatedRequest(URI.create(docUri), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .header("Content-Type", "application/xml")
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(cdata_xml.getBytes(UTF_8)))
+                .build();
+        assertEquals(HTTP_CREATED, executeForStatus(client, putRequest));
 
         // retrieve document
-        final HttpResponse retrieveResponse = executor.execute(
-                Request
-                        .Get(docUri)
-                ).returnResponse();
-        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-            retrieveResponse.getEntity().writeTo(baos);
-            assertEquals(cdata_xml, baos.toString(UTF_8));
-        }
+        final HttpRequest getRequest = authenticatedRequest(URI.create(docUri), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .GET()
+                .build();
+        final HttpResponseResult retrieved = executeForStatusAndBody(client, getRequest);
+        assertEquals(HTTP_OK, retrieved.statusCode());
+        assertEquals(cdata_xml, retrieved.body());
     }
 
     @Test

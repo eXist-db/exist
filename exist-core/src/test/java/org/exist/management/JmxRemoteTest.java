@@ -21,23 +21,18 @@
  */
 package org.exist.management;
 
-import com.evolvedbinary.j8fu.function.FunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHeader;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 import static org.xmlunit.matchers.HasXPathMatcher.hasXPath;
 
-public class JmxRemoteTest {
+public class JmxRemoteTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
@@ -61,8 +56,9 @@ public class JmxRemoteTest {
     @Test
     public void checkContent() throws IOException {
         // Get content
-        final Request request = Request.Get(getServerUri());
-        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri())).GET().build();
+        final String jmxXml = withHttpClient(client ->
+                AbstractHttpTest.executeForStatusAndBody(client, request).body());
 
         // Prepare XPath validation
         final Map<String, String> prefix2Uri = new HashMap<>();
@@ -103,8 +99,9 @@ public class JmxRemoteTest {
 
     @Test
     public void vectorCategoryIncludesVectorStore() throws IOException {
-        final Request request = Request.Get(getServerUri() + "?c=vector");
-        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri() + "?c=vector")).GET().build();
+        final String jmxXml = withHttpClient(client ->
+                AbstractHttpTest.executeForStatusAndBody(client, request).body());
 
         final Map<String, String> prefix2Uri = new HashMap<>();
         prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
@@ -121,8 +118,9 @@ public class JmxRemoteTest {
     public void vectorCategoryIncludesVectorEmbeddingWhenExtensionPresent() throws IOException {
         assumeTrue("Vector extension not on classpath", isVectorExtensionPresent());
 
-        final Request request = Request.Get(getServerUri() + "?c=vector");
-        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri() + "?c=vector")).GET().build();
+        final String jmxXml = withHttpClient(client ->
+                AbstractHttpTest.executeForStatusAndBody(client, request).body());
 
         final Map<String, String> prefix2Uri = new HashMap<>();
         prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
@@ -134,31 +132,27 @@ public class JmxRemoteTest {
 
     @Test
     public void checkBasicRequest() throws IOException {
-        final Request request = Request.Get(getServerUri())
-                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()));
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri()))
+                .header("Accept", "application/xml")
+                .GET()
+                .build();
 
-         final Tuple2<Integer, String> codeAndMediaType = withHttpExecutor(executor -> {
-            final HttpResponse response = executor.execute(request).returnResponse();
-            return Tuple(response.getStatusLine().getStatusCode(), response.getEntity().getContentType().getValue());
+        final Tuple2<Integer, String> codeAndMediaType = withHttpClient(client -> {
+            final HttpResponse<Void> response = send(client, request, HttpResponse.BodyHandlers.discarding());
+            return Tuple(response.statusCode(), response.headers().firstValue("Content-Type").orElse(null));
         });
 
-        assertEquals(Tuple(HttpStatus.SC_OK, "application/xml"), codeAndMediaType);
+        assertEquals(Tuple(200, "application/xml"), codeAndMediaType);
     }
 
-    private static <T> T withHttpClient(final FunctionE<HttpClient, T, IOException> fn) throws IOException {
-        try (final CloseableHttpClient client = HttpClientBuilder
-                .create()
-                .disableAutomaticRetries()
-                .build()) {
-            return fn.apply(client);
+    private static <T> HttpResponse<T> send(final HttpClient client, final HttpRequest request,
+            final HttpResponse.BodyHandler<T> bodyHandler) throws IOException {
+        try {
+            return client.send(request, bodyHandler);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting HTTP response", e);
         }
-    }
-
-    private static <T> T withHttpExecutor(final FunctionE<Executor, T, IOException> fn) throws IOException {
-        return withHttpClient(client -> {
-            final Executor executor = Executor.newInstance(client);
-            return fn.apply(executor);
-        });
     }
 
     private static boolean isVectorExtensionPresent() {

@@ -26,20 +26,16 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.http.message.BasicHeader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.assertEquals;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
@@ -105,47 +101,62 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
     @Test
     public void mediaTypeJson1() throws IOException {
-        assertMediaTypeResponse("/media-type-json1", ContentType.APPLICATION_JSON,
-                "application/json; charset=utf-8",
+        assertMediaTypeResponse("/media-type-json1", "application/json",
+                "application/json;charset=utf-8",
                 "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
     }
 
     @Test
     public void mediaTypeJson2() throws IOException {
-        assertMediaTypeResponse("/media-type-json2", ContentType.APPLICATION_JSON,
-                "application/json; charset=utf-8",
+        assertMediaTypeResponse("/media-type-json2", "application/json",
+                "application/json;charset=utf-8",
                 "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
     }
 
     @Test
     public void mediaTypeXml1() throws IOException {
-        assertMediaTypeResponse("/media-type-xml1", ContentType.APPLICATION_XML.withCharset(UTF_8),
-                ContentType.APPLICATION_XML.withCharset(UTF_8).toString(),
+        assertMediaTypeResponse("/media-type-xml1", "application/xml; charset=utf-8",
+                "application/xml; charset=UTF-8",
                 "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");
     }
 
     @Test
     public void mediaTypeXml2() throws IOException {
-        assertMediaTypeResponse("/media-type-xml2", ContentType.APPLICATION_XML.withCharset(UTF_8),
-                ContentType.APPLICATION_XML.withCharset(UTF_8).toString(),
+        assertMediaTypeResponse("/media-type-xml2", "application/xml; charset=utf-8",
+                "application/xml; charset=UTF-8",
                 "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");
     }
 
-    private void assertMediaTypeResponse(final String uriEndpoint, final ContentType acceptContentType, final String expectedResponseContentType, final String expectedResponseBody) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Get(getRestXqUri() + uriEndpoint)
-                .addHeader(new BasicHeader("Accept", acceptContentType.toString()))
-        ).returnResponse();
+    private void assertMediaTypeResponse(final String uriEndpoint, final String acceptContentType, final String expectedResponseContentType, final String expectedResponseBody) throws IOException {
+        final HttpRequest request = authenticatedAdminRequest(getRestXqUri() + uriEndpoint)
+                .header("Accept", acceptContentType)
+                .GET()
+                .build();
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        final HttpResponse<InputStream> response = send(request);
 
-        final HttpEntity responseEntity = response.getEntity();
-        assertEquals(expectedResponseContentType, responseEntity.getContentType().getValue());
+        assertEquals(HTTP_OK, response.statusCode());
+
+        assertEquals(expectedResponseContentType, response.headers().firstValue("Content-Type").orElse(null));
 
         final String responseBody;
-        try (final InputStream is = responseEntity.getContent()) {
+        try (final InputStream is = response.body()) {
             responseBody = asString(is);
         }
         assertEquals(expectedResponseBody, responseBody);
+    }
+
+    /**
+     * Send a request reading the body as an {@link InputStream}, translating the checked
+     * {@link InterruptedException} thrown by {@link java.net.http.HttpClient#send} into an
+     * {@link IOException}.
+     */
+    private HttpResponse<InputStream> send(final HttpRequest request) throws IOException {
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting HTTP response", e);
+        }
     }
 }

@@ -123,6 +123,7 @@
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
+        <methanol.version>1.8.3</methanol.version>
         <appassembler.version>2.1.0</appassembler.version>
         <aspectj.version>1.9.25.1</aspectj.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
@@ -317,6 +318,14 @@
                         <groupId>xml-apis</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Methanol: lightweight augmentation of java.net.http.HttpClient (multipart, decoding,
+                 MediaType, read timeout). Pure JDK extension - pulls in no Apache HttpClient. -->
+            <dependency>
+                <groupId>com.github.mizosoft.methanol</groupId>
+                <artifactId>methanol</artifactId>
+                <version>${methanol.version}</version>
             </dependency>
 
             <dependency>
