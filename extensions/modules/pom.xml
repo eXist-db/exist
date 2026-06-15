@@ -48,6 +48,7 @@
         <module>expathrepo</module>
         <module>expathrepo/expathrepo-trigger-test</module>
         <module>file</module>
+        <module>http-client</module>
         <module>image</module>
         <module>jndi</module>
         <module>mail</module>
