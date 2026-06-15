@@ -54,40 +54,54 @@ public class FunctionFactory {
      * These names must not be used as unprefixed function calls (XPST0003).
      */
     private static final Set<String> RESERVED_FUNCTION_NAMES = Set.of(
-        "array", "attribute", "comment", "document-node", "element",
-        "function", "if", "item", "map", "namespace-node", "node",
-        "processing-instruction", "schema-attribute", "schema-element",
-        "switch", "text", "typeswitch"
+            "array", "attribute", "comment", "document-node", "element",
+            "function", "if", "item", "map", "namespace-node", "node",
+            "processing-instruction", "schema-attribute", "schema-element",
+            "switch", "text", "typeswitch"
     );
 
-    public static Expression createFunction(final XQueryContext context,final  XQueryAST ast, final PathExpr parent, final List<Expression> params) throws XPathException {
+    public static Expression createFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params
+    ) throws XPathException {
         final QName qname = getQName(context, ast);
         return createFunction(context, qname, ast, parent, params);
     }
 
-    private static QName getQName(final XQueryContext context, final XQueryAST ast) throws XPathException {
+    private static QName getQName(
+            final XQueryContext context,
+            final XQueryAST ast
+    ) throws XPathException {
         final String rawName = ast.getText();
         final QName qname;
         try {
             qname = QName.parse(context, rawName, context.getDefaultFunctionNamespace());
-        } catch(final QName.IllegalQNameException xpe) {
-            throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  rawName + ". " + xpe.getMessage());
+        } catch (final QName.IllegalQNameException xpe) {
+            throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " + rawName + ". " + xpe.getMessage());
         }
 
         // Check for reserved function names — unprefixed reserved names cannot be
         // used as function calls (XPST0003). Prefixed names like fn:item() are not
         // subject to the reserved name restriction (they just won't be found → XPST0017).
-        if (rawName != null && !rawName.contains(":") && !rawName.contains("{")) {
+        if (!rawName.contains(":") && !rawName.contains("{")) {
             final String local = qname.getLocalPart();
             if (RESERVED_FUNCTION_NAMES.contains(local)) {
                 throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0003,
-                    "'" + local + "' is a reserved function name and cannot be used as a function call");
+                        "'" + local + "' is a reserved function name and cannot be used as a function call");
             }
         }
         return qname;
     }
 
-    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
+    public static Expression createFunction(
+            final XQueryContext context,
+            final QName qname,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params
+    ) throws XPathException {
         return createFunction(context, qname, ast, parent, params, true);
     }
 
@@ -95,31 +109,44 @@ public class FunctionFactory {
      * Make sure that partially applied functions are wrapped correctly
      * the QName is read from the given AST
      *
-     * @param context the XQuery context
-     * @param ast the AST node of the function
-     * @param parent the parent expression of the function
-     * @param params the parameters to the function
+     * @param context   the XQuery context
+     * @param ast       the AST node of the function
+     * @param parent    the parent expression of the function
+     * @param params    the parameters to the function
      * @param isPartial is this a partially applied function with placeholders?
      * @return either a FunctionCall or a PartialFunctionApplication
      * @throws XPathException if an error occurs creating the function
      */
-    public static Expression createFunctionCall(final XQueryContext context, final XQueryAST ast, final PathExpr parent, final List<Expression> params, final boolean isPartial) throws XPathException {
+    public static Expression createFunctionCall(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params,
+            final boolean isPartial
+    ) throws XPathException {
         return createFunctionCall(context, getQName(context, ast), ast, parent, params, isPartial);
     }
 
     /**
      * Make sure that partially applied functions are wrapped correctly
      *
-     * @param context the XQuery context
-     * @param qname the name of the function
-     * @param ast the AST node of the function
-     * @param parent the parent expression of the function
-     * @param params the parameters to the function
+     * @param context   the XQuery context
+     * @param qname     the name of the function
+     * @param ast       the AST node of the function
+     * @param parent    the parent expression of the function
+     * @param params    the parameters to the function
      * @param isPartial is this a partially applied function with placeholders?
      * @return either a FunctionCall or a PartialFunctionApplication
      * @throws XPathException if an error occurs creating the function
      */
-    public static Expression createFunctionCall(final XQueryContext context, final QName qname, final XQueryAST ast, final PathExpr parent, final List<Expression> params, final boolean isPartial) throws XPathException {
+    public static Expression createFunctionCall(
+            final XQueryContext context,
+            final QName qname,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params,
+            final boolean isPartial
+    ) throws XPathException {
         Expression fc = createFunction(context, qname, ast, parent, params);
         if (!isPartial) {
             return fc;
@@ -141,19 +168,23 @@ public class FunctionFactory {
      * optimizes some function calls like starts-with, ends-with or
      * contains.
      *
-     * @param context the XQuery context
-     * @param qname the name of the function
-     * @param ast the AST node of the function
-     * @param parent the parent expression of the function
-     * @param params the parameters to the function
+     * @param context                 the XQuery context
+     * @param qname                   the name of the function
+     * @param ast                     the AST node of the function
+     * @param parent                  the parent expression of the function
+     * @param params                  the parameters to the function
      * @param optimizeStringFunctions true if string functions be optimized
-     *
      * @return the function expression
-     *
      * @throws XPathException if an error occurs creating the function
      */
-    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
-        boolean optimizeStringFunctions) throws XPathException {
+    public static Expression createFunction(
+            final XQueryContext context,
+            final QName qname,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params,
+            final boolean optimizeStringFunctions
+    ) throws XPathException {
         final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
 
@@ -238,11 +269,15 @@ public class FunctionFactory {
         return op;
     }
 
-    private static CastExpression castExpression(XQueryContext context,
-            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
+    private static CastExpression castExpression(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname
+    ) throws XPathException {
         if (params.size() != 1) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
+                    ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
         final Expression arg = params.getFirst();
         final int code;
@@ -251,28 +286,32 @@ public class FunctionFactory {
         } catch (final XPathException e) {
             // Unknown type name in xs: namespace → XPST0017 (no such function)
             throw new XPathException(ast.getLine(), ast.getColumn(),
-                ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
+                    ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
         }
         // No constructor function exists for xs:NOTATION, xs:anyAtomicType, or xs:anySimpleType
         // (per QT4 §4.6.3 — XPST0017 since no function with this name and arity exists)
         if (code == Type.NOTATION || code == Type.ANY_ATOMIC_TYPE || code == Type.ANY_SIMPLE_TYPE) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
-                ErrorCodes.XPST0017, "No constructor function exists for " + qname.getStringValue());
+                    ErrorCodes.XPST0017, "No constructor function exists for " + qname.getStringValue());
         }
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;
     }
 
-    private static JavaCall javaFunctionBinding(XQueryContext context,
-            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
+    private static JavaCall javaFunctionBinding(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname
+    ) throws XPathException {
         // Only allow java binding if specified in config file <xquery enable-java-binding="yes">
         final String javaBinding = (String) context.getBroker().getConfiguration()
-            .getProperty(PROPERTY_ENABLE_JAVA_BINDING);
+                .getProperty(PROPERTY_ENABLE_JAVA_BINDING);
         if (!"yes".equals(javaBinding)) {
             throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
-                "Java binding is disabled in the current configuration (see conf.xml)." +
-                " Call to " + qname.getStringValue() + " denied.");
+                    "Java binding is disabled in the current configuration (see conf.xml)." +
+                            " Call to " + qname.getStringValue() + " denied.");
         }
         final JavaCall call = new JavaCall(context, qname);
         call.setLocation(ast.getLine(), ast.getColumn());
@@ -280,9 +319,12 @@ public class FunctionFactory {
         return call;
     }
 
-    private static Function functionCall(final XQueryContext context,
-            final XQueryAST ast, final List<Expression> params, final QName qname) throws XPathException {
-
+    private static Function functionCall(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname
+    ) throws XPathException {
         final String uri = qname.getNamespaceURI();
         final Module[] modules = context.getModules(uri);
 
@@ -317,9 +359,14 @@ public class FunctionFactory {
      *
      * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
-    private static @Nullable Function getInternalModuleFunction(final XQueryContext context,
-            final XQueryAST ast, final List<Expression> params, QName qname, Module module,
-            final boolean throwOnNotFound) throws XPathException {
+    private static @Nullable Function getInternalModuleFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            QName qname,
+            Module module,
+            final boolean throwOnNotFound
+    ) throws XPathException {
         // For internal modules: create a new function instance from the class
         FunctionDef def = ((InternalModule) module).getFunctionDef(qname, params.size());
         //TODO: rethink: xsl namespace function should search xpath one too
@@ -381,7 +428,12 @@ public class FunctionFactory {
     /**
      * Get a user-defined function from the XQuery context
      */
-    private static FunctionCall getUserDefinedFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
+    private static FunctionCall getUserDefinedFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname
+    ) throws XPathException {
         final UserDefinedFunction func = context.resolveFunction(qname, params.size());
 
         if (func == null) {
@@ -403,8 +455,14 @@ public class FunctionFactory {
      *
      * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
-    private static FunctionCall getXQueryModuleFunction(final XQueryContext context,
-            final XQueryAST ast, final List<Expression> params, final QName qname, final Module module, final boolean throwOnNotFound) throws XPathException {
+    private static FunctionCall getXQueryModuleFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname,
+            final Module module,
+            final boolean throwOnNotFound
+    ) throws XPathException {
         final FunctionCall fc;
         final UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size(), context);
         if (func == null) {
@@ -420,8 +478,8 @@ public class FunctionFactory {
                 if (!otherArities.isEmpty()) {
                     final StringBuilder msg = new StringBuilder();
                     msg.append("Unexpectedly received ").append(params.size())
-                       .append(" parameter(s) in call to function '")
-                       .append(qname.getStringValue()).append("()'. ");
+                            .append(" parameter(s) in call to function '")
+                            .append(qname.getStringValue()).append("()'. ");
                     msg.append("Defined function signatures are:\r\n");
                     for (final FunctionSignature sig : otherArities) {
                         msg.append(sig.toString()).append("\r\n");
@@ -448,9 +506,9 @@ public class FunctionFactory {
                     return null;
                 }
 
-            // If not, postpone the function resolution
-            // Register a forward reference with the root module, so it gets resolved
-            // when the main query has been compiled.
+                // If not, postpone the function resolution
+                // Register a forward reference with the root module, so it gets resolved
+                // when the main query has been compiled.
             } else {
                 fc = new FunctionCall(((ExternalModule) module).getContext(), qname, params);
                 fc.setLocation(ast.getLine(), ast.getColumn());
@@ -467,71 +525,76 @@ public class FunctionFactory {
         }
         return fc;
     }
- 
+
     /**
      * Wrap a function call into a user defined function.
      * This is used to handle dynamic function calls or partial
      * function applications on built-in functions.
-     * 
+     *
      * @param context current context
-     * @param call the function call to be wrapped
+     * @param call    the function call to be wrapped
      * @return a new function call referencing an inline function
      * @throws XPathException in case of a static error
      */
-    public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
-		final int argCount = call.getArgumentCount();
-		final QName[] variables = new QName[argCount];
-		final List<Expression> innerArgs = new ArrayList<>(argCount);
-		final List<Expression> wrapperArgs = new ArrayList<>(argCount);
-		final FunctionSignature signature = call.getSignature();
-		// the parameters of the newly created inline function:
-		final List<SequenceType> newParamTypes = new ArrayList<>();
-		final SequenceType[] paramTypes = signature.getArgumentTypes();
-		for (int i = 0; i < argCount; i++) {
-			final Expression param = call.getArgument(i);
-			wrapperArgs.add(param);
-			QName varName = new QName("vp" + i, XMLConstants.NULL_NS_URI);
-			variables[i] = varName;
-			final VariableReference ref = new VariableReference(context, varName);
-			innerArgs.add(ref);
-			
-			// copy parameter sequence types
-			// overloaded functions like concat may have an arbitrary number of arguments
-			if (i < paramTypes.length)
-				{newParamTypes.add(paramTypes[i]);}
-			else
-				// overloaded function: add last sequence type
-				{newParamTypes.add(paramTypes[paramTypes.length - 1]);}
-		}
-		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[0]);
-		final FunctionSignature newSignature = new FunctionSignature(signature);
-                newSignature.setArgumentTypes(newParamArray);
+    public static FunctionCall wrap(
+            final XQueryContext context,
+            final Function call
+    ) throws XPathException {
+        final int argCount = call.getArgumentCount();
+        final QName[] variables = new QName[argCount];
+        final List<Expression> innerArgs = new ArrayList<>(argCount);
+        final List<Expression> wrapperArgs = new ArrayList<>(argCount);
+        final FunctionSignature signature = call.getSignature();
+        // the parameters of the newly created inline function:
+        final List<SequenceType> newParamTypes = new ArrayList<>();
+        final SequenceType[] paramTypes = signature.getArgumentTypes();
+        for (int i = 0; i < argCount; i++) {
+            final Expression param = call.getArgument(i);
+            wrapperArgs.add(param);
+            QName varName = new QName("vp" + i, XMLConstants.NULL_NS_URI);
+            variables[i] = varName;
+            final VariableReference ref = new VariableReference(context, varName);
+            innerArgs.add(ref);
 
-		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
-		// This wrapper exists to lift a built-in Function into a FunctionCall
-		// so that it can be used as a function item. Per F&O 3.1 section
-		// 16.1.1, the static and dynamic context of the call to
-		// fn:function-lookup -- and of named function references -- forms
-		// part of the closure of the returned function. When the wrapped
-		// built-in is itself context-dependent (fn:position#0,
-		// fn:node-name#0, fn:lang#1, fn:default-collation,
-		// fn:static-base-uri, ...), the wrapper must forward that captured
-		// focus into the body. Each Function subclass declares its own
-		// context-dependency via Function.isContextDependent(); the default
-		// is false, so non-context-dependent built-ins (fn:concat,
-		// fn:string-length#1, ...) and user-defined functions do not pay
-		// the propagation cost.
-		func.setPropagateContextToBody(call.isContextDependent());
-		for (final QName varName: variables) {
-			func.addVariable(varName);
-		}
+            // copy parameter sequence types
+            // overloaded functions like concat may have an arbitrary number of arguments
+            if (i < paramTypes.length) {
+                newParamTypes.add(paramTypes[i]);
+            } else
+            // overloaded function: add last sequence type
+            {
+                newParamTypes.add(paramTypes[paramTypes.length - 1]);
+            }
+        }
+        final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[0]);
+        final FunctionSignature newSignature = new FunctionSignature(signature);
+        newSignature.setArgumentTypes(newParamArray);
 
-		call.setArguments(innerArgs);
+        final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+        // This wrapper exists to lift a built-in Function into a FunctionCall
+        // so that it can be used as a function item. Per F&O 3.1 section
+        // 16.1.1, the static and dynamic context of the call to
+        // fn:function-lookup -- and of named function references -- forms
+        // part of the closure of the returned function. When the wrapped
+        // built-in is itself context-dependent (fn:position#0,
+        // fn:node-name#0, fn:lang#1, fn:default-collation,
+        // fn:static-base-uri, ...), the wrapper must forward that captured
+        // focus into the body. Each Function subclass declares its own
+        // context-dependency via Function.isContextDependent(); the default
+        // is false, so non-context-dependent built-ins (fn:concat,
+        // fn:string-length#1, ...) and user-defined functions do not pay
+        // the propagation cost.
+        func.setPropagateContextToBody(call.isContextDependent());
+        for (final QName varName : variables) {
+            func.addVariable(varName);
+        }
 
-		func.setFunctionBody(call);
-		
-		final FunctionCall wrappedCall = new FunctionCall(context, func);
-		wrappedCall.setArguments(wrapperArgs);
-		return wrappedCall;
-	}
+        call.setArguments(innerArgs);
+
+        func.setFunctionBody(call);
+
+        final FunctionCall wrappedCall = new FunctionCall(context, func);
+        wrappedCall.setArguments(wrapperArgs);
+        return wrappedCall;
+    }
 }
