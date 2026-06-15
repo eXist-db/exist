@@ -54,24 +54,25 @@ import org.xmldb.api.base.XMLDBException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class RemoteResourceSet implements ResourceSet, AutoCloseable {
+public class RemoteResourceSet implements ResourceSet {
+
+    private static final Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
     private final RemoteCollection collection;
     private int handle = -1;
     private int hash = -1;
-    private final List resources;
+    private final List<Object> resources;
     private final Properties outputProperties;
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
 
-    private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
     public RemoteResourceSet(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCollection col, final Properties properties, final Object[] resources, final int handle, final int hash) {
         this.leasableXmlRpcClient = leasableXmlRpcClient;
         this.handle = handle;
         this.hash = hash;
-        this.resources = new ArrayList(Arrays.asList(resources));
+        this.resources = new ArrayList<>(Arrays.asList(resources));
         this.collection = col;
         this.outputProperties = properties;
     }
@@ -115,7 +116,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         return new NewResourceIterator();
     }
 
-    public ResourceIterator getIterator(final long start) throws XMLDBException {
+    public ResourceIterator getIterator(final long start)  {
         return new NewResourceIterator(start);
     }
 
@@ -199,10 +200,11 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
             return null;
         }
 
-        if(resources.get((int) pos) instanceof Resource) {
-            return (Resource) resources.get((int) pos);
+        final Object resourceObject = resources.get((int) pos);
+        if (resourceObject instanceof Resource resource) {
+            return resource;
         } else {
-            final Map<String, String> item = (Map<String, String>)resources.get((int)pos);
+            final Map<String, String> item = (Map<String, String>) resourceObject;
 
             return switch (item.get("type")) {
                 case "node()", "document-node()", "element()", "attribute()", "text()", "processing-instruction()", "comment()", "namespace()", "cdata-section()" ->
@@ -217,8 +219,8 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
     private RemoteXMLResource getResourceNode(final int pos, final Map<String, String> nodeDetail) throws XMLDBException {
         final String doc = nodeDetail.get("docUri");
-        final Optional<String> s_id =  Optional.ofNullable(nodeDetail.get("nodeId"));
-        final Optional<String> s_type = Optional.ofNullable(nodeDetail.get("type"));
+        final Optional<String> nodeId =  Optional.ofNullable(nodeDetail.get("nodeId"));
+        final Optional<String> type = Optional.ofNullable(nodeDetail.get("type"));
         final XmldbURI docUri;
         try {
             docUri = XmldbURI.xmldbUriFor(doc);
@@ -237,7 +239,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
         parent.setProperties(outputProperties);
         final RemoteXMLResource res = new RemoteXMLResource(parent, handle, pos, docUri,
-                s_id, s_type);
+                nodeId, type);
         res.setProperties(outputProperties);
         return res;
     }
@@ -266,7 +268,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
     @Override
     public long getSize() throws XMLDBException {
-        return resources == null ? 0 : (long) resources.size();
+        return resources.size();
     }
 
     @Override
@@ -301,7 +303,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
         @Override
         public boolean hasMoreResources() throws XMLDBException {
-            return resources == null ? false : pos < resources.size();
+            return pos < resources.size();
         }
 
         @Override
