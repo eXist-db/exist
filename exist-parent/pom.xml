@@ -120,8 +120,6 @@
         <contact.email>info@exist-db.org</contact.email>
 
         <ant.version>1.10.17</ant.version>
-        <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
-        <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
         <methanol.version>1.8.3</methanol.version>
         <appassembler.version>2.1.0</appassembler.version>
@@ -137,8 +135,6 @@
         <jetty.version>12.1.10</jetty.version>
         <log4j.version>2.26.0</log4j.version>
         <lucene.version>10.4.0</lucene.version>
-        <milton.version>1.8.1.3</milton.version>
-        <milton.servlet.version>1.8.1.3-jakarta-ee10</milton.servlet.version>
         <nekohtml.version>2.1.3</nekohtml.version>
         <saxon.version>12.5</saxon.version>
         <xmlresolver.version>6.0.23</xmlresolver.version>
@@ -328,27 +324,6 @@
                 <version>${methanol.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>${apache.httpcomponents.core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpmime</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>fluent-hc</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-
             <!-- Jetty 12 core modules -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
@@ -530,24 +505,6 @@
                 <groupId>org.exquery</groupId>
                 <artifactId>exquery-common</artifactId>
                 <version>${exquery.distribution.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-                <artifactId>milton-api</artifactId>
-                <version>${milton.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-                <artifactId>milton-client</artifactId>
-                <version>${milton.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.evolvedbinary.thirdparty.com.ettrema</groupId>
-                <artifactId>milton-servlet</artifactId>
-                <version>${milton.servlet.version}</version>
             </dependency>
 
             <!-- Jackrabbit WebDAV (Jakarta EE 10 transformed) -->
