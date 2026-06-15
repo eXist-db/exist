@@ -37,9 +37,12 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -192,90 +195,263 @@ public class RequestBuilder {
     }
 
     /**
-     * Builds the {@link java.net.http.HttpRequest} from the parsed parameters.
+     * Builds the {@link java.net.http.HttpRequest} from the parsed parameters, sending credentials
+     * preemptively only when {@code @send-authorization} is true.
      */
     public HttpRequest build() throws XPathException {
+        return build(null);
+    }
+
+    /**
+     * Builds the {@link java.net.http.HttpRequest} from the parsed parameters.
+     *
+     * @param authorizationHeader when non-null, attach this exact {@code Authorization} header
+     *     value — used to answer a 401 challenge with a Basic or Digest response computed by
+     *     {@link #challengeResponse(String)} (see {@link #shouldAttemptChallenge()}).
+     */
+    public HttpRequest build(final String authorizationHeader) throws XPathException {
         final URI uri;
         try {
             uri = URI.create(href);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             throw new XPathException((org.exist.xquery.Expression) null,
                     HttpClientModule.HC005, "Invalid URI: " + href + ". " + e.getMessage());
         }
 
         final HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
-
-        // Timeout
         if (timeout > 0) {
             builder.timeout(Duration.ofSeconds(timeout));
         }
 
-        // Headers (a Content-Type set here is ignored for multipart, where the publisher supplies
-        // a Content-Type carrying the generated boundary)
         final boolean isMultipart = !multipartBodies.isEmpty();
+        applyHeaders(builder, isMultipart);
+        applyAuthorization(builder, authorizationHeader);
+        applyBody(builder, method.toUpperCase(), isMultipart);
+        return builder.build();
+    }
+
+    private void applyHeaders(final HttpRequest.Builder builder, final boolean isMultipart) {
+        // a Content-Type set here is ignored for multipart, where the publisher supplies a
+        // Content-Type carrying the generated boundary
         for (final String[] header : headers) {
             if (isMultipart && "Content-Type".equalsIgnoreCase(header[0])) {
                 continue;
             }
             builder.header(header[0], header[1]);
         }
+    }
 
-        // Authentication
-        if (username != null && sendAuthorization && "basic".equalsIgnoreCase(authMethod)) {
-            final String encoded = Base64.getEncoder().encodeToString(
-                    (username + ":" + (password != null ? password : ""))
-                            .getBytes(StandardCharsets.UTF_8));
-            builder.header("Authorization", "Basic " + encoded);
+    /**
+     * Per the EXPath spec, credentials are sent preemptively only when {@code @send-authorization}
+     * is true; otherwise they are withheld until the server issues a 401 challenge, at which point
+     * the request is re-sent with the {@code authorizationHeader} that {@link #challengeResponse}
+     * computed for the offered scheme.
+     */
+    private void applyAuthorization(final HttpRequest.Builder builder, final String authorizationHeader) {
+        final String authorization;
+        if (authorizationHeader != null) {
+            authorization = authorizationHeader;
+        } else if (sendAuthorization && username != null && "basic".equalsIgnoreCase(authMethod)) {
+            authorization = "Basic " + base64Credentials();
+        } else {
+            authorization = null;
         }
+        if (authorization != null) {
+            builder.header("Authorization", authorization);
+        }
+    }
 
-        final String upperMethod = method.toUpperCase();
-
-        // Multipart request body, built with Methanol's MultipartBodyPublisher (the JDK client has
-        // no multipart support). Each http:body part becomes a part with its own Content-Type.
+    private void applyBody(final HttpRequest.Builder builder, final String upperMethod, final boolean isMultipart) {
         if (isMultipart) {
-            final MultipartBodyPublisher.Builder multipart = MultipartBodyPublisher.newBuilder();
-            if (multipartMediaType != null && !multipartMediaType.isEmpty()) {
-                multipart.mediaType(MediaType.parse(multipartMediaType));
-            }
-            for (final BodyPart part : multipartBodies) {
-                final HttpRequest.BodyPublisher partBody =
-                        HttpRequest.BodyPublishers.ofString(part.content(), StandardCharsets.UTF_8);
-                final Map<String, List<String>> partHeaders = part.mediaType() != null && !part.mediaType().isEmpty()
-                        ? Map.of("Content-Type", List.of(part.mediaType()))
-                        : Map.of();
-                multipart.part(MultipartBodyPublisher.Part.create(
-                        HttpHeaders.of(partHeaders, (k, v) -> true), partBody));
-            }
-            final MultipartBodyPublisher publisher = multipart.build();
-            builder.header("Content-Type", publisher.mediaType().toString());
-            builder.method(upperMethod, publisher);
-            return builder.build();
-        }
-
-        // Single body
-        if (bodyContent != null && !bodyContent.isEmpty()) {
-            final Charset charset = bodyMediaType != null
-                    ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
-                    : StandardCharsets.UTF_8;
-            final HttpRequest.BodyPublisher bodyPublisher =
-                    HttpRequest.BodyPublishers.ofString(bodyContent, charset);
-
-            // Set Content-Type if not already set via headers
-            if (bodyMediaType != null && headers.stream().noneMatch(
-                    h -> "Content-Type".equalsIgnoreCase(h[0]))) {
-                builder.header("Content-Type", bodyMediaType);
-            }
-
-            builder.method(upperMethod, bodyPublisher);
+            applyMultipartBody(builder, upperMethod);
+        } else if (bodyContent != null && !bodyContent.isEmpty()) {
+            applySingleBody(builder, upperMethod);
         } else {
             builder.method(upperMethod, HttpRequest.BodyPublishers.noBody());
         }
+    }
 
-        return builder.build();
+    /**
+     * Multipart request body, built with Methanol's MultipartBodyPublisher (the JDK client has no
+     * multipart support). Each http:body part becomes a part with its own Content-Type.
+     */
+    private void applyMultipartBody(final HttpRequest.Builder builder, final String upperMethod) {
+        final MultipartBodyPublisher.Builder multipart = MultipartBodyPublisher.newBuilder();
+        if (multipartMediaType != null && !multipartMediaType.isEmpty()) {
+            multipart.mediaType(MediaType.parse(multipartMediaType));
+        }
+        for (final BodyPart part : multipartBodies) {
+            final HttpRequest.BodyPublisher partBody =
+                    HttpRequest.BodyPublishers.ofString(part.content(), StandardCharsets.UTF_8);
+            final Map<String, List<String>> partHeaders = part.mediaType() != null && !part.mediaType().isEmpty()
+                    ? Map.of("Content-Type", List.of(part.mediaType()))
+                    : Map.of();
+            multipart.part(MultipartBodyPublisher.Part.create(
+                    HttpHeaders.of(partHeaders, (k, v) -> true), partBody));
+        }
+        final MultipartBodyPublisher publisher = multipart.build();
+        builder.header("Content-Type", publisher.mediaType().toString());
+        builder.method(upperMethod, publisher);
+    }
+
+    private void applySingleBody(final HttpRequest.Builder builder, final String upperMethod) {
+        final Charset charset = bodyMediaType != null
+                ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
+                : StandardCharsets.UTF_8;
+        final HttpRequest.BodyPublisher bodyPublisher =
+                HttpRequest.BodyPublishers.ofString(bodyContent, charset);
+        // Set Content-Type if not already set via headers
+        if (bodyMediaType != null && headers.stream().noneMatch(h -> "Content-Type".equalsIgnoreCase(h[0]))) {
+            builder.header("Content-Type", bodyMediaType);
+        }
+        builder.method(upperMethod, bodyPublisher);
     }
 
     public boolean isFollowRedirect() {
         return followRedirect;
+    }
+
+    /**
+     * Whether a 401 response should be answered with credentials (EXPath challenge-response):
+     * credentials and an auth method are present but were not sent preemptively (because
+     * {@code @send-authorization} is not true). If they had been sent preemptively, a 401 means the
+     * credentials are wrong and retrying would not help.
+     *
+     * @return true if the request should be re-sent with an {@code Authorization} header on a 401.
+     */
+    public boolean shouldAttemptChallenge() {
+        return username != null && !sendAuthorization && authMethod != null
+                && ("basic".equalsIgnoreCase(authMethod) || "digest".equalsIgnoreCase(authMethod));
+    }
+
+    /**
+     * Computes the {@code Authorization} header value answering a server's {@code WWW-Authenticate}
+     * challenge, for the request's declared {@code @auth-method} (Basic or Digest). Mirrors the
+     * EXPath reference behavior.
+     *
+     * @param wwwAuthenticate the server's {@code WWW-Authenticate} header value (may be null).
+     * @return the {@code Authorization} header value, or null if the challenge cannot be answered
+     *     (unsupported scheme, missing data, or a scheme mismatch with {@code @auth-method}).
+     */
+    public String challengeResponse(final String wwwAuthenticate) {
+        if (username == null || authMethod == null) {
+            return null;
+        }
+        if ("basic".equalsIgnoreCase(authMethod)) {
+            return "Basic " + base64Credentials();
+        }
+        if ("digest".equalsIgnoreCase(authMethod)) {
+            return digestResponse(wwwAuthenticate);
+        }
+        return null;
+    }
+
+    private String base64Credentials() {
+        return Base64.getEncoder().encodeToString(
+                (username + ":" + (password != null ? password : "")).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Builds an RFC 2617 Digest {@code Authorization} header value from the server's challenge.
+     */
+    private String digestResponse(final String wwwAuthenticate) {
+        if (wwwAuthenticate == null) {
+            return null;
+        }
+        final String[] schemeAndParams = wwwAuthenticate.trim().split("\\s+", 2);
+        if (schemeAndParams.length < 2 || !"digest".equalsIgnoreCase(schemeAndParams[0])) {
+            return null;
+        }
+        final Map<String, String> p = parseAuthParams(schemeAndParams[1]);
+        final String realm = p.get("realm");
+        final String nonce = p.get("nonce");
+        final String opaque = p.get("opaque");
+        if (realm == null || nonce == null) {
+            return null;
+        }
+        final String qop = resolveQop(p.get("qop"));
+        final String pwd = password != null ? password : "";
+        final String digestUri = href;
+        final String ha1 = md5(username + ":" + realm + ":" + pwd);
+        final String ha2 = md5(method.toUpperCase() + ":" + digestUri);
+
+        final StringBuilder value = new StringBuilder()
+                .append("username=\"").append(username).append("\", ")
+                .append("realm=\"").append(realm).append("\", ")
+                .append("nonce=\"").append(nonce).append("\", ")
+                .append("uri=\"").append(digestUri).append('"');
+        final String response;
+        if (qop != null) {
+            final String nc = "00000001";
+            final String cnonce = md5(Long.toString(System.nanoTime()));
+            response = md5(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2);
+            value.append(", qop=").append(qop)
+                    .append(", nc=").append(nc)
+                    .append(", cnonce=\"").append(cnonce).append('"');
+        } else {
+            response = md5(ha1 + ":" + nonce + ":" + ha2);
+        }
+        value.append(", response=\"").append(response).append("\", algorithm=MD5");
+        if (opaque != null) {
+            value.append(", opaque=\"").append(opaque).append('"');
+        }
+        return "Digest " + value;
+    }
+
+    /**
+     * Selects the quality-of-protection to use from a server's offered {@code qop} (which may be a
+     * comma-separated list such as {@code "auth,auth-int"}); we implement {@code auth}. Returns null
+     * for the legacy (no-qop) digest variant.
+     */
+    private static String resolveQop(final String offeredQop) {
+        if (offeredQop != null) {
+            for (final String q : offeredQop.split(",")) {
+                if ("auth".equals(q.trim())) {
+                    return "auth";
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses comma-separated {@code key=value} (optionally quoted) auth parameters into a map keyed
+     * by lower-case name. Adequate for the realm/nonce/qop/opaque tokens used here.
+     */
+    private static Map<String, String> parseAuthParams(final String params) {
+        final Map<String, String> map = new HashMap<>();
+        for (final String part : params.split(",")) {
+            final int eq = part.indexOf('=');
+            if (eq > 0) {
+                final String key = part.substring(0, eq).trim().toLowerCase();
+                String val = part.substring(eq + 1).trim();
+                if (val.length() >= 2 && val.startsWith("\"") && val.endsWith("\"")) {
+                    val = val.substring(1, val.length() - 1);
+                }
+                if (!key.isEmpty()) {
+                    map.put(key, val);
+                }
+            }
+        }
+        return map;
+    }
+
+    // Digest authentication is defined over MD5 (RFC 2617); this is protocol-mandated, not a
+    // security choice on our part.
+    @SuppressWarnings("java:S4790")
+    private static String md5(final String s) {
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            final byte[] digest = md.digest(s.getBytes(StandardCharsets.UTF_8));
+            final StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (final byte b : digest) {
+                hex.append(Character.forDigit((b >> 4) & 0xF, 16)).append(Character.forDigit(b & 0xF, 16));
+            }
+            return hex.toString();
+        } catch (final NoSuchAlgorithmException e) {
+            // MD5 is required to be present on every Java platform
+            throw new IllegalStateException("MD5 not available", e);
+        }
     }
 
     public boolean isStatusOnly() {

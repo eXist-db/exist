@@ -92,30 +92,10 @@ public class SendRequestFunction extends BasicFunction {
         final RequestBuilder reqBuilder = new RequestBuilder();
         reqBuilder.parse(requestNode, hrefParam, bodiesParam);
 
-        // Build the HTTP client. Methanol augments java.net.http.HttpClient: autoAcceptEncoding
-        // advertises Accept-Encoding and transparently decodes gzip/deflate responses, and readTimeout
-        // gives a per-read (inactivity) timeout that the bare JDK client lacks.
-        final Methanol.Builder clientBuilder = Methanol.newBuilder()
-                .autoAcceptEncoding(true);
-        if (reqBuilder.isFollowRedirect()) {
-            clientBuilder.followRedirects(HttpClient.Redirect.NORMAL);
-        } else {
-            clientBuilder.followRedirects(HttpClient.Redirect.NEVER);
-        }
-        if (reqBuilder.getTimeout() > 0) {
-            final Duration timeout = Duration.ofSeconds(reqBuilder.getTimeout());
-            clientBuilder.connectTimeout(timeout);
-            clientBuilder.readTimeout(timeout);
-        }
-
-        // Build HttpRequest
         final HttpRequest httpRequest = reqBuilder.build();
 
-        // Send request
-        try (final HttpClient client = clientBuilder.build()) {
-            final HttpResponse<byte[]> response = client.send(httpRequest,
-                    HttpResponse.BodyHandlers.ofByteArray());
-
+        try (final HttpClient client = buildClient(reqBuilder)) {
+            final HttpResponse<byte[]> response = send(client, reqBuilder, httpRequest);
             return ResponseHandler.buildResult(response, context, this,
                     reqBuilder.isStatusOnly(), reqBuilder.getOverrideMediaType());
 
@@ -133,5 +113,40 @@ public class SendRequestFunction extends BasicFunction {
             throw new XPathException(this, HttpClientModule.HC001,
                     "Request interrupted: " + e.getMessage());
         }
+    }
+
+    /**
+     * Builds the HTTP client. Methanol augments java.net.http.HttpClient: autoAcceptEncoding
+     * advertises Accept-Encoding and transparently decodes gzip/deflate responses, and readTimeout
+     * gives a per-read (inactivity) timeout that the bare JDK client lacks.
+     */
+    private static HttpClient buildClient(final RequestBuilder reqBuilder) {
+        final Methanol.Builder clientBuilder = Methanol.newBuilder()
+                .autoAcceptEncoding(true)
+                .followRedirects(reqBuilder.isFollowRedirect()
+                        ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
+        if (reqBuilder.getTimeout() > 0) {
+            final Duration timeout = Duration.ofSeconds(reqBuilder.getTimeout());
+            clientBuilder.connectTimeout(timeout).readTimeout(timeout);
+        }
+        return clientBuilder.build();
+    }
+
+    /**
+     * Sends the request, and — per the EXPath challenge-response model — if credentials were not
+     * sent preemptively and the server answers 401 with a WWW-Authenticate challenge, re-sends once
+     * with the computed Authorization header (Basic or Digest).
+     */
+    private static HttpResponse<byte[]> send(final HttpClient client, final RequestBuilder reqBuilder,
+            final HttpRequest httpRequest) throws IOException, InterruptedException, XPathException {
+        final HttpResponse<byte[]> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() == 401 && reqBuilder.shouldAttemptChallenge()) {
+            final String challenge = response.headers().firstValue("WWW-Authenticate").orElse(null);
+            final String authorization = reqBuilder.challengeResponse(challenge);
+            if (authorization != null) {
+                return client.send(reqBuilder.build(authorization), HttpResponse.BodyHandlers.ofByteArray());
+            }
+        }
+        return response;
     }
 }

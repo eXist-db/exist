@@ -36,7 +36,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -185,21 +189,7 @@ public class SendRequestFunctionTest {
             sendResponse(exchange, 500, "text/plain", "Internal Server Error");
         });
 
-        // Basic auth endpoint
-        httpServer.createContext("/auth/basic", exchange -> {
-            String auth = exchange.getRequestHeaders().getFirst("Authorization");
-            if (auth != null && auth.startsWith("Basic ")) {
-                String decoded = new String(Base64.getDecoder().decode(auth.substring(6)),
-                        StandardCharsets.UTF_8);
-                if ("testuser:testpass".equals(decoded)) {
-                    sendResponse(exchange, 200, "application/json",
-                            "{\"authenticated\":true,\"user\":\"testuser\"}");
-                    return;
-                }
-            }
-            exchange.getResponseHeaders().set("WWW-Authenticate", "Basic realm=\"test\"");
-            sendResponse(exchange, 401, "text/plain", "Unauthorized");
-        });
+        registerAuthEndpoints();
 
         // Multi-header endpoint — returns multiple Set-Cookie headers
         httpServer.createContext("/multi-header", exchange -> {
@@ -322,6 +312,78 @@ public class SendRequestFunctionTest {
     private static String escapeJson(String s) {
         return s.replace("\\", "\\\\").replace("\"", "\\\"")
                 .replace("\n", "\\n").replace("\r", "\\r");
+    }
+
+    /** Registers the Basic and Digest authentication test endpoints. */
+    private static void registerAuthEndpoints() {
+        // Basic auth endpoint: challenges with Basic, then accepts the credentials
+        httpServer.createContext("/auth/basic", exchange -> {
+            final String auth = exchange.getRequestHeaders().getFirst("Authorization");
+            if (auth != null && auth.startsWith("Basic ")) {
+                final String decoded = new String(Base64.getDecoder().decode(auth.substring(6)),
+                        StandardCharsets.UTF_8);
+                if ("testuser:testpass".equals(decoded)) {
+                    sendResponse(exchange, 200, "application/json",
+                            "{\"authenticated\":true,\"user\":\"testuser\"}");
+                    return;
+                }
+            }
+            exchange.getResponseHeaders().set("WWW-Authenticate", "Basic realm=\"test\"");
+            sendResponse(exchange, 401, "text/plain", "Unauthorized");
+        });
+
+        // Digest auth endpoint (RFC 2617): challenges with Digest, then validates the response hash
+        httpServer.createContext("/auth/digest", exchange -> {
+            final String realm = "testrealm";
+            final String nonce = "abc123nonce";
+            final String qop = "auth";
+            final String auth = exchange.getRequestHeaders().getFirst("Authorization");
+            if (auth != null && auth.startsWith("Digest ")) {
+                final Map<String, String> p = parseDigestParams(auth.substring("Digest ".length()));
+                final String ha1 = md5Hex("testuser:" + realm + ":testpass");
+                final String ha2 = md5Hex(exchange.getRequestMethod() + ":" + p.getOrDefault("uri", ""));
+                final String expected = md5Hex(ha1 + ":" + nonce + ":" + p.getOrDefault("nc", "")
+                        + ":" + p.getOrDefault("cnonce", "") + ":" + qop + ":" + ha2);
+                if ("testuser".equals(p.get("username")) && expected.equals(p.get("response"))) {
+                    sendResponse(exchange, 200, "application/json",
+                            "{\"authenticated\":true,\"user\":\"testuser\"}");
+                    return;
+                }
+            }
+            exchange.getResponseHeaders().set("WWW-Authenticate",
+                    "Digest realm=\"" + realm + "\", nonce=\"" + nonce + "\", qop=\"" + qop + "\"");
+            sendResponse(exchange, 401, "text/plain", "Unauthorized");
+        });
+    }
+
+    /** Parses comma-separated, optionally-quoted Digest auth parameters into a lower-cased map. */
+    private static Map<String, String> parseDigestParams(final String params) {
+        final Map<String, String> map = new HashMap<>();
+        for (final String part : params.split(",")) {
+            final int eq = part.indexOf('=');
+            if (eq > 0) {
+                final String key = part.substring(0, eq).trim().toLowerCase();
+                String val = part.substring(eq + 1).trim();
+                if (val.length() >= 2 && val.startsWith("\"") && val.endsWith("\"")) {
+                    val = val.substring(1, val.length() - 1);
+                }
+                map.put(key, val);
+            }
+        }
+        return map;
+    }
+
+    private static String md5Hex(final String s) {
+        try {
+            final byte[] digest = MessageDigest.getInstance("MD5").digest(s.getBytes(StandardCharsets.UTF_8));
+            final StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (final byte b : digest) {
+                hex.append(Character.forDigit((b >> 4) & 0xF, 16)).append(Character.forDigit(b & 0xF, 16));
+            }
+            return hex.toString();
+        } catch (final NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private String baseUrl() {
@@ -1045,6 +1107,36 @@ public class SendRequestFunctionTest {
                 "return $response[1]/@status/string()");
         assertEquals("No auth should get 401",
                 "401", result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void basicChallengeResponse() throws XMLDBException {
+        // No send-authorization: the client must answer the server's 401 Basic challenge by
+        // re-sending the request with credentials (EXPath default behavior).
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $response := http:send-request(" +
+                "  <http:request method='GET' href='" + baseUrl() + "/auth/basic'" +
+                "    username='testuser' password='testpass' auth-method='basic'/>" +
+                ")\n" +
+                "return parse-json($response[2])?authenticated");
+        assertEquals("Basic challenge-response should authenticate without send-authorization",
+                "true", result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void digestChallengeResponse() throws XMLDBException {
+        // The client must answer the server's 401 Digest challenge by computing the RFC 2617
+        // digest response and re-sending; the test server validates the response hash.
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $response := http:send-request(" +
+                "  <http:request method='GET' href='" + baseUrl() + "/auth/digest'" +
+                "    username='testuser' password='testpass' auth-method='digest'/>" +
+                ")\n" +
+                "return parse-json($response[2])?authenticated");
+        assertEquals("Digest challenge-response should authenticate",
+                "true", result.getResource(0).getContent().toString());
     }
 
     // ========================================================================
