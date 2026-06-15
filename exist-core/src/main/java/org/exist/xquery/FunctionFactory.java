@@ -158,11 +158,20 @@ public class FunctionFactory {
         final String uri = qname.getNamespaceURI();
 
         if (optimizeStringFunctions && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
-            return switch (local)  {
-                case "starts-with" -> startsWith(context, ast, parent, params);
-                case "ends-with" -> endsWith(context, ast, parent, params);
-                case "contains" -> contains(context, ast, parent, params);
-                case "equals" -> equals(context, ast, parent, params);
+            return switch (local) {
+                case "starts-with" ->
+                        optimizeStringFunction(context, ast, parent, params, "starts-with", StringTruncationOperator.RIGHT);
+                case "ends-with" ->
+                        optimizeStringFunction(context, ast, parent, params, "ends-with", StringTruncationOperator.LEFT);
+                case "contains" ->
+                        optimizeStringFunction(context, ast, parent, params, "contains", StringTruncationOperator.BOTH);
+                case "equals" -> {
+                    final GeneralComparison op = optimizeStringFunction(context, ast, parent, params, "equals", StringTruncationOperator.EQUALS);
+                    if (params.size() < 3) {
+                        op.setCollation(new StringValue("?strength=identical"));
+                    }
+                    yield op;
+                }
                 default -> functionCall(context, ast, params, qname);
             };
         }
@@ -185,127 +194,47 @@ public class FunctionFactory {
     }
 
     /**
-     * starts-with(node-set, string)
+     * Optimize a function call that compares strings into a general comparison
+     *
+     * @param context      The XQuery context
+     * @param ast          The parsed AST
+     * @param parent       The parent expression
+     * @param params       The list of parameters
+     * @param functionName The name of the function to optimize
+     * @param operator     The StringTruncationOperator to optimize with
+     * @return The optimized GeneralComparison
+     * @throws XPathException If the provided parameters are incorrect
      */
-    private static GeneralComparison startsWith(XQueryContext context,
-            XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function starts-with() requires two or three arguments");
+    private static GeneralComparison optimizeStringFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final PathExpr parent,
+            final List<Expression> params,
+            final String functionName,
+            final StringTruncationOperator operator
+    ) throws XPathException {
+        if (params.size() < 2 || params.size() > 3) {
+            throw new XPathException(ast,
+                    ErrorCodes.XPST0017, "Function " + functionName + "() requires two or three arguments");
         }
-        if (params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function starts-with() requires two or three arguments");
-        }
-        final PathExpr p0 = (PathExpr) params.getFirst();
-        final PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of starts-with() is empty");
-        }
-        final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Comparison.EQ, StringTruncationOperator.RIGHT);
-        op.setLocation(ast.getLine(), ast.getColumn());
-        //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
-                "OPTIMIZATION", "Rewritten start-with as a general comparison with a right truncations");
-        if (params.size() == 3) {
-            op.setCollation((Expression) params.get(2));
-        }
-        return op;
-    }
 
-    /**
-     * ends-with(node-set, string)
-     */
-    private static GeneralComparison endsWith(XQueryContext context, XQueryAST ast,
-            PathExpr parent, List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), 
-        		ErrorCodes.XPST0017, "Function ends-with() requires two or three arguments");
-        }
-        if (params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function ends-with() requires two or three arguments");
-        }
         final PathExpr p0 = (PathExpr) params.getFirst();
         final PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of ends-with() is empty");
-        }
-        final GeneralComparison op = new GeneralComparison(context, p0, p1, Comparison.EQ, StringTruncationOperator.LEFT);
-        //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
-            "OPTIMIZATION", "Rewritten ends-with as a general comparison with a left truncations");
-        op.setLocation(ast.getLine(), ast.getColumn());
-        if(params.size() == 3) {
-            op.setCollation((Expression) params.get(2));
-        }
-        return op;
-    }
 
-    /**
-     * contains(node-set, string)
-     */
-    private static GeneralComparison contains(XQueryContext context, XQueryAST ast,
-            PathExpr parent, List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function contains() requires two or three arguments");
+        if (p1.getSubExpressionCount() == 0) {
+            throw new XPathException(ast, ErrorCodes.XPTY0004, "Second argument of " + functionName + "() is empty");
         }
-        if (params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function contains() requires two or three arguments");
-        }
-        final PathExpr p0 = (PathExpr) params.getFirst();
-        final PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of contains() is empty");
-        }
-        final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Comparison.EQ, StringTruncationOperator.BOTH);
-        //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
-            "OPTIMIZATION", "Rewritten contains() as a general comparison with left and right truncations");
-        op.setLocation(ast.getLine(), ast.getColumn());
-        if (params.size() == 3) {
-            op.setCollation((Expression) params.get(2));
-        }
-        return op;
-    }
 
-    /**
-     * equals(node-set, string)
-     */
-    private static GeneralComparison equals(XQueryContext context, XQueryAST ast,
-            PathExpr parent, List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function equals() requires two or three arguments");
-        }
-        if (params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function equals() requires two or three arguments");
-        }
-        final PathExpr p0 = (PathExpr) params.getFirst();
-        final PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of equals() is empty");
-        }
-        final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Comparison.EQ, StringTruncationOperator.EQUALS);
-        //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
-            "OPTIMIZATION", "Rewritten contains() as a general comparison with no truncations");
+        final GeneralComparison op = new GeneralComparison(context, p0, p1, Comparison.EQ, operator);
         op.setLocation(ast.getLine(), ast.getColumn());
+        //TODO : not sure for parent -pb
+        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",
+                "Rewritten " + functionName + "() as a general comparison with a right truncations");
+
         if (params.size() == 3) {
-            op.setCollation((Expression) params.get(2));
-        } else {
-            op.setCollation(new StringValue("?strength=identical"));
+            op.setCollation(params.get(2));
         }
+
         return op;
     }
 
