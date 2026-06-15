@@ -27,6 +27,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.KnnFloatVectorField;
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.ReindexScope;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
@@ -356,8 +357,10 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     @Override
-    protected void build(final DBBroker broker, final DocumentImpl document, final NodeId nodeId,
+    protected void build(final DBBroker broker, final NodeProxy contextNode,
             final Document luceneDoc, final CharSequence text) {
+        final DocumentImpl document = contextNode.getOwnerDocument();
+        final NodeId nodeId = contextNode.getNodeId();
         final ReindexScope scope = broker.getIndexController().getReindexScope();
         try {
             if (scope == ReindexScope.FULLTEXT && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
@@ -372,7 +375,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
             try {
-                doBuild(broker, document, nodeId, luceneDoc, text);
+                doBuild(broker, contextNode, luceneDoc, text);
             } finally {
                 if (embeddingLocal) {
                     STORE_CONTEXT.remove();
@@ -381,7 +384,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         } catch (IOException e) {
             LOG.debug("vector.dbx read failed, falling back to XML: {}", e.getMessage());
             try {
-                doBuild(broker, document, nodeId, luceneDoc, text);
+                doBuild(broker, contextNode, luceneDoc, text);
             } catch (PermissionDeniedException | XPathException ex) {
                 LOG.warn("Error evaluating expression for vector field '{}': {}", fieldName, ex.getMessage());
             }

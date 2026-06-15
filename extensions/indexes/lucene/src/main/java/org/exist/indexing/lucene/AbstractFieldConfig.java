@@ -29,7 +29,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
@@ -100,9 +99,9 @@ public abstract class AbstractFieldConfig {
 
     protected abstract void processText(CharSequence text, Document luceneDoc);
 
-    protected abstract void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text);
+    protected abstract void build(DBBroker broker, NodeProxy contextNode, Document luceneDoc, CharSequence text);
 
-    protected void doBuild(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text)
+    protected void doBuild(DBBroker broker, NodeProxy contextNode, Document luceneDoc, CharSequence text)
             throws PermissionDeniedException, XPathException {
         if (expression.isEmpty()) {
             processText(text, luceneDoc);
@@ -116,19 +115,16 @@ public abstract class AbstractFieldConfig {
         }
 
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final NodeProxy currentNode = new NodeProxy(null, document, nodeId);
         try {
-            Sequence result = xquery.execute(broker, compiled, currentNode);
+            Sequence result = xquery.execute(broker, compiled, contextNode);
 
             if (!result.isEmpty()) {
                 processResult(result, luceneDoc);
             }
         } catch (PermissionDeniedException | XPathException e) {
-            isValid = false;
             throw e;
         } finally {
-            compiled.reset();
-            compiled.getContext().reset();
+            try { compiled.reset(); } finally { compiled.getContext().reset(); }
         }
     }
 

@@ -2070,14 +2070,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (final PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
 
-
+                final short nodeType = pending.qname.getNameType() == ElementValue.ATTRIBUTE
+                        ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE;
+                final NodeProxy contextNode = new NodeProxy(null, currentDoc, pending.nodeId, nodeType);
                 List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
                 final ReindexScope scope = broker.getIndexController().getReindexScope();
                 facetConfigs.forEach(config -> {
                     if (scope == ReindexScope.VECTOR && !(config instanceof LuceneVectorFieldConfig)) {
                         return; // Vector-only: skip fulltext fields and facets
                     }
-                    config.build(broker, currentDoc, pending.nodeId, doc, pending.text);
+                    config.build(broker, contextNode, doc, pending.text);
                 });
                 // register field analyzers so indexing uses the same analyzer as querying
                 final LuceneConfig luceneConfig = pending.idxConf.getParent();

@@ -23,8 +23,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetField;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.numbering.NodeId;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -117,9 +116,9 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         }
     }
 
-    public void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
+    public void build(DBBroker broker, NodeProxy contextNode, Document luceneDoc, CharSequence text) {
         try {
-            doBuild(broker, document, nodeId, luceneDoc, text);
+            doBuild(broker, contextNode, luceneDoc, text);
         } catch (PermissionDeniedException e) {
             LOG.warn("Permission denied while evaluating expression for facet '{}': {}", dimension, expression, e);
         } catch (XPathException e) {
