@@ -159,6 +159,23 @@ Add to `ErrorCodes.java` in a labeled block for your feature area:
 public static final ErrorCode FOXX0001 = new ErrorCode("FOXX0001", "Description");
 ```
 
+### Choosing XQSuite vs Java tests
+
+Default to **XQSuite** (`%test:` annotations) for anything that is XQuery-level behavior — it's idiomatic, runs in-process, and lives beside the XQuery code.
+
+Use **Java** only when XQSuite structurally can't express or exercise the behavior:
+
+1. The unit under test is **Java, not XQuery** (a util/algorithm class) — pure JUnit.
+2. The function needs a **context XQSuite doesn't provide** — above all an HTTP request/response context. `request:`/`response:`/`session:` functions throw `XPDY0002` with no live request. Test via Java with a mocked `RequestWrapper` + `context.setHttpContext(...)` (see `GetData2Test`), or over real HTTP (`RESTServiceTest`).
+3. The behavior **IS the HTTP/transport layer** — status codes, response headers (e.g. `Content-Type`), serialization wire format, end-to-end content negotiation → Java HTTP integration test (`RESTServiceTest`).
+4. Behavior depends on **Java-level wiring** — broker pool, locking/concurrency, transactions, startup/config.
+
+Within Java, use the lightest vehicle that exercises the real behavior: pure unit test for pure logic; mocked-request unit test for request-bound function logic (`GetData2Test` pattern); full HTTP integration test only when you need the real request pipeline / transport.
+
+One-line test: "Can this be a pure XQuery assertion, runnable without an HTTP request or Java-internal state?" → XQSuite. Otherwise → Java, lightest form.
+
+Concrete precedent: PR eXist-db/exist#6477 (request-module content negotiation) — `request:negotiate-content-type` / `request:parse-accept-header` couldn't be XQSuite-tested (request-bound), so they use `AcceptHeaderTest` (pure logic) + `RESTServiceTest` (HTTP wiring).
+
 ## Git & PR Workflow
 
 ### Remotes
@@ -215,12 +232,6 @@ eXist-db uses the [exist-xqts-runner](https://github.com/eXist-db/exist-xqts-run
 ### XQuery 4.0 Reference Implementations
 - **BaseX**: reference implementation for XQuery 4.0 features including XQUF and ixml
 - **Saxon**: reference implementation for XQuery 4.0, XPath 4.0, and XSLT 4.0
-
-## Known Issues
-
-- `groupby.collation` test is flaky — occasionally throws `ArrayIndexOutOfBoundsException`. Pre-existing FLWOR bug.
-- eXist doesn't check HOF return types, only arity (issue #3382). `fn:filter` uses `effectiveBooleanValue()` instead of validating `xs:boolean` return type.
-- `fn:doc()` can only load documents from the XML database, not from the local filesystem via `file://` URIs (by design — security boundary).
 
 ---
 
