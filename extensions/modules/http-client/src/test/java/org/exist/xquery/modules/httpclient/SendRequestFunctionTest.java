@@ -1303,6 +1303,23 @@ public class SendRequestFunctionTest {
     }
 
     @Test
+    public void connectionErrorIsCatchableAsExpathHC001() throws XMLDBException {
+        // Regression test for #4256: a connection error must surface as the EXPath error
+        // expath-err:HC001 (namespace http://expath.org/ns/error), catchable from XQuery — not as a
+        // raw Java exception (org.expath.httpclient.HttpClientException), as the old client did.
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "declare namespace expath-err = 'http://expath.org/ns/error';\n" +
+                "try {\n" +
+                "  http:send-request(<http:request method='GET' href='http://localhost:1' timeout='2'/>)\n" +
+                "} catch expath-err:HC001 {\n" +
+                "  'caught-HC001'\n" +
+                "}");
+        assertEquals("Connection error must be catchable as expath-err:HC001 (#4256)",
+                "caught-HC001", result.getResource(0).getContent().toString());
+    }
+
+    @Test
     public void missingHrefRaisesError() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
