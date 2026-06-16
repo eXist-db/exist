@@ -479,6 +479,143 @@ function xtj:xmlmap-to-json-for-exponent($int as xs:string) as xs:string {
     )
 };
 
+(: ===========================================================
+   F&O 3.1 §17.4.2 / §17.5.4 — structural validation tests
+   (parity with XQTS HEAD xml-to-json-{033,040,042,043,062,063,069,081,082})
+   =========================================================== :)
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-text-child-of-map() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+            <string key="t">tab</string>blubber<string key="u">undo</string>
+        </map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-text-child-of-array() {
+    fn:xml-to-json(
+        <array xmlns="http://www.w3.org/2005/xpath-functions">
+            <string>tab</string>blubber<string>undo</string>
+        </array>
+    )
+};
+
+declare
+    %test:assertEquals('{"a":null,"b":null}')
+function xtj:xml-to-json-whitespace-between-map-children-allowed() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+            <null key="a"/>
+            <null key="b"/>
+        </map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-disallowed-no-ns-attribute() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+            <null key="a" yek="z"/>
+            <null key="b"/>
+        </map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-attribute-in-json-namespace() {
+    fn:xml-to-json(
+        <j:map xmlns:j="http://www.w3.org/2005/xpath-functions" j:base="http://www.w3.org">
+            <j:string key="t">tab</j:string>
+        </j:map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-invalid-escaped-key-value() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+            <string escaped-key="bonkers" key="t">tab</string>
+        </map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-invalid-escaped-value() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+            <string escaped="potty" key="t">tab</string>
+        </map>
+    )
+};
+
+declare
+    %test:assertEquals('{"\\t":"tab"}')
+function xtj:xml-to-json-escaped-on-map-tolerated() {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions" escaped="0">
+            <string key="\t">tab</string>
+        </map>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-element-child-of-string() {
+    fn:xml-to-json(
+        <string xmlns="http://www.w3.org/2005/xpath-functions">ok<null/></string>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-element-child-of-boolean() {
+    fn:xml-to-json(
+        <boolean xmlns="http://www.w3.org/2005/xpath-functions">true<string>qq</string></boolean>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-element-child-of-null() {
+    fn:xml-to-json(
+        <null xmlns="http://www.w3.org/2005/xpath-functions"><null/></null>
+    )
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-element-child-of-number() {
+    fn:xml-to-json(
+        <number xmlns="http://www.w3.org/2005/xpath-functions">1<null/></number>
+    )
+};
+
+declare
+    %test:assertEquals('"ok"')
+function xtj:xml-to-json-foreign-ns-attribute-ignored() {
+    fn:xml-to-json(
+        <string xmlns="http://www.w3.org/2005/xpath-functions"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:type="xs:string">ok</string>
+    )
+};
+
+declare
+    %test:assertEquals('"ok"')
+function xtj:xml-to-json-escaped-numeric-boolean() {
+    fn:xml-to-json(
+        <string xmlns="http://www.w3.org/2005/xpath-functions" escaped="0">ok</string>
+    )
+};
+
 declare
     %test:arg("int", "1E9") %test:assertXPath('$result/fn:map/fn:number = ''1E9''')
     %test:arg("int", "1E+9") %test:assertXPath('$result/fn:map/fn:number = ''1E+9''')
