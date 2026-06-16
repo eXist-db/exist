@@ -11,8 +11,30 @@
   <Call name="addIfAbsentConnectionFactory">
     <Arg>
       <New class="org.eclipse.jetty.server.SslConnectionFactory">
-        <Arg name="next">http/1.1</Arg>
+        <Arg name="next">alpn</Arg>
         <Arg name="sslContextFactory"><Ref refid="sslContextFactory"/></Arg>
+      </New>
+    </Arg>
+  </Call>
+
+  <Call name="addConnectionFactory">
+    <Arg>
+      <New class="org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory">
+        <Arg name="protocols">
+          <Array type="String">
+            <Item>h2</Item>
+            <Item>http/1.1</Item>
+          </Array>
+        </Arg>
+        <Set name="defaultProtocol">http/1.1</Set>
+      </New>
+    </Arg>
+  </Call>
+
+  <Call name="addConnectionFactory">
+    <Arg>
+      <New class="org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory">
+        <Arg name="config"><Ref refid="sslHttpConfig" /></Arg>
       </New>
     </Arg>
   </Call>
