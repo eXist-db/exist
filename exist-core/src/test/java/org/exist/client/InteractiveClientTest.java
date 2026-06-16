@@ -268,7 +268,7 @@ class InteractiveClientTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"xxxxInvalid password for userXXXX", "YYYYYConnection refused: connectXXXXX", "XXXUser AAAA unknownXXXX"})
+    @ValueSource(strings = {"xxxxInvalid password for userXXXX", "YYYYYConnection refused: connectXXXXX", "XXXUser AAAA unknownXXXX", "HTTP server returned unexpected status: Unauthorized"})
     void isRetryableError(String errorMessage) {
         assertThat(client.isRetryableError(errorMessage)).isTrue();
     }
