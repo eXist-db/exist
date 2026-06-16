@@ -1378,6 +1378,75 @@ try {
     }
 
     /**
+     * request:negotiate-content-type picks the best server media type for the request's Accept header.
+     */
+    @Test
+    public void negotiateContentTypeFromAcceptHeader() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist">
+                    <text>
+                        xquery version "3.1";
+                        import module namespace request="http://exist-db.org/xquery/request";
+                        request:negotiate-content-type(("application/json", "application/xml"))
+                    </text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            connect.setRequestProperty("Accept", "application/json;q=0.9, application/xml;q=0.4");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(query);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            final String response = readResponse(connect.getInputStream());
+            assertTrue("Expected application/json in: " + response, response.contains("application/json"));
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * request:parse-accept-header parses the Accept header into a quality-ranked sequence of maps.
+     */
+    @Test
+    public void parseAcceptHeaderReturnsRankedMediaTypes() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist">
+                    <text>
+                        xquery version "3.1";
+                        import module namespace request="http://exist-db.org/xquery/request";
+                        string-join(request:parse-accept-header()?type, ",")
+                    </text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            connect.setRequestProperty("Accept", "text/html, application/json;q=0.9");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(query);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            final String response = readResponse(connect.getInputStream());
+            assertTrue("Expected text/html in: " + response, response.contains("text/html"));
+            assertTrue("Expected application/json in: " + response, response.contains("application/json"));
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
      * By default there should be NO doctype serialized.
      */
     @Test
