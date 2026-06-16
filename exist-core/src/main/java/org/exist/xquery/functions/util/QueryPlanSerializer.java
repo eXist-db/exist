@@ -25,8 +25,11 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
+import org.xml.sax.helpers.AttributesImpl;
 
 import javax.annotation.Nullable;
+
+import static org.exist.xquery.Constants.AXISSPECIFIERS;
 
 /**
  * Serializes a compiled XQuery expression tree as XML.
@@ -52,7 +55,7 @@ public class QueryPlanSerializer extends DefaultExpressionVisitor {
     }
 
     private void startElement(final String name, final String[][] attrs) {
-        final org.xml.sax.helpers.AttributesImpl atts = new org.xml.sax.helpers.AttributesImpl();
+        final AttributesImpl atts = new AttributesImpl();
         for (final String[] attr : attrs) {
             if (attr[1] != null) {
                 atts.addAttribute("", attr[0], attr[0], "CDATA", attr[1]);
@@ -129,7 +132,7 @@ public class QueryPlanSerializer extends DefaultExpressionVisitor {
     public void visitLocationStep(final LocationStep locationStep) {
         startElement("step", mergeAttrs(
                 new String[][]{
-                        {"axis", org.exist.xquery.Constants.AXISSPECIFIERS[locationStep.getAxis()]},
+                        {"axis", AXISSPECIFIERS[locationStep.getAxis()]},
                         {"test", locationStep.getTest().toString()}
                 },
                 locationAttrs(locationStep)));

@@ -21,6 +21,8 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.functions.map.MapExpr;
+
 /**
  * Defines a visitor to be used for traversing and analyzing the
  * expression tree.
@@ -111,13 +113,13 @@ public interface ExpressionVisitor {
     /**
      * Visit a map-constructor expression ({@code map { k1 : v1, k2 : v2 }}).
      * The visitor controls element emission: the call site (i.e.
-     * {@link org.exist.xquery.functions.map.MapExpr#accept}) is expected
+     * {@link MapExpr#accept}) is expected
      * to delegate here rather than calling {@code super.accept} + recursing
      * manually, so that emitters like
      * {@link org.exist.xquery.functions.util.QueryPlanSerializer} can wrap
      * the entries inside the map element rather than emit them as siblings.
      */
-    default void visitMapExpr(final org.exist.xquery.functions.map.MapExpr mapExpr) {
+    default void visitMapExpr(final MapExpr mapExpr) {
         // Default: preserve the prior traversal semantics of
         // MapExpr.accept (a generic visit() followed by walking through
         // every key and value expression). Visitors that care about
