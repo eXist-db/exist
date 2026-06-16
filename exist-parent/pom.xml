@@ -1199,11 +1199,7 @@
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>3.2.8</version>
                 </plugin>
-                <plugin>
-                    <groupId>de.jutzig</groupId>
-                    <artifactId>github-release-plugin</artifactId>
-                    <version>1.6.0</version>
-                </plugin>
+
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
