@@ -67,6 +67,65 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+
+            <!-- Canonical config templates vs native XSDs — see schema/schema-manifest.xml -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-canonical-instances</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                        <configuration>
+                            <validationSets>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/conf.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>collection.xconf.init</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/collection.xconf.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>descriptor.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/descriptor.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-jetty-config/src/main/resources/webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/controller-config.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-core/src/main/resources/org/exist/util</dir>
+                                    <includes>
+                                        <include>mime-types.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/mime-types.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                            </validationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
