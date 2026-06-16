@@ -68,7 +68,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Canonical config templates vs native XSDs — see schema/schema-manifest.xml -->
+            <!-- Canonical config templates vs native XSDs (also drives CI governance via schema/governance-check.xsl) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>

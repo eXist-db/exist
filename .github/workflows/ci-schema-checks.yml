@@ -1,0 +1,64 @@
+name: Schema checks
+
+on:
+  pull_request:
+    paths:
+      - 'schema/**'
+      - 'exist-distribution/src/main/config/**'
+      - 'exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml'
+      - 'exist-core/src/main/resources/org/exist/util/mime-types.xml'
+  push:
+    branches: [develop]
+    paths:
+      - 'schema/**'
+      - 'exist-distribution/src/main/config/**'
+      - 'exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml'
+      - 'exist-core/src/main/resources/org/exist/util/mime-types.xml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MAVEN_OPTS: -DtrimStackTrace=false
+  DEV_JDK: '21'
+
+jobs:
+  schema:
+    name: Native XSD checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+
+      - uses: ./.github/actions/maven-cache
+
+      - name: Install xmllint and xsltproc
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils xsltproc
+
+      - name: Validate canonical templates against XSD
+        run: mvn -V -B --no-transfer-progress validate -Ddependency-check.skip=true -Ddocker=false
+
+      - name: Export base revisions to env
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          chmod +x .github/scripts/prepare-governance-env.sh
+          .github/scripts/prepare-governance-env.sh \
+            "${{ github.workspace }}" \
+            "${{ runner.temp }}"
+
+      - name: Run schema governance check
+        run: |
+          chmod +x .github/scripts/run-governance-check.sh
+          .github/scripts/run-governance-check.sh \
+            "${{ github.workspace }}" \
+            "${{ runner.temp }}/governance-ctx.xml"
