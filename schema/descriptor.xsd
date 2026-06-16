@@ -35,6 +35,7 @@
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="request-replay-log" type="xs:boolean" default="false"/>
+            <xs:attribute name="filtered" type="xs:boolean" default="false"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>
