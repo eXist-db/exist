@@ -36,6 +36,7 @@ import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.AttributeSource;
 import org.apache.lucene.util.BytesRef;
@@ -163,6 +164,8 @@ public class LuceneUtil {
                     extractTermsFromTermRange(termRangeQuery, terms, reader, includeFields);
             case DrillDownQuery drillDownQuery ->
                     extractTermsFromDrillDown(drillDownQuery, terms, reader, includeFields);
+            case FunctionScoreQuery functionScoreQuery ->
+                    extractTerms(functionScoreQuery.getWrappedQuery(), terms, reader, includeFields);
             case null, default -> {
                 query.visit(new QueryVisitor() {
                     @Override
@@ -181,8 +184,11 @@ public class LuceneUtil {
     }
 
     private static void extractTermsFromDrillDown(DrillDownQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        final Query rewritten = query.rewrite(new IndexSearcher(reader));
-        extractTerms(rewritten, terms, reader, includeFields);
+        // Extract terms from the base (content) query only. Rewriting a DrillDownQuery expands it
+        // into a BooleanQuery that also carries the internal dimension-filter clauses (e.g.
+        // $facets:kind$para), whose terms don't appear in document text and prevent correct
+        // highlight extraction. getBaseQuery() returns the content query directly.
+        extractTerms(query.getBaseQuery(), terms, reader, includeFields);
     }
 
     private static void extractTermsFromBoolean(final BooleanQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
