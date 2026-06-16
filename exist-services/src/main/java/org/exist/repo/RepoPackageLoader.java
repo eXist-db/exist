@@ -46,7 +46,6 @@ import java.nio.file.StandardCopyOption;
  * @param repoURL the base URL of the public package repository
  */
 public record RepoPackageLoader(String repoURL) implements PackageLoader {
-
     private static final Logger LOG = LogManager.getLogger(RepoPackageLoader.class);
 
     private static final int CONNECT_TIMEOUT = 15_000;

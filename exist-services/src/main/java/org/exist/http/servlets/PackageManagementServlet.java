@@ -38,6 +38,8 @@ import org.expath.pkg.repo.PackageException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -161,21 +163,7 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
             final List<String> dependents = packageService.findDependents(getPool(), nameOrAbbrev);
             final boolean force = "true".equals(request.getParameter("force"));
             if (!dependents.isEmpty() && !force) {
-                response.setStatus(HttpServletResponse.SC_CONFLICT);
-                response.setContentType("application/json");
-                try (final OutputStream os = response.getOutputStream();
-                     final JsonGenerator gen = createJsonGenerator(os)) {
-                    gen.writeStartObject();
-                    gen.writeStringField("status", "error");
-                    gen.writeStringField("code", "HAS_DEPENDENTS");
-                    gen.writeStringField("message", "Cannot remove: other packages depend on " + nameOrAbbrev);
-                    gen.writeArrayFieldStart("dependents");
-                    for (final String dep : dependents) {
-                        gen.writeString(dep);
-                    }
-                    gen.writeEndArray();
-                    gen.writeEndObject();
-                }
+                writeDependentsConflict(response, nameOrAbbrev, dependents);
                 return;
             }
 
@@ -189,13 +177,41 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
                         "DATABASE_ERROR", e.getMessage());
             }
         } catch (final PackageException e) {
-            if (e.getMessage() != null && e.getMessage().contains("not found")) {
-                writeError(response, HttpServletResponse.SC_NOT_FOUND,
-                        "PACKAGE_NOT_FOUND", e.getMessage());
-            } else {
-                writeError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "PACKAGE_ERROR", e.getMessage());
+            writePackageError(response, e);
+        }
+    }
+
+    /**
+     * Writes a 409 Conflict response listing the packages that still depend on the one being
+     * removed (when removal was requested without {@code force=true}).
+     */
+    private void writeDependentsConflict(final HttpServletResponse response, final String nameOrAbbrev,
+            final List<String> dependents) throws IOException {
+        response.setStatus(HttpServletResponse.SC_CONFLICT);
+        response.setContentType("application/json");
+        try (final OutputStream os = response.getOutputStream();
+             final JsonGenerator gen = createJsonGenerator(os)) {
+            gen.writeStartObject();
+            gen.writeStringField("status", "error");
+            gen.writeStringField("code", "HAS_DEPENDENTS");
+            gen.writeStringField("message", "Cannot remove: other packages depend on " + nameOrAbbrev);
+            gen.writeArrayFieldStart("dependents");
+            for (final String dep : dependents) {
+                gen.writeString(dep);
             }
+            gen.writeEndArray();
+            gen.writeEndObject();
+        }
+    }
+
+    /** Maps a {@link PackageException} raised during removal to a 404 (not found) or 500 response. */
+    private void writePackageError(final HttpServletResponse response, final PackageException e) throws IOException {
+        if (e.getMessage() != null && e.getMessage().contains("not found")) {
+            writeError(response, HttpServletResponse.SC_NOT_FOUND,
+                    "PACKAGE_NOT_FOUND", e.getMessage());
+        } else {
+            writeError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "PACKAGE_ERROR", e.getMessage());
         }
     }
 
@@ -272,7 +288,7 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
         // Parse JSON body manually (avoid adding a JSON parsing dependency)
         final String body;
         try (final InputStream is = request.getInputStream()) {
-            body = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
         final String name = PackageService.extractJsonStringValue(body, "name");
         final String url = PackageService.extractJsonStringValue(body, "url");
@@ -327,7 +343,7 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
         if (contentType != null && contentType.contains("json")) {
             final String body;
             try (final InputStream is = request.getInputStream()) {
-                body = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
             final String url = PackageService.extractJsonStringValue(body, "registry");
             if (url != null && !url.isEmpty()) {
@@ -390,31 +406,27 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
         for (final Map.Entry<String, Object> entry : map.entrySet()) {
             final String key = entry.getKey();
             final Object value = entry.getValue();
-            if (value == null) {
-                gen.writeNullField(key);
-            } else if (value instanceof String s) {
-                gen.writeStringField(key, s);
-            } else if (value instanceof Boolean b) {
-                gen.writeBooleanField(key, b);
-            } else if (value instanceof Number n) {
-                gen.writeNumberField(key, n.longValue());
-            } else if (value instanceof List<?> list) {
-                gen.writeArrayFieldStart(key);
-                for (final Object item : list) {
-                    if (item instanceof Map<?, ?> itemMap) {
-                        writeMapAsJson(gen, (Map<String, Object>) itemMap);
-                    } else if (item instanceof String s) {
-                        gen.writeString(s);
-                    } else {
-                        gen.writeString(String.valueOf(item));
+            switch (value) {
+                case null -> gen.writeNullField(key);
+                case String s -> gen.writeStringField(key, s);
+                case Boolean b -> gen.writeBooleanField(key, b);
+                case Number n -> gen.writeNumberField(key, n.longValue());
+                case List<?> list -> {
+                    gen.writeArrayFieldStart(key);
+                    for (final Object item : list) {
+                        switch (item) {
+                            case Map<?, ?> itemMap -> writeMapAsJson(gen, (Map<String, Object>) itemMap);
+                            case String s -> gen.writeString(s);
+                            default -> gen.writeString(String.valueOf(item));
+                        }
                     }
+                    gen.writeEndArray();
                 }
-                gen.writeEndArray();
-            } else if (value instanceof Map<?, ?> nested) {
-                gen.writeFieldName(key);
-                writeMapAsJson(gen, (Map<String, Object>) nested);
-            } else {
-                gen.writeStringField(key, String.valueOf(value));
+                case Map<?, ?> nested -> {
+                    gen.writeFieldName(key);
+                    writeMapAsJson(gen, (Map<String, Object>) nested);
+                }
+                default -> gen.writeStringField(key, String.valueOf(value));
             }
         }
         gen.writeEndObject();
@@ -425,6 +437,6 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
             return null;
         }
         // URL-decode the path
-        return java.net.URLDecoder.decode(pathInfo, java.nio.charset.StandardCharsets.UTF_8);
+        return URLDecoder.decode(pathInfo, StandardCharsets.UTF_8);
     }
 }

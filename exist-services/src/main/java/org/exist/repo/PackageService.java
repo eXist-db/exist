@@ -54,7 +54,6 @@ import java.util.*;
  * a built-in REST API for package CRUD that does not depend on any XAR package.
  */
 public class PackageService {
-
     private static final Logger LOG = LogManager.getLogger(PackageService.class);
 
     private static final String PKG_NAMESPACE = "http://expath.org/ns/pkg";
@@ -372,31 +371,32 @@ public class PackageService {
             final NodeList deps = root.getElementsByTagNameNS(PKG_NAMESPACE, "dependency");
             final List<Map<String, String>> depList = new ArrayList<>();
             for (int i = 0; i < deps.getLength(); i++) {
-                final Element dep = (Element) deps.item(i);
-                final Map<String, String> depInfo = new LinkedHashMap<>();
-                if (!dep.getAttribute("package").isEmpty()) {
-                    depInfo.put("package", dep.getAttribute("package"));
-                }
-                if (!dep.getAttribute("processor").isEmpty()) {
-                    depInfo.put("processor", dep.getAttribute("processor"));
-                }
-                if (!dep.getAttribute("semver-min").isEmpty()) {
-                    depInfo.put("semverMin", dep.getAttribute("semver-min"));
-                }
-                if (!dep.getAttribute("semver-max").isEmpty()) {
-                    depInfo.put("semverMax", dep.getAttribute("semver-max"));
-                }
-                if (!dep.getAttribute("semver").isEmpty()) {
-                    depInfo.put("semver", dep.getAttribute("semver"));
-                }
-                if (!dep.getAttribute("version").isEmpty()) {
-                    depInfo.put("version", dep.getAttribute("version"));
-                }
-                depList.add(depInfo);
+                depList.add(readDependency((Element) deps.item(i)));
             }
             info.put("dependencies", depList);
         } catch (final Exception e) {
             LOG.debug("Failed to read expath-pkg.xml from {}", pkgDir, e);
+        }
+    }
+
+    /** Extracts the recognized attributes of a single expath {@code <dependency>} element into a map. */
+    private static Map<String, String> readDependency(final Element dep) {
+        final Map<String, String> depInfo = new LinkedHashMap<>();
+        putAttributeIfPresent(dep, "package", "package", depInfo);
+        putAttributeIfPresent(dep, "processor", "processor", depInfo);
+        putAttributeIfPresent(dep, "semver-min", "semverMin", depInfo);
+        putAttributeIfPresent(dep, "semver-max", "semverMax", depInfo);
+        putAttributeIfPresent(dep, "semver", "semver", depInfo);
+        putAttributeIfPresent(dep, "version", "version", depInfo);
+        return depInfo;
+    }
+
+    /** Copies {@code attr} from {@code dep} into {@code target} under {@code key} when the attribute is non-empty. */
+    private static void putAttributeIfPresent(final Element dep, final String attr, final String key,
+            final Map<String, String> target) {
+        final String value = dep.getAttribute(attr);
+        if (!value.isEmpty()) {
+            target.put(key, value);
         }
     }
 
