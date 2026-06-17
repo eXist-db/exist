@@ -24,7 +24,9 @@ Canonical templates may declare an optional **`schemaVersion`** attribute on the
 | `mime-types.xsd` | `<mime-types schemaVersion="…">` |
 | `controller-config.xsd` | `<configuration schemaVersion="…">` |
 
-Keep [`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVersion.java) constants in sync with `xs:schema/@version` on the paired XSDs.
+All five schemas `xs:include` the `schemaVersionType` simple type from [`schema-version-type.xsd`](schema-version-type.xsd) rather than each declaring their own copy (it has no `targetNamespace`, so it is pulled in as a chameleon component and inherits each includer's namespace).
+
+Keep [`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVersion.java) constants in sync with `xs:schema/@version` on the paired XSDs — [`SchemaVersionSyncTest`](../exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java) fails the build if they drift apart, and [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) also triggers on edits to `SchemaVersion.java` itself.
 
 ## Validation
 
@@ -32,7 +34,9 @@ Keep [`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVer
 
 [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) re-runs `mvn validate` on PRs that touch schemas or canonical templates (fast, path-filtered).
 
-**Version bumps** — CI xpath on the base revision exports `GOVERNANCE_OLD_VERSION_*` env vars; schema paths come from [`governance-schemas.xsl`](governance-schemas.xsl) (pairs read from `pom.xml` validationSets). [`governance-check.xsl`](governance-check.xsl) compares old vs current `xs:schema/@version`.
+**Version bumps** — a single Saxon XSLT 2.0 transform, [`governance.xsl`](governance.xsl), does the whole check in one pass: it reads the schema/template pairs straight from `pom.xml`'s `validate-canonical-instances` validationSets, reads changed paths and BASE-revision copies of each XSD via [`unparsed-text()`](https://www.w3.org/TR/xpath-functions-30/#func-unparsed-text)/[`document()`](https://www.w3.org/TR/xslt-30/#document)/[`doc-available()`](https://www.w3.org/TR/xpath-functions-30/#func-doc-available), and fails the build directly with `xsl:message terminate="yes"` (which also prints the GitHub Actions `::error::` annotations) when a paired schema/template changed without its `xs:schema/@version` moving. [`.github/scripts/prepare-governance-context.sh`](../.github/scripts/prepare-governance-context.sh) is pure git plumbing — it resolves the diff base, dumps each schema's BASE-revision content to disk, and writes a small `context.xml` — everything else is XSLT, run via `mvn -N xml:transform@schema-governance`.
+
+That execution is bound to `phase=none` in [`pom.xml`](../pom.xml), so it never runs on an ordinary `mvn install`/`mvn test`/`mvn validate` — only [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) invokes it directly, after running the shim script. Saxon-HE (XSLT 2.0/3.0) is already a `xml-maven-plugin` dependency via `exist-parent/pom.xml`'s `pluginManagement` — no extra CI dependency installation needed (no more `xmllint`/`xsltproc`).
 
 ## Canonical templates
 

@@ -7,6 +7,7 @@ on:
       - 'exist-distribution/src/main/config/**'
       - 'exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml'
       - 'exist-core/src/main/resources/org/exist/util/mime-types.xml'
+      - 'exist-core/src/main/java/org/exist/util/SchemaVersion.java'
   push:
     branches: [develop]
     paths:
@@ -14,6 +15,7 @@ on:
       - 'exist-distribution/src/main/config/**'
       - 'exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml'
       - 'exist-core/src/main/resources/org/exist/util/mime-types.xml'
+      - 'exist-core/src/main/java/org/exist/util/SchemaVersion.java'
   workflow_dispatch:
 
 permissions:
@@ -40,25 +42,19 @@ jobs:
 
       - uses: ./.github/actions/maven-cache
 
-      - name: Install xmllint and xsltproc
-        run: sudo apt-get update && sudo apt-get install -y libxml2-utils xsltproc
-
       - name: Validate canonical templates against XSD
         run: mvn -V -B --no-transfer-progress validate -Ddependency-check.skip=true -Ddocker=false
 
-      - name: Export base revisions to env
+      - name: Prepare governance context
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: |
-          chmod +x .github/scripts/prepare-governance-env.sh
-          .github/scripts/prepare-governance-env.sh \
-            "${{ github.workspace }}" \
-            "${{ runner.temp }}"
+          chmod +x .github/scripts/prepare-governance-context.sh
+          .github/scripts/prepare-governance-context.sh "${{ github.workspace }}"
 
-      - name: Run schema governance check
-        run: |
-          chmod +x .github/scripts/run-governance-check.sh
-          .github/scripts/run-governance-check.sh \
-            "${{ github.workspace }}" \
-            "${{ runner.temp }}/governance-ctx.xml"
+      - name: Run schema governance (XSLT 2.0 / Saxon)
+        run: mvn -N -B --no-transfer-progress xml:transform@schema-governance -Ddependency-check.skip=true -Ddocker=false
+
+      - name: Verify SchemaVersion.java matches XSD versions
+        run: mvn -B --no-transfer-progress test -pl exist-core -Dtest=org.exist.util.SchemaVersionSyncTest -Ddependency-check.skip=true -Ddocker=false
