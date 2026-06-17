@@ -34,6 +34,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -192,7 +193,10 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     protected final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI().toString()), "/");
+        // Resource-naming contract (eXist-db/exist#6463): relPath is a decoded display path.
+        // Encode each segment once into its canonical stored form (escaping %, space, non-ASCII;
+        // sub-delimiters left literal) so a literal '%' round-trips and raw spaces are accepted.
+        final StringTokenizer tok = new StringTokenizer(URIUtils.encodePathForURILenient(relPath), "/");
         while (tok.hasMoreTokens()) {
             final String token = tok.nextToken();
             current = createCollection(current, token);
