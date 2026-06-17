@@ -33,11 +33,11 @@ public final class SchemaVersion {
     public static final String ATTRIBUTE = "schemaVersion";
 
     /** Paired {@code xs:schema/@version} values for canonical templates (keep in sync with {@code schema/*.xsd}). */
-    public static final String CONF = "2.1.0";
-    public static final String COLLECTION_XCONF = "1.2.0";
-    public static final String DESCRIPTOR = "1.2.0";
-    public static final String MIME_TYPES = "1.2.0";
-    public static final String CONTROLLER_CONFIG = "1.1.0";
+    public static final String CONF = "2.1.1";
+    public static final String COLLECTION_XCONF = "1.2.1";
+    public static final String DESCRIPTOR = "1.2.1";
+    public static final String MIME_TYPES = "1.2.1";
+    public static final String CONTROLLER_CONFIG = "1.1.1";
 
     private SchemaVersion() {
     }
@@ -56,15 +56,13 @@ public final class SchemaVersion {
     public static void logDocumentVersion(final Logger log, final String declaredVersion,
             final String expectedVersion, final String documentDescription) {
         if (declaredVersion == null || declaredVersion.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("{} has no {} attribute (legacy document)", documentDescription, ATTRIBUTE);
-            }
+            log.debug("{} has no {} attribute (legacy document)", documentDescription, ATTRIBUTE);
             return;
         }
         if (!declaredVersion.equals(expectedVersion)) {
             log.warn("{} declares {}=\"{}\" but this eXist build expects \"{}\"",
                     documentDescription, ATTRIBUTE, declaredVersion, expectedVersion);
-        } else if (log.isDebugEnabled()) {
+        } else {
             log.debug("{} {}=\"{}\"", documentDescription, ATTRIBUTE, declaredVersion);
         }
     }
