@@ -93,6 +93,12 @@ class ResourceNameCodecTest {
         c.put("a,b;c=d.xml", "a,b;c=d.xml");
         c.put("@home.xml", "@home.xml");
 
+        // --- gen-delimiters that a URL path segment must escape (so REST/WebDAV escape them too,
+        //     and we match, for cross-surface convergence): # ? [ ] ---
+        c.put("a#b.xml", "a%23b.xml");
+        c.put("q?x.xml", "q%3Fx.xml");
+        c.put("[draft].xml", "%5Bdraft%5D.xml");
+
         // --- literal percent: the hard case decision 2 is about (ALWAYS escaped to %25) ---
         c.put("50%.xml", "50%25.xml");
         c.put("a%20b.xml", "a%2520b.xml");
