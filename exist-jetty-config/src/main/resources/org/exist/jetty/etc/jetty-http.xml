@@ -31,6 +31,11 @@
                 <Arg name="config"><Ref refid="httpConfig" /></Arg>
               </New>
             </Item>
+            <Item>
+              <New class="org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory">
+                <Arg name="config"><Ref refid="httpConfig" /></Arg>
+              </New>
+            </Item>
           </Array>
         </Arg>
         <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host" deprecated="jetty.host"/></Default></Property></Set>

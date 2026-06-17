@@ -371,6 +371,22 @@
                 <artifactId>jetty-http</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty.http2</groupId>
+                <artifactId>jetty-http2-server</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-alpn-server</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-alpn-java-server</artifactId>
+                <version>${jetty.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <!-- Jetty 12 ee10 modules (Jakarta EE 10 / Servlet 6.0) -->
             <dependency>
                 <groupId>org.eclipse.jetty.ee10</groupId>
