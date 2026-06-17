@@ -273,7 +273,186 @@ public class URIUtils {
 		result = result.replaceAll("%25", "%");
 		return result;
 	}
-	
+
+	// =========================================================================================
+	// Resource-naming contract prototype (eXist-db/exist#6463, decision 2: literal '%')
+	//
+	// The pair {encodeForURILenient, decodeForURI} below is the canonical store/display codec
+	// for a single resource or collection NAME segment under the proposed contract. It is the
+	// "Unicode-all-the-way, sub-delimiters-literal" direction, extended to be BIJECTIVE so that a
+	// literal percent sign in a name round-trips. The keystone test is ResourceNameCodecTest.
+	// =========================================================================================
+
+	/**
+	 * Encodes a single resource/collection NAME segment into its canonical stored form under the
+	 * proposed resource-naming contract (see eXist-db/exist#6463, decision 2). This is the
+	 * "lenient" encoding: it percent-encodes only what storage requires to be unambiguous --
+	 * control characters, space, non-ASCII (as UTF-8 bytes), the path separator {@code '/'}
+	 * ({@code %2F}) and, crucially, a literal percent sign {@code '%'} ({@code %25}) -- while
+	 * leaving sub-delimiters and other printable ASCII (e.g. {@code & + ' ( ) @ , ; = $ [ ]})
+	 * literal. Leaving sub-delimiters literal keeps human-friendly names such as {@code it's.xml}
+	 * and {@code a+b.xml} readable in storage (the eXide#824 direction); always escaping
+	 * {@code '%'} as {@code %25} is what makes the encoding bijective, so a literal percent in a
+	 * name ({@code 50%.xml}, {@code a%20b.xml}) is distinguishable from a percent-escape and is
+	 * recovered exactly by {@link #decodeForURI(String)}.
+	 *
+	 * <p>This differs from {@link #iriToURI(String)} in exactly the two respects required for
+	 * bijectivity of a single name segment: {@code '/'} is NOT left literal (a slash inside a
+	 * name is data, not a separator), and {@code '%'} is NOT un-escaped back from {@code %25}. It
+	 * differs from {@link #encodeForURI(String)} (the strict RFC 3986 path-component encoder) only
+	 * in that the strict encoder additionally escapes sub-delimiters ({@code it's -> it%27s});
+	 * both escape {@code '%'}.</p>
+	 *
+	 * <p>This encoding is deliberately NOT idempotent: {@code encodeForURILenient("50%")} is
+	 * {@code "50%25"} and encoding that again is {@code "50%2525"}. The contract therefore
+	 * requires it be applied EXACTLY ONCE, at the boundary where a decoded display name enters
+	 * storage.</p>
+	 *
+	 * @param nameSegment the literal (decoded) resource or collection name segment.
+	 *
+	 * @return the canonical percent-encoded stored form of the name segment.
+	 */
+	public static String encodeForURILenient(final String nameSegment) {
+		// urlEncodeUtf8 escapes EVERYTHING that is not unreserved, including % -> %25,
+		// space -> %20 and / -> %2F. We then restore to literal only the lenient "keep" set,
+		// deliberately leaving %25 (literal percent) and %2F (literal slash) escaped.
+		String result = urlEncodeUtf8(nameSegment);
+		result = result.replace("%23", "#");
+		result = result.replace("%2D", "-");
+		result = result.replace("%5F", "_");
+		result = result.replace("%2E", ".");
+		result = result.replace("%21", "!");
+		result = result.replace("%7E", "~");
+		result = result.replace("%2A", "*");
+		result = result.replace("%27", "'");
+		result = result.replace("%28", "(");
+		result = result.replace("%29", ")");
+		result = result.replace("%3B", ";");
+		result = result.replace("%3F", "?");
+		result = result.replace("%3A", ":");
+		result = result.replace("%40", "@");
+		result = result.replace("%26", "&");
+		result = result.replace("%3D", "=");
+		result = result.replace("%2B", "+");
+		result = result.replace("%24", "$");
+		result = result.replace("%2C", ",");
+		result = result.replace("%5B", "[");
+		result = result.replace("%5D", "]");
+		return result;
+	}
+
+	/**
+	 * Encodes a whole {@code '/'}-delimited resource PATH by applying {@link #encodeForURILenient}
+	 * to each segment and rejoining with {@code '/'}. Slashes are treated as separators; a literal
+	 * slash that is part of a name is not representable at the path level (it must be handled a
+	 * segment at a time via {@link #encodeForURILenient}).
+	 *
+	 * @param path the literal (decoded) resource path, e.g. {@code /db/data/café.xml}.
+	 *
+	 * @return the canonical stored form of the path, e.g. {@code /db/data/caf%C3%A9.xml}.
+	 */
+	public static String encodePathForURILenient(final String path) {
+		final String[] segments = path.split("/", -1);
+		final StringBuilder out = new StringBuilder(path.length());
+		for (int i = 0; i < segments.length; i++) {
+			out.append(encodeForURILenient(segments[i]));
+			if (i < segments.length - 1) {
+				out.append('/');
+			}
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Decodes a whole {@code '/'}-delimited stored resource PATH back to its display form by
+	 * applying {@link #decodeForURI} to each segment and rejoining with {@code '/'}.
+	 *
+	 * @param path the percent-encoded stored path, e.g. {@code /db/data/caf%C3%A9.xml}.
+	 *
+	 * @return the display form of the path, e.g. {@code /db/data/café.xml}.
+	 */
+	public static String decodePathForURI(final String path) {
+		final String[] segments = path.split("/", -1);
+		final StringBuilder out = new StringBuilder(path.length());
+		for (int i = 0; i < segments.length; i++) {
+			out.append(decodeForURI(segments[i]));
+			if (i < segments.length - 1) {
+				out.append('/');
+			}
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Decodes a percent-encoded URI path component back to its literal form, the inverse of
+	 * {@link #encodeForURI(String)} and of {@link #encodeForURILenient(String)}. Each
+	 * {@code %XX} escape is decoded to a byte; consecutive escapes are interpreted together as a
+	 * UTF-8 byte sequence. Every other character is left unchanged.
+	 *
+	 * <p>Unlike {@link #urlDecodeUtf8(String)} (which wraps {@link java.net.URLDecoder} and
+	 * therefore follows application/x-www-form-urlencoded rules), this method treats {@code '+'}
+	 * as a literal plus sign, per RFC 3986. This is required for round-tripping names (see
+	 * eXist-db/exist#1824): {@code decodeForURI(encodeForURI(s))} and
+	 * {@code decodeForURI(encodeForURILenient(s))} both equal {@code s} for every {@code s}.</p>
+	 *
+	 * <p>This is deliberately a standalone percent-decoder rather than a call to
+	 * {@link java.net.URI#getPath()}. {@code java.net.URI} is unsuitable as a general decoder for
+	 * the arbitrary strings that resource names may contain: it throws {@code URISyntaxException}
+	 * on inputs that are valid names here (a literal space, a trailing or malformed {@code %},
+	 * characters such as <code>{</code> or <code>}</code>), and worse, it <em>silently
+	 * truncates</em> at {@code '?'} and {@code '#'} -- losing data with no error. This decoder
+	 * never throws and never truncates: any {@code '%'} not followed by two hex digits is
+	 * preserved verbatim.</p>
+	 *
+	 * @param uriComponent the percent-encoded path component to decode.
+	 *
+	 * @return the decoded path component.
+	 */
+	public static String decodeForURI(final String uriComponent) {
+		if (uriComponent.indexOf('%') == -1) {
+			// fast path: nothing percent-encoded, nothing to decode
+			return uriComponent;
+		}
+
+		final int len = uriComponent.length();
+		final StringBuilder out = new StringBuilder(len);
+		final java.io.ByteArrayOutputStream pending = new java.io.ByteArrayOutputStream();
+
+		int i = 0;
+		while (i < len) {
+			final char c = uriComponent.charAt(i);
+			if (c == '%' && i + 2 < len && isHexDigit(uriComponent.charAt(i + 1)) && isHexDigit(uriComponent.charAt(i + 2))) {
+				pending.write((hexValue(uriComponent.charAt(i + 1)) << 4) | hexValue(uriComponent.charAt(i + 2)));
+				i += 3;
+			} else {
+				if (pending.size() > 0) {
+					out.append(pending.toString(UTF_8));
+					pending.reset();
+				}
+				out.append(c);
+				i++;
+			}
+		}
+		if (pending.size() > 0) {
+			out.append(pending.toString(UTF_8));
+		}
+		return out.toString();
+	}
+
+	private static boolean isHexDigit(final char c) {
+		return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+	}
+
+	private static int hexValue(final char c) {
+		if (c >= '0' && c <= '9') {
+			return c - '0';
+		}
+		if (c >= 'A' && c <= 'F') {
+			return c - 'A' + 10;
+		}
+		return c - 'a' + 10;
+	}
+
 	public static String escapeHtmlURI(String uri){
 		String result = urlEncodeUtf8(uri);
 		//TODO : to be continued
