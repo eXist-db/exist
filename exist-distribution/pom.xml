@@ -516,10 +516,19 @@
                                 <mkdir dir="${assemble.dir}/etc"/>
                                 <mkdir dir="${assemble.dir}/bin"/>
                                 <mkdir dir="${assemble.dir}/logs"/>
+                                <mkdir dir="${assemble.dir}/schema"/>
 
                                 <!-- copy configuration files -->
                                 <copy todir="${assemble.dir}/etc">
                                     <fileset dir="${project.basedir}/src/main/config"/>
+                                </copy>
+
+                                <!-- copy native XML schemas (#6189): $EXIST_HOME/schema/, sibling to etc/ -->
+                                <copy todir="${assemble.dir}/schema">
+                                    <fileset dir="${project.basedir}/../schema">
+                                        <exclude name="*.md"/>
+                                        <exclude name="governance.xsl"/>
+                                    </fileset>
                                 </copy>
 
                                 <macrodef name="copy-script">
