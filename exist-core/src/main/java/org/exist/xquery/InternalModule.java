@@ -57,12 +57,4 @@ public interface InternalModule extends Module {
 	 */
 	FunctionDef getFunctionDef(QName qname, int argCount);
 	
-	/**
-	 * Returns all functions defined in this module matching the
-	 * specified qname.
-	 * 
-	 * @param qname function QName to match
-	 * @return all functions defined in this module
-	 */
-	List<FunctionSignature> getFunctionsByName(QName qname);
 }

@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
@@ -97,7 +98,16 @@ public interface Module {
 	 * @return the function signature or null if the function is not defined.
 	 */
 	@Nullable Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
-	
+
+	/**
+	 * Returns all functions defined in this module matching the
+	 * specified qname.
+	 *
+	 * @param qname function QName to match
+	 * @return all functions defined in this module
+	 */
+	List<FunctionSignature> getFunctionsByName(QName qname);
+
 	@Nullable Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
 	@Nullable Variable resolveVariable(QName qname) throws XPathException;
 	

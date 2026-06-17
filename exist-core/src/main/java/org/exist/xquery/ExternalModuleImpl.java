@@ -181,6 +181,19 @@ public class ExternalModuleImpl implements ExternalModule {
         return signatures.iterator();
     }
 
+    @Override
+    public List<FunctionSignature> getFunctionsByName(final QName qname) {
+        final List<FunctionSignature> matchingFunctions = new ArrayList<>();
+        for (final UserDefinedFunction func : mFunctionMap.values()) {
+            final FunctionSignature sig = func.getSignature();
+            if (sig.getName().compareTo(qname) == 0) {
+                matchingFunctions.add(sig);
+            }
+        }
+        return matchingFunctions;
+    }
+
+
     public Iterator<QName> getGlobalVariables() {
         return mGlobalVariables.keySet().iterator();
     }
