@@ -112,6 +112,14 @@ public class ResourceNamingConformanceTest {
         CORPUS.put("non-ascii",       "café.xml");
         CORPUS.put("cyrillic",        "Привет.xml");
         CORPUS.put("cjk",             "文書.xml");
+        // characters macOS/Windows reject in filenames (eXist-db/exist#6463 follow-up): ':' and '*'
+        // are RFC 3986 pchar; the rest are not. Probes whether REST/WebDAV agree with the canonical
+        // codec on these (the stored-form oracle), and whether they store at all.
+        CORPUS.put("colon",           "a:b.xml");
+        CORPUS.put("asterisk",        "a*b.xml");
+        CORPUS.put("angle-brackets",  "a<b>.xml");
+        CORPUS.put("pipe",            "a|b.xml");
+        CORPUS.put("dquote",          "a\"b.xml");
     }
 
     /**
@@ -134,7 +142,14 @@ public class ResourceNamingConformanceTest {
      * not-yet-covered name fail, add it here with a comment. See the resource-naming tasking
      * (issues #3795, #3665, #1824, #5299, #1612).</p>
      */
-    private static final Set<String> KNOWN_FAILURES = Set.of();
+    private static final Set<String> KNOWN_FAILURES = Set.of(
+            // A literal ':' cannot round-trip on any surface. eXist's XmldbURI wraps java.net.URI,
+            // and a ':' makes the segment look like it carries a scheme -- xmldb:store rejects it,
+            // and a WebDAV PUT of ".../a:b.xml" returns HTTP 500 (verified). The canonical codec
+            // therefore encodes ':' to %3A (URIUtils.encodeForURILenient); a client must likewise
+            // send %3A to address such a name. Tracked under eXist-db/exist#6463. (Separately, the
+            // 500 should arguably be a 4xx -- a pre-existing WebDAV error-mapping nit.)
+            "colon");
 
     @BeforeClass
     public static void createTestCollection() {
