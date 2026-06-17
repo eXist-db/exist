@@ -286,15 +286,19 @@ public class URIUtils {
 	/**
 	 * Encodes a single resource/collection NAME segment into its canonical stored form under the
 	 * proposed resource-naming contract (see eXist-db/exist#6463, decision 2). This is the
-	 * "lenient" encoding: it percent-encodes only what storage requires to be unambiguous --
-	 * control characters, space, non-ASCII (as UTF-8 bytes), the path separator {@code '/'}
-	 * ({@code %2F}) and, crucially, a literal percent sign {@code '%'} ({@code %25}) -- while
-	 * leaving sub-delimiters and other printable ASCII (e.g. {@code & + ' ( ) @ , ; = $ [ ]})
-	 * literal. Leaving sub-delimiters literal keeps human-friendly names such as {@code it's.xml}
-	 * and {@code a+b.xml} readable in storage (the eXide#824 direction); always escaping
-	 * {@code '%'} as {@code %25} is what makes the encoding bijective, so a literal percent in a
-	 * name ({@code 50%.xml}, {@code a%20b.xml}) is distinguishable from a percent-escape and is
-	 * recovered exactly by {@link #decodeForURI(String)}.
+	 * "lenient" encoding: it keeps literal exactly the RFC 3986 "pchar" set that may appear
+	 * unescaped in a path segment -- unreserved ({@code - . _ ~}), sub-delimiters
+	 * ({@code ! $ & ' ( ) * + , ; =}), and {@code ':'} and {@code '@'} -- and percent-encodes
+	 * everything else: control characters, space, non-ASCII (as UTF-8 bytes), the path separator
+	 * {@code '/'} ({@code %2F}), the gen-delimiters {@code '#'} ({@code %23}), {@code '?'}
+	 * ({@code %3F}), {@code '['}/{@code ']'}, and, crucially, a literal percent sign {@code '%'}
+	 * ({@code %25}). Keeping sub-delimiters literal makes human-friendly names such as
+	 * {@code it's.xml} and {@code a+b.xml} readable in storage (the eXide#824 direction); encoding
+	 * {@code '#'} and {@code '?'} (which a URL path segment must escape) makes the stored form match
+	 * what the REST and WebDAV surfaces put on the wire, so all surfaces converge on one key; and
+	 * always escaping {@code '%'} as {@code %25} is what makes the encoding bijective, so a literal
+	 * percent in a name ({@code 50%.xml}, {@code a%20b.xml}) is distinguishable from a percent-escape
+	 * and is recovered exactly by {@link #decodeForURI(String)}.
 	 *
 	 * <p>This differs from {@link #iriToURI(String)} in exactly the two respects required for
 	 * bijectivity of a single name segment: {@code '/'} is NOT left literal (a slash inside a
@@ -317,27 +321,30 @@ public class URIUtils {
 		// space -> %20 and / -> %2F. We then restore to literal only the lenient "keep" set,
 		// deliberately leaving %25 (literal percent) and %2F (literal slash) escaped.
 		String result = urlEncodeUtf8(nameSegment);
-		result = result.replace("%23", "#");
+		// Restore to literal exactly the RFC 3986 "pchar" set that may appear unescaped in a path
+		// segment: unreserved (- . _ ~), sub-delimiters (! $ & ' ( ) * + , ; =), and ':' '@'.
+		// Everything else stays percent-encoded -- in particular %25 (literal percent), %2F (slash),
+		// %23 (#), %3F (?), %5B/%5D ([ ]) and space/non-ASCII. Keeping '#' and '?' encoded is what
+		// makes this match the form a standards-compliant HTTP client (and therefore the REST and
+		// WebDAV surfaces) put on the wire, so xmldb:store and the HTTP surfaces converge on one
+		// canonical stored key. See ResourceNamingConformanceTest (stored-form oracle).
 		result = result.replace("%2D", "-");
 		result = result.replace("%5F", "_");
 		result = result.replace("%2E", ".");
-		result = result.replace("%21", "!");
 		result = result.replace("%7E", "~");
-		result = result.replace("%2A", "*");
+		result = result.replace("%21", "!");
+		result = result.replace("%24", "$");
+		result = result.replace("%26", "&");
 		result = result.replace("%27", "'");
 		result = result.replace("%28", "(");
 		result = result.replace("%29", ")");
+		result = result.replace("%2A", "*");
+		result = result.replace("%2B", "+");
+		result = result.replace("%2C", ",");
 		result = result.replace("%3B", ";");
-		result = result.replace("%3F", "?");
+		result = result.replace("%3D", "=");
 		result = result.replace("%3A", ":");
 		result = result.replace("%40", "@");
-		result = result.replace("%26", "&");
-		result = result.replace("%3D", "=");
-		result = result.replace("%2B", "+");
-		result = result.replace("%24", "$");
-		result = result.replace("%2C", ",");
-		result = result.replace("%5B", "[");
-		result = result.replace("%5D", "]");
 		return result;
 	}
 
