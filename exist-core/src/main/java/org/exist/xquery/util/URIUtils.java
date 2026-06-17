@@ -288,10 +288,12 @@ public class URIUtils {
 	 * proposed resource-naming contract (see eXist-db/exist#6463, decision 2). This is the
 	 * "lenient" encoding: it keeps literal exactly the RFC 3986 "pchar" set that may appear
 	 * unescaped in a path segment -- unreserved ({@code - . _ ~}), sub-delimiters
-	 * ({@code ! $ & ' ( ) * + , ; =}), and {@code ':'} and {@code '@'} -- and percent-encodes
-	 * everything else: control characters, space, non-ASCII (as UTF-8 bytes), the path separator
-	 * {@code '/'} ({@code %2F}), the gen-delimiters {@code '#'} ({@code %23}), {@code '?'}
-	 * ({@code %3F}), {@code '['}/{@code ']'}, and, crucially, a literal percent sign {@code '%'}
+	 * ({@code ! $ & ' ( ) * + , ; =}), and {@code '@'} -- and percent-encodes everything else:
+	 * control characters, space, non-ASCII (as UTF-8 bytes), the path separator {@code '/'}
+	 * ({@code %2F}), the gen-delimiters {@code '#'} ({@code %23}), {@code '?'} ({@code %3F}),
+	 * {@code '['}/{@code ']'}, {@code ':'} ({@code %3A}, which RFC 3986 permits in a segment but
+	 * eXist's {@code XmldbURI} cannot store literally -- {@code new URI("a:b")} reads {@code a} as a
+	 * scheme), and, crucially, a literal percent sign {@code '%'}
 	 * ({@code %25}). Keeping sub-delimiters literal makes human-friendly names such as
 	 * {@code it's.xml} and {@code a+b.xml} readable in storage (the eXide#824 direction); encoding
 	 * {@code '#'} and {@code '?'} (which a URL path segment must escape) makes the stored form match
@@ -321,10 +323,10 @@ public class URIUtils {
 		// space -> %20 and / -> %2F. We then restore to literal only the lenient "keep" set,
 		// deliberately leaving %25 (literal percent) and %2F (literal slash) escaped.
 		String result = urlEncodeUtf8(nameSegment);
-		// Restore to literal exactly the RFC 3986 "pchar" set that may appear unescaped in a path
-		// segment: unreserved (- . _ ~), sub-delimiters (! $ & ' ( ) * + , ; =), and ':' '@'.
+		// Restore to literal the RFC 3986 "pchar" set that may appear unescaped in a path segment,
+		// MINUS ':' (see below): unreserved (- . _ ~), sub-delimiters (! $ & ' ( ) * + , ; =), '@'.
 		// Everything else stays percent-encoded -- in particular %25 (literal percent), %2F (slash),
-		// %23 (#), %3F (?), %5B/%5D ([ ]) and space/non-ASCII. Keeping '#' and '?' encoded is what
+		// %23 (#), %3F (?), %3A (:), %5B/%5D ([ ]) and space/non-ASCII. Keeping '#' and '?' encoded is what
 		// makes this match the form a standards-compliant HTTP client (and therefore the REST and
 		// WebDAV surfaces) put on the wire, so xmldb:store and the HTTP surfaces converge on one
 		// canonical stored key. See ResourceNamingConformanceTest (stored-form oracle).
@@ -343,8 +345,11 @@ public class URIUtils {
 		result = result.replace("%2C", ",");
 		result = result.replace("%3B", ";");
 		result = result.replace("%3D", "=");
-		result = result.replace("%3A", ":");
 		result = result.replace("%40", "@");
+		// NOTE: ':' (%3A) is deliberately NOT restored. Although RFC 3986 permits ':' in a path
+		// segment, eXist's XmldbURI wraps java.net.URI, and a leading-segment ':' makes new URI
+		// parse the text before it as a scheme ("a:b" -> scheme "a") -- so a literal ':' is not
+		// storable. Encoding it as %3A is required for ':'-containing names to round-trip.
 		return result;
 	}
 

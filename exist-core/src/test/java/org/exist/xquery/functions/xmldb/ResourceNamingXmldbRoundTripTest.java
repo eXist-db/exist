@@ -180,6 +180,36 @@ public class ResourceNamingXmldbRoundTripTest {
                 rs.getResource(0).getContent());
     }
 
+    /**
+     * Characters that macOS/Windows reject in filenames but that the codec either encodes (`< | "`
+     * etc.) or keeps literal (`:` `*`, which are RFC 3986 pchar). eXist's native store is page-based,
+     * not one-file-per-resource, so it should accept all of them; FS-safety only matters at a
+     * backup/export boundary (flagged in the fallout report). This probes that the native store
+     * round-trips them, including the literal `:` and `*`.
+     */
+    @Test
+    public void filesystemHostileCharsRoundTripInNativeStore() throws XMLDBException {
+        final String col = "/db/naming-rt-fschars";
+        existEmbeddedServer.executeQuery("xmldb:create-collection('/db', 'naming-rt-fschars')");
+        final String[] fsNames = {"a:b.xml", "a*b.xml", "a<b.xml", "a|b.xml", "a\"b.xml"};
+        for (final String name : fsNames) {
+            store(col, name);
+        }
+        final Set<String> stored = childNames(existEmbeddedServer.executeQuery(
+                "declare variable $c external; xmldb:get-child-resources($c)", Map.of("c", col)));
+        final Set<String> expected = new LinkedHashSet<>();
+        for (final String name : fsNames) {
+            expected.add(name);
+            assertTrue("native store should accept " + name,
+                    stored.contains(URIUtils.encodeForURILenient(name)));
+        }
+        assertEquals("distinct FS-hostile names must not collide", fsNames.length, stored.size());
+        for (final String key : stored) {
+            assertTrue("stored key " + key + " did not decode to a known name",
+                    expected.contains(URIUtils.decodeForURI(key)));
+        }
+    }
+
     private static void store(final String col, final String name) throws XMLDBException {
         existEmbeddedServer.executeQuery(
                 "declare variable $name external; declare variable $col external; "
