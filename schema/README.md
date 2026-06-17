@@ -14,6 +14,18 @@ Each native schema declares an independent semver on `<xs:schema version="…">`
 
 CI fails if a schema or canonical template changes without bumping the paired `xs:schema/@version`.
 
+Canonical templates may declare an optional **`schemaVersion`** attribute on the root element. When present, its value should match the paired `xs:schema/@version` (native schema semver — not the eXist product release, and not expath package `@version`). Legacy documents without the attribute remain valid; runtime code logs a debug message when it is missing and warns when it differs from the version this build expects.
+
+| Schema `@version` | `schemaVersion` on template |
+|-------------------|----------------------------|
+| `conf.xsd` | `<exist schemaVersion="…">` |
+| `collection.xconf.xsd` | `<collection schemaVersion="…">` |
+| `descriptor.xsd` | `<xquery-app schemaVersion="…">` |
+| `mime-types.xsd` | `<mime-types schemaVersion="…">` |
+| `controller-config.xsd` | `<configuration schemaVersion="…">` |
+
+Keep [`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVersion.java) constants in sync with `xs:schema/@version` on the paired XSDs.
+
 ## Validation
 
 **Templates vs schemas** — root [`pom.xml`](../pom.xml) binds `xml-maven-plugin:validate` at the `validate` phase. This also runs on every full build via [`ci-test.yml`](../.github/workflows/ci-test.yml) (`mvn test` runs `validate` first).

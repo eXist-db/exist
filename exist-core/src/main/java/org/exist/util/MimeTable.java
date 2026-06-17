@@ -264,8 +264,8 @@ public class MimeTable {
 
     private void loadFromStream(final InputStream stream, final String sourceDescription) {
         try (stream) {
-            loadMimeTypes(stream);
             this.src = sourceDescription;
+            loadMimeTypes(stream);
         } catch (final ParserConfigurationException | SAXException | IOException e) {
             throw new IllegalStateException("Failed to load mime-type table from " + sourceDescription, e);
         }
@@ -312,6 +312,8 @@ public class MimeTable {
 
 
             if (MIME_TYPES.equals(qName)) {
+                SchemaVersion.logDocumentVersion(LOG, attributes.getValue(SchemaVersion.ATTRIBUTE),
+                        SchemaVersion.MIME_TYPES, src != null ? "mime-types.xml (" + src + ")" : "mime-types.xml");
                 // Check for a default mime type settings
                 final String defaultMimeAttr = attributes.getValue("default-mime-type");
                 final String defaultTypeAttr = attributes.getValue("default-resource-type");
