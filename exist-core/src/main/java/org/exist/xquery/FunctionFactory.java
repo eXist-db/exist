@@ -253,14 +253,14 @@ public class FunctionFactory {
         final PathExpr p1 = (PathExpr) params.get(1);
 
         if (p1.getSubExpressionCount() == 0) {
-            throw new XPathException(ast, ErrorCodes.XPTY0004, "Second argument of " + functionName + "() is empty");
+            throw new XPathException(ast, ErrorCodes.XPST0017, "Second argument of " + functionName + "() is empty");
         }
 
         final GeneralComparison op = new GeneralComparison(context, p0, p1, Comparison.EQ, operator);
         op.setLocation(ast.getLine(), ast.getColumn());
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",
-                "Rewritten " + functionName + "() as a general comparison with a right truncations");
+                "Rewritten " + functionName + "() as a general comparison using " + operator);
 
         if (params.size() == 3) {
             op.setCollation(params.get(2));
