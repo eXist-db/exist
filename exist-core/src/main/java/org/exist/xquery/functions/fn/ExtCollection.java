@@ -122,7 +122,17 @@ public class ExtCollection extends BasicFunction {
 
         } else {
             final MutableDocumentSet ndocs = new DefaultDocumentSet();
-            final XmldbURI uri = XmldbURI.create(collectionUri);
+            final XmldbURI uri;
+            try {
+                // Resource-naming contract (eXist-db/exist#6463, decision 5): normalize the
+                // collection path the way xmldb:store/create-collection do, so
+                // collection("/db/café-col") resolves the stored key. escape=true encodes
+                // non-ASCII/space and leaves a literal '%' alone, so it is idempotent on an
+                // already-encoded path.
+                uri = XmldbURI.xmldbUriFor(collectionUri.toString(), true);
+            } catch (final URISyntaxException e) {
+                throw new XPathException(this, ErrorCodes.FODC0004, e);
+            }
             try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
                 if (coll == null) {
                     if (context.isRaiseErrorOnFailedRetrieval()) {

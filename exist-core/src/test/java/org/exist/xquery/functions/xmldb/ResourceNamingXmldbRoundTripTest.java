@@ -126,6 +126,83 @@ public class ResourceNamingXmldbRoundTripTest {
         }
     }
 
+    /**
+     * Surface 2 (decision 5): doc() resolves a stored document by a bare db-path. A non-percent
+     * decoded name resolves directly (the asymmetry with xmldb:store is fixed); a literal-percent
+     * decoded name is ambiguous and is addressed by its %25 stored form instead (decision 2
+     * boundary). collection() over the collection enumerates every stored document.
+     */
+    @Test
+    public void docResolvesDecodedNames() throws XMLDBException {
+        final String col = "/db/naming-rt-doc";
+        existEmbeddedServer.executeQuery("xmldb:create-collection('/db', 'naming-rt-doc')");
+        for (final String name : NAMES) {
+            store(col, name);
+        }
+
+        for (final String name : NAMES) {
+            // addressing by the canonical stored form always resolves
+            assertTrue("doc() by stored form should resolve " + name,
+                    docExists(col + "/" + URIUtils.encodeForURILenient(name)));
+
+            // A "clean" decoded name (no literal '%', no raw space) resolves directly via the
+            // decision-5 normalization. A literal-'%' name is ambiguous (decision 2 boundary) and a
+            // raw space is rejected on the read path (decision 3, read side, a separate gap); in
+            // both cases the display form does not resolve and the stored form must be used.
+            final boolean clean = name.indexOf('%') < 0 && name.indexOf(' ') < 0;
+            assertEquals("doc() resolution by decoded name for " + name,
+                    clean, docExists(col + "/" + name));
+        }
+
+        final ResourceSet rs = existEmbeddedServer.executeQuery(
+                "declare variable $c external; count(collection($c))", Map.of("c", col));
+        assertEquals(String.valueOf(NAMES.length), rs.getResource(0).getContent());
+    }
+
+    /**
+     * Surface 2 (decision 5): collection() resolves a decoded non-ASCII collection PATH. The child
+     * collection is created and the document is stored via the canonical stored form; collection()
+     * is then asked for it by the decoded display path and must resolve the same key.
+     */
+    @Test
+    public void collectionResolvesDecodedCollectionPath() throws XMLDBException {
+        existEmbeddedServer.executeQuery("xmldb:create-collection('/db', 'rt-colnorm')");
+        existEmbeddedServer.executeQuery(
+                "declare variable $n external; xmldb:create-collection('/db/rt-colnorm', $n)",
+                Map.of("n", new StringValue("café-col")));
+        // store via the canonical stored collection path, isolating collection()'s own normalization
+        store("/db/rt-colnorm/" + URIUtils.encodeForURILenient("café-col"), "doc1.xml");
+
+        final ResourceSet rs = existEmbeddedServer.executeQuery(
+                "declare variable $c external; count(collection($c))",
+                Map.of("c", new StringValue("/db/rt-colnorm/café-col")));
+        assertEquals("collection() should resolve the decoded non-ASCII collection path", "1",
+                rs.getResource(0).getContent());
+    }
+
+    private static void store(final String col, final String name) throws XMLDBException {
+        existEmbeddedServer.executeQuery(
+                "declare variable $name external; declare variable $col external; "
+                        + "xmldb:store($col, $name, document { <doc/> })",
+                Map.of("name", new StringValue(name), "col", col));
+    }
+
+    /**
+     * Whether {@code doc($path)} resolves to a document. A path that doc() rejects as a malformed
+     * URI (a raw space, or a literal '%' not forming a valid escape) throws here; for the purpose
+     * of "does the display form resolve to the intended document?" that counts as "did not
+     * resolve", so the throw is mapped to {@code false}.
+     */
+    private static boolean docExists(final String path) {
+        try {
+            final ResourceSet rs = existEmbeddedServer.executeQuery(
+                    "declare variable $p external; exists(doc($p))", Map.of("p", new StringValue(path)));
+            return Boolean.parseBoolean((String) rs.getResource(0).getContent());
+        } catch (final XMLDBException e) {
+            return false;
+        }
+    }
+
     private static Set<String> childNames(final ResourceSet rs) throws XMLDBException {
         final Set<String> names = new LinkedHashSet<>();
         for (long i = 0; i < rs.getSize(); i++) {

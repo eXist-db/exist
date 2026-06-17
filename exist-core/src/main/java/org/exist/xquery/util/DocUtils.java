@@ -220,11 +220,16 @@ public class DocUtils {
         try {
             final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
             final XmldbURI pathUri;
+            // Resource-naming contract (eXist-db/exist#6463, decision 5): normalize a bare db-path
+            // the way xmldb:store already normalizes a name, so doc("/db/x/café.xml") resolves the
+            // same key xmldb:store wrote. escape=true encodes non-ASCII/space and leaves a literal
+            // '%' alone -- so it is idempotent on an already-encoded path (e.g. one produced by
+            // xmldb:encode-uri), which still resolves as before.
             if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
                 // relative collection Path: add the current base URI
-                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, false));
+                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, true));
             } else {
-                pathUri = XmldbURI.xmldbUriFor(path, false);
+                pathUri = XmldbURI.xmldbUriFor(path, true);
             }
 
             // relative collection Path: add the current module call URI if applicable
