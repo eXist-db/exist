@@ -99,6 +99,19 @@ class ResourceNameCodecTest {
         c.put("q?x.xml", "q%3Fx.xml");
         c.put("[draft].xml", "%5Bdraft%5D.xml");
 
+        // --- characters that macOS/Windows reject in FILENAMES. Most are not RFC 3986 pchar, so
+        //     the codec already percent-encodes them (the encoded stored form is filesystem-safe).
+        //     NOTE: ':' and '*' ARE pchar, so the codec keeps them LITERAL -- safe in eXist's native
+        //     page store, but hostile if a name becomes a host filename (backup/export). Flagged in
+        //     the fallout report as a contract question (encode ':'/'*' for cross-OS file safety?). ---
+        c.put("a<b.xml", "a%3Cb.xml");
+        c.put("a>b.xml", "a%3Eb.xml");
+        c.put("a\"b.xml", "a%22b.xml");
+        c.put("a\\b.xml", "a%5Cb.xml");
+        c.put("a|b.xml", "a%7Cb.xml");
+        c.put("a:b.xml", "a%3Ab.xml");   // pchar, but eXist's XmldbURI can't store a literal ':' -> encode
+        c.put("a*b.xml", "a*b.xml");     // pchar -> kept literal (FS-hostile on Windows, but storable)
+
         // --- literal percent: the hard case decision 2 is about (ALWAYS escaped to %25) ---
         c.put("50%.xml", "50%25.xml");
         c.put("a%20b.xml", "a%2520b.xml");
