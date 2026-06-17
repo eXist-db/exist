@@ -49,20 +49,25 @@ function ser:exist-insert-final-newline-true() {
 
 declare
     %test:assertTrue
-function ser:exist-insert-final-newline-false-json() {
+function ser:exist-insert-final-newline-true-json() {
     let $doc := map { "a": 1 }
     let $serialized := fn:serialize($doc,
         map {
             "method": "json",
-            "exist:insert-final-newline": false()
+            xs:QName("exist:insert-final-newline"): true()
         }
     )
-    return fn:ends-with($serialized, "}")
+    return fn:ends-with($serialized, "&#x0A;")
 };
 
+(: An eXist serialization parameter keyed by the prefixed string "exist:..." is
+ : NON-conformant and is now ignored - only the xs:QName key form is honored,
+ : because op:same-key treats a string key and a QName key as distinct. Passing
+ : true() via the string key therefore has no effect, so the default
+ : (insert-final-newline=false) applies and no trailing newline is added. :)
 declare
     %test:assertTrue
-function ser:exist-insert-final-newline-true-json() {
+function ser:exist-insert-final-newline-json-prefixed-string-ignored() {
     let $doc := map { "a": 1 }
     let $serialized := fn:serialize($doc,
         map {
@@ -70,5 +75,5 @@ function ser:exist-insert-final-newline-true-json() {
             "exist:insert-final-newline": true()
         }
     )
-    return fn:ends-with($serialized, "&#x0A;")
+    return fn:ends-with($serialized, "}")
 };

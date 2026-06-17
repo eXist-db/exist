@@ -207,7 +207,7 @@ function syse:insert-final-newline-yes() {
     let $sync := file:sync(
         $fixtures:collection,
         $directory,
-        map{ "exist:insert-final-newline": true() }
+        map{ xs:QName("exist:insert-final-newline"): true() }
     )
 
     return (
@@ -231,7 +231,7 @@ function syse:insert-final-newline-no() {
     let $sync := file:sync(
         $fixtures:collection,
         $directory,
-        map{ "exist:insert-final-newline": false() }
+        map{ xs:QName("exist:insert-final-newline"): false() }
     )
 
     return (
