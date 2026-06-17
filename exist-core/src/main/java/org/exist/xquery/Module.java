@@ -32,117 +32,120 @@ import javax.annotation.Nullable;
 /**
  * Defines an XQuery library module. A module consists of function definitions
  * and global variables. It is uniquely identified by a namespace URI and an optional
- * default namespace prefix. All functions provided by the module have to be defined 
+ * default namespace prefix. All functions provided by the module have to be defined
  * in the module's namespace.
- * 
+ * <p>
  * Modules can be either internal or external: internal modules are collections of Java
  * classes, each being a subclass of {@link org.exist.xquery.Function}. External modules
  * are defined by the XQuery "module" directive and can be loaded with "import module".
- * 
+ * <p>
  * Modules are dynamically loaded by class {@link org.exist.xquery.XQueryContext}, either
  * during the initialization phase of the query engine (for the standard library modules) or
- * upon an "import module" directive. 
- * 
+ * upon an "import module" directive.
+ *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface Module {
-	
-	/**
-	 * Returns the namespace URI that uniquely identifies this module.
-	 * 
-	 * @return namespace URI 
-	 */
-	public String getNamespaceURI();
-	
-	/**
-	 * Returns an optional default prefix (used if no prefix is supplied with
-	 * the "import module" directive).
-	 * 
-	 * @return optional default prefix 
-	 */
-	public String getDefaultPrefix();
-	
-	/**
-	 * Return a short description of this module to be displayed to a user.
-	 * 
-	 * @return short description of this module
-	 */
-	public String getDescription();
 
-	/**
-	 * Returns the release version in which the module was firstly available.
-	 * 
-	 * @return available from which release version
-	 */
-	public String getReleaseVersion();
-
-	
-	/**
-	 * Is this an internal module?
-	 * 
-	 * @return True if is internal module.
-	 */
-	public boolean isInternalModule();
-	
-	/**
-	 * Returns the signatures of all functions defined within this module.
-	 * 
-	 * @return signatures of all functions
-	 */
-	public FunctionSignature[] listFunctions();
-	
-	/**
-	 * Try to find the signature of the function identified by its QName.
-	 * 
-	 * @param qname the function name
-	 * @return the function signature or null if the function is not defined.
-	 */
-	@Nullable Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
-
-	/**
-	 * Returns all functions defined in this module matching the
-	 * specified qname.
-	 *
-	 * @param qname function QName to match
-	 * @return all functions defined in this module
-	 */
-	List<FunctionSignature> getFunctionsByName(QName qname);
-
-	@Nullable Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
-	@Nullable Variable resolveVariable(QName qname) throws XPathException;
-	
-	public Variable declareVariable(QName qname, Object value) throws XPathException;
-	
-    public Variable declareVariable(Variable var);
-    
-    public boolean isVarDeclared(QName qname);
-    
     /**
-     * Returns an iterator over all global variables in this modules, which were
+     * Returns the namespace URI that uniquely identifies this module.
+     *
+     * @return namespace URI
+     */
+    String getNamespaceURI();
+
+    /**
+     * Returns an optional default prefix (used if no prefix is supplied with
+     * the "import module" directive).
+     *
+     * @return optional default prefix
+     */
+    String getDefaultPrefix();
+
+    /**
+     * Return a short description of this module to be displayed to a user.
+     *
+     * @return short description of this module
+     */
+    String getDescription();
+
+    /**
+     * Returns the release version in which the module was firstly available.
+     *
+     * @return available from which release version
+     */
+    String getReleaseVersion();
+
+
+    /**
+     * Is this an internal module?
+     *
+     * @return True if is internal module.
+     */
+    boolean isInternalModule();
+
+    /**
+     * Returns the signatures of all functions defined within this module.
+     *
+     * @return signatures of all functions
+     */
+    FunctionSignature[] listFunctions();
+
+    /**
+     * Try to find the signature of the function identified by its QName.
+     *
+     * @param qname the function name
+     * @return the function signature or null if the function is not defined.
+     */
+    @Nullable
+    Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
+
+    /**
+     * Returns all functions defined in this module matching the
+     * specified qname.
+     *
+     * @param qname function QName to match
+     * @return all functions defined in this module
+     */
+    List<FunctionSignature> getFunctionsByName(QName qname);
+
+    @Nullable
+    Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
+
+    @Nullable
+    Variable resolveVariable(QName qname) throws XPathException;
+
+    Variable declareVariable(QName qname, Object value) throws XPathException;
+
+    Variable declareVariable(Variable var);
+
+    boolean isVarDeclared(QName qname);
+
+    /**
+     * Returns an iterator over all global variables in this module, which were
      * either declared with "declare variable" (for external modules) or set in the
      * module implementation (internal modules).
-	 *
-	 * @return an iterator over the names of the global variables
+     *
+     * @return an iterator over the names of the global variables
      */
-    public Iterator<QName> getGlobalVariables();
+    Iterator<QName> getGlobalVariables();
 
-	/**
-	 * Reset the module's internal state for being reused.
-	 *
-	 * @param context the xquery context
-	 *
-	 * @deprecated use {@link #reset(XQueryContext, boolean)} instead
-	 */
-	@Deprecated
+    /**
+     * Reset the module's internal state for being reused.
+     *
+     * @param context the xquery context
+     * @deprecated use {@link #reset(XQueryContext, boolean)} instead
+     */
+    @Deprecated
     void reset(XQueryContext context);
 
-	/**
-	 * Reset the module's internal state for being reused.
-	 *
-	 * @param xqueryContext the xquery context
-	 * @param keepGlobals true to keep global declarations
-	 */
-	public void reset(XQueryContext xqueryContext, boolean keepGlobals);
+    /**
+     * Reset the module's internal state for being reused.
+     *
+     * @param xqueryContext the xquery context
+     * @param keepGlobals   true to keep global declarations
+     */
+    void reset(XQueryContext xqueryContext, boolean keepGlobals);
 
     /**
      * Check if this module has been fully loaded
@@ -150,7 +153,7 @@ public interface Module {
      *
      * @return false while the module is being compiled.
      */
-    public boolean isReady();
+    boolean isReady();
 
     void setContextItem(Sequence contextItem);
 }

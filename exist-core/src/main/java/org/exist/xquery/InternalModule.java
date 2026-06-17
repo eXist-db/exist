@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.List;
-
 import org.exist.dom.QName;
 
 /**

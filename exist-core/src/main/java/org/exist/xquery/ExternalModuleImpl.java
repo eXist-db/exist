@@ -31,34 +31,32 @@ import javax.annotation.Nullable;
 
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
- * 
+ *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ExternalModuleImpl implements ExternalModule {
 
-    private String mNamespaceURI;
-    private String mPrefix;
-
-    private String description = "User Defined Module";
-    private Map<String, String> metadata = null;
-
-    private boolean isReady = false;
-
     final private TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<>();
     final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<>();
     final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<>();
-
+    private String mNamespaceURI;
+    private String mPrefix;
+    private String description = "User Defined Module";
+    private Map<String, String> metadata = null;
+    private boolean isReady = false;
     private Source mSource = null;
 
     private XQueryContext mContext = null;
 
     private boolean needsReset = true;
+    private Expression rootExpression = null;
 
     public ExternalModuleImpl(String namespaceURI, String prefix) {
         mNamespaceURI = namespaceURI;
         mPrefix = prefix;
     }
 
+    @Override
     public void setNamespace(String prefix, String namespace) {
         this.mPrefix = prefix;
         this.mNamespaceURI = namespace;
@@ -73,21 +71,22 @@ public class ExternalModuleImpl implements ExternalModule {
         this.isReady = ready;
     }
 
+    @Override
     public boolean isReady() {
         return isReady;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDescription()
-     */
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String desc) {
         this.description = desc;
     }
 
+    @Override
     public void addMetadata(String key, String value) {
         if (metadata == null) {
             metadata = new HashMap<>();
@@ -99,66 +98,57 @@ public class ExternalModuleImpl implements ExternalModule {
         metadata.put(key, value);
     }
 
+    @Override
     public Map<String, String> getMetadata() {
         return metadata;
     }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.Module#getReleaseVersion()
-    */
+    @Override
     public String getReleaseVersion() {
         return "user-defined";
     }
 
-    public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) 
-    throws XPathException {
+    @Override
+    public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext)
+            throws XPathException {
         final FunctionId id = new FunctionId(qname, arity);
         final UserDefinedFunction fn = mFunctionMap.get(id);
-        if (fn == null)
-        	{return null;}
+        if (fn == null) {
+            return null;
+        }
         if (callerContext != getContext() && fn.getSignature().isPrivate()) {
-        	throw new XPathException(fn, ErrorCodes.XPST0017, "Calling a private function from outside its module");
+            throw new XPathException(fn, ErrorCodes.XPST0017, "Calling a private function from outside its module");
         }
         return fn;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.ExternalModule#declareFunction(org.exist.xquery.UserDefinedFunction)
-     */
+    @Override
     public void declareFunction(UserDefinedFunction func) throws XPathException {
         final QName name = func.getSignature().getName();
         if (!name.getNamespaceURI().equals(getNamespaceURI())) {
             throw new XPathException(func, ErrorCodes.XQST0048,
-                "It is a static error if a function or variable declared in a library module" +
-                " is not in the target namespace of the library module: " + name);
+                    "It is a static error if a function or variable declared in a library module" +
+                            " is not in the target namespace of the library module: " + name);
         }
         mFunctionMap.put(func.getSignature().getFunctionId(), func);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getNamespaceURI()
-     */
+    @Override
     public String getNamespaceURI() {
         return mNamespaceURI;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDefaultPrefix()
-     */
+    @Override
     public String getDefaultPrefix() {
         return mPrefix;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#isInternalModule()
-     */
+    @Override
     public boolean isInternalModule() {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#listFunctions()
-     */
+    @Override
     public FunctionSignature[] listFunctions() {
         final List<FunctionSignature> signatures = new ArrayList<>(mFunctionMap.size());
         for (UserDefinedFunction userDefinedFunction : mFunctionMap.values()) {
@@ -169,14 +159,13 @@ public class ExternalModuleImpl implements ExternalModule {
         return signatures.toArray(result);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
-     */
+    @Override
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
         final ArrayList<FunctionSignature> signatures = new ArrayList<>(2);
         for (final UserDefinedFunction func : mFunctionMap.values()) {
-            if (func.getName().compareTo(qname) == 0)
-                {signatures.add(func.getSignature());}
+            if (func.getName().compareTo(qname) == 0) {
+                signatures.add(func.getSignature());
+            }
         }
         return signatures.iterator();
     }
@@ -193,18 +182,17 @@ public class ExternalModuleImpl implements ExternalModule {
         return matchingFunctions;
     }
 
-
+    @Override
     public Iterator<QName> getGlobalVariables() {
         return mGlobalVariables.keySet().iterator();
     }
 
+    @Override
     public Collection<VariableDeclaration> getVariableDeclarations() {
         return mGlobalVariables.values();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
-     */
+    @Override
     public Variable declareVariable(QName qname, Object value) throws XPathException {
         final Sequence val = XPathUtil.javaObjectToXPath(value, mContext, null);
         Variable var = mStaticVariables.computeIfAbsent(qname, VariableImpl::new);
@@ -212,32 +200,39 @@ public class ExternalModuleImpl implements ExternalModule {
         return var;
     }
 
+    @Override
     public Variable declareVariable(Variable var) {
         mStaticVariables.put(var.getQName(), var);
         return var;
     }
 
+    @Override
     public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException {
-        if (!qname.getNamespaceURI().equals(getNamespaceURI()))
-            {throw new XPathException(decl, ErrorCodes.XQST0048, "It is a static error" +
-                " if a function or variable declared in a library module is" + 
-                " not in the target namespace of the library module.");}
+        if (!qname.getNamespaceURI().equals(getNamespaceURI())) {
+            throw new XPathException(decl, ErrorCodes.XQST0048, "It is a static error" +
+                    " if a function or variable declared in a library module is" +
+                    " not in the target namespace of the library module.");
+        }
         mGlobalVariables.put(qname, decl);
     }
 
+    @Override
     public boolean isVarDeclared(QName qname) {
-        if (mGlobalVariables.get(qname) != null)
-            {return true;}
+        if (mGlobalVariables.get(qname) != null) {
+            return true;
+        }
         return mStaticVariables.get(qname) != null;
     }
 
     @Override
-    @Nullable public Variable resolveVariable(final QName qname) throws XPathException {
+    @Nullable
+    public Variable resolveVariable(final QName qname) throws XPathException {
         return resolveVariable(null, qname);
     }
 
     @Override
-    @Nullable public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
+    @Nullable
+    public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         final VariableDeclaration decl = mGlobalVariables.get(qname);
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
@@ -268,26 +263,31 @@ public class ExternalModuleImpl implements ExternalModule {
         return var;
     }
 
+    @Override
     public void analyzeGlobalVars() throws XPathException {
         for (final VariableDeclaration decl : mGlobalVariables.values()) {
             decl.analyzeExpression(new AnalyzeContextInfo());
         }
     }
 
+    @Override
     public Source getSource() {
         return mSource;
     }
 
+    @Override
     public void setSource(Source source) {
         mSource = source;
     }
 
-    public void setContext(XQueryContext context) {
-        mContext = context;
-    }
-
+    @Override
     public XQueryContext getContext() {
         return mContext;
+    }
+
+    @Override
+    public void setContext(XQueryContext context) {
+        mContext = context;
     }
 
     @Override
@@ -300,6 +300,7 @@ public class ExternalModuleImpl implements ExternalModule {
         // deprecated, ignore
     }
 
+    @Override
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         // prevent recursive calls by checking needsReset
         if (needsReset) {
@@ -314,23 +315,22 @@ public class ExternalModuleImpl implements ExternalModule {
         }
     }
 
-    private Expression rootExpression = null;
+    /**
+     * Returns the root expression associated with this context.
+     *
+     * @return root expression
+     */
+    @Override
+    public Expression getRootExpression() {
+        return rootExpression;
+    }
 
     /**
      * Set the root expression for this context.
      *
-     * @param  expr the root expression
+     * @param expr the root expression
      */
     protected void setRootExpression(Expression expr) {
         rootExpression = expr;
-    }
-
-    /**
-     * Returns the root expression associated with this context.
-     *
-     * @return  root expression
-     */
-    public Expression getRootExpression() {
-        return  rootExpression;
     }
 }
