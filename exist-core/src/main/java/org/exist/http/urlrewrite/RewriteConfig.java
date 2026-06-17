@@ -35,6 +35,7 @@ import net.sf.saxon.regex.JavaRegularExpression;
 import net.sf.saxon.str.StringView;
 import net.sf.saxon.trans.XPathException;
 import org.exist.util.XMLReaderPool;
+import org.exist.util.SchemaVersion;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -199,6 +200,7 @@ public class RewriteConfig {
 
     private void parse(final Document doc) throws ServletException {
         final Element root = doc.getDocumentElement();
+        SchemaVersion.logDocumentVersion(LOG, root, SchemaVersion.CONTROLLER_CONFIG, "controller-config.xml");
         Node child = root.getFirstChild();
         while (child != null) {
             final String ns = child.getNamespaceURI();

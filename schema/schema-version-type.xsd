@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Shared type for the optional schemaVersion attribute on canonical config
+    instance documents. xs:include this file (it declares no targetNamespace,
+    so it is included as a chameleon component — see W3C XML Schema Part 1,
+    4.2.3) from each native schema that wants a schemaVersion attribute.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0.0">
+
+    <xs:simpleType name="schemaVersionType">
+        <xs:annotation>
+            <xs:documentation>Native XSD semver; mirrors the paired schema's xs:schema/@version (not eXist product version). See schema/README.md.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(0|[1-9]\d*)(\.(0|[1-9]\d*)){0,2}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
