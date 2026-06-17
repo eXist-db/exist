@@ -329,7 +329,7 @@ public class FunctionFactory {
         final Module[] modules = context.getModules(uri);
 
         if (modules == null) {
-            return getUserDefinedFunction(context, ast, params, qname);
+            return getLocalDefinedFunction(context, ast, params, qname);
         }
 
         // Function might belong to a module
@@ -352,6 +352,31 @@ public class FunctionFactory {
         throw new XPathException(ast.getLine(), ast.getColumn(),
                 ErrorCodes.XPST0017, "Function " + qname.getStringValue() + "() " +
                 " is not defined in module namespace: " + qname.getNamespaceURI());
+    }
+
+    /**
+     * Get a user-defined function from the XQuery context
+     */
+    private static FunctionCall getLocalDefinedFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final List<Expression> params,
+            final QName qname
+    ) throws XPathException {
+        final UserDefinedFunction func = context.resolveFunction(qname, params.size());
+
+        if (func == null) {
+            // Create a forward reference which will be resolved later
+            final FunctionCall forwardReference = new FunctionCall(context, qname, params);
+            forwardReference.setLocation(ast.getLine(), ast.getColumn());
+            context.addForwardReference(forwardReference);
+            return forwardReference;
+        }
+
+        final FunctionCall functionCall = new FunctionCall(context, func);
+        functionCall.setLocation(ast.getLine(), ast.getColumn());
+        functionCall.setArguments(params);
+        return functionCall;
     }
 
     /**
@@ -423,31 +448,6 @@ public class FunctionFactory {
         fn.setArguments(params);
         fn.setASTNode(ast);
         return new InternalFunctionCall(fn);
-    }
-
-    /**
-     * Get a user-defined function from the XQuery context
-     */
-    private static FunctionCall getUserDefinedFunction(
-            final XQueryContext context,
-            final XQueryAST ast,
-            final List<Expression> params,
-            final QName qname
-    ) throws XPathException {
-        final UserDefinedFunction func = context.resolveFunction(qname, params.size());
-
-        if (func == null) {
-            // Create a forward reference which will be resolved later
-            final FunctionCall forwardReference = new FunctionCall(context, qname, params);
-            forwardReference.setLocation(ast.getLine(), ast.getColumn());
-            context.addForwardReference(forwardReference);
-            return forwardReference;
-        }
-
-        final FunctionCall functionCall = new FunctionCall(context, func);
-        functionCall.setLocation(ast.getLine(), ast.getColumn());
-        functionCall.setArguments(params);
-        return functionCall;
     }
 
     /**
