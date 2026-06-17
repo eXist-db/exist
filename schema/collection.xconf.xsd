@@ -6,7 +6,7 @@
            xmlns:dcterms="http://purl.org/dc/terms/"
            elementFormDefault="qualified"
            targetNamespace="http://exist-db.org/collection-config/1.0"
-           version="1.0.0">
+           version="1.1.0">
 
     <xs:annotation>
         <xs:documentation>Schema for eXist-db Collection Configuration files /db/system/config/db/**/collection.xconf</xs:documentation>

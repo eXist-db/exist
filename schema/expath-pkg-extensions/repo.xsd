@@ -5,7 +5,8 @@
     xmlns:repo="http://exist-db.org/xquery/repo"
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
-    targetNamespace="http://exist-db.org/xquery/repo">
+    targetNamespace="http://exist-db.org/xquery/repo"
+    version="1.0.0">
     
     <xs:annotation>
         <xs:documentation>A schema for eXist-db Package Repository extensions to EXPath Packaging.</xs:documentation>

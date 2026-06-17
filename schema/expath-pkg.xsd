@@ -5,7 +5,8 @@
     xmlns:pkg="http://expath.org/ns/pkg"
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
-    targetNamespace="http://expath.org/ns/pkg">
+    targetNamespace="http://expath.org/ns/pkg"
+    version="1.0.0">
     
     <xs:annotation>
         <xs:documentation>A schema for EXPath Packaging (i.e. <code>expath-pkg.xml</code>) file as per the <a href="http://expath.org/spec/pkg">EXPath Packaging System - Candidate Module 9 May 2012'</a> specification.</xs:documentation>
