@@ -39,6 +39,10 @@ declare variable $syse:suite := "syse";
 declare variable $syse:simple-file-name := "simple-data.xml";
 declare variable $syse:complex-file-name := "complex-data.xml";
 
+(: eXist serialization extension parameters are supplied via their exist-namespace QName key
+ : (the spec-conformant form for implementation-defined parameters). :)
+declare variable $syse:exist-ns := "http://exist.sourceforge.net/NS/exist";
+
 declare
     %test:setUp
 function syse:setup() as empty-sequence() {
@@ -207,7 +211,7 @@ function syse:insert-final-newline-yes() {
     let $sync := file:sync(
         $fixtures:collection,
         $directory,
-        map{ xs:QName("exist:insert-final-newline"): true() }
+        map{ QName($syse:exist-ns, "insert-final-newline"): true() }
     )
 
     return (
@@ -231,7 +235,7 @@ function syse:insert-final-newline-no() {
     let $sync := file:sync(
         $fixtures:collection,
         $directory,
-        map{ xs:QName("exist:insert-final-newline"): false() }
+        map{ QName($syse:exist-ns, "insert-final-newline"): false() }
     )
 
     return (
@@ -246,4 +250,43 @@ function syse:insert-final-newline-no() {
             ($directory, $syse:complex-file-name)
         )
     )
+};
+
+(:
+ : The exist:expand-xincludes extension parameter (an exist-namespace serialization option) must be
+ : honored when supplied via the options map. Regression test for
+ : https://github.com/eXist-db/exist/issues/3704 — the "fill defaults" loop overwrote a supplied
+ : exist:expand-xincludes back to the default, so expand-xincludes=true was silently ignored.
+ :)
+declare variable $syse:xinclude-host-name := "xinclude-host.xml";
+declare variable $syse:xinclude-target-name := "xinclude-target.xml";
+
+declare %private function syse:store-xinclude-fixture() as empty-sequence() {
+    helper:create-db-resource($fixtures:collection, $syse:xinclude-target-name, document { <inc>INCLUDED</inc> }),
+    helper:create-db-resource($fixtures:collection, $syse:xinclude-host-name,
+        document {
+            <doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="{$syse:xinclude-target-name}"/></doc>
+        })
+};
+
+(: expand-xincludes=true expands the include (this is the case the #3704 bug broke) :)
+declare
+    %test:assertTrue
+function syse:expand-xincludes-yes() {
+    let $directory := helper:get-test-directory($syse:suite)
+    let $_ := syse:store-xinclude-fixture()
+    let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): true() })
+    let $content := file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
+    return contains($content, "INCLUDED") and not(contains($content, "xi:include"))
+};
+
+(: expand-xincludes=false preserves the include (control: also the file:sync default) :)
+declare
+    %test:assertTrue
+function syse:expand-xincludes-no() {
+    let $directory := helper:get-test-directory($syse:suite)
+    let $_ := syse:store-xinclude-fixture()
+    let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): false() })
+    let $content := file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
+    return contains($content, "xi:include")
 };
