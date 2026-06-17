@@ -5,7 +5,8 @@
     xmlns:eepkg="http://exist-db.org/ns/expath-pkg"
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
-    targetNamespace="http://exist-db.org/ns/expath-pkg">
+    targetNamespace="http://exist-db.org/ns/expath-pkg"
+    version="1.0.0">
     
     <xs:annotation>
         <xs:documentation>A schema for eXist-db extensions to EXPath Packaging.</xs:documentation>

@@ -6,7 +6,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="1.0.0">
+           version="1.1.0">
     <xs:element name="xquery-app">
         <xs:complexType>
             <xs:sequence>
