@@ -42,11 +42,10 @@ import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
-import org.exist.xquery.Expression;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -64,7 +63,6 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
@@ -129,13 +127,15 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
     @Override
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        final Expression expression = this;
         String docName = args[1].isEmpty() ? null : args[1].getStringValue();
         if (docName != null && docName.isEmpty()) {
             docName = null;
         } else if (docName != null) {
-            final String localDocName = docName;
-            docName = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, localDocName).toXmldbURI().toString());
+            // Resource-naming contract (eXist-db/exist#6463): the name argument is a decoded
+            // display name. Encode it exactly once into its canonical stored form -- escaping
+            // control characters, space, non-ASCII, and a literal '%' (to %25), while leaving
+            // sub-delimiters literal -- so a literal '%' round-trips and a raw space is accepted.
+            docName = URIUtils.encodeForURILenient(docName);
         }
 
         final Item item = args[2].itemAt(0);
