@@ -220,18 +220,8 @@ public class ResourceNamingConformanceTest {
         // -- the same encoder xmldb:store/create-collection now apply. This proves the HTTP surfaces
         // and the xmldb: layer agree on one stored key for every name, including the literal-percent
         // cases (a%b -> a%25b, a%20b -> a%2520b) which must stay distinct.
-        final StringBuilder storeMismatch = new StringBuilder();
-        for (final Row r : rows) {
-            if (r.created && r.storedName != null) {
-                final String canonical = URIUtils.encodeForURILenient(r.requestedName);
-                if (!canonical.equals(r.storedName)) {
-                    storeMismatch.append("\n    - ").append(r.label)
-                            .append(": stored '").append(r.storedName)
-                            .append("' but canonical lenient codec is '").append(canonical).append('\'');
-                }
-            }
-        }
-        if (storeMismatch.length() > 0) {
+        final String storeMismatch = storedFormMismatches(rows);
+        if (!storeMismatch.isEmpty()) {
             fail("REST/WebDAV stored form diverges from the canonical lenient codec "
                     + "(URIUtils.encodeForURILenient):" + storeMismatch
                     + "\n--- current matrix ---\n" + matrix);
@@ -270,6 +260,26 @@ public class ResourceNamingConformanceTest {
         if (msg.length() > 0) {
             fail(msg.append("--- current matrix ---\n").append(matrix).toString());
         }
+    }
+
+    /**
+     * For each created row, compare the form actually stored against the canonical lenient codec
+     * {@link URIUtils#encodeForURILenient(String)}. Returns a (possibly empty) description of the
+     * mismatches.
+     */
+    private static String storedFormMismatches(final List<Row> rows) {
+        final StringBuilder mismatch = new StringBuilder();
+        for (final Row r : rows) {
+            if (r.created && r.storedName != null) {
+                final String canonical = URIUtils.encodeForURILenient(r.requestedName);
+                if (!canonical.equals(r.storedName)) {
+                    mismatch.append("\n    - ").append(r.label)
+                            .append(": stored '").append(r.storedName)
+                            .append("' but canonical lenient codec is '").append(canonical).append('\'');
+                }
+            }
+        }
+        return mismatch.toString();
     }
 
     /** Render a set of corpus labels as "    - label (requested-name)" lines for failure messages. */
