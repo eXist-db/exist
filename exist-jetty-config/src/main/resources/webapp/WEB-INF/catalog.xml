@@ -7,7 +7,16 @@
 	
 	<!-- eXist-db internals entries -->
     <uri name="http://exist-db.org/collection-config/1.0" uri="../../../schema/collection.xconf.xsd"/>
-	
+    <uri name="http://exist.sourceforge.net/NS/exist" uri="../../../schema/controller-config.xsd"/>
+    <!-- conf.xml/descriptor.xml/mime-types.xml have no target namespace, so they're keyed by
+         the literal schemaLocation hint's suffix rather than a namespace URI. systemSuffix
+         matches regardless of how many ../ precede it, so this resolves correctly both for the
+         canonical templates (../schema/conf.xsd from etc/) and for the many test/sample
+         instance copies scattered across modules with differing relative depths. -->
+    <systemSuffix systemIdSuffix="schema/conf.xsd" uri="../../../schema/conf.xsd"/>
+    <systemSuffix systemIdSuffix="schema/descriptor.xsd" uri="../../../schema/descriptor.xsd"/>
+    <systemSuffix systemIdSuffix="schema/mime-types.xsd" uri="../../../schema/mime-types.xsd"/>
+
 	<!-- W3C XHTML DTD entries --> 
 	
 	<public publicId="-//W3C//DTD XHTML 1.0 Strict//EN" uri="entities/xhtml1-strict.dtd"/> 

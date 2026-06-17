@@ -28,6 +28,7 @@ COPY autodeploy /exist/autodeploy
 COPY etc /exist/etc
 COPY lib /exist/lib
 COPY logs /exist/logs
+COPY schema /exist/schema
 
 
 # Build-time metadata as defined at http://label-schema.org
