@@ -37,7 +37,7 @@
     and then as a classpath resource in org/exist/util .
     ======================================================= 
 -->
-<mime-types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/mime-types.xsd">
+<mime-types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/mime-types.xsd" schemaVersion="1.2.0">
 
     <!-- - - Mime types stored as XML - - - - - - - - -  -->
 

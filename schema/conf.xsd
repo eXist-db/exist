@@ -8,7 +8,16 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.0.0">
+           version="2.1.0">
+    
+    <xs:simpleType name="schemaVersionType">
+        <xs:annotation>
+            <xs:documentation>Native XSD semver; mirrors xs:schema/@version on conf.xsd (not eXist product version).</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(0|[1-9]\d*)(\.(0|[1-9]\d*)){0,2}"/>
+        </xs:restriction>
+    </xs:simpleType>
     
     <!-- Shared types -->
     <xs:simpleType name="yes_no">
@@ -1413,6 +1422,7 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
+            <xs:attribute name="schemaVersion" type="schemaVersionType" use="optional"/>
         </xs:complexType>
     </xs:element>
 
