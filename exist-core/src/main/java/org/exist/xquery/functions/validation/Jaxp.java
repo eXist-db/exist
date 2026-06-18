@@ -22,8 +22,6 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -68,8 +66,6 @@ import org.exist.util.Configuration;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.TemporaryFileManager;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
@@ -98,6 +94,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.utils.SaxProducer;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -256,7 +253,7 @@ public class Jaxp extends BasicFunction {
                 } else if (singleUrl.endsWith(".xml")) {
                     LOG.debug("Using catalogs {}", getStrings(catalogUrls));
 
-                    final List<Tuple2<String, Optional<InputSource>>> catalogs = new ArrayList<>();
+                    final List<Tuple2<String, Optional<SaxProducer>>> catalogs = new ArrayList<>();
                     for (String catalogUrl : catalogUrls) {
 
                         /* NOTE(AR): Catalog URL if stored in database must start with
@@ -264,23 +261,20 @@ public class Jaxp extends BasicFunction {
                            org.exist.protocolhandler.protocols.xmldb.Handler
                            to resolve any relative URI resources from the database.
                          */
-                        final Optional<InputSource> maybeInputSource;
+                        final Optional<SaxProducer> maybeSaxProducer;
                         if (catalogUrl.startsWith("xmldb:exist://")) {
                             catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
-                            maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
+                            maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
                         } else if (catalogUrl.startsWith("/db")) {
                             catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
-                            maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
+                            maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
                         } else {
-                            maybeInputSource = Optional.empty();
+                            maybeSaxProducer = Optional.empty();
                         }
 
-                        if (maybeInputSource.isPresent()) {
-                            maybeInputSource.get().setSystemId(catalogUrl);
-                        }
-                        catalogs.add(Tuple(catalogUrl, maybeInputSource));
+                        catalogs.add(Tuple(catalogUrl, maybeSaxProducer));
                     }
-                    final Resolver resolver = ResolverFactory.newResolver(catalogs);
+                    final Resolver resolver = ResolverFactory.newResolverFromSax(catalogs);
                     catalogResolver = resolver;
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
@@ -500,16 +494,28 @@ public class Jaxp extends BasicFunction {
         return validator;
     }
 
-    // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
-    private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
-        try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
-            if (lockedDocument == null) {
-                throw new IOException("No such document: " + documentUri);
-            }
+    /**
+     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
+     * at {@code documentUri} directly to whatever {@link org.xml.sax.ContentHandler} the catalog
+     * loader supplies, avoiding having to first serialize the document to a {@link String} and
+     * have the catalog loader re-parse it from an {@link InputSource}.
+     *
+     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
+     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
+     * load the entries), so each invocation re-acquires the document lock and re-serializes it.</p>
+     *
+     * @param documentUri the URI of the catalog document stored in the database.
+     * @return a producer that re-serializes the document's SAX events on each invocation.
+     */
+    private SaxProducer catalogSaxProducer(final XmldbURI documentUri) {
+        return (contentHandler, dtdHandler, errorHandler) -> {
+            try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
+                if (lockedDocument == null) {
+                    throw new IOException("No such document: " + documentUri);
+                }
 
-            final DocumentImpl doc = lockedDocument.getDocument();
+                final DocumentImpl doc = lockedDocument.getDocument();
 
-            try (final StringWriter stringWriter = new StringWriter()) {
                 final Properties outputProperties = new Properties();
                 outputProperties.setProperty(OutputKeys.METHOD, "XML");
                 outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -518,26 +524,13 @@ public class Jaxp extends BasicFunction {
 
                 final Serializer serializer = context.getBroker().getSerializer();
                 serializer.reset();
-                SAXSerializer sax = null;
-                try {
-                    sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                    sax.setOutput(stringWriter, outputProperties);
-                    serializer.setProperties(outputProperties);
-                    serializer.setSAXHandlers(sax, sax);
-                    serializer.toSAX(doc);
-                } catch (final SAXNotSupportedException | SAXNotRecognizedException e) {
-                    throw new SAXException(e.getMessage(), e);
-                } finally {
-                    if (sax != null) {
-                        SerializerPool.getInstance().returnObject(sax);
-                    }
-                }
-
-                return stringWriter.toString();
+                serializer.setProperties(outputProperties);
+                serializer.setSAXHandlers(contentHandler, null);
+                serializer.toSAX(doc);
+            } catch (final PermissionDeniedException e) {
+                throw new IOException(e.getMessage(), e);
             }
-        } catch (final PermissionDeniedException e) {
-            throw new IOException(e.getMessage(), e);
-        }
+        };
     }
 
     // No-go ...processor is in validating mode

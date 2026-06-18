@@ -34,9 +34,11 @@ package org.exist.resolver;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.xml.sax.InputSource;
+import org.xmlresolver.CatalogManager;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.utils.SaxProducer;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -76,6 +78,49 @@ public interface ResolverFactory {
             strCatalogUri = sanitizeCatalogUri(strCatalogUri);
             if (catalog._2.isPresent()) {
                 resolverConfiguration.addCatalog(new URI(strCatalogUri), catalog._2.get());
+            } else {
+                resolverConfiguration.addCatalog(strCatalogUri);
+            }
+        }
+
+        return new Resolver(resolverConfiguration);
+    }
+
+    /**
+     * Create a Resolver that is configured for specific catalogs, where catalogs that are
+     * not retrievable directly via their URI (e.g. catalogs stored inside the database) are
+     * instead supplied as a {@link SaxProducer} that streams the catalog's SAX events directly,
+     * avoiding having to first serialize the catalog document to a {@link String}/{@link InputSource}
+     * and then have the catalog loader re-parse it.
+     *
+     * @param catalogs the list of catalogs, the first entry in the tuple is their URI (and/or location),
+     *                 and the optional second argument is a {@link SaxProducer} for obtaining their
+     *                 content directly as SAX events.
+     *
+     * @return the resolver
+     *
+     * @throws URISyntaxException if one of the catalog URI is invalid
+     */
+    static Resolver newResolverFromSax(final List<Tuple2<String, Optional<SaxProducer>>> catalogs) throws URISyntaxException {
+        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
+        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
+        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
+        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
+        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+
+        final CatalogManager manager = resolverConfiguration.getFeature(ResolverFeature.CATALOG_MANAGER);
+
+        for (final Tuple2<String, Optional<SaxProducer>> catalog : catalogs) {
+            String strCatalogUri = catalog._1;
+            strCatalogUri = sanitizeCatalogUri(strCatalogUri);
+            if (catalog._2.isPresent()) {
+                final URI catalogUri = new URI(strCatalogUri);
+                // Register the catalog URI with the configuration first (mirrors what
+                // XMLResolverConfiguration#addCatalog(URI, InputSource) does internally),
+                // then have the manager load it directly from SAX events -- the manager
+                // caches the result by URI, so the resolver never tries to dereference it.
+                resolverConfiguration.addCatalog(strCatalogUri);
+                manager.loadCatalog(catalogUri, catalog._2.get());
             } else {
                 resolverConfiguration.addCatalog(strCatalogUri);
             }

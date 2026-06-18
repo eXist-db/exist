@@ -38,21 +38,16 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.utils.SaxProducer;
 
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -127,22 +122,18 @@ public class SearchResourceResolver implements XMLEntityResolver {
                    to resolve any relative URI resources from the database.
                  */
                 try {
-                    final Optional<InputSource> maybeInputSource;
+                    final Optional<SaxProducer> maybeSaxProducer;
                     if (catalogPath.startsWith("xmldb:exist://")) {
                         catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogPath)))));
+                        maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogPath)));
                     } else if (catalogPath.startsWith("/db")) {
                         catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogPath)))));
+                        maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogPath)));
                     } else {
-                        maybeInputSource = Optional.empty();
+                        maybeSaxProducer = Optional.empty();
                     }
 
-                    if (maybeInputSource.isPresent()) {
-                        maybeInputSource.get().setSystemId(catalogPath);
-                    }
-
-                    final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(catalogPath, maybeInputSource)));
+                    final Resolver resolver = ResolverFactory.newResolverFromSax(List.of(Tuple(catalogPath, maybeSaxProducer)));
                     final InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
                     if (source != null) {
                         resourcePath = source.getSystemId();
@@ -192,16 +183,28 @@ public class SearchResourceResolver implements XMLEntityResolver {
                 xis.getPublicId(), xis.getSystemId(), xis.getBaseSystemId(), xis.getEncoding());
     }
 
-    // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
-    private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
-        try (final DBBroker broker = brokerPool.get(Optional.of(subject));
-             final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
-            if (lockedDocument == null) {
-                throw new IOException("No such document: " + documentUri);
-            }
-            final DocumentImpl doc = lockedDocument.getDocument();
+    /**
+     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
+     * at {@code documentUri} directly to whatever {@link org.xml.sax.ContentHandler} the catalog
+     * loader supplies, avoiding having to first serialize the document to a {@link String} and
+     * have the catalog loader re-parse it from an {@link InputSource}.
+     *
+     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
+     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
+     * load the entries), so each invocation re-acquires the document lock and re-serializes it.</p>
+     *
+     * @param documentUri the URI of the catalog document stored in the database.
+     * @return a producer that re-serializes the document's SAX events on each invocation.
+     */
+    private SaxProducer catalogSaxProducer(final XmldbURI documentUri) {
+        return (contentHandler, dtdHandler, errorHandler) -> {
+            try (final DBBroker broker = brokerPool.get(Optional.of(subject));
+                 final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
+                if (lockedDocument == null) {
+                    throw new IOException("No such document: " + documentUri);
+                }
+                final DocumentImpl doc = lockedDocument.getDocument();
 
-            try (final StringWriter stringWriter = new StringWriter()) {
                 final Properties outputProperties = new Properties();
                 outputProperties.setProperty(OutputKeys.METHOD, "XML");
                 outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -210,25 +213,12 @@ public class SearchResourceResolver implements XMLEntityResolver {
 
                 final Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                SAXSerializer sax = null;
-                try {
-                    sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                    sax.setOutput(stringWriter, outputProperties);
-                    serializer.setProperties(outputProperties);
-                    serializer.setSAXHandlers(sax, sax);
-                    serializer.toSAX(doc);
-                } catch (final SAXNotSupportedException | SAXNotRecognizedException e) {
-                    throw new SAXException(e.getMessage(), e);
-                } finally {
-                    if (sax != null) {
-                        SerializerPool.getInstance().returnObject(sax);
-                    }
-                }
-
-                return stringWriter.toString();
+                serializer.setProperties(outputProperties);
+                serializer.setSAXHandlers(contentHandler, null);
+                serializer.toSAX(doc);
+            } catch (final EXistException | PermissionDeniedException e) {
+                throw new IOException(e.getMessage(), e);
             }
-        } catch (final EXistException | PermissionDeniedException e) {
-            throw new IOException(e.getMessage(), e);
-        }
+        };
     }
 }
