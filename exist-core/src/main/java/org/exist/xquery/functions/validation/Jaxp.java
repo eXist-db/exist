@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -40,8 +41,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
@@ -77,17 +83,20 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -207,6 +216,7 @@ public class Jaxp extends BasicFunction {
         }
 
         InputSource instance = null;
+        Resolver catalogResolver = null;
         try {
             report.start();
 
@@ -229,6 +239,7 @@ public class Jaxp extends BasicFunction {
                 LOG.debug("Using system catalog.");
                 final Configuration config = brokerPool.getConfiguration();
                 final Resolver resolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                catalogResolver = resolver;
                 XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else {
@@ -270,6 +281,7 @@ public class Jaxp extends BasicFunction {
                         catalogs.add(Tuple(catalogUrl, maybeInputSource));
                     }
                     final Resolver resolver = ResolverFactory.newResolver(catalogs);
+                    catalogResolver = resolver;
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else {
@@ -291,6 +303,29 @@ public class Jaxp extends BasicFunction {
             LOG.debug("Start parsing document");
             xmlReader.parse(instance);
             LOG.debug("Stopped parsing document");
+
+            /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
+               SchemaFactory/Validator API, not into this dynamic-discovery
+               SAXParser pipeline (see plans/catalog-dtd.plan.md). When that
+               shows up as "no declaration found" for the root element and the
+               instance actually references a schema, retry once with the
+               XSD-1.1-capable Validator before giving up. DTD-only documents
+               never produce this cvc-* signature, so they never retry. */
+            if (!report.isValid() && isMissingElementDeclaration(report)
+                    && hasSchemaLocationHint(args[0].itemAt(0))) {
+                LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
+                report.clear();
+
+                final Validator validator = newXsd11Validator(catalogResolver);
+                validator.setErrorHandler(report);
+
+                final InputSource retryInstance = Shared.getInputSource(args[0].itemAt(0), context);
+                try {
+                    validator.validate(new SAXSource(retryInstance), new SAXResult(contenthandler));
+                } finally {
+                    Shared.closeInputSource(retryInstance);
+                }
+            }
 
             // Distill namespace from document
             if (contenthandler instanceof ValidationContentHandler handler) {
@@ -379,11 +414,90 @@ public class Jaxp extends BasicFunction {
 
         try {
             xmlReader.setFeature(featureName, value);
-            
+
         } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());
 
         }
+    }
+
+    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
+    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+
+    /**
+     * @return true if any reported error is the "no global declaration for
+     * the root element" signature ({@code cvc-elt.1.a}) produced when this
+     * Xerces fork's dynamic-discovery pipeline meets an XSD 1.1-only schema.
+     */
+    private static boolean isMissingElementDeclaration(final ValidationReport report) {
+        return report.getValidationReportItemList().stream()
+                .anyMatch(item -> item.getMessage() != null && item.getMessage().startsWith("cvc-elt.1.a:"));
+    }
+
+    /**
+     * Cheaply peeks at the root element's attributes to check whether the
+     * instance references a schema via {@code xsi:schemaLocation} /
+     * {@code xsi:noNamespaceSchemaLocation}, without validating it. Used to
+     * decide whether the XSD 1.1 fallback retry could possibly help (a
+     * DTD-only document never produces the cvc-elt.1.a signature in the
+     * first place, but this guards against retrying on documents that
+     * reference no schema at all).
+     */
+    private boolean hasSchemaLocationHint(final Item item) throws XPathException, IOException {
+        final InputSource probe = Shared.getInputSource(item, context);
+        try {
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            final XMLReader reader = factory.newSAXParser().getXMLReader();
+
+            final boolean[] found = {false};
+            reader.setContentHandler(new DefaultHandler() {
+                @Override
+                public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+                    found[0] = attributes.getValue(XSI_NS, "schemaLocation") != null
+                            || attributes.getValue(XSI_NS, "noNamespaceSchemaLocation") != null;
+                    throw StopAfterRootElement.INSTANCE;
+                }
+            });
+
+            try {
+                reader.parse(probe);
+            } catch (final StopAfterRootElement stop) {
+                // expected: we only need the root element's attributes
+            }
+            return found[0];
+
+        } catch (final ParserConfigurationException | SAXException ex) {
+            throw new IOException(ex.getMessage(), ex);
+        } finally {
+            Shared.closeInputSource(probe);
+        }
+    }
+
+    /**
+     * Sentinel used to abort {@link #hasSchemaLocationHint(Item)}'s probe
+     * parse immediately after the root element's attributes are seen.
+     */
+    private static final class StopAfterRootElement extends SAXException {
+        private static final StopAfterRootElement INSTANCE = new StopAfterRootElement();
+    }
+
+    /**
+     * @param resolver catalog resolver to use for schema/entity resolution, or null.
+     * @return a {@link Validator} for the only XSD 1.1-capable pipeline this
+     * Xerces fork supports: {@link SchemaFactory}/{@link Schema} with no
+     * pre-supplied schema documents, so it dynamically discovers the schema
+     * from the instance's own schemaLocation hint, mirroring how the default
+     * SAXParser pipeline behaves for XSD 1.0.
+     */
+    private Validator newXsd11Validator(@Nullable final Resolver resolver) throws SAXException {
+        final SchemaFactory schemaFactory = SchemaFactory.newInstance(XSD_1_1_NS);
+        final Schema schema = schemaFactory.newSchema();
+        final Validator validator = schema.newValidator();
+        if (resolver != null) {
+            validator.setResourceResolver(resolver);
+        }
+        return validator;
     }
 
     // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
