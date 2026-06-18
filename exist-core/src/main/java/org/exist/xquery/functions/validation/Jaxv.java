@@ -21,18 +21,36 @@
  */
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import javax.xml.XMLConstants;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
+
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
+import org.exist.resolver.ResolverFactory;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.Configuration;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.ValidationReport;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -45,6 +63,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import org.xml.sax.InputSource;
+import org.xmlresolver.Resolver;
+import org.xmlresolver.utils.SaxProducer;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -73,8 +98,13 @@ public class Jaxv extends BasicFunction  {
             "The namespace URI to designate a schema language. Depending on the " +
             "jaxv.SchemaFactory implementation the following values are valid:" +
             "(XSD 1.0) http://www.w3.org/2001/XMLSchema http://www.w3.org/XML/XMLSchema/v1.0, " +
-            "(XSD 1.1) http://www.w3.org/XML/XMLSchema/v1.1, " + 
+            "(XSD 1.1) http://www.w3.org/XML/XMLSchema/v1.1, " +
             "(RELAX NG 1.0) http://relaxng.org/ns/structure/1.0";
+
+    private static final String catalogTxt = "The catalogs referenced as xs:anyURI's. An empty " +
+            "sequence uses the system catalog. A directory-search catalog (a collection URI ending " +
+            "in '/') is not supported here, as javax.xml.validation.Validator has no equivalent of " +
+            "the SAX entity resolver used for that case in validation:jaxp().";
 
     // Setup function signature
     public final static FunctionSignature[] signatures = {
@@ -107,8 +137,24 @@ public class Jaxv extends BasicFunction  {
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
             ),
-        
-        
+
+        new FunctionSignature(
+                new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt+" Optionally an XML catalog can be specified for schema/entity resolution.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        instanceText),
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
+                        grammarText),
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.EXACTLY_ONE,
+                        languageText),
+                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                        catalogTxt),
+                },
+                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    Shared.simplereportText)
+            ),
+
         new FunctionSignature(
                 new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt+" An XML report is returned.",
@@ -121,7 +167,7 @@ public class Jaxv extends BasicFunction  {
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
             ),
-            
+
         new FunctionSignature(
                 new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt+" An XML report is returned.",
@@ -135,20 +181,40 @@ public class Jaxv extends BasicFunction  {
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
+            ),
+
+        new FunctionSignature(
+                new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt+" An XML report is returned. Optionally an XML catalog can be specified for schema/entity resolution.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        instanceText),
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
+                        grammarText),
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.EXACTLY_ONE,
+                        languageText),
+                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                        catalogTxt),
+                },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
             )
-                        
+
     };
     
     
+    private final BrokerPool brokerPool;
+
     public Jaxv(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
+        brokerPool = context.getBroker().getBrokerPool();
     }
 
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         // Check input parameters
-        if (args.length != 2  && args.length != 3) {
+        if (args.length != 2 && args.length != 3 && args.length != 4) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -160,13 +226,13 @@ public class Jaxv extends BasicFunction  {
 
         try {
             report.start();
-            
+
             // Get inputstream for instance document
             instance=Shared.getStreamSource(args[0].itemAt(0), context);
 
             // Validate using resource speciefied in second parameter
             grammars = Shared.getStreamSource(args[1], context);
-           
+
             // Check input
             for (final StreamSource grammar : grammars) {
                 final String grammarUrl = grammar.getSystemId();
@@ -177,23 +243,81 @@ public class Jaxv extends BasicFunction  {
             }
 
             // Fetch third argument if available, and override defailt value
-            if (args.length == 3) {
+            if (args.length >= 3) {
                 schemaLang = args[2].getStringValue();
             }
-            
+
             // Get language specific factory
             SchemaFactory factory = null;
             try {
                 factory = SchemaFactory.newInstance(schemaLang);
-                
+
             } catch (final IllegalArgumentException ex) {
                 final String msg = "Schema language '" + schemaLang + "' is not supported. " + ex.getMessage();
                 LOG.error(msg);
                 throw new XPathException(this, msg);
             }
-            
-            
-            // Create grammar
+
+
+            // Handle catalog (fourth argument). Must be set on the SchemaFactory, and
+            // BEFORE newSchema() is called: that's when xs:import/xs:include resolution
+            // happens (schema compilation), not at validate() time. javax.xml.validation
+            // only accepts an LSResourceResolver, so unlike validation:jaxp() the
+            // directory-search/collection case (a catalog URL ending in '/') has no
+            // equivalent here -- org.xmlresolver.Resolver implements LSResourceResolver
+            // directly, but SearchResourceResolver only implements the Xerces-specific
+            // XMLEntityResolver (XNI) interface.
+            if (args.length == 4) {
+                if (args[3].isEmpty()) {
+                    // Use system catalog
+                    LOG.debug("Using system catalog.");
+                    final Configuration config = brokerPool.getConfiguration();
+                    final Resolver resolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                    factory.setResourceResolver(resolver);
+
+                } else {
+                    final String[] catalogUrls = Shared.getUrls(args[3]);
+                    final String singleUrl = catalogUrls[0];
+
+                    if (singleUrl.endsWith("/")) {
+                        LOG.warn("Directory-search catalogs ('{}') are not supported by validation:jaxv() -- " +
+                                "schema/entity resolution will proceed without a catalog.", singleUrl);
+
+                    } else if (singleUrl.endsWith(".xml")) {
+                        LOG.debug("Using catalogs {}", getStrings(catalogUrls));
+
+                        final List<Tuple2<String, Optional<SaxProducer>>> catalogs = new ArrayList<>();
+                        for (String catalogUrl : catalogUrls) {
+
+                            /* NOTE(AR): Catalog URL if stored in database must start with
+                               URI Scheme xmldb:// so that the XML Resolver can use
+                               org.exist.protocolhandler.protocols.xmldb.Handler
+                               to resolve any relative URI resources from the database.
+                             */
+                            final Optional<SaxProducer> maybeSaxProducer;
+                            if (catalogUrl.startsWith("xmldb:exist://")) {
+                                catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
+                                maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
+                            } else if (catalogUrl.startsWith("/db")) {
+                                catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
+                                maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
+                            } else {
+                                maybeSaxProducer = Optional.empty();
+                            }
+
+                            catalogs.add(Tuple(catalogUrl, maybeSaxProducer));
+                        }
+                        final Resolver resolver = ResolverFactory.newResolverFromSax(catalogs);
+                        factory.setResourceResolver(resolver);
+
+                    } else {
+                        LOG.error("Catalog URLs should end on / or .xml");
+                    }
+                }
+            }
+
+            // Create grammar -- xs:import/xs:include resolution (via the resolver set
+            // above, if any) happens here, during schema compilation.
             final Schema schema = factory.newSchema(grammars);
 
             // Setup validator
@@ -234,8 +358,54 @@ public class Jaxv extends BasicFunction  {
             } finally {
                 context.popDocumentContext();
             }
-        } 
+        }
     }
 
-    
+    private static String getStrings(String[] data) {
+        final StringBuilder sb = new StringBuilder();
+        for (final String field : data) {
+            sb.append(field);
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
+     * at {@code documentUri} directly to whatever {@link org.xml.sax.ContentHandler} the catalog
+     * loader supplies, avoiding having to first serialize the document to a {@link String} and
+     * have the catalog loader re-parse it from an {@link InputSource}.
+     *
+     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
+     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
+     * load the entries), so each invocation re-acquires the document lock and re-serializes.</p>
+     *
+     * @param documentUri the URI of the catalog document stored in the database.
+     * @return a producer that re-serializes the document's SAX events on each invocation.
+     */
+    private SaxProducer catalogSaxProducer(final XmldbURI documentUri) {
+        return (contentHandler, dtdHandler, errorHandler) -> {
+            try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
+                if (lockedDocument == null) {
+                    throw new IOException("No such document: " + documentUri);
+                }
+
+                final DocumentImpl doc = lockedDocument.getDocument();
+
+                final Properties outputProperties = new Properties();
+                outputProperties.setProperty(OutputKeys.METHOD, "XML");
+                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                outputProperties.setProperty(OutputKeys.INDENT, "no");
+                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
+
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setProperties(outputProperties);
+                serializer.setSAXHandlers(contentHandler, null);
+                serializer.toSAX(doc);
+            } catch (final PermissionDeniedException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        };
+    }
 }

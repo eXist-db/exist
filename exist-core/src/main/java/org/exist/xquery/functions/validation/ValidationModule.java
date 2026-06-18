@@ -52,6 +52,8 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Jaxv.signatures[1], Jaxv.class),
        new FunctionDef(Jaxv.signatures[2], Jaxv.class),
        new FunctionDef(Jaxv.signatures[3], Jaxv.class),
+       new FunctionDef(Jaxv.signatures[4], Jaxv.class),
+       new FunctionDef(Jaxv.signatures[5], Jaxv.class),
 
        new FunctionDef(Jing.signatures[0], Jing.class),
        new FunctionDef(Jing.signatures[1], Jing.class),
