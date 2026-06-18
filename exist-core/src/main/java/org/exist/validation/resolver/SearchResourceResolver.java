@@ -28,16 +28,9 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.exist.EXistException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.resolver.ResolverFactory;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
@@ -45,14 +38,12 @@ import org.xml.sax.SAXException;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.utils.SaxProducer;
 
-import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -123,12 +114,9 @@ public class SearchResourceResolver implements XMLEntityResolver {
                  */
                 try {
                     final Optional<SaxProducer> maybeSaxProducer;
-                    if (catalogPath.startsWith("xmldb:exist://")) {
+                    if (catalogPath.startsWith("xmldb:exist://") || catalogPath.startsWith("/db")) {
                         catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogPath)));
-                    } else if (catalogPath.startsWith("/db")) {
-                        catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogPath)));
+                        maybeSaxProducer = Optional.of(ResolverFactory.catalogSaxProducer(brokerPool, subject, XmldbURI.create(catalogPath)));
                     } else {
                         maybeSaxProducer = Optional.empty();
                     }
@@ -181,44 +169,5 @@ public class SearchResourceResolver implements XMLEntityResolver {
     private String getXisDetails(final XMLInputSource xis) {
         return "PublicId='%s' SystemId='%s' BaseSystemId='%s' Encoding='%s' ".formatted(
                 xis.getPublicId(), xis.getSystemId(), xis.getBaseSystemId(), xis.getEncoding());
-    }
-
-    /**
-     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
-     * at {@code documentUri} directly to whatever {@link org.xml.sax.ContentHandler} the catalog
-     * loader supplies, avoiding having to first serialize the document to a {@link String} and
-     * have the catalog loader re-parse it from an {@link InputSource}.
-     *
-     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
-     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
-     * load the entries), so each invocation re-acquires the document lock and re-serializes it.</p>
-     *
-     * @param documentUri the URI of the catalog document stored in the database.
-     * @return a producer that re-serializes the document's SAX events on each invocation.
-     */
-    private SaxProducer catalogSaxProducer(final XmldbURI documentUri) {
-        return (contentHandler, dtdHandler, errorHandler) -> {
-            try (final DBBroker broker = brokerPool.get(Optional.of(subject));
-                 final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
-                if (lockedDocument == null) {
-                    throw new IOException("No such document: " + documentUri);
-                }
-                final DocumentImpl doc = lockedDocument.getDocument();
-
-                final Properties outputProperties = new Properties();
-                outputProperties.setProperty(OutputKeys.METHOD, "XML");
-                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
-
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                serializer.setProperties(outputProperties);
-                serializer.setSAXHandlers(contentHandler, null);
-                serializer.toSAX(doc);
-            } catch (final EXistException | PermissionDeniedException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        };
     }
 }

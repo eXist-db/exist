@@ -24,10 +24,7 @@ package org.exist.xquery.functions.validation;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.Locale;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,21 +44,14 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import com.evolvedbinary.j8fu.tuple.Tuple2;
-
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.resolver.ResolverFactory;
 import org.exist.resolver.XercesXmlResolverAdapter;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
@@ -70,7 +60,6 @@ import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.SearchResourceResolver;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -79,25 +68,22 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.utils.SaxProducer;
 
-import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
@@ -108,22 +94,26 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
  */
 public class Jaxp extends BasicFunction {
 
-    private static final String simpleFunctionTxt =
-            "Validate document by parsing $instance. Optionally "
-            + "grammar caching can be enabled. Supported grammars types "
-            + "are '.xsd' and '.dtd'.";
-    
-    private static final String extendedFunctionTxt =
-            "Validate document by parsing $instance. Optionally "
-            + "grammar caching can be enabled and "
-            + "an XML catalog can be specified. Supported grammars types "
-            + "are '.xsd' and '.dtd'.";
-    
-    private static final String documentTxt = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) "
-            + "or as a Java file object.";
-    
+    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
+    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+
+    private static final String simpleFunctionTxt = """
+            Validate document by parsing $instance. Optionally \
+            grammar caching can be enabled. Supported grammars types \
+            are '.xsd' and '.dtd'.""";
+
+    private static final String extendedFunctionTxt = """
+            Validate document by parsing $instance. Optionally \
+            grammar caching can be enabled and \
+            an XML catalog can be specified. Supported grammars types \
+            are '.xsd' and '.dtd'.""";
+
+    private static final String documentTxt = """
+            The document referenced as xs:anyURI, a node (element or result of fn:doc()) \
+            or as a Java file object.""";
+
     private static final String catalogTxt = "The catalogs referenced as xs:anyURI's.";
-    
+
     private static final String cacheTxt = "Set the flag to true() to enable grammar caching.";
 
     private final BrokerPool brokerPool;
@@ -140,7 +130,7 @@ public class Jaxp extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
         Shared.simplereportText)),
-        
+
         new FunctionSignature(
         new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         extendedFunctionTxt,
@@ -153,7 +143,7 @@ public class Jaxp extends BasicFunction {
             catalogTxt),},
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
         Shared.simplereportText)),
-        
+
         new FunctionSignature(
         new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         simpleFunctionTxt + " An XML report is returned.",
@@ -164,7 +154,7 @@ public class Jaxp extends BasicFunction {
             cacheTxt),},
         new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
         Shared.xmlreportText)),
-        
+
         new FunctionSignature(
         new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         extendedFunctionTxt + " An XML report is returned.",
@@ -177,7 +167,7 @@ public class Jaxp extends BasicFunction {
             catalogTxt),},
         new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
         Shared.xmlreportText)),
-        
+
         new FunctionSignature(
         new QName("jaxp-parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         "Parse document in validating mode, all defaults are filled in according to the " +
@@ -202,8 +192,8 @@ public class Jaxp extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValidationReport report = new ValidationReport();
 
-        final MemTreeBuilder instanceBuilder;
-        final ContentHandler contenthandler;
+        MemTreeBuilder instanceBuilder;
+        ContentHandler contenthandler;
         if (isCalledAs("jaxp-parse")) {
             instanceBuilder = context.getDocumentBuilder();
             contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true); // (namespace?)
@@ -214,6 +204,7 @@ public class Jaxp extends BasicFunction {
 
         InputSource instance = null;
         Resolver catalogResolver = null;
+        boolean usedDirectorySearchCatalog = false;
         try {
             report.start();
 
@@ -247,34 +238,16 @@ public class Jaxp extends BasicFunction {
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
                     LOG.debug("Search for grammar in {}", singleUrl);
+                    usedDirectorySearchCatalog = true;
                     final XMLEntityResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), catalogUrls[0]);
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
-                    LOG.debug("Using catalogs {}", getStrings(catalogUrls));
-
-                    final List<Tuple2<String, Optional<SaxProducer>>> catalogs = new ArrayList<>();
-                    for (String catalogUrl : catalogUrls) {
-
-                        /* NOTE(AR): Catalog URL if stored in database must start with
-                           URI Scheme xmldb:// so that the XML Resolver can use
-                           org.exist.protocolhandler.protocols.xmldb.Handler
-                           to resolve any relative URI resources from the database.
-                         */
-                        final Optional<SaxProducer> maybeSaxProducer;
-                        if (catalogUrl.startsWith("xmldb:exist://")) {
-                            catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
-                            maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
-                        } else if (catalogUrl.startsWith("/db")) {
-                            catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
-                            maybeSaxProducer = Optional.of(catalogSaxProducer(XmldbURI.create(catalogUrl)));
-                        } else {
-                            maybeSaxProducer = Optional.empty();
-                        }
-
-                        catalogs.add(Tuple(catalogUrl, maybeSaxProducer));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Using catalogs {}", String.join(" ", catalogUrls));
                     }
-                    final Resolver resolver = ResolverFactory.newResolverFromSax(catalogs);
+
+                    final Resolver resolver = ResolverFactory.resolveCatalogs(context.getBroker(), catalogUrls);
                     catalogResolver = resolver;
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
@@ -300,15 +273,35 @@ public class Jaxp extends BasicFunction {
 
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
                SchemaFactory/Validator API, not into this dynamic-discovery
-               SAXParser pipeline (see plans/catalog-dtd.plan.md). When that
-               shows up as "no declaration found" for the root element and the
-               instance actually references a schema, retry once with the
-               XSD-1.1-capable Validator before giving up. DTD-only documents
-               never produce this cvc-* signature, so they never retry. */
-            if (!report.isValid() && isMissingElementDeclaration(report)
-                    && hasSchemaLocationHint(args[0].itemAt(0))) {
+               SAXParser pipeline. When that shows up as "no declaration found"
+               for the root element and the instance actually references a
+               schema, retry once with the XSD-1.1-capable Validator before
+               giving up. DTD-only documents never produce this cvc-* signature,
+               so they never retry. */
+            if (!report.isValid() && isMissingElementDeclaration(report) && hasSchemaLocationHint(contenthandler, instanceBuilder)) {
                 LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
                 report.clear();
+
+                if (usedDirectorySearchCatalog) {
+                    LOG.warn("Directory-search catalogs have no equivalent resource resolver for the XSD 1.1 " +
+                            "retry validator -- schema/entity resolution will proceed without a catalog.");
+                }
+
+                // The first pass already fed `contenthandler` (and, for jaxp-parse,
+                // `instanceBuilder`) a complete document; reusing either for the retry
+                // would silently double-build the result. Start over with a fresh
+                // content handler/builder so the retry produces a single, clean document.
+                if (isCalledAs("jaxp-parse")) {
+                    context.pushDocumentContext();
+                    try {
+                        instanceBuilder = context.getDocumentBuilder();
+                    } finally {
+                        context.popDocumentContext();
+                    }
+                    contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true);
+                } else {
+                    contenthandler = new ValidationContentHandler();
+                }
 
                 final Validator validator = newXsd11Validator(catalogResolver);
                 validator.setErrorHandler(report);
@@ -370,6 +363,7 @@ public class Jaxp extends BasicFunction {
                 } finally {
                     context.popDocumentContext();
                 }
+
             }
 
         }
@@ -377,7 +371,7 @@ public class Jaxp extends BasicFunction {
 
     // ####################################
 
-    
+    @SuppressWarnings("deprecation") // org.xml.sax.Parser is the only way to force this Xerces fork's message locale
     private XMLReader getXMLReader() throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
@@ -394,6 +388,17 @@ public class Jaxp extends BasicFunction {
         final XMLReader xmlReader = saxParser.getXMLReader();
 
         xmlReader.setFeature(FEATURE_SECURE_PROCESSING, true);
+
+        // Force English error messages, regardless of server locale: isMissingElementDeclaration()
+        // below matches on this Xerces fork's formatted "cvc-elt.1.a:" message text, which is
+        // otherwise sensitive to the JVM's default locale.
+        if (xmlReader instanceof Parser legacyParser) {
+            try {
+                legacyParser.setLocale(Locale.ENGLISH);
+            } catch (final SAXException ex) {
+                LOG.debug("Could not force the XMLReader's locale to English: {}", ex.getMessage());
+            }
+        }
 
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, true);
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, false);
@@ -415,9 +420,6 @@ public class Jaxp extends BasicFunction {
         }
     }
 
-    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
-    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
-
     /**
      * @return true if any reported error is the "no global declaration for
      * the root element" signature ({@code cvc-elt.1.a}) produced when this
@@ -429,51 +431,30 @@ public class Jaxp extends BasicFunction {
     }
 
     /**
-     * Cheaply peeks at the root element's attributes to check whether the
-     * instance references a schema via {@code xsi:schemaLocation} /
-     * {@code xsi:noNamespaceSchemaLocation}, without validating it. Used to
-     * decide whether the XSD 1.1 fallback retry could possibly help (a
-     * DTD-only document never produces the cvc-elt.1.a signature in the
-     * first place, but this guards against retrying on documents that
-     * reference no schema at all).
+     * Cheaply checks whether the instance document references a schema via
+     * {@code xsi:schemaLocation}/{@code xsi:noNamespaceSchemaLocation}, using
+     * only data already captured by the first (failed) parse -- no re-parsing
+     * of the instance is needed. Used to decide whether the XSD 1.1 fallback
+     * retry could possibly help (a DTD-only document never produces the
+     * cvc-elt.1.a signature in the first place, but this guards against
+     * retrying on documents that reference no schema at all).
+     *
+     * @param contenthandler the content handler used for the first parse pass.
+     * @param instanceBuilder for {@code jaxp-parse}, the document builder used for the first
+     *                        parse pass; {@code null} for {@code jaxp}/{@code jaxp-report}.
      */
-    private boolean hasSchemaLocationHint(final Item item) throws XPathException, IOException {
-        final InputSource probe = Shared.getInputSource(item, context);
-        try {
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            final XMLReader reader = factory.newSAXParser().getXMLReader();
-
-            final boolean[] found = {false};
-            reader.setContentHandler(new DefaultHandler() {
-                @Override
-                public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-                    found[0] = attributes.getValue(XSI_NS, "schemaLocation") != null
-                            || attributes.getValue(XSI_NS, "noNamespaceSchemaLocation") != null;
-                    throw StopAfterRootElement.INSTANCE;
-                }
-            });
-
-            try {
-                reader.parse(probe);
-            } catch (final StopAfterRootElement stop) {
-                // expected: we only need the root element's attributes
-            }
-            return found[0];
-
-        } catch (final ParserConfigurationException | SAXException ex) {
-            throw new IOException(ex.getMessage(), ex);
-        } finally {
-            Shared.closeInputSource(probe);
+    private static boolean hasSchemaLocationHint(final ContentHandler contenthandler, @Nullable final MemTreeBuilder instanceBuilder) {
+        if (contenthandler instanceof ValidationContentHandler handler) {
+            final Attributes attrs = handler.getRootAttributes();
+            return attrs != null
+                    && (attrs.getValue(XSI_NS, "schemaLocation") != null || attrs.getValue(XSI_NS, "noNamespaceSchemaLocation") != null);
         }
-    }
-
-    /**
-     * Sentinel used to abort {@link #hasSchemaLocationHint(Item)}'s probe
-     * parse immediately after the root element's attributes are seen.
-     */
-    private static final class StopAfterRootElement extends SAXException {
-        private static final StopAfterRootElement INSTANCE = new StopAfterRootElement();
+        if (instanceBuilder != null) {
+            final Element root = instanceBuilder.getDocument().getDocumentElement();
+            return root != null
+                    && (root.hasAttributeNS(XSI_NS, "schemaLocation") || root.hasAttributeNS(XSI_NS, "noNamespaceSchemaLocation"));
+        }
+        return false;
     }
 
     /**
@@ -494,45 +475,6 @@ public class Jaxp extends BasicFunction {
         return validator;
     }
 
-    /**
-     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
-     * at {@code documentUri} directly to whatever {@link org.xml.sax.ContentHandler} the catalog
-     * loader supplies, avoiding having to first serialize the document to a {@link String} and
-     * have the catalog loader re-parse it from an {@link InputSource}.
-     *
-     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
-     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
-     * load the entries), so each invocation re-acquires the document lock and re-serializes it.</p>
-     *
-     * @param documentUri the URI of the catalog document stored in the database.
-     * @return a producer that re-serializes the document's SAX events on each invocation.
-     */
-    private SaxProducer catalogSaxProducer(final XmldbURI documentUri) {
-        return (contentHandler, dtdHandler, errorHandler) -> {
-            try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
-                if (lockedDocument == null) {
-                    throw new IOException("No such document: " + documentUri);
-                }
-
-                final DocumentImpl doc = lockedDocument.getDocument();
-
-                final Properties outputProperties = new Properties();
-                outputProperties.setProperty(OutputKeys.METHOD, "XML");
-                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
-
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-                serializer.setProperties(outputProperties);
-                serializer.setSAXHandlers(contentHandler, null);
-                serializer.toSAX(doc);
-            } catch (final PermissionDeniedException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        };
-    }
-
     // No-go ...processor is in validating mode
     private Path preparseDTD(StreamSource instance, String systemId)
             throws IOException, TransformerConfigurationException, TransformerException {
@@ -551,15 +493,6 @@ public class Jaxp extends BasicFunction {
         transformer.transform(instance, result);
 
         return tmp;
-    }
-
-    private static String getStrings(String[] data) {
-        final StringBuilder sb = new StringBuilder();
-        for (final String field : data) {
-            sb.append(field);
-            sb.append(" ");
-        }
-        return sb.toString();
     }
 
     /*

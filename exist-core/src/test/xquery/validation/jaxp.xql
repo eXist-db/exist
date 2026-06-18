@@ -37,9 +37,11 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare variable $jaxp:COLLECTION_NAME := "validation-jaxp-test";
 declare variable $jaxp:COLLECTION := "/db/" || $jaxp:COLLECTION_NAME;
 
-(: No-namespace XSD 1.1 schema -- xs:assert does not exist in XSD 1.0, so a
-   processor that silently falls back to 1.0 grammar parsing fails to load
-   this schema at all, rather than just failing the assertion. :)
+(:~
+ : No-namespace XSD 1.1 schema -- xs:assert does not exist in XSD 1.0, so a
+ : processor that silently falls back to 1.0 grammar parsing fails to load
+ : this schema at all, rather than just failing the assertion.
+ :)
 declare variable $jaxp:XSD11 :=
     <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
                xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
@@ -66,6 +68,9 @@ declare variable $jaxp:INVALID_XML :=
         <value2>20</value2>
     </root>;
 
+(:~
+ : Creates the test collection and stores the XSD 1.1 schema and its valid/invalid instances.
+ :)
 declare
     %test:setUp
 function jaxp:setup() {
@@ -75,23 +80,44 @@ function jaxp:setup() {
     xmldb:store($jaxp:COLLECTION, "invalid.xml", $jaxp:INVALID_XML)
 };
 
+(:~
+ : Removes the test collection.
+ :)
 declare
     %test:tearDown
 function jaxp:cleanup() {
     xmldb:remove($jaxp:COLLECTION)
 };
 
-(: validation:jaxp() must dynamically discover and load an XSD 1.1 schema
-   via the instance's own schemaLocation hint, the same as validation:jaxv()
-   already does when given the v1.1 schema-language URI explicitly. :)
+(:~
+ : validation:jaxp() must dynamically discover and load an XSD 1.1 schema
+ : via the instance's own schemaLocation hint, the same as validation:jaxv()
+ : already does when given the v1.1 schema-language URI explicitly.
+ :)
 declare
     %test:assertEquals("valid")
 function jaxp:xsd11_valid() {
     data(validation:jaxp-report(doc($jaxp:COLLECTION || "/valid.xml"), false())//status)
 };
 
+(:~
+ : The XSD 1.1 fallback must still report genuine assertion failures, not just
+ : confirm that the schema loaded.
+ :)
 declare
     %test:assertEquals("cvc-assertion: Assertion evaluation ('value2 gt value1') for element 'root' on schema type '#AnonType_root' did not succeed. ")
 function jaxp:xsd11_invalid() {
     data(validation:jaxp-report(doc($jaxp:COLLECTION || "/invalid.xml"), false())//message)
+};
+
+(:~
+ : Regression test: the XSD 1.1 retry must not double-build the result document.
+ : jaxp-parse() reuses no content handler/builder between the failed first pass and
+ : the successful retry, so the returned document must have exactly one root element,
+ : not two siblings (one from each pass).
+ :)
+declare
+    %test:assertEquals(1)
+function jaxp:xsd11_parse_single_root() {
+    count(validation:jaxp-parse(doc($jaxp:COLLECTION || "/valid.xml"), false(), ())/*)
 };

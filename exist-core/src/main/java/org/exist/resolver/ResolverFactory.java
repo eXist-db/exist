@@ -33,21 +33,38 @@
 package org.exist.resolver;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.exist.EXistException;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.XMLResolverConfiguration;
 import org.xmlresolver.utils.SaxProducer;
 
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory for creating Resolvers.
@@ -115,10 +132,12 @@ public interface ResolverFactory {
             strCatalogUri = sanitizeCatalogUri(strCatalogUri);
             if (catalog._2.isPresent()) {
                 final URI catalogUri = new URI(strCatalogUri);
-                // Register the catalog URI with the configuration first (mirrors what
-                // XMLResolverConfiguration#addCatalog(URI, InputSource) does internally),
-                // then have the manager load it directly from SAX events -- the manager
-                // caches the result by URI, so the resolver never tries to dereference it.
+                // Register the catalog URI with the configuration, then have the manager
+                // load it directly from SAX events -- the manager caches the result by
+                // URI, so the resolver never tries to dereference it. This is the same
+                // add-then-load order that XMLResolverConfiguration#addCatalog(URI,
+                // InputSource) uses internally (verified against xmlresolver 6.0.23), just
+                // split across two calls since that overload only accepts an InputSource.
                 resolverConfiguration.addCatalog(strCatalogUri);
                 manager.loadCatalog(catalogUri, catalog._2.get());
             } else {
@@ -127,6 +146,121 @@ public interface ResolverFactory {
         }
 
         return new Resolver(resolverConfiguration);
+    }
+
+    /**
+     * Resolve a list of catalog URLs into a single {@link Resolver}, streaming any catalog
+     * that is stored in the database directly from SAX events (see {@link #catalogSaxProducer(DBBroker, XmldbURI)})
+     * rather than first serializing it to a {@link String}.
+     *
+     * @param broker the broker to use for reading any catalogs stored in the database.
+     * @param catalogUrls the catalog URLs, e.g. as obtained from {@code Shared.getUrls(...)}.
+     *
+     * @return the resolver configured for the given catalogs.
+     *
+     * @throws URISyntaxException if one of the catalog URLs is invalid.
+     */
+    static Resolver resolveCatalogs(final DBBroker broker, final String[] catalogUrls) throws URISyntaxException {
+        final List<Tuple2<String, Optional<SaxProducer>>> catalogs = new ArrayList<>();
+        for (String catalogUrl : catalogUrls) {
+
+            /* NOTE(AR): Catalog URL if stored in database must start with
+               URI Scheme xmldb:// so that the XML Resolver can use
+               org.exist.protocolhandler.protocols.xmldb.Handler
+               to resolve any relative URI resources from the database.
+             */
+            final Optional<SaxProducer> maybeSaxProducer;
+            if (catalogUrl.startsWith("xmldb:exist://") || catalogUrl.startsWith("/db")) {
+                catalogUrl = fixupExistCatalogUri(catalogUrl);
+                maybeSaxProducer = Optional.of(catalogSaxProducer(broker, XmldbURI.create(catalogUrl)));
+            } else {
+                maybeSaxProducer = Optional.empty();
+            }
+
+            catalogs.add(Tuple(catalogUrl, maybeSaxProducer));
+        }
+        return newResolverFromSax(catalogs);
+    }
+
+    /**
+     * Builds a {@link SaxProducer} that streams the SAX events of the catalog document stored
+     * at {@code documentUri} directly to whatever {@link ContentHandler} the catalog loader
+     * supplies, avoiding having to first serialize the document to a {@link String} and have
+     * the catalog loader re-parse it from an {@link InputSource}.
+     *
+     * <p>The xmlresolver {@code ValidatingXmlLoader} invokes {@link SaxProducer#produce} twice
+     * (once to validate the catalog against the OASIS XML Catalog RNG schema, once to actually
+     * load the entries). Re-serializing the document from the database on each invocation would
+     * mean a second broker round-trip per catalog per call, and the two passes could see
+     * different content if the document is concurrently modified in between -- so instead, the
+     * first invocation's events are recorded (see {@link RecordingContentHandler}) and replayed
+     * for any subsequent invocation, without touching the broker again.</p>
+     *
+     * @param broker the broker to use for reading the document. Must remain valid for as long
+     *               as the returned {@link SaxProducer}'s first invocation.
+     * @param documentUri the URI of the catalog document stored in the database.
+     *
+     * @return a producer that serializes the document's SAX events once, replaying them for any
+     *         further invocation.
+     */
+    static SaxProducer catalogSaxProducer(final DBBroker broker, final XmldbURI documentUri) {
+        final RecordingContentHandler recorder = new RecordingContentHandler();
+        return (contentHandler, dtdHandler, errorHandler) -> {
+            if (!recorder.hasRecording()) {
+                streamCatalogDocument(broker, documentUri, recorder);
+            }
+            recorder.replay(contentHandler);
+        };
+    }
+
+    /**
+     * As {@link #catalogSaxProducer(DBBroker, XmldbURI)}, but acquires (and releases) a fresh
+     * broker for the given {@code subject} only for the first invocation, for callers that do
+     * not already hold a broker valid for the lifetime of the returned {@link SaxProducer}.
+     *
+     * @param brokerPool the broker pool to acquire a broker from for the first invocation.
+     * @param subject the subject to acquire the broker as.
+     * @param documentUri the URI of the catalog document stored in the database.
+     *
+     * @return a producer that serializes the document's SAX events once, replaying them for any
+     *         further invocation.
+     */
+    static SaxProducer catalogSaxProducer(final BrokerPool brokerPool, final Subject subject, final XmldbURI documentUri) {
+        final RecordingContentHandler recorder = new RecordingContentHandler();
+        return (contentHandler, dtdHandler, errorHandler) -> {
+            if (!recorder.hasRecording()) {
+                try (final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+                    streamCatalogDocument(broker, documentUri, recorder);
+                } catch (final EXistException e) {
+                    throw new IOException(e.getMessage(), e);
+                }
+            }
+            recorder.replay(contentHandler);
+        };
+    }
+
+    private static void streamCatalogDocument(final DBBroker broker, final XmldbURI documentUri, final ContentHandler contentHandler)
+            throws IOException, SAXException {
+        try (final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
+            if (lockedDocument == null) {
+                throw new IOException("No such document: " + documentUri);
+            }
+            final DocumentImpl doc = lockedDocument.getDocument();
+
+            final Properties outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.METHOD, "XML");
+            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            outputProperties.setProperty(OutputKeys.INDENT, "no");
+            outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
+
+            final Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            serializer.setProperties(outputProperties);
+            serializer.setSAXHandlers(contentHandler, null);
+            serializer.toSAX(doc);
+        } catch (final PermissionDeniedException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     /**

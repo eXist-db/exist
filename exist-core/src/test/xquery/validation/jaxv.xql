@@ -21,6 +21,11 @@
  :)
 xquery version "3.1";
 
+(:~
+ : Tests for validation:jaxv()/jaxv-report(), which validate an instance document
+ : against an explicitly-supplied grammar (unlike validation:jaxp(), which discovers
+ : the grammar dynamically from the instance's own schemaLocation hint -- see jaxp.xql).
+ :)
 module namespace val ="http://exist-db.org/xquery/test/validation";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
@@ -60,21 +65,29 @@ declare variable $val:XSD11_2 := <xs:schema xmlns:xs="http://www.w3.org/2001/XML
                                         <xs:element name="value2" type="xs:integer"/>
                                       </xs:schema>;
 
-(: Verify that for JAXV it is required to specify the XSD version :)
+(:~
+ : Verify that for JAXV it is required to specify the XSD version: without the
+ : v1.1 schema-language URI, the XSD 1.1 xs:assert element is rejected as invalid
+ : content by the (default) XSD 1.0 grammar parser.
+ :)
 declare
     %test:assertEquals("s4s-elt-invalid-content.1: The content of '#AnonType_root' is invalid. Element 'assert' is invalid, misplaced, or occurs too often.")
 function val:xsd11_no_xsd11_namespace() {
     data(validation:jaxv-report($val:XML ,$val:XSD11_1)//message)
 };
 
-(: Good weather scenario : XML is valid:)
+(:~
+ : Good weather scenario: XML is valid against the XSD 1.1 schema and its assertion.
+ :)
 declare
     %test:assertEquals("valid")
 function val:xsd11_valid() {
     data(validation:jaxv-report($val:XML, $val:XSD11_1, "http://www.w3.org/XML/XMLSchema/v1.1")//status)
 };
 
-(: Good weather scenario : XML is invalid:)
+(:~
+ : Good weather scenario: XML fails the XSD 1.1 schema's xs:assert.
+ :)
 declare
     %test:assertEquals("cvc-assertion: Assertion evaluation ('value2 lt value1') for element 'root' on schema type '#AnonType_root' did not succeed. ")
 function val:xsd11_invalid() {
@@ -129,6 +142,9 @@ declare variable $val:CATALOG_VALID_XML :=
 declare variable $val:CATALOG_INVALID_XML :=
     <review xmlns="urn:jaxv-test:main"><rating>9</rating></review>;
 
+(:~
+ : Creates the test collection and stores the catalog document and the schema it imports.
+ :)
 declare
     %test:setUp
 function val:catalog_setup() {
@@ -137,21 +153,30 @@ function val:catalog_setup() {
     xmldb:store($val:CATALOG_COLLECTION, "imported.xsd", $val:CATALOG_IMPORTED_XSD)
 };
 
+(:~
+ : Removes the test collection.
+ :)
 declare
     %test:tearDown
 function val:catalog_cleanup() {
     xmldb:remove($val:CATALOG_COLLECTION)
 };
 
-(: Without a catalog, the import can't resolve at all (no schemaLocation hint) --
-   schema compilation itself fails, reported as an exception inside the report
-   rather than an XQuery-level error. Confirms the catalog argument isn't a no-op. :)
+(:~
+ : Without a catalog, the import can't resolve at all (no schemaLocation hint) --
+ : schema compilation itself fails, reported as an exception inside the report
+ : rather than an XQuery-level error. Confirms the catalog argument isn't a no-op.
+ :)
 declare
     %test:assertEquals("invalid")
 function val:catalog_without_catalog_fails() {
     data(validation:jaxv-report($val:CATALOG_VALID_XML, $val:CATALOG_MAIN_XSD, "http://www.w3.org/2001/XMLSchema")//status)
 };
 
+(:~
+ : With the stored catalog supplied as the fourth argument, the import resolves via
+ : the catalog's <uri> entry and a valid instance validates successfully.
+ :)
 declare
     %test:assertEquals("valid")
 function val:catalog_explicit_valid() {
@@ -159,6 +184,10 @@ function val:catalog_explicit_valid() {
         "http://www.w3.org/2001/XMLSchema", doc($val:CATALOG_COLLECTION || "/catalog.xml"))//status)
 };
 
+(:~
+ : With the stored catalog resolving the import, an instance that violates the
+ : imported type's restriction is still correctly reported as invalid.
+ :)
 declare
     %test:assertEquals("invalid")
 function val:catalog_explicit_invalid() {
