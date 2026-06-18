@@ -47,6 +47,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.fn.FunSerialize;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValueFromInputStream;
@@ -71,6 +72,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
@@ -90,9 +92,17 @@ public abstract class AbstractCompressFunction extends BasicFunction {
     protected final static SequenceType COLLECTION_HIERARCHY_PARAM = new FunctionParameterSequenceType("use-collection-hierarchy", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.");
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
     protected final static SequenceType ENCODING_PARAM = new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "This encoding to be used for filenames inside the compressed file");
+    protected final static SequenceType SERIALIZATION_OPTIONS_PARAM = new FunctionParameterSequenceType("serialization-options", Type.ITEM, Cardinality.ZERO_OR_ONE,
+            "Serialization options applied to XML resources written to the archive, as either an " +
+                    "output:serialization-parameters element or a map(*) (e.g. map { \"indent\": false() }). " +
+                    "Standard W3C parameters use their string key; eXist extension parameters use their exist-namespace QName key. " +
+                    "Takes precedence over any prolog declare option exist:serialize.");
     private final static Logger logger = LogManager.getLogger(AbstractCompressFunction.class);
     public static final String METHOD_STORE = "store";
 
+    /** Serialization options from the optional map argument; reset on each eval and applied to XML
+     *  entries after (so overriding) the prolog {@code declare option exist:serialize}. */
+    private Properties serializationProperties = new Properties();
 
     public AbstractCompressFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -110,6 +120,20 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         return uri;
     }
 
+    /**
+     * Parses the optional serialization-options map argument (the 5th argument, if present) into the
+     * serialization properties applied to XML entries written to the archive.
+     *
+     * @param args the function arguments
+     * @return the supplied serialization properties, or an empty {@link Properties} when no map was given
+     */
+    private Properties parseSerializationOptions(final Sequence[] args) throws XPathException {
+        if (args.length >= 5 && !args[4].isEmpty()) {
+            return FunSerialize.getSerializationProperties(this, args[4].itemAt(0));
+        }
+        return new Properties();
+    }
+
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence)
             throws XPathException {
@@ -117,6 +141,9 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
+
+        // serialization options for XML entries (optional map argument); reset on each call
+        serializationProperties = parseSerializationOptions(args);
 
         // use a hierarchy in the tar file?
         final boolean useHierarchy = args[1].effectiveBooleanValue();
@@ -375,6 +402,10 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                 final String[] kvp = Option.parseKeyValuePair(param);
                 serializer.setProperty(kvp[0], kvp[1]);
             }
+        }
+        // an explicit serialization-options map argument takes precedence over the prolog option
+        for (final String key : serializationProperties.stringPropertyNames()) {
+            serializer.setProperty(key, serializationProperties.getProperty(key));
         }
     }
 
