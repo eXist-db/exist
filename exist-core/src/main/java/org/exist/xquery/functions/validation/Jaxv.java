@@ -37,6 +37,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.ValidationReport;
+import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -82,10 +83,9 @@ public class Jaxv extends BasicFunction  {
             (RELAX NG 1.0) http://relaxng.org/ns/structure/1.0""";
 
     private static final String catalogTxt = """
-            The catalogs referenced as xs:anyURI's. An empty
-            sequence uses the system catalog. A directory-search catalog (a collection URI ending
-            in '/') is not supported here, as javax.xml.validation.Validator has no equivalent of
-            the SAX entity resolver used for that case in validation:jaxp().""";
+            The catalogs referenced as xs:anyURI's. An empty \
+            sequence uses the system catalog. A directory-search catalog (a collection URI ending \
+            in '/') searches that collection for an XSD whose target namespace matches an import.""";
 
     // Setup function signature
     public final static FunctionSignature[] signatures = {
@@ -237,11 +237,11 @@ public class Jaxv extends BasicFunction  {
             // Handle catalog (fourth argument). Must be set on the SchemaFactory, and
             // BEFORE newSchema() is called: that's when xs:import/xs:include resolution
             // happens (schema compilation), not at validate() time. javax.xml.validation
-            // only accepts an LSResourceResolver, so unlike validation:jaxp() the
-            // directory-search/collection case (a catalog URL ending in '/') has no
-            // equivalent here -- org.xmlresolver.Resolver implements LSResourceResolver
-            // directly, but SearchResourceResolver only implements the Xerces-specific
-            // XMLEntityResolver (XNI) interface.
+            // only accepts an LSResourceResolver -- org.xmlresolver.Resolver implements it
+            // directly, and SearchResourceResolver also implements it (in addition to the
+            // Xerces-specific XMLEntityResolver/XNI interface it uses for validation:jaxp()'s
+            // SAX pipeline), so the directory-search/collection case (a catalog URL ending
+            // in '/') works here too.
             if (args.length == 4) {
                 if (args[3].isEmpty()) {
                     // Use system catalog
@@ -255,8 +255,9 @@ public class Jaxv extends BasicFunction  {
                     final String singleUrl = catalogUrls[0];
 
                     if (singleUrl.endsWith("/")) {
-                        LOG.warn("Directory-search catalogs ('{}') are not supported by validation:jaxv() -- " +
-                                "schema/entity resolution will proceed without a catalog.", singleUrl);
+                        LOG.debug("Search for grammar in {}", singleUrl);
+                        final SearchResourceResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), singleUrl);
+                        factory.setResourceResolver(resolver);
 
                     } else if (singleUrl.endsWith(".xml")) {
                         if (LOG.isDebugEnabled()) {

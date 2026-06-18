@@ -22,15 +22,27 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -44,7 +56,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
@@ -74,6 +85,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -96,6 +108,7 @@ public class Jaxp extends BasicFunction {
 
     private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
     private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+    private static final String XSD_VERSIONING_NS = "http://www.w3.org/2007/XMLSchema-versioning";
 
     private static final String simpleFunctionTxt = """
             Validate document by parsing $instance. Optionally \
@@ -203,8 +216,7 @@ public class Jaxp extends BasicFunction {
         }
 
         InputSource instance = null;
-        Resolver catalogResolver = null;
-        boolean usedDirectorySearchCatalog = false;
+        LSResourceResolver catalogResolver = null;
         try {
             report.start();
 
@@ -238,8 +250,12 @@ public class Jaxp extends BasicFunction {
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
                     LOG.debug("Search for grammar in {}", singleUrl);
-                    usedDirectorySearchCatalog = true;
-                    final XMLEntityResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), catalogUrls[0]);
+                    // SearchResourceResolver implements both XMLEntityResolver (for this SAX
+                    // pipeline) and LSResourceResolver (for the XSD 1.1 validator below), so
+                    // directory-search catalogs work the same way regardless of which pipeline
+                    // ends up validating.
+                    final SearchResourceResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), catalogUrls[0]);
+                    catalogResolver = resolver;
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
@@ -266,51 +282,82 @@ public class Jaxp extends BasicFunction {
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
 
-            // Jaxp document
-            LOG.debug("Start parsing document");
-            xmlReader.parse(instance);
-            LOG.debug("Stopped parsing document");
-
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
                SchemaFactory/Validator API, not into this dynamic-discovery
-               SAXParser pipeline. When that shows up as "no declaration found"
-               for the root element and the instance actually references a
-               schema, retry once with the XSD-1.1-capable Validator before
-               giving up. DTD-only documents never produce this cvc-* signature,
-               so they never retry. */
-            if (!report.isValid() && isMissingElementDeclaration(report) && hasSchemaLocationHint(contenthandler, instanceBuilder)) {
-                LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
-                report.clear();
+               SAXParser pipeline -- it's a hard limitation of the dependency,
+               not a configuration gap (see plans/catalog-dtd.plan.md). Rather
+               than always discovering this by parsing with the wrong pipeline
+               and failing, peek (best-effort, see detectXsd11ViaSchemaLocation)
+               at the schema the instance's own hint points to and pick the
+               right pipeline up front when that succeeds. If the peek can't
+               tell (catalog-mediated location, unresolvable hint, etc.), fall
+               through to the unchanged default pipeline below, which still
+               retries with the XSD 1.1 validator on the cvc-elt.1.a failure
+               signature -- the peek is purely an optimization, never a
+               correctness requirement. */
+            final boolean useXsd11UpFront;
+            final InputSource peekInstance = Shared.getInputSource(args[0].itemAt(0), context);
+            try {
+                useXsd11UpFront = detectXsd11ViaSchemaLocation(peekInstance);
+            } finally {
+                Shared.closeInputSource(peekInstance);
+            }
 
-                if (usedDirectorySearchCatalog) {
-                    LOG.warn("Directory-search catalogs have no equivalent resource resolver for the XSD 1.1 " +
-                            "retry validator -- schema/entity resolution will proceed without a catalog.");
-                }
-
-                // The first pass already fed `contenthandler` (and, for jaxp-parse,
-                // `instanceBuilder`) a complete document; reusing either for the retry
-                // would silently double-build the result. Start over with a fresh
-                // content handler/builder so the retry produces a single, clean document.
-                if (isCalledAs("jaxp-parse")) {
-                    context.pushDocumentContext();
-                    try {
-                        instanceBuilder = context.getDocumentBuilder();
-                    } finally {
-                        context.popDocumentContext();
-                    }
-                    contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true);
-                } else {
-                    contenthandler = new ValidationContentHandler();
-                }
+            if (useXsd11UpFront) {
+                LOG.debug("Detected XSD 1.1 schema (vc:minVersion) via the instance's schemaLocation hint " +
+                        "before parsing; using the XSD 1.1 validator directly.");
 
                 final Validator validator = newXsd11Validator(catalogResolver);
                 validator.setErrorHandler(report);
+                validator.validate(new SAXSource(instance), new SAXResult(contenthandler));
 
-                final InputSource retryInstance = Shared.getInputSource(args[0].itemAt(0), context);
-                try {
-                    validator.validate(new SAXSource(retryInstance), new SAXResult(contenthandler));
-                } finally {
-                    Shared.closeInputSource(retryInstance);
+            } else {
+                // Jaxp document
+                LOG.debug("Start parsing document");
+                xmlReader.parse(instance);
+                LOG.debug("Stopped parsing document");
+
+                /* Safety net: the up-front peek above didn't (or couldn't) detect XSD 1.1.
+                   When that shows up as "no declaration found" for the root element, retry once
+                   with the XSD-1.1-capable Validator before giving up -- but only when retrying
+                   could plausibly help: either the instance carries an explicit schemaLocation
+                   hint (the no-catalog case, where Xerces' own default resolution would have used
+                   it), or a catalog/resolver IS configured (system catalog, .xml catalog, or
+                   directory-search), since any of those can resolve a schema purely by the root
+                   element's namespace -- the directory-search fixtures in this codebase, for
+                   example, carry no schemaLocation hint at all and rely entirely on namespace-based
+                   lookup. DTD-only documents with neither a hint nor a catalog never produce this
+                   cvc-* signature in the first place, so they never retry. */
+                if (!report.isValid() && isMissingElementDeclaration(report)
+                        && (catalogResolver != null || hasSchemaLocationHint(contenthandler, instanceBuilder))) {
+                    LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
+                    report.clear();
+
+                    // The first pass already fed `contenthandler` (and, for jaxp-parse,
+                    // `instanceBuilder`) a complete document; reusing either for the retry
+                    // would silently double-build the result. Start over with a fresh
+                    // content handler/builder so the retry produces a single, clean document.
+                    if (isCalledAs("jaxp-parse")) {
+                        context.pushDocumentContext();
+                        try {
+                            instanceBuilder = context.getDocumentBuilder();
+                        } finally {
+                            context.popDocumentContext();
+                        }
+                        contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true);
+                    } else {
+                        contenthandler = new ValidationContentHandler();
+                    }
+
+                    final Validator validator = newXsd11Validator(catalogResolver);
+                    validator.setErrorHandler(report);
+
+                    final InputSource retryInstance = Shared.getInputSource(args[0].itemAt(0), context);
+                    try {
+                        validator.validate(new SAXSource(retryInstance), new SAXResult(contenthandler));
+                    } finally {
+                        Shared.closeInputSource(retryInstance);
+                    }
                 }
             }
 
@@ -434,10 +481,12 @@ public class Jaxp extends BasicFunction {
      * Cheaply checks whether the instance document references a schema via
      * {@code xsi:schemaLocation}/{@code xsi:noNamespaceSchemaLocation}, using
      * only data already captured by the first (failed) parse -- no re-parsing
-     * of the instance is needed. Used to decide whether the XSD 1.1 fallback
-     * retry could possibly help (a DTD-only document never produces the
-     * cvc-elt.1.a signature in the first place, but this guards against
-     * retrying on documents that reference no schema at all).
+     * of the instance is needed. One of two ways the XSD 1.1 fallback retry's
+     * guard decides retrying could plausibly help when there's no catalog/resolver
+     * configured at all (the other being a configured catalog/resolver, which can
+     * resolve a schema purely by namespace with no hint present -- see the retry
+     * guard in {@code eval()}). A DTD-only document with neither produces the
+     * cvc-elt.1.a signature in the first place, so it never reaches this check.
      *
      * @param contenthandler the content handler used for the first parse pass.
      * @param instanceBuilder for {@code jaxp-parse}, the document builder used for the first
@@ -458,6 +507,141 @@ public class Jaxp extends BasicFunction {
     }
 
     /**
+     * Best-effort, pre-parse check for whether the instance's referenced schema is XSD 1.1
+     * (declares {@code vc:minVersion} containing "1.1"), so the right validation pipeline can
+     * be chosen up front instead of discovering the mismatch only after a failed first attempt
+     * (see {@link #isMissingElementDeclaration(ValidationReport)}). Resolves the schemaLocation
+     * hint(s) only via simple relative-URI resolution against the instance's own base URI --
+     * it does NOT replicate the full catalog/entity-resolver chain used for the real parse.
+     * Returns {@code false} (never throws) whenever any step can't be completed; the
+     * retry-after-failure check in {@code eval()} remains the safety net for those cases
+     * (catalog-mediated locations, an unresolvable hint, etc.).
+     *
+     * @param peekInstance a fresh, not-yet-consumed InputSource for the same instance document.
+     */
+    private static boolean detectXsd11ViaSchemaLocation(final InputSource peekInstance) {
+        final Map<String, String> rootAttrs = peekRootAttributes(peekInstance);
+        final String baseUri = peekInstance.getSystemId();
+        if (rootAttrs == null || baseUri == null) {
+            return false;
+        }
+
+        final List<String> candidateLocations = new ArrayList<>();
+        final String noNsLocation = rootAttrs.get(clark(XSI_NS, "noNamespaceSchemaLocation"));
+        if (noNsLocation != null) {
+            candidateLocations.add(noNsLocation);
+        }
+        final String schemaLocation = rootAttrs.get(clark(XSI_NS, "schemaLocation"));
+        if (schemaLocation != null) {
+            // xsi:schemaLocation is a list of "namespace location" pairs; we only need the locations.
+            final String[] tokens = schemaLocation.trim().split("\\s+");
+            for (int i = 1; i < tokens.length; i += 2) {
+                candidateLocations.add(tokens[i]);
+            }
+        }
+
+        for (final String location : candidateLocations) {
+            if (isXsd11Schema(baseUri, location)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolves {@code location} relative to {@code baseUri} (the same xmldb:// normalization
+     * the catalog mechanism uses, so this works for documents stored in the database), opens it,
+     * and checks whether its root element declares {@code vc:minVersion} containing "1.1".
+     * Returns {@code false} for any resolution/read failure -- this is a best-effort peek, not
+     * a substitute for the real catalog-aware resolution the actual validation pass performs.
+     *
+     * <p>{@code location} is the literal, attacker/document-author-controlled value of the
+     * instance's own {@code xsi:schemaLocation}/{@code noNamespaceSchemaLocation} hint -- if it's
+     * an absolute URI (e.g. {@code file:///etc/passwd}, {@code http://internal-host/...}, or even
+     * an absolute {@code xmldb://some-other-host:1234/db/...} naming a remote eXist instance),
+     * {@link URI#resolve(String)} returns it verbatim, ignoring {@code baseUri} entirely. Opening
+     * that unconditionally would let any caller make this (unprivileged, security-context-free)
+     * peek fetch arbitrary local files or issue arbitrary outbound requests (file read, or a
+     * network connection -- {@code org.exist.protocolhandler.protocols.xmldb.Handler} dispatches
+     * to XML-RPC against whatever host an absolute {@code xmldb://} URI names) using the server
+     * process's own OS-level/network access, regardless of the calling Subject's DB permissions --
+     * this is NOT the same trust boundary as the real validation pass, which only fetches whatever
+     * a configured catalog/resolver permits. So only resolutions that land in the exact same
+     * scheme+authority (host/port) as {@code baseUri} are attempted -- i.e. genuinely relative
+     * locations within the instance's own origin, never a different scheme or host. Anything else
+     * falls through to the unchanged, already-accepted-risk default pipeline below, exactly as if
+     * this peek didn't exist.</p>
+     */
+    private static boolean isXsd11Schema(final String baseUri, final String location) {
+        try {
+            final URI baseUriNormalized = new URI(ResolverFactory.fixupExistCatalogUri(baseUri));
+            final URI resolvedUri = baseUriNormalized.resolve(location);
+            if (!Objects.equals(baseUriNormalized.getScheme(), resolvedUri.getScheme())
+                    || !Objects.equals(baseUriNormalized.getAuthority(), resolvedUri.getAuthority())) {
+                LOG.debug("Refusing to peek candidate schema '{}': resolved to a different origin ('{}') than " +
+                        "the instance's own base URI ('{}') -- leaving this to the default pipeline/catalog instead.",
+                        location, resolvedUri, baseUriNormalized);
+                return false;
+            }
+            try (final InputStream is = resolvedUri.toURL().openStream()) {
+                final InputSource schemaSource = new InputSource(is);
+                schemaSource.setSystemId(resolvedUri.toString());
+                final Map<String, String> schemaRootAttrs = peekRootAttributes(schemaSource);
+                if (schemaRootAttrs == null) {
+                    return false;
+                }
+                final String minVersion = schemaRootAttrs.get(clark(XSD_VERSIONING_NS, "minVersion"));
+                return minVersion != null && minVersion.contains("1.1");
+            }
+        } catch (final URISyntaxException | IOException ex) {
+            LOG.debug("Could not peek candidate schema '{}' relative to '{}': {}", location, baseUri, ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Reads only as far as the root element's start tag and returns its attributes, keyed by
+     * Clark-notation {@code {namespace}localName} (see {@link #clark(String, String)}) -- cheaper
+     * than a full (validating) parse since StAX stops pulling events the moment the caller stops
+     * asking for them, and avoids the exception-as-control-flow pattern a SAX-based equivalent
+     * would need to abort early. DTD processing and external entities are disabled; this reads
+     * untrusted instance documents as well as schema documents.
+     *
+     * @return the root element's attributes, or {@code null} if the source couldn't be read/parsed.
+     */
+    @Nullable
+    private static Map<String, String> peekRootAttributes(final InputSource source) {
+        try {
+            final XMLInputFactory factory = XMLInputFactory.newInstance();
+            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+
+            final XMLStreamReader reader = factory.createXMLStreamReader(source.getByteStream());
+            try {
+                while (reader.hasNext()) {
+                    if (reader.next() == XMLStreamConstants.START_ELEMENT) {
+                        final Map<String, String> attrs = new HashMap<>();
+                        for (int i = 0; i < reader.getAttributeCount(); i++) {
+                            attrs.put(clark(reader.getAttributeNamespace(i), reader.getAttributeLocalName(i)), reader.getAttributeValue(i));
+                        }
+                        return attrs;
+                    }
+                }
+                return null;
+            } finally {
+                reader.close();
+            }
+        } catch (final XMLStreamException ex) {
+            LOG.debug("Could not peek root element attributes: {}", ex.getMessage());
+            return null;
+        }
+    }
+
+    private static String clark(@Nullable final String namespaceUri, final String localName) {
+        return (namespaceUri == null ? "" : "{" + namespaceUri + "}") + localName;
+    }
+
+    /**
      * @param resolver catalog resolver to use for schema/entity resolution, or null.
      * @return a {@link Validator} for the only XSD 1.1-capable pipeline this
      * Xerces fork supports: {@link SchemaFactory}/{@link Schema} with no
@@ -465,7 +649,7 @@ public class Jaxp extends BasicFunction {
      * from the instance's own schemaLocation hint, mirroring how the default
      * SAXParser pipeline behaves for XSD 1.0.
      */
-    private Validator newXsd11Validator(@Nullable final Resolver resolver) throws SAXException {
+    private Validator newXsd11Validator(@Nullable final LSResourceResolver resolver) throws SAXException {
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XSD_1_1_NS);
         final Schema schema = schemaFactory.newSchema();
         final Validator validator = schema.newValidator();

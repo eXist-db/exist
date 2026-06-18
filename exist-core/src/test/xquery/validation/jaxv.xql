@@ -143,14 +143,18 @@ declare variable $val:CATALOG_INVALID_XML :=
     <review xmlns="urn:jaxv-test:main"><rating>9</rating></review>;
 
 (:~
- : Creates the test collection and stores the catalog document and the schema it imports.
+ : Creates the test collection and stores the catalog document and the schemas it/the
+ : directory-search tests import. $val:SEARCH_IMPORTED_XSD is stored under a filename that
+ : does NOT match $val:SEARCH_MAIN_XSD's schemaLocation -- only a namespace-keyed directory
+ : search can find it.
  :)
 declare
     %test:setUp
 function val:catalog_setup() {
     xmldb:create-collection("/db", $val:CATALOG_COLLECTION_NAME),
     xmldb:store($val:CATALOG_COLLECTION, "catalog.xml", $val:CATALOG_DOC),
-    xmldb:store($val:CATALOG_COLLECTION, "imported.xsd", $val:CATALOG_IMPORTED_XSD)
+    xmldb:store($val:CATALOG_COLLECTION, "imported.xsd", $val:CATALOG_IMPORTED_XSD),
+    xmldb:store($val:CATALOG_COLLECTION, "searched-imported.xsd", $val:SEARCH_IMPORTED_XSD)
 };
 
 (:~
@@ -193,5 +197,60 @@ declare
 function val:catalog_explicit_invalid() {
     data(validation:jaxv-report($val:CATALOG_INVALID_XML, $val:CATALOG_MAIN_XSD,
         "http://www.w3.org/2001/XMLSchema", doc($val:CATALOG_COLLECTION || "/catalog.xml"))//status)
+};
+
+(:~
+ : Directory-search catalog tests for jaxv()'s fourth argument (a collection URI ending
+ : in '/'). $val:SEARCH_MAIN_XSD imports "urn:jaxv-test:searched" with a schemaLocation
+ : that is not a resolvable path at all -- the import can only resolve through
+ : SearchResourceResolver searching $val:CATALOG_COLLECTION (reused from the catalog
+ : tests above; XQSuite only supports one %test:setUp/%test:tearDown per module, so this
+ : avoids needing a second collection) for an XSD whose targetNamespace matches
+ : "urn:jaxv-test:searched". Proves directory-search catalogs work for jaxv() too, not
+ : just for validation:jaxp().
+ :)
+declare variable $val:SEARCH_IMPORTED_XSD :=
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               targetNamespace="urn:jaxv-test:searched" elementFormDefault="qualified">
+        <xs:simpleType name="ratingType">
+            <xs:restriction base="xs:integer">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="5"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:schema>;
+
+declare variable $val:SEARCH_MAIN_XSD :=
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               xmlns:imp="urn:jaxv-test:searched"
+               targetNamespace="urn:jaxv-test:searched-main" elementFormDefault="qualified">
+        <xs:import namespace="urn:jaxv-test:searched" schemaLocation="not-a-resolvable-path.xsd"/>
+        <xs:element name="review">
+            <xs:complexType>
+                <xs:sequence>
+                    <xs:element name="rating" type="imp:ratingType"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:element>
+    </xs:schema>;
+
+declare variable $val:SEARCH_VALID_XML :=
+    <review xmlns="urn:jaxv-test:searched-main"><rating>4</rating></review>;
+
+declare variable $val:SEARCH_INVALID_XML :=
+    <review xmlns="urn:jaxv-test:searched-main"><rating>9</rating></review>;
+
+declare
+    %test:assertEquals("valid")
+function val:search_catalog_valid() {
+    data(validation:jaxv-report($val:SEARCH_VALID_XML, $val:SEARCH_MAIN_XSD,
+        "http://www.w3.org/2001/XMLSchema", xs:anyURI($val:CATALOG_COLLECTION || "/"))//status)
+};
+
+declare
+    %test:assertEquals("invalid")
+function val:search_catalog_invalid() {
+    data(validation:jaxv-report($val:SEARCH_INVALID_XML, $val:SEARCH_MAIN_XSD,
+        "http://www.w3.org/2001/XMLSchema", xs:anyURI($val:CATALOG_COLLECTION || "/"))//status)
 };
 

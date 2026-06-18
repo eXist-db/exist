@@ -33,13 +33,17 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.utils.SaxProducer;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -52,9 +56,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.
  *
+ * <p>Implements both {@link XMLEntityResolver} (Xerces' XNI interface, used by the default
+ * SAX-parser-based dynamic-discovery pipeline) and {@link LSResourceResolver} ({@code
+ * javax.xml.validation}'s interface, used by the XSD-1.1-capable {@link javax.xml.validation.Validator}
+ * pipeline and by {@code validation:jaxv()}'s {@link javax.xml.validation.SchemaFactory}) so that
+ * directory-search catalogs work the same way regardless of which pipeline ends up validating.
+ * {@link LSResourceResolver} is XSD-only (no DTD/catalog equivalent), so {@link #resolveResource}
+ * only ever performs the XML-Schema-by-namespace search, mirroring {@link #resolveEntity}'s
+ * namespace branch.</p>
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class SearchResourceResolver implements XMLEntityResolver {
+public class SearchResourceResolver implements XMLEntityResolver, LSResourceResolver {
     private static final Logger LOG = LogManager.getLogger(SearchResourceResolver.class);
 
     private final String collectionPath;
@@ -159,6 +172,147 @@ public class SearchResourceResolver implements XMLEntityResolver {
         }
 
         return xis;
+    }
+
+    /**
+     * Resolves an {@code xs:import}/{@code xs:include}, or the instance's own root schema
+     * reference during dynamic discovery (confirmed by experiment: {@code javax.xml.validation}'s
+     * dynamic-discovery {@link javax.xml.validation.Validator} consults the configured
+     * {@link LSResourceResolver} for the root schema location too, not just nested imports), by
+     * searching for an XSD declaring {@code namespaceURI} under {@code collectionPath} -- the same
+     * lookup {@link #resolveEntity}'s namespace branch performs for the XNI pipeline.
+     *
+     * <p>{@code systemId}/{@code baseURI} are intentionally ignored: unlike {@link #resolveEntity},
+     * there is no DTD/catalog case to consider here (LSResourceResolver is XSD-only), and the
+     * directory-search contract is "find an XSD by namespace", not "fetch whatever URI is named" --
+     * the result always comes from the permission-checked {@code findXSD} search, never from a
+     * caller/document-supplied location.</p>
+     */
+    @Override
+    @Nullable
+    public LSInput resolveResource(final String type, @Nullable final String namespaceURI,
+            @Nullable final String publicId, @Nullable final String systemId, @Nullable final String baseURI) {
+        if (namespaceURI == null) {
+            return null;
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Searching namespace '{}' in database from {}... (LSResourceResolver)", namespaceURI, collectionPath);
+        }
+
+        final DatabaseResources databaseResources = new DatabaseResources(brokerPool);
+        String resourcePath = databaseResources.findXSD(collectionPath, namespaceURI, subject);
+        if (resourcePath == null) {
+            return null;
+        }
+        resourcePath = ResolverFactory.fixupExistCatalogUri(resourcePath);
+
+        try {
+            final InputStream is = URI.create(resourcePath).toURL().openStream();
+            return new DatabaseLSInput(publicId, systemId, baseURI, is);
+        } catch (final IOException e) {
+            LOG.error("Could not open resolved schema resource '{}': {}", resourcePath, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Minimal {@link LSInput} wrapping an already-opened {@link InputStream} -- there is no
+     * JDK-stock implementation of this interface available to depend on.
+     */
+    private static final class DatabaseLSInput implements LSInput {
+        private final String publicId;
+        private final String systemId;
+        private final String baseURI;
+        private InputStream byteStream;
+
+        DatabaseLSInput(@Nullable final String publicId, @Nullable final String systemId,
+                @Nullable final String baseURI, final InputStream byteStream) {
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.baseURI = baseURI;
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public Reader getCharacterStream() {
+            return null;
+        }
+
+        @Override
+        public void setCharacterStream(final Reader characterStream) {
+            // not used: this implementation only ever supplies a byte stream
+        }
+
+        @Override
+        public InputStream getByteStream() {
+            return byteStream;
+        }
+
+        @Override
+        public void setByteStream(final InputStream byteStream) {
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public String getStringData() {
+            return null;
+        }
+
+        @Override
+        public void setStringData(final String stringData) {
+            // not used: this implementation only ever supplies a byte stream
+        }
+
+        @Override
+        public String getSystemId() {
+            return systemId;
+        }
+
+        @Override
+        public void setSystemId(final String systemId) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getPublicId() {
+            return publicId;
+        }
+
+        @Override
+        public void setPublicId(final String publicId) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getBaseURI() {
+            return baseURI;
+        }
+
+        @Override
+        public void setBaseURI(final String baseURI) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getEncoding() {
+            return null;
+        }
+
+        @Override
+        public void setEncoding(final String encoding) {
+            // not used: the schema document carries its own encoding declaration, if any
+        }
+
+        @Override
+        public boolean getCertifiedText() {
+            return false;
+        }
+
+        @Override
+        public void setCertifiedText(final boolean certifiedText) {
+            // not used
+        }
     }
 
     private String getXriDetails(final XMLResourceIdentifier xrid) {
