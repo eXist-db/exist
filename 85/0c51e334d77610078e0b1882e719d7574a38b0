@@ -1,0 +1,19 @@
+exist-core/src/test/xquery/validation/jaxp.xql
+  s_033f8a50977d21::t_791a77887ad6e5 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "850c51e334d77610078e0b1882e719d7574a38b0",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
