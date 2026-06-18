@@ -160,3 +160,43 @@ function z:zipSerializationParametersElement() {
     return exists($extracted//xi:include)
 };
 
+
+(: strip-prefix (argument 2) must be honored in the 4-arg (encoding) and 5-arg (serialization-options)
+ : forms too, not only the 3-arg form. Regression guard: the eval() guard previously read strip-prefix
+ : only when exactly 3 arguments were supplied, so a higher arity silently kept the full /db/... path. :)
+declare variable $z:strip-collection := "/db/compression-strip-test";
+
+declare %private function z:store-strip-fixture() as empty-sequence() {
+    let $_ := xmldb:create-collection("/db", "compression-strip-test")
+    let $_ := xmldb:store($z:strip-collection, "doc.xml", <doc>x</doc>)
+    return ()
+};
+
+declare %private function z:unzip-entry-path($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()? {
+    string($path)
+};
+
+declare %private function z:zip-collection-entry-names($zip as xs:base64Binary*) as xs:string* {
+    compression:unzip($zip,
+        util:function(xs:QName("z:unzip-entry-filter"), 3), (),
+        util:function(xs:QName("z:unzip-entry-path"), 4), ())
+};
+
+(: 4-arg form (with encoding): strip-prefix applied -> archive-root-relative name :)
+declare
+    %test:assertEquals("doc.xml")
+function z:zipStripPrefixWithEncoding() {
+    let $_ := z:store-strip-fixture()
+    let $zip := compression:zip(xs:anyURI($z:strip-collection), true(), $z:strip-collection, "UTF-8")
+    return z:zip-collection-entry-names($zip)
+};
+
+(: 5-arg form (with serialization-options): strip-prefix still applied :)
+declare
+    %test:assertEquals("doc.xml")
+function z:zipStripPrefixWithSerializationOptions() {
+    let $_ := z:store-strip-fixture()
+    let $zip := compression:zip(xs:anyURI($z:strip-collection), true(), $z:strip-collection, "UTF-8", map { "indent": false() })
+    return z:zip-collection-entry-names($zip)
+};
+

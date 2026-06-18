@@ -148,9 +148,9 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         // use a hierarchy in the tar file?
         final boolean useHierarchy = args[1].effectiveBooleanValue();
 
-        // Get offset
+        // Get offset (strip-prefix is argument 2 in the 3-, 4- and 5-arg forms)
         String stripOffset = "";
-        if (args.length == 3) {
+        if (args.length >= 3) {
             stripOffset = args[2].getStringValue();
         }
 
