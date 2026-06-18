@@ -1,0 +1,70 @@
+exist-core/src/main/java/org/exist/http/Descriptor.java
+  s_16a04778857c54::t_03053ce0a87903 31
+  s_16a04778857c54::t_48f3aabb1ecc15 142-143
+exist-core/src/test/java/org/exist/util/SchemaVersionTest.java
+  s_16a04778857c54::t_9ac9954c67a430 1-58
+exist-core/src/main/java/org/exist/util/SchemaVersion.java
+  s_16a04778857c54::t_07de7c2860950f 1-49,59-63,65,67,69-71
+  s_16a04778857c54::t_59c0bfc2c622fb 50-58,64,66,68
+schema/descriptor.xsd
+  s_16a04778857c54::t_3998d71cccc161 47
+  s_16a04778857c54::t_f5dc81e021c2a1 9-17
+exist-distribution/src/main/config/collection.xconf.init
+  s_16a04778857c54::t_0315c1ab1fbae8 2
+schema/README.md
+  s_16a04778857c54::t_3dfdf4cdd5a1b1 17-28
+exist-distribution/src/main/config/conf.xml
+  s_16a04778857c54::t_9479e1d2431bd8 61
+schema/mime-types.xsd
+  s_16a04778857c54::t_f4fb9dea76fd10 9-17
+  s_16a04778857c54::t_1b9220673347a3 66
+schema/collection.xconf.xsd
+  s_16a04778857c54::t_424f7fc01223cb 9-18
+  s_16a04778857c54::t_b22b02ea350468 40
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_16a04778857c54::t_b89619dfc45ccd 9
+exist-core/src/main/java/org/exist/http/urlrewrite/RewriteConfig.java
+  s_16a04778857c54::t_a1f9eecb6319b1 203
+  s_16a04778857c54::t_932cd8a9fdd509 38
+exist-core/src/main/java/org/exist/collections/CollectionConfiguration.java
+  s_16a04778857c54::t_783b99e0893dfb 133-134
+  s_16a04778857c54::t_aba1b3663d41f3 43
+exist-core/src/main/java/org/exist/util/MimeTable.java
+  s_bdbc9a24e676d8::t_8049d6ae03500a 268
+  s_16a04778857c54::t_ad8c88bc96d82b 315-316
+exist-distribution/src/main/config/descriptor.xml
+  s_16a04778857c54::t_009c51d0bf8572 10
+schema/conf.xsd
+  s_16a04778857c54::t_de9d71d1e49798 1425
+  s_16a04778857c54::t_d01cfe2d1d141d 11-20
+schema/controller-config.xsd
+  s_16a04778857c54::t_41edd73901631b 7-15,22
+exist-core/src/main/resources/org/exist/util/mime-types.xml
+  s_16a04778857c54::t_a10800e4dfaaa7 40
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_16a04778857c54::t_9e8a4e257c099d 348-350
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "2f6e856f404cb5a2e30d5a49012a7b16f0500be4",
+  "prompts": {},
+  "sessions": {
+    "s_16a04778857c54": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d0904c21-548e-4266-8776-9008c4aa6c5a",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

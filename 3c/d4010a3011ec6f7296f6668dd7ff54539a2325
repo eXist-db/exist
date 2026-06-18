@@ -1,0 +1,62 @@
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_bdbc9a24e676d8::t_8397cc449f02a0 9
+schema/collection.xconf.xsd
+  s_bdbc9a24e676d8::t_1d17eacac44709 9,11
+exist-core/src/main/java/org/exist/util/MimeTable.java
+  s_bdbc9a24e676d8::t_67871170549b58 146-148
+  s_bdbc9a24e676d8::t_3fda06690740af 268,279,285,289,297-298,307-308,312-315,323
+schema/controller-config.xsd
+  s_bdbc9a24e676d8::t_aae6c708e6a155 7-8
+schema/conf.xsd
+  s_bdbc9a24e676d8::t_9e74bcc3f7b4b3 11-14
+schema/descriptor.xsd
+  s_bdbc9a24e676d8::t_263f56d66b54b9 9-10
+exist-core/src/main/resources/org/exist/util/mime-types.xml
+  s_bdbc9a24e676d8::t_d80887dc01692f 40
+schema/README.md
+  s_bdbc9a24e676d8::t_e9f8f6e4a5f228 37-39
+  s_bdbc9a24e676d8::t_de3d0230a4c211 27-29
+schema/schema-version-type.xsd
+  s_bdbc9a24e676d8::t_20c0edbb061a99 2-9,12-22
+  s_bdbc9a24e676d8::t_1c6e867c90c6d3 10-11
+exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java
+  s_bdbc9a24e676d8::t_fd918842eebef5 1-89
+exist-distribution/src/main/config/descriptor.xml
+  s_bdbc9a24e676d8::t_dacfdf67bff433 10
+.github/workflows/ci-schema-checks.yml
+  s_bdbc9a24e676d8::t_44ae7fd16be91c 58-60
+  s_bdbc9a24e676d8::t_211774dfc8c8c5 10,18
+  s_bdbc9a24e676d8::t_b6debaeeb81ff6 48,53-54,56-57
+.github/scripts/prepare-governance-context.sh
+  s_bdbc9a24e676d8::t_f45af0bf5c1d7e 30-31
+  s_bdbc9a24e676d8::t_4b20a6a82e801e 2-7,12-13,24-29,32,34-36,41-53
+schema/governance.xsl
+  s_bdbc9a24e676d8::t_20d57206ffef44 2-19,21,23,28-30,32-61,64-70,72-79,83-90,93-95,98-103
+exist-distribution/src/main/config/collection.xconf.init
+  s_bdbc9a24e676d8::t_43053cfc2b59ef 2
+exist-core/src/main/java/org/exist/util/SchemaVersion.java
+  s_bdbc9a24e676d8::t_b2cab461fa52e1 59,65
+  s_bdbc9a24e676d8::t_93207e6bda6b17 36-40
+exist-distribution/src/main/config/conf.xml
+  s_bdbc9a24e676d8::t_3e539357547252 61
+pom.xml
+  s_bdbc9a24e676d8::t_7e48d08bfd91af 71,76-109
+schema/mime-types.xsd
+  s_bdbc9a24e676d8::t_a07b227a440f0d 9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "3cd4010a3011ec6f7296f6668dd7ff54539a2325",
+  "prompts": {},
+  "sessions": {
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

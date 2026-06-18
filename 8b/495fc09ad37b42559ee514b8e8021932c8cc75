@@ -1,0 +1,35 @@
+schema/expath-pkg.xsd
+  s_16a04778857c54::t_f8a7b2c03e8af2 8-9
+schema/expath-pkg-extensions/repo.xsd
+  s_16a04778857c54::t_45ca2439ab5594 8-9
+schema/conf.xsd
+  s_16a04778857c54::t_aff59e3e111c3e 11
+schema/controller-config.xsd
+  s_16a04778857c54::t_fac4e7a0ca85d3 7
+schema/descriptor.xsd
+  s_16a04778857c54::t_83ac2df77cc2d4 9
+schema/collection.xconf.xsd
+  s_16a04778857c54::t_41b295664d61b2 9
+schema/expath-pkg-extensions/cxan.xsd
+  s_16a04778857c54::t_5aa7307339b788 8-9
+schema/mime-types.xsd
+  s_16a04778857c54::t_5dad96b8258958 9
+schema/expath-pkg-extensions/exist.xsd
+  s_16a04778857c54::t_5d6dda4a4bcbcf 8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "8b495fc09ad37b42559ee514b8e8021932c8cc75",
+  "prompts": {},
+  "sessions": {
+    "s_16a04778857c54": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d0904c21-548e-4266-8776-9008c4aa6c5a",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
