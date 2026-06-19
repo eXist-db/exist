@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_033f8a50977d21::t_545fe929963480 114-132
+  s_033f8a50977d21::t_42791083d7378b 640-643,645
+exist-core/src/test/java/org/exist/xquery/functions/validation/JaxpXsd11DetectionCacheTest.java
+  s_033f8a50977d21::t_bdf076b3613173 66,73,79
+exist-core/src/test/java/org/exist/xquery/functions/validation/JaxpSchemaLocationSecurityTest.java
+  s_033f8a50977d21::t_ce9d07dda98133 42-43
+  s_033f8a50977d21::t_6e5a8efabb4a7a 80,85,95,102,110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "dca4b4bc8b8076db6656c56342a58db44f399a5b",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
