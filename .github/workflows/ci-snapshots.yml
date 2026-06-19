@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 45
     if: github.ref == 'refs/heads/develop'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
       - name: Set up JDK 21
