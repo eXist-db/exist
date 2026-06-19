@@ -73,11 +73,13 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
     private final String collectionPath;
     private final Subject subject;
     private final BrokerPool brokerPool;
+    private final DatabaseResources databaseResources;
 
     public SearchResourceResolver(final BrokerPool brokerPool, final Subject subject, final String collectionPath) {
         this.brokerPool = brokerPool;
         this.subject = subject;
         this.collectionPath = collectionPath;
+        this.databaseResources = new DatabaseResources(brokerPool);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Specified collectionPath={}", collectionPath);
@@ -98,15 +100,10 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
 
 
         String resourcePath = null;
-        final DatabaseResources databaseResources = new DatabaseResources(brokerPool);
 
         if (xri.getNamespace() != null) {
             // XML Schema search
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Searching namespace '{}' in database from {}...", xri.getNamespace(), collectionPath);
-            }
-
-            resourcePath = databaseResources.findXSD(collectionPath, xri.getNamespace(), subject);
+            resourcePath = findXsdResourcePathByNamespace(xri.getNamespace());
 
         } else if (xri.getPublicId() != null) {
             // Catalog search
@@ -196,16 +193,10 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
             return null;
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Searching namespace '{}' in database from {}... (LSResourceResolver)", namespaceURI, collectionPath);
-        }
-
-        final DatabaseResources databaseResources = new DatabaseResources(brokerPool);
-        String resourcePath = databaseResources.findXSD(collectionPath, namespaceURI, subject);
+        final String resourcePath = findXsdResourcePathByNamespace(namespaceURI);
         if (resourcePath == null) {
             return null;
         }
-        resourcePath = ResolverFactory.fixupExistCatalogUri(resourcePath);
 
         try {
             final InputStream is = URI.create(resourcePath).toURL().openStream();
@@ -214,6 +205,25 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
             LOG.error("Could not open resolved schema resource '{}': {}", resourcePath, e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Searches {@code collectionPath} for an XSD declaring {@code namespaceURI} as its target
+     * namespace, shared between {@link #resolveEntity}'s namespace branch and {@link #resolveResource}.
+     * The result is already normalized via {@link ResolverFactory#fixupExistCatalogUri} (idempotent,
+     * so {@link #resolveEntity}'s own uniform fixup at the end of that method is a harmless no-op
+     * for this path).
+     *
+     * @return the fixed-up resource path, or {@code null} if no matching schema was found.
+     */
+    @Nullable
+    private String findXsdResourcePathByNamespace(final String namespaceURI) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Searching namespace '{}' in database from {}...", namespaceURI, collectionPath);
+        }
+
+        final String resourcePath = databaseResources.findXSD(collectionPath, namespaceURI, subject);
+        return resourcePath == null ? null : ResolverFactory.fixupExistCatalogUri(resourcePath);
     }
 
     /**
