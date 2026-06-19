@@ -1,0 +1,35 @@
+extensions/xqdoc/pom.xml
+  d860c86ca9c322d9 117
+exist-samples/pom.xml
+  d860c86ca9c322d9 63
+exist-service/pom.xml
+  d860c86ca9c322d9 69,94-97
+extensions/contentextraction/pom.xml
+  d860c86ca9c322d9 124,134
+exist-core/pom.xml
+  d860c86ca9c322d9 708,852,891
+exist-start/pom.xml
+  d860c86ca9c322d9 67,86
+extensions/modules/xmldiff/pom.xml
+  d860c86ca9c322d9 106,120
+extensions/modules/mail/pom.xml
+  d860c86ca9c322d9 184,196
+extensions/modules/sql/pom.xml
+  d860c86ca9c322d9 133,152
+extensions/pom.xml
+  d860c86ca9c322d9 76
+exist-core-jmh/pom.xml
+  d860c86ca9c322d9 78,90
+exist-distribution/pom.xml
+  d860c86ca9c322d9 489-495,901-903,984-985,992-1004,1013
+pom.xml
+  d860c86ca9c322d9 80,84-92,114,124,131-132,137-138
+exist-parent/pom.xml
+  d860c86ca9c322d9 1419-1431,1502-1503
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "14a44470a16e1ac105e7a49ac74a30fc1921b388",
+  "prompts": {}
+}

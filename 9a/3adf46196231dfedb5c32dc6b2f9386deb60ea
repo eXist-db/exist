@@ -1,0 +1,28 @@
+exist-core/pom.xml
+  d860c86ca9c322d9 707,851,890,1197,1224
+exist-service/pom.xml
+  d860c86ca9c322d9 68,93-116
+exist-core/src/main/java/org/exist/SystemProperties.java
+  d860c86ca9c322d9 63-64,68-92
+exist-core/src/test/java/org/exist/VersionTest.java
+  d860c86ca9c322d9 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "9a3adf46196231dfedb5c32dc6b2f9386deb60ea",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 108,
+      "total_deletions": 21,
+      "accepted_lines": 87,
+      "overriden_lines": 0
+    }
+  }
+}

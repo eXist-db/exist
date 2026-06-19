@@ -1,0 +1,34 @@
+.github/workflows/ci-test.yml
+  d860c86ca9c322d9 20,49
+AGENTS.md
+  d860c86ca9c322d9 19,26,35,38,41,48
+mvnw
+  d860c86ca9c322d9 2-19
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 47,81
+mvnw.cmd
+  d860c86ca9c322d9 1-25
+BUILD.md
+  d860c86ca9c322d9 15,26-30,42,52,54
+.github/workflows/ci-xqts.yml
+  d860c86ca9c322d9 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "4e943a75d344f1cd78c04cca51c1df3e1bf3754b",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 71,
+      "total_deletions": 23,
+      "accepted_lines": 63,
+      "overriden_lines": 0
+    }
+  }
+}

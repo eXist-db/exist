@@ -1,0 +1,56 @@
+exist-service/pom.xml
+  d860c86ca9c322d9 69,94-97
+extensions/xqdoc/pom.xml
+  d860c86ca9c322d9 117
+extensions/contentextraction/pom.xml
+  d860c86ca9c322d9 124,134
+.github/PULL_REQUEST_TEMPLATE.md
+  d860c86ca9c322d9 11
+extensions/modules/xmldiff/pom.xml
+  d860c86ca9c322d9 106,120
+exist-distribution/pom.xml
+  d860c86ca9c322d9 489-495,901-903,984-985,992-1004,1013
+.github/workflows/ci-test.yml
+  d860c86ca9c322d9 20,49,92,110
+exist-parent/pom.xml
+  d860c86ca9c322d9 1417-1429,1500-1501
+extensions/modules/sql/pom.xml
+  d860c86ca9c322d9 133,152
+.github/workflows/sonarcloud.yml
+  d860c86ca9c322d9 33
+exist-core-jmh/pom.xml
+  d860c86ca9c322d9 78,90
+exist-core/pom.xml
+  d860c86ca9c322d9 708,852,891
+.github/actions/install-mvnd/action.yml
+  d860c86ca9c322d9 7
+exist-start/pom.xml
+  d860c86ca9c322d9 67,86
+extensions/pom.xml
+  d860c86ca9c322d9 76
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 47,81,84,98
+extensions/modules/mail/pom.xml
+  d860c86ca9c322d9 184,196
+exist-samples/pom.xml
+  d860c86ca9c322d9 63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "9de7e9781db8689044c01f17a3e8bce42da1db95",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": null,
+      "total_additions": 51,
+      "total_deletions": 56,
+      "accepted_lines": 31,
+      "overriden_lines": 0
+    }
+  }
+}
