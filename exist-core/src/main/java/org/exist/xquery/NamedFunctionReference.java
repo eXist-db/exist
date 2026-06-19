@@ -92,10 +92,10 @@ public class NamedFunctionReference extends AbstractExpression {
 		}
 		final Expression fun = FunctionFactory.createFunction(context, funcName, ast, null, args, false);
         switch (fun) {
-            case null -> throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);
+            case null -> throw new XPathException(self, ErrorCodes.XPST0017, Function.functionNotFoundErrorDescription(context, funcName, arity));
             case FunctionCall functionCall -> {
                 if (functionCall.getFunction() == null) {
-                    throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);
+                    throw new XPathException(self, ErrorCodes.XPST0017, Function.functionNotFoundErrorDescription(context, funcName, arity));
                 }
                 // clear line and column as it will be misleading. should be set later to point
                 // to the location from where the function is called.

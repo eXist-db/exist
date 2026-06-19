@@ -339,9 +339,6 @@ public class FunctionFactory {
             return localFn;
         }
 
-        // a possible list of candidates with other arities when none match
-        List<FunctionSignature> otherArities = null;
-
         // Function might belong to a module
         for (final Module module : modules) {
             final Function fn;
@@ -365,36 +362,10 @@ public class FunctionFactory {
                 fn.setASTNode(ast);
                 return fn;
             }
-
-            // gather candidates, if any
-            final List<FunctionSignature> functionsMatchingByName = module.getFunctionsByName(qname);
-
-            if (!functionsMatchingByName.isEmpty()) {
-                // hot code, lazy initialization of list
-                if (otherArities == null) {
-                    otherArities = new ArrayList<>();
-                }
-                otherArities.addAll(functionsMatchingByName);
-            }
         }
 
-        final String msg;
-        if (otherArities == null || otherArities.isEmpty()) {
-            msg = "Function " + qname.getStringValue() + "() is not defined in module namespace: " + uri;
-        } else {
-            msg = String.format("""
-                Unexpectedly received %d parameter(s) in call to function '%s()'.
-                Defined function signatures are:
-                %s
-                in module namespace: %s""",
-                paramCount,
-                qname.getStringValue(),
-                otherArities.stream().map(FunctionSignature::toString).collect(Collectors.joining("\n")),
-                uri
-            );
-        }
-
-        throw new XPathException(ast, ErrorCodes.XPST0017, msg);
+        throw new XPathException(ast, ErrorCodes.XPST0017,
+                Function.functionNotFoundErrorDescription(context, qname, paramCount));
     }
 
     /**
