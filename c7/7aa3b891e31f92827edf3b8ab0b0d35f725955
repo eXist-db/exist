@@ -1,0 +1,32 @@
+exist-samples/src/main/resources/org/exist/samples/validation/parse/instance/searched-xsd11-valid.xml
+  s_033f8a50977d21::t_d1247673fcfdd6 1
+  s_033f8a50977d21::t_13f4e3c7716110 25
+  s_033f8a50977d21::t_a3122a5d15773c 2-24
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_033f8a50977d21::t_2c205f0ff7ced0 107-115
+  s_033f8a50977d21::t_bfff5d86cf824e 78-85
+exist-samples/src/main/resources/org/exist/samples/validation/parse/schemas/searched-xsd11.xsd
+  s_033f8a50977d21::t_29d2fc6681b372 1
+  s_033f8a50977d21::t_a3122a5d15773c 2-24
+  s_033f8a50977d21::t_43a05a773c744c 25-38
+exist-samples/src/main/resources/org/exist/samples/validation/parse/instance/searched-xsd11-invalid.xml
+  s_033f8a50977d21::t_b2c411561ce081 25
+  s_033f8a50977d21::t_331b52f496eddb 1
+  s_033f8a50977d21::t_a3122a5d15773c 2-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "c77aa3b891e31f92827edf3b8ab0b0d35f725955",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
