@@ -1,0 +1,57 @@
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7339eb93078c0b::t_10acf664f81466 207,241,276-281,285-304,437-440
+  s_033f8a50977d21::t_cddbe27255490a 27,76,80,97-114,116,133,146,157,170,195-196,305,366,374,392-402,434-436,441-444,446-450,452-457
+  s_7339eb93078c0b::t_c46aa35783e4d2 246-247,249-250
+exist-core/src/main/java/org/exist/resolver/ResolverFactory.java
+  s_033f8a50977d21::t_c9fb81f7349096 36-46,48,55-56,60,63,67
+  s_033f8a50977d21::t_4e3b87569e9c67 135-140,151-192,198-199,201-202,205-206,214-217,220,222-224,227-228,230,237,239-263
+  s_7339eb93078c0b::t_4f8598ad7442c9 193-197,200,203-204,207-213,218-219,221,225-226,229,231-236,238
+exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java
+  s_033f8a50977d21::t_455786e20a6e22 117,119
+exist-core/src/test/xquery/validation/jaxp.xql
+  s_033f8a50977d21::t_791a77887ad6e5 122
+  s_033f8a50977d21::t_e588ad2b8873ec 40-44
+  s_033f8a50977d21::t_27d2431abb0d27 71-73,83-85,92-96,103-106
+  s_033f8a50977d21::t_67fdeba71b096b 112-121,123
+exist-core/src/main/java/org/exist/validation/ValidationReport.java
+  s_033f8a50977d21::t_d1615f8b6ddf4e 139,146
+exist-core/src/main/java/org/exist/resolver/RecordingContentHandler.java
+  s_7339eb93078c0b::t_9f01e02b7ca720 1-125
+exist-core/src/test/xquery/validation/jaxv.xql
+  s_033f8a50977d21::t_c68b2377623a25 145-147,156-158,165-169,176-179,187-190
+  s_033f8a50977d21::t_bf5a47c488b51d 68-72,79-81,88-90
+  s_033f8a50977d21::t_813e9be9e6c287 24-28
+exist-core/src/main/java/org/exist/validation/ValidationContentHandler.java
+  s_033f8a50977d21::t_a822151540eb99 27,40,51-53,66-73
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxv.java
+  s_033f8a50977d21::t_3d3816f0c6be02 62-84
+  s_033f8a50977d21::t_fa6554214d91d4 122
+  s_033f8a50977d21::t_bba36aa552318a 139,152,167
+  s_033f8a50977d21::t_58d9ab6d2af72b 200
+  s_7339eb93078c0b::t_c46aa35783e4d2 262-263,265-266
+  s_7339eb93078c0b::t_10acf664f81466 85-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "90824cee864b980c83bbc51a21c81bf9e8f1096f",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    },
+    "s_7339eb93078c0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ddb5ce6-410c-4e1e-a33c-069141ab181c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
