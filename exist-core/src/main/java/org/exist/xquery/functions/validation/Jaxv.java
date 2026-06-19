@@ -32,12 +32,8 @@ import javax.xml.validation.Validator;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.resolver.ResolverFactory;
 import org.exist.storage.BrokerPool;
-import org.exist.util.Configuration;
-import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.ValidationReport;
-import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -51,7 +47,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import org.xmlresolver.Resolver;
+import org.w3c.dom.ls.LSResourceResolver;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -243,34 +239,8 @@ public class Jaxv extends BasicFunction  {
             // SAX pipeline), so the directory-search/collection case (a catalog URL ending
             // in '/') works here too.
             if (args.length == 4) {
-                if (args[3].isEmpty()) {
-                    // Use system catalog
-                    LOG.debug("Using system catalog.");
-                    final Configuration config = brokerPool.getConfiguration();
-                    final Resolver resolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                    factory.setResourceResolver(resolver);
-
-                } else {
-                    final String[] catalogUrls = Shared.getUrls(args[3]);
-                    final String singleUrl = catalogUrls[0];
-
-                    if (singleUrl.endsWith("/")) {
-                        LOG.debug("Search for grammar in {}", singleUrl);
-                        final SearchResourceResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), singleUrl);
-                        factory.setResourceResolver(resolver);
-
-                    } else if (singleUrl.endsWith(".xml")) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Using catalogs {}", String.join(" ", catalogUrls));
-                        }
-
-                        final Resolver resolver = ResolverFactory.resolveCatalogs(context.getBroker(), catalogUrls);
-                        factory.setResourceResolver(resolver);
-
-                    } else {
-                        LOG.error("Catalog URLs should end on / or .xml");
-                    }
-                }
+                final LSResourceResolver resolver = Shared.resolveCatalogArgument(this, brokerPool, context.getBroker(), context.getSubject(), args[3]);
+                factory.setResourceResolver(resolver);
             }
 
             // Create grammar -- xs:import/xs:include resolution (via the resolver se

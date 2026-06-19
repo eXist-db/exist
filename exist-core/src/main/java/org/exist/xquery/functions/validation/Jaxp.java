@@ -70,7 +70,6 @@ import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
-import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -94,7 +93,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xmlresolver.Resolver;
 
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
@@ -230,56 +228,23 @@ public class Jaxp extends BasicFunction {
             // Get inputstream for instance document
             instance = Shared.getInputSource(args[0].itemAt(0), context);
 
-            // Handle catalog
+            // Handle catalog. SearchResourceResolver implements both XMLEntityResolver (for
+            // this SAX pipeline) and LSResourceResolver (for the XSD 1.1 validator below), so
+            // directory-search catalogs work the same way regardless of which pipeline ends up
+            // validating.
             if (args.length == 2) {
                 LOG.debug("No Catalog specified");
 
-            } else if (args[2].isEmpty()) {
-                // Use system catalog
-                LOG.debug("Using system catalog.");
-                final Configuration config = brokerPool.getConfiguration();
-                final Resolver resolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                catalogResolver = resolver;
-                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
-
             } else {
-                // Get URL for catalog
-                final String[] catalogUrls = Shared.getUrls(args[2]);
-                final String singleUrl = catalogUrls[0];
-
-                if (singleUrl.endsWith("/")) {
-                    // Search grammar in collection specified by URL. Just one collection is used.
-                    LOG.debug("Search for grammar in {}", singleUrl);
-                    // SearchResourceResolver implements both XMLEntityResolver (for this SAX
-                    // pipeline) and LSResourceResolver (for the XSD 1.1 validator below), so
-                    // directory-search catalogs work the same way regardless of which pipeline
-                    // ends up validating.
-                    final SearchResourceResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), catalogUrls[0]);
-                    catalogResolver = resolver;
-                    XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
-
-                } else if (singleUrl.endsWith(".xml")) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Using catalogs {}", String.join(" ", catalogUrls));
-                    }
-
-                    final Resolver resolver = ResolverFactory.resolveCatalogs(context.getBroker(), catalogUrls);
-                    catalogResolver = resolver;
-                    XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
-
-                } else {
-                    LOG.error("Catalog URLs should end on / or .xml");
-                }
-
+                catalogResolver = Shared.resolveCatalogArgument(this, brokerPool, context.getBroker(), context.getSubject(), args[2]);
+                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, catalogResolver);
             }
 
             // Use grammarpool
             final boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
-                final Configuration config = brokerPool.getConfiguration();
-                final GrammarPool grammarPool = (GrammarPool) config.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, getGrammarPool());
             }
 
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
@@ -287,27 +252,18 @@ public class Jaxp extends BasicFunction {
                SAXParser pipeline -- it's a hard limitation of the dependency,
                not a configuration gap (see plans/catalog-dtd.plan.md). Rather
                than always discovering this by parsing with the wrong pipeline
-               and failing, peek (best-effort, see detectXsd11ViaSchemaLocation)
-               at the schema the instance's own hint points to and pick the
-               right pipeline up front when that succeeds. If the peek can't
-               tell (catalog-mediated location, unresolvable hint, etc.), fall
-               through to the unchanged default pipeline below, which still
-               retries with the XSD 1.1 validator on the cvc-elt.1.a failure
-               signature -- the peek is purely an optimization, never a
-               correctness requirement. */
-            final boolean useXsd11UpFront;
-            final InputSource peekInstance = Shared.getInputSource(args[0].itemAt(0), context);
-            try {
-                useXsd11UpFront = detectXsd11ViaSchemaLocation(peekInstance);
-            } finally {
-                Shared.closeInputSource(peekInstance);
-            }
-
-            if (useXsd11UpFront) {
+               and failing, peek (best-effort) at the schema the instance's own
+               hint points to and pick the right pipeline up front when that
+               succeeds. If the peek can't tell (catalog-mediated location,
+               unresolvable hint, etc.), fall through to the unchanged default
+               pipeline below, which still retries with the XSD 1.1 validator
+               on the cvc-elt.1.a failure signature -- the peek is purely an
+               optimization, never a correctness requirement. */
+            if (peekIsXsd11ViaSchemaLocation(args)) {
                 LOG.debug("Detected XSD 1.1 schema (vc:minVersion) via the instance's schemaLocation hint " +
                         "before parsing; using the XSD 1.1 validator directly.");
 
-                final Validator validator = newXsd11Validator(catalogResolver);
+                final Validator validator = newXsd11Validator(catalogResolver, useCache);
                 validator.setErrorHandler(report);
                 validator.validate(new SAXSource(instance), new SAXResult(contenthandler));
 
@@ -317,48 +273,9 @@ public class Jaxp extends BasicFunction {
                 xmlReader.parse(instance);
                 LOG.debug("Stopped parsing document");
 
-                /* Safety net: the up-front peek above didn't (or couldn't) detect XSD 1.1.
-                   When that shows up as "no declaration found" for the root element, retry once
-                   with the XSD-1.1-capable Validator before giving up -- but only when retrying
-                   could plausibly help: either the instance carries an explicit schemaLocation
-                   hint (the no-catalog case, where Xerces' own default resolution would have used
-                   it), or a catalog/resolver IS configured (system catalog, .xml catalog, or
-                   directory-search), since any of those can resolve a schema purely by the root
-                   element's namespace -- the directory-search fixtures in this codebase, for
-                   example, carry no schemaLocation hint at all and rely entirely on namespace-based
-                   lookup. DTD-only documents with neither a hint nor a catalog never produce this
-                   cvc-* signature in the first place, so they never retry. */
-                if (!report.isValid() && isMissingElementDeclaration(report)
-                        && (catalogResolver != null || hasSchemaLocationHint(contenthandler, instanceBuilder))) {
-                    LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
-                    report.clear();
-
-                    // The first pass already fed `contenthandler` (and, for jaxp-parse,
-                    // `instanceBuilder`) a complete document; reusing either for the retry
-                    // would silently double-build the result. Start over with a fresh
-                    // content handler/builder so the retry produces a single, clean document.
-                    if (isCalledAs("jaxp-parse")) {
-                        context.pushDocumentContext();
-                        try {
-                            instanceBuilder = context.getDocumentBuilder();
-                        } finally {
-                            context.popDocumentContext();
-                        }
-                        contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true);
-                    } else {
-                        contenthandler = new ValidationContentHandler();
-                    }
-
-                    final Validator validator = newXsd11Validator(catalogResolver);
-                    validator.setErrorHandler(report);
-
-                    final InputSource retryInstance = Shared.getInputSource(args[0].itemAt(0), context);
-                    try {
-                        validator.validate(new SAXSource(retryInstance), new SAXResult(contenthandler));
-                    } finally {
-                        Shared.closeInputSource(retryInstance);
-                    }
-                }
+                final ParseTarget retried = retryWithXsd11ValidatorIfNeeded(args, report, catalogResolver, contenthandler, instanceBuilder, useCache);
+                contenthandler = retried.contenthandler();
+                instanceBuilder = retried.instanceBuilder();
             }
 
             // Distill namespace from document
@@ -471,8 +388,13 @@ public class Jaxp extends BasicFunction {
      * @return true if any reported error is the "no global declaration for
      * the root element" signature ({@code cvc-elt.1.a}) produced when this
      * Xerces fork's dynamic-discovery pipeline meets an XSD 1.1-only schema.
+     *
+     * <p>Package-private (not {@code private}) so {@code
+     * IsMissingElementDeclarationTest}, in this package, can pin this match against
+     * the bundled Xerces fork's actual message text directly, without going through
+     * the full {@code validation:jaxp()} pipeline.</p>
      */
-    private static boolean isMissingElementDeclaration(final ValidationReport report) {
+    static boolean isMissingElementDeclaration(final ValidationReport report) {
         return report.getValidationReportItemList().stream()
                 .anyMatch(item -> item.getMessage() != null && item.getMessage().startsWith("cvc-elt.1.a:"));
     }
@@ -504,6 +426,104 @@ public class Jaxp extends BasicFunction {
                     && (root.hasAttributeNS(XSI_NS, "schemaLocation") || root.hasAttributeNS(XSI_NS, "noNamespaceSchemaLocation"));
         }
         return false;
+    }
+
+    /**
+     * The content handler/document builder pair currently receiving parse events. Used to thread
+     * the (possibly freshly-rebuilt, see {@link #retryWithXsd11ValidatorIfNeeded}) pair back out
+     * of a retry attempt without a mutable shared field.
+     *
+     * @param contenthandler the content handler currently wired up to receive SAX events.
+     * @param instanceBuilder for {@code jaxp-parse}, the document builder backing {@code contenthandler};
+     *                        {@code null} for {@code jaxp}/{@code jaxp-report}.
+     */
+    private record ParseTarget(ContentHandler contenthandler, @Nullable MemTreeBuilder instanceBuilder) {
+    }
+
+    /**
+     * Acquires a fresh, disposable {@link InputSource} for the instance and runs
+     * {@link #detectXsd11ViaSchemaLocation(InputSource)} against it.
+     */
+    private boolean peekIsXsd11ViaSchemaLocation(final Sequence[] args) throws XPathException, IOException {
+        final InputSource peekInstance = Shared.getInputSource(args[0].itemAt(0), context);
+        try {
+            return detectXsd11ViaSchemaLocation(peekInstance);
+        } finally {
+            Shared.closeInputSource(peekInstance);
+        }
+    }
+
+    /**
+     * Safety net for when {@link #peekIsXsd11ViaSchemaLocation} didn't (or couldn't) detect XSD 1.1
+     * up front: after the default pipeline's first parse, retries once with the XSD-1.1-capable
+     * {@link Validator} when retrying could plausibly help -- but only then. Retrying is plausible
+     * when the failure is specifically the "no global declaration for the root element" signature
+     * ({@link #isMissingElementDeclaration(ValidationReport)}) <em>and</em> either the instance
+     * carries an explicit schemaLocation hint (the no-catalog case, where Xerces' own default
+     * resolution would have used it), or a catalog/resolver is configured (system catalog, .xml
+     * catalog, or directory-search), since any of those can resolve a schema purely by the root
+     * element's namespace -- the directory-search fixtures in this codebase, for example, carry no
+     * schemaLocation hint at all and rely entirely on namespace-based lookup. DTD-only documents
+     * with neither a hint nor a catalog never produce this cvc-* signature in the first place, so
+     * they never retry.
+     *
+     * @param contenthandler the content handler used for the first (failed) parse pass.
+     * @param instanceBuilder for {@code jaxp-parse}, the document builder used for the first parse
+     *                        pass; {@code null} for {@code jaxp}/{@code jaxp-report}.
+     * @param useCache whether grammar caching was requested (see {@code cache-grammars}); honored
+     *                 by the XSD 1.1 validator built here the same way it is for the default
+     *                 pipeline.
+     * @return {@code contenthandler}/{@code instanceBuilder} unchanged if no retry was attempted;
+     *         otherwise a <em>fresh</em> pair -- the first pass already fed the original pair a
+     *         complete document, so reusing either for the retry would silently double-build the
+     *         result (see {@code jaxp:xsd11_parse_single_root} in jaxp.xql).
+     */
+    private ParseTarget retryWithXsd11ValidatorIfNeeded(final Sequence[] args, final ValidationReport report,
+            @Nullable final LSResourceResolver catalogResolver, final ContentHandler contenthandler,
+            @Nullable final MemTreeBuilder instanceBuilder, final boolean useCache) throws XPathException, IOException, SAXException {
+        // Three independent reasons retrying can't help, checked in order: the first pass
+        // already succeeded; the failure isn't the cvc-elt.1.a signature retrying addresses;
+        // or there's no way to resolve a schema for the retry to use (no catalog/resolver
+        // configured, and no schemaLocation hint on the instance either).
+        if (report.isValid()) {
+            return new ParseTarget(contenthandler, instanceBuilder);
+        }
+        if (!isMissingElementDeclaration(report)) {
+            return new ParseTarget(contenthandler, instanceBuilder);
+        }
+        if (catalogResolver == null && !hasSchemaLocationHint(contenthandler, instanceBuilder)) {
+            return new ParseTarget(contenthandler, instanceBuilder);
+        }
+
+        LOG.debug("Retrying validation with XSD 1.1 validator after cvc-elt.1.a");
+        report.clear();
+
+        final ContentHandler retryContenthandler;
+        final MemTreeBuilder retryInstanceBuilder;
+        if (isCalledAs("jaxp-parse")) {
+            context.pushDocumentContext();
+            try {
+                retryInstanceBuilder = context.getDocumentBuilder();
+            } finally {
+                context.popDocumentContext();
+            }
+            retryContenthandler = new DocumentBuilderReceiver(this, retryInstanceBuilder, true);
+        } else {
+            retryInstanceBuilder = null;
+            retryContenthandler = new ValidationContentHandler();
+        }
+
+        final Validator validator = newXsd11Validator(catalogResolver, useCache);
+        validator.setErrorHandler(report);
+
+        final InputSource retryInstance = Shared.getInputSource(args[0].itemAt(0), context);
+        try {
+            validator.validate(new SAXSource(retryInstance), new SAXResult(retryContenthandler));
+        } finally {
+            Shared.closeInputSource(retryInstance);
+        }
+
+        return new ParseTarget(retryContenthandler, retryInstanceBuilder);
     }
 
     /**
@@ -642,15 +662,42 @@ public class Jaxp extends BasicFunction {
     }
 
     /**
+     * @return the shared {@link GrammarPool} used to honor {@code cache-grammars}, on whichever
+     * pipeline (the default SAX {@code xmlReader} or the XSD 1.1 {@link SchemaFactory}) ends up
+     * validating.
+     */
+    private GrammarPool getGrammarPool() {
+        final Configuration config = brokerPool.getConfiguration();
+        return (GrammarPool) config.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
+    }
+
+    /**
      * @param resolver catalog resolver to use for schema/entity resolution, or null.
+     * @param useCache whether grammar caching was requested (see {@code cache-grammars}); when
+     *                 true, wires the same shared {@link GrammarPool} the default SAX pipeline
+     *                 uses (see {@code eval()}) into the underlying Xerces {@link SchemaFactory}
+     *                 via the same {@code APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL} property --
+     *                 the bundled Xerces fork's {@code BaseSchemaFactory} (the XSD 1.1
+     *                 implementation's superclass) supports it, even though {@code
+     *                 javax.xml.validation.SchemaFactory} doesn't declare it generically.
+     *                 Without this, {@code cache-grammars} would be silently ignored whenever
+     *                 validation routes through the XSD 1.1 validator.
      * @return a {@link Validator} for the only XSD 1.1-capable pipeline this
      * Xerces fork supports: {@link SchemaFactory}/{@link Schema} with no
      * pre-supplied schema documents, so it dynamically discovers the schema
      * from the instance's own schemaLocation hint, mirroring how the default
      * SAXParser pipeline behaves for XSD 1.0.
      */
-    private Validator newXsd11Validator(@Nullable final LSResourceResolver resolver) throws SAXException {
+    private Validator newXsd11Validator(@Nullable final LSResourceResolver resolver, final boolean useCache) throws SAXException {
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XSD_1_1_NS);
+        if (useCache) {
+            LOG.debug("Grammar caching enabled for XSD 1.1 validator.");
+            try {
+                schemaFactory.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, getGrammarPool());
+            } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
+                LOG.debug("XSD 1.1 SchemaFactory does not support grammar pool caching: {}", ex.getMessage());
+            }
+        }
         final Schema schema = schemaFactory.newSchema();
         final Validator validator = schema.newValidator();
         if (resolver != null) {
