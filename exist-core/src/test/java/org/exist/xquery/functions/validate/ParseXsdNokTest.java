@@ -87,10 +87,10 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
-                "doc('/db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report( " +
+                "doc('/db/addressbook/addressbook_invalid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -99,10 +99,10 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report( " +
+                "xs:anyURI('/db/addressbook/addressbook_valid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -111,10 +111,10 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report( " +
+                "xs:anyURI('/db/addressbook/addressbook_invalid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
