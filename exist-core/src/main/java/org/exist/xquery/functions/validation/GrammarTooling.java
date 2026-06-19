@@ -148,9 +148,10 @@ public class GrammarTooling extends BasicFunction  {
             
             final int before = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Clearing {} grammars", before);
-            
+
             clearGrammarPool(grammarpool);
-            
+            Jaxp.clearXsd11DetectionCache();
+
             final int after = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Remained {} grammars", after);
             

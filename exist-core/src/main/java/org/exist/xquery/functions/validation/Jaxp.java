@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -611,19 +612,74 @@ public class Jaxp extends BasicFunction {
                         location, resolvedUri, baseUriNormalized);
                 return false;
             }
+
+            final String cacheKey = resolvedUri.toString();
+            final Boolean cached = getCachedXsd11Detection(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+
             try (final InputStream is = resolvedUri.toURL().openStream()) {
                 final InputSource schemaSource = new InputSource(is);
                 schemaSource.setSystemId(resolvedUri.toString());
                 final Map<String, String> schemaRootAttrs = peekRootAttributes(schemaSource);
                 if (schemaRootAttrs == null) {
+                    // Couldn't even parse the candidate as XML -- not a stable fact about a real
+                    // schema (e.g. case from #6 in detectXsd11ViaSchemaLocation finding a location
+                    // that doesn't actually exist), so don't cache it; let the next call retry.
                     return false;
                 }
                 final String minVersion = schemaRootAttrs.get(clark(XSD_VERSIONING_NS, "minVersion"));
-                return minVersion != null && minVersion.contains("1.1");
+                final boolean result = minVersion != null && minVersion.contains("1.1");
+                cacheXsd11Detection(cacheKey, result);
+                return result;
             }
         } catch (final URISyntaxException | IOException ex) {
+            // Not cached: this may be a transient failure (lock contention, a brief network blip
+            // for an xmldb:// catalog served over XML-RPC, etc); a permanently-cached false would
+            // wrongly keep a legitimate schema on the slower retry-after-failure path forever.
             LOG.debug("Could not peek candidate schema '{}' relative to '{}': {}", location, baseUri, ex.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Bounded (see {@link #XSD11_DETECTION_CACHE_MAX_ENTRIES}), LRU-evicted cache of
+     * "does the schema at this resolved URI declare vc:minVersion 1.1?", so that validating many
+     * documents against the same schema doesn't re-fetch and re-peek it every time. Cleared by
+     * {@code validation:clear-grammar-cache()} (see {@link GrammarTooling}) alongside the Xerces
+     * grammar pool, so operators have one function to clear every validation-related cache.
+     */
+    private static final int XSD11_DETECTION_CACHE_MAX_ENTRIES = 256;
+
+    private static final Map<String, Boolean> XSD11_DETECTION_CACHE = new LinkedHashMap<>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(final Map.Entry<String, Boolean> eldest) {
+            return size() > XSD11_DETECTION_CACHE_MAX_ENTRIES;
+        }
+    };
+
+    @Nullable
+    private static Boolean getCachedXsd11Detection(final String resolvedUri) {
+        synchronized (XSD11_DETECTION_CACHE) {
+            return XSD11_DETECTION_CACHE.get(resolvedUri);
+        }
+    }
+
+    private static void cacheXsd11Detection(final String resolvedUri, final boolean isXsd11) {
+        synchronized (XSD11_DETECTION_CACHE) {
+            XSD11_DETECTION_CACHE.put(resolvedUri, isXsd11);
+        }
+    }
+
+    /**
+     * Discards all cached {@link #isXsd11Schema(String, String)} results. Package-private so
+     * {@link GrammarTooling}'s {@code clear-grammar-cache()} can clear this alongside the Xerces
+     * grammar pool.
+     */
+    static void clearXsd11DetectionCache() {
+        synchronized (XSD11_DETECTION_CACHE) {
+            XSD11_DETECTION_CACHE.clear();
         }
     }
 
