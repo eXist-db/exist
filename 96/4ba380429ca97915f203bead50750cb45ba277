@@ -1,0 +1,22 @@
+exist-core/src/test/java/org/exist/xquery/functions/validate/TournamentSchemaLanguageComparisonTest.java
+  s_033f8a50977d21::t_08da2301c303b1 51-65
+  s_033f8a50977d21::t_deebec078449dd 1-50,66-98,100-101,106-108,110,117-138,149
+  s_033f8a50977d21::t_64a701434a6e45 139-148
+  s_033f8a50977d21::t_99f1ea8e47eb19 99,102-105,109,111-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "964ba380429ca97915f203bead50750cb45ba277",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
