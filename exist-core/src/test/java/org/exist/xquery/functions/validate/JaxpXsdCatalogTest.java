@@ -55,34 +55,6 @@ public class JaxpXsdCatalogTest {
             "    <validation mode='no'/>" +
             "</collection>";
 
-    // No schemaLocation hint at all -- directory-search resolves purely by the root
-    // element's namespace, same as MyNameSpace.xsd/valid.xml above. xs:assert only exists
-    // in XSD 1.1, so this proves the XSD 1.1 retry/up-front pipeline is reachable through
-    // SearchResourceResolver (item 6), not just through an explicit schemaLocation hint.
-    private static final String xsd11SearchedSchema =
-            "<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' " +
-            "xmlns:vc='http://www.w3.org/2007/XMLSchema-versioning' vc:minVersion='1.1' " +
-            "xmlns='urn:jaxp-test:searched-xsd11' targetNamespace='urn:jaxp-test:searched-xsd11' " +
-            // xs:assert's XPath defaults unprefixed names to NO namespace unless told otherwise --
-            // needed here since elementFormDefault='qualified' puts value1/value2 in the target namespace.
-            "elementFormDefault='qualified' xpathDefaultNamespace='##targetNamespace'>" +
-            "<xs:element name='root'>" +
-            "<xs:complexType>" +
-            "<xs:sequence>" +
-            "<xs:element name='value1' type='xs:integer'/>" +
-            "<xs:element name='value2' type='xs:integer'/>" +
-            "</xs:sequence>" +
-            "<xs:assert test='value2 gt value1'/>" +
-            "</xs:complexType>" +
-            "</xs:element>" +
-            "</xs:schema>";
-
-    private static final String xsd11SearchedValidInstance =
-            "<root xmlns='urn:jaxp-test:searched-xsd11'><value1>20</value1><value2>30</value2></root>";
-
-    private static final String xsd11SearchedInvalidInstance =
-            "<root xmlns='urn:jaxp-test:searched-xsd11'><value1>30</value1><value2>20</value2></root>";
-
     @BeforeClass
     public static void prepareResources() throws XMLDBException, IOException, URISyntaxException {
 
@@ -103,7 +75,14 @@ public class JaxpXsdCatalogTest {
                 ExistXmldbEmbeddedServer.storeResource(schemasCollection, "AnotherNamespace.xsd", InputStreamUtil.readAll(is));
             }
 
-            ExistXmldbEmbeddedServer.storeResource(schemasCollection, "searched-xsd11.xsd", xsd11SearchedSchema.getBytes());
+            // No schemaLocation hint at all -- directory-search resolves purely by the root
+            // element's namespace, same as MyNameSpace.xsd/valid.xml above. xs:assert only exists
+            // in XSD 1.1, so this proves the XSD 1.1 retry/up-front pipeline is reachable through
+            // SearchResourceResolver (item 6), not just through an explicit schemaLocation hint.
+            try (final InputStream is = SAMPLES.getSample("validation/parse/schemas/searched-xsd11.xsd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, "searched-xsd11.xsd", InputStreamUtil.readAll(is));
+            }
         }
 
         try (Collection parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse")) {
@@ -125,8 +104,15 @@ public class JaxpXsdCatalogTest {
                 ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid.xml", InputStreamUtil.readAll(is));
             }
 
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-valid.xml", xsd11SearchedValidInstance.getBytes());
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-invalid.xml", xsd11SearchedInvalidInstance.getBytes());
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/searched-xsd11-valid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-valid.xml", InputStreamUtil.readAll(is));
+            }
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/searched-xsd11-invalid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-invalid.xml", InputStreamUtil.readAll(is));
+            }
         }
     }
 
