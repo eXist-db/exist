@@ -1,0 +1,11 @@
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java
+  8be28f47155c9a3c 386-388
+exist-core/src/main/java/org/exist/xquery/JavaCall.java
+  8be28f47155c9a3c 294
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "914c88a9d79bc530163952fce685dc3d029be35e",
+  "prompts": {}
+}

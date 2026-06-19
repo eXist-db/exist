@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/client/security/UserManagerDialog.java
+  592a7185ccaa0d6b 24-29,39,446-447,489
+exist-core/src/main/java/org/exist/client/tristatecheckbox/TristateCheckBox.java
+  592a7185ccaa0d6b 55-56,58-60,82-84
+exist-core/src/main/java/org/exist/client/IndexDialog.java
+  8be28f47155c9a3c 41,275-279,281,285,287-298,301
+  592a7185ccaa0d6b 418,420,422,424-425
+exist-core/src/main/java/org/exist/client/security/AccessControlEntryDialog.java
+  592a7185ccaa0d6b 302,305-306,309
+exist-core/src/main/java/org/exist/client/security/AutoCompletion.java
+  592a7185ccaa0d6b 81,84,87,90
+exist-core/src/main/java/org/exist/client/ClientFrame.java
+  592a7185ccaa0d6b 24-25,1016,1045,1082,1113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "5fa8e217e38920d08bd459a6bc92895f40340d06",
+  "prompts": {
+    "592a7185ccaa0d6b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "325a9006-8581-462e-ab8a-e2a5708cc2a7",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 37,
+      "total_deletions": 49,
+      "accepted_lines": 21,
+      "overriden_lines": 0
+    }
+  }
+}
