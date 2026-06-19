@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import com.github.mizosoft.methanol.Methanol;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -89,15 +87,17 @@ public class SendRequestFunction extends BasicFunction {
         final Sequence bodiesParam = getArgumentCount() >= 3 ? args[2] : Sequence.EMPTY_SEQUENCE;
 
         // Parse request element
-        final RequestBuilder reqBuilder = new RequestBuilder();
-        reqBuilder.parse(requestNode, hrefParam, bodiesParam);
+        final RequestBuilder requestBuilder = new RequestBuilder();
+        requestBuilder.parse(requestNode, hrefParam, bodiesParam);
+        final HttpRequest httpRequest = requestBuilder.build();
 
-        final HttpRequest httpRequest = reqBuilder.build();
+        final RequestOptions options = requestBuilder.getOptions();
 
-        try (final HttpClient client = buildClient(reqBuilder)) {
-            final HttpResponse<byte[]> response = send(client, reqBuilder, httpRequest);
+        final HttpClient client = HttpClientFactory.get(options);
+        try {
+            final HttpResponse<byte[]> response = send(client, requestBuilder, httpRequest);
             return ResponseHandler.buildResult(response, context, this,
-                    reqBuilder.isStatusOnly(), reqBuilder.getOverrideMediaType());
+                    options.statusOnly(), options.overrideMediaType());
 
         } catch (final java.net.http.HttpTimeoutException e) {
             throw new XPathException(this, HttpClientModule.HC006,
@@ -113,23 +113,6 @@ public class SendRequestFunction extends BasicFunction {
             throw new XPathException(this, HttpClientModule.HC001,
                     "Request interrupted: " + e.getMessage());
         }
-    }
-
-    /**
-     * Builds the HTTP client. Methanol augments java.net.http.HttpClient: autoAcceptEncoding
-     * advertises Accept-Encoding and transparently decodes gzip/deflate responses, and readTimeout
-     * gives a per-read (inactivity) timeout that the bare JDK client lacks.
-     */
-    private static HttpClient buildClient(final RequestBuilder reqBuilder) {
-        final Methanol.Builder clientBuilder = Methanol.newBuilder()
-                .autoAcceptEncoding(true)
-                .followRedirects(reqBuilder.isFollowRedirect()
-                        ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
-        if (reqBuilder.getTimeout() > 0) {
-            final Duration timeout = Duration.ofSeconds(reqBuilder.getTimeout());
-            clientBuilder.connectTimeout(timeout).readTimeout(timeout);
-        }
-        return clientBuilder.build();
     }
 
     /**
