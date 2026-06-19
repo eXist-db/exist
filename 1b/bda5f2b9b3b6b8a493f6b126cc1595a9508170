@@ -1,0 +1,20 @@
+exist-core/src/test/java/org/exist/resolver/CatalogResolutionRegressionTest.java
+  s_033f8a50977d21::t_d055f7a67e4c71 55-60,63,73,78-79
+  s_033f8a50977d21::t_1b32a45e7d68f4 1-54,61-62,64-72,74-77,80-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "1bbda5f2b9b3b6b8a493f6b126cc1595a9508170",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
