@@ -121,7 +121,7 @@
 
         <ant.version>1.10.17</ant.version>
         <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
-        <methanol.version>1.8.3</methanol.version>
+        <methanol.version>1.9.0</methanol.version>
         <appassembler.version>2.1.0</appassembler.version>
         <aspectj.version>1.9.25.1</aspectj.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
