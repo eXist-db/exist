@@ -42,9 +42,10 @@ import java.time.Duration;
 class HttpClientFactory {
 
     private static final Cache<RequestOptions, HttpClient> CLIENT_CACHE =
-            Caffeine.newBuilder().build();
+            Caffeine.newBuilder().recordStats().build();
 
     static {
+        HttpClientCacheMonitor.registerIfAbsent(CLIENT_CACHE);
         Runtime.getRuntime().addShutdownHook(new Thread(CLIENT_CACHE::invalidateAll,
                 "http-client-cache-shutdown"));
     }
