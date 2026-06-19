@@ -3506,16 +3506,7 @@ throws PermissionDeniedException, EXistException, XPathException
         )*
     )
     {
-        step = FunctionFactory.createFunction(context, fn, path, params);
-        if (isPartial) {
-            if (!(step instanceof FunctionCall)) {
-                if (step instanceof CastExpression) {
-                    step = ((CastExpression)step).toFunction();
-                }
-                step = FunctionFactory.wrap(context, (Function)step);
-            }
-            step = new PartialFunctionApplication(context, (FunctionCall) step);
-        }
+        step = FunctionFactory.createFunctionCall(context, fn, path, params, isPartial);
     }
     ;
 

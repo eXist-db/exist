@@ -22,7 +22,10 @@
 package org.exist.xquery;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
@@ -214,8 +217,7 @@ public abstract class Function extends PathExpr {
     public void setArguments(final List<Expression> arguments) throws XPathException {
         if ((!mySignature.isVariadic()) && arguments.size() != mySignature.getArgumentCount()) {
             throw new XPathException(this, ErrorCodes.XPST0017,
-                    "Number of arguments of function " + getName() + " doesn't match function signature (expected "
-                            + mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
+                    functionNotFoundErrorDescription(context, mySignature.getName(), mySignature.getArgumentCount()));
         }
         steps.clear();
 
@@ -622,4 +624,48 @@ public abstract class Function extends PathExpr {
             return Type.ITEM;
         }
     }
+
+    /**
+     * Raise an error with an actionable description for a function that could not be resolved
+     * Checks if a function with the same name exists at other arities
+     *
+     * @param callContext XQueryContext in which to resolve function name
+     * @param qname the function name
+     * @param argumentCount the number of arguments this function is called with
+     */
+    public static String functionNotFoundErrorDescription(final XQueryContext callContext, final QName qname, final int argumentCount) {
+        final String uri = qname.getNamespaceURI();
+
+        // Check local declared functions
+        final Iterator<FunctionSignature> localSigs = callContext.getSignaturesForFunction(qname);
+
+        // Also check external modules
+        final List<FunctionSignature> allSignatures = new ArrayList<>();
+        while (localSigs.hasNext()) {
+            allSignatures.add(localSigs.next());
+        }
+
+        final Module[] modules = callContext.getModules(uri);
+        if (modules != null) {
+            for (final Module module : modules) {
+                allSignatures.addAll(module.getFunctionsByName(qname));
+            }
+        }
+
+        if (allSignatures.isEmpty()) {
+            return "Function " + qname.getStringValue() + "() is not defined in module namespace: " + uri;
+        }
+
+        return String.format("""
+            Unexpectedly received %d parameter(s) in call to function '%s()'.
+            Defined function signatures are:
+            %s
+            in module namespace: %s""",
+                argumentCount,
+                qname.getStringValue(),
+                allSignatures.stream().map(FunctionSignature::toString).collect(Collectors.joining("\n")),
+                uri
+        );
+    }
+
 }

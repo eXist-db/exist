@@ -30,88 +30,90 @@ import java.util.Map;
 /**
  * An external library module implemented in XQuery and loaded
  * through the "import module" directive.
- * 
+ *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface ExternalModule extends Module {
 
-    public void setNamespace(String prefix, String namespace);
+    void setNamespace(String prefix, String namespace);
 
-    public void setDescription(String desc);
+    void setDescription(String desc);
 
-    public void addMetadata(String key, String value);
+    void addMetadata(String key, String value);
 
-    public Map<String, String> getMetadata();
+    Map<String, String> getMetadata();
 
     /**
      * Declare a new function. Called by the XQuery compiler
      * when parsing a library module for every function declaration.
-     * 
+     *
      * @param func the function to add
      */
-    public void declareFunction(UserDefinedFunction func) throws XPathException;
+    void declareFunction(UserDefinedFunction func) throws XPathException;
 
     /**
      * Try to find the function identified by qname. Returns null
      * if the function is undefined.
-     * 
-     * @param qname the name of the function to look for
-     * @param arity arity of the function to look for
+     *
+     * @param qname         the name of the function to look for
+     * @param arity         arity of the function to look for
      * @param callerContext context of the caller - needed to check if
      *                      found function should be visible
-     * @throws XPathException in case of a dynamic error
      * @return the function found
+     * @throws XPathException in case of a dynamic error
      */
-    public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) throws XPathException;
+    UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) throws XPathException;
 
-    public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
+    void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 
     /**
      * Analyze declared variables. Needs to be called when the module was imported dynamically.
      *
      * @throws XPathException in case of static errors
      */
-    public void analyzeGlobalVars() throws XPathException;
+    void analyzeGlobalVars() throws XPathException;
 
-    public Collection<VariableDeclaration> getVariableDeclarations();
+    Collection<VariableDeclaration> getVariableDeclarations();
 
     /**
      * Get the source object this module has been read from.
-     *
+     * <p>
      * This is required for query access control.
+     *
      * @return The source object this module has been read from.
      */
-    public Source getSource();
+    Source getSource();
 
     /**
      * Set the source object this module has been read from.
-     * 
+     * <p>
      * This is required to check the validity of a compiled expression.
+     *
      * @param source the source instance
      */
-    public void setSource(Source source);
+    void setSource(Source source);
 
-    public XQueryContext getContext();
+    XQueryContext getContext();
 
     /**
      * Set the XQueryContext of this module. This will be a sub-context
-     * of the main context as parts of the static context are shared. 
-     * 
+     * of the main context as parts of the static context are shared.
+     *
      * @param context the context to set
      */
-    public void setContext(XQueryContext context);
+    void setContext(XQueryContext context);
 
     /**
      * Is this module still valid or should it be reloaded from its source?
      *
      * @return true if module should be reloaded
      */
-    public boolean moduleIsValid();
+    boolean moduleIsValid();
 
     /**
      * Returns the root expression associated with this context.
      *
-     * @return  root expression
+     * @return root expression
      */
-    public Expression getRootExpression();
+    Expression getRootExpression();
 }
