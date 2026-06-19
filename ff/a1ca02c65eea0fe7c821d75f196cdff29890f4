@@ -1,0 +1,20 @@
+exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java
+  s_033f8a50977d21::t_6d25f8ebba14c4 195,209-226
+  s_033f8a50977d21::t_fa72eaad4fe79a 104,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "ffa1ca02c65eea0fe7c821d75f196cdff29890f4",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
