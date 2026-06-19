@@ -21,10 +21,7 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,8 +29,12 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.*;
 
 /**
@@ -122,18 +123,22 @@ public class URLRewriteViewPipelineTest {
         // Set execute permissions on XQuery files
         final String chmod = "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/controller.xq'), 'rwxr-xr-x')," +
                 "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/view.xq'), 'rwxr-xr-x')";
-        Request.Get("http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                java.net.URLEncoder.encode(chmod, "UTF-8") + "&_wrap=no")
-                .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
-                .execute();
+        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
+                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
+        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
+                .GET()
+                .build();
+        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
     }
 
     @AfterClass
     public static void teardown() throws Exception {
         // Remove test collection via REST
-        Request.Delete("http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION)
-                .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
-                .execute();
+        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
+        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
+                .DELETE()
+                .build();
+        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
     }
 
     /**
@@ -146,14 +151,15 @@ public class URLRewriteViewPipelineTest {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/with-head.html";
 
-        final HttpResponse response = Request.Get(url).execute().returnResponse();
-        final int status = response.getStatusLine().getStatusCode();
-        final String body = new String(
-                response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+        final int status = result.statusCode();
+        final String body = result.body();
 
         // Should return 200, not 400 (namespace error) or 500 (XPTY0019)
         assertEquals("Expected 200 OK but got " + status + ": " + body.substring(0, Math.min(200, body.length())),
-                HttpStatus.SC_OK, status);
+                HTTP_OK, status);
 
         // The response should contain the original title from the source HTML
         assertTrue("Response should contain the source page's title",
@@ -180,22 +186,24 @@ public class URLRewriteViewPipelineTest {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/no-head.html";
 
-        final HttpResponse response = Request.Get(url).execute().returnResponse();
-        final int status = response.getStatusLine().getStatusCode();
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+        final int status = result.statusCode();
 
-        assertEquals(HttpStatus.SC_OK, status);
+        assertEquals(HTTP_OK, status);
 
-        final String body = new String(
-                response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+        final String body = result.body();
         assertTrue("Response should contain body content",
                 body.contains("Hello World"));
     }
 
     private static void storeViaRest(final String url, final String content, final String contentType)
             throws IOException {
-        Request.Put(url)
-                .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
-                .bodyString(content, ContentType.create(contentType, StandardCharsets.UTF_8))
-                .execute();
+        final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(url), "admin", "")
+                .header("Content-Type", contentType + "; charset=UTF-8")
+                .PUT(HttpRequest.BodyPublishers.ofString(content, StandardCharsets.UTF_8))
+                .build();
+        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), request);
     }
 }

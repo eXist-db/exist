@@ -23,18 +23,12 @@ package org.exist.xquery.modules.file;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.exist.http.AbstractHttpTest;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -42,13 +36,17 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_OK;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.junit.Assert.assertArrayEquals;
@@ -61,13 +59,12 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private static Executor executor = null;
-
-    @BeforeClass
-    public static void setupExecutor() {
-         executor = Executor.newInstance()
-                .auth(new HttpHost("localhost", existWebServer.getPort()), ADMIN_DB_USER, ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+    /**
+     * Start building a request to the given URL with a preemptive HTTP Basic {@code Authorization}
+     * header for the admin user already set.
+     */
+    private static HttpRequest.Builder authenticatedRequest(final String url) {
+        return AbstractHttpTest.authenticatedRequest(URI.create(url), ADMIN_DB_USER, ADMIN_DB_PWD);
     }
 
     /**
@@ -85,14 +82,9 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
                 "let $bin := file:read-binary('" + tmpInFile.toAbsolutePath() + "')\n" +
                 "return response:stream($bin, 'media-type=application/octet-stream')";
 
-        final HttpResponse response = postXquery(query);
+        final byte[] body = postXquery(query);
 
-        final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
-            entity.writeTo(baos);
-
-            assertArrayEquals(Files.readAllBytes(tmpInFile), Base64.decodeBase64(baos.toByteArray()));
-        }
+        assertArrayEquals(Files.readAllBytes(tmpInFile), Base64.decodeBase64(body));
     }
 
     /**
@@ -110,48 +102,49 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
                 "let $bin := file:read-binary('" + tmpInFile.toAbsolutePath() + "')\n" +
                 "return response:stream-binary($bin, 'media-type=application/octet-stream', ())";
 
-        final HttpResponse response = postXquery(query);
+        final byte[] body = postXquery(query);
 
-        final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
-            entity.writeTo(baos);
-
-            assertArrayEquals(Files.readAllBytes(tmpInFile), baos.toByteArray());
-        }
+        assertArrayEquals(Files.readAllBytes(tmpInFile), body);
     }
 
 
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception {
-        final HttpResponse response = executor.execute(Request.Put(getRestUrl() + filePath.toString())
-                .setHeader("Content-Type", "application/octet-stream")
-                .bodyByteArray(content)
-        ).returnResponse();
+        final HttpRequest request = authenticatedRequest(getRestUrl() + filePath.toString())
+                .header("Content-Type", "application/octet-stream")
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(content))
+                .build();
 
-        if(response.getStatusLine().getStatusCode() != SC_CREATED) {
+        final int status = AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), request);
+        if (status != HTTP_CREATED) {
             throw new Exception("Unable to store binary file: " + filePath);
         }
     }
 
+    /**
+     * Standalone test webapp is mounted at {@code /} (see {@code exist.jetty.standalone.webapp.dir}),
+     * not at {@code /exist} like {@link AbstractHttpTest#getServerUri(ExistWebServer)} in exist-core tests.
+     */
     private String getRestUrl() {
         return "http://localhost:" + existWebServer.getPort() + "/rest";
     }
 
     @Override
     protected void removeCollection(final XmldbURI collectionUri) throws Exception {
-        final HttpResponse response = executor.execute(Request.Delete(getRestUrl() + collectionUri.toString()))
-                .returnResponse();
+        final HttpRequest request = authenticatedRequest(getRestUrl() + collectionUri.toString())
+                .DELETE()
+                .build();
 
-        if(response.getStatusLine().getStatusCode() != SC_OK) {
+        final int status = AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), request);
+        if (status != HTTP_OK) {
             throw new Exception("Unable to delete collection: " + collectionUri);
         }
     }
 
     @Override
     protected QueryResultAccessor<Result, Exception> executeXQuery(final String xquery) throws Exception {
-        final HttpResponse response = postXquery(xquery);
-        final HttpEntity entity = response.getEntity();
-        try(final InputStream is = entity.getContent()) {
+        final byte[] body = postXquery(xquery);
+        try (final InputStream is = new ByteArrayInputStream(body)) {
             final JAXBContext jaxbContext = JAXBContext.newInstance("org.exist.http.jaxb");
             final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             final Result result = (Result)unmarshaller.unmarshal(is);
@@ -160,26 +153,37 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         }
     }
 
-    private HttpResponse postXquery(final String xquery) throws JAXBException, IOException {
+    private byte[] postXquery(final String xquery) throws JAXBException, IOException {
         final Query query = new Query();
         query.setText(xquery);
 
         final JAXBContext jaxbContext = JAXBContext.newInstance("org.exist.http.jaxb");
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
-        final HttpResponse response;
-        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+        final byte[] requestBody;
+        try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             marshaller.marshal(query, baos);
-            response = executor.execute(Request.Post(getRestUrl() + "/db/")
-                    .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)
-            ).returnResponse();
+            requestBody = baos.toByteArray();
         }
 
-        if(response.getStatusLine().getStatusCode() != SC_OK) {
-            throw new IOException("Unable to query, HTTP response code: " + response.getStatusLine().getStatusCode());
+        final HttpRequest request = authenticatedRequest(getRestUrl() + "/db/")
+                .header("Content-Type", "application/xml")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(requestBody))
+                .build();
+
+        final HttpResponse<byte[]> response;
+        try {
+            response = AbstractHttpTest.newHttpClient().send(request, HttpResponse.BodyHandlers.ofByteArray());
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting HTTP response", e);
         }
 
-        return response;
+        if (response.statusCode() != HTTP_OK) {
+            throw new IOException("Unable to query, HTTP response code: " + response.statusCode());
+        }
+
+        return response.body();
     }
 
     @Override

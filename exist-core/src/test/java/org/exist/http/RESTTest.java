@@ -25,7 +25,7 @@ import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 
-public abstract class RESTTest {
+public abstract class RESTTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);

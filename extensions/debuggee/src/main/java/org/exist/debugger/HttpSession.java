@@ -21,8 +21,11 @@
  */
 package org.exist.debugger;
 
-import org.apache.http.client.fluent.Form;
-import org.apache.http.client.fluent.Request;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -45,12 +48,14 @@ public class HttpSession implements Runnable {
 		try {
 			System.out.println("sending http request with debugging flag");
 
-			final int code = Request.Post(url)
-					.bodyForm(Form.form().add("XDEBUG_SESSION", "default").build())
-					.execute()
-					.returnResponse()
-					.getStatusLine()
-					.getStatusCode();
+			final HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+					.header("Content-Type", "application/x-www-form-urlencoded")
+					.POST(HttpRequest.BodyPublishers.ofString("XDEBUG_SESSION=default", StandardCharsets.UTF_8))
+					.build();
+			final int code;
+			try (final HttpClient client = HttpClient.newHttpClient()) {
+				code = client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+			}
 
 			debugger.terminate(url, code);
 

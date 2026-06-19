@@ -22,21 +22,20 @@
 package org.exist.xquery.functions.request;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import com.github.mizosoft.methanol.MediaType;
+import com.github.mizosoft.methanol.MoreBodyPublishers;
+import com.github.mizosoft.methanol.MultipartBodyPublisher;
 import org.exist.http.RESTTest;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
@@ -51,7 +50,7 @@ import javax.annotation.Nullable;
 
 /**
  * Tests expected behaviour of request:get-parameter() XQuery function
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
@@ -65,7 +64,7 @@ public class GetParameterTest extends RESTTest {
 
     private static Collection root;
 
-    
+
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
@@ -316,26 +315,32 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request get = Request.Get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf));
+        final HttpRequest get = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf)))
+                .GET()
+                .build();
 
         testRequest(get, buf.toString().replaceAll("&", ""));
     }
 
     private void testPost(@Nullable final NameValues[] formParams) throws IOException {
         final StringBuilder buf = new StringBuilder();
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        final HttpRequest.Builder postBuilder = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME));
 
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.noBody();
         if (formParams != null) {
-            final List<NameValuePair> bodyPairs = new ArrayList<>();
+            final List<String> bodyPairs = new ArrayList<>();
             for (final NameValues formParam : formParams) {
                 for (final String value : formParam.getData()) {
-                    bodyPairs.add(new BasicNameValuePair(formParam.getName(), value));
+                    bodyPairs.add(urlEncode(formParam.getName()) + "=" + urlEncode(value));
                     buf.append(formParam.getName()).append('=').append(value);
                 }
             }
 
-            post = post.bodyForm(bodyPairs);
+            bodyPublisher = HttpRequest.BodyPublishers.ofString(String.join("&", bodyPairs));
+            postBuilder.header("Content-Type", "application/x-www-form-urlencoded");
         }
+
+        final HttpRequest post = postBuilder.POST(bodyPublisher).build();
 
         testRequest(post, buf.toString());
     }
@@ -353,40 +358,49 @@ public class GetParameterTest extends RESTTest {
             first = false;
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf));
+        final HttpRequest.Builder postBuilder = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf)));
 
-        final List<NameValuePair> bodyPairs = new ArrayList<>();
+        final List<String> bodyPairs = new ArrayList<>();
         for (final NameValues formParam : formParams) {
             for (final String value : formParam.getData()) {
-                bodyPairs.add(new BasicNameValuePair(formParam.getName(), value));
+                bodyPairs.add(urlEncode(formParam.getName()) + "=" + urlEncode(value));
                 formBuf.append(formParam.getName()).append('=').append(value);
             }
         }
 
-        post = post.bodyForm(bodyPairs);
+        final HttpRequest post = postBuilder
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(String.join("&", bodyPairs)))
+                .build();
 
         testRequest(post, queryStringBuf.toString().replaceAll("&", "") + formBuf);
     }
 
     private void testMultipartPost(final Param[] multipartParams) throws IOException {
-        MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
+        final MultipartBodyPublisher.Builder multipart = MultipartBodyPublisher.newBuilder();
 
         StringBuilder buf = new StringBuilder();
 
         for (final Param multipartParam : multipartParams) {
             if(multipartParam instanceof NameValues nameValues) {
                 for(final String value : nameValues.getData()) {
-                    multipart = multipart.addTextBody(nameValues.getName(), value);
+                    multipart.textPart(nameValues.getName(), value);
                     buf.append(nameValues.getName()).append('=').append(value);
                 }
             } else if(multipartParam instanceof TextFileUpload textFileUpload) {
-                multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
+                multipart.formPart("fileUpload", textFileUpload.getName(),
+                        MoreBodyPublishers.ofMediaType(
+                                HttpRequest.BodyPublishers.ofByteArray(textFileUpload.getData().getBytes(UTF_8)),
+                                MediaType.TEXT_PLAIN));
                 buf.append("fileUpload=" + textFileUpload.getData());
             }
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
-            .body(multipart.build());
+        final MultipartBodyPublisher multipartBody = multipart.build();
+        final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
+                .header("Content-Type", multipartBody.mediaType().toString())
+                .POST(multipartBody)
+                .build();
 
         testRequest(post, buf.toString());
     }
@@ -403,36 +417,42 @@ public class GetParameterTest extends RESTTest {
             first = false;
         }
 
-        MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
+        final MultipartBodyPublisher.Builder multipart = MultipartBodyPublisher.newBuilder();
 
         final StringBuilder bodyBuf = new StringBuilder();
 
         for (final Param multipartParam : multipartParams) {
             if(multipartParam instanceof NameValues nameValues) {
                 for(final String value : nameValues.getData()) {
-                    multipart = multipart.addTextBody(nameValues.getName(), value);
+                    multipart.textPart(nameValues.getName(), value);
                     bodyBuf.append(nameValues.getName()).append('=').append(value);
                 }
             } else if(multipartParam instanceof TextFileUpload textFileUpload) {
-                multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
+                multipart.formPart("fileUpload", textFileUpload.getName(),
+                        MoreBodyPublishers.ofMediaType(
+                                HttpRequest.BodyPublishers.ofByteArray(textFileUpload.getData().getBytes(UTF_8)),
+                                MediaType.TEXT_PLAIN));
                 bodyBuf.append("fileUpload=" + textFileUpload.getData());
             }
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf))
-                .body(multipart.build());
+        final MultipartBodyPublisher multipartBody = multipart.build();
+        final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf)))
+                .header("Content-Type", multipartBody.mediaType().toString())
+                .POST(multipartBody)
+                .build();
 
         testRequest(post, queryStringBuf.toString().replaceAll("&", "") + bodyBuf);
     }
 
-    private void testRequest(final Request request, final String expected) throws IOException {
-        final HttpResponse response = request.execute().returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            response.getEntity().writeTo(os);
-            assertEquals(expected, new String(os.toByteArray(), UTF_8));
+    private void testRequest(final HttpRequest request, final String expected) throws IOException {
+        try (final HttpClient client = newHttpClient()) {
+            assertRequestResponse(client, request, HttpURLConnection.HTTP_OK, expected);
         }
+    }
+
+    private static String urlEncode(final String value) {
+        return URLEncoder.encode(value, UTF_8);
     }
 
     public class NameValues implements Param<String[]> {

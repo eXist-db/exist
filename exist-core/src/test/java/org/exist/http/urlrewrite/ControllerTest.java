@@ -23,20 +23,18 @@
 package org.exist.http.urlrewrite;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.exist.TestUtils;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpRequest;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.urlrewrite.XQueryURLRewrite.LEGACY_XQUERY_CONTROLLER_FILENAME;
 import static org.exist.http.urlrewrite.XQueryURLRewrite.XQUERY_CONTROLLER_FILENAME;
 import static org.junit.Assert.assertEquals;
@@ -62,7 +60,7 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the legacy controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpStatus.SC_OK, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(LEGACY_CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
@@ -75,7 +73,7 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpStatus.SC_OK, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
@@ -89,30 +87,30 @@ public class ControllerTest extends AbstractHttpTest {
 
         // make a request and see if the (non-legacy) controller responds
         final Tuple2<Integer, String> responseCodeAndBody = get(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpStatus.SC_OK, (int)responseCodeAndBody._1);
+        assertEquals(HttpURLConnection.HTTP_OK, (int)responseCodeAndBody._1);
         assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
     }
 
     private void store(final String testCollectionName, final String documentMediaType, final String documentName, final String documentContent) throws IOException {
-        final Request request = Request
-                .Put(getRestUri(existWebServer) + "/db/apps/" + testCollectionName + "/" + documentName)
-                .bodyString(documentContent, ContentType.create(documentMediaType));
-        int statusCode = withHttpExecutor(existWebServer, executor ->
-                executor.execute(request).returnResponse().getStatusLine().getStatusCode()
-        );
-        assertEquals(HttpStatus.SC_CREATED, statusCode);
+        final HttpRequest request = authenticatedRequest(
+                URI.create(getRestUri(existWebServer) + "/db/apps/" + testCollectionName + "/" + documentName),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .header("Content-Type", documentMediaType)
+                .PUT(HttpRequest.BodyPublishers.ofString(documentContent))
+                .build();
+        int statusCode = withHttpClient(client -> executeForStatus(client, request));
+        assertEquals(HttpURLConnection.HTTP_CREATED, statusCode);
     }
 
     private Tuple2<Integer, String> get(final String testCollectionName, final String documentName) throws IOException {
-        final Request request = Request
-                .Get(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName);
-        final Tuple2<Integer, String> responseCodeAndBody = withHttpExecutor(existWebServer, executor -> {
-            final HttpResponse response = executor.execute(request).returnResponse();
-            final int sc = response.getStatusLine().getStatusCode();
-            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-                response.getEntity().writeTo(baos);
-                return Tuple(sc, baos.toString(UTF_8));
-            }
+        final HttpRequest request = authenticatedRequest(
+                URI.create(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .GET()
+                .build();
+        final Tuple2<Integer, String> responseCodeAndBody = withHttpClient(client -> {
+            final HttpResponseResult r = executeForStatusAndBody(client, request);
+            return Tuple(r.statusCode(), r.body());
         });
         return responseCodeAndBody;
     }

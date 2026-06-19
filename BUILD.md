@@ -66,6 +66,17 @@ Add all three to `~/.m2/settings.xml`. **The same GitHub PAT (with the `read:pac
 
 CI generates the same shape from secrets via `.github/actions/maven-github-settings/action.yml`.
 
+If a previous resolve failed with 401, Maven may cache the failure as `*.lastUpdated` under `~/.m2/repository/`. After fixing `settings.xml`, delete that artifact directory or add `-U` on the next build.
+
+Example: verify Jackrabbit resolves after configuring auth:
+
+```bash
+rm -rf ~/.m2/repository/org/exist-db/thirdparty/org/apache/jackrabbit/jackrabbit-webdav/2.22.3-jakarta-ee10
+mvn dependency:get \
+  -Dartifact=org.exist-db.thirdparty.org.apache.jackrabbit:jackrabbit-webdav:2.22.3-jakarta-ee10 \
+  -U -Ddependency-check.skip=true
+```
+
 Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist") and on the workflow files of this repo.
 
 ### Running tests locally
@@ -75,6 +86,7 @@ From the repo root:
 - **All tests:** `mvn -V -B verify -Ddependency-check.skip -Dlicense.skip`
 - **exist-core only:** add `--projects exist-core --also-make` to the above
 - **Single test class:** `mvn -Dtest=fully.qualified.TestClass test --projects exist-core --also-make`
+- **WebDAV round-trip tests:** `mvn test -pl extensions/webdav --also-make -Dtest=org.exist.webdav.WebDavRoundTripTest -Dsurefire.failIfNoSpecifiedTests=false` (requires `github-jackrabbit-webdav-jakarta` auth; litmus compliance runs in Docker CI)
 
 **NOTE:** 
 In the above example, we switched the current (checked-out) branch from `develop` to `master`. We use the [GitFlow for eXist-db](#contributing-to-exist) process:

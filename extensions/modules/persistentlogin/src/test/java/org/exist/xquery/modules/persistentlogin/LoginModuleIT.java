@@ -21,16 +21,6 @@
  */
 package org.exist.xquery.modules.persistentlogin;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistResource;
@@ -47,8 +37,14 @@ import org.xmldb.api.modules.BinaryResource;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.CookieManager;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
-import static org.apache.http.HttpStatus.SC_OK;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -68,9 +64,7 @@ public class LoginModuleIT {
     private final static String XQUERY_FILENAME = "test-login.xql";
 
     private static Collection root;
-    private static CloseableHttpClient client;
-    private static BasicCookieStore cookieStore;
-    private static HttpClientContext httpContext;
+    private static HttpClient client;
 
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
@@ -105,23 +99,15 @@ public class LoginModuleIT {
         final UserManagementService ums = root.getService(UserManagementService.class);
         ums.chmod(res, 0777);
 
-        cookieStore = new BasicCookieStore();
-        httpContext = HttpClientContext.create();
-        httpContext.setCookieStore(cookieStore);
-        // Jetty 12 emits RFC 6265 Set-Cookie (RFC1123 Expires). HttpClient 4.x DEFAULT (NetscapeDraftSpec)
-        // rejects that format; STANDARD is required for automatic cookie storage. See jetty/jetty.project#12771.
-        client = HttpClientBuilder.create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.STANDARD)
-                        .build())
+        // an in-memory cookie store keeps the login session across requests
+        client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .cookieHandler(new CookieManager())
                 .build();
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
-        if (client != null) {
-            client.close();
-        }
         if (root != null) {
             final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
             if (res != null) {
@@ -146,12 +132,18 @@ public class LoginModuleIT {
     }
 
     private void doGet(@Nullable String params, String expected) throws IOException {
-        final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
-                (params == null ? "" : "?" + params));
-        HttpResponse response = client.execute(httpGet, httpContext);
-        HttpEntity entity = response.getEntity();
-        final String responseBody = EntityUtils.toString(entity);
-        assertEquals(responseBody, SC_OK, response.getStatusLine().getStatusCode());
+        final String url = "http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
+                (params == null ? "" : "?" + params);
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
+        final HttpResponse<String> response;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting HTTP response", e);
+        }
+        final String responseBody = response.body();
+        assertEquals(responseBody, HTTP_OK, response.statusCode());
         assertEquals(expected, responseBody);
     }
 

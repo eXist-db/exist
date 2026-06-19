@@ -105,12 +105,6 @@ updates:
       update-types:
       - patch
       - minor
-    milton-webdav:
-      patterns:
-      - "org.exist-db.thirdparty.com.ettrema:*"
-      update-types:
-      - patch
-      - minor
     maven-plugins-apache:
       patterns:
       - "org.apache.maven.plugins:*"

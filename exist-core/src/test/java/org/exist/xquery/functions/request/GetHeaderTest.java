@@ -21,18 +21,18 @@
  */
 package org.exist.xquery.functions.request;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
+import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.http.RESTTest;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -65,23 +65,20 @@ public class GetHeaderTest extends RESTTest {
 	}
 
 	private void testGetHeader(String headerValue) throws IOException, SAXException {
-		Request request = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no");
+		final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no")).GET();
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
 		if (headerValue != null) {
-			request = request.addHeader(HTTP_HEADER_NAME, headerValue);
+			requestBuilder.header(HTTP_HEADER_NAME, headerValue);
 			xmlExpectedResponse.append(headerValue);
 		}
 		xmlExpectedResponse.append("</request-header>");
 
-		final HttpResponse response = request.execute().returnResponse();
+		final HttpClient client = newHttpClient();
+		final HttpResponseResult response = executeForStatusAndBody(client, requestBuilder.build());
 
-		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+		assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
 
-		try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-			response.getEntity().writeTo(os);
-			assertXMLEqual(xmlExpectedResponse
-					.toString(), new String(os.toByteArray(), UTF_8));
-		}
+		assertXMLEqual(xmlExpectedResponse.toString(), response.body());
 	}
 }

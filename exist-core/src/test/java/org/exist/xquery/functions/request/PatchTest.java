@@ -21,14 +21,11 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.hamcrest.Matcher;
@@ -36,6 +33,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -92,8 +91,10 @@ public class PatchTest extends RESTTest {
     public void patchBinary() throws IOException {
         final byte[] testData = "12345".getBytes(UTF_8);
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
-                .bodyByteArray(testData, ContentType.APPLICATION_OCTET_STREAM);
+        final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
+                .method("PATCH", HttpRequest.BodyPublishers.ofByteArray(testData))
+                .header("Content-Type", "application/octet-stream")
+                .build();
 
         assertResponse(patch, encodeBase64String(testData));
     }
@@ -102,8 +103,10 @@ public class PatchTest extends RESTTest {
     public void patchXml() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
-                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
+        final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
+                .method("PATCH", HttpRequest.BodyPublishers.ofByteArray(testData.getBytes(UTF_8)))
+                .header("Content-Type", "text/xml")
+                .build();
 
         assertResponse(patch, testData);
     }
@@ -112,8 +115,9 @@ public class PatchTest extends RESTTest {
     public void patchString() throws IOException {
         final String testData = "12345";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
-                .bodyByteArray(testData.getBytes(UTF_8));
+        final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
+                .method("PATCH", HttpRequest.BodyPublishers.ofByteArray(testData.getBytes(UTF_8)))
+                .build();
 
         assertResponse(patch, testData);
     }
@@ -122,8 +126,10 @@ public class PatchTest extends RESTTest {
     public void patchCollectionNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri())
-                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
+        final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri()))
+                .method("PATCH", HttpRequest.BodyPublishers.ofByteArray(testData.getBytes(UTF_8)))
+                .header("Content-Type", "text/xml")
+                .build();
 
         assertMethodNotAllowed(patch);
     }
@@ -132,33 +138,26 @@ public class PatchTest extends RESTTest {
     public void patchXmlResourceNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XML_FILENAME)
-                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
+        final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XML_FILENAME))
+                .method("PATCH", HttpRequest.BodyPublishers.ofByteArray(testData.getBytes(UTF_8)))
+                .header("Content-Type", "text/xml")
+                .build();
 
         assertMethodNotAllowed(patch);
     }
 
-    private void assertResponse(final Request method, String expectedData) throws IOException {
-        final HttpResponse response = method.execute().returnResponse();
+    private void assertResponse(final HttpRequest method, String expectedData) throws IOException {
         final Matcher<String> valueMatcher = hasSimilarXml(
                 "<request><method>PATCH</method><data>" + expectedData + "</data></request>");
 
-        assertHTTPStatusCode(HttpStatus.SC_OK, response);
-
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            response.getEntity().writeTo(os);
-
-            final String actualResponse = new String(os.toByteArray());
-            assertThat(actualResponse, valueMatcher);
-        }
+        final HttpClient client = newHttpClient();
+        final HttpResponseResult result = executeForStatusAndBody(client, method);
+        assertEquals(HTTP_OK, result.statusCode());
+        assertThat(result.body(), valueMatcher);
     }
 
-    private void assertHTTPStatusCode (final int code, final HttpResponse response) {
-        assertEquals(code, response.getStatusLine().getStatusCode());
-    }
-
-    private void assertMethodNotAllowed (final Request req) throws IOException {
-        final HttpResponse response = req.execute().returnResponse();
-        assertHTTPStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED, response);
+    private void assertMethodNotAllowed(final HttpRequest req) throws IOException {
+        final HttpClient client = newHttpClient();
+        assertEquals(HTTP_BAD_METHOD, executeForStatus(client, req));
     }
 }
