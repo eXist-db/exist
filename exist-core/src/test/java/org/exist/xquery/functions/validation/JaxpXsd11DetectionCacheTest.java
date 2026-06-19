@@ -24,7 +24,6 @@ package org.exist.xquery.functions.validation;
 import org.junit.After;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,9 +33,11 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests that {@code Jaxp.isXsd11Schema}'s result cache (a) actually caches -- a second call for
- * the same resolved schema URI doesn't re-read the (changed) underlying content -- and (b) is
- * fully cleared by {@code Jaxp.clearXsd11DetectionCache()}, the hook {@code
- * validation:clear-grammar-cache()} calls (see {@link GrammarTooling}).
+ * the same Subject and resolved schema URI doesn't re-read the (changed) underlying content --
+ * (b) is fully cleared by {@code Jaxp.clearXsd11DetectionCache()}, the hook {@code
+ * validation:clear-grammar-cache()} calls (see {@link GrammarTooling}), and (c) is scoped per
+ * Subject, so a different Subject querying the same resolved URI doesn't observe a cached answer
+ * populated by someone else's fetch.
  */
 public class JaxpXsd11DetectionCacheTest {
 
@@ -64,20 +65,20 @@ public class JaxpXsd11DetectionCacheTest {
             final String baseUri = instance.toUri().toString();
 
             // First call: reads the real (XSD 1.1) content from disk.
-            assertTrue(invokeIsXsd11Schema(baseUri, "schema.xsd"));
+            assertTrue(Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
 
             // Flip the on-disk content to XSD 1.0 without going through the cache -- if the second
             // call is actually served from cache, it must still report the stale (cached) "true",
             // not re-read this new content.
             Files.writeString(schema, XSD_1_0_SCHEMA, StandardCharsets.UTF_8);
             assertTrue("second call should be served from cache, not re-read the changed file",
-                    invokeIsXsd11Schema(baseUri, "schema.xsd"));
+                    Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
 
             // Clearing the cache (what validation:clear-grammar-cache() does) must make the next
             // call re-read the file and observe the now-current (XSD 1.0) content.
             Jaxp.clearXsd11DetectionCache();
             assertFalse("after clearing the cache, the now-current XSD 1.0 content must be observed",
-                    invokeIsXsd11Schema(baseUri, "schema.xsd"));
+                    Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
         } finally {
             Files.deleteIfExists(tempDir.resolve("instance.xml"));
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));
@@ -85,9 +86,30 @@ public class JaxpXsd11DetectionCacheTest {
         }
     }
 
-    private static boolean invokeIsXsd11Schema(final String baseUri, final String location) throws Exception {
-        final Method method = Jaxp.class.getDeclaredMethod("isXsd11Schema", String.class, String.class);
-        method.setAccessible(true);
-        return (boolean) method.invoke(null, baseUri, location);
+    @Test
+    public void cacheIsScopedPerSubject() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaxp-xsd11-cache-subject-test");
+        try {
+            final Path instance = tempDir.resolve("instance.xml");
+            Files.writeString(instance, "<root/>", StandardCharsets.UTF_8);
+            final Path schema = tempDir.resolve("schema.xsd");
+            Files.writeString(schema, XSD_1_1_SCHEMA, StandardCharsets.UTF_8);
+
+            final String baseUri = instance.toUri().toString();
+
+            // subject-a's call populates the cache for this resolved URI.
+            assertTrue(Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
+
+            // Delete the underlying file so any call that actually has to read it (i.e. a cache
+            // miss) fails/returns false -- if subject-b's call were wrongly served from
+            // subject-a's cache entry, it would still report "true" despite never reading anything.
+            Files.delete(schema);
+            assertFalse("a different Subject must not observe a cache entry populated by another Subject's fetch",
+                    Jaxp.isXsd11Schema("subject-b", baseUri, "schema.xsd"));
+        } finally {
+            Files.deleteIfExists(tempDir.resolve("instance.xml"));
+            Files.deleteIfExists(tempDir.resolve("schema.xsd"));
+            Files.deleteIfExists(tempDir);
+        }
     }
 }

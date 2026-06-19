@@ -29,11 +29,13 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
@@ -108,6 +110,33 @@ public class Jaxp extends BasicFunction {
     private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
     private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
     private static final String XSD_VERSIONING_NS = "http://www.w3.org/2007/XMLSchema-versioning";
+
+    /**
+     * Bound on the size of {@link #XSD11_DETECTION_CACHE} (see there for what it caches).
+     */
+    private static final int XSD11_DETECTION_CACHE_MAX_ENTRIES = 256;
+
+    /**
+     * Cache key for {@link #XSD11_DETECTION_CACHE}: the requesting Subject's name plus the
+     * resolved schema URI. Including the Subject prevents a Subject without read permission on
+     * the schema resource from observing a boolean populated by a different (permitted)
+     * Subject's earlier, permission-checked fetch -- a cache hit skips {@link
+     * #isXsd11Schema(String, String, String)}'s {@code openStream()} entirely, so without this
+     * the cache itself would bypass whatever permission check that open would otherwise perform.
+     */
+    private record Xsd11DetectionCacheKey(String subjectName, String resolvedSchemaUri) {
+    }
+
+    /**
+     * Bounded (see {@link #XSD11_DETECTION_CACHE_MAX_ENTRIES}), LRU-evicted cache of
+     * "does the schema at this resolved URI declare vc:minVersion 1.1?", so that validating many
+     * documents against the same schema doesn't re-fetch and re-peek it every time. Cleared by
+     * {@code validation:clear-grammar-cache()} (see {@link GrammarTooling}) alongside the Xerces
+     * grammar pool, so operators have one function to clear every validation-related cache.
+     */
+    private static final Cache<Xsd11DetectionCacheKey, Boolean> XSD11_DETECTION_CACHE = Caffeine.newBuilder()
+            .maximumSize(XSD11_DETECTION_CACHE_MAX_ENTRIES)
+            .build();
 
     private static final String simpleFunctionTxt = """
             Validate document by parsing $instance. Optionally \
@@ -443,12 +472,12 @@ public class Jaxp extends BasicFunction {
 
     /**
      * Acquires a fresh, disposable {@link InputSource} for the instance and runs
-     * {@link #detectXsd11ViaSchemaLocation(InputSource)} against it.
+     * {@link #detectXsd11ViaSchemaLocation(String, InputSource)} against it.
      */
     private boolean peekIsXsd11ViaSchemaLocation(final Sequence[] args) throws XPathException, IOException {
         final InputSource peekInstance = Shared.getInputSource(args[0].itemAt(0), context);
         try {
-            return detectXsd11ViaSchemaLocation(peekInstance);
+            return detectXsd11ViaSchemaLocation(context.getSubject().getName(), peekInstance);
         } finally {
             Shared.closeInputSource(peekInstance);
         }
@@ -538,9 +567,11 @@ public class Jaxp extends BasicFunction {
      * retry-after-failure check in {@code eval()} remains the safety net for those cases
      * (catalog-mediated locations, an unresolvable hint, etc.).
      *
+     * @param subjectName the requesting Subject's name, used to scope {@link #XSD11_DETECTION_CACHE}
+     *                     (see there for why).
      * @param peekInstance a fresh, not-yet-consumed InputSource for the same instance document.
      */
-    private static boolean detectXsd11ViaSchemaLocation(final InputSource peekInstance) {
+    private static boolean detectXsd11ViaSchemaLocation(final String subjectName, final InputSource peekInstance) {
         final Map<String, String> rootAttrs = peekRootAttributes(peekInstance);
         final String baseUri = peekInstance.getSystemId();
         if (rootAttrs == null || baseUri == null) {
@@ -562,7 +593,7 @@ public class Jaxp extends BasicFunction {
         }
 
         for (final String location : candidateLocations) {
-            if (isXsd11Schema(baseUri, location)) {
+            if (isXsd11Schema(subjectName, baseUri, location)) {
                 return true;
             }
         }
@@ -575,6 +606,8 @@ public class Jaxp extends BasicFunction {
      * and checks whether its root element declares {@code vc:minVersion} containing "1.1".
      * Returns {@code false} for any resolution/read failure -- this is a best-effort peek, not
      * a substitute for the real catalog-aware resolution the actual validation pass performs.
+     * Package-private (not {@code private}) so {@code JaxpSchemaLocationSecurityTest}/
+     * {@code JaxpXsd11DetectionCacheTest}, both in this package, can call it directly.
      *
      * <p>{@code location} is the literal, attacker/document-author-controlled value of the
      * instance's own {@code xsi:schemaLocation}/{@code noNamespaceSchemaLocation} hint -- if it's
@@ -600,8 +633,13 @@ public class Jaxp extends BasicFunction {
      * way to get a {@code file:} base URI here), which already requires the caller to have used
      * {@code util:} Java-interop functions to construct that object in the first place -- a
      * separate, pre-existing privilege boundary this peek doesn't change either way.</p>
+     *
+     * <p>{@code subjectName} scopes {@link #XSD11_DETECTION_CACHE}: a cache hit skips this
+     * method's permission-checked {@code openStream()} entirely, so without scoping by Subject,
+     * a Subject without read permission on the schema resource could observe a boolean populated
+     * by a different (permitted) Subject's earlier fetch -- a cross-Subject information leak.</p>
      */
-    private static boolean isXsd11Schema(final String baseUri, final String location) {
+    static boolean isXsd11Schema(final String subjectName, final String baseUri, final String location) {
         try {
             final URI baseUriNormalized = new URI(ResolverFactory.fixupExistCatalogUri(baseUri));
             final URI resolvedUri = baseUriNormalized.resolve(location);
@@ -613,7 +651,7 @@ public class Jaxp extends BasicFunction {
                 return false;
             }
 
-            final String cacheKey = resolvedUri.toString();
+            final Xsd11DetectionCacheKey cacheKey = new Xsd11DetectionCacheKey(subjectName, resolvedUri.toString());
             final Boolean cached = getCachedXsd11Detection(cacheKey);
             if (cached != null) {
                 return cached;
@@ -643,44 +681,22 @@ public class Jaxp extends BasicFunction {
         }
     }
 
-    /**
-     * Bounded (see {@link #XSD11_DETECTION_CACHE_MAX_ENTRIES}), LRU-evicted cache of
-     * "does the schema at this resolved URI declare vc:minVersion 1.1?", so that validating many
-     * documents against the same schema doesn't re-fetch and re-peek it every time. Cleared by
-     * {@code validation:clear-grammar-cache()} (see {@link GrammarTooling}) alongside the Xerces
-     * grammar pool, so operators have one function to clear every validation-related cache.
-     */
-    private static final int XSD11_DETECTION_CACHE_MAX_ENTRIES = 256;
-
-    private static final Map<String, Boolean> XSD11_DETECTION_CACHE = new LinkedHashMap<>(16, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(final Map.Entry<String, Boolean> eldest) {
-            return size() > XSD11_DETECTION_CACHE_MAX_ENTRIES;
-        }
-    };
-
     @Nullable
-    private static Boolean getCachedXsd11Detection(final String resolvedUri) {
-        synchronized (XSD11_DETECTION_CACHE) {
-            return XSD11_DETECTION_CACHE.get(resolvedUri);
-        }
+    private static Boolean getCachedXsd11Detection(final Xsd11DetectionCacheKey key) {
+        return XSD11_DETECTION_CACHE.getIfPresent(key);
     }
 
-    private static void cacheXsd11Detection(final String resolvedUri, final boolean isXsd11) {
-        synchronized (XSD11_DETECTION_CACHE) {
-            XSD11_DETECTION_CACHE.put(resolvedUri, isXsd11);
-        }
+    private static void cacheXsd11Detection(final Xsd11DetectionCacheKey key, final boolean isXsd11) {
+        XSD11_DETECTION_CACHE.put(key, isXsd11);
     }
 
     /**
-     * Discards all cached {@link #isXsd11Schema(String, String)} results. Package-private so
-     * {@link GrammarTooling}'s {@code clear-grammar-cache()} can clear this alongside the Xerces
-     * grammar pool.
+     * Discards all cached {@link #isXsd11Schema(String, String, String)} results. Package-private
+     * so {@link GrammarTooling}'s {@code clear-grammar-cache()} can clear this alongside the
+     * Xerces grammar pool.
      */
     static void clearXsd11DetectionCache() {
-        synchronized (XSD11_DETECTION_CACHE) {
-            XSD11_DETECTION_CACHE.clear();
-        }
+        XSD11_DETECTION_CACHE.invalidateAll();
     }
 
     /**
