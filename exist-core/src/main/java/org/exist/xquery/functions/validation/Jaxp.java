@@ -591,6 +591,14 @@ public class Jaxp extends BasicFunction {
      * locations within the instance's own origin, never a different scheme or host. Anything else
      * falls through to the unchanged, already-accepted-risk default pipeline below, exactly as if
      * this peek didn't exist.</p>
+     *
+     * <p>Residual nuance, not a new gap: {@code file:} URIs have no authority component at all
+     * (it's always empty), so this check cannot distinguish {@code file:///a/instance.xml} from
+     * an absolute {@code file:///etc/passwd} hint -- both have scheme {@code file} and empty
+     * authority. This only matters for Java-{@link java.io.File}-backed instance items (the only
+     * way to get a {@code file:} base URI here), which already requires the caller to have used
+     * {@code util:} Java-interop functions to construct that object in the first place -- a
+     * separate, pre-existing privilege boundary this peek doesn't change either way.</p>
      */
     private static boolean isXsd11Schema(final String baseUri, final String location) {
         try {
