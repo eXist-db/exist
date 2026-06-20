@@ -37,12 +37,17 @@ import java.time.Duration;
  *
  * <p>Clients are cached by {@link RequestOptions} so that requests sharing the same options
  * reuse a single {@link HttpClient} instance (and its underlying connection pool). The cache
- * is cleared on JVM shutdown via a registered shutdown hook.</p>
+ * holds at most 25 entries and evicts entries that have not been accessed for one hour.
+ * It is also cleared on JVM shutdown via a registered shutdown hook.</p>
  */
 class HttpClientFactory {
 
     private static final Cache<RequestOptions, HttpClient> CLIENT_CACHE =
-            Caffeine.newBuilder().recordStats().build();
+            Caffeine.newBuilder()
+                    .maximumSize(25)
+                    .expireAfterAccess(Duration.ofHours(1))
+                    .recordStats()
+                    .build();
 
     static {
         HttpClientCacheMonitor.registerIfAbsent(CLIENT_CACHE);
