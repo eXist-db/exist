@@ -226,13 +226,40 @@ function ff:vector-model() {
     ft:fields($ff:COLLECTION)[?kind = "vector" and ?field = "embedding"]?model
 };
 
-(: R1: permission-agnostic. The config lives under admin-only /db/system/config, but ft:fields reads
-   the resolved config via the broker, so a non-dba (guest) sees the configured fields
-   — existdb-openapi applies field-level security on top. :)
+(: R1: a non-dba reads the resolved config without needing access to admin-only /db/system/config.
+   ft:fields reads the resolved config via the broker, gated at collection-read granularity, so a guest
+   sees the configured fields of a (world-readable) collection it may read — without /db/system/config
+   read. existdb-openapi applies any finer field-level policy on top. :)
 declare
     %test:assertEquals(5)
-function ff:permission-agnostic-guest() {
+function ff:guest-reads-config-without-admin() {
     system:as-user("guest", "guest", count(ft:fields($ff:COLLECTION)[?kind = "field"]))
+};
+
+(: every entry reports the collection its config resolved from :)
+declare
+    %test:assertTrue
+function ff:entry-reports-collection() {
+    every $e in ft:fields($ff:COLLECTION) satisfies map:contains($e, "collection")
+};
+
+(: the single-collection scope attributes every entry to that collection :)
+declare
+    %test:assertEquals("/db/lucene-test-fields")
+function ff:collection-key-value() {
+    distinct-values(ft:fields($ff:COLLECTION)?collection)
+};
+
+(: cascade discoverability: in a multi-collection scope the collection key tells which sub-collection
+   each field's config came from, so a field defined (or overridden) in one collection vs another is
+   distinguishable by its differing collection path :)
+declare
+    %test:assertTrue
+function ff:collection-attribution-distinguishes-sources() {
+    let $fields := ft:fields($ff:MULTI)
+    let $alpha := $fields[?field = "alpha-field"]?collection
+    let $beta := $fields[?field = "beta-field"]?collection
+    return $alpha = ($ff:MULTI || "/a") and $beta = ($ff:MULTI || "/b") and $alpha != $beta
 };
 
 (: follow-up 1: ft:fields aggregates across every collection in scope — a parent scope returns the
