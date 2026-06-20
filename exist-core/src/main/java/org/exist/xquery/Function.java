@@ -217,7 +217,7 @@ public abstract class Function extends PathExpr {
     public void setArguments(final List<Expression> arguments) throws XPathException {
         if ((!mySignature.isVariadic()) && arguments.size() != mySignature.getArgumentCount()) {
             throw new XPathException(this, ErrorCodes.XPST0017,
-                    functionNotFoundErrorDescription(context, mySignature.getName(), mySignature.getArgumentCount()));
+                    functionNotFoundErrorDescription(context, mySignature.getName(), arguments.size()));
         }
         steps.clear();
 
