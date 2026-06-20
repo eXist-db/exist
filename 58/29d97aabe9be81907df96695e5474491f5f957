@@ -13,7 +13,7 @@ exist-core/src/main/java/org/exist/indexing/IndexController.java
 ---
 {
   "schema_version": "authorship/3.0.0",
-  "git_ai_version": "1.4.1",
+  "git_ai_version": "1.5.8",
   "base_commit_sha": "5829d97aabe9be81907df96695e5474491f5f957",
   "prompts": {},
   "sessions": {

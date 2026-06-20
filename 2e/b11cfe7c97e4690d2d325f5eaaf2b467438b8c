@@ -1,10 +1,12 @@
-exist-core/src/main/java/org/exist/indexing/IndexController.java
-  s_cc91f600c392c3::t_cb4b437adc6f17 205-207
-exist-core/src/main/java/org/exist/xmlrpc/RpcConnection.java
-  s_cc91f600c392c3::t_76c7ceddb11956 3235
 extensions/indexes/lucene/src/test/xquery/lucene/ft-edge.xqm
   s_cc91f600c392c3::t_96ad1729ad6637 305-306,313-322,327-336,342-355
   s_cc91f600c392c3::t_12244ed1f7f1b4 307-312,323-326,337-341
+exist-core/src/main/java/org/exist/storage/DBBroker.java
+  s_cc91f600c392c3::t_fc1b3dc102073d 596-607
+exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java
+  s_9a183dbdc45354::t_3b5d1146efcd43 568-575
+exist-core-jmh/src/test/java/org/exist/storage/ReindexBenchmarkTest.java
+  s_cc91f600c392c3::t_001fbc040ce7be 1-42
 exist-core-jmh/pom.xml
   s_cc91f600c392c3::t_c0ad4564e7de51 73-77
 exist-core/src/main/java/org/exist/storage/NativeBroker.java
@@ -13,25 +15,28 @@ exist-core/src/main/java/org/exist/storage/NativeBroker.java
   s_9a183dbdc45354::t_3b5d1146efcd43 2133-2149
   s_cc91f600c392c3::t_5c971b3cbfa96e 2165
   s_cc91f600c392c3::t_8fdf373e8bccf2 2174-2176,2187-2188,2191-2193
-exist-core/src/main/java/org/exist/xmldb/LocalIndexQueryService.java
-  s_cc91f600c392c3::t_8779fcf318ff73 113
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_cc91f600c392c3::t_cb4b437adc6f17 205-207
 exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java
   s_cc91f600c392c3::t_03a57900292c35 58,135-139
   s_cc91f600c392c3::t_72428bac24afff 69-71
   s_cc91f600c392c3::t_073ed437c7c5b2 166
   s_cc91f600c392c3::t_faf58efc849706 174-175
-exist-core-jmh/src/test/java/org/exist/storage/ReindexBenchmarkTest.java
-  s_cc91f600c392c3::t_001fbc040ce7be 1-42
-exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java
-  s_9a183dbdc45354::t_3b5d1146efcd43 568-575
-exist-core/src/main/java/org/exist/storage/DBBroker.java
-  s_cc91f600c392c3::t_fc1b3dc102073d 596-607
+exist-core/src/main/java/org/exist/xmldb/LocalIndexQueryService.java
+  s_cc91f600c392c3::t_8779fcf318ff73 113
+exist-core/src/main/java/org/exist/xmlrpc/RpcConnection.java
+  s_cc91f600c392c3::t_76c7ceddb11956 3235
 ---
 {
   "schema_version": "authorship/3.0.0",
-  "git_ai_version": "1.4.1",
+  "git_ai_version": "1.5.8",
   "base_commit_sha": "2eb11cfe7c97e4690d2d325f5eaaf2b467438b8c",
   "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
   "sessions": {
     "s_9a183dbdc45354": {
       "agent_id": {

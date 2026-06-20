@@ -7,7 +7,7 @@ exist-core/src/main/java/org/exist/storage/NativeBroker.java
 ---
 {
   "schema_version": "authorship/3.0.0",
-  "git_ai_version": "1.4.1",
+  "git_ai_version": "1.5.8",
   "base_commit_sha": "4f787253e7979d5189cacea94d8705463ca73bd6",
   "prompts": {},
   "sessions": {
