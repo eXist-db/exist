@@ -34,7 +34,7 @@ public final class SchemaVersion {
 
     /** Paired {@code xs:schema/@version} values for canonical templates (keep in sync with {@code schema/*.xsd}). */
     public static final String CONF = "2.1.1";
-    public static final String COLLECTION_XCONF = "1.2.1";
+    public static final String COLLECTION_XCONF = "1.2.2";
     public static final String DESCRIPTOR = "1.2.1";
     public static final String MIME_TYPES = "1.2.1";
     public static final String CONTROLLER_CONFIG = "1.1.1";

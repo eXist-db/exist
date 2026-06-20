@@ -6,13 +6,13 @@
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
     targetNamespace="http://cxan.org/ns/package"
-    version="1.0.0">
+    version="1.0.1">
     
     <xs:annotation>
         <xs:documentation>A schema for the EXPath Packaging CXAN concept.</xs:documentation>
         <xs:appinfo>
             <dcterms:title>Schema for the EXPath Packaging CXAN concept.</dcterms:title>
-            <dcterms:created xsi:type="dcterms:W3CDTF">2013-11-03T11:36:19.343+01:00</dcterms:created>
+            <dcterms:created>2013-11-03T11:36:19.343+01:00</dcterms:created>
             <dcterms:creator>Adam Retter</dcterms:creator>
         </xs:appinfo>
     </xs:annotation>
