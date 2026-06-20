@@ -95,7 +95,7 @@ public class HttpClientCacheMonitorTest {
         // hit
         cache.getIfPresent(opts);
         // miss
-        cache.getIfPresent(new HttpClientOptions(false, 30));
+        cache.getIfPresent(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1));
 
         assertEquals(1L, server.getAttribute(name, "HitCount"));
         assertEquals(1L, server.getAttribute(name, "MissCount"));
@@ -108,9 +108,9 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void cachedClientsSummaryListsConfigurations() throws Exception {
-        cache.put(new HttpClientOptions(true, 0),
+        cache.put(new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1),
                 HttpClient.newHttpClient());
-        cache.put(new HttpClientOptions(false, 30),
+        cache.put(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1),
                 HttpClient.newHttpClient());
 
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");

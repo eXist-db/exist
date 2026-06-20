@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.net.http.HttpClient;
+
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
@@ -33,8 +35,8 @@ import org.w3c.dom.Element;
  *
  * <p>Reads the EXPath HTTP Client attributes ({@code follow-redirect}, {@code status-only},
  * {@code override-media-type}, {@code username}, {@code password}, {@code auth-method},
- * {@code send-authorization}, {@code timeout}) and produces an immutable {@link RequestOptions}
- * combining a {@link HttpClientOptions} and a {@link UserCredentials}.</p>
+ * {@code send-authorization}, {@code timeout}, {@code http-version}) and produces an immutable
+ * {@link RequestOptions} combining a {@link HttpClientOptions} and a {@link UserCredentials}.</p>
  */
 public class RequestOptionsParser {
 
@@ -56,6 +58,7 @@ public class RequestOptionsParser {
 
         final int timeout = parseTimeout(reqElem, defaults.timeout());
         final boolean followRedirect = parseBooleanAttr(reqElem, "follow-redirect", defaults.followRedirect());
+        final HttpClient.Version httpVersion = parseHttpVersion(reqElem, defaults.httpVersion());
         final boolean statusOnly = parseBooleanAttr(reqElem, "status-only", responseDefaults.statusOnly());
         final String overrideMediaType = getAttr(reqElem, "override-media-type");
         final String username = getAttr(reqElem, "username");
@@ -63,10 +66,23 @@ public class RequestOptionsParser {
         final String authMethod = getAttr(reqElem, "auth-method");
         final boolean sendAuthorization = parseBooleanAttr(reqElem, "send-authorization", credDefaults.sendAuthorization());
 
-        final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout);
+        final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout, httpVersion);
         final ResponseOptions responseOptions = new ResponseOptions(statusOnly, overrideMediaType);
         final UserCredentials userCredentials = new UserCredentials(username, password, authMethod, sendAuthorization);
         return new RequestOptions(requestOptions, responseOptions, userCredentials);
+    }
+
+    private static HttpClient.Version parseHttpVersion(final Element reqElem, final HttpClient.Version defaultVersion) throws XPathException {
+        final String value = getAttr(reqElem, "http-version");
+        if (value == null) {
+            return defaultVersion;
+        }
+        return switch (value) {
+            case "1.1" -> HttpClient.Version.HTTP_1_1;
+            case "2", "2.0" -> HttpClient.Version.HTTP_2;
+            default -> throw new XPathException((org.exist.xquery.Expression) null,
+                    HttpClientModule.HC005, "Invalid http-version value: " + value);
+        };
     }
 
     private static int parseTimeout(final Element reqElem, final int defaultTimeout) throws XPathException {

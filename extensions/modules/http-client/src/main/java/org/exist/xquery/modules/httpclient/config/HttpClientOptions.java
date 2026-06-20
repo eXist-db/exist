@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.httpclient.config;
 
+import java.net.http.HttpClient;
+
 /**
  * Immutable options parsed from an {@code <http:request>} element.
  *
@@ -29,8 +31,9 @@ package org.exist.xquery.modules.httpclient.config;
  */
 public record HttpClientOptions(
         boolean followRedirect,
-        int timeout
+        int timeout,
+        HttpClient.Version httpVersion
 ) {
-    /** Default options: follow redirects, no timeout. */
-    public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0);
+    /** Default options: follow redirects, no timeout, HTTP/1.1. */
+    public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1);
 }

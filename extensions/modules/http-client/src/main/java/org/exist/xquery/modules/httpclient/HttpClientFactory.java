@@ -65,7 +65,7 @@ class HttpClientFactory {
      * Returns a cached {@link HttpClient} for the given {@link HttpClientOptions}, creating one
      * if no matching client exists in the cache yet.
      *
-     * @param options the request options controlling redirect behaviour and timeouts
+     * @param options the request options controlling redirect behaviour, timeouts, and HTTP version
      * @return a configured {@link HttpClient}
      */
     static HttpClient get(final HttpClientOptions options) {
@@ -75,12 +75,14 @@ class HttpClientFactory {
     private static HttpClient newClient(final HttpClientOptions options) {
         final Methanol.Builder clientBuilder = Methanol.newBuilder()
                 .autoAcceptEncoding(true)
+                .version(options.httpVersion())
                 .followRedirects(options.followRedirect()
                         ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
         if (options.timeout() > 0) {
             final Duration timeoutDuration = Duration.ofSeconds(options.timeout());
             clientBuilder.connectTimeout(timeoutDuration).readTimeout(timeoutDuration);
         }
+
         return clientBuilder.build();
     }
 }

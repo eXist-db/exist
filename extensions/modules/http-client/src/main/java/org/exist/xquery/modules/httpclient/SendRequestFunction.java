@@ -95,6 +95,7 @@ public class SendRequestFunction extends BasicFunction {
         final RequestOptions allOptions = requestBuilder.getOptions();
 
         final HttpClient client = HttpClientFactory.get(allOptions.requestOptions());
+
         try {
             final HttpResponse<byte[]> response = send(client, requestBuilder, httpRequest);
             return ResponseHandler.buildResult(response, context, this,
