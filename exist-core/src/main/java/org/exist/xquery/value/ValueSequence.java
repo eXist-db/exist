@@ -395,7 +395,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     @Override
     public boolean containsReference(final Item item) {
         for (int i = 0; i <= size; i++) {
-            if (values[i] == item) {
+            // recurse into container items (maps/arrays) so a value nested inside a map or array held
+            // by this sequence is detected, mirroring MapType/ArrayType.containsReference
+            if (values[i] == item || (values[i] instanceof Sequence seq && seq.containsReference(item))) {
                 return true;
             }
         }
