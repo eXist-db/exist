@@ -27,10 +27,10 @@ package org.exist.xquery.modules.httpclient.config;
  * <p>All fields correspond directly to attributes on the {@code http:request} element
  * as defined by the EXPath HTTP Client specification.</p>
  */
-public record RequestOptions(
+public record HttpClientOptions(
         boolean followRedirect,
         int timeout
 ) {
     /** Default options: follow redirects, no timeout. */
-    public static final RequestOptions DEFAULTS = new RequestOptions(true, 0);
+    public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0);
 }

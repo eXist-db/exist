@@ -19,11 +19,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.modules.httpclient;
+package org.exist.xquery.modules.httpclient.jmx;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class HttpClientCacheMonitorTest {
 
     private MBeanServer server;
     private ObjectName name;
-    private Cache<RequestOptions, HttpClient> cache;
+    private Cache<HttpClientOptions, HttpClient> cache;
 
     @Before
     public void setUp() throws Exception {
@@ -81,7 +81,7 @@ public class HttpClientCacheMonitorTest {
     public void cacheSizeReflectsEntries() throws Exception {
         assertEquals(0L, server.getAttribute(name, "CacheSize"));
 
-        final RequestOptions opts = RequestOptions.DEFAULTS;
+        final HttpClientOptions opts = HttpClientOptions.DEFAULTS;
         cache.put(opts, HttpClient.newHttpClient());
 
         assertEquals(1L, server.getAttribute(name, "CacheSize"));
@@ -89,13 +89,13 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void hitAndMissCountsAreReported() throws Exception {
-        final RequestOptions opts = RequestOptions.DEFAULTS;
+        final HttpClientOptions opts = HttpClientOptions.DEFAULTS;
         cache.put(opts, HttpClient.newHttpClient());
 
         // hit
         cache.getIfPresent(opts);
         // miss
-        cache.getIfPresent(new RequestOptions(false, 30));
+        cache.getIfPresent(new HttpClientOptions(false, 30));
 
         assertEquals(1L, server.getAttribute(name, "HitCount"));
         assertEquals(1L, server.getAttribute(name, "MissCount"));
@@ -108,9 +108,9 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void cachedClientsSummaryListsConfigurations() throws Exception {
-        cache.put(new RequestOptions(true, 0),
+        cache.put(new HttpClientOptions(true, 0),
                 HttpClient.newHttpClient());
-        cache.put(new RequestOptions(false, 30),
+        cache.put(new HttpClientOptions(false, 30),
                 HttpClient.newHttpClient());
 
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");
@@ -127,7 +127,7 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void invalidateAllClearsCache() throws Exception {
-        cache.put(RequestOptions.DEFAULTS, HttpClient.newHttpClient());
+        cache.put(HttpClientOptions.DEFAULTS, HttpClient.newHttpClient());
         assertEquals(1L, server.getAttribute(name, "CacheSize"));
 
         server.invoke(name, "invalidateAll", new Object[0], new String[0]);

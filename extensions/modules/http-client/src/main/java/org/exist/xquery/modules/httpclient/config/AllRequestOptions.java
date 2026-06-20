@@ -24,11 +24,11 @@ package org.exist.xquery.modules.httpclient.config;
 import org.exist.xquery.modules.httpclient.RequestOptionsParser;
 
 /**
- * Combines the parsed {@link RequestOptions}, {@link ResponseOptions}, and {@link UserCredentials}
+ * Combines the parsed {@link HttpClientOptions}, {@link ResponseOptions}, and {@link UserCredentials}
  * returned by {@link RequestOptionsParser#parse(org.w3c.dom.Element)}.
  */
 public record AllRequestOptions(
-        RequestOptions requestOptions,
+        HttpClientOptions requestOptions,
         ResponseOptions responseOptions,
         UserCredentials userCredentials
 ) {

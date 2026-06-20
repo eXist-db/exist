@@ -25,7 +25,7 @@ import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
-import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.config.ResponseOptions;
 import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.exist.xquery.value.NodeValue;
@@ -68,7 +68,7 @@ public class RequestBuilder {
 
     private String method;
     private String href;
-    private AllRequestOptions allOptions = new AllRequestOptions(RequestOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
+    private AllRequestOptions allOptions = new AllRequestOptions(HttpClientOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
 
     private final List<String[]> headers = new ArrayList<>();
     private String bodyMediaType;

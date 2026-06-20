@@ -23,7 +23,7 @@ package org.exist.xquery.modules.httpclient;
 
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
-import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.config.ResponseOptions;
 import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.w3c.dom.Element;
@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
  * <p>Reads the EXPath HTTP Client attributes ({@code follow-redirect}, {@code status-only},
  * {@code override-media-type}, {@code username}, {@code password}, {@code auth-method},
  * {@code send-authorization}, {@code timeout}) and produces an immutable {@link AllRequestOptions}
- * combining a {@link RequestOptions} and a {@link UserCredentials}.</p>
+ * combining a {@link HttpClientOptions} and a {@link UserCredentials}.</p>
  */
 public class RequestOptionsParser {
 
@@ -50,7 +50,7 @@ public class RequestOptionsParser {
      * @throws XPathException if the {@code timeout} attribute is present but not a valid integer
      */
     public static AllRequestOptions parse(final Element reqElem) throws XPathException {
-        final RequestOptions defaults = RequestOptions.DEFAULTS;
+        final HttpClientOptions defaults = HttpClientOptions.DEFAULTS;
         final ResponseOptions responseDefaults = ResponseOptions.DEFAULTS;
         final UserCredentials credDefaults = UserCredentials.DEFAULTS;
 
@@ -63,7 +63,7 @@ public class RequestOptionsParser {
         final String authMethod = getAttr(reqElem, "auth-method");
         final boolean sendAuthorization = parseBooleanAttr(reqElem, "send-authorization", credDefaults.sendAuthorization());
 
-        final RequestOptions requestOptions = new RequestOptions(followRedirect, timeout);
+        final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout);
         final ResponseOptions responseOptions = new ResponseOptions(statusOnly, overrideMediaType);
         final UserCredentials userCredentials = new UserCredentials(username, password, authMethod, sendAuthorization);
         return new AllRequestOptions(requestOptions, responseOptions, userCredentials);

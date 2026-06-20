@@ -19,13 +19,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.modules.httpclient;
+package org.exist.xquery.modules.httpclient.jmx;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -40,15 +40,15 @@ import java.util.stream.Collectors;
  * <p>Registered once as a singleton under the object name
  * {@value #OBJECT_NAME} on the platform {@link javax.management.MBeanServer}.</p>
  */
-class HttpClientCacheMonitor implements HttpClientCacheMXBean {
+public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
-    static final String OBJECT_NAME = "org.exist.management:type=HttpClientCache";
+    public static final String OBJECT_NAME = "org.exist.management:type=HttpClientCache";
 
     private static final Logger LOG = LogManager.getLogger(HttpClientCacheMonitor.class);
 
-    private final Cache<RequestOptions, HttpClient> cache;
+    private final Cache<HttpClientOptions, HttpClient> cache;
 
-    HttpClientCacheMonitor(final Cache<RequestOptions, HttpClient> cache) {
+    HttpClientCacheMonitor(final Cache<HttpClientOptions, HttpClient> cache) {
         this.cache = cache;
     }
 
@@ -58,7 +58,7 @@ class HttpClientCacheMonitor implements HttpClientCacheMXBean {
      *
      * @param cache the Caffeine cache to monitor
      */
-    static void registerIfAbsent(final Cache<RequestOptions, HttpClient> cache) {
+    public static void registerIfAbsent(final Cache<HttpClientOptions, HttpClient> cache) {
         try {
             final ObjectName name = new ObjectName(OBJECT_NAME);
             final var server = ManagementFactory.getPlatformMBeanServer();

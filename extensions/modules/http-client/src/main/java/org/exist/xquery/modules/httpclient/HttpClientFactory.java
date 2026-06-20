@@ -24,7 +24,8 @@ package org.exist.xquery.modules.httpclient;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.mizosoft.methanol.Methanol;
-import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
+import org.exist.xquery.modules.httpclient.jmx.HttpClientCacheMonitor;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -36,14 +37,14 @@ import java.time.Duration;
  * and transparently decodes gzip/deflate responses, and readTimeout gives a per-read (inactivity)
  * timeout that the bare JDK client lacks.</p>
  *
- * <p>Clients are cached by {@link RequestOptions} so that requests sharing the same options
+ * <p>Clients are cached by {@link HttpClientOptions} so that requests sharing the same options
  * reuse a single {@link HttpClient} instance (and its underlying connection pool). The cache
  * holds at most 25 entries and evicts entries that have not been accessed for one hour.
  * It is also cleared on JVM shutdown via a registered shutdown hook.</p>
  */
 class HttpClientFactory {
 
-    private static final Cache<RequestOptions, HttpClient> CLIENT_CACHE =
+    private static final Cache<HttpClientOptions, HttpClient> CLIENT_CACHE =
             Caffeine.newBuilder()
                     .maximumSize(25)
                     .expireAfterAccess(Duration.ofHours(1))
@@ -61,17 +62,17 @@ class HttpClientFactory {
     }
 
     /**
-     * Returns a cached {@link HttpClient} for the given {@link RequestOptions}, creating one
+     * Returns a cached {@link HttpClient} for the given {@link HttpClientOptions}, creating one
      * if no matching client exists in the cache yet.
      *
      * @param options the request options controlling redirect behaviour and timeouts
      * @return a configured {@link HttpClient}
      */
-    static HttpClient get(final RequestOptions options) {
+    static HttpClient get(final HttpClientOptions options) {
         return CLIENT_CACHE.get(options, HttpClientFactory::newClient);
     }
 
-    private static HttpClient newClient(final RequestOptions options) {
+    private static HttpClient newClient(final HttpClientOptions options) {
         final Methanol.Builder clientBuilder = Methanol.newBuilder()
                 .autoAcceptEncoding(true)
                 .followRedirects(options.followRedirect()
