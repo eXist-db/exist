@@ -1,0 +1,22 @@
+exist-core/src/main/java/org/exist/launcher/SplashScreen.java
+  592a7185ccaa0d6b 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "ebdd0dbb3c3da0a76e30fc0f5cbe2cd089a132c2",
+  "prompts": {
+    "592a7185ccaa0d6b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "325a9006-8581-462e-ab8a-e2a5708cc2a7",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 22,
+      "total_deletions": 17,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}

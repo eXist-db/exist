@@ -1,0 +1,9 @@
+exist-core/src/main/java/org/exist/config/Configurator.java
+  8be28f47155c9a3c 684-685,700,744
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "33789018c480481bcb0e81b9674e1fd0bf28aac3",
+  "prompts": {}
+}

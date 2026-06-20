@@ -1,0 +1,9 @@
+exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java
+  8be28f47155c9a3c 123-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "13b2a4acaf752c34dd3cf477f356129d5e794607",
+  "prompts": {}
+}
