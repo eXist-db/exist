@@ -25,6 +25,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;

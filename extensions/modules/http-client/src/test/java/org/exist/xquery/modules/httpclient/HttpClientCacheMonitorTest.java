@@ -23,6 +23,7 @@ package org.exist.xquery.modules.httpclient;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +95,7 @@ public class HttpClientCacheMonitorTest {
         // hit
         cache.getIfPresent(opts);
         // miss
-        cache.getIfPresent(new RequestOptions(false, false, null, null, null, null, false, 30));
+        cache.getIfPresent(new RequestOptions(false, 30));
 
         assertEquals(1L, server.getAttribute(name, "HitCount"));
         assertEquals(1L, server.getAttribute(name, "MissCount"));
@@ -107,9 +108,9 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void cachedClientsSummaryListsConfigurations() throws Exception {
-        cache.put(new RequestOptions(true, false, null, null, null, null, false, 0),
+        cache.put(new RequestOptions(true, 0),
                 HttpClient.newHttpClient());
-        cache.put(new RequestOptions(false, false, null, null, null, null, false, 30),
+        cache.put(new RequestOptions(false, 30),
                 HttpClient.newHttpClient());
 
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");

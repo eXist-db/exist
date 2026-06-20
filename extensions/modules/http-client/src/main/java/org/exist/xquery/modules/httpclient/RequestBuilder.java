@@ -24,6 +24,10 @@ package org.exist.xquery.modules.httpclient;
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.ResponseOptions;
+import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
@@ -55,7 +59,7 @@ import javax.xml.transform.stream.StreamResult;
  * Builds a {@link java.net.http.HttpRequest} from an {@code <http:request>} element.
  *
  * <p>Parses child elements (http:header, http:body, http:multipart) from the request element,
- * and accepts a {@link RequestOptions} (produced by {@link RequestOptionsParser}) that carries
+ * and accepts an {@link AllRequestOptions} (produced by {@link RequestOptionsParser}) that carries
  * all attribute-level options. The caller invokes {@link #parse} then {@link #build}.</p>
  */
 public class RequestBuilder {
@@ -64,7 +68,7 @@ public class RequestBuilder {
 
     private String method;
     private String href;
-    private RequestOptions options = RequestOptions.DEFAULTS;
+    private AllRequestOptions allOptions = new AllRequestOptions(RequestOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
 
     private final List<String[]> headers = new ArrayList<>();
     private String bodyMediaType;
@@ -91,7 +95,7 @@ public class RequestBuilder {
         final Element reqElem = (Element) requestNode.getNode();
         method = getAttr(reqElem, "method");
         href = getAttr(reqElem, "href");
-        options = RequestOptionsParser.parse(reqElem);
+        allOptions = RequestOptionsParser.parse(reqElem);
         parseChildren(reqElem);
         applyOverrides(hrefParam, bodiesParam);
         validate();
@@ -178,8 +182,8 @@ public class RequestBuilder {
         }
 
         final HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
-        if (options.timeout() > 0) {
-            builder.timeout(Duration.ofSeconds(options.timeout()));
+        if (allOptions.requestOptions().timeout() > 0) {
+            builder.timeout(Duration.ofSeconds(allOptions.requestOptions().timeout()));
         }
 
         final boolean isMultipart = !multipartBodies.isEmpty();
@@ -210,7 +214,7 @@ public class RequestBuilder {
         final String authorization;
         if (authorizationHeader != null) {
             authorization = authorizationHeader;
-        } else if (options.sendAuthorization() && options.username() != null && "basic".equalsIgnoreCase(options.authMethod())) {
+        } else if (allOptions.userCredentials().sendAuthorization() && allOptions.userCredentials().username() != null && "basic".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
             authorization = "Basic " + base64Credentials();
         } else {
             authorization = null;
@@ -275,8 +279,8 @@ public class RequestBuilder {
      * @return true if the request should be re-sent with an {@code Authorization} header on a 401.
      */
     public boolean shouldAttemptChallenge() {
-        return options.username() != null && !options.sendAuthorization() && options.authMethod() != null
-                && ("basic".equalsIgnoreCase(options.authMethod()) || "digest".equalsIgnoreCase(options.authMethod()));
+        return allOptions.userCredentials().username() != null && !allOptions.userCredentials().sendAuthorization() && allOptions.userCredentials().authMethod() != null
+                && ("basic".equalsIgnoreCase(allOptions.userCredentials().authMethod()) || "digest".equalsIgnoreCase(allOptions.userCredentials().authMethod()));
     }
 
     /**
@@ -289,13 +293,13 @@ public class RequestBuilder {
      *     (unsupported scheme, missing data, or a scheme mismatch with {@code @auth-method}).
      */
     public String challengeResponse(final String wwwAuthenticate) {
-        if (options.username() == null || options.authMethod() == null) {
+        if (allOptions.userCredentials().username() == null || allOptions.userCredentials().authMethod() == null) {
             return null;
         }
-        if ("basic".equalsIgnoreCase(options.authMethod())) {
+        if ("basic".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
             return "Basic " + base64Credentials();
         }
-        if ("digest".equalsIgnoreCase(options.authMethod())) {
+        if ("digest".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
             return digestResponse(wwwAuthenticate);
         }
         return null;
@@ -303,7 +307,7 @@ public class RequestBuilder {
 
     private String base64Credentials() {
         return Base64.getEncoder().encodeToString(
-                (options.username() + ":" + (options.password() != null ? options.password() : "")).getBytes(StandardCharsets.UTF_8));
+                (allOptions.userCredentials().username() + ":" + (allOptions.userCredentials().password() != null ? allOptions.userCredentials().password() : "")).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -325,13 +329,13 @@ public class RequestBuilder {
             return null;
         }
         final String qop = resolveQop(p.get("qop"));
-        final String pwd = options.password() != null ? options.password() : "";
+        final String pwd = allOptions.userCredentials().password() != null ? allOptions.userCredentials().password() : "";
         final String digestUri = href;
-        final String ha1 = md5(options.username() + ":" + realm + ":" + pwd);
+        final String ha1 = md5(allOptions.userCredentials().username() + ":" + realm + ":" + pwd);
         final String ha2 = md5(method.toUpperCase() + ":" + digestUri);
 
         final StringBuilder value = new StringBuilder()
-                .append("username=\"").append(options.username()).append("\", ")
+                .append("username=\"").append(allOptions.userCredentials().username()).append("\", ")
                 .append("realm=\"").append(realm).append("\", ")
                 .append("nonce=\"").append(nonce).append("\", ")
                 .append("uri=\"").append(digestUri).append('"');
@@ -409,8 +413,8 @@ public class RequestBuilder {
         }
     }
 
-    public RequestOptions getOptions() {
-        return options;
+    public AllRequestOptions getOptions() {
+        return allOptions;
     }
 
     private void parseMultipart(final Element multipartElem) {

@@ -19,24 +19,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.modules.httpclient;
+package org.exist.xquery.modules.httpclient.config;
 
 /**
- * Immutable options parsed from an {@code <http:request>} element.
+ * Immutable response-handling options parsed from an {@code <http:request>} element.
  *
- * <p>All fields correspond directly to attributes on the {@code http:request} element
+ * <p>These fields control how the HTTP response is interpreted and returned,
  * as defined by the EXPath HTTP Client specification.</p>
  */
-public record RequestOptions(
-        boolean followRedirect,
+public record ResponseOptions(
         boolean statusOnly,
-        String overrideMediaType,
-        String username,
-        String password,
-        String authMethod,
-        boolean sendAuthorization,
-        int timeout
+        String overrideMediaType
 ) {
-    /** Default options: follow redirects, no status-only, no auth, no timeout. */
-    public static final RequestOptions DEFAULTS = new RequestOptions(true, false, null, null, null, null, false, 0);
+    /** Default response options: return full body, no media-type override. */
+    public static final ResponseOptions DEFAULTS = new ResponseOptions(false, null);
 }

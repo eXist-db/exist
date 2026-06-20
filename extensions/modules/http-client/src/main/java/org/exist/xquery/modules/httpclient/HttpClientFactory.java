@@ -24,6 +24,7 @@ package org.exist.xquery.modules.httpclient;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.mizosoft.methanol.Methanol;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
