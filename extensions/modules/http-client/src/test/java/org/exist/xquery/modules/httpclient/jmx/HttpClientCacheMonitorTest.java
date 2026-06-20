@@ -55,7 +55,7 @@ public class HttpClientCacheMonitorTest {
         }
 
         cache = Caffeine.newBuilder().recordStats().build();
-        HttpClientCacheMonitor.registerIfAbsent(cache);
+        HttpClientCacheMonitor.register(cache);
     }
 
     @After
@@ -71,9 +71,9 @@ public class HttpClientCacheMonitorTest {
     }
 
     @Test
-    public void registerIfAbsentIsIdempotent() {
+    public void registerAndGetIsIdempotent() {
         // Second call must not throw and must not register a duplicate
-        HttpClientCacheMonitor.registerIfAbsent(cache);
+        HttpClientCacheMonitor.register(cache);
         assertTrue(server.isRegistered(name));
     }
 
@@ -126,11 +126,11 @@ public class HttpClientCacheMonitorTest {
     }
 
     @Test
-    public void invalidateAllClearsCache() throws Exception {
+    public void resetClearsCache() throws Exception {
         cache.put(HttpClientOptions.DEFAULTS, HttpClient.newHttpClient());
         assertEquals(1L, server.getAttribute(name, "CacheSize"));
 
-        server.invoke(name, "invalidateAll", new Object[0], new String[0]);
+        server.invoke(name, "reset", new Object[0], new String[0]);
 
         assertEquals(0L, server.getAttribute(name, "CacheSize"));
     }

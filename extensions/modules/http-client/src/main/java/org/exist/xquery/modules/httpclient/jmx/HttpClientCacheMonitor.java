@@ -54,16 +54,17 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
     /**
      * Registers a singleton {@link HttpClientCacheMonitor} with the platform MBeanServer.
-     * Safe to call multiple times — subsequent calls are no-ops.
+     * Safe to call multiple times — if the MBean is already registered the call is a no-op.
      *
      * @param cache the Caffeine cache to monitor
      */
-    public static void registerIfAbsent(final Cache<HttpClientOptions, HttpClient> cache) {
+    public static HttpClientCacheMonitor register(final Cache<HttpClientOptions, HttpClient> cache) {
+        final HttpClientCacheMonitor monitor = new HttpClientCacheMonitor(cache);
         try {
             final ObjectName name = new ObjectName(OBJECT_NAME);
             final var server = ManagementFactory.getPlatformMBeanServer();
             if (!server.isRegistered(name)) {
-                server.registerMBean(new HttpClientCacheMonitor(cache), name);
+                server.registerMBean(monitor, name);
             }
         } catch (final MalformedObjectNameException e) {
             // OBJECT_NAME is a compile-time constant — this cannot happen
@@ -71,6 +72,7 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
         } catch (final Exception e) {
             LOG.warn("Failed to register HttpClientCache JMX MBean: {}", e.getMessage(), e);
         }
+        return monitor;
     }
 
     @Override
@@ -110,7 +112,8 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
     }
 
     @Override
-    public void invalidateAll() {
+    public void reset() {
+        cache.asMap().values().forEach(HttpClient::close);
         cache.invalidateAll();
     }
 }

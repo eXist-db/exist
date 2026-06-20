@@ -78,8 +78,8 @@ public interface HttpClientCacheMXBean {
     String getCachedClientsSummary();
 
     /**
-     * Evicts all cached {@link java.net.http.HttpClient} instances, forcing new clients
-     * to be created on the next request.
+     * Closes all cached {@link java.net.http.HttpClient} instances and removes them from the cache,
+     * forcing new clients to be created on the next request.
      */
-    void invalidateAll();
+    void reset();
 }

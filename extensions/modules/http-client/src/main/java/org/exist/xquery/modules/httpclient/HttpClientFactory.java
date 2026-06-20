@@ -51,9 +51,11 @@ class HttpClientFactory {
                     .recordStats()
                     .build();
 
+    private static final HttpClientCacheMonitor MONITOR =
+            HttpClientCacheMonitor.register(CLIENT_CACHE);
+
     static {
-        HttpClientCacheMonitor.registerIfAbsent(CLIENT_CACHE);
-        Runtime.getRuntime().addShutdownHook(new Thread(CLIENT_CACHE::invalidateAll,
+        Runtime.getRuntime().addShutdownHook(new Thread(HttpClientFactory::reset,
                 "http-client-cache-shutdown"));
     }
 
@@ -70,6 +72,13 @@ class HttpClientFactory {
      */
     static HttpClient get(final HttpClientOptions options) {
         return CLIENT_CACHE.get(options, HttpClientFactory::newClient);
+    }
+
+    /**
+     * Closes all cached {@link HttpClient} instances and removes them from the cache.
+     */
+    static void reset() {
+        MONITOR.reset();
     }
 
     private static HttpClient newClient(final HttpClientOptions options) {
