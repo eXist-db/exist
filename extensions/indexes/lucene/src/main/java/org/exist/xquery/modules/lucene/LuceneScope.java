@@ -30,6 +30,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -42,6 +43,11 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Shared scope-resolution and index-first query execution for the collection-scoped Lucene functions
@@ -82,6 +88,73 @@ final class LuceneScope {
             }
         }
         return docs;
+    }
+
+    /**
+     * Resolve a sequence of collection or document URIs to the set of collections in scope, recursively
+     * (sub-collections included) and permission-checked at collection-read granularity. Unlike
+     * {@link #resolveScope}, this does not enumerate documents: configuration introspection
+     * ({@link Fields}) needs only the collection hierarchy, so the cost is bounded by the number of
+     * collections in scope, not the number of documents.
+     *
+     * <p>A URI that resolves to a collection contributes that collection and, recursively, every
+     * sub-collection the caller can read (unreadable sub-collections are skipped, as in
+     * {@link org.exist.collections.Collection#allDocs}). A URI that is not a collection is treated as a
+     * document and contributes its owning collection. Insertion order is preserved (parents before
+     * children) so a configuration inherited from a parent is attributed to that parent.</p>
+     */
+    static Set<XmldbURI> resolveScopeCollections(final BasicFunction fn, final Sequence scope) throws XPathException {
+        final DBBroker broker = fn.getContext().getBroker();
+        final Set<XmldbURI> collections = new LinkedHashSet<>();
+        for (final SequenceIterator i = scope.iterate(); i.hasNext(); ) {
+            final String path = i.nextItem().getStringValue();
+            final XmldbURI uri = XmldbURI.create(path);
+            try {
+                if (!collectCollections(broker, uri, collections)) {
+                    // not a collection: treat it as a document and add its owning collection
+                    try (final LockedDocument lockedDoc = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
+                        if (lockedDoc != null) {
+                            collections.add(lockedDoc.getDocument().getCollection().getURI());
+                        }
+                    }
+                }
+            } catch (final PermissionDeniedException e) {
+                throw new XPathException(fn, LuceneModule.EXXQDYFT0001, "Permission denied to access '" + path + "'");
+            } catch (final LockException e) {
+                throw new XPathException(fn, LuceneModule.EXXQDYFT0002, "Lock error while accessing '" + path + "': " + e.getMessage());
+            }
+        }
+        return collections;
+    }
+
+    /**
+     * Add {@code uri} and every readable sub-collection to {@code collections}. Returns {@code false}
+     * if {@code uri} is not a collection (so the caller can fall back to document resolution). Child
+     * URIs are snapshotted under the read lock and recursed into after the lock is released, mirroring
+     * {@link org.exist.collections.Collection#allDocs} to avoid self-deadlock.
+     */
+    private static boolean collectCollections(final DBBroker broker, final XmldbURI uri, final Set<XmldbURI> collections)
+            throws PermissionDeniedException, LockException {
+        final XmldbURI[] childUris;
+        try (final Collection coll = broker.openCollection(uri, LockMode.READ_LOCK)) {
+            if (coll == null) {
+                return false;
+            }
+            collections.add(uri);
+            final List<XmldbURI> children = new ArrayList<>();
+            for (final Iterator<XmldbURI> ci = coll.collectionIterator(broker); ci.hasNext(); ) {
+                children.add(uri.append(ci.next()));
+            }
+            childUris = children.toArray(new XmldbURI[0]);
+        }
+        for (final XmldbURI child : childUris) {
+            try {
+                collectCollections(broker, child, collections);
+            } catch (final PermissionDeniedException pde) {
+                // skip sub-collections the caller cannot read (matches Collection.allDocs)
+            }
+        }
+        return true;
     }
 
     /**
