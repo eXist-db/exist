@@ -24,7 +24,6 @@ package org.exist.xquery.modules.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.indexing.lucene.AbstractFieldConfig;
 import org.exist.indexing.lucene.LuceneConfig;
 import org.exist.indexing.lucene.LuceneFacetConfig;
@@ -33,7 +32,11 @@ import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.indexing.lucene.LuceneVectorFieldConfig;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -52,7 +55,6 @@ import org.exist.xquery.value.ValueSequence;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 
@@ -63,7 +65,8 @@ import java.util.Set;
  *
  * <p>Each result map describes a configured field, facet, or vector field:</p>
  * <pre>
- * map { "field": xs:string,                 (: the field name / facet dimension / vector field name :)
+ * map { "collection": xs:string,            (: the collection whose config this entry resolved from :)
+ *       "field": xs:string,                 (: the field name / facet dimension / vector field name :)
  *       "element": xs:string,               (: the element the index is defined on (or named-index name) :)
  *       "kind": "field" | "facet" | "vector",
  *       "analyzer": xs:string,              (: effective analyzer (fields only) :)
@@ -78,10 +81,15 @@ import java.util.Set;
  * analyzer-id resolution, and merged qname/wildcard/named indexes), so callers do not have to parse
  * {@code collection.xconf} themselves. It <b>aggregates across every collection in scope</b> the way
  * {@code ft:search-scope} aggregates documents: a scope spanning several producer collections returns
- * the union of their configured fields/facets (one record per occurrence; the caller dedups).</p>
+ * the union of their configured fields/facets (one record per occurrence; the caller dedups). The
+ * {@code collection} key reports which collection each entry resolved from, so a field defined in a
+ * parent collection and overridden in a sub-collection is distinguishable by its differing paths.</p>
  *
- * <p>It is <b>permission-agnostic</b>: it returns the full configured field set. Any per-caller field
- * visibility policy (e.g. exposing some fields only to certain groups) is the application layer's job.</p>
+ * <p>Visibility is <b>gated at collection-read granularity</b>: the scope is resolved through
+ * permission-checked collection access, so a caller only discovers configurations for collections it may
+ * read (sub-collections it cannot read are skipped). Within a readable collection the full configured
+ * field set is returned; any finer, per-caller field-visibility policy (e.g. exposing some fields only to
+ * certain groups) is the application layer's job, as eXist has no field-level permission primitive.</p>
  */
 public class Fields extends BasicFunction {
 
@@ -92,16 +100,17 @@ public class Fields extends BasicFunction {
     private static final FunctionReturnSequenceType FS_RETURN =
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
                     "One map per configured field, facet, or vector field in scope: "
-                            + "{ field, element, kind, analyzer, type, returnable } for fields/facets, plus "
-                            + "{ dimension, similarity, model } for vector fields.");
+                            + "{ collection, field, element, kind, analyzer, type, returnable } for fields/facets, "
+                            + "plus { dimension, similarity, model } for vector fields.");
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("fields", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Returns the configured Lucene fields, facets, and vector fields in scope, one map per entry "
-                            + "(field name, element, kind, analyzer, type, returnable; vector fields also carry "
-                            + "dimension, similarity, and model). The full set is returned; "
-                            + "any per-caller field visibility policy is the application's responsibility.",
+                            + "(collection, field name, element, kind, analyzer, type, returnable; vector fields also "
+                            + "carry dimension, similarity, and model). Only configurations for collections the caller "
+                            + "may read are returned; any finer per-caller field-visibility policy is the "
+                            + "application's responsibility.",
                     new SequenceType[]{FS_PARAM_SCOPE},
                     FS_RETURN)
     };
@@ -115,8 +124,12 @@ public class Fields extends BasicFunction {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final MutableDocumentSet docs = LuceneScope.resolveScope(this, args[0]);
-        if (docs.getDocumentCount() == 0) {
+        // Resolve the scope to its collection set only (not its documents): configuration introspection
+        // needs the collection hierarchy, so the cost is bounded by the number of collections rather
+        // than documents. The resolution is permission-checked at collection-read granularity, so a
+        // caller only discovers configurations for collections it may read.
+        final Set<XmldbURI> collections = LuceneScope.resolveScopeCollections(this, args[0]);
+        if (collections.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -124,37 +137,48 @@ public class Fields extends BasicFunction {
         // no) configs — and LuceneIndexWorker.getLuceneConfig() returns only the first one it finds, so
         // it would silently drop the rest. Union each distinct collection config so ft:fields($scope)
         // discovers the full field set, the way ft:search-scope aggregates documents across the scope.
+        // LuceneConfig identity dedup means an inherited config is reported once, attributed to the
+        // collection it is defined on (parents are visited before children), while a sub-collection that
+        // overrides the config carries a distinct LuceneConfig and is reported under its own path.
+        final DBBroker broker = context.getBroker();
         final ValueSequence result = new ValueSequence();
         final Set<LuceneConfig> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            try (final Collection collection = i.next()) {
-                final IndexSpec indexSpec = collection.getIndexConfiguration(context.getBroker());
+        for (final XmldbURI collectionUri : collections) {
+            try (final Collection collection = broker.openCollection(collectionUri, LockMode.READ_LOCK)) {
+                if (collection == null) {
+                    continue;
+                }
+                final IndexSpec indexSpec = collection.getIndexConfiguration(broker);
                 if (indexSpec == null) {
                     continue;
                 }
                 final LuceneConfig config = (LuceneConfig) indexSpec.getCustomIndexSpec(LuceneIndex.ID);
                 if (config != null && seen.add(config)) {
-                    appendFields(result, config);
+                    appendFields(result, config, collectionUri);
                 }
+            } catch (final PermissionDeniedException e) {
+                // resolveScopeCollections already permission-checked the scope; skip on any late change
             }
         }
         return result;
     }
 
-    private void appendFields(final ValueSequence result, final LuceneConfig config) throws XPathException {
+    private void appendFields(final ValueSequence result, final LuceneConfig config, final XmldbURI collectionUri)
+            throws XPathException {
         for (final LuceneIndexConfig head : config.getAllIndexConfigurations()) {
             for (LuceneIndexConfig ic = head; ic != null; ic = ic.getNext()) {
                 final String element = ic.isNamed() ? ic.getName() : qnameString(ic.getQName());
                 for (final AbstractFieldConfig fc : ic.getFacetsAndFields()) {
-                    result.add(describe(config, fc, ic, element));
+                    result.add(describe(config, fc, ic, element, collectionUri));
                 }
             }
         }
     }
 
     private MapType describe(final LuceneConfig config, final AbstractFieldConfig fc, final LuceneIndexConfig ic,
-                             final String element) throws XPathException {
+                             final String element, final XmldbURI collectionUri) throws XPathException {
         final MapType map = new MapType(this, context);
+        map.add(new StringValue(this, "collection"), new StringValue(this, collectionUri.getCollectionPath()));
         map.add(new StringValue(this, "element"), new StringValue(this, element));
         if (fc instanceof LuceneFieldConfig field) {
             map.add(new StringValue(this, "field"), new StringValue(this, field.getName()));
