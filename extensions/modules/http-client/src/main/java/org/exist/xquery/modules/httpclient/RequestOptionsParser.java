@@ -22,18 +22,18 @@
 package org.exist.xquery.modules.httpclient;
 
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.config.ResponseOptions;
 import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.w3c.dom.Element;
 
 /**
- * Parses an {@code <http:request>} element's attributes into an {@link AllRequestOptions} instance.
+ * Parses an {@code <http:request>} element's attributes into an {@link RequestOptions} instance.
  *
  * <p>Reads the EXPath HTTP Client attributes ({@code follow-redirect}, {@code status-only},
  * {@code override-media-type}, {@code username}, {@code password}, {@code auth-method},
- * {@code send-authorization}, {@code timeout}) and produces an immutable {@link AllRequestOptions}
+ * {@code send-authorization}, {@code timeout}) and produces an immutable {@link RequestOptions}
  * combining a {@link HttpClientOptions} and a {@link UserCredentials}.</p>
  */
 public class RequestOptionsParser {
@@ -43,13 +43,13 @@ public class RequestOptionsParser {
     }
 
     /**
-     * Parses the attributes of the given {@code <http:request>} element into an {@link AllRequestOptions}.
+     * Parses the attributes of the given {@code <http:request>} element into an {@link RequestOptions}.
      *
      * @param reqElem the {@code http:request} DOM element
-     * @return a fully populated {@link AllRequestOptions}
+     * @return a fully populated {@link RequestOptions}
      * @throws XPathException if the {@code timeout} attribute is present but not a valid integer
      */
-    public static AllRequestOptions parse(final Element reqElem) throws XPathException {
+    public static RequestOptions parse(final Element reqElem) throws XPathException {
         final HttpClientOptions defaults = HttpClientOptions.DEFAULTS;
         final ResponseOptions responseDefaults = ResponseOptions.DEFAULTS;
         final UserCredentials credDefaults = UserCredentials.DEFAULTS;
@@ -66,7 +66,7 @@ public class RequestOptionsParser {
         final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout);
         final ResponseOptions responseOptions = new ResponseOptions(statusOnly, overrideMediaType);
         final UserCredentials userCredentials = new UserCredentials(username, password, authMethod, sendAuthorization);
-        return new AllRequestOptions(requestOptions, responseOptions, userCredentials);
+        return new RequestOptions(requestOptions, responseOptions, userCredentials);
     }
 
     private static int parseTimeout(final Element reqElem, final int defaultTimeout) throws XPathException {

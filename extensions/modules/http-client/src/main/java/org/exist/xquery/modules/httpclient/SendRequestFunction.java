@@ -25,7 +25,7 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -92,7 +92,7 @@ public class SendRequestFunction extends BasicFunction {
         requestBuilder.parse(requestNode, hrefParam, bodiesParam);
         final HttpRequest httpRequest = requestBuilder.build();
 
-        final AllRequestOptions allOptions = requestBuilder.getOptions();
+        final RequestOptions allOptions = requestBuilder.getOptions();
 
         final HttpClient client = HttpClientFactory.get(allOptions.requestOptions());
         try {

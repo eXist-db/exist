@@ -24,7 +24,7 @@ package org.exist.xquery.modules.httpclient;
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.httpclient.config.AllRequestOptions;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.config.ResponseOptions;
 import org.exist.xquery.modules.httpclient.config.UserCredentials;
@@ -59,7 +59,7 @@ import javax.xml.transform.stream.StreamResult;
  * Builds a {@link java.net.http.HttpRequest} from an {@code <http:request>} element.
  *
  * <p>Parses child elements (http:header, http:body, http:multipart) from the request element,
- * and accepts an {@link AllRequestOptions} (produced by {@link RequestOptionsParser}) that carries
+ * and accepts an {@link RequestOptions} (produced by {@link RequestOptionsParser}) that carries
  * all attribute-level options. The caller invokes {@link #parse} then {@link #build}.</p>
  */
 public class RequestBuilder {
@@ -68,7 +68,7 @@ public class RequestBuilder {
 
     private String method;
     private String href;
-    private AllRequestOptions allOptions = new AllRequestOptions(HttpClientOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
+    private RequestOptions allOptions = new RequestOptions(HttpClientOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
 
     private final List<String[]> headers = new ArrayList<>();
     private String bodyMediaType;
@@ -413,7 +413,7 @@ public class RequestBuilder {
         }
     }
 
-    public AllRequestOptions getOptions() {
+    public RequestOptions getOptions() {
         return allOptions;
     }
 
