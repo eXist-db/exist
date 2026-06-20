@@ -32,8 +32,9 @@ import java.net.http.HttpClient;
 public record HttpClientOptions(
         boolean followRedirect,
         int timeout,
-        HttpClient.Version httpVersion
+        HttpClient.Version httpVersion,
+        boolean autoAcceptEncoding
 ) {
-    /** Default options: follow redirects, no timeout, HTTP/1.1. */
-    public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1);
+    /** Default options: follow redirects, no timeout, HTTP/1.1, auto-accept encoding. */
+    public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1, true);
 }

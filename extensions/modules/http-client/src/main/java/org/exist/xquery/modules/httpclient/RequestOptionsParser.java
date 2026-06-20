@@ -58,6 +58,7 @@ public class RequestOptionsParser {
 
         final int timeout = parseTimeout(reqElem, defaults.timeout());
         final boolean followRedirect = parseBooleanAttr(reqElem, "follow-redirect", defaults.followRedirect());
+        final boolean autoAcceptEncoding = parseBooleanAttr(reqElem, "auto-accept-encoding", defaults.autoAcceptEncoding());
         final HttpClient.Version httpVersion = parseHttpVersion(reqElem, defaults.httpVersion());
         final boolean statusOnly = parseBooleanAttr(reqElem, "status-only", responseDefaults.statusOnly());
         final String overrideMediaType = getAttr(reqElem, "override-media-type");
@@ -66,7 +67,7 @@ public class RequestOptionsParser {
         final String authMethod = getAttr(reqElem, "auth-method");
         final boolean sendAuthorization = parseBooleanAttr(reqElem, "send-authorization", credDefaults.sendAuthorization());
 
-        final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout, httpVersion);
+        final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout, httpVersion, autoAcceptEncoding);
         final ResponseOptions responseOptions = new ResponseOptions(statusOnly, overrideMediaType);
         final UserCredentials userCredentials = new UserCredentials(username, password, authMethod, sendAuthorization);
         return new RequestOptions(requestOptions, responseOptions, userCredentials);

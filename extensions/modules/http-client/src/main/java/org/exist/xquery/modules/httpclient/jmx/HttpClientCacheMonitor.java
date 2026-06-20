@@ -105,7 +105,8 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
     public String getCachedClientsSummary() {
         return cache.asMap().keySet().stream()
                 .map(opts -> "followRedirect=" + opts.followRedirect()
-                        + ", timeout=" + opts.timeout() + "s")
+                        + ", timeout=" + opts.timeout() + "s"
+                        + ", autoAcceptEncoding=" + opts.autoAcceptEncoding())
                 .collect(Collectors.joining("; "));
     }
 

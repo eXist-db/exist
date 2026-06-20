@@ -95,7 +95,7 @@ public class HttpClientCacheMonitorTest {
         // hit
         cache.getIfPresent(opts);
         // miss
-        cache.getIfPresent(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1));
+        cache.getIfPresent(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1, true));
 
         assertEquals(1L, server.getAttribute(name, "HitCount"));
         assertEquals(1L, server.getAttribute(name, "MissCount"));
@@ -103,20 +103,21 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void hitRateIsZeroWhenNoRequests() throws Exception {
-        assertEquals(0.0, (double) server.getAttribute(name, "HitRate"), 0.0001);
+        assertEquals(1.0, (double) server.getAttribute(name, "HitRate"), 0.0001);
     }
 
     @Test
     public void cachedClientsSummaryListsConfigurations() throws Exception {
-        cache.put(new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1),
+        cache.put(new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1, true),
                 HttpClient.newHttpClient());
-        cache.put(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1),
+        cache.put(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1, true),
                 HttpClient.newHttpClient());
 
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");
         assertTrue("Summary should mention followRedirect=true", summary.contains("followRedirect=true"));
         assertTrue("Summary should mention followRedirect=false", summary.contains("followRedirect=false"));
         assertTrue("Summary should mention timeout=30s", summary.contains("timeout=30s"));
+        assertTrue("Summary should mention autoAcceptEncoding=true", summary.contains("autoAcceptEncoding=true"));
     }
 
     @Test

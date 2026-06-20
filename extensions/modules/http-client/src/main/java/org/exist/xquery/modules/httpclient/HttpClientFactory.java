@@ -83,7 +83,7 @@ class HttpClientFactory {
 
     private static HttpClient newClient(final HttpClientOptions options) {
         final Methanol.Builder clientBuilder = Methanol.newBuilder()
-                .autoAcceptEncoding(true)
+                .autoAcceptEncoding(options.autoAcceptEncoding())
                 .version(options.httpVersion())
                 .followRedirects(options.followRedirect()
                         ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
