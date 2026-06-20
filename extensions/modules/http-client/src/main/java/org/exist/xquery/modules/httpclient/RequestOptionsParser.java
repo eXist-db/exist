@@ -23,6 +23,7 @@ package org.exist.xquery.modules.httpclient;
 
 import java.net.http.HttpClient;
 
+import org.exist.Namespaces;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
@@ -58,7 +59,7 @@ public class RequestOptionsParser {
 
         final int timeout = parseTimeout(reqElem, defaults.timeout());
         final boolean followRedirect = parseBooleanAttr(reqElem, "follow-redirect", defaults.followRedirect());
-        final boolean autoAcceptEncoding = parseBooleanAttr(reqElem, "auto-accept-encoding", defaults.autoAcceptEncoding());
+        final boolean autoAcceptEncoding = parseBooleanAttr(reqElem, Namespaces.EXIST_NS, "auto-accept-encoding", defaults.autoAcceptEncoding());
         final HttpClient.Version httpVersion = parseHttpVersion(reqElem, defaults.httpVersion());
         final boolean statusOnly = parseBooleanAttr(reqElem, "status-only", responseDefaults.statusOnly());
         final String overrideMediaType = getAttr(reqElem, "override-media-type");
@@ -74,7 +75,7 @@ public class RequestOptionsParser {
     }
 
     private static HttpClient.Version parseHttpVersion(final Element reqElem, final HttpClient.Version defaultVersion) throws XPathException {
-        final String value = getAttr(reqElem, "http-version");
+        final String value = getAttr(reqElem, Namespaces.EXIST_NS, "http-version");
         if (value == null) {
             return defaultVersion;
         }
@@ -100,7 +101,22 @@ public class RequestOptionsParser {
     }
 
     private static boolean parseBooleanAttr(final Element elem, final String name, final boolean defaultValue) {
-        final String value = getAttr(elem, name);
+        String value = getAttr(elem, name);
+        if (value == null) {
+            value = getAttr(elem, Namespaces.EXIST_NS, name);
+        }
+        if (value == null) {
+            value = getAttr(elem, HttpClientModule.NAMESPACE_URI, name);
+        }
+        return parseBooleanAttr(value, defaultValue);
+    }
+
+    private static boolean parseBooleanAttr(final Element elem, final String namespaceURI, final String localName, final boolean defaultValue) {
+        final String value = getAttr(elem, namespaceURI, localName);
+        return parseBooleanAttr(value, defaultValue);
+    }
+
+    private static boolean parseBooleanAttr(final String value, final boolean defaultValue) {
         if (value == null) {
             return defaultValue;
         }
@@ -109,6 +125,11 @@ public class RequestOptionsParser {
 
     private static String getAttr(final Element elem, final String name) {
         final String val = elem.getAttribute(name);
+        return val != null && !val.isEmpty() ? val : null;
+    }
+
+    private static String getAttr(final Element elem, final String namespaceURI, final String localName) {
+        final String val = elem.getAttributeNS(namespaceURI, localName);
         return val != null && !val.isEmpty() ? val : null;
     }
 }
