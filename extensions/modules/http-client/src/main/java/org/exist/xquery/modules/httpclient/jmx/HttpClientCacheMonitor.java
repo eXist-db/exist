@@ -98,9 +98,7 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
     @Override
     public double getHitRate() {
-        final CacheStats stats = cache.stats();
-        final long total = stats.requestCount();
-        return total == 0 ? 0.0 : stats.hitRate();
+        return cache.stats().hitRate();
     }
 
     @Override
