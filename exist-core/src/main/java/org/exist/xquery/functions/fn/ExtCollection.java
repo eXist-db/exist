@@ -34,6 +34,7 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.*;
@@ -81,7 +82,15 @@ public class ExtCollection extends BasicFunction {
         if (args.length == 0 || args[0].isEmpty()) {
             collectionUri = null;
         } else {
-            collectionUri = asUri(args[0].itemAt(0).getStringValue());
+            final String raw = args[0].itemAt(0).getStringValue();
+            // Resource-naming contract (eXist-db/exist#6463, decisions 1 + 2 + 5): canonicalize a bare
+            // db-path to its stored key by decode-then-encode, so collection("/db/x/café-col") and a
+            // literal '%' resolve, mirroring fn:doc. A scheme-ful URI (xmldb:, file:, ...) is left
+            // untouched so its scheme/authority are not rewritten.
+            final String effective = raw.startsWith(XmldbURI.ROOT_COLLECTION)
+                    ? URIUtils.encodePathForURILenient(URIUtils.decodePathForURI(raw))
+                    : raw;
+            collectionUri = asUri(effective);
         }
 
         return getCollectionItems(new URI[] { collectionUri });

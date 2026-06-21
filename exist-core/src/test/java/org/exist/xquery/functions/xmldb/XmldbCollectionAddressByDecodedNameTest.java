@@ -91,6 +91,37 @@ public class XmldbCollectionAddressByDecodedNameTest {
         assertEquals("1", rs.getResource(0).getContent());
     }
 
+    /**
+     * Decision 2, read side, across the xmldb: and fn:collection surfaces: a collection whose name
+     * literally contains '%' is stored bijectively (the '%' is escaped to %25) and is resolvable by
+     * its decoded literal name via xmldb:collection-available and fn:collection -- the same
+     * decode-then-encode canonicalization fn:doc applies. (The '%' here is not a valid escape, so
+     * decoding is a no-op and the decoded form round-trips to its own stored key.)
+     */
+    @Test
+    public void literalPercentCollectionResolvesByDecodedName() throws XMLDBException {
+        final String name = "pctcol-50%done";
+        existEmbeddedServer.executeQuery(
+                "declare variable $n external; xmldb:create-collection('/db', $n)",
+                Map.of("n", new StringValue(name)));
+
+        // bijective lenient store escapes the literal '%' to %25 (no collision)
+        assertTrue("precondition: the name must encode to a %25 stored key",
+                URIUtils.encodeForURILenient(name).contains("%25"));
+
+        // xmldb:collection-available by the decoded literal name
+        assertEquals("xmldb:collection-available by decoded literal-% name", "true", available("/db/" + name));
+
+        // fn:collection over the decoded literal path resolves the same collection
+        existEmbeddedServer.executeQuery(
+                "declare variable $c external; xmldb:store($c, 'd.xml', document { <d/> })",
+                Map.of("c", new StringValue("/db/" + name)));
+        final ResourceSet count = existEmbeddedServer.executeQuery(
+                "declare variable $c external; count(collection($c))",
+                Map.of("c", new StringValue("/db/" + name)));
+        assertEquals("collection() by decoded literal-% path", "1", count.getResource(0).getContent());
+    }
+
     private static String available(final String path) throws XMLDBException {
         final ResourceSet rs = existEmbeddedServer.executeQuery(
                 "declare variable $p external; xmldb:collection-available($p)", Map.of("p", new StringValue(path)));
