@@ -24,7 +24,6 @@ package org.exist.xquery.value;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
 import org.junit.ClassRule;
@@ -43,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  *
  * <p>Regression for the file-backed binary premature-close bug: the general-purpose value sequences
  * checked only direct reference equality and did not recurse into container items, unlike
- * {@code MapType}/{@code ArrayType}. Each method below fails (the nested item is not detected) without the
+ * {@code MapType}/{@code ArrayType}. Each test below fails (the nested item is not detected) without the
  * fix. {@code OrderedValueSequence} and {@code PreorderedValueSequence} receive the same one-line fix; they
  * are not constructed directly here (they require {@code OrderSpec} scaffolding) but share the identical
  * recursion.</p>
@@ -55,53 +54,60 @@ public class ContainsReferenceNestedTest {
 
     @Test
     public void valueSequenceDetectsItemNestedInMap() throws Exception {
-        withMapNesting((map, nested, notNested) -> {
-            final ValueSequence vs = new ValueSequence();
-            vs.add(map);
-            assertTrue(vs.containsReference(nested));
-            assertFalse(vs.containsReference(notNested));
-        });
-    }
-
-    @Test
-    public void arrayListValueSequenceDetectsItemNestedInMap() throws Exception {
-        withMapNesting((map, nested, notNested) -> {
-            final ArrayListValueSequence als = new ArrayListValueSequence();
-            als.add(map);
-            assertTrue(als.containsReference(nested));
-            assertFalse(als.containsReference(notNested));
-        });
-    }
-
-    @Test
-    public void subSequenceDetectsItemNestedInMap() throws Exception {
-        withMapNesting((map, nested, notNested) -> {
-            final ValueSequence backing = new ValueSequence();
-            backing.add(map);
-            final SubSequence sub = new SubSequence(1, backing);
-            assertTrue(sub.containsReference(nested));
-            assertFalse(sub.containsReference(notNested));
-        });
-    }
-
-    @FunctionalInterface
-    private interface MapNestingTest {
-        void test(MapType map, StringValue nested, StringValue notNested) throws XPathException;
-    }
-
-    /**
-     * Builds a {@code map { "data": $nested }} in a fresh context and runs {@code test} with it, plus a
-     * sibling {@code notNested} item that the sequence must NOT report as referenced.
-     */
-    private void withMapNesting(final MapNestingTest test) throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
             final StringValue nested = new StringValue("nested-marker");
             final StringValue notNested = new StringValue("not-nested");
+
             final MapType map = new MapType(context);
             map.add(new StringValue("data"), nested);
-            test.test(map, nested, notNested);
+
+            final ValueSequence sequence = new ValueSequence();
+            sequence.add(map);
+
+            assertTrue(sequence.containsReference(nested));
+            assertFalse(sequence.containsReference(notNested));
+        }
+    }
+
+    @Test
+    public void arrayListValueSequenceDetectsItemNestedInMap() throws Exception {
+        final BrokerPool pool = SERVER.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            final StringValue nested = new StringValue("nested-marker");
+            final StringValue notNested = new StringValue("not-nested");
+
+            final MapType map = new MapType(context);
+            map.add(new StringValue("data"), nested);
+
+            final ArrayListValueSequence sequence = new ArrayListValueSequence();
+            sequence.add(map);
+
+            assertTrue(sequence.containsReference(nested));
+            assertFalse(sequence.containsReference(notNested));
+        }
+    }
+
+    @Test
+    public void subSequenceDetectsItemNestedInMap() throws Exception {
+        final BrokerPool pool = SERVER.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            final StringValue nested = new StringValue("nested-marker");
+            final StringValue notNested = new StringValue("not-nested");
+
+            final MapType map = new MapType(context);
+            map.add(new StringValue("data"), nested);
+
+            // SubSequence over a one-element backing sequence whose only item (at index 1) is the map.
+            final ValueSequence backing = new ValueSequence();
+            backing.add(map);
+            final SubSequence sequence = new SubSequence(1, backing);
+
+            assertTrue(sequence.containsReference(nested));
+            assertFalse(sequence.containsReference(notNested));
         }
     }
 }
