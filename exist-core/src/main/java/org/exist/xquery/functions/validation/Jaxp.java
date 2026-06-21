@@ -22,30 +22,16 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -63,7 +49,6 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.resolver.ResolverFactory;
 import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -73,6 +58,7 @@ import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
+import org.exist.validation.Xsd11SchemaDetection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -109,34 +95,6 @@ public class Jaxp extends BasicFunction {
 
     private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
     private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
-    private static final String XSD_VERSIONING_NS = "http://www.w3.org/2007/XMLSchema-versioning";
-
-    /**
-     * Bound on the size of {@link #XSD11_DETECTION_CACHE} (see there for what it caches).
-     */
-    private static final int XSD11_DETECTION_CACHE_MAX_ENTRIES = 256;
-
-    /**
-     * Cache key for {@link #XSD11_DETECTION_CACHE}: the requesting Subject's name plus the
-     * resolved schema URI. Including the Subject prevents a Subject without read permission on
-     * the schema resource from observing a boolean populated by a different (permitted)
-     * Subject's earlier, permission-checked fetch -- a cache hit skips {@link
-     * #isXsd11Schema(String, String, String)}'s {@code openStream()} entirely, so without this
-     * the cache itself would bypass whatever permission check that open would otherwise perform.
-     */
-    private record Xsd11DetectionCacheKey(String subjectName, String resolvedSchemaUri) {
-    }
-
-    /**
-     * Bounded (see {@link #XSD11_DETECTION_CACHE_MAX_ENTRIES}), LRU-evicted cache of
-     * "does the schema at this resolved URI declare vc:minVersion 1.1?", so that validating many
-     * documents against the same schema doesn't re-fetch and re-peek it every time. Cleared by
-     * {@code validation:clear-grammar-cache()} (see {@link GrammarTooling}) alongside the Xerces
-     * grammar pool, so operators have one function to clear every validation-related cache.
-     */
-    private static final Cache<Xsd11DetectionCacheKey, Boolean> XSD11_DETECTION_CACHE = Caffeine.newBuilder()
-            .maximumSize(XSD11_DETECTION_CACHE_MAX_ENTRIES)
-            .build();
 
     private static final String simpleFunctionTxt = """
             Validate document by parsing $instance. Optionally \
@@ -426,7 +384,7 @@ public class Jaxp extends BasicFunction {
      */
     static boolean isMissingElementDeclaration(final ValidationReport report) {
         return report.getValidationReportItemList().stream()
-                .anyMatch(item -> item.getMessage() != null && item.getMessage().startsWith("cvc-elt.1.a:"));
+                .anyMatch(item -> Xsd11SchemaDetection.isMissingElementDeclaration(item.getMessage()));
     }
 
     /**
@@ -472,12 +430,21 @@ public class Jaxp extends BasicFunction {
 
     /**
      * Acquires a fresh, disposable {@link InputSource} for the instance and runs
-     * {@link #detectXsd11ViaSchemaLocation(String, InputSource)} against it.
+     * {@link Xsd11SchemaDetection#detectXsd11ViaSchemaLocation(String, InputSource)} against it.
+     * <p>
+     * Deliberately does NOT reuse the caller's own {@code instance} {@link InputSource} (which
+     * would save this second acquisition): unlike the {@code EXistInputSource} subclasses {@code
+     * org.exist.collections.MutableCollection}'s peek relies on, {@link Shared#getInputSource} here
+     * returns a plain {@link InputSource} wrapping a single-use {@link java.io.InputStream} --
+     * {@code getByteStream()} returns the same, already-consumed stream on a second call, not a
+     * fresh one. Reusing it would silently feed the real parse an exhausted stream. Investigated
+     * and accepted as the cost of this peek; not a candidate for the InputSource-reuse pattern used
+     * elsewhere.
      */
     private boolean peekIsXsd11ViaSchemaLocation(final Sequence[] args) throws XPathException, IOException {
         final InputSource peekInstance = Shared.getInputSource(args[0].itemAt(0), context);
         try {
-            return detectXsd11ViaSchemaLocation(context.getSubject().getName(), peekInstance);
+            return Xsd11SchemaDetection.detectXsd11ViaSchemaLocation(context.getSubject().getName(), peekInstance);
         } finally {
             Shared.closeInputSource(peekInstance);
         }
@@ -557,188 +524,21 @@ public class Jaxp extends BasicFunction {
     }
 
     /**
-     * Best-effort, pre-parse check for whether the instance's referenced schema is XSD 1.1
-     * (declares {@code vc:minVersion} containing "1.1"), so the right validation pipeline can
-     * be chosen up front instead of discovering the mismatch only after a failed first attempt
-     * (see {@link #isMissingElementDeclaration(ValidationReport)}). Resolves the schemaLocation
-     * hint(s) only via simple relative-URI resolution against the instance's own base URI --
-     * it does NOT replicate the full catalog/entity-resolver chain used for the real parse.
-     * Returns {@code false} (never throws) whenever any step can't be completed; the
-     * retry-after-failure check in {@code eval()} remains the safety net for those cases
-     * (catalog-mediated locations, an unresolvable hint, etc.).
-     *
-     * @param subjectName the requesting Subject's name, used to scope {@link #XSD11_DETECTION_CACHE}
-     *                     (see there for why).
-     * @param peekInstance a fresh, not-yet-consumed InputSource for the same instance document.
-     */
-    private static boolean detectXsd11ViaSchemaLocation(final String subjectName, final InputSource peekInstance) {
-        final Map<String, String> rootAttrs = peekRootAttributes(peekInstance);
-        final String baseUri = peekInstance.getSystemId();
-        if (rootAttrs == null || baseUri == null) {
-            return false;
-        }
-
-        final List<String> candidateLocations = new ArrayList<>();
-        final String noNsLocation = rootAttrs.get(clark(XSI_NS, "noNamespaceSchemaLocation"));
-        if (noNsLocation != null) {
-            candidateLocations.add(noNsLocation);
-        }
-        final String schemaLocation = rootAttrs.get(clark(XSI_NS, "schemaLocation"));
-        if (schemaLocation != null) {
-            // xsi:schemaLocation is a list of "namespace location" pairs; we only need the locations.
-            final String[] tokens = schemaLocation.trim().split("\\s+");
-            for (int i = 1; i < tokens.length; i += 2) {
-                candidateLocations.add(tokens[i]);
-            }
-        }
-
-        for (final String location : candidateLocations) {
-            if (isXsd11Schema(subjectName, baseUri, location)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Resolves {@code location} relative to {@code baseUri} (the same xmldb:// normalization
-     * the catalog mechanism uses, so this works for documents stored in the database), opens it,
-     * and checks whether its root element declares {@code vc:minVersion} containing "1.1".
-     * Returns {@code false} for any resolution/read failure -- this is a best-effort peek, not
-     * a substitute for the real catalog-aware resolution the actual validation pass performs.
-     * Package-private (not {@code private}) so {@code JaxpSchemaLocationSecurityTest}/
-     * {@code JaxpXsd11DetectionCacheTest}, both in this package, can call it directly.
-     *
-     * <p>{@code location} is the literal, attacker/document-author-controlled value of the
-     * instance's own {@code xsi:schemaLocation}/{@code noNamespaceSchemaLocation} hint -- if it's
-     * an absolute URI (e.g. {@code file:///etc/passwd}, {@code http://internal-host/...}, or even
-     * an absolute {@code xmldb://some-other-host:1234/db/...} naming a remote eXist instance),
-     * {@link URI#resolve(String)} returns it verbatim, ignoring {@code baseUri} entirely. Opening
-     * that unconditionally would let any caller make this (unprivileged, security-context-free)
-     * peek fetch arbitrary local files or issue arbitrary outbound requests (file read, or a
-     * network connection -- {@code org.exist.protocolhandler.protocols.xmldb.Handler} dispatches
-     * to XML-RPC against whatever host an absolute {@code xmldb://} URI names) using the server
-     * process's own OS-level/network access, regardless of the calling Subject's DB permissions --
-     * this is NOT the same trust boundary as the real validation pass, which only fetches whatever
-     * a configured catalog/resolver permits. So only resolutions that land in the exact same
-     * scheme+authority (host/port) as {@code baseUri} are attempted -- i.e. genuinely relative
-     * locations within the instance's own origin, never a different scheme or host. Anything else
-     * falls through to the unchanged, already-accepted-risk default pipeline below, exactly as if
-     * this peek didn't exist.</p>
-     *
-     * <p>Residual nuance, not a new gap: {@code file:} URIs have no authority component at all
-     * (it's always empty), so this check cannot distinguish {@code file:///a/instance.xml} from
-     * an absolute {@code file:///etc/passwd} hint -- both have scheme {@code file} and empty
-     * authority. This only matters for Java-{@link java.io.File}-backed instance items (the only
-     * way to get a {@code file:} base URI here), which already requires the caller to have used
-     * {@code util:} Java-interop functions to construct that object in the first place -- a
-     * separate, pre-existing privilege boundary this peek doesn't change either way.</p>
-     *
-     * <p>{@code subjectName} scopes {@link #XSD11_DETECTION_CACHE}: a cache hit skips this
-     * method's permission-checked {@code openStream()} entirely, so without scoping by Subject,
-     * a Subject without read permission on the schema resource could observe a boolean populated
-     * by a different (permitted) Subject's earlier fetch -- a cross-Subject information leak.</p>
+     * Package-private delegate to {@link Xsd11SchemaDetection#isXsd11Schema(String, String,
+     * String)} so {@code JaxpSchemaLocationSecurityTest}/{@code JaxpXsd11DetectionCacheTest}, both
+     * in this package, can keep calling it directly.
      */
     static boolean isXsd11Schema(final String subjectName, final String baseUri, final String location) {
-        try {
-            final URI baseUriNormalized = new URI(ResolverFactory.fixupExistCatalogUri(baseUri));
-            final URI resolvedUri = baseUriNormalized.resolve(location);
-            if (!Objects.equals(baseUriNormalized.getScheme(), resolvedUri.getScheme())
-                    || !Objects.equals(baseUriNormalized.getAuthority(), resolvedUri.getAuthority())) {
-                LOG.debug("Refusing to peek candidate schema '{}': resolved to a different origin ('{}') than " +
-                        "the instance's own base URI ('{}') -- leaving this to the default pipeline/catalog instead.",
-                        location, resolvedUri, baseUriNormalized);
-                return false;
-            }
-
-            final Xsd11DetectionCacheKey cacheKey = new Xsd11DetectionCacheKey(subjectName, resolvedUri.toString());
-            final Boolean cached = getCachedXsd11Detection(cacheKey);
-            if (cached != null) {
-                return cached;
-            }
-
-            try (final InputStream is = resolvedUri.toURL().openStream()) {
-                final InputSource schemaSource = new InputSource(is);
-                schemaSource.setSystemId(resolvedUri.toString());
-                final Map<String, String> schemaRootAttrs = peekRootAttributes(schemaSource);
-                if (schemaRootAttrs == null) {
-                    // Couldn't even parse the candidate as XML -- not a stable fact about a real
-                    // schema (e.g. case from #6 in detectXsd11ViaSchemaLocation finding a location
-                    // that doesn't actually exist), so don't cache it; let the next call retry.
-                    return false;
-                }
-                final String minVersion = schemaRootAttrs.get(clark(XSD_VERSIONING_NS, "minVersion"));
-                final boolean result = minVersion != null && minVersion.contains("1.1");
-                cacheXsd11Detection(cacheKey, result);
-                return result;
-            }
-        } catch (final URISyntaxException | IOException ex) {
-            // Not cached: this may be a transient failure (lock contention, a brief network blip
-            // for an xmldb:// catalog served over XML-RPC, etc); a permanently-cached false would
-            // wrongly keep a legitimate schema on the slower retry-after-failure path forever.
-            LOG.debug("Could not peek candidate schema '{}' relative to '{}': {}", location, baseUri, ex.getMessage());
-            return false;
-        }
-    }
-
-    @Nullable
-    private static Boolean getCachedXsd11Detection(final Xsd11DetectionCacheKey key) {
-        return XSD11_DETECTION_CACHE.getIfPresent(key);
-    }
-
-    private static void cacheXsd11Detection(final Xsd11DetectionCacheKey key, final boolean isXsd11) {
-        XSD11_DETECTION_CACHE.put(key, isXsd11);
+        return Xsd11SchemaDetection.isXsd11Schema(subjectName, baseUri, location);
     }
 
     /**
-     * Discards all cached {@link #isXsd11Schema(String, String, String)} results. Package-private
-     * so {@link GrammarTooling}'s {@code clear-grammar-cache()} can clear this alongside the
-     * Xerces grammar pool.
+     * Package-private delegate to {@link Xsd11SchemaDetection#clearCache()}, so {@link
+     * GrammarTooling}'s {@code clear-grammar-cache()} can clear this alongside the Xerces grammar
+     * pool.
      */
     static void clearXsd11DetectionCache() {
-        XSD11_DETECTION_CACHE.invalidateAll();
-    }
-
-    /**
-     * Reads only as far as the root element's start tag and returns its attributes, keyed by
-     * Clark-notation {@code {namespace}localName} (see {@link #clark(String, String)}) -- cheaper
-     * than a full (validating) parse since StAX stops pulling events the moment the caller stops
-     * asking for them, and avoids the exception-as-control-flow pattern a SAX-based equivalent
-     * would need to abort early. DTD processing and external entities are disabled; this reads
-     * untrusted instance documents as well as schema documents.
-     *
-     * @return the root element's attributes, or {@code null} if the source couldn't be read/parsed.
-     */
-    @Nullable
-    private static Map<String, String> peekRootAttributes(final InputSource source) {
-        try {
-            final XMLInputFactory factory = XMLInputFactory.newInstance();
-            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-
-            final XMLStreamReader reader = factory.createXMLStreamReader(source.getByteStream());
-            try {
-                while (reader.hasNext()) {
-                    if (reader.next() == XMLStreamConstants.START_ELEMENT) {
-                        final Map<String, String> attrs = new HashMap<>();
-                        for (int i = 0; i < reader.getAttributeCount(); i++) {
-                            attrs.put(clark(reader.getAttributeNamespace(i), reader.getAttributeLocalName(i)), reader.getAttributeValue(i));
-                        }
-                        return attrs;
-                    }
-                }
-                return null;
-            } finally {
-                reader.close();
-            }
-        } catch (final XMLStreamException ex) {
-            LOG.debug("Could not peek root element attributes: {}", ex.getMessage());
-            return null;
-        }
-    }
-
-    private static String clark(@Nullable final String namespaceUri, final String localName) {
-        return (namespaceUri == null ? "" : "{" + namespaceUri + "}") + localName;
+        Xsd11SchemaDetection.clearCache();
     }
 
     /**

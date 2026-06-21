@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
+import org.exist.Namespaces;
 import org.exist.collections.triggers.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
@@ -57,31 +58,34 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
+import org.exist.util.SaxonConfiguration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.validation.Xsd11SchemaDetection;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmlresolver.Resolver;
 
 import javax.annotation.Nullable;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
+import javax.xml.validation.ValidatorHandler;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.exist.storage.lock.Lock.LockMode.*;
 
@@ -99,6 +103,17 @@ public class MutableCollection implements Collection {
     private static final Logger LOG = LogManager.getLogger(Collection.class);
     private static final int SHALLOW_SIZE = 550;
     private static final int DOCUMENT_SIZE = 450;
+    private static final String XML_SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
+    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
+
+    /**
+     * Caches, per namespace, whether the system catalog's grammar for that namespace needs an
+     * XSD 1.1-capable loader -- see {@link #resolveXsd11SchemaForNamespace(Resolver, String)}.
+     * Namespaces reaching this cache are catalog-registered (a finite, admin-controlled set, never
+     * attacker-influenced), so unlike {@link org.exist.validation.Xsd11SchemaDetection}'s
+     * location-driven cache, no per-Subject scoping/bounding is needed here.
+     */
+    private static final ConcurrentMap<String, Optional<Schema>> XSD11_SCHEMA_BY_NAMESPACE = new ConcurrentHashMap<>();
 
     private final int collectionId;
     private XmldbURI path;
@@ -128,6 +143,38 @@ public class MutableCollection implements Collection {
     private volatile boolean isTempCollection;
     private final Permission permissions;
     @Deprecated private CollectionMetadata collectionMetadata = null;
+
+    /**
+     * Discards all cached {@link #resolveXsd11SchemaForNamespace(Resolver, String)} results --
+     * called alongside {@code Jaxp.clearXsd11DetectionCache()} by {@code validation:clear-grammar-cache()}
+     * so one admin action clears both XSD-1.1-detection caches, not just the schemaLocation-hint one.
+     */
+    public static void clearXsd11SchemaByNamespaceCache() {
+        XSD11_SCHEMA_BY_NAMESPACE.clear();
+    }
+
+    /**
+     * Lazily compiles, once per JVM, the no-pre-supplied-source XSD 1.1 {@link Schema} used for the
+     * case where the instance carries its own {@code xsi:schemaLocation}/{@code
+     * noNamespaceSchemaLocation} hint that needs XSD 1.1 to load (detected via
+     * {@link org.exist.validation.Xsd11SchemaDetection#detectXsd11ViaSchemaLocation}): unlike
+     * {@link #resolveXsd11SchemaForNamespace(Resolver, String)}, no pre-supplied Source is needed
+     * here, since dynamic discovery can follow the instance's own hint itself, the same way the
+     * default SAX pipeline follows it for XSD 1.0.
+     * <p>
+     * Initialization-on-demand holder idiom: thread-safe with no explicit synchronization, relying
+     * on the JVM's class-initialization guarantees instead of manual double-checked locking.
+     */
+    private static final class Xsd11DynamicDiscoverySchemaHolder {
+        private static final Schema INSTANCE;
+        static {
+            try {
+                INSTANCE = SchemaFactory.newInstance(XSD_1_1_NS).newSchema();
+            } catch (final SAXException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
+    }
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -1198,94 +1245,96 @@ public class MutableCollection implements Collection {
         }
     }
 
-    private static final String XML_SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
-    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
-
-    /**
-     * A {@link Schema}, unlike a {@link Validator}, is immutable and thread-safe, so this one is
-     * compiled once per JVM and reused. Compiled explicitly from the system catalog's resolution
-     * of the {@code http://www.w3.org/2001/XMLSchema} namespace, rather than relying on a
-     * no-pre-supplied-source {@code Schema}'s dynamic discovery: that only resolves grammars via
-     * an instance's own {@code xsi:schemaLocation} hint, not via "this document's root namespace
-     * has no hint at all, but happens to be the schema-for-schemas namespace" (confirmed
-     * empirically -- a no-source {@code Schema} fails with {@code cvc-elt.1.a} for exactly this
-     * case, even with the resolver wired on). Cheap to keep correct: the system catalog never
-     * changes at runtime for a given {@code BrokerPool}.
-     */
-    private static volatile Schema xsd11MetaSchema;
-
-    private static Schema getXsd11MetaSchema(final Resolver catalogResolver) throws SAXException {
-        Schema schema = xsd11MetaSchema;
-        if (schema == null) {
-            synchronized (MutableCollection.class) {
-                schema = xsd11MetaSchema;
-                if (schema == null) {
-                    final SchemaFactory schemaFactory = SchemaFactory.newInstance(XSD_1_1_NS);
-                    try {
-                        final Source metaSchemaSource = catalogResolver.resolve(XML_SCHEMA_NS, null);
-                        if (metaSchemaSource == null) {
-                            throw new SAXException("System catalog has no entry for " + XML_SCHEMA_NS);
-                        }
-                        schemaFactory.setResourceResolver(catalogResolver);
-                        schema = schemaFactory.newSchema(metaSchemaSource);
-                    } catch (final TransformerException e) {
-                        throw new SAXException(e);
-                    }
-                    xsd11MetaSchema = schema;
-                }
-            }
-        }
-        return schema;
+    private static Schema getXsd11DynamicDiscoverySchema() {
+        return Xsd11DynamicDiscoverySchemaHolder.INSTANCE;
     }
 
     /**
-     * Reads only as far as the root element's start tag and returns its namespace URI (or
-     * {@code null} for no namespace, or if the source couldn't be read/parsed at all) -- mirrors
-     * the StAX-based peek {@link org.exist.xquery.functions.validation.Jaxp} already uses for a
-     * similar purpose, cheaper than a full parse. Safe to call before the real parse: callers of
-     * {@code storeDocument()}/{@code storeXmlDocument()} already require their {@link InputSource}
-     * to support being parsed twice (once to validate, once to store) via the same
-     * {@code getByteStream()}/{@code getCharacterStream()} methods this calls -- see
-     * {@link org.exist.util.StringInputSource}.
+     * Resolves the system catalog's grammar for {@code namespace} and, only if that grammar
+     * actually requires XSD 1.1 to load, compiles and caches an explicit-Source XSD 1.1
+     * {@link Schema} for it; returns {@code null} when the resolved grammar loads fine under the
+     * standard XSD 1.0 {@link SchemaFactory} (the overwhelmingly common case), so the default SAX
+     * pipeline keeps handling that case exactly as before.
+     *
+     * <p>"Does it need 1.1?" is decided empirically -- attempt the cheap, side-effect-free compile
+     * via the plain (1.0) {@code SchemaFactory} first; if that throws, the grammar needs an
+     * XSD-1.1-aware loader. This is the only reliable signal here: the W3C XSD 1.1 meta-schema
+     * itself (the motivating case, see {@code https://github.com/eXist-db/exist/issues/5541}) does
+     * not self-declare {@code vc:minVersion} the way a hand-authored 1.1 schema would, so peeking
+     * for that attribute (as {@link org.exist.validation.Xsd11SchemaDetection} does for the
+     * schemaLocation-hint case below) does not apply to namespace-only resolution.</p>
+     *
+     * <p>A no-pre-supplied-source {@code Schema}'s dynamic discovery only resolves grammars via an
+     * instance's own {@code xsi:schemaLocation} hint, not via "this document's root namespace has
+     * no hint at all, but happens to be a namespace the catalog can resolve" (confirmed
+     * empirically -- a no-source {@code Schema} fails with {@code cvc-elt.1.a} for exactly this
+     * case, even with the resolver wired on) -- hence the explicit {@code Source} here.</p>
      */
     @Nullable
-    private static String peekRootNamespace(final InputSource source) {
-        try {
-            final XMLInputFactory factory = XMLInputFactory.newInstance();
-            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    private static Schema resolveXsd11SchemaForNamespace(final Resolver catalogResolver, final String namespace) throws SAXException {
+        final Optional<Schema> cached = XSD11_SCHEMA_BY_NAMESPACE.get(namespace);
+        if (cached != null) {
+            return cached.orElse(null);
+        }
 
-            final Reader characterStream = source.getCharacterStream();
-            final XMLStreamReader reader = characterStream != null
-                    ? factory.createXMLStreamReader(characterStream)
-                    : factory.createXMLStreamReader(source.getByteStream());
-            try {
-                while (reader.hasNext()) {
-                    if (reader.next() == XMLStreamConstants.START_ELEMENT) {
-                        return reader.getNamespaceURI();
+        Optional<Schema> result = Optional.empty();
+        try {
+            final Source probeSource = catalogResolver.resolve(namespace, null);
+            if (probeSource != null) {
+                try {
+                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(probeSource);
+                    // Loads fine under the standard (1.0) pipeline -- nothing special needed.
+                } catch (final SAXException loadsAs10Failure) {
+                    final Source compileSource = catalogResolver.resolve(namespace, null);
+                    if (compileSource != null) {
+                        final SchemaFactory xsd11Factory = SchemaFactory.newInstance(XSD_1_1_NS);
+                        xsd11Factory.setResourceResolver(catalogResolver);
+                        result = Optional.of(xsd11Factory.newSchema(compileSource));
                     }
                 }
-                return null;
-            } finally {
-                reader.close();
             }
-        } catch (final XMLStreamException | NullPointerException ex) {
-            LOG.debug("Could not peek root element namespace: {}", ex.getMessage());
-            return null;
+        } catch (final TransformerException e) {
+            throw new SAXException(e);
         }
+
+        XSD11_SCHEMA_BY_NAMESPACE.put(namespace, result);
+        return result.orElse(null);
     }
 
     /**
-     * Parses/validates {@code source} via {@code xmlReader1} as before, unless the document's
-     * root element is in the W3C XML Schema namespace (i.e. the document being stored is itself
-     * an XSD schema document). The bundled Xerces fork's XSD 1.1 support is only wired into the
-     * JAXP {@code SchemaFactory}/{@code Validator} API, never into this dynamic-discovery SAX
-     * pipeline (confirmed empirically: setting Xerces' internal {@code schema/version} property
-     * on a standard {@code XMLReader} throws {@code SAXNotRecognizedException}), so dynamically
-     * discovering the schema-for-schemas grammar via the system catalog -- now the upgraded XSD
-     * 1.1 meta-schema -- can never succeed through {@code xmlReader1} alone. Route this one,
-     * exactly-known case through the JAXP 1.1 {@link Validator} instead, mirroring
-     * {@link org.exist.xquery.functions.validation.Jaxp}'s {@code newXsd11Validator()}.
+     * Parses/validates {@code source} via {@code xmlReader1} as before, unless the document needs
+     * an XSD 1.1-capable loader -- the bundled Xerces fork's XSD 1.1 support is only wired into
+     * the JAXP {@code SchemaFactory}/{@code Validator} API, never into this dynamic-discovery SAX
+     * pipeline (confirmed empirically: setting Xerces' internal {@code schema/version} property on
+     * a standard {@code XMLReader} throws {@code SAXNotRecognizedException}). Two independent ways
+     * this can be needed, checked up front from a single peek of the root element via
+     * {@link org.exist.validation.Xsd11SchemaDetection#peekRootElement(InputSource)} (never via
+     * retry-after-failure: by the time a SAX parse fails, the {@link IndexInfo}'s
+     * {@link org.exist.Indexer}/triggers have already received partial events for an aborted
+     * document, so re-feeding them via a second pass is not safe):
+     *
+     * <ol>
+     *   <li>The document being stored is itself a schema document (root element in the W3C XML
+     *   Schema namespace, no {@code schemaLocation} hint at all): see
+     *   {@link #resolveXsd11SchemaForNamespace(Resolver, String)}.</li>
+     *   <li>The instance carries its own {@code xsi:schemaLocation}/{@code
+     *   noNamespaceSchemaLocation} hint that resolves to a schema declaring {@code
+     *   vc:minVersion="1.1"}: see {@link org.exist.validation.Xsd11SchemaDetection}, shared with
+     *   {@code validation:jaxp()}'s own up-front peek.</li>
+     * </ol>
+     *
+     * <p>Anything neither case catches (most prominently: a catalog-mediated {@code
+     * schemaLocation} hint whose target doesn't self-declare {@code vc:minVersion}) falls through
+     * to the default pipeline unchanged, and may still fail with {@code cvc-elt.1.a} -- a known,
+     * accepted limitation of peek-only detection with no retry safety net.</p>
+     *
+     * <p>The peek above, and the validate/store double-invocation of this method itself (once via
+     * {@code validatorFn}, once via {@code parserFn} in {@link #storeXmlDocument}), both read
+     * {@code source} more than once via the same {@link InputSource#getByteStream()}/{@link
+     * InputSource#getCharacterStream()} methods. Safe because every {@link InputSource} actually
+     * reaching {@code storeDocument()}/{@code storeXmlDocument()} today (see {@code
+     * org.exist.util.StringInputSource} and its siblings) vends a fresh stream per call by
+     * convention -- a precondition of this method, not something it (or its callers) re-validates.</p>
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/5541">#5541</a>
      */
@@ -1297,21 +1346,196 @@ public class MutableCollection implements Collection {
             schemaValidationEnabled = xmlReader1.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA);
         } catch (final SAXException e) {
             schemaValidationEnabled = false;
+            LOG.debug("Could not determine if schema validation is enabled, assuming disabled: {}", e.getMessage());
         }
 
-        if (schemaValidationEnabled && XML_SCHEMA_NS.equals(peekRootNamespace(source))) {
-            final Resolver catalogResolver = (Resolver) broker.getBrokerPool().getConfiguration()
-                    .getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-            if (catalogResolver != null) {
-                final Validator validator = getXsd11MetaSchema(catalogResolver).newValidator();
-                validator.setResourceResolver(catalogResolver);
-                validator.setErrorHandler(indexInfo.getIndexer());
-                validator.validate(new SAXSource(source), new SAXResult(indexInfo.getContentHandler()));
+        if (schemaValidationEnabled) {
+            final Resolver catalogResolver = SaxonConfiguration.resolveCatalogResolver(broker.getBrokerPool().getConfiguration());
+
+            // One StAX pass yields both the root namespace (case 1) and, if case 1 doesn't apply,
+            // the root attributes detectXsd11ViaSchemaLocation needs (case 2) -- avoids peeking the
+            // same root start tag twice.
+            final Xsd11SchemaDetection.RootElementInfo rootElement = Xsd11SchemaDetection.peekRootElement(source);
+            final String rootNamespace = rootElement == null ? null : rootElement.namespaceUri();
+            if (catalogResolver != null && rootNamespace != null) {
+                final Schema schema = resolveXsd11SchemaForNamespace(catalogResolver, rootNamespace);
+                if (schema != null) {
+                    validateWithXsd11Schema(xmlReader1, schema, catalogResolver, indexInfo, source);
+                    return;
+                }
+            }
+
+            if (Xsd11SchemaDetection.detectXsd11ViaSchemaLocation(broker.getCurrentSubject().getName(), rootElement, source.getSystemId())) {
+                validateWithXsd11Schema(xmlReader1, getXsd11DynamicDiscoverySchema(), catalogResolver, indexInfo, source);
                 return;
             }
         }
 
         xmlReader1.parse(source);
+    }
+
+    /**
+     * Validates {@code source} against {@code schema}, feeding the resulting SAX events into
+     * {@code indexInfo}'s indexing/trigger pipeline.
+     * <p>
+     * Uses {@link Schema#newValidatorHandler()} driven by {@code xmlReader1.parse(source)} rather
+     * than {@link Schema#newValidator()}'s {@code validate(Source, Result)} -- a {@link SAXResult}
+     * has no lexical-handler hook (confirmed by inspecting the bundled Xerces fork's {@code
+     * ValidatorImpl}: it wires a {@link SAXResult}'s {@code ContentHandler} but never a {@code
+     * LexicalHandler}), so comments/CDATA sections would otherwise be silently dropped on this
+     * path, unlike the default {@code xmlReader1.parse(source)} path which {@link
+     * IndexInfo#setReader} already wires with both.
+     * <p>
+     * {@link ValidatorHandler} itself has no public API to register a downstream
+     * {@link LexicalHandler} (confirmed empirically: it does not forward comment()/startCDATA()/
+     * endCDATA() to its registered {@code ContentHandler} even when that handler also implements
+     * {@code LexicalHandler}), so {@link Xsd11LexicalHandlerForwarder} sits in front of it,
+     * forwarding content events to the validator (so validation/indexing both still happen) and
+     * lexical events directly to {@code indexInfo}'s real lexical handler, bypassing the validator
+     * for those (comments/CDATA boundaries are not part of any XSD content model -- CDATA's
+     * character content is still validated normally, via the ordinary {@code characters()} event).
+     * <p>
+     * Reuses the caller's already-configured {@code xmlReader1} (rather than constructing a fresh
+     * {@link XMLReader}) purely to drive the parse; its content/lexical handlers are repointed at
+     * {@link Xsd11LexicalHandlerForwarder} for the duration of this call.
+     */
+    private static void validateWithXsd11Schema(final XMLReader xmlReader1, final Schema schema, @Nullable final Resolver catalogResolver, final IndexInfo indexInfo, final InputSource source) throws SAXException, IOException {
+        final ValidatorHandler validatorHandler = schema.newValidatorHandler();
+        if (catalogResolver != null) {
+            validatorHandler.setResourceResolver(catalogResolver);
+        }
+        validatorHandler.setErrorHandler(indexInfo.getIndexer());
+        validatorHandler.setContentHandler(indexInfo.getContentHandler());
+        final Xsd11LexicalHandlerForwarder forwarder = new Xsd11LexicalHandlerForwarder(validatorHandler, indexInfo.getLexicalHandler());
+
+        // xmlReader1 is the pooled, dynamic-discovery-validating reader -- its own schema
+        // validation feature must be off for this call, or it independently (mis)validates the
+        // document against the default XSD 1.0 pipeline in parallel with validatorHandler's XSD
+        // 1.1 validation, producing spurious cvc-elt.1.a/s4s-att-not-allowed errors. Saved and
+        // restored rather than left disabled, since storeXmlDocument() reuses this same xmlReader1
+        // instance for a second, separate parseOrValidateXmlSource() call (the store phase).
+        final boolean wasValidating = xmlReader1.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA);
+        try {
+            xmlReader1.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, false);
+            xmlReader1.setFeature(Namespaces.SAX_VALIDATION, false);
+            xmlReader1.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
+
+            xmlReader1.setContentHandler(forwarder);
+            xmlReader1.setProperty(Namespaces.SAX_LEXICAL_HANDLER, forwarder);
+            xmlReader1.parse(source);
+        } finally {
+            xmlReader1.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, wasValidating);
+            xmlReader1.setFeature(Namespaces.SAX_VALIDATION, wasValidating);
+            xmlReader1.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, wasValidating);
+        }
+    }
+
+    /**
+     * Splits incoming SAX events from a single source (an {@link XMLReader}) across two
+     * downstream consumers: content events go to {@code contentDelegate} (a {@link
+     * ValidatorHandler}, so schema validation still happens), lexical events go directly to
+     * {@code lexicalDelegate}, bypassing the validator -- see {@link
+     * #validateWithXsd11Schema(XMLReader, Schema, Resolver, IndexInfo, InputSource)} for why.
+     */
+    private static final class Xsd11LexicalHandlerForwarder implements ContentHandler, LexicalHandler {
+
+        private final ContentHandler contentDelegate;
+        private final LexicalHandler lexicalDelegate;
+
+        private Xsd11LexicalHandlerForwarder(final ContentHandler contentDelegate, final LexicalHandler lexicalDelegate) {
+            this.contentDelegate = contentDelegate;
+            this.lexicalDelegate = lexicalDelegate;
+        }
+
+        @Override
+        public void setDocumentLocator(final Locator locator) {
+            contentDelegate.setDocumentLocator(locator);
+        }
+
+        @Override
+        public void startDocument() throws SAXException {
+            contentDelegate.startDocument();
+        }
+
+        @Override
+        public void endDocument() throws SAXException {
+            contentDelegate.endDocument();
+        }
+
+        @Override
+        public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
+            contentDelegate.startPrefixMapping(prefix, uri);
+        }
+
+        @Override
+        public void endPrefixMapping(final String prefix) throws SAXException {
+            contentDelegate.endPrefixMapping(prefix);
+        }
+
+        @Override
+        public void startElement(final String uri, final String localName, final String qName, final Attributes atts) throws SAXException {
+            contentDelegate.startElement(uri, localName, qName, atts);
+        }
+
+        @Override
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
+            contentDelegate.endElement(uri, localName, qName);
+        }
+
+        @Override
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
+            contentDelegate.characters(ch, start, length);
+        }
+
+        @Override
+        public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
+            contentDelegate.ignorableWhitespace(ch, start, length);
+        }
+
+        @Override
+        public void processingInstruction(final String target, final String data) throws SAXException {
+            contentDelegate.processingInstruction(target, data);
+        }
+
+        @Override
+        public void skippedEntity(final String name) throws SAXException {
+            contentDelegate.skippedEntity(name);
+        }
+
+        @Override
+        public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
+            lexicalDelegate.startDTD(name, publicId, systemId);
+        }
+
+        @Override
+        public void endDTD() throws SAXException {
+            lexicalDelegate.endDTD();
+        }
+
+        @Override
+        public void startEntity(final String name) throws SAXException {
+            lexicalDelegate.startEntity(name);
+        }
+
+        @Override
+        public void endEntity(final String name) throws SAXException {
+            lexicalDelegate.endEntity(name);
+        }
+
+        @Override
+        public void startCDATA() throws SAXException {
+            lexicalDelegate.startCDATA();
+        }
+
+        @Override
+        public void endCDATA() throws SAXException {
+            lexicalDelegate.endCDATA();
+        }
+
+        @Override
+        public void comment(final char[] ch, final int start, final int length) throws SAXException {
+            lexicalDelegate.comment(ch, start, length);
+        }
     }
 
     private void storeXmlDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final MimeType mimeType, final @Nullable Date createdDate, final @Nullable Date lastModifiedDate, final @Nullable Permission permission, final @Nullable DocumentType documentType, @Nullable final XMLReader xmlReader, final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> validatorFn, final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> parserFn) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {

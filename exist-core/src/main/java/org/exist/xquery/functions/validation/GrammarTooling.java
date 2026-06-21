@@ -32,6 +32,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 import org.exist.Namespaces;
+import org.exist.collections.MutableCollection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
@@ -151,6 +152,7 @@ public class GrammarTooling extends BasicFunction  {
 
             clearGrammarPool(grammarpool);
             Jaxp.clearXsd11DetectionCache();
+            MutableCollection.clearXsd11SchemaByNamespaceCache();
 
             final int after = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Remained {} grammars", after);
