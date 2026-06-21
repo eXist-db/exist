@@ -86,6 +86,42 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     /**
+     * A file-backed binary (file:read-binary -&gt; BinaryValueFromFile) used in an element constructor and
+     * then read again must remain readable. Without BinaryValueFromFile's shared-reference reference
+     * counting, XQueryContext.exitEnclosedExpr() closed the channel immediately after the constructor and
+     * the second read failed with "Underlying channel has been closed". {@code count($w)} forces the
+     * constructor to be evaluated before {@code $b} is read again.
+     *
+     * <p>This must run as a <em>root-context main module</em> to reproduce, which is why it is a Java
+     * (executeXQuery) test rather than an XQSuite function: in a {@code ModuleContext} (an XQSuite test
+     * function, or {@code util:eval}) {@code registerBinaryValueInstance()} delegates to the parent/root
+     * context while {@code enterEnclosedExpr()}/{@code exitEnclosedExpr()} act on the {@code ModuleContext}'s
+     * own (empty) deque, so the constructor's {@code exitEnclosedExpr()} never sees the binary there and the
+     * premature close does not occur (it defers harmlessly to {@code popLocalVariables} after the read).
+     * Both {@code executeXQuery()} implementations here run the query as a main module (embedded and REST),
+     * so {@code exitEnclosedExpr()} and the binary share one context and the bug is exercised.</p>
+     */
+    @Test
+    public void readBinaryUsedInElementConstructorThenReadAgain() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                let $b := file:read-binary('%s')
+                let $w := <a>{$b}</a>
+                return (count($w), $b)[2]""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
      */
     @Test
