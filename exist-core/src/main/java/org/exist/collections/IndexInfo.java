@@ -96,11 +96,28 @@ public class IndexInfo {
         if(entityResolver != null) {
             reader.setEntityResolver(entityResolver);
         }
-        final LexicalHandler lexicalHandler = docTriggers == null ? indexer : docTriggers;
-        final ContentHandler contentHandler = docTriggers == null ? indexer : docTriggers;
-        reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
-        reader.setContentHandler(contentHandler);
+        reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, getLexicalHandler());
+        reader.setContentHandler(getContentHandler());
         reader.setErrorHandler(indexer);
+    }
+
+    /**
+     * The same content handler {@link #setReader(XMLReader, EntityResolver)} wires onto an
+     * {@link XMLReader} -- exposed so callers that validate via a {@link javax.xml.validation.ValidatorHandler}
+     * instead of an {@code XMLReader} (which has no equivalent {@code setReader}-style helper) can feed
+     * the same indexing/trigger pipeline through a SAX-driven validation pass.
+     */
+    ContentHandler getContentHandler() {
+        return docTriggers == null ? indexer : docTriggers;
+    }
+
+    /**
+     * The same lexical handler {@link #setReader(XMLReader, EntityResolver)} wires onto an
+     * {@link XMLReader} -- see {@link #getContentHandler()} for why this is also exposed
+     * separately.
+     */
+    LexicalHandler getLexicalHandler() {
+        return docTriggers == null ? indexer : docTriggers;
     }
 
     void setDOMStreamer(final DOMStreamer streamer) {
