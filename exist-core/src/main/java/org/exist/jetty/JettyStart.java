@@ -56,10 +56,20 @@ import java.io.Reader;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Observer;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -105,11 +115,22 @@ public class JettyStart implements LifeCycle.Listener {
 
     @GuardedBy("this") private int status = STATUS_STOPPED;
     @GuardedBy("this") private Optional<Thread> shutdownHookThread = Optional.empty();
+    @GuardedBy("this") private Optional<Server> server = Optional.empty();
     @GuardedBy("this") private int primaryPort = 8080;
     @GuardedBy("this") private boolean webAppStartedSuccessfully = false;
     @GuardedBy("this") private String webAppStartupFailureDetail = null;
 
     private final CopyOnWriteArrayList<JettyStartListener> jettyStartListeners = new CopyOnWriteArrayList<>();
+
+    /**
+     * Guards {@link #stopServerAndAwait()} against being run twice concurrently --
+     * shutdown can be triggered either directly via {@link #shutdown()}, or indirectly via
+     * {@link ShutdownListenerImpl} (itself fired as a side effect of a direct
+     * {@code BrokerPool.shutdown()} call, e.g. from the XML-RPC shutdown API or
+     * {@code system:shutdown()}, which never goes through {@link #shutdown()} at all), or via
+     * {@link BrokerPoolAndJettyShutdownHook} on JVM exit -- any two of these can race.
+     */
+    private final AtomicBoolean serverStopRequested = new AtomicBoolean(false);
 
 
     public static void main(final String[] args) {
@@ -518,18 +539,18 @@ public class JettyStart implements LifeCycle.Listener {
 
     private Optional<Server> startJetty(final List<Object> configuredObjects) throws Exception {
         // For all objects created by XmlConfigurations, start them if they are lifecycles.
-        Optional<Server> server = Optional.empty();
+        Optional<Server> serverFound = Optional.empty();
         for (final Object configuredObject : configuredObjects) {
             if(configuredObject instanceof Server _server) {
 
                 //skip this server if we have already started it
-                if(server.map(configuredServer -> configuredServer == _server).orElse(false)) {
+                if(serverFound.map(configuredServer -> configuredServer == _server).orElse(false)) {
                     continue;
                 }
 
                 //setup server shutdown
                 _server.addEventListener(this);
-                BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(_server));
+                BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
 
                 // register a shutdown hook for the server
                 final BrokerPoolAndJettyShutdownHook brokerPoolAndJettyShutdownHook =
@@ -550,7 +571,9 @@ public class JettyStart implements LifeCycle.Listener {
                     throw e;
                 }
 
-                server = Optional.of(_server);
+                _server.setStopTimeout(TimeUnit.SECONDS.toMillis(30));
+                serverFound = Optional.of(_server);
+                this.server = serverFound;
             }
 
             if (configuredObject instanceof LifeCycle lc && !lc.isRunning()) {
@@ -559,7 +582,7 @@ public class JettyStart implements LifeCycle.Listener {
             }
         }
 
-        return server;
+        return serverFound;
     }
 
     /**
@@ -841,7 +864,7 @@ public class JettyStart implements LifeCycle.Listener {
         }
     }
 
-    public synchronized void shutdown() {
+    public void shutdown() {
         shutdownHookThread.ifPresent(thread -> {
             try {
                 Runtime.getRuntime().removeShutdownHook(thread);
@@ -854,53 +877,91 @@ public class JettyStart implements LifeCycle.Listener {
 
         BrokerPool.stopAll(false);
 
-        while (status != STATUS_STOPPED) {
-            try {
-                wait();
-            } catch (final InterruptedException e) {
-                Thread.currentThread().interrupt();
+        // No longer relies on ShutdownListenerImpl's old Timer-based ~1s pre-stop grace
+        // window for in-flight requests -- setStopTimeout(30s) below is far more generous
+        // for graceful draining, so that window was evaluated and deliberately not
+        // reinstated rather than overlooked.
+        stopServerAndAwait();
+    }
+
+    /**
+     * Stops the Jetty server, if not already stopping/stopped, and waits for the
+     * {@link LifeCycle.Listener} callbacks to confirm {@link #STATUS_STOPPED}.
+     * <p>
+     * Deliberately does NOT hold the {@code this} monitor across the blocking
+     * {@code srv.stop()}/{@code srv.join()} call: {@link #lifeCycleStopping(LifeCycle)} and
+     * {@link #lifeCycleStopped(LifeCycle)} are themselves {@code synchronized} on {@code this},
+     * so if Jetty's {@code setStopTimeout} machinery ever invoked them from a thread other than
+     * the one calling {@code stop()}, that thread would otherwise stall trying to acquire a
+     * monitor held by the thread blocked in {@code join()}.
+     */
+    private void stopServerAndAwait() {
+        server.ifPresent(srv -> {
+            if (serverStopRequested.compareAndSet(false, true)) {
+                try {
+                    srv.stop();
+                    srv.join();
+                } catch (final Exception e) {
+                    logger.warn("Error stopping Jetty server: {}", e.getMessage(), e);
+                }
             }
+        });
+
+        // srv.stop()/join() above already respects setStopTimeout(30s); this is a short
+        // catch-up margin for the STATUS_STOPPED notifyAll() to land, not a second
+        // independent timeout -- avoids stacking to a ~60s worst case.
+        if (!waitUntilStopped(TimeUnit.SECONDS.toMillis(5))) {
+            logger.warn("Timed out waiting for Jetty to reach STATUS_STOPPED (current status={}); forcing shutdown", status);
         }
     }
 
     /**
-     * This class gets called after the database received a shutdown request.
+     * Waits, with a timeout, for {@link #status} to become {@link #STATUS_STOPPED}.
+     * Shared by {@link #stopServerAndAwait()} and {@link #isStarted()}, which otherwise
+     * each had their own copy of this same deadline/{@code wait(remaining)} loop.
      *
-     * @author wolf
+     * @return {@code true} if {@link #STATUS_STOPPED} was reached before the timeout.
      */
-    private static class ShutdownListenerImpl implements ShutdownListener {
-        private final Server server;
-
-        ShutdownListenerImpl(final Server server) {
-            this.server = server;
+    private boolean waitUntilStopped(final long timeoutMs) {
+        final long deadline = System.currentTimeMillis() + timeoutMs;
+        synchronized (this) {
+            while (status != STATUS_STOPPED) {
+                final long remaining = deadline - System.currentTimeMillis();
+                if (remaining <= 0) {
+                    return false;
+                }
+                try {
+                    wait(remaining);
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
+        return true;
+    }
 
+    /**
+     * This class gets called after the database received a shutdown request.
+     * <p>
+     * This is the ONLY path that stops the Jetty server when shutdown is triggered via a
+     * direct {@code BrokerPool.shutdown()} call that bypasses {@link JettyStart#shutdown()}
+     * entirely -- e.g. the XML-RPC shutdown API ({@code RpcConnection.shutdown()}) or
+     * {@code system:shutdown()} both call {@code BrokerPool.shutdown()}/{@code pool.shutdown()}
+     * directly, which fires this listener as a side effect of {@code BrokerPool}'s own
+     * {@code stopAll()}. {@link #stopServerAndAwait()}'s {@link #serverStopRequested} guard
+     * makes it safe to also call this when {@link JettyStart#shutdown()} itself triggers it
+     * (via its own {@code BrokerPool.stopAll(false)} call, just before calling
+     * {@link #stopServerAndAwait()} again).
+     */
+    private final class ShutdownListenerImpl implements ShutdownListener {
         @Override
         public void shutdown(final String dbname, final int remainingInstances) {
-            logger.info("Database shutdown: stopping server in 1sec ...");
-            if (remainingInstances == 0) {
-                // give the webserver a 1s chance to complete open requests
-                final Timer timer = new Timer("jetty shutdown schedule", true);
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            // stop the server
-                            server.stop();
-                            server.join();
-
-                            // make sure to stop the timer thread!
-                            timer.cancel();
-                        } catch (final Exception e) {
-                            logger.error("An error occurred in the shutdown scheduler: {}", e.getMessage(), e);
-                        }
-                    }
-                }, 1000); // timer.schedule
-            }
+            logger.info("Database shutdown: stopping server ...");
+            stopServerAndAwait();
         }
     }
 
-    private static class BrokerPoolAndJettyShutdownHook implements Runnable {
+    private final class BrokerPoolAndJettyShutdownHook implements Runnable {
         private final Server server;
 
         BrokerPoolAndJettyShutdownHook(final Server server) {
@@ -910,31 +971,30 @@ public class JettyStart implements LifeCycle.Listener {
         @Override
         public void run() {
             BrokerPool.stopAll(true);
-            if (server.isStopping() || server.isStopped()) {
-                return;
-            }
-
-            try {
-                server.stop();
-            } catch (final Exception e) {
-                e.printStackTrace();
+            // shares JettyStart#serverStopRequested with stopServerAndAwait() so a JVM-exit
+            // triggered stop and an explicit admin shutdown() cannot both call server.stop()
+            // concurrently.
+            if (serverStopRequested.compareAndSet(false, true)) {
+                try {
+                    server.stop();
+                } catch (final Exception e) {
+                    logger.warn("Error stopping Jetty server: {}", e.getMessage(), e);
+                }
             }
         }
     }
 
-    public synchronized boolean isStarted() {
-        if (status == STATUS_STARTED || status == STATUS_STARTING) {
-            return true;
-        }
-        if (status == STATUS_STOPPED) {
-            return false;
-        }
-        while (status != STATUS_STOPPED) {
-            try {
-                wait();
-            } catch (final InterruptedException e) {
-                Thread.currentThread().interrupt();
+    public boolean isStarted() {
+        synchronized (this) {
+            if (status == STATUS_STARTED || status == STATUS_STARTING) {
+                return true;
             }
+            if (status == STATUS_STOPPED) {
+                return false;
+            }
+        }
+        if (!waitUntilStopped(TimeUnit.SECONDS.toMillis(30))) {
+            logger.warn("Timed out waiting for Jetty to reach STATUS_STOPPED (current status={})", status);
         }
         return false;
     }
