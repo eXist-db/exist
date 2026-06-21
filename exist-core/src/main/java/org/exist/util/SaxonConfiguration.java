@@ -22,12 +22,18 @@
 package org.exist.util;
 
 import net.jcip.annotations.ThreadSafe;
+import net.sf.saxon.lib.ResourceRequest;
+import net.sf.saxon.lib.ResourceResolver;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.trans.XPathException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.xmlresolver.Resolver;
 
+import javax.annotation.Nullable;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,11 +56,54 @@ public final class SaxonConfiguration {
   private final net.sf.saxon.Configuration configuration;
   private final Processor processor;
 
-  private SaxonConfiguration(final net.sf.saxon.Configuration configuration) {
+  private SaxonConfiguration(final net.sf.saxon.Configuration configuration, final BrokerPool brokerPool) {
     this.configuration = configuration;
     this.processor = new Processor(configuration);
-    //TODO (AP) This is a better place to configure URI/Resource resolution for Saxon within eXist
-    //At present the configuration for Saxon to resolve xmldb:exist: URIs is restricted to fn:transform
+
+    // System catalog (webapp/WEB-INF/catalog.xml by default) as the Saxon-wide fallback
+    // resource resolver -- governs doc()/document() inside XSLT, and anything xmldb:exist:-aware
+    // resolvers (wired separately per-call in fn:transform/transform:transform) don't claim (#350).
+    final Resolver catalogResolver = resolveCatalogResolver(brokerPool.getConfiguration());
+    if (catalogResolver != null) {
+      configuration.setResourceResolver(new CatalogResourceResolver(catalogResolver));
+    }
+  }
+
+  /**
+   * Fetches the system catalog {@link Resolver} from {@code configuration}, if one is configured.
+   * Shared accessor for the {@code (Resolver) configuration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)}
+   * cast otherwise repeated independently at each call site -- a key/type change to that property
+   * only needs updating here.
+   *
+   * @return the configured catalog resolver, or {@code null} if none is configured.
+   */
+  @Nullable
+  public static Resolver resolveCatalogResolver(final Configuration configuration) {
+    final Object resolver = configuration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+    return resolver instanceof Resolver r ? r : null;
+  }
+
+  /**
+   * Adapts a classic {@link javax.xml.transform.URIResolver} (here, the system catalog) to
+   * Saxon 10+'s {@link ResourceResolver}, which {@link net.sf.saxon.Configuration} requires --
+   * it no longer exposes a plain {@code setURIResolver(URIResolver)}.
+   */
+  private static final class CatalogResourceResolver implements ResourceResolver {
+
+    private final Resolver delegate;
+
+    private CatalogResourceResolver(final Resolver delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public Source resolve(final ResourceRequest request) throws XPathException {
+      try {
+        return delegate.resolve(request.relativeUri, request.baseUri);
+      } catch (final TransformerException e) {
+        throw new XPathException(e);
+      }
+    }
   }
 
   /**
@@ -104,7 +153,7 @@ public final class SaxonConfiguration {
 
     saxonConfiguration.ifPresent(SaxonConfiguration::reportLicensedFeatures);
 
-    return new SaxonConfiguration(saxonConfiguration.get());
+    return new SaxonConfiguration(saxonConfiguration.get(), brokerPool);
   }
 
   static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final Path saxonConfigFile) {

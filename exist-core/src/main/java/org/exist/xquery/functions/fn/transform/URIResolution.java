@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn.transform;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.SaxonConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -34,7 +35,9 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.xmlresolver.Resolver;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
@@ -74,13 +77,35 @@ public class URIResolution {
         private final XQueryContext xQueryContext;
         private final Expression containingExpression;
 
+        /**
+         * Fetched once here rather than per-href in {@link #resolveViaCatalog(String, String)} --
+         * this resolver doesn't change for the lifetime of one compile, so re-fetching it from
+         * {@link org.exist.util.Configuration} on every {@code href} encountered while compiling a
+         * stylesheet (every {@code xsl:import}/{@code xsl:include}/{@code doc()}) was redundant.
+         */
+        @Nullable
+        private final Resolver catalogResolver;
+
         public CompileTimeURIResolver(XQueryContext xQueryContext, Expression containingExpression) {
             this.xQueryContext = xQueryContext;
             this.containingExpression = containingExpression;
+            this.catalogResolver = xQueryContext.getBroker() == null
+                    ? null
+                    : SaxonConfiguration.resolveCatalogResolver(xQueryContext.getBroker().getBrokerPool().getConfiguration());
         }
 
         @Override
         public Source resolve(final String href, final String base) throws TransformerException {
+
+            // Try the system catalog (webapp/WEB-INF/catalog.xml by default) first, the same way
+            // XsltURIResolverHelper tries it before any network-risking fallback -- a catalog miss
+            // declines promptly (no fetch attempt), but resolveDocument()/DocUtils.getDocument()
+            // below will itself attempt a live fetch for an absolute http(s) URI, so the catalog
+            // must run first to avoid a slow/hanging network round-trip on every catalog hit (#350).
+            final Source catalogSource = resolveViaCatalog(href, base);
+            if (catalogSource != null) {
+                return catalogSource;
+            }
 
             try {
                 final AnyURIValue baseURI = new AnyURIValue(base);
@@ -94,6 +119,13 @@ public class URIResolution {
                 throw new TransformerException(
                     "Failed to find document as result of resolving " + href + " against " + base, e);
             }
+        }
+
+        private Source resolveViaCatalog(final String href, final String base) throws TransformerException {
+            if (catalogResolver == null) {
+                return null;
+            }
+            return catalogResolver.resolve(href, base);
         }
 
         protected Source resolveDocument(final String location) throws XPathException {

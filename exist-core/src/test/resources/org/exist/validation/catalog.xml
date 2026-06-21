@@ -184,7 +184,12 @@
 
 
     <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
-    
+
+    <!-- #350 regression: a non-routable absolute URI an xsl:import/xsl:include can be
+         redirected to locally via the system catalog, the same way it already works for the
+         Xerces/JAXP validation pipeline above. -->
+    <uri name="http://203.0.113.1/transform-catalog-test-lib.xsl" uri="entities/transform-catalog-test-lib.xsl"/>
+
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
 	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
 	
