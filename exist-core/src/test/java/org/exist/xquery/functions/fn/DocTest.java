@@ -34,6 +34,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.junit.*;
 
 import static com.evolvedbinary.j8fu.Either.Left;
@@ -66,6 +67,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  *
@@ -275,6 +277,54 @@ public class DocTest {
             return Left(saxAdapter.getDocument());
         } catch (final ParserConfigurationException | SAXException | IOException e) {
             throw new XPathException((Expression) null, "Unable to parse document", e);
+        }
+    }
+
+    /**
+     * Resource-naming contract (eXist-db/exist#6463, decision 3, read side): a db resource whose
+     * decoded name contains a raw space is accepted at the write boundary; reading it back by the
+     * decoded absolute db-path must resolve too. Before the fix the read path raised FODC0005 in the
+     * dynamically-available-documents URI check (and IllegalArgumentException in base-uri resolution)
+     * before reaching the decision-5 normalization that escapes the space.
+     */
+    @Test
+    public void doc_resolvesRawSpaceDbPathOnRead() throws XMLDBException {
+        existEmbeddedServer.executeQuery(
+                "declare variable $c external; declare variable $n external; "
+                        + "xmldb:store($c, $n, document { <hit/> })",
+                Map.of("c", new StringValue("/db/test"), "n", new StringValue("with space.xml")));
+
+        final ResourceSet hit = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/with space.xml")));
+        assertEquals("hit", hit.getResource(0).getContent());
+
+        final ResourceSet avail = existEmbeddedServer.executeQuery(
+                "declare variable $p external; doc-available($p)",
+                Map.of("p", new StringValue("/db/test/with space.xml")));
+        assertEquals("true", avail.getResource(0).getContent());
+    }
+
+    /**
+     * The decision-3 read-side rescue must be scoped to db-paths: a genuinely malformed, non-db URI
+     * must still raise FODC0005 (qt3tests fn-doc-17 {@code "%gg"}, K2-SeqDocFunc-7/8/9 Windows
+     * backslash paths, K2-SeqDocFunc-14 {@code ":/"}), not silently fall through to an empty result.
+     */
+    @Test
+    public void doc_malformedNonDbUriStillRaisesFODC0005() {
+        for (final String bad : new String[] {"%gg", "%GG", ":/", "C:\\a\\b.xml", "\\a\\b.xml", "example.com\\x.xml"}) {
+            assertFODC0005(bad);
+        }
+    }
+
+    private static void assertFODC0005(final String path) {
+        try {
+            existEmbeddedServer.executeQuery(
+                    "declare variable $p external; doc($p)", Map.of("p", new StringValue(path)));
+            fail("expected FODC0005 for malformed non-db URI: " + path);
+        } catch (final XMLDBException e) {
+            final String chain = e.getMessage() + " | " + e.getCause();
+            assertTrue("expected FODC0005 for " + path + " but got: " + chain, chain.contains("FODC0005"));
         }
     }
 }

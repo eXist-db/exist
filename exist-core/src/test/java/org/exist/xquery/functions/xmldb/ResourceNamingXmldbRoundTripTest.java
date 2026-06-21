@@ -145,13 +145,13 @@ public class ResourceNamingXmldbRoundTripTest {
             assertTrue("doc() by stored form should resolve " + name,
                     docExists(col + "/" + URIUtils.encodeForURILenient(name)));
 
-            // A "clean" decoded name (no literal '%', no raw space) resolves directly via the
-            // decision-5 normalization. A literal-'%' name is ambiguous (decision 2 boundary) and a
-            // raw space is rejected on the read path (decision 3, read side, a separate gap); in
-            // both cases the display form does not resolve and the stored form must be used.
-            final boolean clean = name.indexOf('%') < 0 && name.indexOf(' ') < 0;
+            // A decoded name without a literal '%' resolves directly via the decision-5 normalization
+            // -- including a raw space, now that the read path is normalized on both the doc() and
+            // doc-available() URI checks (decision 3, read side). A literal-'%' name remains ambiguous
+            // (decision 2 boundary): its display form does not resolve and the stored form must be used.
+            final boolean resolvesByDecodedName = name.indexOf('%') < 0;
             assertEquals("doc() resolution by decoded name for " + name,
-                    clean, docExists(col + "/" + name));
+                    resolvesByDecodedName, docExists(col + "/" + name));
         }
 
         final ResourceSet rs = existEmbeddedServer.executeQuery(
