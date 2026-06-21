@@ -285,8 +285,9 @@ public class RequestBuilder {
      * @return true if the request should be re-sent with an {@code Authorization} header on a 401.
      */
     public boolean shouldAttemptChallenge() {
-        return allOptions.userCredentials().username() != null && !allOptions.userCredentials().sendAuthorization() && allOptions.userCredentials().authMethod() != null
-                && ("basic".equalsIgnoreCase(allOptions.userCredentials().authMethod()) || "digest".equalsIgnoreCase(allOptions.userCredentials().authMethod()));
+        final UserCredentials userCredentials = allOptions.userCredentials();
+        return userCredentials.username() != null && !userCredentials.sendAuthorization() && userCredentials.authMethod() != null
+                && ("basic".equalsIgnoreCase(userCredentials.authMethod()) || "digest".equalsIgnoreCase(userCredentials.authMethod()));
     }
 
     /**
@@ -299,21 +300,23 @@ public class RequestBuilder {
      *     (unsupported scheme, missing data, or a scheme mismatch with {@code @auth-method}).
      */
     public String challengeResponse(final String wwwAuthenticate) {
-        if (allOptions.userCredentials().username() == null || allOptions.userCredentials().authMethod() == null) {
+        final UserCredentials userCredentials = allOptions.userCredentials();
+        if (userCredentials.username() == null || userCredentials.authMethod() == null) {
             return null;
         }
-        if ("basic".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
+        if ("basic".equalsIgnoreCase(userCredentials.authMethod())) {
             return "Basic " + base64Credentials();
         }
-        if ("digest".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
+        if ("digest".equalsIgnoreCase(userCredentials.authMethod())) {
             return digestResponse(wwwAuthenticate);
         }
         return null;
     }
 
     private String base64Credentials() {
+        final UserCredentials userCredentials = allOptions.userCredentials();
         return Base64.getEncoder().encodeToString(
-                (allOptions.userCredentials().username() + ":" + (allOptions.userCredentials().password() != null ? allOptions.userCredentials().password() : "")).getBytes(StandardCharsets.UTF_8));
+                (userCredentials.username() + ":" + (userCredentials.password() != null ? userCredentials.password() : "")).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
