@@ -327,4 +327,37 @@ public class DocTest {
             assertTrue("expected FODC0005 for " + path + " but got: " + chain, chain.contains("FODC0005"));
         }
     }
+
+    /**
+     * Resource-naming contract (eXist-db/exist#6463, decision 2, read side): a resource whose name
+     * literally contains '%' is stored bijectively (the '%' is escaped to %25, so it never collides
+     * with a real percent-escape), and doc() resolves it by its decoded display name. doc() now
+     * canonicalizes a db-path by decode-then-encode, so doc("/db/test/50%.xml") reaches the 50%25.xml
+     * key; the encoded stored form resolves too (decode-then-encode is idempotent on it). The literal
+     * '%' is no longer deferred -- the write side never loses data, and the read side resolves the name.
+     */
+    @Test
+    public void doc_resolvesLiteralPercentNameByDecodedForm() throws XMLDBException {
+        existEmbeddedServer.executeQuery(
+                "declare variable $c external; declare variable $n external; "
+                        + "xmldb:store($c, $n, document { <pct/> })",
+                Map.of("c", new StringValue("/db/test"), "n", new StringValue("50%.xml")));
+
+        // the bijective lenient store escapes the literal '%' to %25 (no collision, no data loss)
+        final ResourceSet stored = existEmbeddedServer.executeQuery(
+                "xmldb:get-child-resources('/db/test')[contains(., '50%25')]");
+        assertEquals("50%25.xml", stored.getResource(0).getContent());
+
+        // resolve by the DECODED literal name (decision 2, read side, now closed)
+        final ResourceSet byDecoded = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/50%.xml")));
+        assertEquals("pct", byDecoded.getResource(0).getContent());
+
+        // and by the encoded stored form (idempotent)
+        final ResourceSet byEncoded = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/50%25.xml")));
+        assertEquals("pct", byEncoded.getResource(0).getContent());
+    }
 }

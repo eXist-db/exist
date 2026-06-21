@@ -245,16 +245,20 @@ public class DocUtils {
         try {
             final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
             final XmldbURI pathUri;
-            // Resource-naming contract (eXist-db/exist#6463, decision 5): normalize a bare db-path
-            // the way xmldb:store already normalizes a name, so doc("/db/x/café.xml") resolves the
-            // same key xmldb:store wrote. escape=true encodes non-ASCII/space and leaves a literal
-            // '%' alone -- so it is idempotent on an already-encoded path (e.g. one produced by
-            // xmldb:encode-uri), which still resolves as before.
+            // Resource-naming contract (eXist-db/exist#6463, decisions 1 + 2 + 5): canonicalize the
+            // db-path to the key xmldb:store wrote by treating it as decoded UTF-8 (decision 1) and
+            // re-encoding it leniently. decode-then-encode maps BOTH a decoded display name and an
+            // already-encoded path to the same stored key, so doc("/db/x/café.xml") and
+            // doc("/db/x/caf%C3%A9.xml") both resolve cafe.xml; and a literal '%' name resolves by its
+            // decoded form -- doc("/db/x/50%.xml") -> 50%25.xml (decision 2, read side). decodeForURI is
+            // the exact inverse of encodeForURILenient and never throws/truncates, so this is idempotent
+            // on the canonical stored form (the case a pre-encoding caller such as xmldb:encode-uri hits).
+            final String canonicalPath = URIUtils.encodePathForURILenient(URIUtils.decodePathForURI(path));
             if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
                 // relative collection Path: add the current base URI
-                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, true));
+                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(canonicalPath, false));
             } else {
-                pathUri = XmldbURI.xmldbUriFor(path, true);
+                pathUri = XmldbURI.xmldbUriFor(canonicalPath, false);
             }
 
             // relative collection Path: add the current module call URI if applicable

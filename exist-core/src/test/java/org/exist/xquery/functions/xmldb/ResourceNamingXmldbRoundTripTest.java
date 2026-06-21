@@ -145,11 +145,14 @@ public class ResourceNamingXmldbRoundTripTest {
             assertTrue("doc() by stored form should resolve " + name,
                     docExists(col + "/" + URIUtils.encodeForURILenient(name)));
 
-            // A decoded name without a literal '%' resolves directly via the decision-5 normalization
-            // -- including a raw space, now that the read path is normalized on both the doc() and
-            // doc-available() URI checks (decision 3, read side). A literal-'%' name remains ambiguous
-            // (decision 2 boundary): its display form does not resolve and the stored form must be used.
-            final boolean resolvesByDecodedName = name.indexOf('%') < 0;
+            // doc() now canonicalizes a db-path by decode-then-encode (decisions 1 + 2 + 5), so a name
+            // resolves by its decoded display form exactly when decoding is a no-op on it -- i.e. the
+            // name does not itself contain a valid %XX escape. That covers every normal name plus a
+            // literal '%' that is not a valid escape (e.g. "50%.xml", "100%done%.xml"). The irreducible
+            // residual: a name that literally IS a valid escape ("a%20b.xml", "%25.xml") is read as its
+            // decoded meaning ("a b.xml", "%.xml"), so addressing it by that literal form does not reach
+            // its own stored key -- the single-decoded-wire ambiguity, addressable by the encoded form.
+            final boolean resolvesByDecodedName = URIUtils.decodeForURI(name).equals(name);
             assertEquals("doc() resolution by decoded name for " + name,
                     resolvesByDecodedName, docExists(col + "/" + name));
         }
