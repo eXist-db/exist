@@ -26,6 +26,10 @@ import org.exist.xquery.modules.httpclient.RequestOptionsParser;
 /**
  * Combines the parsed {@link HttpClientOptions}, {@link ResponseOptions}, and {@link UserCredentials}
  * returned by {@link RequestOptionsParser#parse(org.w3c.dom.Element)}.
+ *
+ * @param requestOptions  the parsed HTTP client options
+ * @param responseOptions the parsed response handling options
+ * @param userCredentials the parsed user credentials for authentication
  */
 public record RequestOptions(
         HttpClientOptions requestOptions,

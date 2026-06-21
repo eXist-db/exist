@@ -54,6 +54,7 @@ public class SendRequestFunction extends BasicFunction {
             "The response is a sequence where the first item is an http:response element " +
             "with status, message, and header information, followed by the response body content.";
 
+    /** The function signature for http:send-request. */
     public static final FunctionSignature[] FS_SEND_REQUEST = functionSignatures(
             HttpClientModule.qname(FS_SEND_REQUEST_NAME),
             FS_SEND_REQUEST_DESCRIPTION,
@@ -75,6 +76,12 @@ public class SendRequestFunction extends BasicFunction {
             )
     );
 
+    /**
+     * Creates a new function instance.
+     *
+     * @param context   the XQuery context
+     * @param signature the function signature
+     */
     public SendRequestFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }

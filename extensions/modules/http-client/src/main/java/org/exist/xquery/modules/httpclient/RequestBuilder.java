@@ -64,6 +64,7 @@ import javax.xml.transform.stream.StreamResult;
  */
 public class RequestBuilder {
 
+
     private static final String HTTP_NS = HttpClientModule.NAMESPACE_URI;
 
     private String method;
@@ -160,6 +161,9 @@ public class RequestBuilder {
     /**
      * Builds the {@link java.net.http.HttpRequest} from the parsed parameters, sending credentials
      * preemptively only when {@code @send-authorization} is true.
+     *
+     * @return the built HttpRequest
+     * @throws XPathException if the URI is invalid
      */
     public HttpRequest build() throws XPathException {
         return build(null);
@@ -171,6 +175,8 @@ public class RequestBuilder {
      * @param authorizationHeader when non-null, attach this exact {@code Authorization} header
      *     value — used to answer a 401 challenge with a Basic or Digest response computed by
      *     {@link #challengeResponse(String)} (see {@link #shouldAttemptChallenge()}).
+     * @return the built HttpRequest
+     * @throws XPathException if the URI is invalid
      */
     public HttpRequest build(final String authorizationHeader) throws XPathException {
         final URI uri;
@@ -413,6 +419,10 @@ public class RequestBuilder {
         }
     }
 
+    /**
+     * Returns the parsed request options.
+     * @return the request options
+     */
     public RequestOptions getOptions() {
         return allOptions;
     }

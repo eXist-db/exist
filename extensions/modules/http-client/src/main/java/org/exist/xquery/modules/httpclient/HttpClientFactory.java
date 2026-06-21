@@ -42,7 +42,7 @@ import java.time.Duration;
  * holds at most 25 entries and evicts entries that have not been accessed for one hour.
  * It is also cleared on JVM shutdown via a registered shutdown hook.</p>
  */
-class HttpClientFactory {
+public class HttpClientFactory {
 
     private static final Cache<HttpClientOptions, HttpClient> CLIENT_CACHE =
             Caffeine.newBuilder()

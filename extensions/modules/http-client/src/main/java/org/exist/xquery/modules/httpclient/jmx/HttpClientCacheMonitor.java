@@ -26,6 +26,7 @@ import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
+import org.exist.xquery.modules.httpclient.HttpClientFactory;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  */
 public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
+    /** Object name for the JMX MBean. */
     public static final String OBJECT_NAME = "org.exist.management:type=HttpClientCache";
 
     private static final Logger LOG = LogManager.getLogger(HttpClientCacheMonitor.class);
@@ -57,6 +59,7 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
      * Safe to call multiple times — if the MBean is already registered the call is a no-op.
      *
      * @param cache the Caffeine cache to monitor
+     * @return the registered monitor instance
      */
     public static HttpClientCacheMonitor register(final Cache<HttpClientOptions, HttpClient> cache) {
         final HttpClientCacheMonitor monitor = new HttpClientCacheMonitor(cache);

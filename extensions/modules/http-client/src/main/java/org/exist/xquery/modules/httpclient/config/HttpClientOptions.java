@@ -28,6 +28,11 @@ import java.net.http.HttpClient;
  *
  * <p>All fields correspond directly to attributes on the {@code http:request} element
  * as defined by the EXPath HTTP Client specification.</p>
+ *
+ * @param followRedirect     whether to follow HTTP redirects
+ * @param timeout            connection timeout in seconds
+ * @param httpVersion        the HTTP version to use
+ * @param autoAcceptEncoding whether to automatically add the {@code Accept-Encoding} header
  */
 public record HttpClientOptions(
         boolean followRedirect,
@@ -35,6 +40,8 @@ public record HttpClientOptions(
         HttpClient.Version httpVersion,
         boolean autoAcceptEncoding
 ) {
-    /** Default options: follow redirects, no timeout, HTTP/1.1, auto-accept encoding. */
+    /**
+     * Default options: follow redirects, no timeout, HTTP/1.1, auto-accept encoding.
+     */
     public static final HttpClientOptions DEFAULTS = new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1, true);
 }

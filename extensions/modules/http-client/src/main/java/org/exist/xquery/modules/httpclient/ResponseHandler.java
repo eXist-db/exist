@@ -85,6 +85,7 @@ public class ResponseHandler {
      * @param statusOnly    if true, return only the response element (no body)
      * @param overrideMedia if non-null, use this media type instead of the response Content-Type
      * @return the result sequence
+     * @throws XPathException if an error occurs during result building
      */
     public static Sequence buildResult(final HttpResponse<byte[]> response,
                                         final XQueryContext context,

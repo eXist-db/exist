@@ -27,6 +27,11 @@ package org.exist.xquery.modules.httpclient.config;
  * <p>Holds the authentication-related attributes ({@code username}, {@code password},
  * {@code auth-method}, {@code send-authorization}) as defined by the EXPath HTTP Client
  * specification.</p>
+ *
+ * @param username          the username for authentication
+ * @param password          the password for authentication
+ * @param authMethod        the authentication method (e.g., "Basic", "Digest")
+ * @param sendAuthorization whether to send the Authorization header preemptively
  */
 public record UserCredentials(
         String username, //user
@@ -34,6 +39,8 @@ public record UserCredentials(
         String authMethod, // user
         boolean sendAuthorization //
 ) {
-    /** Default credentials: no authentication. */
+    /**
+     * Default credentials: no authentication.
+     */
     public static final UserCredentials DEFAULTS = new UserCredentials(null, null, null, false);
 }

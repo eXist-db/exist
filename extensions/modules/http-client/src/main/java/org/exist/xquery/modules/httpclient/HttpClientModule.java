@@ -45,31 +45,46 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  */
 public class HttpClientModule extends AbstractInternalModule {
 
+    /** Namespace URI for the module. */
     public static final String NAMESPACE_URI = "http://expath.org/ns/http-client";
+    /** Default prefix for the module. */
     public static final String PREFIX = "http";
+    /** Release version of the module. */
     public static final String RELEASE = "0.9.0-SNAPSHOT";
 
+    /** Namespace URI for EXPath error codes. */
     public static final String ERROR_NS = "http://expath.org/ns/error";
 
     // EXPath HTTP Client error codes
+    /** An HTTP error occurred. */
     public static final ErrorCodes.ErrorCode HC001 = new ErrorCodes.ErrorCode(
             new QName("HC001", ERROR_NS, "err"), "An HTTP error occurred");
+    /** Error parsing entity content as XML or HTML. */
     public static final ErrorCodes.ErrorCode HC002 = new ErrorCodes.ErrorCode(
             new QName("HC002", ERROR_NS, "err"), "Error parsing entity content as XML or HTML");
+    /** Multipart override-media-type violation. */
     public static final ErrorCodes.ErrorCode HC003 = new ErrorCodes.ErrorCode(
             new QName("HC003", ERROR_NS, "err"), "Multipart override-media-type violation");
+    /** src attribute conflicts with body content. */
     public static final ErrorCodes.ErrorCode HC004 = new ErrorCodes.ErrorCode(
             new QName("HC004", ERROR_NS, "err"), "src attribute conflicts with body content");
+    /** Invalid request element structure. */
     public static final ErrorCodes.ErrorCode HC005 = new ErrorCodes.ErrorCode(
             new QName("HC005", ERROR_NS, "err"), "Invalid request element structure");
+    /** Timeout waiting for response. */
     public static final ErrorCodes.ErrorCode HC006 = new ErrorCodes.ErrorCode(
             new QName("HC006", ERROR_NS, "err"), "Timeout waiting for response");
 
+    /** The functions defined in this module. */
     public static final FunctionDef[] functions = functionDefs(
             functionDefs(SendRequestFunction.class,
                     SendRequestFunction.FS_SEND_REQUEST)
     );
 
+    /**
+     * Creates a new module instance.
+     * @param parameters the module parameters
+     */
     public HttpClientModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
