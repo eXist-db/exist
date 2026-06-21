@@ -75,15 +75,16 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         try {
             return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> {
                 try {
-                    // Resource-naming contract (eXist-db/exist#6463, decision 5): resolve the collection
-                    // path with escape=true -- the same codec XmldbURI.create / xmldb:store apply when a
-                    // collection is written -- so a caller's decoded or descriptor-derived literal path
-                    // (e.g. "/db/system/repo/badver-${app.version}") resolves the percent-encoded key that
-                    // was actually stored ("badver-$%7Bapp.version%7D"). AnyURIValue.toXmldbURI() resolved
-                    // with escape=false, so an awkward name either missed or threw on a raw illegal char.
-                    // escape=true leaves a literal '%' alone, so it is idempotent on an already-encoded
-                    // path (such as the internal collection URI passed by the node branch of eval()).
-                    return XmldbURI.xmldbUriFor(name, true);
+                    // Resource-naming contract (eXist-db/exist#6463, decisions 1 + 2 + 5): canonicalize
+                    // the collection path to its stored key by decode-then-encode -- the same mapping
+                    // fn:doc / fn:collection apply -- so a caller's decoded or descriptor-derived literal
+                    // path (e.g. "/db/system/repo/badver-${app.version}") resolves the percent-encoded key
+                    // that was actually stored ("badver-$%7Bapp.version%7D"), and a literal '%' resolves by
+                    // its decoded form. AnyURIValue.toXmldbURI() resolved with escape=false, so an awkward
+                    // name either missed or threw on a raw illegal char. decodeForURI is the exact inverse
+                    // of encodeForURILenient, so this is idempotent on an already-encoded path (such as the
+                    // internal collection URI passed by the node branch of eval()).
+                    return XmldbURI.xmldbUriFor(URIUtils.encodePathForURILenient(URIUtils.decodePathForURI(name)), false);
                 } catch (final URISyntaxException e) {
                     throw new XPathException(callingExpression, org.exist.xquery.ErrorCodes.FORG0001,
                             "failed to convert '" + name + "' into an XmldbURI: " + e.getMessage(), e);
