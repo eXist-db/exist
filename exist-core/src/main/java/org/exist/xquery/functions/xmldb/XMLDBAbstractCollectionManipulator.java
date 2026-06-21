@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
@@ -28,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Expression;
@@ -71,7 +73,22 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     public static LocalCollection getLocalCollection(final Expression callingExpression, final XQueryContext context, final String name) throws XMLDBException {
         try {
-            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> new AnyURIValue(name).toXmldbURI()));
+            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> {
+                try {
+                    // Resource-naming contract (eXist-db/exist#6463, decision 5): resolve the collection
+                    // path with escape=true -- the same codec XmldbURI.create / xmldb:store apply when a
+                    // collection is written -- so a caller's decoded or descriptor-derived literal path
+                    // (e.g. "/db/system/repo/badver-${app.version}") resolves the percent-encoded key that
+                    // was actually stored ("badver-$%7Bapp.version%7D"). AnyURIValue.toXmldbURI() resolved
+                    // with escape=false, so an awkward name either missed or threw on a raw illegal char.
+                    // escape=true leaves a literal '%' alone, so it is idempotent on an already-encoded
+                    // path (such as the internal collection URI passed by the node branch of eval()).
+                    return XmldbURI.xmldbUriFor(name, true);
+                } catch (final URISyntaxException e) {
+                    throw new XPathException(callingExpression, org.exist.xquery.ErrorCodes.FORG0001,
+                            "failed to convert '" + name + "' into an XmldbURI: " + e.getMessage(), e);
+                }
+            }));
         } catch (final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
