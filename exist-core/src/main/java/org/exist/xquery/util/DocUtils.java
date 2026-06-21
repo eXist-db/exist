@@ -136,10 +136,27 @@ public class DocUtils {
                 }
                 return new URI(baseStr).resolve(relativePath).toString();
             }
-        } catch (final URISyntaxException | XPathException e) {
-            // fall through
+        } catch (final URISyntaxException | IllegalArgumentException | XPathException e) {
+            // IllegalArgumentException: URI.create(relativePath) (called by URI.resolve) rejects a db
+            // resource name containing a raw space or similar -- a valid name under the resource-naming
+            // contract (eXist-db/exist#6463, decision 3). Fall through; the caller passes the original
+            // path (not this resolved form) to the DB branch, which normalizes and resolves it.
         }
         return null;
+    }
+
+    /**
+     * Whether {@code path} addresses a database resource (an absolute {@code /db} path or an
+     * {@code xmldb:} URI). Used to scope the resource-naming contract's read-side leniency
+     * (eXist-db/exist#6463, decision 3): a db resource name may contain a character that is not valid
+     * in a {@link URI} but is a valid name, so a parse failure on such a path should defer to the DB
+     * normalization rather than raise {@code FODC0005}; any other malformed URI is a genuine error.
+     *
+     * @param path the path argument to {@code fn:doc} / {@code fn:doc-available}
+     * @return true if the path targets the database
+     */
+    public static boolean isDbPath(final String path) {
+        return path.startsWith(XmldbURI.ROOT_COLLECTION) || path.startsWith(XmldbURI.XMLDB_URI_PREFIX);
     }
 
     private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path, @Nullable final Expression expression) throws XPathException {
@@ -157,6 +174,14 @@ public class DocUtils {
             }
             return context.getDynamicallyAvailableDocument(uri.toString());
         } catch (final URISyntaxException e) {
+            // A bare db-path may contain a character (e.g. a raw space) that is a valid resource name
+            // under the resource-naming contract (eXist-db/exist#6463, decision 3) but not a valid
+            // java.net.URI. Such a path cannot be a key in the dynamically-available-documents map
+            // (which is keyed by valid URIs), so skip that lookup and let the DB branch normalize
+            // (escape=true) and resolve it. Any other malformed URI keeps the spec-mandated FODC0005.
+            if (isDbPath(path)) {
+                return null;
+            }
             throw new XPathException(expression, ErrorCodes.FODC0005, e);
         }
     }
