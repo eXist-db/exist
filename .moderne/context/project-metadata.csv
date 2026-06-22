@@ -10,6 +10,7 @@ extensions/contentextraction/pom.xml,exist-contentextraction,,eXist-db Content E
 extensions/exiftool/pom.xml,exist-exiftool,,eXist-db EXIF Tool Extension,eXist-db NoSQL Database XQuery EXIF Tool Extension,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/expath/pom.xml,exist-expath,,eXist-db EXPath Extensions,eXist NoSQL Database EXPath Modules,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/exquery/modules/request/pom.xml,exist-exquery-request-module,,eXist-db EXQuery Request Module,eXist-db NoSQL Database EXQuery Request Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
+extensions/modules/http-client/pom.xml,exist-http-client,,eXist-db EXPath HTTP Client Module,Native EXPath HTTP Client Module for eXist-db using java.net.http.HttpClient,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/exquery/restxq/pom.xml,exist-restxq,,eXist-db RESTXQ Extension,eXist NoSQL Database RESTXQ Implementation,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/webdav/pom.xml,exist-webdav,,eXist-db WebDAV Extension,eXist-db NoSQL Database WebDAV Extension,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/xqdoc/pom.xml,exist-xqdoc,,eXist-db xqDoc Extension,eXist-db NoSQL Database xqDoc Extension,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
@@ -47,7 +48,7 @@ extensions/indexes/pom.xml,exist-indexes,,eXist-db Index Extensions,eXist-db NoS
 extensions/modules/example/pom.xml,exist-example,,eXist-db Example Module,eXist-db XQuery Example Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/modules/exi/pom.xml,exist-exi,,eXist-db EXI Module,eXist-db XQuery EXIficient Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/modules/sql-oracle/pom.xml,exist-sql-oracle,,eXist-db Oracle SQL Module,eXist-db XQuery Oracle SQL Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
-extensions/modules/pom.xml,exist-modules,,eXist-db Extension XQuery Modules,eXist-db Extension XQuery Modules,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,20
+extensions/modules/pom.xml,exist-modules,,eXist-db Extension XQuery Modules,eXist-db Extension XQuery Modules,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,21
 extensions/security/iprange/pom.xml,exist-security-iprange,,eXist-db IP Range Security Module,eXist-db NoSQL Database IP Range Security Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/security/pom.xml,exist-security,,eXist-db Extension Security Modules,eXist-db Extension Security Modules,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,3
 extensions/pom.xml,exist-extensions,,eXist-db Extensions,eXist-db NoSQL Database Extensions,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,10

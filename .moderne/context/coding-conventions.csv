@@ -106,6 +106,7 @@ imports,Static imports from org.exist.config.annotation,org.exist.config.annotat
 imports,Static imports from java.time,java.time.ZoneOffset.UTC,,project-wide
 imports,Static imports from javax.xml.transform,javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION,,project-wide
 imports,Static imports from org.exist.client,org.exist.client.InteractiveClient.DATE_TIME_FORMATTER,,project-wide
+imports,Static imports from java.net,java.net.HttpURLConnection.HTTP_OK,,project-wide
 imports,Static imports from org.exist.http.urlrewrite,org.exist.http.urlrewrite.XQueryURLRewrite.LEGACY_XQUERY_CONTROLLER_FILENAME,,project-wide
 imports,Static imports from org.easymock,org.easymock.EasyMock.expect,,project-wide
 imports,Static imports from java.util.concurrent,java.util.concurrent.TimeUnit.SECONDS,,project-wide
@@ -123,7 +124,6 @@ imports,Static imports from org.exist.management.client,org.exist.management.cli
 imports,Static imports from org.xmlunit.matchers,org.xmlunit.matchers.HasXPathMatcher.hasXPath,,project-wide
 imports,Static imports from org.custommonkey.xmlunit,org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo,,project-wide
 imports,Static imports from com.ibm.icu.impl,com.ibm.icu.impl.Assert.fail,,project-wide
-imports,Static imports from org.apache.http,org.apache.http.HttpStatus.SC_CREATED,,project-wide
 imports,Static imports from org.exist.xquery.InternalModuleTest,org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*,,project-wide
 imports,Static imports from org.apache.commons.codec.binary,org.apache.commons.codec.binary.Base64.encodeBase64String,,project-wide
 naming,Tests suffix for classes,AbsolutePathTests,,project-wide
@@ -131,7 +131,6 @@ imports,Static imports from org.exist.stax,org.exist.stax.ExtendedXMLStreamReade
 imports,Static imports from org.exist.stax.EmbeddedXMLStreamReaderTest,org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*,,project-wide
 imports,Static imports from org.hamcrest.core,org.hamcrest.core.AllOf.allOf,,project-wide
 imports,Static imports from org.exist.contentextraction.xquery,org.exist.contentextraction.xquery.Util.executeQuery,,project-wide
-imports,Static imports from org.expath.httpclient,org.expath.httpclient.HttpClientError.HC001,,project-wide
 imports,Static imports from org.exist.xquery.modules.vector,org.exist.xquery.modules.vector.VectorModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene,org.exist.xquery.modules.lucene.LuceneModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene.QueryOptions,org.exist.xquery.modules.lucene.QueryOptions.DefaultOperator.OR,,project-wide
