@@ -32,12 +32,16 @@ public final class SchemaVersion {
 
     public static final String ATTRIBUTE = "schemaVersion";
 
-    /** Paired {@code xs:schema/@version} values for canonical templates (keep in sync with {@code schema/*.xsd}). */
-    public static final String CONF = "2.1.1";
-    public static final String COLLECTION_XCONF = "1.2.2";
-    public static final String DESCRIPTOR = "1.2.1";
-    public static final String MIME_TYPES = "1.2.1";
-    public static final String CONTROLLER_CONFIG = "1.1.1";
+    /**
+     * Paired {@code xs:schema/@version} values for canonical templates -- generated at build time
+     * from {@code schema/*.xsd} itself (see {@link GeneratedSchemaVersions}), so these can never
+     * drift from the schemas they describe.
+     */
+    public static final String CONF = GeneratedSchemaVersions.CONF;
+    public static final String COLLECTION_XCONF = GeneratedSchemaVersions.COLLECTION_XCONF;
+    public static final String DESCRIPTOR = GeneratedSchemaVersions.DESCRIPTOR;
+    public static final String MIME_TYPES = GeneratedSchemaVersions.MIME_TYPES;
+    public static final String CONTROLLER_CONFIG = GeneratedSchemaVersions.CONTROLLER_CONFIG;
 
     private SchemaVersion() {
     }

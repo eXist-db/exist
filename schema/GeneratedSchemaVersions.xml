@@ -1,0 +1,8 @@
+<!--
+    Dummy trigger input for xml-maven-plugin's transform goal (see exist-core/pom.xml's
+    schema-version-codegen execution and schema/generate-schema-version.xsl). Content is
+    irrelevant: generate-schema-version.xsl reads sibling *.xsd files via base-uri(), not this
+    file's content. Named to match the generated output (org/exist/util/GeneratedSchemaVersions.java)
+    so a plain FileExtensionMapper produces the right filename.
+-->
+<trigger/>
