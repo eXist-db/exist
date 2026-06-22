@@ -46,6 +46,10 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -63,6 +67,16 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 public class Validator {
 
     private static final Logger logger = LogManager.getLogger(Validator.class);
+
+    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
+
+    /**
+     * Generous upper bound on how much of the document's prolog (up to and including the root
+     * start tag) {@link #validateParse(InputStream, String, String)}'s XSD 1.1 peek may read
+     * before giving up on {@code mark()}/{@code reset()} -- real documents' prologs are at most a
+     * few KB even with many namespace declarations/attributes.
+     */
+    private static final int XSD11_PEEK_MARK_LIMIT = 65536;
 
     private final BrokerPool brokerPool;
     private final Subject subject;
@@ -115,6 +129,23 @@ public class Validator {
      * @return Validation report containing all validation info.
      */
     public ValidationReport validate(final InputStream stream, @Nullable String grammarUrl) {
+        return validate(stream, grammarUrl, null);
+    }
+
+    /**
+     * Validate XML data from reader using specified grammar.
+     *
+     * @param grammarUrl User supplied path to grammar, or null.
+     * @param stream     XML input.
+     * @param documentBaseUri the base URI of {@code stream}'s document (e.g. the stored document's
+     *                        own URI), or {@code null} if unknown -- used only to resolve the
+     *                        instance's own {@code xsi:schemaLocation} hint (see {@link
+     *                        Xsd11SchemaDetection#detectXsd11ViaSchemaLocation}) when deciding
+     *                        whether an XSD 1.1-capable validator is needed; validation against an
+     *                        explicitly-supplied {@code grammarUrl} does not otherwise depend on it.
+     * @return Validation report containing all validation info.
+     */
+    public ValidationReport validate(final InputStream stream, @Nullable String grammarUrl, @Nullable final String documentBaseUri) {
 
         // repair path to local resource
         if (grammarUrl != null) {
@@ -129,7 +160,7 @@ public class Validator {
 
         } else {
             // Validate with Xerces
-            return validateParse(stream, grammarUrl);
+            return validateParse(stream, grammarUrl, documentBaseUri);
         }
 
     }
@@ -195,14 +226,41 @@ public class Validator {
      * @param stream     XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateParse(final InputStream stream, String grammarUrl) {
+    public ValidationReport validateParse(final InputStream stream, final String grammarUrl) {
+        return validateParse(stream, grammarUrl, null);
+    }
+
+    /**
+     * Validate XML data from reader using specified grammar.
+     *
+     * @param grammarUrl User supplied path to grammar.
+     * @param stream     XML input.
+     * @param documentBaseUri see {@link #validate(InputStream, String, String)}.
+     * @return Validation report containing all validation info.
+     */
+    public ValidationReport validateParse(final InputStream stream, final String grammarUrl, @Nullable final String documentBaseUri) {
 
         logger.debug("Start validation.");
 
         final ValidationReport report = new ValidationReport();
         final ValidationContentHandler contenthandler = new ValidationContentHandler();
 
+        final BufferedInputStream bufferedStream = new BufferedInputStream(stream, XSD11_PEEK_MARK_LIMIT);
+        final ValidationReport xsd11Report = tryValidateWithXsd11Schema(bufferedStream, documentBaseUri, contenthandler, report);
+        if (xsd11Report != null) {
+            return xsd11Report;
+        }
 
+        return validateParseDefault(bufferedStream, grammarUrl, contenthandler, report);
+    }
+
+    /**
+     * The XSD 1.0/DTD dynamic-discovery SAX pipeline {@link #validateParse} falls through to when
+     * no XSD 1.1 hint was detected (or could be resolved) -- unchanged behavior, just extracted
+     * out of {@code validateParse} to keep that method's own branching to one decision (XSD 1.1
+     * or not).
+     */
+    private ValidationReport validateParseDefault(final InputStream stream, String grammarUrl, final ValidationContentHandler contenthandler, final ValidationReport report) {
         try {
 
             final XMLReader xmlReader = getXMLReader(contenthandler, report);
@@ -274,6 +332,117 @@ public class Validator {
         }
 
         return report;
+    }
+
+    /**
+     * The bundled Xerces fork's XSD 1.1 support is only wired into the JAXP
+     * SchemaFactory/Validator API, never into the dynamic-discovery SAX pipeline {@code
+     * validateParse}'s default path uses -- same limitation {@code org.exist.collections.
+     * MutableCollection}'s store-time validation and {@code validation:jaxp()} already work
+     * around. Peeks the instance's own {@code xsi:schemaLocation}/{@code
+     * noNamespaceSchemaLocation} hint up front (mark/reset on {@code bufferedStream} since
+     * callers hand in a single-use {@link InputStream}, not a re-readable {@link InputSource})
+     * and, if it resolves to a schema declaring {@code vc:minVersion="1.1"}, validates with an
+     * XSD 1.1-capable {@link ValidatorHandler} instead.
+     *
+     * @return the completed {@link ValidationReport} if the XSD 1.1 path was taken, or {@code
+     *         null} if {@code documentBaseUri} is unknown (needed to resolve the hint) or no hint
+     *         was found -- the caller should fall through to the default pipeline in that case
+     *         (same accepted, documented limitation as the other two call sites).
+     */
+    @Nullable
+    private ValidationReport tryValidateWithXsd11Schema(final BufferedInputStream bufferedStream, @Nullable final String documentBaseUri,
+            final ValidationContentHandler contenthandler, final ValidationReport report) {
+        if (documentBaseUri == null) {
+            return null;
+        }
+        try {
+            bufferedStream.mark(XSD11_PEEK_MARK_LIMIT);
+            final InputSource peekSource = new InputSource(bufferedStream);
+            final Xsd11SchemaDetection.RootElementInfo rootElement = Xsd11SchemaDetection.peekRootElement(peekSource);
+            bufferedStream.reset();
+
+            if (Xsd11SchemaDetection.detectXsd11ViaSchemaLocation(subject.getName(), rootElement, documentBaseUri)) {
+                logger.debug("Detected XSD 1.1 schema (vc:minVersion) via the instance's schemaLocation hint; using the XSD 1.1 validator directly.");
+                return validateWithXsd11Schema(bufferedStream, documentBaseUri, contenthandler, report);
+            }
+        } catch (final IOException ex) {
+            // Mark/reset failure (e.g. the prolog before the root start tag exceeded
+            // XSD11_PEEK_MARK_LIMIT) -- not a validation failure, just means the peek couldn't
+            // run; fall through to the default pipeline exactly as if no hint had been found.
+            logger.debug("Could not peek root element for XSD 1.1 detection: {}", ex.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Validates {@code stream} against a no-pre-supplied-source XSD 1.1 {@link Schema} (dynamic
+     * discovery follows the instance's own {@code xsi:schemaLocation} hint, the same way the
+     * default SAX pipeline follows it for XSD 1.0). Drives a plain, non-validating {@link
+     * XMLReader} rather than reusing {@link #getXMLReader} -- this class builds a fresh reader per
+     * call rather than reusing a pooled one, so there's no risk of it independently
+     * (mis)validating the document via its own XSD-1.0-only dynamic discovery in parallel with
+     * this {@link ValidatorHandler} (the failure mode {@code MutableCollection}'s equivalent fix
+     * had to specifically guard against, since it reuses a pooled, already-validating reader).
+     * {@code contenthandler} doesn't implement {@link org.xml.sax.ext.LexicalHandler}, so unlike
+     * {@code MutableCollection}'s fix, no lexical-event forwarder is needed here.
+     */
+    private ValidationReport validateWithXsd11Schema(final InputStream stream, final String documentBaseUri, final ValidationContentHandler contenthandler, final ValidationReport report) {
+        try {
+            final ValidatorHandler validatorHandler = getXsd11DynamicDiscoverySchema().newValidatorHandler();
+            if (systemCatalogResolver != null) {
+                validatorHandler.setResourceResolver(systemCatalogResolver);
+            }
+            validatorHandler.setErrorHandler(report);
+            validatorHandler.setContentHandler(contenthandler);
+
+            final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
+            saxFactory.setNamespaceAware(true);
+            final XMLReader xmlReader = saxFactory.newSAXParser().getXMLReader();
+            xmlReader.setFeature(FEATURE_SECURE_PROCESSING, true);
+            xmlReader.setContentHandler(validatorHandler);
+
+            // Dynamic discovery resolves the instance's own xsi:schemaLocation hint against the
+            // InputSource's systemId during the parse -- without it, a relative hint falls back
+            // to the JVM's current working directory instead of documentBaseUri (confirmed
+            // empirically: this was the actual cause of an early version of this fix silently
+            // falling through to "schema document not found" instead of validating).
+            final InputSource source = new InputSource(stream);
+            source.setSystemId(documentBaseUri);
+
+            report.start();
+            xmlReader.parse(source);
+            report.stop();
+
+            report.setNamespaceUri(contenthandler.getNamespaceUri());
+        } catch (final ParserConfigurationException | SAXException | IOException ex) {
+            logger.error(ex);
+            report.setThrowable(ex);
+        } finally {
+            report.stop();
+            logger.debug("Validation performed in {} msec.", report.getValidationDuration());
+        }
+        return report;
+    }
+
+    /**
+     * Lazily compiles, once per JVM, the no-pre-supplied-source XSD 1.1 {@link Schema} used by
+     * {@link #validateWithXsd11Schema(InputStream, ValidationContentHandler, ValidationReport)}.
+     * Initialization-on-demand holder idiom: thread-safe with no explicit synchronization.
+     */
+    private static Schema getXsd11DynamicDiscoverySchema() {
+        return Xsd11DynamicDiscoverySchemaHolder.INSTANCE;
+    }
+
+    private static final class Xsd11DynamicDiscoverySchemaHolder {
+        private static final Schema INSTANCE;
+        static {
+            try {
+                INSTANCE = SchemaFactory.newInstance(XSD_1_1_NS).newSchema();
+            } catch (final SAXException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
     }
 
     private XMLReader getXMLReader(final ContentHandler contentHandler,

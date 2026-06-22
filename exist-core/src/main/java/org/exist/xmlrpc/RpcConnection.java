@@ -3287,7 +3287,7 @@ public class RpcConnection implements RpcAPI {
             // TODO DWES reconsider
             try (final InputStream is = new EmbeddedInputStream(new XmldbURL(docUri))) {
                 // Perform validation
-                final ValidationReport report = validator.validate(is);
+                final ValidationReport report = validator.validate(is, null, docUri.toString());
 
                 // Return validation result
                 return report.isValid();
