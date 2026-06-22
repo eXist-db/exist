@@ -41,6 +41,17 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $bnm:suite := "binary-nested-in-map";
 
+(: One directory per run, shared by setUp and the test (helper:get-test-directory embeds a fresh uuid
+ : on each call, so it must be computed once here rather than recomputed in each function). :)
+declare variable $bnm:directory := helper:get-test-directory($bnm:suite);
+
+declare
+    %test:setUp
+function bnm:set-up() as empty-sequence() {
+    let $_ := helper:setup-fs-extra($bnm:directory)
+    return ()
+};
+
 declare
     %test:tearDown
 function bnm:tear-down() as empty-sequence() {
@@ -61,7 +72,5 @@ function bnm:make-nested($path as xs:string) {
 declare
     %test:assertEquals("SERVER_SECRET=123!")
 function bnm:binary-nested-in-map-survives-function-return() {
-    let $directory := helper:get-test-directory($bnm:suite)
-    let $_ := helper:setup-fs-extra($directory)
-    return util:binary-to-string(bnm:make-nested(concat($directory, "/.env"))[1]?data)
+    util:binary-to-string(bnm:make-nested(concat($bnm:directory, "/.env"))[1]?data)
 };
