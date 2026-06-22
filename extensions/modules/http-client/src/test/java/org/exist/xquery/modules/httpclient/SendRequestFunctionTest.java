@@ -816,6 +816,56 @@ public class SendRequestFunctionTest {
                 .withStackTraceContaining("HC005");
     }
 
+    /**
+     * http:body/@method='binary' decodes the body's base64 text content and sends the raw bytes
+     * (EXPath HTTP Client 3.1 serialization method). base64('hello') = 'aGVsbG8='.
+     */
+    @Test
+    public void bodyMethodBinarySendsDecodedBytes() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $response := http:send-request(\n" +
+                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                "    <http:body media-type='application/octet-stream' method='binary'>aGVsbG8=</http:body>\n" +
+                "  </http:request>)\n" +
+                "return parse-json($response[2])?body");
+        assertEquals("method='binary' should base64-decode the body to raw bytes",
+                "hello", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * http:body/@method='hex' decodes the body's hexadecimal text content. hex('hi') = '6869'.
+     */
+    @Test
+    public void bodyMethodHexSendsDecodedBytes() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $response := http:send-request(\n" +
+                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                "    <http:body media-type='application/octet-stream' method='hex'>6869</http:body>\n" +
+                "  </http:request>)\n" +
+                "return parse-json($response[2])?body");
+        assertEquals("method='hex' should hex-decode the body to raw bytes",
+                "hi", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * http:body/@method='text' serializes element content as text (its string value), not as XML --
+     * so a child element is sent as its text, not its markup.
+     */
+    @Test
+    public void bodyMethodTextSerializesAsText() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $response := http:send-request(\n" +
+                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                "    <http:body media-type='text/plain' method='text'><a>x</a></http:body>\n" +
+                "  </http:request>)\n" +
+                "return parse-json($response[2])?body");
+        assertEquals("method='text' should send the element's string value, not its markup",
+                "x", result.getResource(0).getContent().toString());
+    }
+
     @Test
     public void putMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
