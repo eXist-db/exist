@@ -6,7 +6,7 @@
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
     targetNamespace="http://expath.org/ns/pkg"
-    version="1.0.1">
+    version="1.1.0">
     
     <xs:annotation>
         <xs:documentation>A schema for EXPath Packaging (i.e. <code>expath-pkg.xml</code>) file as per the <a href="http://expath.org/spec/pkg">EXPath Packaging System - Candidate Module 9 May 2012'</a> specification.</xs:documentation>
@@ -42,7 +42,7 @@
                     <xs:documentation>The name of the package. A package is named using an IRI, as defined by <a href="file:///Users/aretter/Desktop/expath-pkg-spec.html#rfc3987">[RFC 3987]</a>, excepted any IRI using the file: scheme (most frequent choices are http: and urn: scheme URIs). Note that the definition of IRI excludes relative references.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="abrev" type="xs:NCName" use="required"/>
+            <xs:attribute name="abbrev" type="xs:NCName" use="required"/>
             <xs:attribute name="version" type="pkg:semVer2Type" use="required"/>
             <xs:attribute name="spec" type="xs:string" use="required" fixed="1.0">
                 <xs:annotation>
