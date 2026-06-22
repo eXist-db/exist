@@ -26,7 +26,7 @@ Canonical templates may declare an optional **`schemaVersion`** attribute on the
 
 All five schemas `xs:include` the `schemaVersionType` simple type from [`schema-version-type.xsd`](schema-version-type.xsd) rather than each declaring their own copy (it has no `targetNamespace`, so it is pulled in as a chameleon component and inherits each includer's namespace).
 
-Keep [`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVersion.java) constants in sync with `xs:schema/@version` on the paired XSDs — [`SchemaVersionSyncTest`](../exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java) fails the build if they drift apart, and [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) also triggers on edits to `SchemaVersion.java` itself.
+[`SchemaVersion.java`](../exist-core/src/main/java/org/exist/util/SchemaVersion.java)'s version constants are generated at build time from `xs:schema/@version` on the paired XSDs (see [`generate-schema-version.xsl`](generate-schema-version.xsl), wired as `exist-core/pom.xml`'s `schema-version-codegen` execution) — never hand-edit them. [`SchemaVersionSyncTest`](../exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java) is a tautology now that the constants can't drift by construction, kept as a guard against the codegen wiring itself silently breaking. [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) still triggers on edits to `SchemaVersion.java` itself.
 
 ## Validation
 
