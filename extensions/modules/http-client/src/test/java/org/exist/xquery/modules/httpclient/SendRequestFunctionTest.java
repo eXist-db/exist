@@ -274,6 +274,9 @@ public class SendRequestFunctionTest {
             }
         });
 
+        // Multipart byte-safety + nesting endpoints (extracted to keep startHttpServer's complexity down)
+        registerMultipartTestEndpoints(httpServer);
+
         // OPTIONS endpoint
         httpServer.createContext("/options", exchange -> {
             exchange.getResponseHeaders().set("Allow", "GET, POST, OPTIONS");
@@ -302,6 +305,45 @@ public class SendRequestFunctionTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
+    }
+
+    /**
+     * Registers the multipart response endpoints used by the byte-safety and nesting tests, kept out
+     * of startHttpServer so that method's complexity is not inflated.
+     */
+    private static void registerMultipartTestEndpoints(final HttpServer server) {
+        // Multipart response with a binary part (bytes 0xFF 0xFE, base64 "//4=") that is not valid
+        // UTF-8 — corrupted by the old String-based splitter
+        server.createContext("/multipart-binary", exchange -> {
+            final String boundary = "bnd";
+            final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            baos.writeBytes(("--" + boundary + "\r\nContent-Type: application/octet-stream\r\n\r\n")
+                    .getBytes(StandardCharsets.US_ASCII));
+            baos.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xFE});
+            baos.writeBytes(("\r\n--" + boundary + "\r\nContent-Type: text/plain\r\n\r\nhello\r\n--"
+                    + boundary + "--\r\n").getBytes(StandardCharsets.US_ASCII));
+            final byte[] bodyBytes = baos.toByteArray();
+            exchange.getResponseHeaders().set("Content-Type", "multipart/mixed; boundary=" + boundary);
+            exchange.sendResponseHeaders(200, bodyBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bodyBytes);
+            }
+        });
+
+        // Nested multipart: outer multipart/mixed whose first part is itself a multipart/mixed
+        server.createContext("/multipart-nested", exchange -> {
+            final String inner = "--inner\r\nContent-Type: text/plain\r\n\r\nA\r\n"
+                    + "--inner\r\nContent-Type: text/plain\r\n\r\nB\r\n--inner--\r\n";
+            final String body = "--outer\r\nContent-Type: multipart/mixed; boundary=inner\r\n\r\n"
+                    + inner + "\r\n"
+                    + "--outer\r\nContent-Type: text/plain\r\n\r\nC\r\n--outer--\r\n";
+            exchange.getResponseHeaders().set("Content-Type", "multipart/mixed; boundary=outer");
+            final byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bodyBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bodyBytes);
+            }
+        });
     }
 
     private static void sendResponse(HttpExchange exchange, int status, String contentType,
@@ -1480,5 +1522,38 @@ public class SendRequestFunctionTest {
                 "return exists($response[1]/http:multipart)");
         assertEquals("Multipart response element should contain http:multipart",
                 "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * A binary multipart part is returned byte-for-byte (base64Binary), not corrupted by a UTF-8
+     * String round-trip. The first part is the two bytes 0xFF 0xFE (base64 "//4="); the second is text.
+     */
+    @Test
+    public void multipartBinaryPartIsByteSafe() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $r := http:send-request(\n" +
+                "  <http:request method='GET' href='" + baseUrl() + "/multipart-binary'/>)\n" +
+                "return $r[2] instance of xs:base64Binary\n" +
+                "  and string($r[2]) = '//4='\n" +
+                "  and $r[3] = 'hello'");
+        assertEquals("binary multipart part should round-trip byte-for-byte",
+                "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * A nested multipart part is parsed recursively, so its sub-parts surface as individual items:
+     * outer = [ multipart[ "A", "B" ], "C" ] yields the three leaf text items A, B, C.
+     */
+    @Test
+    public void multipartNestedIsParsedRecursively() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $r := http:send-request(\n" +
+                "  <http:request method='GET' href='" + baseUrl() + "/multipart-nested'/>)\n" +
+                "let $bodies := $r[position() gt 1]\n" +
+                "return string-join($bodies, ',')");
+        assertEquals("nested multipart should yield the leaf parts A,B,C",
+                "A,B,C", result.getResource(0).getContent().toString());
     }
 }
