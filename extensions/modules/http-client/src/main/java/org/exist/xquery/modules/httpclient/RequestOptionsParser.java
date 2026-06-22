@@ -62,10 +62,10 @@ public class RequestOptionsParser {
         final boolean autoAcceptEncoding = parseBooleanAttr(reqElem, Namespaces.EXIST_NS, "auto-accept-encoding", defaults.autoAcceptEncoding());
         final HttpClient.Version httpVersion = parseHttpVersion(reqElem, defaults.httpVersion());
         final boolean statusOnly = parseBooleanAttr(reqElem, "status-only", responseDefaults.statusOnly());
-        final String overrideMediaType = getAttr(reqElem, "override-media-type");
-        final String username = getAttr(reqElem, "username");
-        final String password = getAttr(reqElem, "password");
-        final String authMethod = getAttr(reqElem, "auth-method");
+        final String overrideMediaType = getAttributeValue(reqElem, "override-media-type");
+        final String username = getAttributeValue(reqElem, "username");
+        final String password = getAttributeValue(reqElem, "password");
+        final String authMethod = getAttributeValue(reqElem, "auth-method");
         final boolean sendAuthorization = parseBooleanAttr(reqElem, "send-authorization", credDefaults.sendAuthorization());
 
         final HttpClientOptions requestOptions = new HttpClientOptions(followRedirect, timeout, httpVersion, autoAcceptEncoding);
@@ -75,7 +75,7 @@ public class RequestOptionsParser {
     }
 
     private static HttpClient.Version parseHttpVersion(final Element reqElem, final HttpClient.Version defaultVersion) throws XPathException {
-        final String value = getAttr(reqElem, Namespaces.EXIST_NS, "http-version");
+        final String value = getAttributeValueinNamespace(reqElem, Namespaces.EXIST_NS, "http-version");
         if (value == null) {
             return defaultVersion;
         }
@@ -88,7 +88,7 @@ public class RequestOptionsParser {
     }
 
     private static int parseTimeout(final Element reqElem, final int defaultTimeout) throws XPathException {
-        final String timeoutStr = getAttr(reqElem, "timeout");
+        final String timeoutStr = getAttributeValue(reqElem, "timeout");
         if (timeoutStr == null || timeoutStr.isEmpty()) {
             return defaultTimeout;
         }
@@ -100,35 +100,30 @@ public class RequestOptionsParser {
         }
     }
 
-    private static boolean parseBooleanAttr(final Element elem, final String name, final boolean defaultValue) {
-        String value = getAttr(elem, name);
-        if (value == null) {
-            value = getAttr(elem, Namespaces.EXIST_NS, name);
-        }
-        if (value == null) {
-            value = getAttr(elem, HttpClientModule.NAMESPACE_URI, name);
-        }
-        return parseBooleanAttr(value, defaultValue);
+    private static boolean parseBooleanAttr(final Element elem, final String attributeName, final boolean defaultValue) {
+        String value = getAttributeValue(elem, attributeName);
+
+        return getBooleanValue(value, defaultValue);
     }
 
     private static boolean parseBooleanAttr(final Element elem, final String namespaceURI, final String localName, final boolean defaultValue) {
-        final String value = getAttr(elem, namespaceURI, localName);
-        return parseBooleanAttr(value, defaultValue);
+        final String value = getAttributeValueinNamespace(elem, namespaceURI, localName);
+        return getBooleanValue(value, defaultValue);
     }
 
-    private static boolean parseBooleanAttr(final String value, final boolean defaultValue) {
+    private static boolean getBooleanValue(final String value, final boolean defaultValue) {
         if (value == null) {
             return defaultValue;
         }
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 
-    private static String getAttr(final Element elem, final String name) {
+    private static String getAttributeValue(final Element elem, final String name) {
         final String val = elem.getAttribute(name);
         return val != null && !val.isEmpty() ? val : null;
     }
 
-    private static String getAttr(final Element elem, final String namespaceURI, final String localName) {
+    private static String getAttributeValueinNamespace(final Element elem, final String namespaceURI, final String localName) {
         final String val = elem.getAttributeNS(namespaceURI, localName);
         return val != null && !val.isEmpty() ? val : null;
     }

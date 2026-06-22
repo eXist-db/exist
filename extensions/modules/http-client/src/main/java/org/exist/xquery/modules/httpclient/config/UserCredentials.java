@@ -34,10 +34,10 @@ package org.exist.xquery.modules.httpclient.config;
  * @param sendAuthorization whether to send the Authorization header preemptively
  */
 public record UserCredentials(
-        String username, //user
-        String password, //user
-        String authMethod, // user
-        boolean sendAuthorization //
+        String username,
+        String password,
+        String authMethod,
+        boolean sendAuthorization
 ) {
     /**
      * Default credentials: no authentication.

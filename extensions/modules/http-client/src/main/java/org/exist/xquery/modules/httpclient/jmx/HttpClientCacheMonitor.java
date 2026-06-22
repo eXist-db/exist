@@ -80,7 +80,6 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
     @Override
     public long getCacheSize() {
-        cache.cleanUp();
         return cache.estimatedSize();
     }
 
@@ -101,21 +100,20 @@ public class HttpClientCacheMonitor implements HttpClientCacheMXBean {
 
     @Override
     public double getHitRate() {
-        return cache.stats().hitRate();
+        final CacheStats stats = cache.stats();
+        // cafeine returns perfect hit rate when no requests have been made.
+        return stats.requestCount() == 0 ? 0.0 : stats.hitRate();
     }
 
     @Override
     public String getCachedClientsSummary() {
         return cache.asMap().keySet().stream()
-                .map(opts -> "followRedirect=" + opts.followRedirect()
-                        + ", timeout=" + opts.timeout() + "s"
-                        + ", autoAcceptEncoding=" + opts.autoAcceptEncoding())
+                .map(Record::toString)
                 .collect(Collectors.joining("; "));
     }
 
     @Override
     public void reset() {
-        cache.asMap().values().forEach(HttpClient::close);
         cache.invalidateAll();
     }
 }

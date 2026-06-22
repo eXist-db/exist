@@ -23,9 +23,12 @@ package org.exist.xquery.modules.httpclient;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.github.mizosoft.methanol.Methanol;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.jmx.HttpClientCacheMonitor;
+import org.jspecify.annotations.Nullable;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -48,6 +51,14 @@ public class HttpClientFactory {
             Caffeine.newBuilder()
                     .maximumSize(25)
                     .expireAfterAccess(Duration.ofHours(1))
+                    .<HttpClientOptions, HttpClient>removalListener(new RemovalListener<HttpClientOptions, HttpClient>() {
+                        @Override
+                        public void onRemoval(@Nullable HttpClientOptions options, @Nullable HttpClient client, RemovalCause cause) {
+                            if (client != null) {
+                                client.close();
+                            }
+                        }
+                    })
                     .recordStats()
                     .build();
 
