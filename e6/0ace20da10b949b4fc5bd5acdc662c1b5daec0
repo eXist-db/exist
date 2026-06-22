@@ -1,0 +1,47 @@
+exist-core/src/main/java/org/exist/validation/Xsd11SchemaDetection.java
+  s_7cdf0e373ff9b9::t_db4342f3de760d 1-255
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7cdf0e373ff9b9::t_d2333cd4a020b4 433,438
+  s_7cdf0e373ff9b9::t_18954fbb789397 387
+  s_7cdf0e373ff9b9::t_3dff652bb23882 518-520,523,527-529,532
+  s_7cdf0e373ff9b9::t_652659da6e9045 61
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_7cdf0e373ff9b9::t_9e28d7722898b1 1227-1228,1231,1233-1234,1242-1258,1260,1262-1267,1269-1281,1285-1286,1288-1290,1331-1353,1367,1370-1381,1389-1395
+  s_7cdf0e373ff9b9::t_f3787f40186a7b 1229-1230,1232,1235-1239,1396
+  s_56954b91ebe638::t_4e9c15688b262b 106-127
+  s_7cdf0e373ff9b9::t_d079e285055d7a 64,75,87-88
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java
+  s_7cdf0e373ff9b9::t_8f5ea75772b74a 24-32,34,38,42-48,67-77,84-91,108,111-112,122-130,137-138,148-157,180-183,196,198-200,202-203
+  s_7cdf0e373ff9b9::t_b83f9a1320086a 110
+  s_7cdf0e373ff9b9::t_6c1ddcd8e957f0 39-41
+  s_7cdf0e373ff9b9::t_5c7c5557eb448d 1-23,33,35-37,49-66,78-83,92-107,109,113-115,146-147,158-160,162-163,171-173,190-192,195,210,218-219
+  s_56954b91ebe638::t_0ecc97a5f99bfa 216
+  s_56954b91ebe638::t_89fa9185a701dd 161,164-170
+  s_7cdf0e373ff9b9::t_8b38cf8121ecb3 174-179,186-189,193-194,197,201,204-209,211-215,217
+  s_7cdf0e373ff9b9::t_b642bc4298bfc8 116-121,131-136,139-145
+  s_56954b91ebe638::t_d3ed5c33f2357b 184-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "e60ace20da10b949b4fc5bd5acdc662c1b5daec0",
+  "prompts": {},
+  "sessions": {
+    "s_56954b91ebe638": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_114903f14ffef4IbzoSoyVEXA9",
+        "model": "big-pickle"
+      },
+      "human_author": null
+    },
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
