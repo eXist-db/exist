@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_56954b91ebe638::t_7e4563db11db7a 934,936-940,942
+  s_56954b91ebe638::t_9fefbdf4169478 574
+  s_56954b91ebe638::t_96ef1812f29663 59-64,66-68
+  s_56954b91ebe638::t_d97c1b84159882 531,536,542,563-565
+  s_56954b91ebe638::t_5d9fe9791ac90c 117
+  s_56954b91ebe638::t_2006710fcf376d 65
+  s_56954b91ebe638::t_66e5c1a82a0970 879,881-885,887
+  s_56954b91ebe638::t_dcea54bdefaabd 896,901
+  s_56954b91ebe638::t_795ad13a1265cf 869-878
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "1b619d8421cbfe7b40bba2c1564de6bcef6ab6b4",
+  "prompts": {},
+  "sessions": {
+    "s_56954b91ebe638": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_114903f14ffef4IbzoSoyVEXA9",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
