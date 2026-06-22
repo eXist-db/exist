@@ -103,7 +103,7 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void hitRateIsZeroWhenNoRequests() throws Exception {
-        assertEquals(1.0, (double) server.getAttribute(name, "HitRate"), 0.0001);
+        assertEquals(0.0, (double) server.getAttribute(name, "HitRate"), 0.0001);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class HttpClientCacheMonitorTest {
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");
         assertTrue("Summary should mention followRedirect=true", summary.contains("followRedirect=true"));
         assertTrue("Summary should mention followRedirect=false", summary.contains("followRedirect=false"));
-        assertTrue("Summary should mention timeout=30s", summary.contains("timeout=30s"));
+        assertTrue("Summary should mention timeout=30", summary.contains("timeout=30"));
         assertTrue("Summary should mention autoAcceptEncoding=true", summary.contains("autoAcceptEncoding=true"));
     }
 

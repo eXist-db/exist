@@ -32,19 +32,27 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import java.net.http.HttpClient;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class RequestOptionsNamespaceTest {
 
-    @Test
-    public void namespacedAttribute() throws XPathException, ParserConfigurationException {
+    private static Document createEmptyDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         final DocumentBuilder db = dbf.newDocumentBuilder();
-        final Document doc = db.newDocument();
+        return db.newDocument();
+    }
+
+    @Test
+    public void namespacedAttribute() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
-        reqElem.setAttributeNS(HttpClientModule.NAMESPACE_URI, "http:follow-redirect", "false");
+        reqElem.setAttributeNS(HttpClientModule.NAMESPACE_URI, "follow-redirect", "false");
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
@@ -53,12 +61,9 @@ public class RequestOptionsNamespaceTest {
 
     @Test
     public void existNamespacedAttribute() throws XPathException, ParserConfigurationException {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        final DocumentBuilder db = dbf.newDocumentBuilder();
-        final Document doc = db.newDocument();
+        final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
-        reqElem.setAttributeNS(Namespaces.EXIST_NS, "exist:follow-redirect", "false");
+        reqElem.setAttributeNS(Namespaces.EXIST_NS, "follow-redirect", "false");
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
@@ -67,12 +72,9 @@ public class RequestOptionsNamespaceTest {
 
     @Test
     public void autoAcceptEncodingExistNamespaced() throws XPathException, ParserConfigurationException {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        final DocumentBuilder db = dbf.newDocumentBuilder();
-        final Document doc = db.newDocument();
+        final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
-        reqElem.setAttributeNS(Namespaces.EXIST_NS, "exist:auto-accept-encoding", "false");
+        reqElem.setAttributeNS(Namespaces.EXIST_NS, "auto-accept-encoding", "false");
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
@@ -81,15 +83,69 @@ public class RequestOptionsNamespaceTest {
 
     @Test
     public void autoAcceptEncodingNoNamespaceIgnored() throws XPathException, ParserConfigurationException {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        final DocumentBuilder db = dbf.newDocumentBuilder();
-        final Document doc = db.newDocument();
+        final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttribute("auto-accept-encoding", "false");
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
         assertTrue("auto-accept-encoding should be true (default) when set via no-namespace attribute", options.requestOptions().autoAcceptEncoding());
+    }
+
+    @Test
+    public void httpVersionExistNamespacedHttp11() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
+        final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
+        reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "1.1");
+        doc.appendChild(reqElem);
+
+        final RequestOptions options = RequestOptionsParser.parse(reqElem);
+        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
+                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
+    }
+
+    @Test
+    public void httpVersionExistNamespacedHttp2() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
+        final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
+        reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "2");
+        doc.appendChild(reqElem);
+
+        final RequestOptions options = RequestOptionsParser.parse(reqElem);
+        assertEquals("http-version should be HTTP_2 when set via exist-namespaced attribute",
+                HttpClient.Version.HTTP_2, options.requestOptions().httpVersion());
+    }
+
+    @Test
+    public void httpVersionExistNamespacedHttp123() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
+        final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
+        reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "1.2.3");
+        doc.appendChild(reqElem);
+
+        assertThrows(XPathException.class, () -> RequestOptionsParser.parse(reqElem));
+    }
+
+    @Test
+    public void httpVersionNoNamespacedHttp2() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
+        final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
+        reqElem.setAttribute("http-version", "2");
+        doc.appendChild(reqElem);
+
+        final RequestOptions options = RequestOptionsParser.parse(reqElem);
+        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
+                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
+    }
+
+    @Test
+    public void noHttpVersion() throws XPathException, ParserConfigurationException {
+        final Document doc = createEmptyDocument();
+        final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
+        doc.appendChild(reqElem);
+
+        final RequestOptions options = RequestOptionsParser.parse(reqElem);
+        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
+                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
     }
 }
