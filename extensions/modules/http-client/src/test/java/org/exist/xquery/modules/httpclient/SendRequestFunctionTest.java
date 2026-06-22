@@ -29,8 +29,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.exist.xmldb.EXistResource;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -743,6 +747,83 @@ public class SendRequestFunctionTest {
                 "return contains(parse-json($response[2])?body, 'hello server')");
         assertEquals("POST body should be transmitted",
                 "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * The http:body @src attribute (EXPath HTTP Client 3.1) sends the linked database resource as the
+     * request body. Regression for eXist-db/exist#6510, where @src was silently ignored and an empty
+     * body was sent.
+     */
+    @Test
+    public void bodySrcSendsResourceContent() throws XMLDBException {
+        storeBinaryResource("http-src-body.txt", "abracadabra");
+        try {
+            final ResourceSet result = existEmbeddedServer.executeQuery(
+                    HTTP_NS +
+                    "let $response := http:send-request(\n" +
+                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                    "    <http:body media-type='text/plain' src='/db/http-src-body.txt'/>\n" +
+                    "  </http:request>)\n" +
+                    "return parse-json($response[2])?body");
+            assertEquals("http:body/@src content should be sent as the request body",
+                    "abracadabra", result.getResource(0).getContent().toString());
+        } finally {
+            removeResource("http-src-body.txt");
+        }
+    }
+
+    private static void storeBinaryResource(final String name, final String content) throws XMLDBException {
+        final Collection root = existEmbeddedServer.getRoot();
+        final BinaryResource res = root.createResource(name, BinaryResource.class);
+        ((EXistResource) res).setMimeType("text/plain");
+        res.setContent(content.getBytes(StandardCharsets.UTF_8));
+        root.storeResource(res);
+    }
+
+    private static void removeResource(final String name) throws XMLDBException {
+        final Collection root = existEmbeddedServer.getRoot();
+        final Resource res = root.getResource(name);
+        if (res != null) {
+            root.removeResource(res);
+        }
+    }
+
+    /**
+     * Per EXPath HTTP Client 3.1, combining @src with body content is err:HC004.
+     */
+    @Test
+    public void bodySrcWithContentThrowsHC004() {
+        try {
+            existEmbeddedServer.executeQuery(
+                    HTTP_NS +
+                    "http:send-request(\n" +
+                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                    "    <http:body media-type='text/plain' src='/db/http-src-body.txt'>inline</http:body>\n" +
+                    "  </http:request>)");
+            fail("expected err:HC004 for http:body with both @src and content");
+        } catch (final XMLDBException e) {
+            final String chain = e.getMessage() + " | " + e.getCause();
+            assertTrue("expected HC004 but got: " + chain, chain.contains("HC004"));
+        }
+    }
+
+    /**
+     * media-type is mandatory on an http:body that uses @src (request-validity error err:HC005).
+     */
+    @Test
+    public void bodySrcWithoutMediaTypeThrowsHC005() {
+        try {
+            existEmbeddedServer.executeQuery(
+                    HTTP_NS +
+                    "http:send-request(\n" +
+                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
+                    "    <http:body src='/db/http-src-body.txt'/>\n" +
+                    "  </http:request>)");
+            fail("expected err:HC005 for http:body with @src but no media-type");
+        } catch (final XMLDBException e) {
+            final String chain = e.getMessage() + " | " + e.getCause();
+            assertTrue("expected HC005 but got: " + chain, chain.contains("HC005"));
+        }
     }
 
     @Test
