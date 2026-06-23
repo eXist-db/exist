@@ -37,7 +37,7 @@ jobs:
       - name: Set week for OWASP cache key
         run: echo "WEEK=$(date +%Y-%U)" >> $GITHUB_ENV
       - name: Restore OWASP dependency-check cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.dependency-check-data
           key: owasp-dc-${{ env.WEEK }}
@@ -50,7 +50,7 @@ jobs:
         timeout-minutes: 90
       - name: Save OWASP dependency-check cache
         if: github.event_name == 'push'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ~/.dependency-check-data
           key: owasp-dc-${{ env.WEEK }}
@@ -124,7 +124,7 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report coveralls:report
       - name: Save Maven cache
         if: github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ~/.m2
           key: maven-${{ github.ref_name }}-java${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
