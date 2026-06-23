@@ -1,35 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
-    eXist-db Open Source Native XML Database
-    Copyright (C) 2001 The eXist-db Authors
-
-    info@exist-db.org
-    http://www.exist-db.org
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
--->
-<!--
     This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
     the WEB-INF directory of the web application. Otherwise, the configuration
     is read from the directory specified by the exist.home system property.
-    
+
     Structure of this xml document:
-    
+
         exist
             db-connection
                 startup
@@ -48,36 +25,40 @@
             serializer
             transformer
             validation
+                entity-resolver
+                grammar-cache
             xquery
                 builtin-modules
                     module
             xupdate
-    
-    Any unique attributes specified can also be overridden using a Java system 
+            vector-models (optional)
+                model
+
+    Any unique attributes specified can also be overridden using a Java system
     property, typically specified on the command line, of the form:
-    
+
         org.element.element....attribute
-        
-    where the nesting of the element names follows the structure of the 
+
+    where the nesting of the element names follows the structure of the
     XML configuration document, as was shown above.
-        
+
     For example, to override the value of the cache size to be 128MB you could
     specify:
-    
+
         -Dorg.exist.db-connection.cacheSize=128M
-        
-    on your JVM startup command line or options.  Note that this only works 
-    for unique, non-repeating elements, so you can't override things like 
-    the transformer attribute element values or the XQuery module builtin 
+
+    on your JVM startup command line or options.  Note that this only works
+    for unique, non-repeating elements, so you can't override things like
+    the transformer attribute element values or the XQuery module builtin
     definitions, since they are not unique.
-    
+
     For detailed and latest information please consult the eXist documentation:
-    
+
         - http://exist-db.org/exist/apps/doc/configuration.xml
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd" schemaVersion="2.1.1">
 
     <!-- 
         Configures the database backend.
