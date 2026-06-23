@@ -207,7 +207,7 @@
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
-                    <exclude>**/*.xsl</exclude>
+                    <exclude>**/*-fixture.xsl</exclude>
                 </excludes>
             </testResource>
             <testResource>
