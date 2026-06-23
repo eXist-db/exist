@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -50,8 +51,18 @@ public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
 
     private static final String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>";
 
+    // The feature must be set at startup, not via Configuration#setProperty() on an already-running
+    // BrokerPool: XMLReaderObjectFactory#configure() reads this property exactly once, at startup,
+    // and caches it; pooled XMLReaders never re-consult Configuration on later checkouts.
+    private static final Properties expansionEnabledConfigProperties = new Properties();
+    static {
+        final Map<String, Boolean> parserConfig = new HashMap<>();
+        parserConfig.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, true);
+        expansionEnabledConfigProperties.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
+    }
+
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(expansionEnabledConfigProperties, true, true);
 
     @Override
     protected ExistEmbeddedServer getExistEmbeddedServer() {
@@ -61,9 +72,6 @@ public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
     @Test
     public void expandExternalEntities() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
-        final Map<String, Boolean> parserConfig = new HashMap<>();
-        parserConfig.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, true);
-        brokerPool.getConfiguration().setProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
 
         // create a temporary file on disk that contains secret info
         final Tuple2<String, Path> secret = createTempSecretFile();

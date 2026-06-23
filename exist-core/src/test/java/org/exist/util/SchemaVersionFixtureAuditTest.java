@@ -21,7 +21,7 @@
  */
 package org.exist.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Visibility check for test/sample fixture copies of the canonical config templates (the ones
@@ -46,9 +46,8 @@ import static org.junit.Assert.assertTrue;
  * per-module customization).
  * <p>
  * Originally none of these ~39 fixtures carried {@link SchemaVersion#ATTRIBUTE}. Several have
- * since been normalized (see {@code plans/catalog-dtd.plan.md}'s fixture-drift research table --
- * the cluster A/B/D "easy win" fixtures got the attribute added as part of stripping an
- * accidentally-added LGPL header and other boilerplate drift). {@link #REMAINING_WITHOUT_VERSION}
+ * since been normalized -- the attribute was added as part of stripping an accidentally-added
+ * LGPL header and other boilerplate drift from a subset of them. {@link #REMAINING_WITHOUT_VERSION}
  * is the known, explicit list of what's still missing it. This test fails if that set changes --
  * either grows (a new undocumented fixture appeared) or shrinks without updating the list (a
  * fixture got fixed but this tracker wasn't updated) -- so it stays an honest, current map of
@@ -67,8 +66,7 @@ public class SchemaVersionFixtureAuditTest {
     /**
      * Fixtures not yet normalized -- update this list (not the assertion) as more are fixed.
      * {@code vector-it} and {@code http-client}'s {@code conf.xml} are deliberate, modern,
-     * hand-written-from-scratch minimal configs (not drift victims -- see
-     * {@code plans/catalog-dtd.plan.md}'s cluster E), left alone on purpose.
+     * hand-written-from-scratch minimal configs, not drift victims, left alone on purpose.
      * {@code exist-core-jmh}'s {@code conf.xml} is a JMH benchmark resource, not a test fixture.
      */
     private static final Set<String> REMAINING_WITHOUT_VERSION = Set.of(
@@ -81,9 +79,8 @@ public class SchemaVersionFixtureAuditTest {
         final Path repoRoot = resolveRepoRoot();
 
         final List<Path> fixtures = findFixtures(repoRoot);
-        assertTrue("expected to find test/sample fixture copies of conf.xml/controller-config.xml/"
-                + "collection.xconf.init under " + repoRoot + " (found none -- is repo root resolution broken?)",
-                !fixtures.isEmpty());
+        assertTrue(!fixtures.isEmpty(), "expected to find test/sample fixture copies of conf.xml/controller-config.xml/"
+                + "collection.xconf.init under " + repoRoot + " (found none -- is repo root resolution broken?)");
 
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -97,10 +94,10 @@ public class SchemaVersionFixtureAuditTest {
             }
         }
 
-        assertEquals("set of fixtures missing " + SchemaVersion.ATTRIBUTE + " changed -- if you fixed one, "
+        assertEquals(REMAINING_WITHOUT_VERSION, Set.copyOf(missing),
+                "set of fixtures missing " + SchemaVersion.ATTRIBUTE + " changed -- if you fixed one, "
                         + "remove it from REMAINING_WITHOUT_VERSION; if a new undocumented fixture appeared, "
-                        + "add it there (or better, give it schemaVersion to begin with): " + missing,
-                REMAINING_WITHOUT_VERSION, Set.copyOf(missing));
+                        + "add it there (or better, give it schemaVersion to begin with): " + missing);
     }
 
     private static List<Path> findFixtures(final Path repoRoot) throws IOException {

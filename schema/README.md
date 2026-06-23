@@ -65,3 +65,147 @@ Other schemas (`users.xsd`, `server.xsd`, `expath-pkg.xsd`, …) apply to runtim
 ## Distribution
 
 Schemas ship at `$EXIST_HOME/schema/` ([#6189](https://github.com/eXist-db/exist/issues/6189)).
+
+---
+
+## Test fixture codegen
+
+Hand-rolling separate `conf.xml` / `controller-config.xml` copies for every test module means
+they drift. Two shared base stylesheets in this directory generate the module-specific test
+fixtures from the canonical templates at build time:
+
+| Base stylesheet | Canonical source | Generated file |
+|-----------------|-----------------|----------------|
+| [`generate-conf-fixture.xsl`](generate-conf-fixture.xsl) | `exist-distribution/src/main/config/conf.xml` | `conf.xml` |
+| [`generate-controller-config-fixture.xsl`](generate-controller-config-fixture.xsl) | `exist-jetty-config/…/standalone-webapp/WEB-INF/controller-config.xml` | `controller-config.xml` |
+
+### How it works
+
+Each test module that needs a custom `conf.xml` has a thin `src/test/resources-filtered/conf-fixture.xsl`
+that imports the base stylesheet and redeclares whichever `xsl:param` defaults need changing.
+XSLT import precedence means the per-fixture param value wins over the base default without
+requiring any template overrides.  `xml-maven-plugin` runs the transformation in the
+`generate-test-resources` phase; the output lands in `target/generated-test-resources/` and
+is listed as a filtered `testResource` so Maven's `${...}` token substitution still applies.
+
+### Param reference — `generate-conf-fixture.xsl`
+
+| Param | Type | Default | Purpose |
+|-------|------|---------|---------|
+| `keep-modules` | `xs:string*` | `()` | `@uri` values of builtin XQuery modules to keep |
+| `keep-indexes` | `xs:string*` | `()` | `@id` values of indexer modules to keep |
+| `data-path` | `xs:string` | `${basedir}/target/test-data` | Rewrites `db-connection/@files` and `recovery/@journal-dir` |
+| `catalog-uri` | `xs:string?` | `()` | Overrides `validation/catalog/@uri`; empty = keep canonical's |
+| `content-file-pool-size` | `xs:string?` | `()` | Overrides content file pool size; empty = keep canonical's |
+| `extra-triggers` | `element()*` | `()` | Appended to `db-connection/startup/triggers` |
+| `extra-index-modules` | `element()*` | `()` | Appended to `indexer/modules` |
+| `extra-modules` | `element()*` | `()` | Appended to `xquery/builtin-modules` |
+
+The base stylesheet also strips `RestXqStartupTrigger` and `AutoDeploymentTrigger` from
+canonical (they assume a full webapp deployment); restore them per-fixture via
+`$extra-triggers` if a test needs them.
+
+### Param reference — `generate-controller-config-fixture.xsl`
+
+| Param | Type | Default | Purpose |
+|-------|------|---------|---------|
+| `keep-forwards` | `xs:string*` | all 4 | `forward/@pattern` values to keep |
+| `rest-forward-pattern` | `xs:string?` | `()` | Override `@pattern` on the `/rest` forward; empty = keep as-is |
+| `root-elements` | `element()*` | `()` | Replace the entire `<root>` group; empty = keep template's roots |
+
+### `keep-*` vs `extra-*` — critical distinction
+
+`keep-modules` and `keep-indexes` operate on **live elements only**.  If a `<module>` entry
+is commented out in the canonical template, it is invisible to the XPath match and cannot be
+"kept" this way.  Use the corresponding `extra-*` param instead:
+
+```xml
+<!-- WRONG: spatial-index is commented out in canonical — keep-indexes silently produces nothing -->
+<xsl:param name="keep-indexes" as="xs:string*" select="('sort-index', 'spatial-index')"/>
+
+<!-- CORRECT: inject the live element directly -->
+<xsl:param name="extra-index-modules" as="element()*">
+    <module xmlns="" id="spatial-index" file="spatial.dbx"
+            class="org.exist.indexing.spatial.GMLHSQLIndex"/>
+</xsl:param>
+```
+
+Modules that are commented out in canonical by default: `spatial-index`, `xqsuite`, `vector`.
+
+The same rule applies to `$extra-modules` for **builtin modules with child `<parameter>`
+elements** — if the canonical entry is self-closing and your fixture needs parameter children,
+keep `$keep-modules` empty for that module (so the bare canonical entry is not also kept)
+and supply the parameterised element via `$extra-modules`:
+
+```xml
+<!-- SQL module needs pool parameters not present in the canonical self-closing entry -->
+<xsl:param name="extra-modules" as="element()*">
+    <module xmlns="" uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule">
+        <parameter name="pool.1.name" value="pool-1"/>
+        …
+    </module>
+</xsl:param>
+```
+
+### Maven token escaping in element literals
+
+The generated `conf.xml` goes through Maven's testResource filtering, so `${basedir}` in
+string parameters expands correctly.  However, if you write a `${…}` token inside a
+**literal-result-element attribute that is also an XSLT AVT** (`{…}`), you must double the
+curly braces so XSLT does not try to evaluate the inner braces as an XPath expression:
+
+```xml
+<!-- WRONG: XSLT tries to evaluate ${project.build.testOutputDirectory} as XPath -->
+<parameter name="dir" value="${project.build.testOutputDirectory}/functx"/>
+
+<!-- CORRECT: doubled braces → XSLT emits ${...} as literal text → Maven expands it -->
+<parameter name="dir" value="${{project.build.testOutputDirectory}}/functx"/>
+```
+
+Plain attribute content (not inside `{…}`) passes through unchanged and needs no escaping.
+
+### Adding a fixture for a new module
+
+1. Create `src/test/resources-filtered/conf-fixture.xsl` importing the base stylesheet.
+   Count the directory levels from that file to the repo root to get the correct relative path:
+   - Depth 2 (e.g. `exist-ant/src/test/resources-filtered/…`): `../../../../schema/generate-conf-fixture.xsl`
+   - Depth 3 (e.g. `extensions/lucene/src/test/resources-filtered/…`): `../../../../../schema/…`
+   - Depth 4 (e.g. `extensions/modules/sql/…`): `../../../../../../schema/…`
+
+2. Override only the params that differ from the base defaults; leave everything else out.
+
+3. In `pom.xml` (or automatically via the `conf-fixture-codegen` root profile described
+   below), wire `xml-maven-plugin` to run the transformation.
+
+4. Add `target/generated-test-resources` as a filtered `testResource` and exclude
+   `**/*-fixture.xsl` from `src/test/resources-filtered` so the stylesheet itself is not
+   copied to `target/test-classes`.
+
+### Parent POM profile (`conf-fixture-codegen`)
+
+The root `pom.xml` contains a `conf-fixture-codegen` profile activated automatically
+whenever `src/test/resources-filtered/conf-fixture.xsl` is present in a module.  The profile
+runs the standard single-conf-xml transformation (canonical `conf.xml` → fixture → output in
+`target/generated-test-resources/conf.xml`).
+
+Most modules can remove their individual `xml-maven-plugin` `conf-fixture-codegen` execution
+from `pom.xml` entirely and rely on the profile; only modules with **multiple fixtures** (e.g.
+`exist-core`'s four per-package `conf-fixture.xsl` files) or **non-standard output paths**
+(e.g. `expathrepo`) keep their own explicit execution alongside the profile.
+
+### IDE support (`schema/catalog.xml`)
+
+[`schema/catalog.xml`](catalog.xml) provides OASIS catalog entries mapping stable URNs to
+the two base stylesheets.  Registering this catalog in your IDE lets it resolve `xsl:import`
+references in per-fixture stylesheets without needing the correct relative-path depth:
+
+```xml
+<xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
+```
+
+The Maven build does **not** use these URN aliases — the `xsl:import href` in source fixtures
+still uses depth-relative paths, which are correct and working.  The catalog is for IDE
+tooling only.
+
+- **oXygen**: Preferences → XML → XML Catalogs → Add → browse to `schema/catalog.xml`
+- **IntelliJ**: Settings → Languages & Frameworks → Schemas and DTDs → User Catalogs → add the catalog
