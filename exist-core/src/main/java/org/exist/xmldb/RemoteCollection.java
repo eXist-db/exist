@@ -64,6 +64,8 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.xmldb.api.security.PermissionManagementService;
+import org.xmldb.api.security.UserPrincipalLookupService;
 
 /**
  * A remote implementation of the Collection interface. This implementation
@@ -278,6 +280,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         registry.add(XUpdateQueryService.class, () -> new RemoteXUpdateQueryService(this));
         registry.add(IndexQueryService.class, () -> new RemoteIndexQueryService(this));
         registry.add(EXistRestoreService.class, () -> new RemoteRestoreService(leasableXmlRpcClient, this::execute));
+        registry.add(UserPrincipalLookupService.class, () -> new RemoteUserPrincipalLookupService(this));
+        registry.add(PermissionManagementService.class, () -> new RemotePermissionManagementService(this));
     }
 
     protected boolean hasChildCollection(final String name) throws XMLDBException {
