@@ -165,16 +165,70 @@
         </pack>
 
         <pack name="Apps" required="false" installGroups="Group2">
-            <description>Application Packages: additional applications for XQuery development, database management,
-                documentation, examples and more. You should at least install the "dashboard" and "packageservice" 
-                package to be able to add more applications later.
-            </description>
+            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the "dashboard" and "packageservice" package to be able to add more applications later.</description>
         </pack>
 
-        <pack name="templating" required="true" preselected="true" parent="Apps">
-            <description>Templating library (formally part of shared-resources)</description>
+        <pack name="Dashboard" required="true" preselected="true" parent="Apps">
+            <description>Dashboard</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="templating-*.xar"/>
+                <include name="dashboard-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="Documentation" required="false" preselected="true" parent="Apps">
+            <description>eXist-db Documentation</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="exist-documentation-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="eXide" required="false" preselected="true" parent="Apps">
+            <description>eXide - XQuery IDE</description>
+            <depends packname="OpenAPI HTTP surface for eXist-db"/>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="eXide-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="Function documentation" required="false" preselected="true" parent="Apps">
+            <description>XQuery Function Documentation</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="exist-function-documentation-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="FunctX library" required="true" preselected="true" parent="Apps">
+            <description>FunctX library</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="functx-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="Monex" required="false" preselected="true" parent="Apps">
+            <description>Monitoring and Profiling application for eXist-db</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="monex-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="OpenAPI HTTP surface for eXist-db" required="true" preselected="true" parent="Apps">
+            <description>OpenAPI-described HTTP surface for eXist-db: database management, query execution, language services, user management, package management, search, and cross-app linking</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="existdb-openapi-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="OpenAPI Router library for eXist-db" required="true" preselected="true" parent="Apps">
+            <description>OpenAPI Router library for eXist-db: reads an Open API JSON specification and routes requests accordingly.</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="roaster-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="Package service" required="false" preselected="true" parent="Apps">
+            <description>existdb-packageservice</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="packageservice-*.xar"/>
             </fileset>
         </pack>
 
@@ -185,52 +239,10 @@
             </fileset>
         </pack>
 
-        <pack name="dashboard" required="true" preselected="true" parent="Apps">
-            <description>Dashboard</description>
+        <pack name="Templating library" required="true" preselected="true" parent="Apps">
+            <description>Templating library (formally part of shared-resources)</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="dashboard-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="eXide" required="false" preselected="true" parent="Apps">
-            <description>eXide - XQuery IDE</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="eXide-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="functx" required="true" preselected="true" parent="Apps">
-            <description>FunctX library</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="functx-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="monex" required="false" preselected="true" parent="Apps">
-            <description>Monitoring and Profiling for eXist (Monex)</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="*monex-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="packageservice" required="false" preselected="true" parent="Apps">
-            <description>existdb-packageservice</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="packageservice-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="exist-documentation" required="false" preselected="true" parent="Apps">
-            <description>eXist-db Documentation</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="exist-documentation-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="exist-function-documentation" required="false" preselected="true" parent="Apps">
-            <description>XQuery Function Documentation</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="exist-function-documentation-*.xar"/>
+                <include name="templating-*.xar"/>
             </fileset>
         </pack>
 
