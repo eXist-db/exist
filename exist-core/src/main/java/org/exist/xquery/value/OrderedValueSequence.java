@@ -387,7 +387,9 @@ public class OrderedValueSequence extends AbstractSequence {
     public boolean containsReference(final Item item) {
         for (final SequenceIterator it = iterate(); it.hasNext(); ) {
             final Item i = it.nextItem();
-            if (i == item) {
+            // recurse into container items (maps/arrays) so a value nested inside a map or array held
+            // by this sequence is detected, mirroring MapType/ArrayType.containsReference
+            if (i == item || (i instanceof Sequence seq && seq.containsReference(item))) {
                 return true;
             }
         }

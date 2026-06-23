@@ -242,7 +242,9 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     @Override
     public boolean containsReference(final Item item) {
         for (final Item value : values) {
-            if (value == item) {
+            // recurse into container items (maps/arrays) so a value nested inside a map or array held
+            // by this sequence is detected, mirroring MapType/ArrayType.containsReference
+            if (value == item || (value instanceof Sequence seq && seq.containsReference(item))) {
                 return true;
             }
         }
