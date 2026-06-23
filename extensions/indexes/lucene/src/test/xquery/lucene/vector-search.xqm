@@ -26,6 +26,8 @@ module namespace vs="http://exist-db.org/xquery/vector-search/test";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace stats="http://exist-db.org/xquery/profiling";
 
+import module namespace vector="http://exist-db.org/xquery/vector";
+
 (:~
  : Test data for vector search. dimension=4.
  : Base64: little-endian float32, 24 chars each. Text: space-separated floats.

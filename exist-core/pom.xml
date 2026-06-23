@@ -671,9 +671,16 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.xsl</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
                 <filtering>true</filtering>
             </testResource>
         </testResources>
@@ -1114,6 +1121,33 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                             <targetExtension>.java</targetExtension>
                                         </fileMapper>
                                     </fileMappers>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Generates this module's test controller-config.xml from the
+                        exist-jetty-config standalone-webapp template via
+                        src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+                        (which imports schema/generate-controller-config-fixture.xsl, see that
+                        stylesheet's header). Runs before process-test-resources.
+                    -->
+                    <execution>
+                        <id>controller-config-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/standalone-webapp/WEB-INF</outputDir>
                                 </transformationSet>
                             </transformationSets>
                         </configuration>

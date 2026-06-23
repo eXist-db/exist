@@ -98,7 +98,55 @@
             </resource>
         </resources>
 
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+
         <plugins>
+            <!--
+                Generates this module's test conf.xml from the canonical
+                exist-distribution/.../conf.xml via src/test/resources/conf-fixture.xsl (which
+                imports schema/generate-conf-fixture.xsl, see that stylesheet's header). Runs
+                before process-test-resources. No ${basedir}-style Maven token in this fixture's
+                content (its data-path is the literal "webapp/WEB-INF/data"), so filtering=false
+                is fine here, unlike most other fixtures.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>conf-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../../../../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>ro.kuberam.maven.plugins</groupId>
                 <artifactId>kuberam-expath-plugin</artifactId>

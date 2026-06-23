@@ -238,8 +238,8 @@ public class Jaxp extends BasicFunction {
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
                SchemaFactory/Validator API, not into this dynamic-discovery
                SAXParser pipeline -- it's a hard limitation of the dependency,
-               not a configuration gap (see plans/catalog-dtd.plan.md). Rather
-               than always discovering this by parsing with the wrong pipeline
+               not a configuration gap. Rather than always discovering this
+               by parsing with the wrong pipeline
                and failing, peek (best-effort) at the schema the instance's own
                hint points to and pick the right pipeline up front when that
                succeeds. If the peek can't tell (catalog-mediated location,

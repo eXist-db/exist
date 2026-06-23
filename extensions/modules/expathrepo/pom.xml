@@ -100,9 +100,56 @@
             <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <!--
+                Separate from the (filtering=false, binary .xar) generated-test-resources dir
+                above: this one needs filtering=true for the ${basedir} substitution in the
+                generated conf.xml below.
+            -->
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources-conf</directory>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>
+            <!--
+                Generates this module's test conf.xml from the canonical
+                exist-distribution/.../conf.xml via src/test/resources-filtered/conf-fixture.xsl
+                (which imports schema/generate-conf-fixture.xsl, see that stylesheet's header).
+                Runs before process-test-resources, so the standard testResource filtering above
+                (the ${basedir} substitution) still applies to the generated output. Uses its own
+                output dir, separate from the (filtering=false) generated-test-resources used for
+                the binary .xar copy below.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>conf-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../../../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources-conf</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
