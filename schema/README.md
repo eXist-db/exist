@@ -183,10 +183,15 @@ Plain attribute content (not inside `{…}`) passes through unchanged and needs 
 
 ### Parent POM profile (`conf-fixture-codegen`)
 
-The root `pom.xml` contains a `conf-fixture-codegen` profile activated automatically
+`exist-parent/pom.xml` contains a `conf-fixture-codegen` profile activated automatically
 whenever `src/test/resources-filtered/conf-fixture.xsl` is present in a module.  The profile
 runs the standard single-conf-xml transformation (canonical `conf.xml` → fixture → output in
 `target/generated-test-resources/conf.xml`).
+
+Note: the profile must live in `exist-parent` (the actual inheritance parent of all modules),
+not the reactor root `pom.xml` — Maven evaluates `<file>` activation relative to the pom that
+defines the profile, so a profile in the reactor root would check the root's own basedir,
+where no module's `src/test/resources-filtered/conf-fixture.xsl` ever exists.
 
 Most modules can remove their individual `xml-maven-plugin` `conf-fixture-codegen` execution
 from `pom.xml` entirely and rely on the profile; only modules with **multiple fixtures** (e.g.
