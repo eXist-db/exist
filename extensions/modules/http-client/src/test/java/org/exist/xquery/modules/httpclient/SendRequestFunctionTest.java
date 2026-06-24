@@ -46,6 +46,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.*;
 
 /**
@@ -758,13 +759,12 @@ public class SendRequestFunctionTest {
     public void bodySrcSendsResourceContent() throws XMLDBException {
         storeBinaryResource("http-src-body.txt", "abracadabra");
         try {
-            final ResourceSet result = existEmbeddedServer.executeQuery(
-                    HTTP_NS +
-                    "let $response := http:send-request(\n" +
-                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                    "    <http:body media-type='text/plain' src='/db/http-src-body.txt'/>\n" +
-                    "  </http:request>)\n" +
-                    "return parse-json($response[2])?body");
+            final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                    let $response := http:send-request(
+                      <http:request method='POST' href='%s/echo'>
+                        <http:body media-type='text/plain' src='/db/http-src-body.txt'/>
+                      </http:request>)
+                    return parse-json($response[2])?body""".formatted(baseUrl()));
             assertEquals("http:body/@src content should be sent as the request body",
                     "abracadabra", result.getResource(0).getContent().toString());
         } finally {
@@ -793,18 +793,13 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void bodySrcWithContentThrowsHC004() {
-        try {
-            existEmbeddedServer.executeQuery(
-                    HTTP_NS +
-                    "http:send-request(\n" +
-                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                    "    <http:body media-type='text/plain' src='/db/http-src-body.txt'>inline</http:body>\n" +
-                    "  </http:request>)");
-            fail("expected err:HC004 for http:body with both @src and content");
-        } catch (final XMLDBException e) {
-            final String chain = e.getMessage() + " | " + e.getCause();
-            assertTrue("expected HC004 but got: " + chain, chain.contains("HC004"));
-        }
+        assertThatExceptionOfType(XMLDBException.class)
+                .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
+                        http:send-request(
+                          <http:request method='POST' href='%s/echo'>
+                            <http:body media-type='text/plain' src='/db/http-src-body.txt'>inline</http:body>
+                          </http:request>)""".formatted(baseUrl())))
+                .withStackTraceContaining("HC004");
     }
 
     /**
@@ -812,18 +807,13 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void bodySrcWithoutMediaTypeThrowsHC005() {
-        try {
-            existEmbeddedServer.executeQuery(
-                    HTTP_NS +
-                    "http:send-request(\n" +
-                    "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                    "    <http:body src='/db/http-src-body.txt'/>\n" +
-                    "  </http:request>)");
-            fail("expected err:HC005 for http:body with @src but no media-type");
-        } catch (final XMLDBException e) {
-            final String chain = e.getMessage() + " | " + e.getCause();
-            assertTrue("expected HC005 but got: " + chain, chain.contains("HC005"));
-        }
+        assertThatExceptionOfType(XMLDBException.class)
+                .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
+                        http:send-request(
+                          <http:request method='POST' href='%s/echo'>
+                            <http:body src='/db/http-src-body.txt'/>
+                          </http:request>)""".formatted(baseUrl())))
+                .withStackTraceContaining("HC005");
     }
 
     @Test
