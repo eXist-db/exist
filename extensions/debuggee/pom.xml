@@ -102,18 +102,16 @@
         </testResources>
         <plugins>
             <!--
-                Generates this module's test conf.xml from the canonical
-                exist-distribution/.../conf.xml via src/test/resources-filtered/conf-fixture.xsl
-                (which imports schema/generate-conf-fixture.xsl, see that stylesheet's header).
-                Runs before process-test-resources, so the standard testResource filtering above
-                (the ${basedir} substitution) still applies to the generated output.
+                Generates this module's test controller-config.xml from the canonical
+                standalone-webapp/WEB-INF/controller-config.xml via the fixture stylesheet.
+                conf.xml codegen is handled by the root pom's conf-fixture-codegen profile.
             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>conf-fixture-codegen</id>
+                        <id>controller-config-fixture-codegen</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>transform</goal>
@@ -122,15 +120,7 @@
                             <forceCreation>true</forceCreation>
                             <transformationSets>
                                 <transformationSet>
-                                    <dir>${project.basedir}/../../exist-distribution/src/main/config</dir>
-                                    <includes>
-                                        <include>conf.xml</include>
-                                    </includes>
-                                    <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
-                                    <outputDir>${project.build.directory}/generated-test-resources</outputDir>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${project.basedir}/../../exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
+                                    <dir>${maven.multiModuleProjectDirectory}/exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
                                     <includes>
                                         <include>controller-config.xml</include>
                                     </includes>
