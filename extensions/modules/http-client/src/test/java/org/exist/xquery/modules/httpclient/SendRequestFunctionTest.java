@@ -36,6 +36,7 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -239,7 +240,7 @@ public class SendRequestFunctionTest {
             byte[] bodyBytes = "gzipped content".getBytes(StandardCharsets.UTF_8);
 
             if (acceptEncoding != null && acceptEncoding.contains("gzip")) {
-                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try (java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(baos)) {
                     gzip.write(bodyBytes);
                 }
@@ -316,7 +317,7 @@ public class SendRequestFunctionTest {
         // UTF-8 — corrupted by the old String-based splitter
         server.createContext("/multipart-binary", exchange -> {
             final String boundary = "bnd";
-            final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.writeBytes(("--" + boundary + "\r\nContent-Type: application/octet-stream\r\n\r\n")
                     .getBytes(StandardCharsets.US_ASCII));
             baos.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xFE});
