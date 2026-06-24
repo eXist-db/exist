@@ -265,15 +265,6 @@
     </servlet>
 
     <!--
-        Webstart servlet, provides access to the java client.
-    -->
-    <servlet>
-        <servlet-name>jnlp</servlet-name>
-        <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
-    </servlet>
-
-
-    <!--
         ====================== URL space mappings =======================
     -->
 
