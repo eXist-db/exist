@@ -80,6 +80,8 @@ public class RequestOptionsParser {
             return defaultVersion;
         }
         return switch (value) {
+            case "1.0", "1" -> throw new XPathException((org.exist.xquery.Expression) null,
+                    HttpClientModule.HC005, "HTTP version 1.0 is not supported");
             case "1.1" -> HttpClient.Version.HTTP_1_1;
             case "2", "2.0" -> HttpClient.Version.HTTP_2;
             default -> throw new XPathException((org.exist.xquery.Expression) null,
@@ -101,7 +103,7 @@ public class RequestOptionsParser {
     }
 
     private static boolean parseBooleanAttr(final Element elem, final String attributeName, final boolean defaultValue) {
-        String value = getAttributeValue(elem, attributeName);
+        final String value = getAttributeValue(elem, attributeName);
 
         return getBooleanValue(value, defaultValue);
     }
