@@ -725,13 +725,12 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void malformedHtmlResponseIsParsedToDocument() throws XMLDBException {
-        final ResourceSet result = existEmbeddedServer.executeQuery(
-                HTTP_NS +
-                "let $doc := http:send-request(\n" +
-                "  <http:request method='GET' href='" + baseUrl() + "/malformed-html'/>)[2]\n" +
-                "return $doc instance of document-node()\n" +
-                "  and exists($doc//*[local-name() = 'body'])\n" +
-                "  and count($doc//*[local-name() = 'li']) = 2");
+        final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                let $doc := http:send-request(
+                  <http:request method='GET' href='%s/malformed-html'/>)[2]
+                return $doc instance of document-node()
+                  and exists($doc//*[local-name() = 'body'])
+                  and count($doc//*[local-name() = 'li']) = 2""".formatted(baseUrl()));
         assertEquals("non-well-formed text/html should be parsed to a navigable document",
                 "true", result.getResource(0).getContent().toString());
     }
