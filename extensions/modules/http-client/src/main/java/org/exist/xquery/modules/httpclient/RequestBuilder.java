@@ -361,8 +361,10 @@ public class RequestBuilder {
      * plain string (text), rather than XML-serialized.
      */
     private static boolean isRawContentMethod(final String method) {
-        return "binary".equals(method) || "base64".equals(method)
-                || "hex".equals(method) || "text".equals(method);
+        return switch (method) {
+            case "binary", "base64", "hex", "text" -> true;
+            case null, default -> false;
+        };
     }
 
     /**

@@ -822,13 +822,12 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void bodyMethodBinarySendsDecodedBytes() throws XMLDBException {
-        final ResourceSet result = existEmbeddedServer.executeQuery(
-                HTTP_NS +
-                "let $response := http:send-request(\n" +
-                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                "    <http:body media-type='application/octet-stream' method='binary'>aGVsbG8=</http:body>\n" +
-                "  </http:request>)\n" +
-                "return parse-json($response[2])?body");
+        final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                let $response := http:send-request(
+                  <http:request method='POST' href='%s/echo'>
+                    <http:body media-type='application/octet-stream' method='binary'>aGVsbG8=</http:body>
+                  </http:request>)
+                return parse-json($response[2])?body""".formatted(baseUrl()));
         assertEquals("method='binary' should base64-decode the body to raw bytes",
                 "hello", result.getResource(0).getContent().toString());
     }
@@ -838,13 +837,12 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void bodyMethodHexSendsDecodedBytes() throws XMLDBException {
-        final ResourceSet result = existEmbeddedServer.executeQuery(
-                HTTP_NS +
-                "let $response := http:send-request(\n" +
-                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                "    <http:body media-type='application/octet-stream' method='hex'>6869</http:body>\n" +
-                "  </http:request>)\n" +
-                "return parse-json($response[2])?body");
+        final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                let $response := http:send-request(
+                  <http:request method='POST' href='%s/echo'>
+                    <http:body media-type='application/octet-stream' method='hex'>6869</http:body>
+                  </http:request>)
+                return parse-json($response[2])?body""".formatted(baseUrl()));
         assertEquals("method='hex' should hex-decode the body to raw bytes",
                 "hi", result.getResource(0).getContent().toString());
     }
@@ -855,13 +853,12 @@ public class SendRequestFunctionTest {
      */
     @Test
     public void bodyMethodTextSerializesAsText() throws XMLDBException {
-        final ResourceSet result = existEmbeddedServer.executeQuery(
-                HTTP_NS +
-                "let $response := http:send-request(\n" +
-                "  <http:request method='POST' href='" + baseUrl() + "/echo'>\n" +
-                "    <http:body media-type='text/plain' method='text'><a>x</a></http:body>\n" +
-                "  </http:request>)\n" +
-                "return parse-json($response[2])?body");
+        final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                let $response := http:send-request(
+                  <http:request method='POST' href='%s/echo'>
+                    <http:body media-type='text/plain' method='text'><a>x</a></http:body>
+                  </http:request>)
+                return parse-json($response[2])?body""".formatted(baseUrl()));
         assertEquals("method='text' should send the element's string value, not its markup",
                 "x", result.getResource(0).getContent().toString());
     }
