@@ -58,6 +58,13 @@
         <tag>HEAD</tag>
     </scm>
 
+    <properties>
+        <!-- Set to true in a module to prevent the conf-fixture-codegen profile from
+             generating an additional conf.xml (needed for modules with non-standard output
+             paths, e.g. expathrepo, or modules that manage their own full execution set). -->
+        <skip.conf.fixture.profile>false</skip.conf.fixture.profile>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -331,6 +338,57 @@
                                             <fileset dir="${project.basedir}" includes="tmp*tmp"/>
                                         </delete>
                                     </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!--
+                Activated automatically whenever a module has src/test/resources-filtered/conf-fixture.xsl.
+                Runs the standard single-conf-xml codegen (canonical conf.xml → fixture XSLT →
+                target/generated-test-resources/conf.xml) without requiring any xml-maven-plugin
+                boilerplate in the module's own pom.xml.
+
+                Modules with MULTIPLE conf fixtures (exist-core, etc.) or a non-standard output
+                directory (expathrepo) keep their own xml-maven-plugin execution and can set
+                skip.conf.fixture.profile=true to prevent this profile from generating a second
+                copy to the wrong location.
+            -->
+            <id>conf-fixture-codegen</id>
+            <activation>
+                <file>
+                    <exists>src/test/resources-filtered/conf-fixture.xsl</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>conf-fixture-codegen</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skip.conf.fixture.profile}</skip>
+                                    <forceCreation>true</forceCreation>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${maven.multiModuleProjectDirectory}/exist-distribution/src/main/config</dir>
+                                            <includes>
+                                                <include>conf.xml</include>
+                                            </includes>
+                                            <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
+                                            <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                        </transformationSet>
+                                    </transformationSets>
                                 </configuration>
                             </execution>
                         </executions>

@@ -29,6 +29,11 @@
     not derived from it. A per-fixture stylesheet imports this one and redeclares the xsl:param
     defaults below to select which forward rules that fixture's test routing needs; everything else
     is copied unchanged via the identity template.
+
+    Note: the controller-config.xml root element carries a default XML namespace
+    (xmlns="http://exist.sourceforge.net/NS/exist"), so this stylesheet declares
+    xpath-default-namespace on its own xsl:stylesheet element.  Importing stylesheets
+    inherit this declaration automatically via the XSLT import mechanism.
 -->
 <xsl:stylesheet version="3.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -43,13 +48,25 @@
         xsl:param/select; the importing stylesheet's value wins over this base's default.
     -->
 
-    <!-- forward/@pattern values to keep; default is all 4 the standalone-webapp template has. -->
+    <!--
+        forward/@pattern values to keep from the template.  Default is all four the
+        standalone-webapp template defines: /rest, /xmlrpc, /webdav/, /restxq/.  A fixture
+        that only needs REST and WebDAV routing sets this to ('/rest', '/webdav/').
+    -->
     <xsl:param name="keep-forwards" as="xs:string*" select="('/rest', '/xmlrpc', '/webdav/', '/restxq/')"/>
 
-    <!-- Override the REST forward's own @pattern (e.g. restxq needs '/(rest|servlet)/'); empty means keep as-is. -->
+    <!--
+        Override the REST forward's own @pattern attribute (e.g. restxq tests route both
+        /rest and /servlet through the same servlet, so they use '/(rest|servlet)/').
+        Empty (the default) means keep the template's value unchanged.
+    -->
     <xsl:param name="rest-forward-pattern" as="xs:string?" select="()"/>
 
-    <!-- Override the whole <root> element group; empty means keep the template's own roots. -->
+    <!--
+        Replace the entire <root> element group with these elements.  Empty (the default)
+        means keep the template's own <root> entries unchanged.  Supply namespace-qualified
+        elements when overriding: xmlns="http://exist.sourceforge.net/NS/exist" on each.
+    -->
     <xsl:param name="root-elements" as="element()*" select="()"/>
 
     <!-- Identity transform: copy everything from the template unless overridden below. -->

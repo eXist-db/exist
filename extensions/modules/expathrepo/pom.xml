@@ -38,6 +38,13 @@
     <name>eXist-db EXPath Repository Module</name>
     <description>eXist-db XQuery EXPath Repository Module</description>
 
+    <properties>
+        <!-- expathrepo uses target/generated-test-resources-conf (not the default
+             target/generated-test-resources) for conf.xml, to avoid mixing with the
+             binary .xar test resource. Skip the root profile's standard output path. -->
+        <skip.conf.fixture.profile>true</skip.conf.fixture.profile>
+    </properties>
+
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>

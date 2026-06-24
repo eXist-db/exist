@@ -104,41 +104,6 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
-        <plugins>
-            <!--
-                Generates this module's test conf.xml from the canonical
-                exist-distribution/.../conf.xml via src/test/resources-filtered/conf-fixture.xsl
-                (which imports schema/generate-conf-fixture.xsl, see that stylesheet's header).
-                Runs before process-test-resources, so the standard testResource filtering above
-                (the ${basedir} substitution) still applies to the generated output.
-            -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>xml-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>conf-fixture-codegen</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>transform</goal>
-                        </goals>
-                        <configuration>
-                            <forceCreation>true</forceCreation>
-                            <transformationSets>
-                                <transformationSet>
-                                    <dir>${project.basedir}/../../../exist-distribution/src/main/config</dir>
-                                    <includes>
-                                        <include>conf.xml</include>
-                                    </includes>
-                                    <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
-                                    <outputDir>${project.build.directory}/generated-test-resources</outputDir>
-                                </transformationSet>
-                            </transformationSets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 
 </project>

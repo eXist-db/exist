@@ -42,13 +42,32 @@
         xsl:param/select; the importing stylesheet's value wins over this base's default.
     -->
 
-    <!-- xquery/builtin-modules/module@uri values this fixture needs. -->
+    <!--
+        xquery/builtin-modules/module@uri values this fixture needs to keep in the output.
+        LIVE ELEMENTS ONLY: entries commented out in canonical are not visible to the XPath
+        match and cannot be "kept" this way.  For modules absent or commented out in canonical
+        (e.g. xqsuite, vector), use $extra-modules instead.
+    -->
     <xsl:param name="keep-modules" as="xs:string*" select="()"/>
 
-    <!-- indexer/modules/module@id values this fixture needs (e.g. 'sort-index'). -->
+    <!--
+        indexer/modules/module@id values this fixture needs (e.g. 'sort-index').
+        LIVE ELEMENTS ONLY: same caveat as $keep-modules — entries commented out in canonical
+        (e.g. spatial-index, which needs an optional GML/HSQL dependency) cannot be selected
+        here.  Supply the live element via $extra-index-modules for those.
+    -->
     <xsl:param name="keep-indexes" as="xs:string*" select="()"/>
 
-    <!-- db-connection/@files and recovery/@journal-dir. -->
+    <!--
+        db-connection/@files and recovery/@journal-dir path.
+        Maven property tokens (${basedir}, ${project.build.directory}, etc.) are safe here:
+        the generated conf.xml is further processed by Maven's testResource filtering.
+        AVT pitfall: if you embed a Maven token inside a literal-result-element ATTRIBUTE that
+        is also an XSLT AVT (curly braces), double each brace so XSLT does not treat them as
+        its own expression syntax — e.g. value="${{project.build.testOutputDirectory}}/dir"
+        produces ${project.build.testOutputDirectory}/dir after serialisation, which Maven
+        then expands.  Plain attribute content (not inside {…}) passes through unchanged.
+    -->
     <xsl:param name="data-path" as="xs:string" select="'${basedir}/target/test-data'"/>
 
     <!-- validation/catalog/@uri; empty means "keep canonical's value". -->
@@ -58,25 +77,29 @@
     <xsl:param name="content-file-pool-size" as="xs:string?" select="()"/>
 
     <!--
-        Extra db-connection/startup/triggers content this fixture needs beyond canonical's
-        default set (e.g. an AutoDeploymentTrigger pointed at a test-only XAR). Appended after
-        whatever survives the trigger-filtering templates below.
+        Extra db-connection/startup/triggers elements to append after canonical's surviving
+        triggers (e.g. an AutoDeploymentTrigger scoped to a test-only XAR directory).
+        AVT reminder: Maven tokens inside element attribute values that are XSLT AVTs require
+        doubled braces — ${{project.build.testOutputDirectory}} → ${project.build.testOutputDirectory}.
     -->
     <xsl:param name="extra-triggers" as="element()*" select="()"/>
 
     <!--
-        Extra indexer/modules/module content this fixture needs. Canonical comments out some
-        index modules by default (e.g. spatial-index, since GMLHSQLIndex needs an optional
-        dependency), so $keep-indexes alone can't select them; supply the live element here
-        instead.
+        Extra indexer/modules/module elements to append.  Use this for index modules that are
+        commented out in canonical ($keep-indexes cannot un-comment them — live elements only)
+        or for modules whose canonical element needs child configuration that the bare entry
+        does not carry.
     -->
     <xsl:param name="extra-index-modules" as="element()*" select="()"/>
 
     <!--
-        Extra xquery/builtin-modules/module content this fixture needs that canonical doesn't
-        declare at all (e.g. the test-only XQSuite module, registered by hand in test fixtures
-        rather than shipped as part of the canonical builtin set). $keep-modules alone can't
-        select something that was never a live element to begin with.
+        Extra xquery/builtin-modules/module elements to append.  Use this for:
+        — modules commented out in canonical (e.g. xqsuite, vector) that $keep-modules cannot
+          select;
+        — modules whose canonical <module> needs child <parameter> elements that the bare
+          self-closing canonical entry does not have (e.g. the SQL connection-pool module).
+          In that case keep $keep-modules empty so the bare canonical entry is NOT also kept,
+          which would produce a duplicate registration.
     -->
     <xsl:param name="extra-modules" as="element()*" select="()"/>
 
