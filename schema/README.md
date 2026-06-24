@@ -166,16 +166,21 @@ Plain attribute content (not inside `{…}`) passes through unchanged and needs 
 
 ### Adding a fixture for a new module
 
-1. Create `src/test/resources-filtered/conf-fixture.xsl` importing the base stylesheet.
-   Count the directory levels from that file to the repo root to get the correct relative path:
-   - Depth 2 (e.g. `exist-ant/src/test/resources-filtered/…`): `../../../../schema/generate-conf-fixture.xsl`
-   - Depth 3 (e.g. `extensions/lucene/src/test/resources-filtered/…`): `../../../../../schema/…`
-   - Depth 4 (e.g. `extensions/modules/sql/…`): `../../../../../../schema/…`
+1. Create `src/test/resources-filtered/conf-fixture.xsl` importing the base stylesheet via
+   its stable URN — no depth-counting required:
+
+   ```xml
+   <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
+   ```
+
+   The URN is resolved by the `schema/catalog.xml` OASIS catalog, which `xml-maven-plugin`
+   picks up automatically from `exist-parent`'s pluginManagement (no per-module config needed).
 
 2. Override only the params that differ from the base defaults; leave everything else out.
 
-3. In `pom.xml` (or automatically via the `conf-fixture-codegen` root profile described
-   below), wire `xml-maven-plugin` to run the transformation.
+3. No `xml-maven-plugin` boilerplate needed in `pom.xml` — the `conf-fixture-codegen` profile
+   in `exist-parent/pom.xml` activates automatically when `src/test/resources-filtered/conf-fixture.xsl`
+   is present.
 
 4. Add `target/generated-test-resources` as a filtered `testResource` and exclude
    `**/*-fixture.xsl` from `src/test/resources-filtered` so the stylesheet itself is not
@@ -198,19 +203,22 @@ from `pom.xml` entirely and rely on the profile; only modules with **multiple fi
 `exist-core`'s four per-package `conf-fixture.xsl` files) or **non-standard output paths**
 (e.g. `expathrepo`) keep their own explicit execution alongside the profile.
 
-### IDE support (`schema/catalog.xml`)
+### IDE and build support (`schema/catalog.xml`)
 
 [`schema/catalog.xml`](catalog.xml) provides OASIS catalog entries mapping stable URNs to
-the two base stylesheets.  Registering this catalog in your IDE lets it resolve `xsl:import`
-references in per-fixture stylesheets without needing the correct relative-path depth:
+the two base stylesheets.  **Both the Maven build and IDE tooling** use these URN aliases —
+per-fixture `xsl:import` hrefs use the URN form, resolved by `schema/catalog.xml` in both
+contexts:
 
 ```xml
 <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
+<xsl:import href="urn:exist-db:codegen:generate-controller-config-fixture"/>
 ```
 
-The Maven build does **not** use these URN aliases — the `xsl:import href` in source fixtures
-still uses depth-relative paths, which are correct and working.  The catalog is for IDE
-tooling only.
+Maven wiring: `exist-parent/pom.xml`'s pluginManagement registers `schema/catalog.xml` as a
+`<catalog>` for `xml-maven-plugin`; the plugin's `Resolver` (which implements
+`javax.xml.transform.URIResolver`) is set on the Saxon `TransformerFactory`, so URN hrefs
+resolve through the catalog at XSLT compile time.
 
 - **oXygen**: Preferences → XML → XML Catalogs → Add → browse to `schema/catalog.xml`
 - **IntelliJ**: Settings → Languages & Frameworks → Schemas and DTDs → User Catalogs → add the catalog

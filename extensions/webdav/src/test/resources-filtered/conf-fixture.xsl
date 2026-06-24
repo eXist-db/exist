@@ -29,6 +29,6 @@
     exclude-result-prefixes="xsl xs">
 
     <!-- This module needs no builtin modules at all; base defaults (keep-modules=()) apply. -->
-    <xsl:import href="../../../../../schema/generate-conf-fixture.xsl"/>
+    <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
 </xsl:stylesheet>

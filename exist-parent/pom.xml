@@ -954,6 +954,9 @@
                     <version>1.2.1</version>
                     <configuration>
                         <transformerFactory>net.sf.saxon.TransformerFactoryImpl</transformerFactory>
+                        <catalogs>
+                            <catalog>${maven.multiModuleProjectDirectory}/schema/catalog.xml</catalog>
+                        </catalogs>
                     </configuration>
                     <dependencies>
                         <dependency>

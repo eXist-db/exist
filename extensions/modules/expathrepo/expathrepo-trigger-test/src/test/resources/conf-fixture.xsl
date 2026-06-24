@@ -28,7 +28,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     exclude-result-prefixes="xsl xs">
 
-    <xsl:import href="../../../../../../../schema/generate-conf-fixture.xsl"/>
+    <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
     <!-- This test exercises a WAR-relative (not Maven-basedir-relative) data path. -->
     <xsl:param name="data-path" as="xs:string" select="'webapp/WEB-INF/data'"/>
