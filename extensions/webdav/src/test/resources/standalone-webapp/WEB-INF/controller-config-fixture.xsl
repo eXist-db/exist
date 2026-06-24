@@ -28,7 +28,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     exclude-result-prefixes="xsl xs">
 
-    <xsl:import href="../../../../../../../schema/generate-controller-config-fixture.xsl"/>
+    <xsl:import href="urn:exist-db:codegen:generate-controller-config-fixture"/>
 
     <xsl:param name="keep-forwards" as="xs:string*" select="('/rest', '/webdav/')"/>
 

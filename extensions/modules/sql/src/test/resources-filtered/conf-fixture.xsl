@@ -28,7 +28,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     exclude-result-prefixes="xsl xs">
 
-    <xsl:import href="../../../../../../schema/generate-conf-fixture.xsl"/>
+    <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
     <!-- Canonical's sql module element has no children; supply the parameterized version via
          extra-modules. keep-modules stays empty (base default) so the bare canonical entry

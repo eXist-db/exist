@@ -66,6 +66,33 @@ Other schemas (`users.xsd`, `server.xsd`, `expath-pkg.xsd`, …) apply to runtim
 
 Schemas ship at `$EXIST_HOME/schema/` ([#6189](https://github.com/eXist-db/exist/issues/6189)).
 
+## Adding a new native schema
+
+Four touch points, in order:
+
+1. **Add the XSD to `schema/`.** The `schema/**` path trigger in
+   [`ci-schema-checks.yml`](../.github/workflows/ci-schema-checks.yml) fires automatically on
+   any change there. Governance reads schema/template pairs from `pom.xml`'s
+   `validate-canonical-instances` validationSets, not by scanning `schema/` directly, so the
+   XSD alone is not enough.
+
+2. **Register the schema/template pair in `pom.xml`'s `validate-canonical-instances`
+   execution.** This is the single source of truth that both validation and drift-detection
+   read. Add a `<validationSet>` entry pairing the new XSD with its canonical instance.
+
+3. **Add the canonical instance path to the drift-detection scope** — but only if it lives
+   outside the paths already covered. Currently covered: everything under
+   `exist-distribution/src/main/config/`, plus `controller-config.xml` and `mime-types.xml`
+   explicitly. If the new instance is outside these, add its path to the `git diff
+   --name-only` call in
+   [`.github/scripts/prepare-governance-context.sh`](../.github/scripts/prepare-governance-context.sh)
+   and to both `paths:` blocks in `ci-schema-checks.yml`. In practice any new eXist-db config
+   schema will land under `exist-distribution/src/main/config/` and step 3 does not apply.
+
+4. **Wire `SchemaVersion` codegen** in the consumer module's `pom.xml` (modelled on
+   `exist-core/pom.xml`'s `schema-version-codegen` execution) if you want the version
+   constant auto-generated at build time rather than maintained by hand.
+
 ---
 
 ## Test fixture codegen
@@ -166,16 +193,21 @@ Plain attribute content (not inside `{…}`) passes through unchanged and needs 
 
 ### Adding a fixture for a new module
 
-1. Create `src/test/resources-filtered/conf-fixture.xsl` importing the base stylesheet.
-   Count the directory levels from that file to the repo root to get the correct relative path:
-   - Depth 2 (e.g. `exist-ant/src/test/resources-filtered/…`): `../../../../schema/generate-conf-fixture.xsl`
-   - Depth 3 (e.g. `extensions/lucene/src/test/resources-filtered/…`): `../../../../../schema/…`
-   - Depth 4 (e.g. `extensions/modules/sql/…`): `../../../../../../schema/…`
+1. Create `src/test/resources-filtered/conf-fixture.xsl` importing the base stylesheet via
+   its stable URN — no depth-counting required:
+
+   ```xml
+   <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
+   ```
+
+   The URN is resolved by the `schema/catalog.xml` OASIS catalog, which `xml-maven-plugin`
+   picks up automatically from `exist-parent`'s pluginManagement (no per-module config needed).
 
 2. Override only the params that differ from the base defaults; leave everything else out.
 
-3. In `pom.xml` (or automatically via the `conf-fixture-codegen` root profile described
-   below), wire `xml-maven-plugin` to run the transformation.
+3. No `xml-maven-plugin` boilerplate needed in `pom.xml` — the `conf-fixture-codegen` profile
+   in `exist-parent/pom.xml` activates automatically when `src/test/resources-filtered/conf-fixture.xsl`
+   is present.
 
 4. Add `target/generated-test-resources` as a filtered `testResource` and exclude
    `**/*-fixture.xsl` from `src/test/resources-filtered` so the stylesheet itself is not
@@ -183,29 +215,37 @@ Plain attribute content (not inside `{…}`) passes through unchanged and needs 
 
 ### Parent POM profile (`conf-fixture-codegen`)
 
-The root `pom.xml` contains a `conf-fixture-codegen` profile activated automatically
+`exist-parent/pom.xml` contains a `conf-fixture-codegen` profile activated automatically
 whenever `src/test/resources-filtered/conf-fixture.xsl` is present in a module.  The profile
 runs the standard single-conf-xml transformation (canonical `conf.xml` → fixture → output in
 `target/generated-test-resources/conf.xml`).
+
+Note: the profile must live in `exist-parent` (the actual inheritance parent of all modules),
+not the reactor root `pom.xml` — Maven evaluates `<file>` activation relative to the pom that
+defines the profile, so a profile in the reactor root would check the root's own basedir,
+where no module's `src/test/resources-filtered/conf-fixture.xsl` ever exists.
 
 Most modules can remove their individual `xml-maven-plugin` `conf-fixture-codegen` execution
 from `pom.xml` entirely and rely on the profile; only modules with **multiple fixtures** (e.g.
 `exist-core`'s four per-package `conf-fixture.xsl` files) or **non-standard output paths**
 (e.g. `expathrepo`) keep their own explicit execution alongside the profile.
 
-### IDE support (`schema/catalog.xml`)
+### IDE and build support (`schema/catalog.xml`)
 
 [`schema/catalog.xml`](catalog.xml) provides OASIS catalog entries mapping stable URNs to
-the two base stylesheets.  Registering this catalog in your IDE lets it resolve `xsl:import`
-references in per-fixture stylesheets without needing the correct relative-path depth:
+the two base stylesheets.  **Both the Maven build and IDE tooling** use these URN aliases —
+per-fixture `xsl:import` hrefs use the URN form, resolved by `schema/catalog.xml` in both
+contexts:
 
 ```xml
 <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
+<xsl:import href="urn:exist-db:codegen:generate-controller-config-fixture"/>
 ```
 
-The Maven build does **not** use these URN aliases — the `xsl:import href` in source fixtures
-still uses depth-relative paths, which are correct and working.  The catalog is for IDE
-tooling only.
+Maven wiring: `exist-parent/pom.xml`'s pluginManagement registers `schema/catalog.xml` as a
+`<catalog>` for `xml-maven-plugin`; the plugin's `Resolver` (which implements
+`javax.xml.transform.URIResolver`) is set on the Saxon `TransformerFactory`, so URN hrefs
+resolve through the catalog at XSLT compile time.
 
 - **oXygen**: Preferences → XML → XML Catalogs → Add → browse to `schema/catalog.xml`
 - **IntelliJ**: Settings → Languages & Frameworks → Schemas and DTDs → User Catalogs → add the catalog

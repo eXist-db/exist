@@ -28,7 +28,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     exclude-result-prefixes="xsl xs">
 
-    <xsl:import href="../../../../../../schema/generate-conf-fixture.xsl"/>
+    <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
     <xsl:param name="keep-modules" as="xs:string*" select="(
         'http://exist-db.org/xquery/mail',
