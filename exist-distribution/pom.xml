@@ -335,14 +335,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- needed for the AppAssembler booter approach -->
-        <dependency>
-            <groupId>org.codehaus.mojo.appassembler</groupId>
-            <artifactId>appassembler-booter</artifactId>
-            <version>${appassembler.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
