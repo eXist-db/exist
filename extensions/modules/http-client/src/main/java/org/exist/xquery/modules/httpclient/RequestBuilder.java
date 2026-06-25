@@ -23,8 +23,11 @@ package org.exist.xquery.modules.httpclient;
 
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
-import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
+import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
+import org.exist.xquery.modules.httpclient.config.ResponseOptions;
+import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
@@ -45,7 +48,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -56,24 +58,18 @@ import javax.xml.transform.stream.StreamResult;
 /**
  * Builds a {@link java.net.http.HttpRequest} from an {@code <http:request>} element.
  *
- * <p>Parses attributes (method, href, timeout, follow-redirect, auth, etc.)
- * and child elements (http:header, http:body, http:multipart) from the request
- * element.</p>
+ * <p>Parses child elements (http:header, http:body, http:multipart) from the request element,
+ * and accepts an {@link RequestOptions} (produced by {@link RequestOptionsParser}) that carries
+ * all attribute-level options. The caller invokes {@link #parse} then {@link #build}.</p>
  */
 public class RequestBuilder {
+
 
     private static final String HTTP_NS = HttpClientModule.NAMESPACE_URI;
 
     private String method;
     private String href;
-    private int timeout = 0;
-    private boolean followRedirect = true;
-    private boolean statusOnly = false;
-    private String overrideMediaType;
-    private String username;
-    private String password;
-    private String authMethod;
-    private boolean sendAuthorization = false;
+    private RequestOptions allOptions = new RequestOptions(HttpClientOptions.DEFAULTS, ResponseOptions.DEFAULTS, UserCredentials.DEFAULTS);
 
     private final List<String[]> headers = new ArrayList<>();
     private String bodyMediaType;
@@ -91,43 +87,20 @@ public class RequestBuilder {
      * @throws XPathException if the request element is invalid
      */
     public RequestBuilder parse(final NodeValue requestNode, final String hrefParam,
-                                 final Sequence bodiesParam) throws XPathException {
+                                final Sequence bodiesParam) throws XPathException {
         if (requestNode == null) {
             throw new XPathException((org.exist.xquery.Expression) null,
                     HttpClientModule.HC005, "http:request element is required");
         }
 
         final Element reqElem = (Element) requestNode.getNode();
-        parseAttributes(reqElem);
+        method = getAttr(reqElem, "method");
+        href = getAttr(reqElem, "href");
+        allOptions = RequestOptionsParser.parse(reqElem);
         parseChildren(reqElem);
         applyOverrides(hrefParam, bodiesParam);
         validate();
         return this;
-    }
-
-    private void parseAttributes(final Element reqElem) throws XPathException {
-        method = getAttr(reqElem, "method");
-        href = getAttr(reqElem, "href");
-        timeout = parseTimeout(getAttr(reqElem, "timeout"));
-        followRedirect = parseBooleanAttr(reqElem, "follow-redirect", followRedirect);
-        statusOnly = parseBooleanAttr(reqElem, "status-only", statusOnly);
-        overrideMediaType = getAttr(reqElem, "override-media-type");
-        username = getAttr(reqElem, "username");
-        password = getAttr(reqElem, "password");
-        authMethod = getAttr(reqElem, "auth-method");
-        sendAuthorization = parseBooleanAttr(reqElem, "send-authorization", sendAuthorization);
-    }
-
-    private int parseTimeout(final String timeoutStr) throws XPathException {
-        if (timeoutStr == null || timeoutStr.isEmpty()) {
-            return timeout;
-        }
-        try {
-            return Integer.parseInt(timeoutStr);
-        } catch (final NumberFormatException e) {
-            throw new XPathException((org.exist.xquery.Expression) null,
-                    HttpClientModule.HC005, "Invalid timeout value: " + timeoutStr);
-        }
     }
 
     private void parseChildren(final Element reqElem) {
@@ -143,7 +116,6 @@ public class RequestBuilder {
             } else if ("body".equals(localName)) {
                 final Element bodyElem = (Element) child;
                 bodyMediaType = bodyElem.getAttribute("media-type");
-                // Body content is the text/XML content of the body element
                 bodyContent = getBodyContent(bodyElem);
             } else if ("multipart".equals(localName)) {
                 final Element multipartElem = (Element) child;
@@ -186,17 +158,12 @@ public class RequestBuilder {
         }
     }
 
-    private static boolean parseBooleanAttr(final Element elem, final String name, final boolean defaultValue) {
-        final String value = getAttr(elem, name);
-        if (value == null) {
-            return defaultValue;
-        }
-        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
     /**
      * Builds the {@link java.net.http.HttpRequest} from the parsed parameters, sending credentials
      * preemptively only when {@code @send-authorization} is true.
+     *
+     * @return the built HttpRequest
+     * @throws XPathException if the URI is invalid
      */
     public HttpRequest build() throws XPathException {
         return build(null);
@@ -208,6 +175,8 @@ public class RequestBuilder {
      * @param authorizationHeader when non-null, attach this exact {@code Authorization} header
      *     value — used to answer a 401 challenge with a Basic or Digest response computed by
      *     {@link #challengeResponse(String)} (see {@link #shouldAttemptChallenge()}).
+     * @return the built HttpRequest
+     * @throws XPathException if the URI is invalid
      */
     public HttpRequest build(final String authorizationHeader) throws XPathException {
         final URI uri;
@@ -219,8 +188,8 @@ public class RequestBuilder {
         }
 
         final HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
-        if (timeout > 0) {
-            builder.timeout(Duration.ofSeconds(timeout));
+        if (allOptions.requestOptions().timeout() > 0) {
+            builder.timeout(Duration.ofSeconds(allOptions.requestOptions().timeout()));
         }
 
         final boolean isMultipart = !multipartBodies.isEmpty();
@@ -251,7 +220,7 @@ public class RequestBuilder {
         final String authorization;
         if (authorizationHeader != null) {
             authorization = authorizationHeader;
-        } else if (sendAuthorization && username != null && "basic".equalsIgnoreCase(authMethod)) {
+        } else if (allOptions.userCredentials().sendAuthorization() && allOptions.userCredentials().username() != null && "basic".equalsIgnoreCase(allOptions.userCredentials().authMethod())) {
             authorization = "Basic " + base64Credentials();
         } else {
             authorization = null;
@@ -307,10 +276,6 @@ public class RequestBuilder {
         builder.method(upperMethod, bodyPublisher);
     }
 
-    public boolean isFollowRedirect() {
-        return followRedirect;
-    }
-
     /**
      * Whether a 401 response should be answered with credentials (EXPath challenge-response):
      * credentials and an auth method are present but were not sent preemptively (because
@@ -320,8 +285,9 @@ public class RequestBuilder {
      * @return true if the request should be re-sent with an {@code Authorization} header on a 401.
      */
     public boolean shouldAttemptChallenge() {
-        return username != null && !sendAuthorization && authMethod != null
-                && ("basic".equalsIgnoreCase(authMethod) || "digest".equalsIgnoreCase(authMethod));
+        final UserCredentials userCredentials = allOptions.userCredentials();
+        return userCredentials.username() != null && !userCredentials.sendAuthorization() && userCredentials.authMethod() != null
+                && ("basic".equalsIgnoreCase(userCredentials.authMethod()) || "digest".equalsIgnoreCase(userCredentials.authMethod()));
     }
 
     /**
@@ -334,21 +300,23 @@ public class RequestBuilder {
      *     (unsupported scheme, missing data, or a scheme mismatch with {@code @auth-method}).
      */
     public String challengeResponse(final String wwwAuthenticate) {
-        if (username == null || authMethod == null) {
+        final UserCredentials userCredentials = allOptions.userCredentials();
+        if (userCredentials.username() == null || userCredentials.authMethod() == null) {
             return null;
         }
-        if ("basic".equalsIgnoreCase(authMethod)) {
+        if ("basic".equalsIgnoreCase(userCredentials.authMethod())) {
             return "Basic " + base64Credentials();
         }
-        if ("digest".equalsIgnoreCase(authMethod)) {
+        if ("digest".equalsIgnoreCase(userCredentials.authMethod())) {
             return digestResponse(wwwAuthenticate);
         }
         return null;
     }
 
     private String base64Credentials() {
+        final UserCredentials userCredentials = allOptions.userCredentials();
         return Base64.getEncoder().encodeToString(
-                (username + ":" + (password != null ? password : "")).getBytes(StandardCharsets.UTF_8));
+                (userCredentials.username() + ":" + (userCredentials.password() != null ? userCredentials.password() : "")).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -370,13 +338,13 @@ public class RequestBuilder {
             return null;
         }
         final String qop = resolveQop(p.get("qop"));
-        final String pwd = password != null ? password : "";
+        final String pwd = allOptions.userCredentials().password() != null ? allOptions.userCredentials().password() : "";
         final String digestUri = href;
-        final String ha1 = md5(username + ":" + realm + ":" + pwd);
+        final String ha1 = md5(allOptions.userCredentials().username() + ":" + realm + ":" + pwd);
         final String ha2 = md5(method.toUpperCase() + ":" + digestUri);
 
         final StringBuilder value = new StringBuilder()
-                .append("username=\"").append(username).append("\", ")
+                .append("username=\"").append(allOptions.userCredentials().username()).append("\", ")
                 .append("realm=\"").append(realm).append("\", ")
                 .append("nonce=\"").append(nonce).append("\", ")
                 .append("uri=\"").append(digestUri).append('"');
@@ -454,28 +422,12 @@ public class RequestBuilder {
         }
     }
 
-    public boolean isStatusOnly() {
-        return statusOnly;
-    }
-
-    public String getOverrideMediaType() {
-        return overrideMediaType;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getAuthMethod() {
-        return authMethod;
-    }
-
-    public int getTimeout() {
-        return timeout;
+    /**
+     * Returns the parsed request options.
+     * @return the request options
+     */
+    public RequestOptions getOptions() {
+        return allOptions;
     }
 
     private void parseMultipart(final Element multipartElem) {
@@ -494,7 +446,6 @@ public class RequestBuilder {
     }
 
     private String getBodyContent(final Element bodyElem) {
-        // Check for child elements (XML content)
         final NodeList children = bodyElem.getChildNodes();
         boolean hasElements = false;
         for (int i = 0; i < children.getLength(); i++) {
@@ -505,7 +456,6 @@ public class RequestBuilder {
         }
 
         if (hasElements) {
-            // Serialize XML child content
             try {
                 final StringBuilder sb = new StringBuilder();
                 final TransformerFactory tf = TransformerFactory.newInstance();

@@ -21,11 +21,11 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import com.github.mizosoft.methanol.Methanol;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -55,6 +54,7 @@ public class SendRequestFunction extends BasicFunction {
             "The response is a sequence where the first item is an http:response element " +
             "with status, message, and header information, followed by the response body content.";
 
+    /** The function signature for http:send-request. */
     public static final FunctionSignature[] FS_SEND_REQUEST = functionSignatures(
             HttpClientModule.qname(FS_SEND_REQUEST_NAME),
             FS_SEND_REQUEST_DESCRIPTION,
@@ -76,6 +76,12 @@ public class SendRequestFunction extends BasicFunction {
             )
     );
 
+    /**
+     * Creates a new function instance.
+     *
+     * @param context   the XQuery context
+     * @param signature the function signature
+     */
     public SendRequestFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -89,15 +95,18 @@ public class SendRequestFunction extends BasicFunction {
         final Sequence bodiesParam = getArgumentCount() >= 3 ? args[2] : Sequence.EMPTY_SEQUENCE;
 
         // Parse request element
-        final RequestBuilder reqBuilder = new RequestBuilder();
-        reqBuilder.parse(requestNode, hrefParam, bodiesParam);
+        final RequestBuilder requestBuilder = new RequestBuilder();
+        requestBuilder.parse(requestNode, hrefParam, bodiesParam);
+        final HttpRequest httpRequest = requestBuilder.build();
 
-        final HttpRequest httpRequest = reqBuilder.build();
+        final RequestOptions allOptions = requestBuilder.getOptions();
 
-        try (final HttpClient client = buildClient(reqBuilder)) {
-            final HttpResponse<byte[]> response = send(client, reqBuilder, httpRequest);
+        final HttpClient client = HttpClientFactory.get(allOptions.requestOptions());
+
+        try {
+            final HttpResponse<byte[]> response = send(client, requestBuilder, httpRequest);
             return ResponseHandler.buildResult(response, context, this,
-                    reqBuilder.isStatusOnly(), reqBuilder.getOverrideMediaType());
+                    allOptions.responseOptions().statusOnly(), allOptions.responseOptions().overrideMediaType());
 
         } catch (final java.net.http.HttpTimeoutException e) {
             throw new XPathException(this, HttpClientModule.HC006,
@@ -113,23 +122,6 @@ public class SendRequestFunction extends BasicFunction {
             throw new XPathException(this, HttpClientModule.HC001,
                     "Request interrupted: " + e.getMessage());
         }
-    }
-
-    /**
-     * Builds the HTTP client. Methanol augments java.net.http.HttpClient: autoAcceptEncoding
-     * advertises Accept-Encoding and transparently decodes gzip/deflate responses, and readTimeout
-     * gives a per-read (inactivity) timeout that the bare JDK client lacks.
-     */
-    private static HttpClient buildClient(final RequestBuilder reqBuilder) {
-        final Methanol.Builder clientBuilder = Methanol.newBuilder()
-                .autoAcceptEncoding(true)
-                .followRedirects(reqBuilder.isFollowRedirect()
-                        ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
-        if (reqBuilder.getTimeout() > 0) {
-            final Duration timeout = Duration.ofSeconds(reqBuilder.getTimeout());
-            clientBuilder.connectTimeout(timeout).readTimeout(timeout);
-        }
-        return clientBuilder.build();
     }
 
     /**

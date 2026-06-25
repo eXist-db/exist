@@ -50,6 +50,9 @@ public final class ContentTypeHelper {
 
     /**
      * Tests whether the content type represents XML that should be parsed.
+     *
+     * @param contentType the content type to test
+     * @return {@code true} if the content type is XML
      */
     public static boolean isXml(final String contentType) {
         final String mediaType = extractMediaType(contentType);
@@ -60,6 +63,9 @@ public final class ContentTypeHelper {
 
     /**
      * Tests whether the content type represents HTML that should be parsed.
+     *
+     * @param contentType the content type to test
+     * @return {@code true} if the content type is HTML
      */
     public static boolean isHtml(final String contentType) {
         final String mediaType = extractMediaType(contentType);
@@ -71,6 +77,9 @@ public final class ContentTypeHelper {
      * Tests whether the content type represents text that should be returned as xs:string.
      *
      * <p>Excludes XML and HTML types (which are parsed as documents instead).</p>
+     *
+     * @param contentType the content type to test
+     * @return {@code true} if the content type is text
      */
     public static boolean isText(final String contentType) {
         final String mediaType = extractMediaType(contentType);
