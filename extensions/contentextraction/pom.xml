@@ -95,7 +95,6 @@
             <artifactId>j8fu</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
