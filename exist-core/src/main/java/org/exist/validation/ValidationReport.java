@@ -135,6 +135,17 @@ public class ValidationReport implements ErrorHandler {
         return validationReport;
     }
 
+    /**
+     * Discard previously recorded errors/warnings/exception so the report can be
+     * reused for a second validation pass (e.g. retrying with a different
+     * validator), while keeping start/duration/namespace tracking intact.
+     */
+    public void clear() {
+        validationReport.clear();
+        lastItem = null;
+        throwed = null;
+    }
+
     public List<String> getTextValidationReport() {
 
         final List<String> textReport = new ArrayList<>();

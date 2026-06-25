@@ -75,6 +75,14 @@ public class JaxpXsdCatalogTest {
                 ExistXmldbEmbeddedServer.storeResource(schemasCollection, "AnotherNamespace.xsd", InputStreamUtil.readAll(is));
             }
 
+            // No schemaLocation hint at all -- directory-search resolves purely by the root
+            // element's namespace, same as MyNameSpace.xsd/valid.xml above. xs:assert only exists
+            // in XSD 1.1, so this proves the XSD 1.1 retry/up-front pipeline is reachable through
+            // SearchResourceResolver (item 6), not just through an explicit schemaLocation hint.
+            try (final InputStream is = SAMPLES.getSample("validation/parse/schemas/searched-xsd11.xsd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, "searched-xsd11.xsd", InputStreamUtil.readAll(is));
+            }
         }
 
         try (Collection parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse")) {
@@ -94,6 +102,16 @@ public class JaxpXsdCatalogTest {
             try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid.xml")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid.xml", InputStreamUtil.readAll(is));
+            }
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/searched-xsd11-valid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-valid.xml", InputStreamUtil.readAll(is));
+            }
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/searched-xsd11-invalid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "searched-xsd11-invalid.xml", InputStreamUtil.readAll(is));
             }
         }
     }
@@ -188,6 +206,26 @@ public class JaxpXsdCatalogTest {
                 "xs:anyURI('/db/parse/') )";
         final String r = existEmbeddedServer.executeOneValue(query);
         assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
+    }
+
+    // Directory-search catalog + XSD 1.1 schema, resolved purely by namespace (no
+    // schemaLocation hint on the instance). Proves item 6: SearchResourceResolver's
+    // LSResourceResolver support makes directory-search catalogs work with the XSD 1.1
+    // validator pipeline too, not just the default SAX pipeline.
+    @Test
+    public void xsd11SearchedValid() throws XMLDBException, SAXException, XpathException, IOException {
+        final String query = "validation:jaxp-report( " +
+                "doc('/db/parse/instance/searched-xsd11-valid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+        executeAndEvaluate(query, "valid");
+    }
+
+    @Test
+    public void xsd11SearchedInvalid() throws XMLDBException, SAXException, XpathException, IOException {
+        final String query = "validation:jaxp-report( " +
+                "doc('/db/parse/instance/searched-xsd11-invalid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+        executeAndEvaluate(query, "invalid");
     }
 
     private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {

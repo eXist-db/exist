@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -37,12 +38,19 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.resolver.ResolverFactory;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.util.Configuration;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
+import org.exist.validation.resolver.SearchResourceResolver;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryDocument;
@@ -54,8 +62,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xmlresolver.Resolver;
 
 /**
  *  Shared methods for validation functions.
@@ -281,8 +291,57 @@ public class Shared {
 
         String[] returnUrls = new String[urls.size()];
         returnUrls = urls.toArray(returnUrls);
-        
+
         return returnUrls;
+    }
+
+    /**
+     * Resolves the {@code catalogs} argument shared by {@code validation:jaxp()} and {@code
+     * validation:jaxv()} into an {@link LSResourceResolver}, per the documented contract: an
+     * empty sequence selects the system catalog; a URL ending in '/' is a directory-search
+     * (collection) catalog; a URL ending in '.xml' is an explicit catalog document (which may be
+     * stored in the database). Any other URL form is a caller error.
+     *
+     * @param caller the function requesting resolution, used to attribute a thrown {@link
+     *               XPathException} to the right place.
+     * @param brokerPool the broker pool, used for the system catalog and directory-search cases.
+     * @param broker the broker to use for reading any '.xml' catalog stored in the database.
+     * @param subject the subject to use for directory-search/database access.
+     * @param catalogsArg the catalogs argument: an empty sequence (system catalog), or one or
+     *                     more catalog URLs.
+     *
+     * @return the resolver for {@code catalogsArg}.
+     *
+     * @throws XPathException if a catalog URL doesn't end in '/' or '.xml'.
+     * @throws IOException if a catalog stored in the database could not be read.
+     * @throws URISyntaxException if a catalog URL is not a valid URI.
+     */
+    public static LSResourceResolver resolveCatalogArgument(final BasicFunction caller, final BrokerPool brokerPool,
+            final DBBroker broker, final Subject subject, final Sequence catalogsArg)
+            throws XPathException, IOException, URISyntaxException {
+
+        if (catalogsArg.isEmpty()) {
+            LOG.debug("Using system catalog.");
+            final Configuration config = brokerPool.getConfiguration();
+            return (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+        }
+
+        final String[] catalogUrls = getUrls(catalogsArg);
+        final String singleUrl = catalogUrls[0];
+
+        if (singleUrl.endsWith("/")) {
+            LOG.debug("Search for grammar in {}", singleUrl);
+            return new SearchResourceResolver(brokerPool, subject, singleUrl);
+
+        } else if (singleUrl.endsWith(".xml")) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using catalogs {}", String.join(" ", catalogUrls));
+            }
+            return ResolverFactory.resolveCatalogs(broker, catalogUrls);
+
+        } else {
+            throw new XPathException(caller, "Catalog URLs should end on / or .xml");
+        }
     }
 
     /**

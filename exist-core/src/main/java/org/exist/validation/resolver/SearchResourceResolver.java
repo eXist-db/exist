@@ -28,36 +28,26 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.exist.EXistException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.resolver.ResolverFactory;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.utils.SaxProducer;
 
-import javax.xml.transform.OutputKeys;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -66,19 +56,30 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.
  *
+ * <p>Implements both {@link XMLEntityResolver} (Xerces' XNI interface, used by the default
+ * SAX-parser-based dynamic-discovery pipeline) and {@link LSResourceResolver} ({@code
+ * javax.xml.validation}'s interface, used by the XSD-1.1-capable {@link javax.xml.validation.Validator}
+ * pipeline and by {@code validation:jaxv()}'s {@link javax.xml.validation.SchemaFactory}) so that
+ * directory-search catalogs work the same way regardless of which pipeline ends up validating.
+ * {@link LSResourceResolver} is XSD-only (no DTD/catalog equivalent), so {@link #resolveResource}
+ * only ever performs the XML-Schema-by-namespace search, mirroring {@link #resolveEntity}'s
+ * namespace branch.</p>
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class SearchResourceResolver implements XMLEntityResolver {
+public class SearchResourceResolver implements XMLEntityResolver, LSResourceResolver {
     private static final Logger LOG = LogManager.getLogger(SearchResourceResolver.class);
 
     private final String collectionPath;
     private final Subject subject;
     private final BrokerPool brokerPool;
+    private final DatabaseResources databaseResources;
 
     public SearchResourceResolver(final BrokerPool brokerPool, final Subject subject, final String collectionPath) {
         this.brokerPool = brokerPool;
         this.subject = subject;
         this.collectionPath = collectionPath;
+        this.databaseResources = new DatabaseResources(brokerPool);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Specified collectionPath={}", collectionPath);
@@ -99,15 +100,10 @@ public class SearchResourceResolver implements XMLEntityResolver {
 
 
         String resourcePath = null;
-        final DatabaseResources databaseResources = new DatabaseResources(brokerPool);
 
         if (xri.getNamespace() != null) {
             // XML Schema search
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Searching namespace '{}' in database from {}...", xri.getNamespace(), collectionPath);
-            }
-
-            resourcePath = databaseResources.findXSD(collectionPath, xri.getNamespace(), subject);
+            resourcePath = findXsdResourcePathByNamespace(xri.getNamespace());
 
         } else if (xri.getPublicId() != null) {
             // Catalog search
@@ -127,22 +123,15 @@ public class SearchResourceResolver implements XMLEntityResolver {
                    to resolve any relative URI resources from the database.
                  */
                 try {
-                    final Optional<InputSource> maybeInputSource;
-                    if (catalogPath.startsWith("xmldb:exist://")) {
+                    final Optional<SaxProducer> maybeSaxProducer;
+                    if (catalogPath.startsWith("xmldb:exist://") || catalogPath.startsWith("/db")) {
                         catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogPath)))));
-                    } else if (catalogPath.startsWith("/db")) {
-                        catalogPath = ResolverFactory.fixupExistCatalogUri(catalogPath);
-                        maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogPath)))));
+                        maybeSaxProducer = Optional.of(ResolverFactory.catalogSaxProducer(brokerPool, subject, XmldbURI.create(catalogPath)));
                     } else {
-                        maybeInputSource = Optional.empty();
+                        maybeSaxProducer = Optional.empty();
                     }
 
-                    if (maybeInputSource.isPresent()) {
-                        maybeInputSource.get().setSystemId(catalogPath);
-                    }
-
-                    final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(catalogPath, maybeInputSource)));
+                    final Resolver resolver = ResolverFactory.newResolverFromSax(List.of(Tuple(catalogPath, maybeSaxProducer)));
                     final InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
                     if (source != null) {
                         resourcePath = source.getSystemId();
@@ -182,6 +171,160 @@ public class SearchResourceResolver implements XMLEntityResolver {
         return xis;
     }
 
+    /**
+     * Resolves an {@code xs:import}/{@code xs:include}, or the instance's own root schema
+     * reference during dynamic discovery (confirmed by experiment: {@code javax.xml.validation}'s
+     * dynamic-discovery {@link javax.xml.validation.Validator} consults the configured
+     * {@link LSResourceResolver} for the root schema location too, not just nested imports), by
+     * searching for an XSD declaring {@code namespaceURI} under {@code collectionPath} -- the same
+     * lookup {@link #resolveEntity}'s namespace branch performs for the XNI pipeline.
+     *
+     * <p>{@code systemId}/{@code baseURI} are intentionally ignored: unlike {@link #resolveEntity},
+     * there is no DTD/catalog case to consider here (LSResourceResolver is XSD-only), and the
+     * directory-search contract is "find an XSD by namespace", not "fetch whatever URI is named" --
+     * the result always comes from the permission-checked {@code findXSD} search, never from a
+     * caller/document-supplied location.</p>
+     */
+    @Override
+    @Nullable
+    public LSInput resolveResource(final String type, @Nullable final String namespaceURI,
+            @Nullable final String publicId, @Nullable final String systemId, @Nullable final String baseURI) {
+        if (namespaceURI == null) {
+            return null;
+        }
+
+        final String resourcePath = findXsdResourcePathByNamespace(namespaceURI);
+        if (resourcePath == null) {
+            return null;
+        }
+
+        try {
+            final InputStream is = URI.create(resourcePath).toURL().openStream();
+            return new DatabaseLSInput(publicId, systemId, baseURI, is);
+        } catch (final IOException e) {
+            LOG.error("Could not open resolved schema resource '{}': {}", resourcePath, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Searches {@code collectionPath} for an XSD declaring {@code namespaceURI} as its target
+     * namespace, shared between {@link #resolveEntity}'s namespace branch and {@link #resolveResource}.
+     * The result is already normalized via {@link ResolverFactory#fixupExistCatalogUri} (idempotent,
+     * so {@link #resolveEntity}'s own uniform fixup at the end of that method is a harmless no-op
+     * for this path).
+     *
+     * @return the fixed-up resource path, or {@code null} if no matching schema was found.
+     */
+    @Nullable
+    private String findXsdResourcePathByNamespace(final String namespaceURI) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Searching namespace '{}' in database from {}...", namespaceURI, collectionPath);
+        }
+
+        final String resourcePath = databaseResources.findXSD(collectionPath, namespaceURI, subject);
+        return resourcePath == null ? null : ResolverFactory.fixupExistCatalogUri(resourcePath);
+    }
+
+    /**
+     * Minimal {@link LSInput} wrapping an already-opened {@link InputStream} -- there is no
+     * JDK-stock implementation of this interface available to depend on.
+     */
+    private static final class DatabaseLSInput implements LSInput {
+        private final String publicId;
+        private final String systemId;
+        private final String baseURI;
+        private InputStream byteStream;
+
+        DatabaseLSInput(@Nullable final String publicId, @Nullable final String systemId,
+                @Nullable final String baseURI, final InputStream byteStream) {
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.baseURI = baseURI;
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public Reader getCharacterStream() {
+            return null;
+        }
+
+        @Override
+        public void setCharacterStream(final Reader characterStream) {
+            // not used: this implementation only ever supplies a byte stream
+        }
+
+        @Override
+        public InputStream getByteStream() {
+            return byteStream;
+        }
+
+        @Override
+        public void setByteStream(final InputStream byteStream) {
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public String getStringData() {
+            return null;
+        }
+
+        @Override
+        public void setStringData(final String stringData) {
+            // not used: this implementation only ever supplies a byte stream
+        }
+
+        @Override
+        public String getSystemId() {
+            return systemId;
+        }
+
+        @Override
+        public void setSystemId(final String systemId) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getPublicId() {
+            return publicId;
+        }
+
+        @Override
+        public void setPublicId(final String publicId) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getBaseURI() {
+            return baseURI;
+        }
+
+        @Override
+        public void setBaseURI(final String baseURI) {
+            // immutable: this instance is only ever built once per resolveResource() call
+        }
+
+        @Override
+        public String getEncoding() {
+            return null;
+        }
+
+        @Override
+        public void setEncoding(final String encoding) {
+            // not used: the schema document carries its own encoding declaration, if any
+        }
+
+        @Override
+        public boolean getCertifiedText() {
+            return false;
+        }
+
+        @Override
+        public void setCertifiedText(final boolean certifiedText) {
+            // not used
+        }
+    }
+
     private String getXriDetails(final XMLResourceIdentifier xrid) {
         return "PublicId='%s' BaseSystemId='%s' ExpandedSystemId='%s' LiteralSystemId='%s' Namespace='%s' ".formatted(
                 xrid.getPublicId(), xrid.getBaseSystemId(), xrid.getExpandedSystemId(), xrid.getLiteralSystemId(), xrid.getNamespace());
@@ -190,45 +333,5 @@ public class SearchResourceResolver implements XMLEntityResolver {
     private String getXisDetails(final XMLInputSource xis) {
         return "PublicId='%s' SystemId='%s' BaseSystemId='%s' Encoding='%s' ".formatted(
                 xis.getPublicId(), xis.getSystemId(), xis.getBaseSystemId(), xis.getEncoding());
-    }
-
-    // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
-    private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
-        try (final DBBroker broker = brokerPool.get(Optional.of(subject));
-             final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
-            if (lockedDocument == null) {
-                throw new IOException("No such document: " + documentUri);
-            }
-            final DocumentImpl doc = lockedDocument.getDocument();
-
-            try (final StringWriter stringWriter = new StringWriter()) {
-                final Properties outputProperties = new Properties();
-                outputProperties.setProperty(OutputKeys.METHOD, "XML");
-                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
-
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                SAXSerializer sax = null;
-                try {
-                    sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                    sax.setOutput(stringWriter, outputProperties);
-                    serializer.setProperties(outputProperties);
-                    serializer.setSAXHandlers(sax, sax);
-                    serializer.toSAX(doc);
-                } catch (final SAXNotSupportedException | SAXNotRecognizedException e) {
-                    throw new SAXException(e.getMessage(), e);
-                } finally {
-                    if (sax != null) {
-                        SerializerPool.getInstance().returnObject(sax);
-                    }
-                }
-
-                return stringWriter.toString();
-            }
-        } catch (final EXistException | PermissionDeniedException e) {
-            throw new IOException(e.getMessage(), e);
-        }
     }
 }

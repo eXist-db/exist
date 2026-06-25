@@ -24,6 +24,7 @@ package org.exist.validation;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -36,7 +37,7 @@ public class ValidationContentHandler extends DefaultHandler {
 
     private boolean isFirstElement = true;
     private String namespaceUri = null;
-
+    private Attributes rootAttributes = null;
 
     /**
      * @see org.xml.sax.helpers.DefaultHandler#startElement(String, String, String, Attributes)
@@ -47,6 +48,9 @@ public class ValidationContentHandler extends DefaultHandler {
 
         if (isFirstElement) {
             namespaceUri = uri;
+            // SAX may reuse/mutate the Attributes instance after this call returns, so take
+            // a defensive copy for callers that want to inspect the root element's attributes later.
+            rootAttributes = new AttributesImpl(attributes);
             isFirstElement = false;
         }
     }
@@ -58,5 +62,14 @@ public class ValidationContentHandler extends DefaultHandler {
      */
     public String getNamespaceUri() {
         return namespaceUri;
+    }
+
+    /**
+     * Get the attributes of the root element, as seen during parsing.
+     *
+     * @return the root element's attributes, or {@code null} if no element has been seen yet.
+     */
+    public Attributes getRootAttributes() {
+        return rootAttributes;
     }
 }
