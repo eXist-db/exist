@@ -142,6 +142,12 @@
                             <goal>transform</goal>
                         </goals>
                         <configuration>
+                            <!-- Explicit skip=false: this execution shares its ID with the
+                                 conf-fixture-codegen profile in exist-parent, so Maven merges
+                                 them. The profile's <skip>${skip.conf.fixture.profile}</skip>
+                                 (which is 'true' for this module) would otherwise be inherited
+                                 and silently suppress this transform. -->
+                            <skip>false</skip>
                             <forceCreation>true</forceCreation>
                             <transformationSets>
                                 <transformationSet>
