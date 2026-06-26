@@ -1,0 +1,92 @@
+extensions/debuggee/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/mail/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/xqdoc/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/expath/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/contentextraction/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/xmldiff/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-ant/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/file/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-core/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/indexes/range/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/indexes/sort/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-core/src/test/resources-filtered/org/exist/xquery/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/file/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/exquery/restxq/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 36
+extensions/modules/sql/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/exquery/restxq/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 36
+extensions/modules/persistentlogin/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+schema/README.md
+  s_7cdf0e373ff9b9::t_58b968310c9e95 206,209-211,215,218-221
+  s_7cdf0e373ff9b9::t_b0d0a11d74b38f 169-177,181-183
+extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/indexes/spatial/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/cache/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/image/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-core/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-core/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/indexes/ngram/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/counter/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/indexes/lucene/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-core/src/test/resources-filtered/org/exist/storage/statistics/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+exist-parent/pom.xml
+  s_7cdf0e373ff9b9::t_e5d61c792bf4d4 957-959
+extensions/modules/compression/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/expathrepo/expathrepo-trigger-test/src/test/resources/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/persistentlogin/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/expathrepo/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/modules/xslfo/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/debuggee/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 32
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 31
+extensions/webdav/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_433041c9b6e175 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "8a7eb49b5ea0d6226468d854a647277b714c13cf",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

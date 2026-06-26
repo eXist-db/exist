@@ -1,0 +1,42 @@
+extensions/modules/file/pom.xml
+  s_7cdf0e373ff9b9::t_a3b9aa1894576a 146
+exist-core/src/test/java/org/exist/xquery/AbsolutePathTests.java
+  s_7cdf0e373ff9b9::t_0874fe96703055 132-135
+exist-core/pom.xml
+  s_7cdf0e373ff9b9::t_a1f2ab8e6dc3ae 1160-1218
+  s_7cdf0e373ff9b9::t_54acd0b12d088c 675-677
+  s_7cdf0e373ff9b9::t_be81dacd45d7f4 683-685
+extensions/debuggee/pom.xml
+  s_7cdf0e373ff9b9::t_83713980c5d5b2 88
+exist-core/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_c66b2a3bdf98be 1-38
+extensions/exquery/restxq/pom.xml
+  s_7cdf0e373ff9b9::t_6728917e0e9a8c 210
+exist-core/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_2239889f766ab4 1-39
+exist-core/src/test/resources-filtered/org/exist/xquery/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_9dffedec92b5dd 1-46
+extensions/webdav/pom.xml
+  s_7cdf0e373ff9b9::t_c35f3ebdc0daa7 124
+extensions/modules/persistentlogin/pom.xml
+  s_7cdf0e373ff9b9::t_909bc2b16cb946 110
+exist-core/src/test/resources-filtered/org/exist/storage/statistics/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_c0fb2da6935717 1-28,34
+  s_7cdf0e373ff9b9::t_ce0eea1c0848b8 29-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "8abbb75f5a8f4318c03dc046fbb5817025084f42",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

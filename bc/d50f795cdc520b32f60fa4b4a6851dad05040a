@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_7cdf0e373ff9b9::t_c2d54117e21311 78-79
+  s_7cdf0e373ff9b9::t_88e29b1872e9a8 1206-1213,1215,1217-1218,1221,1223-1234
+  s_7cdf0e373ff9b9::t_47177b1de04470 71,74-77,80-84
+  s_7cdf0e373ff9b9::t_f3787f40186a7b 1201-1205,1214,1216,1219-1220,1222,1235-1287,1291,1293-1305,1307,1311-1316
+  s_7cdf0e373ff9b9::t_80cae24e0e2451 1288-1290
+  s_7cdf0e373ff9b9::t_afb297dd348205 1292
+  s_7cdf0e373ff9b9::t_2b1a2f69ab64d9 1141,1151
+  s_7cdf0e373ff9b9::t_c3e4a35f806ba1 1306,1308-1310
+exist-core/src/main/java/org/exist/collections/IndexInfo.java
+  s_7cdf0e373ff9b9::t_0961ebf6ee2ba0 99-100,106,108,111-119
+  s_7cdf0e373ff9b9::t_a3d90e9dd02503 104-105,107,109-110,120-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "bcd50f795cdc520b32f60fa4b4a6851dad05040a",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
