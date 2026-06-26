@@ -956,8 +956,15 @@ public class JettyStart implements LifeCycle.Listener {
     private final class ShutdownListenerImpl implements ShutdownListener {
         @Override
         public void shutdown(final String dbname, final int remainingInstances) {
-            logger.info("Database shutdown: stopping server ...");
-            stopServerAndAwait();
+            logger.info("Database shutdown: stopping server asynchronously ...");
+            // Must NOT block here: BrokerPool.stopAll() calls this listener synchronously
+            // before completing its own cleanup. If we block until Jetty stops, the pool
+            // stays registered (and partially shut down / read-only) for the full Jetty
+            // drain period, causing concurrent tests that try to configure the same default
+            // instance name to see a read-only database.
+            final Thread t = new Thread(JettyStart.this::stopServerAndAwait, "JettyShutdown");
+            t.setDaemon(true);
+            t.start();
         }
     }
 
