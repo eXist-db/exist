@@ -1,0 +1,19 @@
+extensions/modules/expathrepo/pom.xml
+  s_7cdf0e373ff9b9::t_469e9725815d39 145-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "b9a5a85aa25fe376ad2454980e4e513808c128b6",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
