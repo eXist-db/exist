@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/util/XMLReaderExpansionTest.java
+  s_7cdf0e373ff9b9::t_066c9ed4f7b020 45,54-63,65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "0b6bb708fe6e1476103544d617af6fe8905464ca",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
