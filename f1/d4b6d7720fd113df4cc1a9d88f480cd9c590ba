@@ -1,0 +1,32 @@
+exist-core/src/main/java/org/exist/http/ws/QueryExecutor.java
+  s_df30998873e606::t_5fb8ee5de90094 152-167
+exist-core/src/main/java/org/exist/http/ws/EvalWebSocketEndpoint.java
+  s_df30998873e606::t_db1162cfc724f1 195
+  s_df30998873e606::t_4a4f423fc3159c 265,268-279
+exist-core/src/test/java/org/exist/http/ws/EvalWebSocketEndpointTest.java
+  s_df30998873e606::t_e044c876665798 663
+  s_df30998873e606::t_ed103fd11a42ea 71-72,74-76
+  s_df30998873e606::t_cc7c9e4f1bf759 73,77-80
+  s_df30998873e606::t_cc227570cc69cf 491,500-502
+  s_df30998873e606::t_9ad3b2147ba798 490
+  s_df30998873e606::t_8f141b063be9e3 664,666-667
+  s_df30998873e606::t_5774ebf0297f94 1163-1164,1171-1172
+exist-core/src/main/java/org/exist/http/ws/EvalProtocol.java
+  s_df30998873e606::t_780ee6ad2b5aa2 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "f1d4b6d7720fd113df4cc1a9d88f480cd9c590ba",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
