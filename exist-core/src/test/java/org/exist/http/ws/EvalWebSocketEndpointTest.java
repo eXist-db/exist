@@ -658,10 +658,12 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // Query that should take longer than 2s timeout
+            // GC-free query: return () avoids heap exhaustion on CI, ensuring the 2s
+            // watchdog timeout fires reliably via proceed() rather than OOM killing
+            // the thread before the timeout check runs.
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-timeout\"," +
-                    "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
+                    "\"query\":\"for $i in 1 to 999999999 return ()\"," +
                     "\"max-execution-time\":2000}");
 
             assertTrue("Should receive timeout error within 30s",

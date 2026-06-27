@@ -103,8 +103,8 @@ public final class QueryExecutor {
             sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_COMPILING, 0,
                     System.currentTimeMillis() - startTime);
 
-            // Set timeout via watchdog
             final XQueryWatchDog watchDog = context.getWatchDog();
+            watchDog.reset(); // before signal: prevents execute() from clearing a concurrent kill() via its internal watchdog.reset()
             if (msg.maxExecutionTime() > 0) {
                 watchDog.setTimeout(msg.maxExecutionTime());
             }
@@ -120,7 +120,7 @@ public final class QueryExecutor {
 
                 final Sequence result;
                 try {
-                    result = xquery.execute(broker, compiled, null, new Properties(), true);
+                    result = xquery.execute(broker, compiled, null, new Properties(), false);
                 } catch (final TerminatedException e) {
                     timing.evaluate = System.currentTimeMillis() - evalStart;
                     reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
@@ -164,6 +164,7 @@ public final class QueryExecutor {
             } finally {
                 evalSession.unregisterQuery(msg.id());
                 context.runCleanupTasks();
+                context.reset();  // needed: resetContext=false skipped this in xquery.execute()
             }
 
         } catch (final EXistException | PermissionDeniedException e) {
