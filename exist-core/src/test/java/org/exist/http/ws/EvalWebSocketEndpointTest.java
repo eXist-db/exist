@@ -481,13 +481,19 @@ public class EvalWebSocketEndpointTest {
                     "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
                     "\"max-execution-time\":5000}");
 
-            // Wait a bit then cancel
-            Thread.sleep(200);
+            // Wait for the server to confirm the query is executing before cancelling.
+            // Without this, the cancel may arrive before the watchdog is registered and
+            // be silently dropped, leaving the query to run until max-execution-time fires.
+            assertTrue("Query should start executing within 10s",
+                    progressLatch.await(10, TimeUnit.SECONDS));
+
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
 
-            assertTrue("Should receive cancelled/error within 30s",
-                    cancelledLatch.await(30, TimeUnit.SECONDS));
+            // With terminate declared volatile in XQueryWatchDog, cancellation is
+            // near-instant once proceed() is next called; 5s gives ample headroom.
+            assertTrue("Should receive cancelled/error within 5s",
+                    cancelledLatch.await(5, TimeUnit.SECONDS));
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();

@@ -57,7 +57,9 @@ public class XQueryWatchDog {
     
     private long startTime;
     
-    private boolean terminate = false;
+    // volatile: kill() is called from a different thread than proceed(); without visibility
+    // guarantee the executing thread may never observe terminate=true (JMM data race).
+    private volatile boolean terminate = false;
 
     private String runningThread = null;
 
