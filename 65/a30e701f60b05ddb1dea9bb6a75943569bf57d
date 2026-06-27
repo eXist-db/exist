@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/http/ws/EvalWebSocketEndpointTest.java
+  s_df30998873e606::t_2c43052a820149 71,74-76,79-81,664-665,667-669,1265
+exist-core/src/test/java/org/exist/http/ws/WallClockQueryTimeoutTest.java
+  s_df30998873e606::t_a727291217d2b2 1-52
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java
+  s_df30998873e606::t_8300803c5e3281 32-33,107-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "65a30e701f60b05ddb1dea9bb6a75943569bf57d",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
