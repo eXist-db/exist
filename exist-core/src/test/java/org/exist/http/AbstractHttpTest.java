@@ -103,7 +103,9 @@ public abstract class AbstractHttpTest {
      * @return a new {@link HttpClient}.
      */
     public static HttpClient newHttpClient() {
+        // Force HTTP/1.1: RST_STREAM is an HTTP/2 frame; using HTTP/1.1 eliminates that failure mode.
         return HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
     }
