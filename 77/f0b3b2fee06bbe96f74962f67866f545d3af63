@@ -1,0 +1,24 @@
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_7cdf0e373ff9b9::t_38ea4909857b58 230-235,243-244
+  s_7cdf0e373ff9b9::t_65eaf8b3385aea 206-210
+  s_7cdf0e373ff9b9::t_27dbdf7c204670 114
+  s_7cdf0e373ff9b9::t_dba55a4e508c52 236-242
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_7cdf0e373ff9b9::t_c072f359025d46 106,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "77f0b3b2fee06bbe96f74962f67866f545d3af63",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
