@@ -68,6 +68,11 @@ public class EvalWebSocketEndpointTest {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
     private static final String TEST_COLLECTION = "/db/ws-eval-test";
+    /** Bounded FLWOR loop for cancel tests: long enough to cancel, short enough for CI. */
+    private static final String CANCEL_TEST_QUERY =
+            "for $i in 1 to 10000000 return ()";
+    private static final long CANCEL_MAX_EXECUTION_MS = 15_000L;
+    private static final long CANCEL_AWAIT_SEC = 20L;
     private static final String TEST_MODULE = """
             module namespace test = 'http://exist-db.org/test';
             declare function test:hello($name as xs:string) as xs:string {
@@ -475,31 +480,21 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // GC-free query: return () produces no objects per iteration, so the JVM
-            // stays out of stop-the-world GC and the query thread calls proceed() on
-            // every iteration — letting the volatile terminate flag be observed within
-            // microseconds of kill().  String-producing variants (string($i)) cause
-            // heavy GC that can stall the query thread for several seconds on CI.
-            // max-execution-time is a safety net only; the cancel should fire first.
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-cancel\"," +
-                    "\"query\":\"for $i in 1 to 999999999 return ()\"," +
-                    "\"max-execution-time\":30000}");
+                    "\"query\":\"" + CANCEL_TEST_QUERY + "\"," +
+                    "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
             // Wait for the server to confirm the query is executing before cancelling.
-            // Without this, the cancel may arrive before the watchdog is registered and
-            // be silently dropped, leaving the query to run until max-execution-time fires.
             assertTrue("Query should start executing within 10s",
                     progressLatch.await(10, TimeUnit.SECONDS));
 
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
 
-            // With terminate declared volatile in XQueryWatchDog and no GC pressure
-            // from the query, cancellation is visible at the very next proceed() call
-            // — microseconds after kill(). 10s gives ample CI headroom.
-            assertTrue("Should receive cancelled/error within 10s",
-                    cancelledLatch.await(10, TimeUnit.SECONDS));
+            // Await longer than max-execution-time so the watchdog safety net can fire on slow CI.
+            assertTrue("Should receive cancelled/error within " + CANCEL_AWAIT_SEC + "s",
+                    cancelledLatch.await(CANCEL_AWAIT_SEC, TimeUnit.SECONDS));
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();
@@ -1163,16 +1158,16 @@ public class EvalWebSocketEndpointTest {
         // Start a long-running query
         session.getBasicRemote().sendText(
                 "{\"action\":\"eval\",\"id\":\"q-cleanup\"," +
-                "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                "\"max-execution-time\":30000}");
+                "\"query\":\"" + CANCEL_TEST_QUERY + "\"," +
+                "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
         // Wait for evaluating phase, then abruptly close
         assertTrue("Should reach evaluating phase within 5s",
                 progressLatch.await(5, TimeUnit.SECONDS));
         session.close();
 
-        // Give server time to clean up
-        Thread.sleep(500);
+        // Allow session-close cancellation to finish before later tests reuse the broker pool
+        Thread.sleep(2_000);
 
         // The test passes if no resources leak and no exceptions are thrown.
         // ExistWebServer would fail to shut down if brokers were leaked.

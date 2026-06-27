@@ -192,7 +192,7 @@ public class EvalWebSocketEndpoint {
 
         switch (msg.action()) {
             case EvalProtocol.ACTION_EVAL -> handleEval(session, evalSession, msg);
-            case EvalProtocol.ACTION_CANCEL -> handleCancel(evalSession, msg);
+            case EvalProtocol.ACTION_CANCEL -> handleCancel(session, evalSession, msg);
             case EvalProtocol.ACTION_COMPILE -> handleCompile(session, evalSession, msg);
             case EvalProtocol.ACTION_ADMIN_CANCEL -> handleAdminCancel(session, evalSession, msg);
             default -> {
@@ -262,11 +262,21 @@ public class EvalWebSocketEndpoint {
         });
     }
 
-    private void handleCancel(final EvalSession evalSession,
+    private void handleCancel(final Session session, final EvalSession evalSession,
                                final EvalProtocol.ClientMessage msg) {
         final boolean cancelled = evalSession.cancelQuery(msg.id());
-        if (!cancelled) {
-            LOG.debug("Cancel requested for unknown query: {}", msg.id());
+        try {
+            if (!cancelled) {
+                session.getBasicRemote().sendText(
+                        EvalProtocol.errorMessage(msg.id(), null,
+                                "Query not found or already completed", 0, 0, null));
+                LOG.debug("Cancel requested for unknown query: {}", msg.id());
+            } else {
+                session.getBasicRemote().sendText(
+                        EvalProtocol.progressMessage(msg.id(), EvalProtocol.PHASE_CANCELLING, 0, 0));
+            }
+        } catch (final IOException e) {
+            LOG.debug("Failed to send cancel acknowledgement: {}", e.getMessage());
         }
     }
 

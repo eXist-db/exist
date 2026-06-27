@@ -149,6 +149,22 @@ public final class QueryExecutor {
                         streamResults(wsSession, msg.id(), broker, result, outputProperties,
                                 msg.stream().chunkSize(), timing, startTime, watchDog);
                     } else {
+                        if (watchDog.isTerminating()) {
+                            timing.serialize = System.currentTimeMillis() - serStart;
+                            timing.total = System.currentTimeMillis() - startTime;
+                            sendCancelled(wsSession, msg.id(), 0, timing);
+                            QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id(), user, msg.query(),
+                                    null, 0, timing.total);
+                            return;
+                        }
+                        try {
+                            watchDog.proceed(null);
+                        } catch (final TerminatedException e) {
+                            timing.serialize = System.currentTimeMillis() - serStart;
+                            reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
+                                    watchDog, ErrorInfo.of(e.getMessage()));
+                            return;
+                        }
                         final String serialized = serializeAll(broker, result, outputProperties);
                         timing.serialize = System.currentTimeMillis() - serStart;
                         timing.total = System.currentTimeMillis() - startTime;
