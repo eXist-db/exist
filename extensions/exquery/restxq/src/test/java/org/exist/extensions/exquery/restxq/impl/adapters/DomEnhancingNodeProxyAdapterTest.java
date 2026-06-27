@@ -75,8 +75,8 @@ public class DomEnhancingNodeProxyAdapterTest {
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
-        try (final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
-             final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
              final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
 
             collection.storeDocument(transaction, broker, TEST_DOC_URI, new StringInputSource(TEST_DOC), MimeType.XML_TYPE);
@@ -158,8 +158,8 @@ public class DomEnhancingNodeProxyAdapterTest {
 
     private static void withTestDocument(final ConsumerE<DocumentImpl, AssertionError> fnDocument) throws AssertionError, EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
-        try (final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
-             final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
              final LockedDocument lockedDocument = broker.getXMLResource(TEST_COLLECTION_URI.append(TEST_DOC_URI), Lock.LockMode.READ_LOCK)) {
 
             final DocumentImpl doc = lockedDocument.getDocument();

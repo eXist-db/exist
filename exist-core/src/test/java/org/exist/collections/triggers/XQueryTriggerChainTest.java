@@ -133,8 +133,8 @@ public class XQueryTriggerChainTest {
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-                final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store the trigger modules
             try (final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
@@ -172,8 +172,8 @@ public class XQueryTriggerChainTest {
         final String documentContent = "<id>" + uuid + "</id>";
 
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-             final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store a document into the /db/testXQueryTriggerChain/collection1/input, this should cause the first trigger to fire
             try (final Collection collection = broker.getOrCreateCollection(transaction, COLLECTION_1_INPUT_URI)) {
@@ -186,8 +186,8 @@ public class XQueryTriggerChainTest {
 
         // trigger 1 should have completed by this stage... which will have also caused trigger 2 to fire and complete by this stage... so now check the content of the collections/documents produced by the triggers
 
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-             final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // 1) assert that trigger1 moved the document from its input collection
             try (final Collection collection = broker.getOrCreateCollection(transaction, COLLECTION_1_INPUT_URI)) {
