@@ -29,6 +29,8 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for {@link XQueryWatchDog}.
@@ -101,5 +103,25 @@ public class XQueryWatchDogTest {
         // Should not throw TerminatedException even though startTime is in the past
         watchDog.proceed(null);
         assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
+    }
+
+    @Test
+    public void proceedThrowsTimeoutWhenElapsedExceedsLimit() throws Exception {
+        final Expression expr = EasyMock.createNiceMock(Expression.class);
+        EasyMock.expect(expr.getLine()).andReturn(1).anyTimes();
+        EasyMock.expect(expr.getColumn()).andReturn(1).anyTimes();
+        EasyMock.replay(expr);
+
+        final XQueryWatchDog watchDog = createWatchDog();
+        watchDog.setTimeout(1);
+        final Field startTimeField = XQueryWatchDog.class.getDeclaredField("startTime");
+        startTimeField.trySetAccessible();
+        startTimeField.set(watchDog, System.currentTimeMillis() - 100);
+        try {
+            watchDog.proceed(expr);
+            fail("Expected TerminatedException.TimeoutException");
+        } catch (final TerminatedException.TimeoutException e) {
+            assertTrue(e.getMessage().contains("The query exceeded the predefined timeout and has been killed."));
+        }
     }
 }
