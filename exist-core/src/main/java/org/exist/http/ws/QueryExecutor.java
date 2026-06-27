@@ -45,6 +45,7 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Executes XQuery expressions for the /ws/eval endpoint with support for
@@ -55,6 +56,9 @@ public final class QueryExecutor {
     private static final Logger LOG = LogManager.getLogger(QueryExecutor.class);
 
     private static final long PROGRESS_INTERVAL_MS = 500;
+
+    static final String WALL_CLOCK_TIMEOUT_MESSAGE =
+            "The query exceeded the predefined timeout and has been killed.";
 
     private final BrokerPool pool;
 
@@ -110,6 +114,14 @@ public final class QueryExecutor {
             }
             evalSession.registerQuery(msg.id(), watchDog);
 
+            final AtomicBoolean terminalResponseSent = new AtomicBoolean(false);
+            WallClockQueryTimeout wallClockTimeout = null;
+            if (msg.maxExecutionTime() > 0) {
+                wallClockTimeout = new WallClockQueryTimeout();
+                wallClockTimeout.schedule(msg.maxExecutionTime(), () -> handleWallClockTimeout(
+                        wsSession, evalSession, msg, timing, startTime, watchDog, terminalResponseSent));
+            }
+
             try {
                 // Evaluate phase
                 sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_EVALUATING, 0,
@@ -124,12 +136,13 @@ public final class QueryExecutor {
                 } catch (final TerminatedException e) {
                     timing.evaluate = System.currentTimeMillis() - evalStart;
                     reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
-                            watchDog, ErrorInfo.of(e.getMessage(), e.getLine(), e.getColumn()));
+                            watchDog, ErrorInfo.of(e.getMessage(), e.getLine(), e.getColumn()),
+                            terminalResponseSent);
                     return;
                 } catch (final XPathException e) {
                     timing.evaluate = System.currentTimeMillis() - evalStart;
                     reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
-                            watchDog, ErrorInfo.of(e));
+                            watchDog, ErrorInfo.of(e), terminalResponseSent);
                     return;
                 }
 
@@ -147,14 +160,14 @@ public final class QueryExecutor {
                 try {
                     if (msg.stream().enabled() && itemCount > msg.stream().chunkSize()) {
                         streamResults(wsSession, msg.id(), broker, result, outputProperties,
-                                msg.stream().chunkSize(), timing, startTime, watchDog);
+                                msg.stream().chunkSize(), timing, startTime, watchDog,
+                                terminalResponseSent, evalSession, msg);
                     } else {
                         if (watchDog.isTerminating()) {
                             timing.serialize = System.currentTimeMillis() - serStart;
                             timing.total = System.currentTimeMillis() - startTime;
-                            sendCancelled(wsSession, msg.id(), 0, timing);
-                            QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id(), user, msg.query(),
-                                    null, 0, timing.total);
+                            sendCancelledIfAbsent(wsSession, msg.id(), evalSession, msg, timing,
+                                    0, terminalResponseSent);
                             return;
                         }
                         try {
@@ -162,22 +175,28 @@ public final class QueryExecutor {
                         } catch (final TerminatedException e) {
                             timing.serialize = System.currentTimeMillis() - serStart;
                             reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
-                                    watchDog, ErrorInfo.of(e.getMessage()));
+                                    watchDog, ErrorInfo.of(e.getMessage()), terminalResponseSent);
                             return;
                         }
                         final String serialized = serializeAll(broker, result, outputProperties);
                         timing.serialize = System.currentTimeMillis() - serStart;
                         timing.total = System.currentTimeMillis() - startTime;
 
-                        sendResult(wsSession, msg.id(), 1, serialized, false, timing, itemCount);
+                        if (terminalResponseSent.compareAndSet(false, true)) {
+                            sendResult(wsSession, msg.id(), 1, serialized, false, timing, itemCount);
+                            QueryMonitorBroadcaster.broadcastEvent("completed", msg.id(), user, msg.query(),
+                                    null, itemCount, timing.total);
+                        }
                     }
-                    QueryMonitorBroadcaster.broadcastEvent("completed", msg.id(), user, msg.query(),
-                            null, itemCount, System.currentTimeMillis() - startTime);
                 } catch (final SAXException | XPathException e) {
                     timing.serialize = System.currentTimeMillis() - serStart;
-                    reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()));
+                    reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()),
+                            terminalResponseSent);
                 }
             } finally {
+                if (wallClockTimeout != null) {
+                    wallClockTimeout.cancel();
+                }
                 evalSession.unregisterQuery(msg.id());
                 context.runCleanupTasks();
                 context.reset();  // needed: resetContext=false skipped this in xquery.execute()
@@ -209,6 +228,16 @@ public final class QueryExecutor {
     private void reportError(final Session wsSession, final EvalSession evalSession,
                              final EvalProtocol.ClientMessage msg, final EvalProtocol.Timing timing,
                              final long startTime, final ErrorInfo error) {
+        reportError(wsSession, evalSession, msg, timing, startTime, error, null);
+    }
+
+    private void reportError(final Session wsSession, final EvalSession evalSession,
+                             final EvalProtocol.ClientMessage msg, final EvalProtocol.Timing timing,
+                             final long startTime, final ErrorInfo error,
+                             @Nullable final AtomicBoolean terminalGate) {
+        if (terminalGate != null && !terminalGate.compareAndSet(false, true)) {
+            return;
+        }
         timing.total = System.currentTimeMillis() - startTime;
         if (error.xpe() != null) {
             sendError(wsSession, msg.id(), error.xpe(), timing);
@@ -224,14 +253,48 @@ public final class QueryExecutor {
                                           final EvalProtocol.Timing timing, final long startTime,
                                           final XQueryWatchDog watchDog,
                                           final ErrorInfo error) {
+        reportTerminationOrError(wsSession, evalSession, msg, timing, startTime, watchDog, error, null);
+    }
+
+    private void reportTerminationOrError(final Session wsSession, final EvalSession evalSession,
+                                          final EvalProtocol.ClientMessage msg,
+                                          final EvalProtocol.Timing timing, final long startTime,
+                                          final XQueryWatchDog watchDog,
+                                          final ErrorInfo error,
+                                          @Nullable final AtomicBoolean terminalGate) {
         if (watchDog.isTerminating()) {
             timing.total = System.currentTimeMillis() - startTime;
-            sendCancelled(wsSession, msg.id(), 0, timing);
-            QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id(),
-                    evalSession.getSubject().getName(), msg.query(), null, 0, timing.total);
+            sendCancelledIfAbsent(wsSession, msg.id(), evalSession, msg, timing, 0, terminalGate);
         } else {
-            reportError(wsSession, evalSession, msg, timing, startTime, error);
+            reportError(wsSession, evalSession, msg, timing, startTime, error, terminalGate);
         }
+    }
+
+    private void handleWallClockTimeout(final Session wsSession, final EvalSession evalSession,
+                                        final EvalProtocol.ClientMessage msg,
+                                        final EvalProtocol.Timing timing, final long startTime,
+                                        final XQueryWatchDog watchDog,
+                                        final AtomicBoolean terminalResponseSent) {
+        watchDog.kill(0);
+        if (terminalResponseSent.compareAndSet(false, true)) {
+            timing.total = System.currentTimeMillis() - startTime;
+            sendError(wsSession, msg.id(), null, WALL_CLOCK_TIMEOUT_MESSAGE, 0, 0, timing);
+            QueryMonitorBroadcaster.broadcastEvent("error", msg.id(),
+                    evalSession.getSubject().getName(), msg.query(), null, 0, timing.total);
+        }
+    }
+
+    private void sendCancelledIfAbsent(final Session wsSession, final String queryId,
+                                       final EvalSession evalSession,
+                                       final EvalProtocol.ClientMessage msg,
+                                       final EvalProtocol.Timing timing, final long items,
+                                       @Nullable final AtomicBoolean terminalGate) {
+        if (terminalGate != null && !terminalGate.compareAndSet(false, true)) {
+            return;
+        }
+        sendCancelled(wsSession, queryId, items, timing);
+        QueryMonitorBroadcaster.broadcastEvent("cancelled", queryId,
+                evalSession.getSubject().getName(), msg.query(), null, items, timing.total);
     }
 
     /**
@@ -290,7 +353,10 @@ public final class QueryExecutor {
                                 final DBBroker broker, final Sequence result,
                                 final Properties outputProperties, final int chunkSize,
                                 final EvalProtocol.Timing timing, final long startTime,
-                                final XQueryWatchDog watchDog) {
+                                final XQueryWatchDog watchDog,
+                                final AtomicBoolean terminalResponseSent,
+                                final EvalSession evalSession,
+                                final EvalProtocol.ClientMessage msg) {
         final long serStart = System.currentTimeMillis();
         final long totalItems = result.getItemCount();
         int chunkNum = 0;
@@ -299,10 +365,11 @@ public final class QueryExecutor {
         try {
             final SequenceIterator iter = result.iterate();
             while (iter.hasNext()) {
-                if (watchDog.isTerminating()) {
+                if (watchDog.isTerminating() || terminalResponseSent.get()) {
                     timing.serialize = System.currentTimeMillis() - serStart;
                     timing.total = System.currentTimeMillis() - startTime;
-                    sendCancelled(wsSession, queryId, itemsSent, timing);
+                    sendCancelledIfAbsent(wsSession, queryId, evalSession, msg, timing,
+                            itemsSent, terminalResponseSent);
                     return;
                 }
 
@@ -321,10 +388,15 @@ public final class QueryExecutor {
                 if (!more) {
                     timing.serialize = System.currentTimeMillis() - serStart;
                     timing.total = System.currentTimeMillis() - startTime;
+                    if (terminalResponseSent.compareAndSet(false, true)) {
+                        sendResult(wsSession, queryId, chunkNum, data, false, timing, totalItems);
+                        QueryMonitorBroadcaster.broadcastEvent("completed", queryId,
+                                evalSession.getSubject().getName(), msg.query(),
+                                null, totalItems, timing.total);
+                    }
+                } else {
+                    sendResult(wsSession, queryId, chunkNum, data, true, null, totalItems);
                 }
-
-                sendResult(wsSession, queryId, chunkNum, data, more,
-                        more ? null : timing, totalItems);
 
                 // send progress during streaming
                 if (more && (System.currentTimeMillis() - startTime) % PROGRESS_INTERVAL_MS < 50) {
@@ -335,7 +407,8 @@ public final class QueryExecutor {
         } catch (final XPathException | SAXException e) {
             timing.serialize = System.currentTimeMillis() - serStart;
             timing.total = System.currentTimeMillis() - startTime;
-            sendError(wsSession, queryId, null, e.getMessage(), 0, 0, timing);
+            reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()),
+                    terminalResponseSent);
         }
     }
 
