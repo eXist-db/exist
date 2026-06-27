@@ -1,0 +1,21 @@
+AGENTS.md
+  s_7cdf0e373ff9b9::t_f2ace9c2cf8bf4 101,103
+exist-core/pom.xml
+  s_7cdf0e373ff9b9::t_1c0915eb3e385c 1219-1220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "e6bdf1ca51032689b3cb782588513d05f83f8d46",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
