@@ -1,0 +1,41 @@
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerSetUidTest.java
+  s_7cdf0e373ff9b9::t_aebb0dab02358d 153-154
+  s_7cdf0e373ff9b9::t_9f4b0a3dcd373e 107-108
+  s_7cdf0e373ff9b9::t_4cdc0b99107f43 175-176,207-208
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerSetGidTest.java
+  s_7cdf0e373ff9b9::t_c666fc369447b1 107-108
+  s_7cdf0e373ff9b9::t_ee61b6f67d28af 153-154
+  s_7cdf0e373ff9b9::t_8671004cf1582f 175-176,206-207
+exist-core/src/test/java/org/exist/backup/DeepEmbeddedBackupRestoreTest.java
+  s_7cdf0e373ff9b9::t_ead861e711f54b 126-127
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/DomEnhancingNodeProxyAdapterTest.java
+  s_7cdf0e373ff9b9::t_8fcbc3e8d0283a 161-162
+  s_7cdf0e373ff9b9::t_364dbf6b5452bf 78-79
+extensions/modules/mail/src/test/java/org/exist/xquery/modules/mail/SendEmailIT.java
+  s_7cdf0e373ff9b9::t_9225a004e871ff 131-132
+exist-core/src/test/java/org/exist/xquery/XQueryUpdateTest.java
+  s_7cdf0e373ff9b9::t_747d3dc72bc9a3 484,498
+  s_7cdf0e373ff9b9::t_f96bef5973555d 494
+  s_7cdf0e373ff9b9::t_d0d56a84ffaffa 481
+  s_7cdf0e373ff9b9::t_2b148708afa3d3 503-504
+  s_7cdf0e373ff9b9::t_2bd76d4bf854bd 32,64-65,99,103,107,148,152-153,202,206-207,256,260,264,308,312,316,328,332,336,358,362,366,398,402-403,418,422-423,450,454-455,470,476-480,482,485-486,490-493,499-502,506
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerChainTest.java
+  s_7cdf0e373ff9b9::t_a8c4202132bf95 175-176,189-190
+  s_7cdf0e373ff9b9::t_7e4e760f2d4c3b 136-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "6c30bcb77851b0848adbd4a9bc5917db9108ae0a",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
