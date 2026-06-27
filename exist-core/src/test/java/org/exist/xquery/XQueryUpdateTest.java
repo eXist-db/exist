@@ -515,6 +515,9 @@ public class XQueryUpdateTest {
     }
 
 
+    // Precondition: caller must hold an active DBBroker on the current thread (e.g. via withBroker).
+    // Txn.close() calls pool.getBroker() to remove the transaction; without an active broker on the
+    // thread it may draw a different instance and throw IllegalStateException.
     private void store(DBBroker broker, String docName, String data) throws PermissionDeniedException, EXistException, SAXException, LockException, IOException {
         Collection root;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
