@@ -1,0 +1,34 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/DomEnhancingNodeProxyAdapterTest.java
+  s_7cdf0e373ff9b9::t_364dbf6b5452bf 78-79
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerSetGidTest.java
+  s_7cdf0e373ff9b9::t_8671004cf1582f 175-176,206-207
+  s_7cdf0e373ff9b9::t_ee61b6f67d28af 153-154
+  s_7cdf0e373ff9b9::t_c666fc369447b1 107-108
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerChainTest.java
+  s_7cdf0e373ff9b9::t_a8c4202132bf95 175-176,189-190
+  s_7cdf0e373ff9b9::t_7e4e760f2d4c3b 136-137
+exist-core/src/test/java/org/exist/collections/triggers/XQueryTriggerSetUidTest.java
+  s_7cdf0e373ff9b9::t_4cdc0b99107f43 175-176,207-208
+  s_7cdf0e373ff9b9::t_9f4b0a3dcd373e 107-108
+  s_7cdf0e373ff9b9::t_aebb0dab02358d 153-154
+exist-core/src/test/java/org/exist/backup/DeepEmbeddedBackupRestoreTest.java
+  s_7cdf0e373ff9b9::t_ead861e711f54b 126-127
+extensions/modules/mail/src/test/java/org/exist/xquery/modules/mail/SendEmailIT.java
+  s_7cdf0e373ff9b9::t_9225a004e871ff 131-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "19e717a1d54d03ade91445de41d1d556ba6387ea",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
