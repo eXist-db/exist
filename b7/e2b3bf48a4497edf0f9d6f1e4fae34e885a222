@@ -1,0 +1,20 @@
+exist-core/src/test/java/org/exist/http/ws/EvalWebSocketEndpointTest.java
+  s_df30998873e606::t_09a034e2a3e5a0 82-86
+  s_df30998873e606::t_a51e2cbba04f47 679-681
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "b7e2b3bf48a4497edf0f9d6f1e4fae34e885a222",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
