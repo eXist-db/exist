@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/util/XMLReaderObjectFactory.java
+  s_df30998873e606::t_debe3dbc75b0f5 152
+  s_df30998873e606::t_a6509422c34e9f 105
+  s_df30998873e606::t_73ea5bd8fd6777 42
+  s_df30998873e606::t_3e8cf6116392c1 55-57
+  s_df30998873e606::t_4e8433dd2ba883 143-144
+exist-core/src/main/java/org/exist/backup/FileSystemBackupDescriptor.java
+  s_df30998873e606::t_05b553933151f1 198-201,203-204,211-216
+exist-core/src/main/java/org/exist/backup/DescriptorResourceCounter.java
+  s_df30998873e606::t_d291b73a47c1c3 59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "61f8a542c66f2b31748884f4161c8774704a7c31",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
