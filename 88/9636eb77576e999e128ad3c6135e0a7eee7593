@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/backup/FileSystemBackupDescriptorTest.java
+  s_df30998873e606::t_4b678f2a70667f 1-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "889636eb77576e999e128ad3c6135e0a7eee7593",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
