@@ -102,7 +102,7 @@
                     <argLine>--add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                     <systemPropertyVariables>
                         <exist.home>${project.basedir}/../../exist-core/target/test-classes</exist.home>
-                        <log4j.configurationFile>${project.basedir}/../../exist-core/target/test-classes/log4j2.xml</log4j.configurationFile>
+                        <log4j.configurationFile>${exist.log4j.testConfigurationFile}</log4j.configurationFile>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
