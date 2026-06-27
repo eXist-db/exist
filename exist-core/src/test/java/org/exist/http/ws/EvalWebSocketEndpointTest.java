@@ -475,11 +475,16 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // Start a long-running query
+            // GC-free query: return () produces no objects per iteration, so the JVM
+            // stays out of stop-the-world GC and the query thread calls proceed() on
+            // every iteration — letting the volatile terminate flag be observed within
+            // microseconds of kill().  String-producing variants (string($i)) cause
+            // heavy GC that can stall the query thread for several seconds on CI.
+            // max-execution-time is a safety net only; the cancel should fire first.
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-cancel\"," +
-                    "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                    "\"max-execution-time\":5000}");
+                    "\"query\":\"for $i in 1 to 999999999 return ()\"," +
+                    "\"max-execution-time\":30000}");
 
             // Wait for the server to confirm the query is executing before cancelling.
             // Without this, the cancel may arrive before the watchdog is registered and
@@ -490,10 +495,11 @@ public class EvalWebSocketEndpointTest {
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
 
-            // With terminate declared volatile in XQueryWatchDog, cancellation is
-            // near-instant once proceed() is next called; 5s gives ample headroom.
-            assertTrue("Should receive cancelled/error within 5s",
-                    cancelledLatch.await(5, TimeUnit.SECONDS));
+            // With terminate declared volatile in XQueryWatchDog and no GC pressure
+            // from the query, cancellation is visible at the very next proceed() call
+            // — microseconds after kill(). 10s gives ample CI headroom.
+            assertTrue("Should receive cancelled/error within 10s",
+                    cancelledLatch.await(10, TimeUnit.SECONDS));
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();
