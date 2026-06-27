@@ -1,0 +1,19 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/DomEnhancingNodeProxyAdapterTest.java
+  s_7cdf0e373ff9b9::t_8fcbc3e8d0283a 161-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "baaebc01eaeb4aa2b29bcf9eef8d84bba1ac8a4c",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
