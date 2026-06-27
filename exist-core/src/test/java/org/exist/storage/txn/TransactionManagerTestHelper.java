@@ -69,6 +69,7 @@ public class TransactionManagerTestHelper {
         expect(mockBrokerPool.get(Optional.of(mockSystemSubject))).andReturn(mockBroker).anyTimes();
         expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).anyTimes();
         expect(mockSecurityManager.getSystemSubject()).andReturn(mockSystemSubject).anyTimes();
+        expect(mockBrokerPool.isShuttingDownOrDown()).andReturn(false).anyTimes();
 
         final JournalManager mockJournalManager = createMock(JournalManager.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);

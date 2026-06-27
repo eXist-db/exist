@@ -572,6 +572,11 @@ public class TransactionManager implements BrokerPoolService {
             return;
         }
 
+        if (pool.isShuttingDownOrDown()) {
+            // Pool is gone; system tasks will not run. Not an error.
+            return;
+        }
+
         try (final DBBroker systemBroker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             // no new transactions can begin, commit, or abort whilst processing system tasks
