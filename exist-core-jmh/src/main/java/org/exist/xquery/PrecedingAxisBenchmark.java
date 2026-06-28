@@ -66,10 +66,6 @@ public class PrecedingAxisBenchmark {
     private Collection root;
     private XQueryService xqs;
 
-    /** Default constructor for JMH harness. */
-    public PrecedingAxisBenchmark() {
-    }
-
     /**
      * Boots an embedded eXist server, registers the XML:DB driver, and stores
      * a 50,000-element flat words document used by the benchmark queries.
