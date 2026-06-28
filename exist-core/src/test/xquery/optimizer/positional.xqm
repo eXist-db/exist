@@ -176,7 +176,7 @@ function ot:optimize-simple-following-nested() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-preceding() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return

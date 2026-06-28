@@ -38,6 +38,8 @@ import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -920,7 +922,7 @@ public class LocationStep extends Step {
                         final NodeProxy root = new NodeProxy(this, node);
                         final StreamFilter filter;
                         if (axis == Constants.PRECEDING_AXIS) {
-                            filter = new PrecedingFilter(test, root, next, result, contextId);
+                            filter = new PrecedingFilter(test, root, next, result, contextId, position);
                         } else {
                             filter = new FollowingFilter(test, root, next, result, contextId, position);
                         }
@@ -1447,12 +1449,19 @@ public class LocationStep extends Step {
     private class PrecedingFilter extends AbstractFilterBase {
         final NodeProxy root;
         final NodeProxy referenceNode;
+        // Sliding window of the most recent {@code limit} matches. Non-null only
+        // when limit > 0 (positional predicate {@code [K]} present). The K-th
+        // preceding element in axis order is the (K-th-from-end) match in doc
+        // order, so any match earlier than the K most recent cannot be selected
+        // and may be discarded as new ones are found.
+        final Deque<NodeProxy> window;
 
         PrecedingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId) {
-            super(test, result, contextId, -1);
+                final int contextId, final int limit) {
+            super(test, result, contextId, limit);
             this.root = root;
             this.referenceNode = referenceNode;
+            this.window = limit > 0 ? new ArrayDeque<>(limit) : null;
         }
 
         @Override
@@ -1461,11 +1470,16 @@ public class LocationStep extends Step {
 
             if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
                 // exited the root element, so  stop filtering
-                return currentId.getTreeLevel() != root.getNodeId().getTreeLevel();
+                if (currentId.getTreeLevel() == root.getNodeId().getTreeLevel()) {
+                    flushWindow();
+                    return false;
+                }
+                return true;
             }
 
             final NodeId refId = referenceNode.getNodeId();
             if (currentId.compareTo(refId) >= 0) {
+                flushWindow();
                 return false;
             }
 
@@ -1479,9 +1493,25 @@ public class LocationStep extends Step {
                         proxy.addContextNode(contextId, referenceNode);
                     }
                 }
-                result.add(proxy);
+                if (window != null) {
+                    if (window.size() == limit) {
+                        window.pollFirst();
+                    }
+                    window.addLast(proxy);
+                } else {
+                    result.add(proxy);
+                }
             }
             return true;
+        }
+
+        private void flushWindow() {
+            if (window != null) {
+                for (final NodeProxy proxy : window) {
+                    result.add(proxy);
+                }
+                window.clear();
+            }
         }
     }
 
