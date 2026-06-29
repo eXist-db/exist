@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/xquery/XQueryWatchDog.java
+  s_7cdf0e373ff9b9::t_5f34f094e52674 211-218,220
+  s_7cdf0e373ff9b9::t_19c336037957f2 149-152
+  s_7cdf0e373ff9b9::t_353bc654f5f387 47-59,61,66,69,72,74,79-80
+  s_7cdf0e373ff9b9::t_6443fb8406e091 25-27
+  s_7cdf0e373ff9b9::t_3fc70a23d73713 131,133,137-138,140
+  s_7cdf0e373ff9b9::t_eecdcc79c8e7ce 236
+  s_7cdf0e373ff9b9::t_70555a329cee34 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "c71fb4b79e6e7827d0020825b70ec0a74e3475f9",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
