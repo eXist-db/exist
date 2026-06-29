@@ -76,6 +76,10 @@ public class XQueryWatchDog {
     // guarantee the executing thread may never observe terminate=true (JMM data race).
     private volatile boolean terminate = false;
 
+    // Set alongside terminate when the kill was triggered by a timeout (not a client cancel),
+    // allowing callers to send "error" rather than "cancelled" in the response.
+    private volatile boolean timedOut = false;
+
     // Scheduled future for wall-clock kill; cancelled when the watchdog resets or fires timeout via proceed().
     private volatile ScheduledFuture<?> scheduledKill;
 
@@ -148,7 +152,7 @@ public class XQueryWatchDog {
         timeout = time;
         cancelScheduledKill();
         if (time > 0 && time != Long.MAX_VALUE) {
-            scheduledKill = KILL_SCHEDULER.schedule(() -> kill(0), time, TimeUnit.MILLISECONDS);
+            scheduledKill = KILL_SCHEDULER.schedule(() -> killAsTimeout(0), time, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -176,6 +180,15 @@ public class XQueryWatchDog {
     		if(expr == null)
     			{expr = context.getRootExpression();}
     		cleanUp();
+    		// The scheduler may race ahead and set terminate before proceed() checks elapsed time.
+    		// Re-check elapsed here so that a scheduler-triggered kill emits TimeoutException,
+    		// not the generic "killed by server" message that belongs to explicit client cancels.
+    		if (timeout != Long.MAX_VALUE && System.currentTimeMillis() - startTime > timeout) {
+    		    final NumberFormat nf = NumberFormat.getNumberInstance();
+    		    LOG.warn("Query exceeded predefined timeout ({} ms.): {}", nf.format(System.currentTimeMillis() - startTime), ExpressionDumper.dump(expr));
+    		    throw new TerminatedException.TimeoutException(expr.getLine(), expr.getColumn(),
+    		            "The query exceeded the predefined timeout and has been killed.");
+    		}
     		throw new TerminatedException(expr.getLine(), expr.getColumn(),
     				"The query has been killed by the server.");
     	}
@@ -223,6 +236,17 @@ public class XQueryWatchDog {
     public void kill(long waitTime) {
     	terminate = true;
     }
+
+    /** Kill the query and mark it as timed out (not cancelled by client). */
+    public void killAsTimeout(long waitTime) {
+        timedOut = true;
+        terminate = true;
+    }
+
+    /** True if the query was killed because it exceeded its time limit (not cancelled by client). */
+    public boolean isTimedOut() {
+        return timedOut;
+    }
     
     public XQueryContext getContext() {
     	return context;
@@ -236,6 +260,7 @@ public class XQueryWatchDog {
         cancelScheduledKill();
         startTime = System.currentTimeMillis();
         terminate = false;
+        timedOut = false;
     }
     
     public boolean isTerminating()
