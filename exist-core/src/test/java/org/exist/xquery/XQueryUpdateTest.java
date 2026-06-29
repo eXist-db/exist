@@ -478,10 +478,8 @@ public class XQueryUpdateTest {
         void run(BrokerPool pool, DBBroker broker) throws Exception;
     }
 
-    // Skips the @Test via AssumptionViolatedException; @After must use a plain isShuttingDownOrDown() guard.
     private void withBroker(final BrokerTask task) throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        Assume.assumeFalse("BrokerPool is shutting down", pool.isShuttingDownOrDown());
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             task.run(pool, broker);
         }
