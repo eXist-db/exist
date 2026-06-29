@@ -59,6 +59,8 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.xmldb.api.security.PermissionManagementService;
+import org.xmldb.api.security.UserPrincipalLookupService;
 
 import static com.evolvedbinary.j8fu.Try.Try;
 import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
@@ -403,6 +405,8 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         registry.add(XUpdateQueryService.class, () -> new LocalXUpdateQueryService(user, brokerPool, this));
         registry.add(IndexQueryService.class, () -> new LocalIndexQueryService(user, brokerPool, this));
         registry.add(EXistRestoreService.class, () -> new LocalRestoreService(user, brokerPool, this));
+        registry.add(UserPrincipalLookupService.class, () -> new LocalUserPrincipalLookupService(user, brokerPool, this));
+        registry.add(PermissionManagementService.class, () -> new LocalPermissionManagementService(user, brokerPool, this));
     }
 
     @Override

@@ -28,16 +28,25 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Service;
 import org.xmldb.api.base.ServiceProviderCache;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.xmldb.api.security.PermissionManagementService;
+import org.xmldb.api.security.UserPrincipalLookupService;
 
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.notNull;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 
 public class LocalCollectionTest {
     static Collection testCollection;
@@ -64,28 +73,43 @@ public class LocalCollectionTest {
     }
 
     @Test
+    public void getServices() throws XMLDBException {
+        final List<Class<? extends Service>> expectedServiceTypes = Arrays.asList(CollectionManagementService.class,
+                DatabaseInstanceManager.class, EXistCollectionManagementService.class, EXistRestoreService.class,
+                EXistUserManagementService.class, IndexQueryService.class, UserManagementService.class,
+                XPathQueryService.class, XQueryService.class, XUpdateQueryService.class,
+                LocalXPathQueryService.class, LocalCollectionManagementService.class, LocalUserManagementService.class,
+                LocalDatabaseInstanceManager.class, LocalIndexQueryService.class, LocalXUpdateQueryService.class,
+                LocalUserPrincipalLookupService.class, LocalPermissionManagementService.class);
+        for (Class<? extends Service> expectedServiceType : expectedServiceTypes) {
+            assertThat(testCollection.hasService(expectedServiceType)).isTrue();
+            assertThat(testCollection.getService(expectedServiceType)).isNotNull();
+        }
+    }
+
+    @Test
     public void getChildCollectionCount() throws XMLDBException {
-        assertEquals(0, testCollection.getChildCollectionCount());
+        assertThat(testCollection.getChildCollectionCount()).isZero();
     }
 
     @Test
     public void getPropertyWithDefault() throws XMLDBException {
-        assertEquals("theDefault", testCollection.getProperty("myProperty", "theDefault"));
+        assertThat(testCollection.getProperty("myProperty", "theDefault")).isEqualTo("theDefault");
     }
 
     @Test
     public void hasService(){
-        assertTrue(testCollection.hasService(XPathQueryService.class));
+        assertThat(testCollection.hasService(XPathQueryService.class)).isTrue();
     }
 
     @Test
     public void findService(){
-        assertNotNull(testCollection.findService(XPathQueryService.class).get());
+        assertThat(testCollection.findService(XPathQueryService.class).get()).isNotNull();
     }
 
     @Test
     public void getService() throws XMLDBException {
-        assertNotNull(testCollection.getService(XPathQueryService.class));
+        assertThat(testCollection.getService(XPathQueryService.class)).isNotNull();
     }
 
     @Test
@@ -103,6 +127,8 @@ public class LocalCollectionTest {
         registry.add(eq(XUpdateQueryService.class), notNull());
         registry.add(eq(IndexQueryService.class), notNull());
         registry.add(eq(EXistRestoreService.class), notNull());
+        registry.add(eq(UserPrincipalLookupService.class), notNull());
+        registry.add(eq(PermissionManagementService.class), notNull());
 
         replay(registry);
         localCollection.registerProvders(registry);
@@ -111,29 +137,29 @@ public class LocalCollectionTest {
 
     @Test
     public void listChildCollections() throws XMLDBException {
-        assertTrue(testCollection.listChildCollections().isEmpty());
+        assertThat(testCollection.listChildCollections()).isEmpty();
     }
 
     @Test
     public void getChildCollections() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
-        assertArrayEquals(new Collection[0], localCollection.getChildCollections());
+        assertThat(localCollection.getChildCollections()).isEmpty();
     }
 
     @Test
     public void listResources() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
-        assertTrue(localCollection.listResources().isEmpty());
+        assertThat(localCollection.listResources()).isEmpty();
     }
 
     @Test
     public void getResources() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
-        assertArrayEquals(new org.exist.Resource[0], localCollection.getResources());
+        assertThat(localCollection.getResources()).isEmpty();
     }
 
     @Test
     public void getCreationTime() throws XMLDBException {
-        assertNotNull(testCollection.getCreationTime());
+        assertThat(testCollection.getCreationTime()).isNotNull();
     }
 }
