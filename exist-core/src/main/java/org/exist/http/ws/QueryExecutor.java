@@ -166,8 +166,8 @@ public final class QueryExecutor {
                         if (watchDog.isTerminating()) {
                             timing.serialize = System.currentTimeMillis() - serStart;
                             timing.total = System.currentTimeMillis() - startTime;
-                            sendCancelledIfAbsent(wsSession, msg.id(), evalSession, msg, timing,
-                                    0, terminalResponseSent);
+                            reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
+                                    watchDog, ErrorInfo.of(WALL_CLOCK_TIMEOUT_MESSAGE), terminalResponseSent);
                             return;
                         }
                         try {
@@ -262,7 +262,7 @@ public final class QueryExecutor {
                                           final XQueryWatchDog watchDog,
                                           final ErrorInfo error,
                                           @Nullable final AtomicBoolean terminalGate) {
-        if (watchDog.isTerminating()) {
+        if (watchDog.isTerminating() && !watchDog.isTimedOut()) {
             timing.total = System.currentTimeMillis() - startTime;
             sendCancelledIfAbsent(wsSession, msg.id(), evalSession, msg, timing, 0, terminalGate);
         } else {
@@ -275,7 +275,7 @@ public final class QueryExecutor {
                                         final EvalProtocol.Timing timing, final long startTime,
                                         final XQueryWatchDog watchDog,
                                         final AtomicBoolean terminalResponseSent) {
-        watchDog.kill(0);
+        watchDog.killAsTimeout(0);
         if (terminalResponseSent.compareAndSet(false, true)) {
             timing.total = System.currentTimeMillis() - startTime;
             // Use async remote: this callback runs on the shared scheduler thread and must not block
@@ -375,8 +375,8 @@ public final class QueryExecutor {
                 if (watchDog.isTerminating() || terminalResponseSent.get()) {
                     timing.serialize = System.currentTimeMillis() - serStart;
                     timing.total = System.currentTimeMillis() - startTime;
-                    sendCancelledIfAbsent(wsSession, queryId, evalSession, msg, timing,
-                            itemsSent, terminalResponseSent);
+                    reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
+                            watchDog, ErrorInfo.of(WALL_CLOCK_TIMEOUT_MESSAGE), terminalResponseSent);
                     return;
                 }
 
