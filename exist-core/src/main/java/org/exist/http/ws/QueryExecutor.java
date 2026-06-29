@@ -278,7 +278,14 @@ public final class QueryExecutor {
         watchDog.kill(0);
         if (terminalResponseSent.compareAndSet(false, true)) {
             timing.total = System.currentTimeMillis() - startTime;
-            sendError(wsSession, msg.id(), null, WALL_CLOCK_TIMEOUT_MESSAGE, 0, 0, timing);
+            // Use async remote: this callback runs on the shared scheduler thread and must not block
+            // on client I/O — a stalled connection would otherwise freeze every pending timeout.
+            try {
+                wsSession.getAsyncRemote().sendText(
+                        EvalProtocol.errorMessage(msg.id(), null, WALL_CLOCK_TIMEOUT_MESSAGE, 0, 0, timing));
+            } catch (final IOException e) {
+                LOG.debug("Failed to send wall-clock timeout error: {}", e.getMessage());
+            }
             QueryMonitorBroadcaster.broadcastEvent("error", msg.id(),
                     evalSession.getSubject().getName(), msg.query(), null, 0, timing.total);
         }

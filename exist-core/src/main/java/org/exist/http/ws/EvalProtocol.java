@@ -64,7 +64,6 @@ public final class EvalProtocol {
     public static final String PHASE_COMPILING = "compiling";
     public static final String PHASE_EVALUATING = "evaluating";
     public static final String PHASE_SERIALIZING = "serializing";
-    public static final String PHASE_CANCELLING = "cancelling";
     public static final String PHASE_COMPLETE = "complete";
 
     private EvalProtocol() {

@@ -21,9 +21,9 @@
  */
 package org.exist.http.ws;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,11 +36,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class WallClockQueryTimeout {
 
-    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(r -> {
-        final Thread t = new Thread(r, "exist-ws-eval-wall-clock-timeout");
-        t.setDaemon(true);
-        return t;
-    });
+    private static final ScheduledExecutorService EXECUTOR;
+    static {
+        final ScheduledThreadPoolExecutor ex = new ScheduledThreadPoolExecutor(1, r -> {
+            final Thread t = new Thread(r, "exist-ws-eval-wall-clock-timeout");
+            t.setDaemon(true);
+            return t;
+        });
+        // Remove cancelled futures immediately so they don't retain session/query closures.
+        ex.setRemoveOnCancelPolicy(true);
+        EXECUTOR = ex;
+    }
 
     private final AtomicBoolean triggered = new AtomicBoolean(false);
     private volatile ScheduledFuture<?> future;
