@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/http/ws/WallClockQueryTimeout.java
+  s_7cdf0e373ff9b9::t_8730297cd4e2dc 26
+  s_7cdf0e373ff9b9::t_d80f1ed80afc0c 39-49
+exist-core/src/main/java/org/exist/http/ws/QueryExecutor.java
+  s_7cdf0e373ff9b9::t_4caeed95940621 281-282
+  s_7cdf0e373ff9b9::t_6dc07df0cddff9 283-288
+exist-core/src/main/java/org/exist/http/ws/EvalWebSocketEndpoint.java
+  s_7cdf0e373ff9b9::t_e0f138b3d8474f 265,268-269
+  s_7cdf0e373ff9b9::t_431826ed7cb273 195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "ea6b756c216fa17c64a12a0b03adf42be2fb8adc",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
