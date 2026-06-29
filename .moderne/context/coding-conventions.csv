@@ -131,6 +131,8 @@ imports,Static imports from org.exist.stax,org.exist.stax.ExtendedXMLStreamReade
 imports,Static imports from org.exist.stax.EmbeddedXMLStreamReaderTest,org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*,,project-wide
 imports,Static imports from org.hamcrest.core,org.hamcrest.core.AllOf.allOf,,project-wide
 imports,Static imports from org.exist.contentextraction.xquery,org.exist.contentextraction.xquery.Util.executeQuery,,project-wide
+imports,Static imports from com.github.tomakehurst.wiremock.client,com.github.tomakehurst.wiremock.client.WireMock.*,,project-wide
+imports,Static imports from com.github.tomakehurst.wiremock.core,com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig,,project-wide
 imports,Static imports from org.exist.xquery.modules.vector,org.exist.xquery.modules.vector.VectorModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene,org.exist.xquery.modules.lucene.LuceneModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene.QueryOptions,org.exist.xquery.modules.lucene.QueryOptions.DefaultOperator.OR,,project-wide
