@@ -30,6 +30,7 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.Transaction;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedCollectionLock;
@@ -50,6 +51,9 @@ public class Txn implements Transaction {
     private final List<LockInfo> locksHeld;
     private final List<TxnListener> listeners;
     private State state;
+    // The broker that called addCurrentTransaction for this txn; used by TransactionManager.close()
+    // to call removeCurrentTransaction on the correct broker regardless of try-with-resources order.
+    DBBroker owningBroker;
 
 
     public Txn(TransactionManager tm, long transactionId) {
@@ -66,6 +70,7 @@ public class Txn implements Transaction {
         this.locksHeld = txn.locksHeld;
         this.listeners = txn.listeners;
         this.state = txn.state;
+        this.owningBroker = txn.owningBroker;
     }
 
     public State getState() {

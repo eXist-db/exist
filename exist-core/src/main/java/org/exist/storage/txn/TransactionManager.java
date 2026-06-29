@@ -223,6 +223,7 @@ public class TransactionManager implements BrokerPoolService {
         // TODO(AR) ultimately we should be doing away with DBBroker#addCurrentTransaction
         try(final DBBroker broker = pool.getBroker()) {
             broker.addCurrentTransaction(txn);
+            txn.owningBroker = broker; // capture for use in close() — avoids thread-local re-lookup
         } catch(final EXistException ee) {
             LOG.fatal(ee.getMessage(), ee);
             throw new RuntimeException(ee);
@@ -423,11 +424,19 @@ public class TransactionManager implements BrokerPoolService {
             }
 
             // TODO(AR) ultimately we should be doing away with DBBroker#addCurrentTransaction
-            try(final DBBroker broker = pool.getBroker()) {
-                broker.removeCurrentTransaction(txn instanceof Txn.ReusableTxn rt ? rt.getUnderlyingTransaction() : txn);
-            } catch(final EXistException ee) {
-                LOG.fatal(ee.getMessage(), ee);
-                throw new RuntimeException(ee);
+            // Use the broker captured at beginTransaction time so removeCurrentTransaction reaches
+            // the correct broker regardless of try-with-resources close order.
+            final Txn underlying = txn instanceof Txn.ReusableTxn rt ? rt.getUnderlyingTransaction() : txn;
+            final DBBroker owningBroker = underlying.owningBroker;
+            if (owningBroker != null) {
+                owningBroker.removeCurrentTransaction(underlying);
+            } else {
+                try(final DBBroker broker = pool.getBroker()) {
+                    broker.removeCurrentTransaction(underlying);
+                } catch(final EXistException ee) {
+                    LOG.fatal(ee.getMessage(), ee);
+                    throw new RuntimeException(ee);
+                }
             }
 
         } finally {
