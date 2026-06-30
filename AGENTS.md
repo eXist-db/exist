@@ -98,8 +98,9 @@ docker run -d --name existdb -p 8080:8080 -p 8443:8443 existdb/existdb:local
 
 ### Known build issues
 
-- Full test suite can hang on flaky infrastructure tests (`MoveResourceTest`, `RenameCollectionTest`). Check with `jstack` and kill if stuck >15 min.
+- Full test suite can hang on flaky infrastructure tests (`RenameCollectionTest`). Check with `jstack` and kill if stuck >15 min.
 - `RenameCollectionTest` "Connection refused" failures are pre-existing and unrelated to XQuery changes.
+- `org.exist.xmldb.concurrent.FragmentsTest` and `org.exist.collections.ConcurrencyTest` are excluded from the surefire run (see `exist-core/pom.xml`). `FragmentsTest` hangs during BrokerPool shutdown even locally; `ConcurrencyTest` can deadlock under concurrent collection access.
 
 ## Parser (ANTLR 2)
 

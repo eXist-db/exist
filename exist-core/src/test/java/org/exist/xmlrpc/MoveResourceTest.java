@@ -111,7 +111,7 @@ public class MoveResourceTest {
             for (int i = 0; i < n; i++) {
                 final Future<Boolean> future = cs.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (future == null) {
-                    i--;
+                    fail("testMove timed out after " + TIMEOUT + "ms — possible deadlock in worker threads");
                 } else {
                     final Boolean result = future.get();
                     assertNotNull(result);
@@ -203,7 +203,11 @@ public class MoveResourceTest {
 
     private static class CheckThread implements Callable<Boolean> {
         private static final int HTTP_OK = 200;
-        private static final HttpClient httpClient = AbstractHttpTest.newHttpClient();
+        // Force HTTP/1.1: RST_STREAM is an HTTP/2 frame; using HTTP/1.1 eliminates that failure mode.
+        private static final HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
 
         static void closeConnectionManager() {
             // The JDK HttpClient has no connection manager to close; retained for API compatibility.
@@ -223,7 +227,21 @@ public class MoveResourceTest {
             for (int i = 0; i < iterations; i++) {
                 int lastStatus = -1;
                 for (int r = 0; r <= REST_RETRY_MAX; r++) {
-                    lastStatus = AbstractHttpTest.executeForStatus(httpClient, request);
+                    try {
+                        lastStatus = AbstractHttpTest.executeForStatus(httpClient, request);
+                    } catch (final IOException e) {
+                        if (r == REST_RETRY_MAX) {
+                            throw e;
+                        }
+                        try {
+                            Thread.sleep(REST_RETRY_DELAY_MS);
+                        } catch (final InterruptedException ie) {
+                            // Restore the interrupt flag and surface the original HTTP failure.
+                            Thread.currentThread().interrupt();
+                            throw e;
+                        }
+                        continue;
+                    }
                     if (lastStatus == HTTP_OK) {
                         break;
                     }

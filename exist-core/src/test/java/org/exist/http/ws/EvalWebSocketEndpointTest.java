@@ -68,6 +68,17 @@ public class EvalWebSocketEndpointTest {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
     private static final String TEST_COLLECTION = "/db/ws-eval-test";
+    /** Bounded FLWOR loop for cancel and rapid-cancel tests. */
+    private static final String CANCEL_TEST_QUERY =
+            "for $i in 1 to 10000000 return ()";
+    /** Slower loop for max-execution-time smoke test (wall-clock backstop). */
+    private static final String TIMEOUT_TEST_QUERY =
+            "for $i in 1 to 100000000 return string($i)";
+    private static final long CANCEL_MAX_EXECUTION_MS = 15_000L;
+    private static final long CANCEL_AWAIT_SEC = 20L;
+    /** Wall-clock backstop on the server guarantees a terminal response by this limit. */
+    private static final long TIMEOUT_MAX_EXECUTION_MS = 1_000L;
+    private static final long TIMEOUT_AWAIT_SLACK_MS = 3_000L;
     private static final String TEST_MODULE = """
             module namespace test = 'http://exist-db.org/test';
             declare function test:hello($name as xs:string) as xs:string {
@@ -475,19 +486,21 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // Start a long-running query
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-cancel\"," +
-                    "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                    "\"max-execution-time\":5000}");
+                    "\"query\":\"" + CANCEL_TEST_QUERY + "\"," +
+                    "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
-            // Wait a bit then cancel
-            Thread.sleep(200);
+            // Wait for the server to confirm the query is executing before cancelling.
+            assertTrue("Query should start executing within 10s",
+                    progressLatch.await(10, TimeUnit.SECONDS));
+
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
 
-            assertTrue("Should receive cancelled/error within 30s",
-                    cancelledLatch.await(30, TimeUnit.SECONDS));
+            // Await longer than max-execution-time so the watchdog safety net can fire on slow CI.
+            assertTrue("Should receive cancelled/error within " + CANCEL_AWAIT_SEC + "s",
+                    cancelledLatch.await(CANCEL_AWAIT_SEC, TimeUnit.SECONDS));
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();
@@ -646,14 +659,14 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // Query that should take longer than 2s timeout
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-timeout\"," +
-                    "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                    "\"max-execution-time\":2000}");
+                    "\"query\":\"" + TIMEOUT_TEST_QUERY + "\"," +
+                    "\"max-execution-time\":" + TIMEOUT_MAX_EXECUTION_MS + "}");
 
-            assertTrue("Should receive timeout error within 30s",
-                    errorLatch.await(30, TimeUnit.SECONDS));
+            final long errorWaitMs = TIMEOUT_MAX_EXECUTION_MS + TIMEOUT_AWAIT_SLACK_MS;
+            assertTrue("Should receive timeout response within " + errorWaitMs + "ms",
+                    errorLatch.await(errorWaitMs, TimeUnit.MILLISECONDS));
             assertEquals("q-timeout", errorMsg.get().get("id"));
         } finally {
             session.close();
@@ -1149,16 +1162,16 @@ public class EvalWebSocketEndpointTest {
         // Start a long-running query
         session.getBasicRemote().sendText(
                 "{\"action\":\"eval\",\"id\":\"q-cleanup\"," +
-                "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                "\"max-execution-time\":30000}");
+                "\"query\":\"" + CANCEL_TEST_QUERY + "\"," +
+                "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
         // Wait for evaluating phase, then abruptly close
         assertTrue("Should reach evaluating phase within 5s",
                 progressLatch.await(5, TimeUnit.SECONDS));
         session.close();
 
-        // Give server time to clean up
-        Thread.sleep(500);
+        // Allow session-close cancellation to finish before later tests reuse the broker pool
+        Thread.sleep(2_000);
 
         // The test passes if no resources leak and no exceptions are thrown.
         // ExistWebServer would fail to shut down if brokers were leaked.
@@ -1249,7 +1262,7 @@ public class EvalWebSocketEndpointTest {
             // Send eval and immediately cancel
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-rapid\"," +
-                    "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
+                    "\"query\":\"" + CANCEL_TEST_QUERY + "\"," +
                     "\"max-execution-time\":5000}");
             // Immediate cancel — no sleep
             session.getBasicRemote().sendText(

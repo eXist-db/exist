@@ -128,8 +128,8 @@ public class SendEmailIT {
     @BeforeClass
     public static void setup() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
-        try (final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
-             final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
              try (final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION)) {
                 broker.storeDocument(transaction, XML_DOC1_NAME, new StringInputSource(XML_DOC1_CONTENT), MimeType.XML_TYPE, collection);

@@ -29,6 +29,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -60,10 +61,8 @@ public class XQueryUpdateTest {
     protected final static int ITEMS_TO_APPEND = 500;
 
     @Test
-    public void append() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+    public void append() throws Exception {
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
             String query =
             	"""
@@ -97,17 +96,15 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-        }
+        });
     }
 
     @Test
-    public void appendAttributes() throws EXistException, PermissionDeniedException, XPathException, SAXException, LockException, IOException {
+    public void appendAttributes() throws Exception {
 
         append();
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
             String query =
             	"""
@@ -148,14 +145,12 @@ public class XQueryUpdateTest {
             } finally {
                 broker.returnSerializer(serializer);
             }
-        }
+        });
     }
 
     @Test
-    public void insertBefore() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+    public void insertBefore() throws Exception {
+        withBroker((pool, broker) -> {
             String query =
                     """
                        update insert
@@ -204,14 +199,12 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-        }
+        });
     }
 
     @Test
-    public void insertAfter() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+    public void insertAfter() throws Exception {
+        withBroker((pool, broker) -> {
             String query =
                     """
                        update insert
@@ -260,17 +253,15 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-        }
+        });
     }
 
     @Test
-    public void update() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void update() throws Exception {
 
         append();
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
 
             String query =
@@ -314,16 +305,15 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product/stock/external[. cast as xs:integer eq 1]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-        }
+        });
     }
 
     @Test
-    public void remove() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void remove() throws Exception {
 
         append();
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
 
         	String query =
@@ -335,18 +325,15 @@ public class XQueryUpdateTest {
 
         	seq = xquery.execute(broker, "//product", null);
         	assertEquals(seq.getItemCount(), 0);
-
-        }
+        });
     }
 
     @Test
-    public void rename() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void rename() throws Exception {
 
         append();
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
 
             String query =
@@ -368,18 +355,15 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product/@count", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-
-        }
+        });
     }
 
     @Test
-    public void replace() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void replace() throws Exception {
 
         append();
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
 
             String query =
@@ -411,13 +395,12 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-        }
+        });
     }
 
     @Test
-    public void attrUpdate() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+    public void attrUpdate() throws Exception {
+        withBroker((pool, broker) -> {
             store(broker, "test.xml", UPDATE_XML);
 
             String query =
@@ -432,14 +415,12 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(broker, query, null);
-        }
+        });
     }
 
     @Test
-    public void appendCDATA() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+    public void appendCDATA() throws Exception {
+        withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
             String query =
             	"""
@@ -466,13 +447,12 @@ public class XQueryUpdateTest {
 
             seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-        }
+        });
     }
 
     @Test
-    public void insertAttrib() throws EXistException, PermissionDeniedException, XPathException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+    public void insertAttrib() throws Exception {
+        withBroker((pool, broker) -> {
             String query =
                 "declare namespace xmldb = 'http://exist-db.org/xquery/xmldb'; "+
                 "let $uri := xmldb:store('/db', 'insertAttribDoc.xml', <C/>) "+
@@ -487,25 +467,41 @@ public class XQueryUpdateTest {
 			Sequence result = xquery.execute(broker, query, null);
 
 			assertFalse(result.isEmpty());
-        }
+        });
     }
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
-    public void loadTestData() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
+    @FunctionalInterface
+    private interface BrokerTask {
+        void run(BrokerPool pool, DBBroker broker) throws Exception;
+    }
+
+    private void withBroker(final BrokerTask task) throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            store(broker, "test.xml", TEST_XML);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            task.run(pool, broker);
         }
+    }
+
+    @Before
+    public void loadTestData() throws Exception {
+        withBroker((pool, broker) -> store(broker, "test.xml", TEST_XML));
     }
 
     @After
     public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        if (pool.isShuttingDownOrDown()) {
+            return;
+        }
+        final SecurityManager sm = pool.getSecurityManager();
+        if (sm == null) {
+            return;
+        }
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+        try(final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
@@ -517,6 +513,9 @@ public class XQueryUpdateTest {
     }
 
 
+    // Precondition: caller must hold an active DBBroker on the current thread (e.g. via withBroker).
+    // Txn.close() calls pool.getBroker() to remove the transaction; without an active broker on the
+    // thread it may draw a different instance and throw IllegalStateException.
     private void store(DBBroker broker, String docName, String data) throws PermissionDeniedException, EXistException, SAXException, LockException, IOException {
         Collection root;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

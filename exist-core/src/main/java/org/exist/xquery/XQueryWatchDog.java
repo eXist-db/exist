@@ -22,6 +22,9 @@
 package org.exist.xquery;
 
 import java.text.NumberFormat;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,23 +44,44 @@ import javax.annotation.Nullable;
 public class XQueryWatchDog {
 
     private static final Logger LOG = LogManager.getLogger(XQueryWatchDog.class);
-    
+
+    // Shared scheduler for wall-clock kill backstop. A single daemon thread is sufficient:
+    // kill() is non-blocking and this executor only fires lightweight Runnables.
+    private static final ScheduledThreadPoolExecutor KILL_SCHEDULER;
+    static {
+        KILL_SCHEDULER = new ScheduledThreadPoolExecutor(1, r -> {
+            final Thread t = new Thread(r, "exist-watchdog-kill-scheduler");
+            t.setDaemon(true);
+            return t;
+        });
+        KILL_SCHEDULER.setRemoveOnCancelPolicy(true);
+    }
+
     public static final String CONFIGURATION_ELEMENT_NAME = "watchdog";
-    
+
     public final static String PROPERTY_QUERY_TIMEOUT = "db-connection.watchdog.query-timeout";
     public final static String PROPERTY_OUTPUT_SIZE_LIMIT = "db-connection.watchdog.output-size-limit";
 
     private final XQueryContext context;
-    
+
     @ConfigurationFieldAsAttribute("query-timeout")
     private long timeout = Long.MAX_VALUE;
-    
+
     @ConfigurationFieldAsAttribute("output-size-limit")
     private int maxNodesLimit = Integer.MAX_VALUE;
-    
+
     private long startTime;
-    
-    private boolean terminate = false;
+
+    // volatile: kill() is called from a different thread than proceed(); without visibility
+    // guarantee the executing thread may never observe terminate=true (JMM data race).
+    private volatile boolean terminate = false;
+
+    // Set alongside terminate when the kill was triggered by a timeout (not a client cancel),
+    // allowing callers to send "error" rather than "cancelled" in the response.
+    private volatile boolean timedOut = false;
+
+    // Scheduled future for wall-clock kill; cancelled when the watchdog resets or fires timeout via proceed().
+    private volatile ScheduledFuture<?> scheduledKill;
 
     private String runningThread = null;
 
@@ -108,14 +132,16 @@ public class XQueryWatchDog {
     	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
     		{throw new XPathException((Expression) null, "Option 'timeout' should have exactly one parameter: the timeout value.");}
+		long time;
 		try {
-			timeout = Long.parseLong(contents[0]);
+			time = Long.parseLong(contents[0]);
 		} catch (final NumberFormatException e) {
 			throw new XPathException((Expression) null, "Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
-		if (timeout <= 0) {
-			timeout = Long.MAX_VALUE;
+		if (time <= 0) {
+			time = Long.MAX_VALUE;
 		}
+		setTimeout(time);
 		if (LOG.isDebugEnabled()) {
 			final NumberFormat nf = NumberFormat.getNumberInstance();
             LOG.debug("timeout set from option: {} ms.", nf.format(timeout));
@@ -124,6 +150,10 @@ public class XQueryWatchDog {
 
     public void setTimeout(long time) {
         timeout = time;
+        cancelScheduledKill();
+        if (time > 0 && time != Long.MAX_VALUE) {
+            scheduledKill = KILL_SCHEDULER.schedule(() -> killAsTimeout(0), time, TimeUnit.MILLISECONDS);
+        }
     }
 
     public void setMaxNodes(int maxNodes) {
@@ -150,6 +180,15 @@ public class XQueryWatchDog {
     		if(expr == null)
     			{expr = context.getRootExpression();}
     		cleanUp();
+    		// The scheduler may race ahead and set terminate before proceed() checks elapsed time.
+    		// Re-check elapsed here so that a scheduler-triggered kill emits TimeoutException,
+    		// not the generic "killed by server" message that belongs to explicit client cancels.
+    		if (timeout != Long.MAX_VALUE && System.currentTimeMillis() - startTime > timeout) {
+    		    final NumberFormat nf = NumberFormat.getNumberInstance();
+    		    LOG.warn("Query exceeded predefined timeout ({} ms.): {}", nf.format(System.currentTimeMillis() - startTime), ExpressionDumper.dump(expr));
+    		    throw new TerminatedException.TimeoutException(expr.getLine(), expr.getColumn(),
+    		            "The query exceeded the predefined timeout and has been killed.");
+    		}
     		throw new TerminatedException(expr.getLine(), expr.getColumn(),
     				"The query has been killed by the server.");
     	}
@@ -182,11 +221,31 @@ public class XQueryWatchDog {
         }
     }
     
+    private void cancelScheduledKill() {
+        final ScheduledFuture<?> f = scheduledKill;
+        if (f != null) {
+            f.cancel(false);
+            scheduledKill = null;
+        }
+    }
+
     public void cleanUp() {
+        cancelScheduledKill();
     }
     
     public void kill(long waitTime) {
     	terminate = true;
+    }
+
+    /** Kill the query and mark it as timed out (not cancelled by client). */
+    public void killAsTimeout(long waitTime) {
+        timedOut = true;
+        terminate = true;
+    }
+
+    /** True if the query was killed because it exceeded its time limit (not cancelled by client). */
+    public boolean isTimedOut() {
+        return timedOut;
     }
     
     public XQueryContext getContext() {
@@ -198,8 +257,10 @@ public class XQueryWatchDog {
 	 }
     
     public void reset() {
+        cancelScheduledKill();
         startTime = System.currentTimeMillis();
         terminate = false;
+        timedOut = false;
     }
     
     public boolean isTerminating()

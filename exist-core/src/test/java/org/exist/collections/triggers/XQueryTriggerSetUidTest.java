@@ -104,8 +104,8 @@ public class XQueryTriggerSetUidTest {
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-                final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store the trigger module
             try (final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
@@ -150,8 +150,8 @@ public class XQueryTriggerSetUidTest {
     @Test
     public void triggerSetUid() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-             final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {  // NOTE: "guest" user
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));  // NOTE: "guest" user
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store a document into the "triggered" collection as the guest user, should cause the trigger to fire
             try (final Collection collection = broker.getOrCreateCollection(transaction, TEST_TRIGGER_COLLECTION_URI)) {
@@ -172,8 +172,8 @@ public class XQueryTriggerSetUidTest {
                 "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
                 "doc('" + TEST_OUTPUT_BEFORE_DOC_URI + "')/sm:id/sm:effective/sm:username";
 
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-             final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final String beforeRealUser = withCompiledQuery(broker, new StringSource(queryBeforeRealUser), compiledQuery -> {
                 final Sequence result = executeQuery(broker, compiledQuery);
@@ -204,8 +204,8 @@ public class XQueryTriggerSetUidTest {
                 "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
                 "doc('" + TEST_OUTPUT_AFTER_DOC_URI + "')/sm:id/sm:effective/sm:username";
 
-        try (final Txn transaction = pool.getTransactionManager().beginTransaction();
-             final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final String afterRealUser = withCompiledQuery(broker, new StringSource(queryAfterRealUser), compiledQuery -> {
                 final Sequence result = executeQuery(broker, compiledQuery);

@@ -123,8 +123,8 @@ public class DeepEmbeddedBackupRestoreTest {
         final List<ResourceInfo> documentInfos = new ArrayList<>();
 
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
-        try (final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
-             final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
             try (final Collection baseCollection = broker.getOrCreateCollection(transaction, baseCollectionUri)) {
 
