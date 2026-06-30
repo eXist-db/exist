@@ -53,6 +53,8 @@
         <docker.tag>latest</docker.tag>
         <docker.debug.tag>debug</docker.debug.tag>
         <docker.platforms>linux/amd64, linux/arm64</docker.platforms>
+        <docker.sbom>false</docker.sbom>
+        <docker.provenance>false</docker.provenance>
     </properties>
 
     <dependencies>
@@ -234,6 +236,10 @@
                                     <platforms>
                                         <platform>${docker.platforms}</platform>
                                     </platforms>
+                                    <attestations>
+                                        <provenance>${docker.provenance}</provenance>
+                                        <sbom>${docker.sbom}</sbom>
+                                    </attestations>
                                 </buildx>
                                 <tags>
                                     <tag>${docker.tag}</tag>
@@ -251,6 +257,10 @@
                                     <platforms>
                                         <platform>${docker.platforms}</platform>
                                     </platforms>
+                                    <attestations>
+                                        <provenance>${docker.provenance}</provenance>
+                                        <sbom>${docker.sbom}</sbom>
+                                    </attestations>
                                 </buildx>
                                 <tags>
                                     <tag>${docker.debug.tag}</tag>
