@@ -38,7 +38,7 @@
     <packaging>pom</packaging>
 
     <name>eXist-db Docker Image</name>
-    <description>Minimal Docker Image of eXist-db NoSQL Database Client/Server with FO support</description>
+    <description>Official eXist-db Docker Image</description>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
@@ -50,11 +50,21 @@
     <properties>
         <assemble.dir>${project.build.directory}/exist-docker-${project.version}-docker-dir</assemble.dir>
         <exist.uber.jar.filename>exist.uber.jar</exist.uber.jar.filename>
+
         <docker.tag>latest</docker.tag>
         <docker.debug.tag>debug</docker.debug.tag>
         <docker.platforms>linux/amd64, linux/arm64</docker.platforms>
+        <!-- attestations -->
         <docker.sbom>false</docker.sbom>
         <docker.provenance>false</docker.provenance>
+
+        <!-- container metadata -->
+        <docker.source>https://github.com/exist-db/exist.git</docker.source>
+        <!-- where to find more detailed information regarding this image -->
+        <docker.url>https://www.exist-db.org/exist/apps/doc/docker.xml</docker.url>
+        <docker.vendor>existdb</docker.vendor>
+        <docker.licenses>LGPL-2.1-or-later</docker.licenses>
+        <docker.title>existdb</docker.title>
     </properties>
 
     <dependencies>
@@ -227,8 +237,31 @@
                     <verbose>true</verbose>
                     <pushRegistry>registry.hub.docker.com</pushRegistry>
                     <images>
+                        <!-- test build: single-arch, load, no attestations -->
                         <image>
                             <name>existdb/existdb:%v</name>
+                            <alias>exist-test</alias>
+                            <build>
+                                <buildx>
+                                    <platforms>
+                                        <platform>linux/amd64</platform>
+                                    </platforms>
+                                </buildx>
+                                <tags>
+                                    <tag>${docker.tag}</tag>
+                                </tags>
+                                <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
+                                <contextDir>${assemble.dir}</contextDir>
+                            </build>
+                        </image>
+                        <!-- release/staging build: multi-arch, push, attestations.
+                             The single pushed tag is fully controlled by ${docker.tag}
+                             so CI can push a `-staging` tag and later promote it
+                             (see .github/workflows/ci-container.yml). Do NOT reintroduce
+                             a %v name or a <tags> block here: either would publish an
+                             un-suffixed, untested tag alongside the staging one. -->
+                        <image>
+                            <name>existdb/existdb:${docker.tag}</name>
                             <registry>registry.hub.docker.com</registry>
                             <alias>exist</alias>
                             <build>
@@ -241,15 +274,31 @@
                                         <sbom>${docker.sbom}</sbom>
                                     </attestations>
                                 </buildx>
-                                <tags>
-                                    <tag>${docker.tag}</tag>
-                                </tags>
                                 <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
                                 <contextDir>${assemble.dir}</contextDir>
                             </build>
                         </image>
+                        <!-- test debug build: single-arch, load, no attestations -->
                         <image>
                             <name>existdb/existdb:%v-DEBUG</name>
+                            <alias>exist-test-debug</alias>
+                            <build>
+                                <buildx>
+                                    <platforms>
+                                        <platform>linux/amd64</platform>
+                                    </platforms>
+                                </buildx>
+                                <tags>
+                                    <tag>${docker.debug.tag}</tag>
+                                </tags>
+                                <dockerFile>${project.build.outputDirectory}/Dockerfile-DEBUG</dockerFile>
+                                <contextDir>${assemble.dir}</contextDir>
+                            </build>
+                        </image>
+                        <!-- release/staging DEBUG build: tag controlled by ${docker.debug.tag}
+                             (same staging/promote rationale as the image above). -->
+                        <image>
+                            <name>existdb/existdb:${docker.debug.tag}</name>
                             <registry>registry.hub.docker.com</registry>
                             <alias>exist-debug</alias>
                             <build>
@@ -262,9 +311,6 @@
                                         <sbom>${docker.sbom}</sbom>
                                     </attestations>
                                 </buildx>
-                                <tags>
-                                    <tag>${docker.debug.tag}</tag>
-                                </tags>
                                 <dockerFile>${project.build.outputDirectory}/Dockerfile-DEBUG</dockerFile>
                                 <contextDir>${assemble.dir}</contextDir>
                             </build>
@@ -273,18 +319,20 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>build image</id>
+                        <id>build test image</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
+                        <goals><goal>build</goal></goals>
+                        <configuration>
+                            <filter>exist-test,exist-test-debug</filter>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>push image to registry</id>
+                        <id>build and push release image</id>
                         <phase>deploy</phase>
-                        <goals>
-                            <goal>push</goal>
-                        </goals>
+                        <goals><goal>build</goal><goal>push</goal></goals>
+                        <configuration>
+                            <filter>exist,exist-debug</filter>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

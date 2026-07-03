@@ -12,11 +12,18 @@ on:
       - cron: "0 6 * * *"
   workflow_dispatch:
 
+# Prevent race for two pushes to develop on the shared tag.
+# Build B could overwrite A's staging image between A's push and A's promote.
+# Do not cancel builds in progress and let it finish and publish before the next starts.
+concurrency:
+  group: ci-container-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Test and Publish Container Images
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     # Publish on develop (latest) and eXist-* tags (versioned + release); test on PRs against these branches.
     if: >
       github.ref == 'refs/heads/develop' ||
@@ -37,51 +44,117 @@ jobs:
         uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3  # v4
         with:
           platforms: linux/amd64,linux/arm64
-      - name: Enable containerd image store
-        run: |
-          echo '{ "features": { "containerd-snapshotter": true } }' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
       - name: Verify containerd snapshotter is active
         run: docker info -f '{{.DriverStatus}}'
-      - name: Make buildkit default
+      - name: Make BuildKit default
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5  # v4
-        with:
-          driver: docker
-        id: buildx
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install bats
         run: sudo apt-get install bats
-        # Hack around #5450
-      - name: pull base image
+
+      # Decide, once, whether this run publishes and under which channel.
+      # publish=true only on the upstream repo for develop (latest) and eXist-* tags (release);
+      # every other run (PRs, forks) just builds a local amd64 image and tests it.
+      - name: Determine publish target
+        id: meta
         run: |
-          docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java21-debian13:latest
-      - name: Build images
+          publish=false
+          channel=""
+          version=""
+          if [[ "${{ github.repository }}" == "eXist-db/exist" ]]; then
+            if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              publish=true
+              channel=latest
+            elif [[ "${{ github.ref }}" == refs/tags/eXist-* ]]; then
+              publish=true
+              channel=release
+              version="${{ github.ref_name }}"
+              version="${version#eXist-}"
+            fi
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved: publish=$publish channel=$channel version=$version"
+
+      # Assemble the distribution + Dockerfile context and build the local
+      # single-arch amd64 test image (fabric8 `build test image` execution).
+      - name: Build distribution and local test image
         timeout-minutes: 35
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REVISION_ARG=""
-          if [[ "${{ github.ref }}" == refs/tags/eXist-* ]]; then
-            VERSION="${{ github.ref_name }}"
-            REVISION_ARG="-Drevision=${VERSION#eXist-}"
+          if [[ -n "${{ steps.meta.outputs.version }}" ]]; then
+            REVISION_ARG="-Drevision=${{ steps.meta.outputs.version }}"
           fi
           mvn -V -B --no-transfer-progress \
-            -Ddocker.sbom=true -Ddocker.provenance=true \
             -Pdocker,skip-build-dist-archives \
             -DskipTests -Ddependency-check.skip=true \
             $REVISION_ARG \
             clean package
+
+      # The exact version string used for the immutable version tag at promote time.
+      - name: Resolve project version
+        id: ver
+        run: |
+          v="${{ steps.meta.outputs.version }}"
+          if [[ -z "$v" ]]; then
+            v=$(mvn -q -N -Ddependency-check.skip=true \
+              help:evaluate -Dexpression=project.version -DforceStdout)
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Project version: $v"
+
       - name: Check local images
         run: docker image ls
       - name: Check license headers
         run: mvn --no-transfer-progress license:check
         working-directory: exist-docker
+
+      # --- Non-publish (PR/fork): test the locally-built amd64 image ---
+      - name: Tag local image for tests
+        if: steps.meta.outputs.publish != 'true'
+        run: docker tag existdb/existdb:latest existdb/existdb:ci
+
+      # --- Publish: build & push the multi-arch, attested staging images ---
+      # Pushed as <channel>-staging (+ <channel>-debug-staging) so nothing
+      # un-suffixed reaches Docker Hub until the tests below pass.
+      - name: Build & push staging images
+        if: steps.meta.outputs.publish == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          REVISION_ARG=""
+          if [[ -n "${{ steps.meta.outputs.version }}" ]]; then
+            REVISION_ARG="-Drevision=${{ steps.meta.outputs.version }}"
+          fi
+          mvn --no-transfer-progress -q \
+            -Pdocker \
+            -DskipTests -Ddependency-check.skip=true \
+            $REVISION_ARG \
+            -Ddocker.tag=${{ steps.meta.outputs.channel }}-staging \
+            -Ddocker.debug.tag=${{ steps.meta.outputs.channel }}-debug-staging \
+            -Ddocker.sbom=true -Ddocker.provenance=true \
+            -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD \
+            -Ddocker.filter=exist,exist-debug \
+            docker:build docker:push
+
+      - name: Pull & tag staging image for tests
+        if: steps.meta.outputs.publish == 'true'
+        run: |
+          docker pull --platform linux/amd64 existdb/existdb:${{ steps.meta.outputs.channel }}-staging
+          docker tag existdb/existdb:${{ steps.meta.outputs.channel }}-staging existdb/existdb:ci
+
+      # --- Common: run the bats suite against the amd64 image under test (:ci) ---
       - name: Start exist-ci container
         run: |
-          docker run -dit -p 8080:8080 --name exist-ci --rm existdb/existdb:latest
+          docker run -dit -p 8080:8080 --name exist-ci --rm existdb/existdb:ci
           sleep 35s
       - name: Run tests
         run: bats --tap exist-docker/src/test/bats/*.bats
@@ -103,31 +176,70 @@ jobs:
           name: exist-core-failed-log
           path: exist.log
 
-      - name: Publish latest images
-        if: github.repository == 'eXist-db/exist' && github.ref == 'refs/heads/develop'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: mvn --no-transfer-progress -q -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
-        working-directory: ./exist-docker
+      # --- Publish: arm64 smoke test (bats only exercises amd64) ---
+      # The multi-arch staging manifest is already in the registry; run its
+      # arm64 variant under QEMU and confirm it boots and serves HTTP before we
+      # promote it. Emulated JVM startup is slow, hence the generous poll.
+      - name: Smoke-test arm64 image
+        if: steps.meta.outputs.publish == 'true'
+        timeout-minutes: 20
+        run: |
+          docker rm -f exist-ci-arm64 >/dev/null 2>&1 || true
+          docker run -d --platform linux/arm64 -p 8081:8080 --name exist-ci-arm64 \
+            existdb/existdb:${{ steps.meta.outputs.channel }}-staging
+          echo "Waiting for the emulated arm64 container to serve..."
+          ok=0
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8081/ | grep -q Jetty; then ok=1; break; fi
+            sleep 10
+          done
+          if [[ "$ok" != 1 ]]; then
+            echo "::error::arm64 image failed to become ready"
+            docker logs exist-ci-arm64 || true
+            docker rm -f exist-ci-arm64 || true
+            exit 1
+          fi
+          echo "arm64 image boots and serves HTTP"
+          docker rm -f exist-ci-arm64 || true
 
-      - name: Publish versioned release images
-        if: github.repository == 'eXist-db/exist' && startsWith(github.ref, 'refs/tags/eXist-')
+      # --- Publish: promote the tested staging digest to the public tags ---
+      # imagetools copies the whole OCI index (both architectures + attestation manifests)
+      # server-side, no rebuild. The `-staging`
+      # tag is deliberately left in place as the inspectable "last CI build".
+      - name: Promote staging images to public tags
+        if: steps.meta.outputs.publish == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#eXist-}"
-          mvn --no-transfer-progress -q \
-            -Drevision="$VERSION" \
-            -Ddocker.tag=release \
-            -Ddocker.username=$DOCKER_USERNAME \
-            -Ddocker.password=$DOCKER_PASSWORD \
-            docker:build docker:push
-        working-directory: ./exist-docker
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          CH="${{ steps.meta.outputs.channel }}"
+          V="${{ steps.ver.outputs.version }}"
+          docker buildx imagetools create \
+            -t existdb/existdb:${CH} \
+            -t existdb/existdb:${V} \
+            existdb/existdb:${CH}-staging
+          docker buildx imagetools create \
+            -t existdb/existdb:debug \
+            -t existdb/existdb:${V}-DEBUG \
+            existdb/existdb:${CH}-debug-staging
+
+      # --- Publish: verify the promoted image carries both arches + attestations ---
+      - name: Verify published manifest (arch + attestations)
+        if: steps.meta.outputs.publish == 'true'
+        run: |
+          CH="${{ steps.meta.outputs.channel }}"
+          for ref in "existdb/existdb:${CH}" "existdb/existdb:debug"; do
+            echo "== $ref =="
+            raw=$(docker buildx imagetools inspect "$ref" --raw)
+            archs=$(echo "$raw" | jq -r '.manifests[].platform.architecture' | sort -u | tr '\n' ' ')
+            for a in amd64 arm64; do
+              echo "$archs" | grep -qw "$a" || { echo "::error::$ref is missing arch $a (found: $archs)"; exit 1; }
+            done
+            att=$(echo "$raw" | jq '[.manifests[] | select(.annotations["vnd.docker.reference.type"] == "attestation-manifest")] | length')
+            [[ "$att" -ge 1 ]] || { echo "::error::$ref has no attestation manifests (SBOM/provenance missing)"; exit 1; }
+            echo "OK: arches=[$archs] attestation-manifests=$att"
+          done
 
       # NOTE (DP): This is for debugging, publishes an experimental image from inside PRs against develop
       # - name: Publish experimental images
