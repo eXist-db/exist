@@ -30,7 +30,6 @@ import org.exist.util.FileUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -196,23 +195,26 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         return null;
     }
 
+    /**
+     * Count resources declared in {@link BackupDescriptor#COLLECTION_DESCRIPTOR} files under this
+     * collection's subtree (same approach as {@link ZipArchiveBackupDescriptor}).
+     * {@link org.exist.backup.Restore} uses only the root descriptor's count for the progress total,
+     * so arbitrary subcollections (e.g. /db/apps, /db/foo/stuff) are included without double-counting
+     * the pre-queued /db/system hierarchy.
+     */
     private void countFileEntries(final Path descriptor) {
-
-        // Only count files from top level.
-        if (!descriptor.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)) {
+        final Path collectionDir = descriptor.getParent();
+        if (collectionDir == null) {
             return;
         }
-
         try {
             final DescriptorResourceCounter descriptorResourceCounter = new DescriptorResourceCounter();
-
-            try (final Stream<Path> walk = Files.walk(descriptor.getParent());
-                final Stream<Path> ds = walk
-                        .filter(f -> !Files.isDirectory(f))
-                        .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))) {
-
-                for (final Path d : ds.collect(Collectors.toList())) {
-                    try (final InputStream is = new BufferedInputStream(Files.newInputStream(d))) {
+            try (final Stream<Path> walk = Files.walk(collectionDir)) {
+                for (final Path contentsFile : walk
+                        .filter(p -> !Files.isDirectory(p))
+                        .filter(p -> COLLECTION_DESCRIPTOR.equals(p.getFileName().toString()))
+                        .toList()) {
+                    try (final InputStream is = Files.newInputStream(contentsFile)) {
                         numberOfFiles += descriptorResourceCounter.count(is);
                     }
                 }

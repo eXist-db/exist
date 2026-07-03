@@ -56,6 +56,8 @@ public class DescriptorResourceCounter {
         this.counterHandler = new CounterHandler();
 
         xmlReader.setContentHandler(counterHandler);
+        // Suppress Xerces "[Fatal Error]" stderr noise; fatal errors still propagate via DefaultHandler.
+        xmlReader.setErrorHandler(counterHandler);
     }
 
     public long count(final InputStream descriptorInputStream) throws IOException, SAXException {
