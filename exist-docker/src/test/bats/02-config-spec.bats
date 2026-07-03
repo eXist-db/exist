@@ -14,7 +14,7 @@
 @test "create modified image" {
   run docker create --name ex-mod -p 9090:8080 existdb/existdb:ci
   [ "$status" -eq 0 ]
-  run docker cp ./conf.xml ex-mod:exist/config/conf.xml
+  run docker cp ./conf.xml ex-mod:exist/etc/conf.xml
   [ "$status" -eq 0 ]
   run docker start ex-mod
   [ "$status" -eq 0 ]
