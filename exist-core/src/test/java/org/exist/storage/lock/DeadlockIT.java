@@ -26,9 +26,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,6 +59,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
@@ -90,6 +93,38 @@ public class DeadlockIT {
 
     /** Max time to wait for executor to finish (fail fast instead of hanging CI). */
     private static final int AWAIT_TERMINATION_MINUTES = 5;
+
+    /** Max attempts to find and remove an existing document before failing. */
+    private static final int MAX_REMOVE_ATTEMPTS = 100;
+
+    private final AtomicReference<Throwable> taskFailure = new AtomicReference<>();
+
+    private void recordTaskFailure(final Throwable t) {
+        taskFailure.compareAndSet(null, t);
+    }
+
+    private void rethrowTaskFailure() {
+        final Throwable failure = taskFailure.get();
+        if (failure != null) {
+            if (failure instanceof RuntimeException re) {
+                throw re;
+            }
+            if (failure instanceof Error err) {
+                throw err;
+            }
+            throw new AssertionError(failure.getMessage(), failure);
+        }
+    }
+
+    /** Matches {@link StoreTask} global document numbering. */
+    private static String documentName(final int collectionId, final int indexInCollection) {
+        return "test" + (collectionId * DOC_COUNT + indexInCollection) + ".xml";
+    }
+
+    private static boolean isConcurrentRemoveRace(final XMLDBException e) {
+        return e.errorCode == ErrorCodes.INVALID_RESOURCE
+                || e.errorCode == ErrorCodes.NO_SUCH_RESOURCE;
+    }
 
     /** Use 4 test runs, querying different collections */
     @Parameters(name = "{0}")
@@ -185,8 +220,10 @@ public class DeadlockIT {
 
 	@Test(timeout = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000)
 	public void runTasks() {
+		taskFailure.set(null);
 		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
-        executor.submit(new StoreTask("store", COLL_COUNT, DOC_COUNT));
+        final CountDownLatch storeComplete = new CountDownLatch(1);
+        executor.submit(new StoreTask(COLL_COUNT, DOC_COUNT, storeComplete, taskFailure));
         synchronized (this) {
             try {
                 wait(DELAY);
@@ -200,6 +237,15 @@ public class DeadlockIT {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
         if (mode == TEST_REMOVE) {
+            try {
+                assertTrue("Store task did not finish before document removals started",
+                        storeComplete.await(AWAIT_TERMINATION_MINUTES, TimeUnit.MINUTES));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.error(e.getMessage(), e);
+                fail(e.getMessage());
+            }
+            rethrowTaskFailure();
             for (int i = 0; i < REMOVE_COUNT; i++) {
                 executor.submit(new RemoveDocumentTask(COLL_COUNT, DOC_COUNT));
             }
@@ -217,20 +263,11 @@ public class DeadlockIT {
 			executor.shutdownNow();
 			assertTrue("Executor did not terminate within " + AWAIT_TERMINATION_MINUTES + " minutes; possible deadlock or hang", terminated);
 		}
+		rethrowTaskFailure();
 	}
 
-	private static class StoreTask implements Runnable {
-
-		@SuppressWarnings("unused")
-		private final String id;
-		private final int docCount;
-		private final int collectionCount;
-
-		public StoreTask(final String id, final int collectionCount, final int docCount) {
-			this.id = id;
-			this.collectionCount = collectionCount;
-			this.docCount = docCount;
-		}
+	private record StoreTask(int collectionCount, int docCount, CountDownLatch storeComplete,
+			AtomicReference<Throwable> taskFailure) implements Runnable {
 
 		@Override
 		public void run() {
@@ -240,7 +277,6 @@ public class DeadlockIT {
 
 				final TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;
-				int fileCount = 0;
 				for (int i = 0; i < collectionCount; i++) {
                     try(final Txn transaction = transact.beginTransaction()) {
                         coll = broker.getOrCreateCollection(transaction,
@@ -252,12 +288,12 @@ public class DeadlockIT {
                     }
 
                     final Path[] files = generator.generate(broker, coll, generateXQ);
-                    for (int j = 0; j < files.length; j++, fileCount++) {
+                    for (int j = 0; j < files.length; j++) {
                         try(final Txn transaction = transact.beginTransaction()) {
                             final InputSource is = new InputSource(files[j].toUri()
                                     .toASCIIString());
 
-							broker.storeDocument(transaction, XmldbURI.create("test" + fileCount + ".xml"), is, MimeType.XML_TYPE, coll);
+							broker.storeDocument(transaction, XmldbURI.create(documentName(i, j)), is, MimeType.XML_TYPE, coll);
                             transact.commit(transaction);
                         }
                     }
@@ -265,8 +301,10 @@ public class DeadlockIT {
 				}
 			} catch (Exception e) {
 				LOG.error(e.getMessage(), e);
-//				fail(e.getMessage());
-			}
+				taskFailure.compareAndSet(null, e);
+			} finally {
+                storeComplete.countDown();
+            }
 		}
 	}
 
@@ -331,7 +369,7 @@ public class DeadlockIT {
 				}
 			} catch (Exception e) {
 				LOG.error(e.getMessage(), e);
-				fail(e.getMessage());
+				recordTaskFailure(e);
 			}
 		}
 	}
@@ -348,11 +386,10 @@ public class DeadlockIT {
         @Override
         public void run() {
             boolean removed = false;
-            do {
+            for (int attempt = 0; !removed && attempt < MAX_REMOVE_ATTEMPTS; attempt++) {
                 final int collectionId = random.nextInt(collectionCount);
                 final String collection = "/db/test/" + collectionId;
-                final int docId = random.nextInt(documentCount) * collectionId;
-                final String document = "test" + docId + ".xml";
+                final String document = documentName(collectionId, random.nextInt(documentCount));
                 try {
                     final org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", "");
                     final Resource resource = testCollection.getResource(document);
@@ -361,10 +398,18 @@ public class DeadlockIT {
                         removed = true;
                     }
                 } catch (final XMLDBException e) {
+                    if (isConcurrentRemoveRace(e)) {
+                        continue;
+                    }
 					LOG.error(e.getMessage(), e);
-                    fail(e.getMessage());
+                    recordTaskFailure(e);
+                    return;
                 }
-            } while (!removed);
+            }
+            if (!removed) {
+                recordTaskFailure(new AssertionError(
+                        "Could not remove a document after " + MAX_REMOVE_ATTEMPTS + " attempts"));
+            }
         }
     }
 }
