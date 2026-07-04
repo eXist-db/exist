@@ -57,15 +57,15 @@ class Delivery {
         this.serializationProperties = serializationProperties;
     }
 
-    final Destination createDestination(final Xslt30Transformer xslt30Transformer, final boolean forceCreation) {
+    final Destination createDestination(final Xslt30Transformer xslt30Transformer) {
         switch (format) {
             case DOCUMENT:
-                if (!forceCreation) {
-                    this.builder = context.getDocumentBuilder();
-                } else {
-                    this.builder = new MemTreeBuilder(context);
-                    this.builder.startDocument();
-                }
+                // NOTE: Always build the result into a fresh document builder.
+                // The shared builder of the XQueryContext may already be in use
+                // by an enclosing expression (e.g. an element constructor).
+                // convert() returns the builder's whole document - using the shared builder corrupts both.
+                this.builder = new MemTreeBuilder(context);
+                this.builder.startDocument();
                 return new SAXDestination(new DocumentBuilderReceiver(builder));
             case SERIALIZED:
                 final Serializer serializer = xslt30Transformer.newSerializer();
