@@ -291,7 +291,7 @@ public class PermissionsFunction extends BasicFunction {
                 transaction.commit();
                 
             } catch(final PermissionDeniedException pde) {
-              throw new XPathException(this, ErrorCodes.EXXQDY0007, pde);
+              throw new XPathException(this, ErrorCodes.EXXQDY0009, pde);
             } catch(final TransactionException te) {
               throw new XPathException(this, te);
             }
@@ -304,7 +304,7 @@ public class PermissionsFunction extends BasicFunction {
         try {
             return permissionsToXml(getPermissions(pathUri));
         } catch(final PermissionDeniedException pde) {
-            throw new XPathException(this, ErrorCodes.EXXQDY0007, "Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
+            throw new XPathException(this, ErrorCodes.EXXQDY0009, "Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
         }
     }
 
