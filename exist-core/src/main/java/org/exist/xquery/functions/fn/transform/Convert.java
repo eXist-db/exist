@@ -25,7 +25,6 @@ package org.exist.xquery.functions.fn.transform;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -161,7 +160,8 @@ class Convert {
         private XdmValue ofNode(final Node node) throws XPathException {
             final DocumentBuilder sourceBuilder = newDocumentBuilder();
             try {
-                if (node instanceof DocumentImpl) {
+                if (node instanceof Document) {
+                    // a document node (in-memory or persistent) can be built directly
                     return sourceBuilder.build(new DOMSource(node));
                 } else {
                     //The source must be part of a document
@@ -208,6 +208,9 @@ class Convert {
         }
 
         XdmValue of(final Sequence value) throws XPathException {
+            if (value instanceof NodeProxy) {
+                return ofNode(((NodeProxy) value).getNode());
+            }
             return XdmValue.makeSequence(listOf(value));
         }
 
