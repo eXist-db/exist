@@ -65,9 +65,9 @@ function pec:mode-to-octal-bad-syntax() {
     sm:mode-to-octal("not-a-valid-mode")
 };
 
-(: permission denied -> EXXQDY0007: guest is neither owner nor dba of the locked resource :)
+(: permission denied -> EXXQDY0009: guest is neither owner nor dba of the locked resource :)
 declare
-    %test:assertError("EXXQDY0007")
+    %test:assertError("EXXQDY0009")
 function pec:guest-chmod-denied() {
     system:as-user("guest", "guest", sm:chmod(xs:anyURI($pec:resource), "rwxr-xr-x"))
 };
