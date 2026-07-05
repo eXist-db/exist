@@ -56,8 +56,11 @@ public class URIResolution {
         if (relativeURI.isAbsolute()) {
             return relative;
         }
-        var baseURI = new URI(base.getStringValue() );
-        if (!baseURI.isAbsolute()) {
+        var baseString = base.getStringValue();
+        var baseURI = new URI(baseString);
+        // Treat database paths (starting with "/" or "xmldb:") as absolute for resolution
+        var isAbsoluteBase = baseURI.isAbsolute() || baseString.startsWith("/") || baseString.startsWith("xmldb:");
+        if (!isAbsoluteBase) {
             return relative;
         }
         try {
@@ -123,10 +126,14 @@ public class URIResolution {
         }
         if (document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             if (document instanceof NodeProxy proxy) {
-                return new DOMSource(proxy.getNode());
+                final DOMSource source = new DOMSource(proxy.getNode());
+                source.setSystemId(location);
+                return source;
             }
             else if (document.itemAt(0) instanceof Node node) {
-                return new DOMSource(node);
+                final DOMSource source = new DOMSource(node);
+                source.setSystemId(location);
+                return source;
             }
         }
         throw new XPathException(containingExpression, ErrorCodes.FODC0002,
