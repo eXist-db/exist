@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_e3550e4bdc54ca 1263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c8ba2b93a882a1f783aaa1c8e79e04e877cb1fe8",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
