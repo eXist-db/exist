@@ -255,6 +255,10 @@ public class ParametersExtractor {
             for (int i = 0; i < params.getLength(); i++) {
                 final Element param = ((Element) params.item(i));
 
+                if ("no".equals(param.getAttribute("enabled"))) {
+                    continue;
+                }
+
                 final String name = param.getAttribute("name");
                 final String value = param.getAttribute("value");
 

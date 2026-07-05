@@ -125,6 +125,10 @@
     <!-- Keep only the builtin XQuery modules this fixture's tests actually exercise. -->
     <xsl:template match="builtin-modules/module[not(@uri = $keep-modules)]"/>
 
+    <!-- Strip @enabled from kept modules: canonical marks optional ones enabled="no",
+         but a fixture that keeps a module needs it active. -->
+    <xsl:template match="builtin-modules/module[@uri = $keep-modules]/@enabled"/>
+
     <xsl:template match="builtin-modules">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
@@ -134,6 +138,9 @@
 
     <!-- Keep only the index extension modules this fixture's tests actually exercise. -->
     <xsl:template match="indexer/modules/module[not(@id = $keep-indexes)]"/>
+
+    <!-- Strip @enabled from kept index modules for the same reason as builtin-modules above. -->
+    <xsl:template match="indexer/modules/module[@id = $keep-indexes]/@enabled"/>
 
     <xsl:template match="indexer/modules">
         <xsl:copy>
@@ -146,9 +153,12 @@
         Canonical's RestXq/AutoDeployment startup triggers assume a full webapp deployment, a
         RESTXQ registry, an autodeploy directory, neither present nor wanted in an isolated test
         fixture, so they're dropped by default; restored per-fixture via $extra-triggers if needed.
+        XQueryStartupTrigger is dropped too: it requires /db/system/autostart infrastructure not
+        present in test fixtures. Re-add via $extra-triggers when needed.
     -->
     <xsl:template match="trigger[@class = 'org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger']"/>
     <xsl:template match="trigger[@class = 'org.exist.repo.AutoDeploymentTrigger']"/>
+    <xsl:template match="trigger[@class = 'org.exist.collections.triggers.XQueryStartupTrigger']"/>
 
     <xsl:template match="db-connection/startup/triggers">
         <xsl:copy>

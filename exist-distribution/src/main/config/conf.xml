@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.1.1">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.3.0">
 
     <!-- 
         Configures the database backend.
@@ -252,7 +252,7 @@
                     mode "rwxrwx___" (0770) with mime-type "application/xquery". 
                     The names of the scripts must end with ".xq", ".xqy" or ".xquery".
                 -->
-                <!--<trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>-->
+                <trigger class="org.exist.collections.triggers.XQueryStartupTrigger" enabled="no"/>
                     
             </triggers>
         </startup>
@@ -547,9 +547,7 @@
         <modules>
             <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
                     
-            <!--
-            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/>
-            -->
+            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex" enabled="no"/>
             
             <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
@@ -571,9 +569,7 @@
                  distribution of elements in the database, which can be used 
                  by the query optimizer for additional optimizations. 
             -->
-            <!--
-            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" />
-            -->
+            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" enabled="no"/>
         </modules>
 
         <!--
@@ -954,8 +950,7 @@
                 xmldb:xcollection() should return an empty sequence when an 
                 XML resource can not be retrieved. 
     -->
-    <!-- TODO: add attribute 'enabled="yes/no"' -->
-    <xquery enable-java-binding="no" disable-deprecated-functions="no" 
+    <xquery enable-java-binding="no" disable-deprecated-functions="no"
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="strict"
             raise-error-on-failed-retrieval="no">
@@ -998,22 +993,18 @@
             <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule"/>
             <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule"/>
             <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule"/>
-            <!--
-            <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule"/>
-            -->
-            <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule"/>
-            -->
+            <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule" enabled="no"/>
+            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" enabled="no"/>
 
 
             <!--
                 Extensions
             -->
             <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule"/>
-            <!-- module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
+            <module uri="http://exist-db.org/xquery/exiftool" class="org.exist.exiftool.xquery.ExiftoolModule" enabled="no">
                 <parameter name="perl-path" value="/usr/bin/perl" description="file system path to the perl executable"/>
                 <parameter name="exiftool-path" value="/usr/bin/exiftool" description="file system path to the exiftool perl script"/>
-            </module -->
+            </module>
             <module uri="http://expath.org/ns/http-client" class="org.exist.xquery.modules.httpclient.HttpClientModule"/>
             <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule"/>
             <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
@@ -1053,13 +1044,13 @@
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
             <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
             <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
-            <!-- module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule"/ -->
+            <module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule" enabled="no"/>
             <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"/>
             <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
             <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule"/>
             <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule"/>
             <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
-            <!-- module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule"/ -->
+            <module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule" enabled="no"/>
             <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule"/>
             <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
             <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule"/>

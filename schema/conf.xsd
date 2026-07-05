@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.1.1">
+           version="2.3.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -33,6 +33,13 @@
                 <xs:annotation>
                     <xs:documentation>
                         The value of the parameter
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="description" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Optional human-readable description of the parameter's purpose.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -61,6 +68,13 @@
                                                                 <xs:annotation>
                                                                     <xs:documentation>
                                                                         The full class name of the trigger implementation
+                                                                    </xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                                <xs:annotation>
+                                                                    <xs:documentation>
+                                                                        Set to "no" to disable this trigger without removing it from the configuration.
                                                                     </xs:documentation>
                                                                 </xs:annotation>
                                                             </xs:attribute>
@@ -637,6 +651,13 @@
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
+                                                <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Set to "no" to disable this index module without removing it from the configuration.
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -823,6 +844,13 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+                                    <xs:attribute name="enabled" type="yes_no" default="yes">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Set to "no" to disable this job without removing it from the configuration.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -850,6 +878,13 @@
                                                                 <xs:annotation>
                                                                     <xs:documentation>
                                                                         The value of the feature flag
+                                                                    </xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                                <xs:annotation>
+                                                                    <xs:documentation>
+                                                                        Set to "no" to disable this feature flag without removing it from the configuration.
                                                                     </xs:documentation>
                                                                 </xs:annotation>
                                                             </xs:attribute>
@@ -904,6 +939,13 @@
                                                                 <xs:annotation>
                                                                     <xs:documentation>
                                                                         The value of the feature flag
+                                                                    </xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                                <xs:annotation>
+                                                                    <xs:documentation>
+                                                                        Set to "no" to disable this feature flag without removing it from the configuration.
                                                                     </xs:documentation>
                                                                 </xs:annotation>
                                                             </xs:attribute>
@@ -1211,6 +1253,13 @@
                                                     <xs:annotation>
                                                         <xs:documentation>
                                                             TODO
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Set to "no" to disable this module without removing it from the configuration.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
