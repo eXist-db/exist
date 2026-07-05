@@ -23,6 +23,7 @@ package org.exist.vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 
 import javax.annotation.Nonnull;
@@ -70,7 +71,33 @@ public final class ModelRegistry {
   }
 
   private ModelRegistry() {
-    load();
+  }
+
+  /**
+   * Initialises the registry from the parsed Configuration object.
+   * Called reflectively by VectorStoreServiceImpl.configure() during broker pool startup.
+   * Must be called before any call to getInstance() for the registry to reflect conf.xml entries.
+   *
+   * @param configuration the eXist-db configuration
+   */
+  @SuppressWarnings("unchecked")
+  public static void configure(final Configuration configuration) {
+    final Map<String, String[]> raw =
+        (Map<String, String[]>) configuration.getProperty(Configuration.PROPERTY_VECTOR_MODELS);
+    final ModelRegistry r = new ModelRegistry();
+    if (raw != null) {
+      for (final Map.Entry<String, String[]> e : raw.entrySet()) {
+        final String id = e.getKey();
+        final String[] vals = e.getValue();
+        final String path = vals[0];
+        final int dim = parseDimension(vals.length > 1 ? vals[1] : "", 384);
+        r.entries.put(id, new ModelEntry(path, dim));
+      }
+      if (!r.entries.isEmpty()) {
+        LOG.info("Loaded {} model(s) from <vector-models> configuration", r.entries.size());
+      }
+    }
+    instance = r;
   }
 
   @Nonnull
@@ -80,7 +107,10 @@ public final class ModelRegistry {
       synchronized (ModelRegistry.class) {
         r = instance;
         if (r == null) {
+          // Fallback: no Configuration was provided (e.g. standalone tools, tests).
+          // Parse conf.xml directly as before.
           r = instance = new ModelRegistry();
+          r.load();
         }
       }
     }
