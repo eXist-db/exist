@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.6.0">
+           version="2.7.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -1472,9 +1472,30 @@
                 <xs:element name="vector-models" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>
-                            Global vector embedding model registry. When vector-field or vector:embed
-                            omits model-path, the registry supplies path and dimension. Add models
-                            here to use custom or additional embedding models.
+                            Global vector embedding model registry used by the vector extension
+                            (extensions/vector). Requires the vector extension JAR on the classpath
+                            and the vector XQuery module enabled in &lt;builtin-modules&gt;.
+
+                            This registry maps short model identifiers to their resolved path and
+                            embedding dimension. When a collection.xconf &lt;vector-field&gt; element
+                            or a vector:embed() / vector:embed-batch() call omits the model-path
+                            parameter, the registry resolves path and dimension from the matching
+                            &lt;model id="..."&gt; entry here. If no entry matches, the runtime falls
+                            back to looking for a directory named "onnx-models/{model-id}" under
+                            $EXIST_HOME.
+
+                            Registered models are enumerable at query time via vector:models().
+
+                            Example — register a local ONNX model and an OpenAI API endpoint:
+
+                                &lt;vector-models enabled="yes"&gt;
+                                    &lt;model id="all-MiniLM-L6-v2"
+                                           path="onnx-models/all-MiniLM-L6-v2"
+                                           dimension="384"/&gt;
+                                    &lt;model id="text-embedding-3-small"
+                                           path="https://api.openai.com/v1"
+                                           dimension="1536"/&gt;
+                                &lt;/vector-models&gt;
                         </xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
@@ -1483,22 +1504,69 @@
                                 <xs:complexType>
                                     <xs:attribute name="id" type="xs:string" use="required">
                                         <xs:annotation>
-                                            <xs:documentation>Model identifier (e.g. all-MiniLM-L6-v2)</xs:documentation>
+                                            <xs:documentation>
+                                                Short identifier for this model. Must match the value
+                                                used in collection.xconf &lt;vector-field model="..."&gt;
+                                                and in vector:embed($text, $model-id, ...) calls.
+                                                Typical values: "all-MiniLM-L6-v2", "multilingual-e5-large",
+                                                "text-embedding-3-small".
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                     <xs:attribute name="path" type="xs:string" use="required">
                                         <xs:annotation>
-                                            <xs:documentation>Local path or HuggingFace/API URL</xs:documentation>
+                                            <xs:documentation>
+                                                Location of the embedding model. Three forms are accepted:
+
+                                                1. Relative path — resolved against $EXIST_HOME. The
+                                                   directory must contain model.onnx and tokenizer.json.
+                                                   Example: "onnx-models/all-MiniLM-L6-v2"
+
+                                                2. Absolute path — e.g. "/opt/models/all-MiniLM-L6-v2".
+                                                   Same layout requirements as relative paths.
+
+                                                3. HTTP API base URL — for OpenAI-compatible embedding
+                                                   APIs (OpenAI, Azure OpenAI, local proxies such as
+                                                   Ollama). The runtime appends /embeddings to the base
+                                                   URL and authenticates via the OPENAI_API_KEY
+                                                   environment variable (or the apiKey parameter of
+                                                   vector:embed).
+                                                   Example: "https://api.openai.com/v1"
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                     <xs:attribute name="dimension" type="xs:positiveInteger" use="optional">
                                         <xs:annotation>
-                                            <xs:documentation>Embedding dimension (default 384)</xs:documentation>
+                                            <xs:documentation>
+                                                Number of float32 values in the output embedding vector.
+                                                Must match the actual model output dimension; used to size
+                                                the Lucene KNN field and validate embeddings at index time.
+
+                                                Defaults to 384 when omitted.
+
+                                                Common values:
+                                                  384  — all-MiniLM-L6-v2, paraphrase-MiniLM-L6-v2
+                                                  768  — multilingual-e5-base, BERT-base variants
+                                                  1024 — multilingual-e5-large
+                                                  1536 — text-embedding-3-small (OpenAI)
+                                                  3072 — text-embedding-3-large (OpenAI)
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
+                        <xs:attribute name="enabled" type="yes_no" default="yes">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Set to "no" to disable the vector model registry without removing
+                                    it from the configuration. When disabled, vector-field and vector:embed
+                                    will not resolve model IDs via this registry; calls that rely on
+                                    registry-supplied paths or dimensions will fall back to the
+                                    $EXIST_HOME/onnx-models/{model-id} default location.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>

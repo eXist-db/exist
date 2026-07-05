@@ -234,6 +234,7 @@ import static org.exist.xslt.TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRI
 
 public class Configuration implements ErrorHandler {
     public static final String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    public static final String PROPERTY_VECTOR_MODELS = "vector.models";
     private static final String PRP_DETAILS = "{}: {}";
     private static final Logger LOG = LogManager.getLogger(Configuration.class); //Logger
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
@@ -378,6 +379,8 @@ public class Configuration implements ErrorHandler {
             configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHomePath, element));
             // RPC server
             configureElement(doc, "rpc-server", this::configureRpcServer);
+            // Vector model registry
+            configureElement(doc, "vector-models", this::configureVectorModels);
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
@@ -1361,6 +1364,25 @@ public class Configuration implements ErrorHandler {
             configureProperty(element, "size", ContentFilePool.PROPERTY_POOL_SIZE, Configuration::asInteger, -1);
             configureProperty(element, "max-idle", ContentFilePool.PROPERTY_POOL_MAX_IDLE, Configuration::asInteger, 5);
         });
+    }
+
+    private void configureVectorModels(final Element vectorModels) {
+        if ("no".equalsIgnoreCase(vectorModels.getAttribute("enabled"))) {
+            return;
+        }
+        final org.w3c.dom.NodeList models = vectorModels.getElementsByTagName("model");
+        final Map<String, String[]> entries = new HashMap<>();
+        for (int i = 0; i < models.getLength(); i++) {
+            final Element model = (Element) models.item(i);
+            final String id = model.getAttribute("id");
+            final String path = model.getAttribute("path");
+            final String dimension = model.getAttribute("dimension");
+            if (id.isEmpty() || path.isEmpty()) {
+                continue;
+            }
+            entries.put(id.trim(), new String[]{path.trim(), dimension.trim()});
+        }
+        setProperty(PROPERTY_VECTOR_MODELS, entries);
     }
 
     /**

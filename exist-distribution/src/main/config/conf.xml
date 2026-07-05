@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.6.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.7.0">
 
     <!-- 
         Configures the database backend.
@@ -1112,12 +1112,14 @@
 
     <!--
     Global vector embedding model registry. When vector-field or vector:embed
-    omits model-path, the registry supplies path and dimension. Add models here
-    to use custom or additional embedding models; they appear in vector:models().
+    omits model-path, the registry supplies path and dimension. Add <model>
+    children and set enabled="yes" to register custom or additional models;
+    they appear in vector:models().
+
+    Example:
+        <vector-models enabled="yes">
+            <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
+        </vector-models>
     -->
-    <!--
-    <vector-models>
-        <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
-    </vector-models>
-    -->
+    <vector-models enabled="no"/>
 </exist>
