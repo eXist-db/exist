@@ -4,6 +4,7 @@ exist-core/src/main/java/org/exist/util/Configuration.java
   s_a16a808e4ef4ca::t_878221bfe0abdf 237,382-383,1369-1387
 exist-distribution/src/main/config/conf.xml
   s_a16a808e4ef4ca::t_ee3af2dd86680f 1115-1122,1124
+  s_a16a808e4ef4ca::t_40f888183a349f 61
 extensions/vector/src/main/java/org/exist/vector/ModelRegistry.java
   s_a16a808e4ef4ca::t_4c72a8e337c318 26,74-100,110-111,113
 extensions/vector/src/main/java/org/exist/xquery/modules/vector/VectorModule.java
@@ -12,6 +13,7 @@ extensions/vector/src/main/resources/META-INF/services/org.exist.xquery.ModuleFa
   s_a16a808e4ef4ca::t_b8b6af5aa141ad 1
 schema/conf.xsd
   s_a16a808e4ef4ca::t_c92c3863ce5a11 1475-1498,1507-1513,1518-1535,1540-1553,1559-1569
+  s_a16a808e4ef4ca::t_2263171bb68af1 11
 ---
 {
   "schema_version": "authorship/3.0.0",
