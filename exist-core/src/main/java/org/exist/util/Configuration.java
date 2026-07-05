@@ -51,6 +51,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import org.exist.Indexer;
+import org.exist.indexing.IndexFactory;
 import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
@@ -77,10 +78,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -1228,18 +1231,21 @@ public class Configuration implements ErrorHandler {
         }
         final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
         final List<IndexModuleConfig> modConfigList = new ArrayList<>();
+        final Set<String> configuredIds = new HashSet<>();
+        final Set<String> disabledIds = new HashSet<>();
 
         for (int i = 0; i < module.getLength(); i++) {
             final Element elem = (Element) module.item(i);
+            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
             // enabled="no" disables the index module without removing it from conf.xml
             if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
-                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE));
+                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", id);
+                disabledIds.add(id);
                 continue;
             }
 
             final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
-            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
             if (className.isEmpty()) {
                 throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
@@ -1249,8 +1255,20 @@ public class Configuration implements ErrorHandler {
                 throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
             }
 
+            configuredIds.add(id);
             modConfigList.add(new IndexModuleConfig(id, className, elem));
         }
+
+        // SPI: auto-discover index modules whose id is not explicitly listed in conf.xml
+        for (final IndexFactory factory : ServiceLoader.load(IndexFactory.class, Configuration.class.getClassLoader())) {
+            final String id = factory.getDefaultId();
+            if (configuredIds.contains(id) || disabledIds.contains(id)) {
+                continue;
+            }
+            LOG.debug("SPI-registered index module: {} ({})", id, factory.getIndexClass().getName());
+            modConfigList.add(new IndexModuleConfig(id, factory.getIndexClass().getName(), null));
+        }
+
         setProperty(IndexManager.PROPERTY_INDEXER_MODULES, modConfigList.toArray(new IndexModuleConfig[0]));
     }
 
