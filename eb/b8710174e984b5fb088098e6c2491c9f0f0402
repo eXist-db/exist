@@ -1,0 +1,23 @@
+exist-core/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_be5cb36bd201ae 33-36,39
+exist-core/src/test/resources-filtered/org/exist/xquery/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_d4e8a4b864dfeb 33-36,39
+exist-core/src/test/resources-filtered/org/exist/storage/statistics/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_45c7b236da16d5 33-36,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ebb8710174e984b5fb088098e6c2491c9f0f0402",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
