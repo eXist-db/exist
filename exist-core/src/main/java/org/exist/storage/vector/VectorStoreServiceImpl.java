@@ -55,6 +55,18 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
         if (dataDir == null) {
             throw new BrokerPoolServiceException("Could not determine " + BrokerPool.PROPERTY_DATA_DIR + " from the configuration");
         }
+        configureVectorModelRegistry(configuration);
+    }
+
+    private static void configureVectorModelRegistry(final Configuration configuration) {
+        try {
+            final Class<?> registryClass = Class.forName("org.exist.vector.ModelRegistry");
+            registryClass.getMethod("configure", Configuration.class).invoke(null, configuration);
+        } catch (final ClassNotFoundException e) {
+            LOG.debug("Vector extension not present; vector model registry not configured");
+        } catch (final ReflectiveOperationException e) {
+            LOG.warn("Failed to configure vector model registry: {}", e.getMessage(), e);
+        }
     }
 
     @Override
