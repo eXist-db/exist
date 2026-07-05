@@ -23,7 +23,7 @@ xquery version "3.1";
 
 (:~
  : The sm: permission functions assign distinct error codes so callers can tell a
- : permission failure (EXXQDY0007) from an invalid-argument failure (EXXQDY0008)
+ : permission failure (EXXQDY0009) from an invalid-argument failure (EXXQDY0008)
  : by branching on $err:code rather than matching message text -- e.g. an HTTP API
  : mapping the former to 403 and the latter to 400.
  :)
