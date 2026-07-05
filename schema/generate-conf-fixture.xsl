@@ -159,6 +159,9 @@
     <xsl:template match="trigger[@class = 'org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger']"/>
     <xsl:template match="trigger[@class = 'org.exist.repo.AutoDeploymentTrigger']"/>
     <xsl:template match="trigger[@class = 'org.exist.collections.triggers.XQueryStartupTrigger']"/>
+    <!-- Strip @enabled from surviving triggers: canonical marks live ones enabled="yes",
+         but fixtures need triggers active and the attribute adds noise to diffs. -->
+    <xsl:template match="trigger/@enabled"/>
 
     <xsl:template match="db-connection/startup/triggers">
         <xsl:copy>

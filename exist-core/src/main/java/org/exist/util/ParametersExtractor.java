@@ -255,7 +255,7 @@ public class ParametersExtractor {
             for (int i = 0; i < params.getLength(); i++) {
                 final Element param = ((Element) params.item(i));
 
-                if ("no".equals(param.getAttribute("enabled"))) {
+                if ("no".equalsIgnoreCase(param.getAttribute("enabled"))) {
                     continue;
                 }
 
