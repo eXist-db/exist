@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.5.0">
+           version="2.6.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -17,6 +17,16 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="yes"/>
             <xs:enumeration value="no"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Memory / disk size expressed as a number followed by an optional SI suffix.
+         Accepts: plain bytes (e.g. "65536"), kilobytes ("64K"), megabytes ("48M"),
+         gigabytes ("2G"), terabytes ("1T") — case-insensitive suffix.
+         The special value "-1" is accepted to signal "disabled" or "unlimited". -->
+    <xs:simpleType name="memorySizeType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="-1|[0-9]+[KkMmGgTt]?"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -95,14 +105,14 @@
                             </xs:element>
                             <xs:element name="pool">
                                 <xs:complexType>
-                                    <xs:attribute name="max" type="xs:integer" default="20">
+                                    <xs:attribute name="max" type="xs:positiveInteger" default="20">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Maximum number of connections allowed.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="min" type="xs:integer" default="1">
+                                    <xs:attribute name="min" type="xs:positiveInteger" default="1">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Minimum number of connections to keep alive.
@@ -172,7 +182,7 @@
                                                 it will wait until the current file buffer (32kb)
                                                 is really full. This can speed up eXist on some systems
                                                 where a file sync is an expensive operation (mainly windows
-                                                XP; not necessary on Linux). However, group-comit="yes"
+                                                XP; not necessary on Linux). However, group-commit="yes"
                                                 will increase the risk of an already committed
                                                 operation being rolled back after a database crash.
                                             </xs:documentation>
@@ -187,7 +197,7 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="size" type="xs:string" default="100M">
+                                    <xs:attribute name="size" type="memorySizeType" default="100M">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 This attributes sets the maximum allowed size of the journal
@@ -288,7 +298,7 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="cacheSize" type="xs:string" default="48M">
+                        <xs:attribute name="cacheSize" type="memorySizeType" default="48M">
                             <xs:annotation>
                                 <xs:documentation>
                                     The maximum amount of memory to use for database page buffers.
@@ -324,7 +334,7 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="collectionCache" type="xs:string" default="24M">
+                        <xs:attribute name="collectionCache" type="memorySizeType" default="24M">
                             <xs:annotation>
                                 <xs:documentation>
                                     Maximum amount of memory (in megabytes) to use for collection caches.
@@ -363,7 +373,7 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="minDiskSpace" type="xs:string" default="128M">
+                        <xs:attribute name="minDiskSpace" type="memorySizeType" default="128M">
                             <xs:annotation>
                                 <xs:documentation>
                                     The amount of disk space (in megabytes) which should be available for
@@ -470,7 +480,7 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="trace-stack-depth" type="xs:int" default="0">
+                                    <xs:attribute name="trace-stack-depth" type="xs:nonNegativeInteger" default="0">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 When set above 0, this captures n frames of each threads stack that performs a try/lock/release
@@ -640,14 +650,18 @@
                                                 <xs:attribute name="flushAfter" type="xs:integer" default="300">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            Number of documents to index before the n-gram index
+                                                            is flushed to disk. Higher values improve throughput
+                                                            at the cost of memory during bulk ingest.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="n" type="xs:integer" default="3">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            The n in n-gram: the number of characters per token.
+                                                            Default 3 produces trigrams, which support efficient
+                                                            substring searches via the ngram:contains() function.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
@@ -678,21 +692,25 @@
                                                 <xs:attribute name="path" type="xs:string" use="optional">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            XPath expression to the node to index (e.g. "//book/title").
+                                                            Mutually exclusive with qname.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="qname" type="xs:string" use="optional">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            Qualified name of the element or attribute to index
+                                                            (e.g. "title" or "@id"). Mutually exclusive with path.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
-                                                <xs:attribute name="type" type="xs:anySimpleType">
+                                                <xs:attribute name="type" type="xs:string">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            XQuery/XML Schema type to cast node values to when indexing
+                                                            (e.g. "xs:integer", "xs:dateTime"). Determines the comparison
+                                                            semantics available on this index.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
@@ -826,7 +844,7 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="period" type="xs:string" use="optional">
+                                    <xs:attribute name="period" type="xs:positiveInteger" use="optional">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Can be used to define an explicit period for firing the job instead
@@ -1154,11 +1172,10 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="caching" type="xs:string">
+                        <xs:attribute name="caching" type="yes_no" default="yes">
                             <xs:annotation>
                                 <xs:documentation>
-                                    You can enable or disable xsl caching by this option.
-                                    This option is set to "yes" by default.
+                                    Set to "no" to disable XSL stylesheet caching.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
@@ -1252,21 +1269,27 @@
                                                 <xs:attribute name="class" type="xs:string">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            Fully-qualified class name of the Java module implementation.
+                                                            The class must implement org.exist.xquery.Module.
+                                                            Mutually exclusive with src.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="uri" type="xs:anyURI">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            Namespace URI that this module is bound to
+                                                            (e.g. "http://exist-db.org/xquery/math").
+                                                            Must match the URI declared inside the module source.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="src" type="xs:string">
                                                     <xs:annotation>
                                                         <xs:documentation>
-                                                            TODO
+                                                            Path to an XQuery library module source file.
+                                                            Used instead of class for XQuery-implemented modules.
+                                                            Mutually exclusive with class.
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
@@ -1318,24 +1341,23 @@
                         <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no" default="no">
                             <xs:annotation>
                                 <xs:documentation>
-                                    When set to "strict", eXist will not use a range index unless all
-                                    collections in the context sequence define it. When set to
-                                    "always", the query engine will still use an index, even if only
-                                    one collection has it defined. It thus leaves it to the user to
-                                    properly define indexes and if you forget to specify an index on
-                                    a particular collection, it will be missing in the results.
+                                    Set to "yes" if a call to doc(), xmldb:document(), collection() or
+                                    xmldb:xcollection() should raise an error (FODC0002) when an
+                                    XML resource cannot be retrieved.
+                                    Set to "no" (default) if such a call should return an empty sequence
+                                    when the resource cannot be retrieved.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
                         <xs:attribute name="enforce-index-use" default="strict">
                             <xs:annotation>
                                 <xs:documentation>
-                                    Set to "yes" if a call to doc(), xmldb:document(), collection() or
-                                    xmldb:xcollection() should raise an error (FODC0002) when an
-                                    XML resource can not be retrieved.
-                                    Set to "no" if a call to doc(), xmldb:document(), collection() or
-                                    xmldb:xcollection() should return an empty sequence when an
-                                    XML resource can not be retrieved.
+                                    Controls whether range indexes must be defined on all collections
+                                    in the context sequence before the query engine will use them.
+                                    "strict" — the index is used only if every collection in the context
+                                    defines it; otherwise the engine falls back to a full scan.
+                                    "always" — the engine uses an available index even if only some
+                                    collections define it; results may be incomplete if others lack the index.
                                 </xs:documentation>
                             </xs:annotation>
                             <xs:simpleType>
@@ -1371,7 +1393,9 @@
                         <xs:attribute name="growth-factor" type="xs:integer" default="20">
                             <xs:annotation>
                                 <xs:documentation>
-                                    TODO
+                                    Percentage by which the DOM storage file grows when it needs to
+                                    be expanded to accommodate new data. A value of 20 means the
+                                    file grows by 20% of its current size each time it is extended.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
@@ -1410,7 +1434,7 @@
                                     </xs:documentation>
                                 </xs:annotation>
                                 <xs:complexType>
-                                    <xs:attribute name="in-memory-size" type="xs:integer" default="4196">
+                                    <xs:attribute name="in-memory-size" type="xs:integer" default="4096">
                                      <xs:annotation>
                                          <xs:documentation>
                                              Defines the maximum amount of bytes stored in memory for each content file instance.
@@ -1467,7 +1491,7 @@
                                             <xs:documentation>Local path or HuggingFace/API URL</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="dimension" type="xs:integer" use="optional">
+                                    <xs:attribute name="dimension" type="xs:positiveInteger" use="optional">
                                         <xs:annotation>
                                             <xs:documentation>Embedding dimension (default 384)</xs:documentation>
                                         </xs:annotation>
