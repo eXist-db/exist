@@ -1,0 +1,19 @@
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_a16a808e4ef4ca::t_e548e9c674b2d6 30,32,46,127-133,152-160,162-166,183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1ac959e26f4b6c0f07424efb0d4227df338e01b4",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
