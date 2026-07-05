@@ -169,7 +169,12 @@ class Options {
             stylesheetBaseUri = xsltSource._1;
         }
         if (!StringUtils.isEmpty(stylesheetBaseUri)) {
-            resolvedStylesheetBaseURI = Optional.of(resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI()));
+            // Only resolve if it's not already absolute (database URIs start with "/" or "xmldb:")
+            if (stylesheetBaseUri.startsWith("/") || stylesheetBaseUri.startsWith("xmldb:") || stylesheetBaseUri.startsWith("exist://")) {
+                resolvedStylesheetBaseURI = Optional.of(new AnyURIValue(stylesheetBaseUri));
+            } else {
+                resolvedStylesheetBaseURI = Optional.of(resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI()));
+            }
         } else {
             resolvedStylesheetBaseURI = Optional.empty();
         }
