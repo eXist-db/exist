@@ -194,4 +194,9 @@ public class CacheModule extends AbstractInternalModule {
     Optional<CacheConfig> getLazyCacheConfig() {
         return lazyCacheConfig;
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return CacheModule.class; }
+    }
 }
