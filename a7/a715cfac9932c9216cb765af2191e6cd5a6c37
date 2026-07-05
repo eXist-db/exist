@@ -1,0 +1,171 @@
+exist-core/src/main/java/org/exist/backup/xquery/BackupModule.java
+  s_a16a808e4ef4ca::t_a7cc142e4f7240 78-81
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_94bdc6f4642edb 39,83,578-589,608,611
+exist-core/src/main/java/org/exist/xquery/ModuleFactory.java
+  s_a16a808e4ef4ca::t_16db9668a49e5e 1-60
+exist-core/src/main/java/org/exist/xquery/functions/array/ArrayModule.java
+  s_a16a808e4ef4ca::t_2a9239d340b4f6 97-101
+exist-core/src/main/java/org/exist/xquery/functions/inspect/InspectionModule.java
+  s_a16a808e4ef4ca::t_487074f6506b47 89-93
+exist-core/src/main/java/org/exist/xquery/functions/map/MapModule.java
+  s_a16a808e4ef4ca::t_934e628b041d22 84-88
+exist-core/src/main/java/org/exist/xquery/functions/math/MathModule.java
+  s_a16a808e4ef4ca::t_e73fa13c4df248 82-86
+exist-core/src/main/java/org/exist/xquery/functions/request/RequestModule.java
+  s_a16a808e4ef4ca::t_67c4c0ea2c4063 105-109
+exist-core/src/main/java/org/exist/xquery/functions/response/ResponseModule.java
+  s_a16a808e4ef4ca::t_b34a237d1bde5e 85-89
+exist-core/src/main/java/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java
+  s_a16a808e4ef4ca::t_f7b4057ac575d5 143-147
+exist-core/src/main/java/org/exist/xquery/functions/session/SessionModule.java
+  s_a16a808e4ef4ca::t_5dc90fbf6473fd 89-93
+exist-core/src/main/java/org/exist/xquery/functions/system/SystemModule.java
+  s_a16a808e4ef4ca::t_9bebb7e324f831 119-123
+exist-core/src/main/java/org/exist/xquery/functions/transform/TransformModule.java
+  s_a16a808e4ef4ca::t_369b77895ebf79 79-82
+exist-core/src/main/java/org/exist/xquery/functions/util/UtilModule.java
+  s_a16a808e4ef4ca::t_936c9d804e32c5 222-226
+exist-core/src/main/java/org/exist/xquery/functions/validation/ValidationModule.java
+  s_a16a808e4ef4ca::t_81681c5010d557 113-117
+exist-core/src/main/java/org/exist/xquery/functions/websocket/ConsoleCompatModule.java
+  s_a16a808e4ef4ca::t_ba24ca792a1917 74-78
+exist-core/src/main/java/org/exist/xquery/functions/websocket/WebSocketModule.java
+  s_a16a808e4ef4ca::t_93f97a7418428e 114-118
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBModule.java
+  s_a16a808e4ef4ca::t_9d26e800bdfb6b 156-160
+exist-core/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_d9275b4a3047a4 1-16
+exist-core/src/test/resources-filtered/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_b5c12f1f8f9dea 33-36,39
+exist-core/src/test/resources-filtered/org/exist/storage/statistics/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_35af213127535e 33-36,39
+exist-core/src/test/resources-filtered/org/exist/xquery/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_8d65c03a0f195c 33-36,39
+exist-core/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl
+  s_a16a808e4ef4ca::t_4589fd47be73e1 33-36,39
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_54a22eacdde989 961,975-976,983
+extensions/contentextraction/src/main/java/org/exist/contentextraction/xquery/ContentExtractionModule.java
+  s_a16a808e4ef4ca::t_f16e4d812f193f 77-81
+extensions/contentextraction/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_7616f5fb70a79c 1
+extensions/expath/src/main/java/org/expath/exist/ZipModule.java
+  s_a16a808e4ef4ca::t_8ca69963b4241e 75-79
+extensions/expath/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_009a4e0563b608 1
+extensions/exquery/modules/request/src/main/java/org/exist/extensions/exquery/modules/request/RequestModule.java
+  s_a16a808e4ef4ca::t_72dd93983bd988 99-103
+extensions/exquery/modules/request/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_b19ccee76ea3c5 1
+extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/xquery/RestXqModule.java
+  s_a16a808e4ef4ca::t_302d9ea1a88aa1 74-78
+extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/xquery/exist/ExistRestXqModule.java
+  s_a16a808e4ef4ca::t_3a02b2e07dc318 79-83
+extensions/exquery/restxq/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_883b4b8b36f5a5 1-2
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_a16a808e4ef4ca::t_2423120ad8e49d 125-130
+extensions/indexes/lucene/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_85bad5ea6738e7 1
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/NGramModule.java
+  s_a16a808e4ef4ca::t_c2ccd21bbc4709 76-80
+extensions/indexes/ngram/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_45df597637cf9d 1
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/RangeIndexModule.java
+  s_a16a808e4ef4ca::t_7d4a4f72082ad0 116-120
+extensions/indexes/range/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_4fd025a91c0519 1
+extensions/indexes/sort/src/main/java/org/exist/xquery/modules/sort/SortModule.java
+  s_a16a808e4ef4ca::t_e2f98e6ab92694 70-74
+extensions/indexes/sort/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_40dcf4a4d48b9a 1
+extensions/modules/cache/src/main/java/org/exist/xquery/modules/cache/CacheModule.java
+  s_a16a808e4ef4ca::t_258dd449c59e3f 197-201
+extensions/modules/cache/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_bf6d155a1ac4f8 1
+extensions/modules/compression/src/main/java/org/exist/xquery/modules/compression/CompressionModule.java
+  s_a16a808e4ef4ca::t_9389eef3431a6b 132-136
+extensions/modules/compression/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_3d856cae689e79 1
+extensions/modules/counter/src/main/java/org/exist/xquery/modules/counter/CounterModule.java
+  s_a16a808e4ef4ca::t_6ce68bb1c68e42 95-99
+extensions/modules/counter/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_aa8d8ce2f3ccf6 1
+extensions/modules/cqlparser/src/main/java/org/exist/xquery/modules/cqlparser/CQLParserModule.java
+  s_a16a808e4ef4ca::t_8c473a8a81afda 73-76
+extensions/modules/cqlparser/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_83670ca15d2503 1
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ExpathPackageModule.java
+  s_a16a808e4ef4ca::t_8cd0be40312fef 88-92
+extensions/modules/expathrepo/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_be6492923d8fc2 1
+extensions/modules/file/src/main/java/org/exist/xquery/modules/file/FileModule.java
+  s_a16a808e4ef4ca::t_cbf573361c46b5 100-104
+extensions/modules/file/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_4b26b6a3dd00b9 1
+extensions/modules/http-client/src/main/java/org/exist/xquery/modules/httpclient/HttpClientModule.java
+  s_a16a808e4ef4ca::t_65c2c88ec5322f 116-120
+extensions/modules/http-client/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_89a3a5582c48fa 1
+extensions/modules/image/src/main/java/org/exist/xquery/modules/image/ImageModule.java
+  s_a16a808e4ef4ca::t_e2356fecd36650 254-258
+extensions/modules/image/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_eb1cd25411dbc4 1
+extensions/modules/jndi/src/main/java/org/exist/xquery/modules/jndi/JNDIModule.java
+  s_a16a808e4ef4ca::t_c1c29062ccba11 307-311
+extensions/modules/jndi/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_72d40bf41be68d 1
+extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/MailModule.java
+  s_a16a808e4ef4ca::t_d1f641e3743133 398-402
+extensions/modules/mail/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_0d6d2ab0424d63 1
+extensions/modules/persistentlogin/src/main/java/org/exist/xquery/modules/persistentlogin/PersistentLoginModule.java
+  s_a16a808e4ef4ca::t_aab012fc479374 75-79
+extensions/modules/persistentlogin/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_26733ca9df708c 1
+extensions/modules/process/src/main/java/org/exist/xquery/modules/process/ProcessModule.java
+  s_a16a808e4ef4ca::t_9daa140bbea29d 63-67
+extensions/modules/process/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_694509918e5dfb 1
+extensions/modules/scheduler/src/main/java/org/exist/xquery/modules/scheduler/SchedulerModule.java
+  s_a16a808e4ef4ca::t_38764f47d4e9e5 94-97
+extensions/modules/scheduler/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_17e24eaad041b6 1
+extensions/modules/simpleql/src/main/java/org/exist/xquery/modules/simpleql/SimpleQLModule.java
+  s_a16a808e4ef4ca::t_5096803bb9e8e5 70-73
+extensions/modules/simpleql/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_58751285baadee 1
+extensions/modules/sql/src/main/java/org/exist/xquery/modules/sql/SQLModule.java
+  s_a16a808e4ef4ca::t_8077f8cd54a2e0 291-295
+extensions/modules/sql/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_342212c748674c 1
+extensions/modules/xmldiff/src/main/java/org/exist/xquery/modules/xmldiff/XmlDiffModule.java
+  s_a16a808e4ef4ca::t_3c001431f0e883 100-104
+extensions/modules/xmldiff/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_55182092379036 1
+extensions/modules/xslfo/src/main/java/org/exist/xquery/modules/xslfo/XSLFOModule.java
+  s_a16a808e4ef4ca::t_1614ea376a3626 105-109
+extensions/modules/xslfo/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_ac234536f38c30 1
+extensions/xqdoc/src/main/java/org/exist/xqdoc/xquery/XQDocModule.java
+  s_a16a808e4ef4ca::t_d03816e082752b 65-69
+extensions/xqdoc/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_02ae9cd02aac22 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a7a715cfac9932c9216cb765af2191e6cd5a6c37",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
