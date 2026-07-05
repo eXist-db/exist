@@ -554,7 +554,14 @@ class Options {
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             if (document instanceof NodeProxy) {
                 // the actual location of the document within the database
-                final String actualLocation = ((NodeProxy) document).getOwnerDocument().getURI().toString();
+                String actualLocation = null;
+                final org.w3c.dom.Document ownerDoc = ((NodeProxy) document).getOwnerDocument();
+                if (ownerDoc != null && ownerDoc.getURI() != null) {
+                    actualLocation = ownerDoc.getURI().toString();
+                }
+                if (actualLocation == null) {
+                    actualLocation = location;
+                }
                 final DOMSource source = new DOMSource(((NodeProxy) document).getNode());
                 source.setSystemId(actualLocation);
                 return Tuple(actualLocation, source);
