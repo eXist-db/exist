@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/util/ParametersExtractor.java
+  s_a16a808e4ef4ca::t_c3a9b05b14f3a2 258-261
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_385833846c41d2 61
+schema/conf.xsd
+  s_a16a808e4ef4ca::t_ab6f01e11de21d 884-890
+  s_a16a808e4ef4ca::t_a58d8a1616d815 11
+  s_a16a808e4ef4ca::t_db8124f334d702 945-951
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e8b15d62069d8d42eb6a3fa85748cd6a223fe62b",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
