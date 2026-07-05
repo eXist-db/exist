@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.3.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.5.0">
 
     <!-- 
         Configures the database backend.
@@ -199,12 +199,12 @@
                 <!--
                     Trigger for registering the GNU Crypto JCE Provider with Java
                 -->
-                <trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
+                <trigger enabled="yes" class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
 
                 <!--
                     Trigger for registering eXists XML:DB URL handler with Java
                 -->
-                <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
+                <trigger enabled="yes" class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
                     <!-- Keeps stream data on disk (temporary files are used for XML documents) -->
                     <parameter name="mode" value="disk"/>
 
@@ -212,12 +212,12 @@
                     <parameter name="mode" value="memory"/>
                 </trigger>
 
-                <!-- 
-                    EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
+                <!--
+                    EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time
                 -->
-                <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-                
-                <!-- 
+                <trigger enabled="yes" class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+
+                <!--
                     AutoDeploymentTrigger will install any .xar application package it finds
                     in the autodeploy directory unless the application has already been installed
                     in the db.
@@ -233,8 +233,8 @@
 
                         * dir
                             An absolute path to the directory which contains the XARs to autodeploy.
-                -->   
-                <trigger class="org.exist.repo.AutoDeploymentTrigger">
+                -->
+                <trigger enabled="yes" class="org.exist.repo.AutoDeploymentTrigger">
 
                     <!-- parameter name="ignore-autodeploy-system-property" value="true"/ -->
 
@@ -662,8 +662,7 @@
                 backup  Set to "yes" to create a backup whenever the job runs, not just
                         when it detects errors.
         -->
-        <!--
-        <job type="system" name="check1" 
+        <job type="system" enabled="no" name="check1"
             class="org.exist.storage.ConsistencyCheckTask"
             cron-trigger="0 0 * * * ?">
             <parameter name="output" value="export"/>
@@ -672,21 +671,17 @@
             <parameter name="incremental-check" value="no"/>
             <parameter name="max" value="2"/>
         </job>
-        -->
-        
-        <!-- 
-            Automatically creates a copy of the database .dbx files every 2 minutes
-            
-            Parameters:
-            output-dir:
-                The directory into which the copy will be written
-        -->
+
         <!--
-        <job type="system" name="databackup" 
-            class="org.exist.storage.DataBackup" period="120000">
-            <parameter name="output-dir" value="backup" />
-        </job>
+            Automatically creates a copy of the database .dbx files every 2 minutes.
+
+            Parameters:
+                output-dir  The directory into which the copy will be written.
         -->
+        <job type="system" enabled="no" name="databackup"
+            class="org.exist.storage.DataBackup" period="120000">
+            <parameter name="output-dir" value="backup"/>
+        </job>
         
     </scheduler>
 

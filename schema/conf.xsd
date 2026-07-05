@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.3.0">
+           version="2.5.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -40,6 +40,13 @@
                 <xs:annotation>
                     <xs:documentation>
                         Optional human-readable description of the parameter's purpose.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="enabled" type="yes_no" default="yes">
+                <xs:annotation>
+                    <xs:documentation>
+                        Set to "no" to disable this parameter without removing it from the configuration.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -915,6 +922,13 @@
                                                                 <xs:annotation>
                                                                     <xs:documentation>
                                                                         The value of the property
+                                                                    </xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="enabled" type="yes_no" default="yes">
+                                                                <xs:annotation>
+                                                                    <xs:documentation>
+                                                                        Set to "no" to disable this property without removing it from the configuration.
                                                                     </xs:documentation>
                                                                 </xs:annotation>
                                                             </xs:attribute>
