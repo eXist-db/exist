@@ -124,10 +124,7 @@ public class IndexManager implements BrokerPoolService {
             // check if a structural index was configured. If not, create one based on default settings.
             AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
             if (structural == null) {
-                structural = initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
-                if (structural != null) {
-                    structural.setName(StructuralIndex.STRUCTURAL_INDEX_ID);
-                }
+                initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
@@ -145,6 +142,9 @@ public class IndexManager implements BrokerPoolService {
             }
             final AbstractIndex index = (AbstractIndex) clazz.newInstance();
             index.configure(pool, dataDir, config);
+            if (index.getIndexName() == null) {
+                index.setName(id);
+            }
             index.open();
             indexers.put(id, index);
             if (LOG.isInfoEnabled()) {
