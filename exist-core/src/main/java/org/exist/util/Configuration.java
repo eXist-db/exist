@@ -36,6 +36,7 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
 import org.exist.util.io.ContentFilePool;
 import org.exist.xquery.Expression;
+import org.exist.xquery.ModuleFactory;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
@@ -79,6 +80,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -573,6 +575,18 @@ public class Configuration implements ErrorHandler {
         // add the standard function module
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
+        // SPI-discovered modules: any JAR on the classpath that provides a ModuleFactory
+        // implementation in META-INF/services/org.exist.xquery.ModuleFactory is auto-registered.
+        // conf.xml entries processed below can override or suppress these entries.
+        ServiceLoader.load(ModuleFactory.class, Configuration.class.getClassLoader())
+                .forEach(factory -> {
+                    final String uri = factory.getNamespaceURI();
+                    if (!modulesClassMap.containsKey(uri)) {
+                        modulesClassMap.put(uri, factory.getModuleClass());
+                        LOG.debug("Auto-registered module '{}' via ModuleFactory SPI", uri);
+                    }
+                });
+
         // add other modules specified in configuration
         configureElement(xquery, XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME, builtIn -> {
 
@@ -591,9 +605,10 @@ public class Configuration implements ErrorHandler {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
-                // enabled="no" disables the module without removing it from conf.xml
+                // enabled="no" disables the module; also suppresses any SPI-discovered entry
                 if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
                     LOG.debug("Module '{}' is disabled via enabled=\"no\", skipping", uri);
+                    modulesClassMap.remove(uri);
                     continue;
                 }
 
