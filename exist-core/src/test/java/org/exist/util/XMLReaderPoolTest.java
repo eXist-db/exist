@@ -348,7 +348,7 @@ public class XMLReaderPoolTest {
     }
 
     @Test
-    public void xmlReaderHasNoErrorHandler()  {
+    public void xmlReaderHasSilentErrorHandler()  {
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
@@ -366,7 +366,7 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertNull(xmlreader.getErrorHandler());
+            assertSame(XMLReaderObjectFactory.SILENT_SAX_ERROR_HANDLER, xmlreader.getErrorHandler());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -800,7 +800,7 @@ public class XMLReaderPoolTest {
     }
 
     @Test
-    public void reusedXmlReaderStillHasNoErrorHandler()  {
+    public void reusedXmlReaderStillHasSilentErrorHandler()  {
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
@@ -830,7 +830,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertNull(xmlreader.getErrorHandler());
+            assertSame(XMLReaderObjectFactory.SILENT_SAX_ERROR_HANDLER, xmlreader.getErrorHandler());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
