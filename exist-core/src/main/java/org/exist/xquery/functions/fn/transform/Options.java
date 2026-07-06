@@ -467,7 +467,7 @@ class Options {
         final List<Tuple2<String, Source>> results = new ArrayList<>(1);
         final Optional<String> stylesheetLocation = Options.STYLESHEET_LOCATION.get(options).map(StringValue::getStringValue);
         if (stylesheetLocation.isPresent()) {
-            results.add(Tuple(stylesheetLocation.get(), resolveStylesheetLocation(stylesheetLocation.get())));
+            results.add(resolveStylesheetLocation(stylesheetLocation.get()));
         }
 
         final Optional<Node> stylesheetNode = Options.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
@@ -496,29 +496,45 @@ class Options {
      *     It may be a dynamically configured document.
      *     Or a document within the database.
      * </p>
+     * <p>
+     *     A relative location is first resolved the way {@code fn:doc} resolves
+     *     relative paths: against the base URI of the query (where a collection
+     *     path is treated as a "directory") and/or the location of the querying
+     *     module within the database. If that does not find a document, the
+     *     location is resolved strictly against the static base URI according
+     *     to RFC 3986 (e.g. for file: or http: base URIs).
+     *     See <a href="https://github.com/eXist-db/exist/issues/5052">issue 5052</a>.
+     * </p>
      * @param stylesheetLocation path or URI of stylesheet
-     * @return a source wrapping the contents of the stylesheet
+     * @return a Tuple whose first value is the actual location of the resolved
+     *     stylesheet, and whose second value is a source wrapping its contents
      * @throws XPathException if there is a problem resolving the location.
      */
-    private Source resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
+    private Tuple2<String, Source> resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
 
         final URI uri = URI.create(stylesheetLocation);
         if (uri.isAbsolute()) {
             return resolvePossibleStylesheetLocation(stylesheetLocation);
-        } else {
+        }
+
+        try {
+            return resolvePossibleStylesheetLocation(stylesheetLocation);
+        } catch (final XPathException e) {
             final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
             return resolvePossibleStylesheetLocation(resolved.getStringValue());
         }
     }
 
     /**
-     * Resolve an absolute stylesheet location
+     * Resolve a stylesheet location
      *
      * @param location of the stylesheet
-     * @return the resolved stylesheet as a source
+     * @return a Tuple whose first value is the actual location of the resolved
+     *     stylesheet (used as its base URI), and whose second value is the
+     *     resolved stylesheet as a source
      * @throws XPathException if the item does not exist, or is not a document
      */
-    private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
+    private Tuple2<String, Source> resolvePossibleStylesheetLocation(final String location) throws XPathException {
 
         Sequence document;
         try {
@@ -529,10 +545,24 @@ class Options {
         }
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             if (document instanceof NodeProxy) {
-                return new DOMSource(((NodeProxy) document).getNode());
+                // the actual location of the document within the database
+                final String actualLocation = ((NodeProxy) document).getOwnerDocument().getURI().toString();
+                final DOMSource source = new DOMSource(((NodeProxy) document).getNode());
+                source.setSystemId(actualLocation);
+                return Tuple(actualLocation, source);
             }
             else if (document.itemAt(0) instanceof Node) {
-                return new DOMSource((Node) document.itemAt(0));
+                final Node node = (Node) document.itemAt(0);
+                String actualLocation = null;
+                if (node instanceof Document) {
+                    actualLocation = ((Document) node).getDocumentURI();
+                }
+                if (actualLocation == null) {
+                    actualLocation = location;
+                }
+                final DOMSource source = new DOMSource(node);
+                source.setSystemId(actualLocation);
+                return Tuple(actualLocation, source);
             }
         }
         throw new XPathException(fnTransform, ErrorCodes.FODC0002,

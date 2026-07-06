@@ -35,19 +35,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.Holder;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.fn.FnTransform;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
+import org.exist.xslt.XsltURIResolverHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -142,6 +146,10 @@ public class Transform {
 
                 final Xslt30Transformer xslt30Transformer = xsltExecutable.load30();
 
+                // Runtime URI resolution (e.g. fn:document) should also be able to resolve against the database
+                // https://github.com/eXist-db/exist/issues/5052
+                xslt30Transformer.getUnderlyingController().setURIResolver(newFnTransformURIResolver(options));
+
                 options.initialMode.ifPresent(qNameValue -> xslt30Transformer.setInitialMode(Convert.ToSaxon.of(qNameValue.getQName())));
                 xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
                 xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
@@ -165,7 +173,7 @@ public class Transform {
                 xslt30Transformer.setResultDocumentHandler(resultDocumentURI -> {
                     final Delivery resultDelivery = new Delivery(context, options.deliveryFormat, serializationProperties);
                     resultDocuments.put(resultDocumentURI, resultDelivery);
-                    return resultDelivery.createDestination(xslt30Transformer, true);
+                    return resultDelivery.createDestination(xslt30Transformer);
                 });
 
                 if (options.globalContextItem.isPresent()) {
@@ -220,8 +228,37 @@ public class Transform {
             xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
         }
 
+        // Resolve URIs against the database where possible,
+        // e.g. relative xsl:include/xsl:import in stylesheets stored in the database
+        // https://github.com/eXist-db/exist/issues/5052
+        xsltCompiler.setURIResolver(newFnTransformURIResolver(options));
+
+        try {
+            options.resolvedStylesheetBaseURI.ifPresent(anyURIValue -> options.xsltSource._2.setSystemId(anyURIValue.getStringValue()));
+            return xsltCompiler.compile(options.xsltSource._2);
+        } catch (final SaxonApiException e) {
+            final Optional<Exception> compilerException = errorListener.getWorst().map(e1 -> e1);
+            throw originalXPathException("Could not compile stylesheet: ", compilerException.orElse(e), ErrorCodes.FOXT0003);
+        }
+    }
+
+    /**
+     * Create a URI Resolver for use by fn:transform.
+     *
+     * Relative URIs (e.g. the href of an xsl:include or xsl:import within a
+     * stylesheet stored in the database) are resolved against the base URI of
+     * the containing stylesheet, from the database. Non-database URIs are
+     * passed back to Saxon's default resolution.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/5052">issue 5052</a>
+     *
+     * @param options the parsed fn:transform options
+     * @return the URI Resolver
+     */
+    private URIResolver newFnTransformURIResolver(final Options options) {
+
         // Take URI resolution into our own hands when there is no base
-        xsltCompiler.setURIResolver((href, base) -> {
+        final URIResolver fallbackResolver = (href, base) -> {
             try {
                 final URI hrefURI = URI.create(href);
                 if ((!options.resolvedStylesheetBaseURI.isPresent()) && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
@@ -236,15 +273,50 @@ public class Transform {
             }
             // Pass it back
             return null;
-        });
+        };
 
-        try {
-            options.resolvedStylesheetBaseURI.ifPresent(anyURIValue -> options.xsltSource._2.setSystemId(anyURIValue.getStringValue()));
-            return xsltCompiler.compile(options.xsltSource._2); //TODO(AR) need to implement support for xslt-packages
-        } catch (final SaxonApiException e) {
-            final Optional<Exception> compilerException = errorListener.getWorst().map(e1 -> e1);
-            throw originalXPathException("Could not compile stylesheet: ", compilerException.orElse(e), ErrorCodes.FOXT0003);
+        final String databaseBase = databaseBaseURI(options);
+        final URIResolver uriResolver = XsltURIResolverHelper.getXsltURIResolver(
+                context.getBroker().getBrokerPool(), fallbackResolver, databaseBase, true);
+        if (uriResolver == null) {
+            return fallbackResolver;
         }
+        return uriResolver;
+    }
+
+    /**
+     * Get the base URI for resolving relative references from the stylesheet,
+     * if the stylesheet is (or may reference) a location within the database.
+     *
+     * @param options the parsed fn:transform options
+     * @return the base URI (a collection path) for database resolution,
+     *     or null if the stylesheet is not associated with the database
+     */
+    private @Nullable String databaseBaseURI(final Options options) {
+        if (options.resolvedStylesheetBaseURI.isPresent()) {
+            final String stylesheetBaseURI = options.resolvedStylesheetBaseURI.get().getStringValue();
+            if (isDatabaseURI(stylesheetBaseURI)) {
+                // the "collection part" of the stylesheet's base URI
+                final int lastSlash = stylesheetBaseURI.lastIndexOf('/');
+                if (lastSlash > 0) {
+                    return stylesheetBaseURI.substring(0, lastSlash);
+                }
+                return stylesheetBaseURI;
+            }
+            return null;
+        }
+
+        // No stylesheet base URI (e.g. stylesheet-node constructed in memory):
+        // fall back to the location of the querying module, if it is stored in the database
+        final String moduleLoadPath = context.getModuleLoadPath();
+        if (!StringUtils.isEmpty(moduleLoadPath) && moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+            return moduleLoadPath;
+        }
+        return null;
+    }
+
+    private static boolean isDatabaseURI(final String uri) {
+        return uri.startsWith("/") || uri.startsWith(XmldbURI.XMLDB_URI_PREFIX) || uri.startsWith("exist://");
     }
 
     /**
@@ -325,7 +397,7 @@ public class Transform {
             this.options = options;
             this.sourceNode = sourceNode;
             this.delivery = delivery;
-            this.destination = delivery.createDestination(xslt30Transformer, false);
+            this.destination = delivery.createDestination(xslt30Transformer);
             this.xslt30Transformer = xslt30Transformer;
             this.resultDocuments = resultDocuments;
         }
