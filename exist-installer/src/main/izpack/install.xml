@@ -68,7 +68,8 @@
         <res id="userInputSpec.xml" src="@{izpack.resources.target}/userInput.xml"/>
         <res id="ProcessPanel.Spec.xml" src="@{izpack.resources.target}/jobs.xml"/>
         <res id="HTMLInfoPanel.start" src="@{izpack.resources.target}/start.html"/>
-        <res id="CustomLangPack.xml_eng" src="@{izpack.resources.target}/custom.eng.xml"/>
+        <res id="packsLang.xml" src="@{izpack.resources.target}/packsLang.xml"/>
+        <res id="packsLang.xml_eng" src="@{izpack.resources.target}/packsLang.xml"/>
         <res id="logo" src="etc/webapp/logo.jpg"/>
     </resources>
 
