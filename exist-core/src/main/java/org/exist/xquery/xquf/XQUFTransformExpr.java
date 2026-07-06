@@ -204,70 +204,10 @@ public class XQUFTransformExpr extends AbstractExpression {
             final Sequence out = new ValueSequence();
             for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
                 Item item = i.nextItem();
-                final boolean isDocument = item.getType() == Type.DOCUMENT;
-                if (isDocument) {
-                    // For document nodes, copy ALL children (comments, PIs, elements)
-                    // to preserve the complete document structure
-                    if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        final NodeProxy docProxy = (NodeProxy) item;
-                        serializer.toReceiver(docProxy, false, false);
-                    } else {
-                        final Document docNode = (Document) item;
-                        Node child = docNode.getFirstChild();
-                        while (child != null) {
-                            if (child instanceof org.exist.dom.memtree.NodeImpl) {
-                                ((org.exist.dom.memtree.NodeImpl) child).copyTo(context.getBroker(), receiver);
-                            }
-                            child = child.getNextSibling();
-                        }
-                    }
-                    item = builder.getDocument();
-                    out.add(item);
-                    continue;
-                }
-                if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                    // Collect inherited namespace bindings from the source node's ancestors
-                    // BEFORE copying, so we can add them to the copied element afterwards.
-                    // This implements W3C copy-namespaces preserve semantics.
-                    final Map<String, String> inheritedNs;
-                    if (item.getType() == Type.ELEMENT && context.preserveNamespaces()) {
-                        inheritedNs = collectInheritedNamespaces((NodeValue) item);
-                    } else {
-                        inheritedNs = null;
-                    }
-
-                    // Always serialize through MemTreeBuilder to create a true independent copy.
-                    // Using NodeImpl.deepCopy() would mutate the original in place, causing
-                    // the source variable and copy variable to share the same document.
-                    final int last = builder.getDocument().getLastNode();
-                    if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        final NodeProxy p = (NodeProxy) item;
-                        serializer.toReceiver(p, false, false);
-                    } else {
-                        final org.exist.dom.memtree.NodeImpl memNode = (org.exist.dom.memtree.NodeImpl) item;
-                        memNode.copyTo(context.getBroker(), receiver);
-                    }
-                    if (item.getType() == Type.ATTRIBUTE) {
-                        item = builder.getDocument().getLastAttr();
-                    } else {
-                        item = builder.getDocument().getNode(last + 1);
-                    }
-
-                    // Add inherited namespace bindings to the copied root element
-                    if (inheritedNs != null && !inheritedNs.isEmpty()
-                            && item instanceof org.exist.dom.memtree.NodeImpl) {
-                        addInheritedNamespaces(builder.getDocument(),
-                                ((org.exist.dom.memtree.NodeImpl) item).getNodeNumber(), inheritedNs);
-                    }
-
-                    // W3C copy-namespaces no-preserve: strip namespace declarations
-                    // not used by element/attribute names from the copied subtree
-                    if (!context.preserveNamespaces()
-                            && item instanceof org.exist.dom.memtree.NodeImpl
-                            && ((org.exist.dom.memtree.NodeImpl) item).getNode().getNodeType() == Node.ELEMENT_NODE) {
-                        builder.getDocument().stripUnusedNamespacesInSubtree(
-                                ((org.exist.dom.memtree.NodeImpl) item).getNodeNumber());
-                    }
+                if (item.getType() == Type.DOCUMENT) {
+                    item = copyDocumentItem(item, builder, serializer, receiver);
+                } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    item = copyNodeItem(item, builder, serializer, receiver);
                 }
                 out.add(item);
             }
@@ -278,6 +218,77 @@ public class XQUFTransformExpr extends AbstractExpression {
             context.getBroker().returnSerializer(serializer);
             context.popDocumentContext();
         }
+    }
+
+    /**
+     * Copy a document node: copy ALL its children (comments, PIs, elements)
+     * to preserve the complete document structure.
+     */
+    private Item copyDocumentItem(final Item item, final MemTreeBuilder builder,
+            final Serializer serializer, final DocumentBuilderReceiver receiver) throws SAXException {
+        if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            final NodeProxy docProxy = (NodeProxy) item;
+            serializer.toReceiver(docProxy, false, false);
+        } else {
+            final Document docNode = (Document) item;
+            Node child = docNode.getFirstChild();
+            while (child != null) {
+                if (child instanceof org.exist.dom.memtree.NodeImpl) {
+                    ((org.exist.dom.memtree.NodeImpl) child).copyTo(context.getBroker(), receiver);
+                }
+                child = child.getNextSibling();
+            }
+        }
+        return builder.getDocument();
+    }
+
+    /**
+     * Copy a non-document node, preserving or stripping namespaces per the
+     * static copy-namespaces mode.
+     */
+    private Item copyNodeItem(final Item item, final MemTreeBuilder builder,
+            final Serializer serializer, final DocumentBuilderReceiver receiver) throws SAXException, XPathException {
+        // Collect inherited namespace bindings from the source node's ancestors
+        // BEFORE copying, so we can add them to the copied element afterwards.
+        // This implements W3C copy-namespaces preserve semantics.
+        final Map<String, String> inheritedNs;
+        if (item.getType() == Type.ELEMENT && context.preserveNamespaces()) {
+            inheritedNs = collectInheritedNamespaces((NodeValue) item);
+        } else {
+            inheritedNs = null;
+        }
+
+        // Always serialize through MemTreeBuilder to create a true independent copy.
+        // Using NodeImpl.deepCopy() would mutate the original in place, causing
+        // the source variable and copy variable to share the same document.
+        final int last = builder.getDocument().getLastNode();
+        if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            final NodeProxy p = (NodeProxy) item;
+            serializer.toReceiver(p, false, false);
+        } else {
+            final org.exist.dom.memtree.NodeImpl memNode = (org.exist.dom.memtree.NodeImpl) item;
+            memNode.copyTo(context.getBroker(), receiver);
+        }
+        final Item copied = item.getType() == Type.ATTRIBUTE
+                ? builder.getDocument().getLastAttr()
+                : builder.getDocument().getNode(last + 1);
+
+        // Add inherited namespace bindings to the copied root element
+        if (inheritedNs != null && !inheritedNs.isEmpty()
+                && copied instanceof org.exist.dom.memtree.NodeImpl) {
+            addInheritedNamespaces(builder.getDocument(),
+                    ((org.exist.dom.memtree.NodeImpl) copied).getNodeNumber(), inheritedNs);
+        }
+
+        // W3C copy-namespaces no-preserve: strip namespace declarations
+        // not used by element/attribute names from the copied subtree
+        if (!context.preserveNamespaces()
+                && copied instanceof org.exist.dom.memtree.NodeImpl
+                && ((org.exist.dom.memtree.NodeImpl) copied).getNode().getNodeType() == Node.ELEMENT_NODE) {
+            builder.getDocument().stripUnusedNamespacesInSubtree(
+                    ((org.exist.dom.memtree.NodeImpl) copied).getNodeNumber());
+        }
+        return copied;
     }
 
     @Override

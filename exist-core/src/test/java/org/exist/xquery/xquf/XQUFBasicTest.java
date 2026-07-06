@@ -806,7 +806,7 @@ public class XQUFBasicTest {
                 "modify delete nodes ($c/a/@y, $c/b/@q) " +
                 "return (count($c/a/@*), count($c/b/@*))";
 
-        final ResourceSet result = testCollection.getService(XQueryService.class).query(query);
+        final ResourceSet result = service.query(query);
         assertEquals("a should have 2 attrs", "2", result.getResource(0).getContent().toString());
         assertEquals("b should have 2 attrs", "2", result.getResource(1).getContent().toString());
     }
@@ -1676,12 +1676,6 @@ public class XQUFBasicTest {
     @Test
     public void deleteDocumentCommentsFollowsOperator() throws XMLDBException {
         // Simulates the structure: document has root element, then comments after it
-        final String query =
-                "let $doc := <root/>\n" +
-                "return\n" +
-                "copy $c := $doc\n" +
-                "modify ()\n" +
-                "return $c";
         // Basic test: just make sure >> operator works
         final String followsTest =
                 "let $doc := parse-xml('<root><a/><b/></root>')\n" +

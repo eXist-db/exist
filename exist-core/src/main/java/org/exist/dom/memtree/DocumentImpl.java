@@ -1818,121 +1818,117 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             case Node.TEXT_NODE:
             case Node.COMMENT_NODE:
             case Node.CDATA_SECTION_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE: {
+            case Node.PROCESSING_INSTRUCTION_NODE:
                 // Replace the character content
-                final char[] chars = value.toCharArray();
-                if (characters == null) {
-                    characters = new char[chars.length > CHAR_BUF_SIZE ? chars.length : CHAR_BUF_SIZE];
-                } else if ((nextChar + chars.length) >= characters.length) {
-                    int newLen = (characters.length * 3) / 2;
-                    if (newLen < (nextChar + chars.length)) {
-                        newLen = nextChar + chars.length;
-                    }
-                    final char[] nc = new char[newLen];
-                    System.arraycopy(characters, 0, nc, 0, characters.length);
-                    characters = nc;
-                }
-                alpha[nodeNum] = nextChar;
-                alphaLen[nodeNum] = chars.length;
-                System.arraycopy(chars, 0, characters, nextChar, chars.length);
-                nextChar += chars.length;
+                setCharacterContent(nodeNum, value);
                 break;
-            }
-            case Node.ELEMENT_NODE: {
-                // W3C replaceElementContent: replace all children with a single text node.
-                // We must be careful to only modify THIS element's children, not nodes
-                // belonging to sibling elements that happen to be adjacent in the array.
-                final short childLevel = (short) (treeLevel[nodeNum] + 1);
-
-                // Determine the boundary of this element's positional subtree.
-                // Only nodes at positions nodeNum+1..subtreeEnd (where subtreeEnd is the
-                // first position at the same or lower level) are this element's children.
-                int subtreeEnd = nodeNum + 1;
-                while (subtreeEnd < size && treeLevel[subtreeEnd] > treeLevel[nodeNum]) {
-                    subtreeEnd++;
-                }
-
-                // Find and modify/create a text child within the positional range
-                int firstTextChild = -1;
-                for (int c = nodeNum + 1; c < subtreeEnd; c++) {
-                    if (firstTextChild == -1 && treeLevel[c] == childLevel
-                            && nodeKind[c] == Node.TEXT_NODE) {
-                        firstTextChild = c;
-                    } else if (c != firstTextChild) {
-                        nodeKind[c] = -1;  // delete other children
-                    }
-                }
-
-                // Also delete any chain-linked children (from previous insertions)
-                if (firstChildOverride != null && firstChildOverride.containsKey(nodeNum)) {
-                    int chainChild = firstChildOverride.get(nodeNum);
-                    while (chainChild >= 0 && chainChild != nodeNum) {
-                        if (chainChild >= subtreeEnd && nodeKind[chainChild] != -1) {
-                            nodeKind[chainChild] = -1;  // delete appended children
-                        }
-                        final int nx = next[chainChild];
-                        if (nx < 0 || nx == nodeNum) break;
-                        chainChild = nx;
-                    }
-                    firstChildOverride.remove(nodeNum);
-                }
-
-                if (firstTextChild >= 0) {
-                    // Modify existing text child in place
-                    final char[] chars = value.toCharArray();
-                    if ((nextChar + chars.length) >= characters.length) {
-                        int newLen = (characters.length * 3) / 2;
-                        if (newLen < (nextChar + chars.length)) {
-                            newLen = nextChar + chars.length;
-                        }
-                        final char[] nc = new char[newLen];
-                        System.arraycopy(characters, 0, nc, 0, characters.length);
-                        characters = nc;
-                    }
-                    alpha[firstTextChild] = nextChar;
-                    alphaLen[firstTextChild] = chars.length;
-                    System.arraycopy(chars, 0, characters, nextChar, chars.length);
-                    nextChar += chars.length;
-                } else if (nodeNum + 1 < subtreeEnd) {
-                    // No text child but has positional children — convert first to text
-                    final int firstChild = nodeNum + 1;
-                    nodeKind[firstChild] = Node.TEXT_NODE;
-                    nodeName[firstChild] = null;
-                    final char[] chars = value.toCharArray();
-                    if ((nextChar + chars.length) >= characters.length) {
-                        int newLen = (characters.length * 3) / 2;
-                        if (newLen < (nextChar + chars.length)) {
-                            newLen = nextChar + chars.length;
-                        }
-                        final char[] nc = new char[newLen];
-                        System.arraycopy(characters, 0, nc, 0, characters.length);
-                        characters = nc;
-                    }
-                    alpha[firstChild] = nextChar;
-                    alphaLen[firstChild] = chars.length;
-                    System.arraycopy(chars, 0, characters, nextChar, chars.length);
-                    nextChar += chars.length;
-                    // Mark remaining positional children as deleted
-                    for (int c = firstChild + 1; c < subtreeEnd; c++) {
-                        nodeKind[c] = -1;
-                    }
-                } else if (value != null && !value.isEmpty()) {
-                    // Element has no positional children — insert via insertChildren
-                    try {
-                        final org.exist.xquery.value.StringValue textVal =
-                                new org.exist.xquery.value.StringValue(value);
-                        insertChildren(nodeNum, textVal, true);
-                    } catch (final org.exist.xquery.XPathException e) {
-                        throw new DOMException(DOMException.INVALID_STATE_ERR,
-                                "Failed to insert text child: " + e.getMessage());
-                    }
-                }
+            case Node.ELEMENT_NODE:
+                replaceElementContent(nodeNum, value);
                 break;
-            }
             default:
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
                         "Cannot replace value of node of type " + kind);
         }
+    }
+
+    /**
+     * Write the given string into the character buffer as the content of the
+     * given node, growing the buffer as needed.
+     */
+    private void setCharacterContent(final int nodeNum, final String value) {
+        final char[] chars = value.toCharArray();
+        if (characters == null) {
+            characters = new char[chars.length > CHAR_BUF_SIZE ? chars.length : CHAR_BUF_SIZE];
+        } else if ((nextChar + chars.length) >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < (nextChar + chars.length)) {
+                newLen = nextChar + chars.length;
+            }
+            final char[] nc = new char[newLen];
+            System.arraycopy(characters, 0, nc, 0, characters.length);
+            characters = nc;
+        }
+        alpha[nodeNum] = nextChar;
+        alphaLen[nodeNum] = chars.length;
+        System.arraycopy(chars, 0, characters, nextChar, chars.length);
+        nextChar += chars.length;
+    }
+
+    /**
+     * W3C replaceElementContent: replace all of the element's children with a
+     * single text node. Only THIS element's children are modified, not nodes
+     * belonging to sibling elements that happen to be adjacent in the array.
+     */
+    private void replaceElementContent(final int nodeNum, final String value) {
+        final short childLevel = (short) (treeLevel[nodeNum] + 1);
+
+        // Determine the boundary of this element's positional subtree.
+        // Only nodes at positions nodeNum+1..subtreeEnd (where subtreeEnd is the
+        // first position at the same or lower level) are this element's children.
+        int subtreeEnd = nodeNum + 1;
+        while (subtreeEnd < size && treeLevel[subtreeEnd] > treeLevel[nodeNum]) {
+            subtreeEnd++;
+        }
+
+        // Find and modify/create a text child within the positional range
+        int firstTextChild = -1;
+        for (int c = nodeNum + 1; c < subtreeEnd; c++) {
+            if (firstTextChild == -1 && treeLevel[c] == childLevel
+                    && nodeKind[c] == Node.TEXT_NODE) {
+                firstTextChild = c;
+            } else if (c != firstTextChild) {
+                nodeKind[c] = -1;  // delete other children
+            }
+        }
+
+        deleteChainLinkedChildren(nodeNum, subtreeEnd);
+
+        if (firstTextChild >= 0) {
+            // Modify existing text child in place
+            setCharacterContent(firstTextChild, value);
+        } else if (nodeNum + 1 < subtreeEnd) {
+            // No text child but has positional children — convert first to text
+            final int firstChild = nodeNum + 1;
+            nodeKind[firstChild] = Node.TEXT_NODE;
+            nodeName[firstChild] = null;
+            setCharacterContent(firstChild, value);
+            // Mark remaining positional children as deleted
+            for (int c = firstChild + 1; c < subtreeEnd; c++) {
+                nodeKind[c] = -1;
+            }
+        } else if (value != null && !value.isEmpty()) {
+            // Element has no positional children — insert via insertChildren
+            try {
+                final org.exist.xquery.value.StringValue textVal =
+                        new org.exist.xquery.value.StringValue(value);
+                insertChildren(nodeNum, textVal, true);
+            } catch (final XPathException e) {
+                throw new DOMException(DOMException.INVALID_STATE_ERR,
+                        "Failed to insert text child: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Delete any chain-linked children of the element (from previous
+     * insertions) that lie outside its positional subtree.
+     */
+    private void deleteChainLinkedChildren(final int nodeNum, final int subtreeEnd) {
+        if (firstChildOverride == null || !firstChildOverride.containsKey(nodeNum)) {
+            return;
+        }
+        int chainChild = firstChildOverride.get(nodeNum);
+        while (chainChild >= 0 && chainChild != nodeNum) {
+            if (chainChild >= subtreeEnd && nodeKind[chainChild] != -1) {
+                nodeKind[chainChild] = -1;  // delete appended children
+            }
+            final int nx = next[chainChild];
+            if (nx < 0 || nx == nodeNum) {
+                break;
+            }
+            chainChild = nx;
+        }
+        firstChildOverride.remove(nodeNum);
     }
 
     /**
@@ -2099,89 +2095,57 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void mergeAdjacentTextNodes() {
         // Walk the document looking for parent nodes (document or element)
         for (int parent = 0; parent < size; parent++) {
-            if (nodeKind[parent] == -1) {
-                continue;
-            }
-            if (nodeKind[parent] != Node.DOCUMENT_NODE && nodeKind[parent] != Node.ELEMENT_NODE) {
-                continue;
-            }
-
-            // Iterate through children of this parent using the next[] chain
-            final short childLevel = (short) (treeLevel[parent] + 1);
-            int child = getFirstChildFor(parent);
-            if (child < 0) {
-                continue;
-            }
-
-            int prevTextNode = -1;
-            while (child >= 0 && child < size && treeLevel[child] >= childLevel) {
-                if (nodeKind[child] == -1) {
-                    // Skip deleted nodes — follow next[] chain
-                    child = next[child];
-                    if (child <= parent) break;
-                    continue;
-                }
-                if (treeLevel[child] > childLevel) {
-                    // Descendant, not direct child — skip
-                    child = next[child];
-                    if (child <= parent) break;
-                    continue;
-                }
-
-                // Direct child at childLevel
-                if (nodeKind[child] == Node.TEXT_NODE) {
-                    if (prevTextNode >= 0) {
-                        // Merge this text node into prevTextNode
-                        final String prevText = new String(characters, alpha[prevTextNode], alphaLen[prevTextNode]);
-                        final String thisText = new String(characters, alpha[child], alphaLen[child]);
-                        final String merged = prevText + thisText;
-
-                        // Store merged text in prevTextNode
-                        final char[] chars = merged.toCharArray();
-                        if ((nextChar + chars.length) >= characters.length) {
-                            int newLen = (characters.length * 3) / 2;
-                            if (newLen < (nextChar + chars.length)) {
-                                newLen = nextChar + chars.length;
-                            }
-                            final char[] nc = new char[newLen];
-                            System.arraycopy(characters, 0, nc, 0, characters.length);
-                            characters = nc;
-                        }
-                        alpha[prevTextNode] = nextChar;
-                        alphaLen[prevTextNode] = chars.length;
-                        System.arraycopy(chars, 0, characters, nextChar, chars.length);
-                        nextChar += chars.length;
-
-                        // Soft-delete the merged text node and restitch
-                        removeNode(child);
-
-                        // Continue from prevTextNode's next (don't advance prevTextNode)
-                        child = next[prevTextNode];
-                        if (child <= parent) break;
-                    } else {
-                        // Check for empty text nodes
-                        if (alphaLen[child] == 0) {
-                            final int nextChild = next[child];
-                            removeNode(child);
-                            child = nextChild;
-                            if (child <= parent) break;
-                        } else {
-                            prevTextNode = child;
-                            child = next[child];
-                            if (child <= parent) break;
-                        }
-                    }
-                } else {
-                    prevTextNode = -1;
-                    child = next[child];
-                    if (child <= parent) break;
-                }
+            if (nodeKind[parent] == Node.DOCUMENT_NODE || nodeKind[parent] == Node.ELEMENT_NODE) {
+                mergeAdjacentTextChildren(parent);
             }
         }
 
         // Invalidate cached node IDs since the structure changed
         if (nodeId != null) {
             nodeId[0] = null;
+        }
+    }
+
+    /**
+     * Merge adjacent text-node children of the given parent and remove empty
+     * text-node children, following the next[] chain.
+     */
+    private void mergeAdjacentTextChildren(final int parent) {
+        final short childLevel = (short) (treeLevel[parent] + 1);
+        int child = getFirstChildFor(parent);
+
+        int prevTextNode = -1;
+        while (child > parent && child < size && treeLevel[child] >= childLevel) {
+            if (nodeKind[child] == -1 || treeLevel[child] > childLevel) {
+                // Deleted node or descendant (not a direct child) — follow next[] chain
+                child = next[child];
+                continue;
+            }
+
+            // Direct child at childLevel
+            if (nodeKind[child] != Node.TEXT_NODE) {
+                prevTextNode = -1;
+                child = next[child];
+            } else if (prevTextNode >= 0) {
+                // Merge this text node into prevTextNode
+                final String prevText = new String(characters, alpha[prevTextNode], alphaLen[prevTextNode]);
+                final String thisText = new String(characters, alpha[child], alphaLen[child]);
+                setCharacterContent(prevTextNode, prevText + thisText);
+
+                // Soft-delete the merged text node and restitch
+                removeNode(child);
+
+                // Continue from prevTextNode's next (don't advance prevTextNode)
+                child = next[prevTextNode];
+            } else if (alphaLen[child] == 0) {
+                // Remove empty text nodes
+                final int nextChild = next[child];
+                removeNode(child);
+                child = nextChild;
+            } else {
+                prevTextNode = child;
+                child = next[child];
+            }
         }
     }
 
@@ -2203,71 +2167,87 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         final short childLevel = (short) (treeLevel[parentNodeNum] + 1);
 
         if (asFirst) {
-            // Insert as first children: find the current first child and link new nodes before it
-            final int firstChild = getFirstChildFor(parentNodeNum);
-
-            int lastInserted = -1;
-            int firstInserted = -1;
-            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-                final org.exist.xquery.value.Item item = i.nextItem();
-                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
-                for (final int newNodeNum : inserted) {
-                    if (firstInserted == -1) {
-                        firstInserted = newNodeNum;
-                    }
-                    if (lastInserted >= 0) {
-                        next[lastInserted] = newNodeNum;
-                    }
-                    lastInserted = newNodeNum;
-                }
-            }
-            // Link last inserted to the old first child (or parent if no children)
-            if (lastInserted >= 0) {
-                next[lastInserted] = firstChild >= 0 ? firstChild : parentNodeNum;
-            }
-            // Override the first-child lookup so navigation finds the new nodes first
-            if (firstInserted >= 0) {
-                if (firstChildOverride == null) {
-                    firstChildOverride = new HashMap<>();
-                }
-                firstChildOverride.put(parentNodeNum, firstInserted);
-            }
+            insertAsFirstChildren(parentNodeNum, content, childLevel);
         } else {
-            // Insert as last children: find the last child and link after it
-            // Walk the sibling chain from first child to find the last one
-            int lastChild = -1;
-            final int firstChild = getFirstChildFor(parentNodeNum);
-            if (firstChild >= 0) {
-                lastChild = firstChild;
-                int nextSib = getNextSiblingFor(lastChild);
-                while (nextSib >= 0) {
-                    lastChild = nextSib;
-                    nextSib = getNextSiblingFor(lastChild);
-                }
-            }
+            insertAsLastChildren(parentNodeNum, content, childLevel);
+        }
+    }
 
-            int firstInsertedAsLast = -1;
-            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-                final org.exist.xquery.value.Item item = i.nextItem();
-                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
-                for (final int newNodeNum : inserted) {
-                    if (firstInsertedAsLast == -1) {
-                        firstInsertedAsLast = newNodeNum;
-                    }
-                    if (lastChild >= 0) {
-                        next[lastChild] = newNodeNum;
-                    }
-                    lastChild = newNodeNum;
+    /**
+     * Insert content as first children: link the new nodes before the current
+     * first child and override the first-child lookup to find them.
+     */
+    private void insertAsFirstChildren(final int parentNodeNum, final Sequence content, final short childLevel)
+            throws XPathException {
+        final int firstChild = getFirstChildFor(parentNodeNum);
+
+        int lastInserted = -1;
+        int firstInserted = -1;
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
+            for (final int newNodeNum : inserted) {
+                if (firstInserted == -1) {
+                    firstInserted = newNodeNum;
                 }
-            }
-            // If the parent had no visible children, the appended nodes are beyond
-            // the positional scan range. Set firstChildOverride so they can be found.
-            if (firstChild < 0 && firstInsertedAsLast >= 0) {
-                if (firstChildOverride == null) {
-                    firstChildOverride = new HashMap<>();
+                if (lastInserted >= 0) {
+                    next[lastInserted] = newNodeNum;
                 }
-                firstChildOverride.put(parentNodeNum, firstInsertedAsLast);
+                lastInserted = newNodeNum;
             }
+        }
+        // Link last inserted to the old first child (or parent if no children)
+        if (lastInserted >= 0) {
+            next[lastInserted] = firstChild >= 0 ? firstChild : parentNodeNum;
+        }
+        // Override the first-child lookup so navigation finds the new nodes first
+        if (firstInserted >= 0) {
+            if (firstChildOverride == null) {
+                firstChildOverride = new HashMap<>();
+            }
+            firstChildOverride.put(parentNodeNum, firstInserted);
+        }
+    }
+
+    /**
+     * Insert content as last children: link the new nodes after the current
+     * last child in the sibling chain.
+     */
+    private void insertAsLastChildren(final int parentNodeNum, final Sequence content, final short childLevel)
+            throws XPathException {
+        // Walk the sibling chain from first child to find the last one
+        int lastChild = -1;
+        final int firstChild = getFirstChildFor(parentNodeNum);
+        if (firstChild >= 0) {
+            lastChild = firstChild;
+            int nextSib = getNextSiblingFor(lastChild);
+            while (nextSib >= 0) {
+                lastChild = nextSib;
+                nextSib = getNextSiblingFor(lastChild);
+            }
+        }
+
+        int firstInsertedAsLast = -1;
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
+            for (final int newNodeNum : inserted) {
+                if (firstInsertedAsLast == -1) {
+                    firstInsertedAsLast = newNodeNum;
+                }
+                if (lastChild >= 0) {
+                    next[lastChild] = newNodeNum;
+                }
+                lastChild = newNodeNum;
+            }
+        }
+        // If the parent had no visible children, the appended nodes are beyond
+        // the positional scan range. Set firstChildOverride so they can be found.
+        if (firstChild < 0 && firstInsertedAsLast >= 0) {
+            if (firstChildOverride == null) {
+                firstChildOverride = new HashMap<>();
+            }
+            firstChildOverride.put(parentNodeNum, firstInsertedAsLast);
         }
     }
 
@@ -2294,55 +2274,72 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         if (before) {
-            // Insert before: find the node whose next[] points to refNodeNum and re-link
-            final int prevNode = findPredecessor(refNodeNum);
-
-            int lastInserted = -1;
-            int firstInserted = -1;
-            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-                final org.exist.xquery.value.Item item = i.nextItem();
-                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
-                for (final int newNodeNum : inserted) {
-                    if (firstInserted == -1) {
-                        firstInserted = newNodeNum;
-                    }
-                    if (prevNode >= 0 && lastInserted == -1) {
-                        next[prevNode] = newNodeNum;
-                    }
-                    if (lastInserted >= 0) {
-                        next[lastInserted] = newNodeNum;
-                    }
-                    lastInserted = newNodeNum;
-                }
-            }
-            // Link last inserted to refNode
-            if (lastInserted >= 0) {
-                next[lastInserted] = refNodeNum;
-            }
-            // If no predecessor found, refNode was the first child (found positionally).
-            // Set override so navigation finds the new nodes first.
-            if (prevNode < 0 && firstInserted >= 0 && parentNum >= 0) {
-                if (firstChildOverride == null) {
-                    firstChildOverride = new HashMap<>();
-                }
-                firstChildOverride.put(parentNum, firstInserted);
-            }
+            insertSiblingsBefore(refNodeNum, content, level, parentNum);
         } else {
-            // Insert after: link new nodes after refNode
-            final int origNext = next[refNodeNum];
-            int lastInserted = refNodeNum;
-            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-                final org.exist.xquery.value.Item item = i.nextItem();
-                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
-                for (final int newNodeNum : inserted) {
-                    next[lastInserted] = newNodeNum;
-                    lastInserted = newNodeNum;
+            insertSiblingsAfter(refNodeNum, content, level, parentNum);
+        }
+    }
+
+    /**
+     * Insert content before the reference node: re-link the predecessor's
+     * next[] pointer to the new nodes, and the last new node to the reference.
+     */
+    private void insertSiblingsBefore(final int refNodeNum, final Sequence content,
+            final short level, final int parentNum) throws XPathException {
+        // Find the node whose next[] points to refNodeNum and re-link
+        final int prevNode = findPredecessor(refNodeNum);
+
+        int lastInserted = -1;
+        int firstInserted = -1;
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
+            for (final int newNodeNum : inserted) {
+                if (firstInserted == -1) {
+                    firstInserted = newNodeNum;
                 }
+                if (prevNode >= 0 && lastInserted == -1) {
+                    next[prevNode] = newNodeNum;
+                }
+                if (lastInserted >= 0) {
+                    next[lastInserted] = newNodeNum;
+                }
+                lastInserted = newNodeNum;
             }
-            // Last inserted points to where refNode originally pointed
-            if (lastInserted != refNodeNum) {
-                next[lastInserted] = origNext;
+        }
+        // Link last inserted to refNode
+        if (lastInserted >= 0) {
+            next[lastInserted] = refNodeNum;
+        }
+        // If no predecessor found, refNode was the first child (found positionally).
+        // Set override so navigation finds the new nodes first.
+        if (prevNode < 0 && firstInserted >= 0 && parentNum >= 0) {
+            if (firstChildOverride == null) {
+                firstChildOverride = new HashMap<>();
             }
+            firstChildOverride.put(parentNum, firstInserted);
+        }
+    }
+
+    /**
+     * Insert content after the reference node, linking the last new node to
+     * where the reference node originally pointed.
+     */
+    private void insertSiblingsAfter(final int refNodeNum, final Sequence content,
+            final short level, final int parentNum) throws XPathException {
+        final int origNext = next[refNodeNum];
+        int lastInserted = refNodeNum;
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
+            for (final int newNodeNum : inserted) {
+                next[lastInserted] = newNodeNum;
+                lastInserted = newNodeNum;
+            }
+        }
+        // Last inserted points to where refNode originally pointed
+        if (lastInserted != refNodeNum) {
+            next[lastInserted] = origNext;
         }
     }
 
@@ -2373,85 +2370,28 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         // Collect new attributes to insert
-        final java.util.List<Object[]> newAttrs = new java.util.ArrayList<>();
-        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-            final org.exist.xquery.value.Item item = i.nextItem();
-            if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
-                final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
-                if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-                    final Attr attr = (Attr) node;
-                    final QName qname = new QName(
-                            attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
-                            attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
-                            attr.getPrefix() != null ? attr.getPrefix() : "");
-                    newAttrs.add(new Object[]{qname, attr.getValue()});
-                }
-            }
-        }
-
+        final java.util.List<Object[]> newAttrs = collectNewAttributes(content);
         if (newAttrs.isEmpty()) {
             return;
         }
 
         // Check for duplicates and replace existing values (only when not in PUL mode)
         if (replaceExisting) {
-            final java.util.Iterator<Object[]> it = newAttrs.iterator();
-            while (it.hasNext()) {
-                final Object[] entry = it.next();
-                final QName qname = (QName) entry[0];
-                final String value = (String) entry[1];
-                if (alpha[elementNodeNum] >= 0) {
-                    int a = alpha[elementNodeNum];
-                    while (a < nextAttr && attrParent[a] == elementNodeNum) {
-                        if (attrName[a].equals(qname)) {
-                            // Replace existing attribute value
-                            attrValue[a] = value;
-                            it.remove();
-                            break;
-                        }
-                        a++;
-                    }
-                }
-            }
+            replaceExistingAttributeValues(elementNodeNum, newAttrs);
         }
-
         if (newAttrs.isEmpty()) {
             return;
         }
 
         final int count = newAttrs.size();
-
-        // Find insertion point: right after the last contiguous attribute of this element
-        int insertPos;
-        if (alpha[elementNodeNum] >= 0) {
-            insertPos = alpha[elementNodeNum];
-            while (insertPos < nextAttr && attrParent[insertPos] == elementNodeNum) {
-                insertPos++;
-            }
-        } else {
-            // Element has no attrs yet — insert at nextAttr (already contiguous)
-            insertPos = nextAttr;
-        }
+        final int insertPos = findAttrInsertPosition(elementNodeNum);
 
         // Ensure capacity
         while (nextAttr + count > attrName.length) {
             growAttributes();
         }
 
-        // Shift everything from insertPos onwards to make room
-        if (insertPos < nextAttr) {
-            System.arraycopy(attrParent, insertPos, attrParent, insertPos + count, nextAttr - insertPos);
-            System.arraycopy(attrName, insertPos, attrName, insertPos + count, nextAttr - insertPos);
-            System.arraycopy(attrValue, insertPos, attrValue, insertPos + count, nextAttr - insertPos);
-            System.arraycopy(attrType, insertPos, attrType, insertPos + count, nextAttr - insertPos);
-
-            // Update alpha pointers for elements whose attrs shifted
-            for (int n = 0; n < size; n++) {
-                if (nodeKind[n] == Node.ELEMENT_NODE && alpha[n] >= insertPos && n != elementNodeNum) {
-                    alpha[n] += count;
-                }
-            }
-        }
+        shiftAttributesFrom(insertPos, count, elementNodeNum);
 
         // Insert new attributes at the contiguous position
         for (int j = 0; j < count; j++) {
@@ -2474,6 +2414,94 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     /**
+     * Collect the attribute nodes from the content sequence as
+     * {QName, value} pairs.
+     */
+    private java.util.List<Object[]> collectNewAttributes(final Sequence content) throws XPathException {
+        final java.util.List<Object[]> newAttrs = new java.util.ArrayList<>();
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                continue;
+            }
+            final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                final Attr attr = (Attr) node;
+                final QName qname = new QName(
+                        attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
+                        attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
+                        attr.getPrefix() != null ? attr.getPrefix() : "");
+                newAttrs.add(new Object[]{qname, attr.getValue()});
+            }
+        }
+        return newAttrs;
+    }
+
+    /**
+     * For each new attribute whose QName already exists on the element,
+     * replace the existing value in place and remove it from the new list.
+     */
+    private void replaceExistingAttributeValues(final int elementNodeNum, final java.util.List<Object[]> newAttrs) {
+        if (alpha[elementNodeNum] < 0) {
+            return;
+        }
+        final java.util.Iterator<Object[]> it = newAttrs.iterator();
+        while (it.hasNext()) {
+            final Object[] entry = it.next();
+            final QName qname = (QName) entry[0];
+            final String value = (String) entry[1];
+            int a = alpha[elementNodeNum];
+            while (a < nextAttr && attrParent[a] == elementNodeNum) {
+                if (attrName[a].equals(qname)) {
+                    // Replace existing attribute value
+                    attrValue[a] = value;
+                    it.remove();
+                    break;
+                }
+                a++;
+            }
+        }
+    }
+
+    /**
+     * Find the insertion point for new attributes: right after the last
+     * contiguous attribute of the element, or at the end of the attribute
+     * arrays if the element has none yet.
+     */
+    private int findAttrInsertPosition(final int elementNodeNum) {
+        if (alpha[elementNodeNum] < 0) {
+            // Element has no attrs yet — insert at nextAttr (already contiguous)
+            return nextAttr;
+        }
+        int insertPos = alpha[elementNodeNum];
+        while (insertPos < nextAttr && attrParent[insertPos] == elementNodeNum) {
+            insertPos++;
+        }
+        return insertPos;
+    }
+
+    /**
+     * Shift the attribute arrays from the insertion point onwards to make
+     * room for the new attributes, updating alpha pointers of other elements.
+     */
+    private void shiftAttributesFrom(final int insertPos, final int count, final int elementNodeNum) {
+        if (insertPos >= nextAttr) {
+            return;
+        }
+        System.arraycopy(attrParent, insertPos, attrParent, insertPos + count, nextAttr - insertPos);
+        System.arraycopy(attrName, insertPos, attrName, insertPos + count, nextAttr - insertPos);
+        System.arraycopy(attrValue, insertPos, attrValue, insertPos + count, nextAttr - insertPos);
+        System.arraycopy(attrType, insertPos, attrType, insertPos + count, nextAttr - insertPos);
+
+        // Update alpha pointers for elements whose attrs shifted
+        for (int n = 0; n < size; n++) {
+            if (nodeKind[n] == Node.ELEMENT_NODE && alpha[n] >= insertPos && n != elementNodeNum) {
+                alpha[n] += count;
+            }
+        }
+    }
+
+    /**
      * Replace a node with new content.
      *
      * @param nodeNum the node number to replace
@@ -2492,39 +2520,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         // Find the predecessor that points to nodeNum
         final int prev = findPredecessor(nodeNum);
 
-        // Find the next node after nodeNum's subtree (the node nodeNum's chain leads to
-        // at the same or lower level)
-        int afterNode = next[nodeNum];
-        int steps = 0;
-        while (afterNode >= 0 && steps < size) {
-            if (nodeKind[afterNode] != -1 && treeLevel[afterNode] <= level) {
-                break;
-            }
-            afterNode = next[afterNode];
-            steps++;
-        }
+        final int afterNode = findSubtreeSuccessor(nodeNum, level);
 
         // Copy new content nodes and link them into the chain.
         // Uses copyItemIntoDocument to handle document nodes and atomic values.
-        int firstNew = -1;
-        int lastNew = -1;
-        try {
-            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
-                final org.exist.xquery.value.Item item = i.nextItem();
-                final java.util.List<Integer> newNodes = copyItemIntoDocument(item, parentNum, level);
-                for (final int newNodeNum : newNodes) {
-                    if (firstNew == -1) {
-                        firstNew = newNodeNum;
-                    }
-                    if (lastNew >= 0) {
-                        next[lastNew] = newNodeNum;
-                    }
-                    lastNew = newNodeNum;
-                }
-            }
-        } catch (final org.exist.xquery.XPathException e) {
-            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
-        }
+        final int[] firstAndLastNew = copyContentAsChain(content, parentNum, level);
+        final int firstNew = firstAndLastNew[0];
+        final int lastNew = firstAndLastNew[1];
 
         // Link new nodes into the chain
         if (prev >= 0 && firstNew >= 0) {
@@ -2551,20 +2553,52 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     /**
-     * Copy a DOM node into this document's arrays.
-     * This is a simplified version for the copy-modify pattern.
-     *
-     * @return the node number of the top-level copied node
+     * Find the next node after the given node's subtree: the node its next[]
+     * chain leads to at the same or a lower tree level.
      */
+    private int findSubtreeSuccessor(final int nodeNum, final short level) {
+        int afterNode = next[nodeNum];
+        int steps = 0;
+        while (afterNode >= 0 && steps < size) {
+            if (nodeKind[afterNode] != -1 && treeLevel[afterNode] <= level) {
+                break;
+            }
+            afterNode = next[afterNode];
+            steps++;
+        }
+        return afterNode;
+    }
+
     /**
-     * Copy a content item into the document arrays, handling atomic values,
-     * document nodes, and regular nodes per the W3C XQuery Update Facility spec.
+     * Copy the content sequence into the document, linking the copied nodes
+     * into a sibling chain.
      *
-     * @param item the content item to copy
-     * @param parentNodeNum the parent node number
-     * @param level the tree level for the new node(s)
-     * @return list of top-level node numbers that were inserted
+     * @return a two-element array of the first and last copied node numbers
+     *         (each -1 if nothing was copied)
      */
+    private int[] copyContentAsChain(final Sequence content, final int parentNum, final short level) {
+        int firstNew = -1;
+        int lastNew = -1;
+        try {
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> newNodes = copyItemIntoDocument(item, parentNum, level);
+                for (final int newNodeNum : newNodes) {
+                    if (firstNew == -1) {
+                        firstNew = newNodeNum;
+                    }
+                    if (lastNew >= 0) {
+                        next[lastNew] = newNodeNum;
+                    }
+                    lastNew = newNodeNum;
+                }
+            }
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+        return new int[]{firstNew, lastNew};
+    }
+
     /**
      * Collect the namespace bindings in scope at the given element node
      * (nearest declaration wins) by walking up this document's parent chain.
@@ -2654,122 +2688,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      *        Pass null to skip materialization (normal copy behavior).
      */
     private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level,
-                                      final java.util.Map<String, String> scopeNamespaces) {
+                                      final Map<String, String> scopeNamespaces) {
         switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE: {
-                final String localName = node.getLocalName() != null ? node.getLocalName() : node.getNodeName();
-                final String nsUri = node.getNamespaceURI() != null ? node.getNamespaceURI() : "";
-                final String prefix = node.getPrefix() != null ? node.getPrefix() : "";
-                final QName qname = new QName(localName, nsUri, prefix);
-                final int nodeNum = addNode(Node.ELEMENT_NODE, level, qname);
-                next[nodeNum] = parentNodeNum;
-
-                // Collect attribute prefixes (needed for no-preserve filtering)
-                final NamedNodeMap attrs = node.getAttributes();
-                final java.util.Set<String> usedPrefixes = new java.util.HashSet<>();
-                usedPrefixes.add(prefix); // element prefix is always "used"
-
-                // Copy attributes (skip xmlns declarations — handled separately below)
-                if (attrs != null) {
-                    for (int i = 0; i < attrs.getLength(); i++) {
-                        final Attr attr = (Attr) attrs.item(i);
-                        // Skip namespace declarations
-                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
-                            continue;
-                        }
-                        final String attrLocal = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
-                        final String attrNs = attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "";
-                        final String attrPrefix = attr.getPrefix() != null ? attr.getPrefix() : "";
-                        usedPrefixes.add(attrPrefix);
-                        addAttribute(nodeNum, new QName(attrLocal, attrNs, attrPrefix),
-                                attr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
-                    }
-                }
-
-                // Check if no-preserve mode should strip unused namespace declarations
-                final boolean noPreserve = context != null && !context.preserveNamespaces();
-
-                // Collect this element's own namespace declarations
-                final java.util.Map<String, String> selfNsDecls = new java.util.LinkedHashMap<>();
-
-                // Copy namespace declarations (filtered by no-preserve if applicable)
-                if (node instanceof ElementImpl memElement) {
-                    // Memtree element: copy from namespace arrays
-                    final java.util.Map<String, String> nsMap = memElement.getNamespaceMap();
-                    for (final java.util.Map.Entry<String, String> e : nsMap.entrySet()) {
-                        if (noPreserve && !usedPrefixes.contains(e.getKey())) {
-                            continue; // strip unused namespace declaration
-                        }
-                        selfNsDecls.put(e.getKey(), e.getValue());
-                        final QName nsQName = new QName(e.getKey(), e.getValue(),
-                                javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
-                        addNamespace(nodeNum, nsQName);
-                    }
-                } else if (attrs != null) {
-                    // DOM element: extract xmlns attributes
-                    for (int i = 0; i < attrs.getLength(); i++) {
-                        final Attr attr = (Attr) attrs.item(i);
-                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
-                            final String nsPrefix = attr.getLocalName() != null
-                                    && !javax.xml.XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
-                                    ? attr.getLocalName() : "";
-                            if (noPreserve && !usedPrefixes.contains(nsPrefix)) {
-                                continue; // strip unused namespace declaration
-                            }
-                            selfNsDecls.put(nsPrefix, attr.getValue());
-                            final QName nsQName = new QName(nsPrefix, attr.getValue(),
-                                    javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
-                            addNamespace(nodeNum, nsQName);
-                        }
-                    }
-                }
-
-                // No-inherit materialization: add ancestor namespace bindings from within
-                // the subtree that are not already declared on this element. Empty-URI
-                // entries are namespace undeclarations (seeded from the insertion target's
-                // scope) and must never be stamped on an element whose own name or
-                // attributes need that prefix bound.
-                if (scopeNamespaces != null) {
-                    for (final Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
-                        if (!selfNsDecls.containsKey(e.getKey())) {
-                            final boolean isUndeclaration = e.getValue().isEmpty();
-                            final boolean prefixNeededBySelf = usedPrefixes.contains(e.getKey())
-                                    && !(e.getKey().equals(prefix) && nsUri.isEmpty());
-                            final boolean add = isUndeclaration
-                                    ? !prefixNeededBySelf
-                                    : (!noPreserve || usedPrefixes.contains(e.getKey()));
-                            if (add) {
-                                final QName nsQName = new QName(e.getKey(), e.getValue(),
-                                        XMLConstants.XMLNS_ATTRIBUTE);
-                                addNamespace(nodeNum, nsQName);
-                                selfNsDecls.put(e.getKey(), e.getValue());
-                            }
-                        }
-                    }
-                }
-
-                // Build effective namespace scope for children
-                final java.util.Map<String, String> childScope;
-                if (scopeNamespaces != null) {
-                    childScope = new java.util.LinkedHashMap<>(scopeNamespaces);
-                    childScope.putAll(selfNsDecls);
-                } else {
-                    childScope = null;
-                }
-
-                // Copy children recursively, linking siblings together
-                int prevChild = -1;
-                Node child = node.getFirstChild();
-                while (child != null) {
-                    final int childNum = copyNodeIntoDocument(child, nodeNum, (short) (level + 1), childScope);
-                    if (prevChild >= 0) {
-                        next[prevChild] = childNum;
-                    }
-                    prevChild = childNum;
-                    child = child.getNextSibling();
-                }
-                return nodeNum;
-            }
+            case Node.ELEMENT_NODE:
+                return copyElementIntoDocument(node, parentNodeNum, level, scopeNamespaces);
             case Node.TEXT_NODE: {
                 final String text = node.getTextContent();
                 final int nodeNum = addNode(Node.TEXT_NODE, level, null);
@@ -2802,6 +2724,155 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             }
             default:
                 return -1;
+        }
+    }
+
+    /**
+     * Copy an element node (attributes, namespace declarations, children)
+     * into this document.
+     *
+     * @param node the source element
+     * @param parentNodeNum the parent in this document
+     * @param level tree level for the new node
+     * @param scopeNamespaces when non-null, namespace bindings accumulated from ancestors
+     *        within the current subtree (for no-inherit materialization)
+     *
+     * @return the node number of the copied element
+     */
+    private int copyElementIntoDocument(final Node node, final int parentNodeNum, final short level,
+                                         final Map<String, String> scopeNamespaces) {
+        final String localName = node.getLocalName() != null ? node.getLocalName() : node.getNodeName();
+        final String nsUri = node.getNamespaceURI() != null ? node.getNamespaceURI() : "";
+        final String prefix = node.getPrefix() != null ? node.getPrefix() : "";
+        final QName qname = new QName(localName, nsUri, prefix);
+        final int nodeNum = addNode(Node.ELEMENT_NODE, level, qname);
+        next[nodeNum] = parentNodeNum;
+
+        // Collect attribute prefixes (needed for no-preserve filtering)
+        final NamedNodeMap attrs = node.getAttributes();
+        final java.util.Set<String> usedPrefixes = new java.util.HashSet<>();
+        usedPrefixes.add(prefix); // element prefix is always "used"
+
+        copyElementAttributes(nodeNum, attrs, usedPrefixes);
+
+        // Check if no-preserve mode should strip unused namespace declarations
+        final boolean noPreserve = context != null && !context.preserveNamespaces();
+
+        final Map<String, String> selfNsDecls = copySelfNamespaceDecls(node, nodeNum, attrs, usedPrefixes, noPreserve);
+
+        materializeScopeNamespaces(nodeNum, scopeNamespaces, selfNsDecls, usedPrefixes, noPreserve, prefix, nsUri);
+
+        // Build effective namespace scope for children
+        final Map<String, String> childScope;
+        if (scopeNamespaces != null) {
+            childScope = new java.util.LinkedHashMap<>(scopeNamespaces);
+            childScope.putAll(selfNsDecls);
+        } else {
+            childScope = null;
+        }
+
+        // Copy children recursively, linking siblings together
+        int prevChild = -1;
+        Node child = node.getFirstChild();
+        while (child != null) {
+            final int childNum = copyNodeIntoDocument(child, nodeNum, (short) (level + 1), childScope);
+            if (prevChild >= 0) {
+                next[prevChild] = childNum;
+            }
+            prevChild = childNum;
+            child = child.getNextSibling();
+        }
+        return nodeNum;
+    }
+
+    /**
+     * Copy the element's attributes (skipping xmlns declarations, which are
+     * handled as namespace declarations), recording each attribute prefix as used.
+     */
+    private void copyElementAttributes(final int nodeNum, final NamedNodeMap attrs, final java.util.Set<String> usedPrefixes) {
+        if (attrs == null) {
+            return;
+        }
+        for (int i = 0; i < attrs.getLength(); i++) {
+            final Attr attr = (Attr) attrs.item(i);
+            // Skip namespace declarations
+            if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                continue;
+            }
+            final String attrLocal = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
+            final String attrNs = attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "";
+            final String attrPrefix = attr.getPrefix() != null ? attr.getPrefix() : "";
+            usedPrefixes.add(attrPrefix);
+            addAttribute(nodeNum, new QName(attrLocal, attrNs, attrPrefix),
+                    attr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
+        }
+    }
+
+    /**
+     * Copy the element's own namespace declarations (from memtree namespace
+     * arrays or DOM xmlns attributes), filtered by no-preserve if applicable.
+     *
+     * @return the copied declarations as a prefix-to-URI map
+     */
+    private Map<String, String> copySelfNamespaceDecls(final Node node, final int nodeNum,
+            final NamedNodeMap attrs, final java.util.Set<String> usedPrefixes, final boolean noPreserve) {
+        final Map<String, String> selfNsDecls = new java.util.LinkedHashMap<>();
+        if (node instanceof ElementImpl memElement) {
+            // Memtree element: copy from namespace arrays
+            final Map<String, String> nsMap = memElement.getNamespaceMap();
+            for (final Map.Entry<String, String> e : nsMap.entrySet()) {
+                if (noPreserve && !usedPrefixes.contains(e.getKey())) {
+                    continue; // strip unused namespace declaration
+                }
+                selfNsDecls.put(e.getKey(), e.getValue());
+                addNamespace(nodeNum, new QName(e.getKey(), e.getValue(), XMLConstants.XMLNS_ATTRIBUTE));
+            }
+        } else if (attrs != null) {
+            // DOM element: extract xmlns attributes
+            for (int i = 0; i < attrs.getLength(); i++) {
+                final Attr attr = (Attr) attrs.item(i);
+                if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                    final String nsPrefix = attr.getLocalName() != null
+                            && !javax.xml.XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
+                            ? attr.getLocalName() : "";
+                    if (noPreserve && !usedPrefixes.contains(nsPrefix)) {
+                        continue; // strip unused namespace declaration
+                    }
+                    selfNsDecls.put(nsPrefix, attr.getValue());
+                    addNamespace(nodeNum, new QName(nsPrefix, attr.getValue(), XMLConstants.XMLNS_ATTRIBUTE));
+                }
+            }
+        }
+        return selfNsDecls;
+    }
+
+    /**
+     * No-inherit materialization: add ancestor namespace bindings from within
+     * the subtree that are not already declared on this element. Empty-URI
+     * entries are namespace undeclarations (seeded from the insertion target's
+     * scope) and must never be stamped on an element whose own name or
+     * attributes need that prefix bound.
+     */
+    private void materializeScopeNamespaces(final int nodeNum, final Map<String, String> scopeNamespaces,
+            final Map<String, String> selfNsDecls, final java.util.Set<String> usedPrefixes,
+            final boolean noPreserve, final String prefix, final String nsUri) {
+        if (scopeNamespaces == null) {
+            return;
+        }
+        for (final Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
+            if (selfNsDecls.containsKey(e.getKey())) {
+                continue;
+            }
+            final boolean isUndeclaration = e.getValue().isEmpty();
+            final boolean prefixNeededBySelf = usedPrefixes.contains(e.getKey())
+                    && !(e.getKey().equals(prefix) && nsUri.isEmpty());
+            final boolean add = isUndeclaration
+                    ? !prefixNeededBySelf
+                    : (!noPreserve || usedPrefixes.contains(e.getKey()));
+            if (add) {
+                addNamespace(nodeNum, new QName(e.getKey(), e.getValue(), XMLConstants.XMLNS_ATTRIBUTE));
+                selfNsDecls.put(e.getKey(), e.getValue());
+            }
         }
     }
 
@@ -2859,7 +2930,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             this.nextReferenceIdx = newDoc.nextReferenceIdx;
             this.firstChildOverride = null;
         } catch (final SAXException e) {
-            throw new RuntimeException("Failed to compact document after mutations", e);
+            throw new IllegalStateException("Failed to compact document after mutations", e);
         }
     }
 }

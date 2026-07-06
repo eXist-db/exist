@@ -69,6 +69,27 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
 
         final Sequence ctxSeq = contextItem != null ? contextItem.toSequence() : contextSequence;
 
+        final NodeValue targetNode = resolveTargetNode(ctxSeq);
+        final int nodeType = targetNode.getNode().getNodeType();
+
+        final Sequence replacementSeq = replacement.eval(ctxSeq, null);
+        checkReplacementTypes(replacementSeq, nodeType);
+
+        final PendingUpdateList pul = context.getPendingUpdateList();
+        pul.addPrimitive(UpdatePrimitive.replaceNode(targetNode.getNode(), replacementSeq, this));
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Evaluate and validate the replace target: a single element, attribute,
+     * text, comment, or PI node with a parent (XUDY0027/XUTY0008/XUTY0006/XUDY0009).
+     */
+    private NodeValue resolveTargetNode(final Sequence ctxSeq) throws XPathException {
         final Sequence targetSeq = target.eval(ctxSeq, null);
         if (targetSeq.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XUDY0027,
@@ -82,7 +103,15 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
         }
 
         final NodeValue targetNode = (NodeValue) targetSeq.itemAt(0);
-        final Node domNode = targetNode.getNode();
+        checkTargetNodeKind(targetNode.getNode());
+        return targetNode;
+    }
+
+    /**
+     * Validate the target node kind (XUTY0008/XUTY0006) and that it has a
+     * parent (XUDY0009).
+     */
+    private void checkTargetNodeKind(final Node domNode) throws XPathException {
         final int nodeType = domNode.getNodeType();
 
         // XUTY0008: target must not be a document node
@@ -100,50 +129,37 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
         }
 
         // XUDY0009: target must have a parent
-        final boolean hasParent;
-        if (nodeType == Node.ATTRIBUTE_NODE) {
-            hasParent = ((org.w3c.dom.Attr) domNode).getOwnerElement() != null;
-        } else {
-            hasParent = domNode.getParentNode() != null;
-        }
+        final boolean hasParent = nodeType == Node.ATTRIBUTE_NODE
+                ? ((org.w3c.dom.Attr) domNode).getOwnerElement() != null
+                : domNode.getParentNode() != null;
         if (!hasParent) {
             throw new XPathException(this, ErrorCodes.XUDY0009,
                     "Target node of replace expression has no parent.");
         }
+    }
 
-        final Sequence replacementSeq = replacement.eval(ctxSeq, null);
-
-        // Type checking based on target node type
-        if (nodeType == Node.ATTRIBUTE_NODE) {
-            // XUTY0011: replacement of attribute must be attributes
-            for (final SequenceIterator i = replacementSeq.iterate(); i.hasNext(); ) {
-                final Item item = i.nextItem();
-                if (Type.subTypeOf(item.getType(), Type.NODE)
-                        && ((NodeValue) item).getNode().getNodeType() != Node.ATTRIBUTE_NODE) {
-                    throw new XPathException(this, ErrorCodes.XUTY0011,
-                            "Replacement of an attribute node must be attribute node(s).");
-                }
+    /**
+     * Type-check the replacement sequence against the target node type:
+     * attributes replace attributes (XUTY0011); everything else must not
+     * contain attributes (XUTY0010).
+     */
+    private void checkReplacementTypes(final Sequence replacementSeq, final int nodeType) throws XPathException {
+        final boolean targetIsAttribute = nodeType == Node.ATTRIBUTE_NODE;
+        for (final SequenceIterator i = replacementSeq.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                continue;
             }
-        } else {
-            // XUTY0010: replacement of element/text/comment/PI must not be attributes
-            for (final SequenceIterator i = replacementSeq.iterate(); i.hasNext(); ) {
-                final Item item = i.nextItem();
-                if (Type.subTypeOf(item.getType(), Type.NODE)
-                        && ((NodeValue) item).getNode().getNodeType() == Node.ATTRIBUTE_NODE) {
-                    throw new XPathException(this, ErrorCodes.XUTY0010,
-                            "Replacement of an element, text, comment, or PI node must not contain attribute nodes.");
-                }
+            final boolean itemIsAttribute = ((NodeValue) item).getNode().getNodeType() == Node.ATTRIBUTE_NODE;
+            if (targetIsAttribute && !itemIsAttribute) {
+                throw new XPathException(this, ErrorCodes.XUTY0011,
+                        "Replacement of an attribute node must be attribute node(s).");
+            }
+            if (!targetIsAttribute && itemIsAttribute) {
+                throw new XPathException(this, ErrorCodes.XUTY0010,
+                        "Replacement of an element, text, comment, or PI node must not contain attribute nodes.");
             }
         }
-
-        final PendingUpdateList pul = context.getPendingUpdateList();
-        pul.addPrimitive(UpdatePrimitive.replaceNode(targetNode.getNode(), replacementSeq, this));
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        }
-
-        return Sequence.EMPTY_SEQUENCE;
     }
 
     @Override

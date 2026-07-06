@@ -262,6 +262,7 @@ public class XQUFInsertExpr extends AbstractExpression {
             case INSERT_INTO_AS_LAST -> dumper.display(" as last into ");
             case INSERT_BEFORE -> dumper.display(" before ");
             case INSERT_AFTER -> dumper.display(" after ");
+            default -> throw new IllegalStateException("Unknown insert mode: " + mode);
         }
         target.dump(dumper);
     }
@@ -276,6 +277,7 @@ public class XQUFInsertExpr extends AbstractExpression {
             case INSERT_INTO_AS_LAST -> sb.append(" as last into ");
             case INSERT_BEFORE -> sb.append(" before ");
             case INSERT_AFTER -> sb.append(" after ");
+            default -> throw new IllegalStateException("Unknown insert mode: " + mode);
         }
         sb.append(target.toString());
         return sb.toString();

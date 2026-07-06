@@ -67,6 +67,32 @@ public class XQUFReplaceValueExpr extends AbstractExpression {
 
         final Sequence ctxSeq = contextItem != null ? contextItem.toSequence() : contextSequence;
 
+        final NodeValue targetNode = resolveTargetNode(ctxSeq);
+
+        final Sequence valueSeq = value.eval(ctxSeq, null);
+
+        // Per W3C spec, the replacement value is the string value obtained by atomizing
+        // the content expression and joining with single space separator.
+        // We materialize this now (at snapshot time) rather than deferring to PUL application,
+        // to ensure we capture the original value before any other PUL primitives modify the tree.
+        final String stringValue = PendingUpdateList.atomizeAndJoin(valueSeq);
+
+        final PendingUpdateList pul = context.getPendingUpdateList();
+        pul.addPrimitive(UpdatePrimitive.replaceValue(targetNode.getNode(),
+                new StringValue(this, stringValue), this));
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Evaluate and validate the replace-value target: a single element,
+     * attribute, text, comment, or PI node (XUDY0027/XUTY0008).
+     */
+    private NodeValue resolveTargetNode(final Sequence ctxSeq) throws XPathException {
         final Sequence targetSeq = target.eval(ctxSeq, null);
         if (targetSeq.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XUDY0027,
@@ -89,24 +115,7 @@ public class XQUFReplaceValueExpr extends AbstractExpression {
                     "Target of replace value of expression must be a single element, attribute, text, comment, or processing instruction node, not " +
                     (nodeType == Node.DOCUMENT_NODE ? "a document node" : "node type " + nodeType) + ".");
         }
-
-        final Sequence valueSeq = value.eval(ctxSeq, null);
-
-        // Per W3C spec, the replacement value is the string value obtained by atomizing
-        // the content expression and joining with single space separator.
-        // We materialize this now (at snapshot time) rather than deferring to PUL application,
-        // to ensure we capture the original value before any other PUL primitives modify the tree.
-        final String stringValue = PendingUpdateList.atomizeAndJoin(valueSeq);
-
-        final PendingUpdateList pul = context.getPendingUpdateList();
-        pul.addPrimitive(UpdatePrimitive.replaceValue(targetNode.getNode(),
-                new StringValue(this, stringValue), this));
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        }
-
-        return Sequence.EMPTY_SEQUENCE;
+        return targetNode;
     }
 
     @Override

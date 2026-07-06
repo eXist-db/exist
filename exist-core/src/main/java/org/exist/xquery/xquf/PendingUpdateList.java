@@ -188,6 +188,7 @@ public class PendingUpdateList {
         return false;
     }
 
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private static boolean nodesAreSame(final Node a, final Node b) {
         // NOTE: intentional reference identity comparison
         if (a == b) {
@@ -278,9 +279,20 @@ public class PendingUpdateList {
      * - XUDY0024: new namespace bindings from different operations conflict with each other
      */
     private void checkAttributeAndNamespaceConflicts() throws XPathException {
-        // Group attribute operations by target element.
-        // We use a string key for node identity because persistent DOM proxies
-        // may return different Java objects for the same underlying node.
+        // Group attribute operations by target element, then check each
+        // affected element for attribute and namespace conflicts.
+        for (final ElementAttrState state : collectElementAttrStates().values()) {
+            checkDuplicateAttributes(state);
+            checkNamespaceConflicts(state);
+        }
+    }
+
+    /**
+     * Group attribute operations by target element.
+     * A string key is used for node identity because persistent DOM proxies
+     * may return different Java objects for the same underlying node.
+     */
+    private Map<String, ElementAttrState> collectElementAttrStates() throws XPathException {
         final Map<String, ElementAttrState> elementStates = new LinkedHashMap<>();
 
         for (final UpdatePrimitive p : primitives) {
@@ -375,79 +387,89 @@ public class PendingUpdateList {
             }
         }
 
-        // Now check each affected element
-        for (final Map.Entry<String, ElementAttrState> entry : elementStates.entrySet()) {
-            final Node element = entry.getValue().elementNode;
-            final ElementAttrState state = entry.getValue();
+        return elementStates;
+    }
 
-            // Build the final attribute set: existing attrs - removed + added
-            final Set<ExpandedName> finalAttrs = new HashSet<>();
+    /**
+     * XUDY0021: check that after applying all updates the element has no
+     * duplicate attribute QNames.
+     */
+    private static void checkDuplicateAttributes(final ElementAttrState state) throws XPathException {
+        // Build the final attribute set: existing attrs - removed + added
+        final Set<ExpandedName> finalAttrs = new HashSet<>();
 
-            // Add existing attributes
-            final org.w3c.dom.NamedNodeMap existingAttrs = element.getAttributes();
-            if (existingAttrs != null) {
-                for (int i = 0; i < existingAttrs.getLength(); i++) {
-                    final Node attr = existingAttrs.item(i);
-                    // Skip xmlns declarations
-                    if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
-                        continue;
-                    }
-                    final ExpandedName name = getExpandedName(attr);
-                    if (!state.removedAttrs.contains(name)) {
-                        finalAttrs.add(name);
-                    }
-                }
-            }
-
-            // Check added attributes for duplicates with existing and with each other
-            for (final ExpandedName addedName : state.addedAttrs) {
-                if (!finalAttrs.add(addedName)) {
-                    // XUDY0021: duplicate attribute name
-                    throw new XPathException(state.firstExpr, ErrorCodes.XUDY0021,
-                            "Duplicate attribute name after update: " +
-                                    (addedName.prefix.isEmpty() ? "" : addedName.prefix + ":") +
-                                    addedName.localName);
-                }
-            }
-
-            // Check namespace bindings
-            // First, collect existing in-scope namespace bindings for this element
-            final Map<String, String> existingNsBindings = collectInScopeNamespaces(element);
-
-            // XUDY0023: check new bindings against existing bindings
-            for (final NsBinding binding : state.newNsBindings) {
-                if (binding.prefix == null || binding.prefix.isEmpty()) {
-                    continue; // default namespace doesn't conflict for attributes
-                }
-                if (binding.uri == null || binding.uri.isEmpty()) {
-                    continue; // empty URI doesn't conflict
-                }
-                final String existingUri = existingNsBindings.get(binding.prefix);
-                if (existingUri != null && !existingUri.equals(binding.uri)) {
-                    throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0023,
-                            "New namespace binding for prefix '" + binding.prefix +
-                                    "' with URI '" + binding.uri +
-                                    "' conflicts with existing binding to URI '" + existingUri + "'.");
-                }
-            }
-
-            // XUDY0024: check new bindings against each other
-            final Map<String, String> newBindingsMap = new HashMap<>();
-            for (final NsBinding binding : state.newNsBindings) {
-                if (binding.prefix == null || binding.prefix.isEmpty()) {
+        // Add existing attributes
+        final org.w3c.dom.NamedNodeMap existingAttrs = state.elementNode.getAttributes();
+        if (existingAttrs != null) {
+            for (int i = 0; i < existingAttrs.getLength(); i++) {
+                final Node attr = existingAttrs.item(i);
+                // Skip xmlns declarations
+                if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
                     continue;
                 }
-                if (binding.uri == null || binding.uri.isEmpty()) {
-                    continue;
-                }
-                final String prevUri = newBindingsMap.put(binding.prefix, binding.uri);
-                if (prevUri != null && !prevUri.equals(binding.uri)) {
-                    throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0024,
-                            "Conflicting namespace bindings for prefix '" + binding.prefix +
-                                    "': URI '" + prevUri + "' vs '" + binding.uri + "'.");
+                final ExpandedName name = getExpandedName(attr);
+                if (!state.removedAttrs.contains(name)) {
+                    finalAttrs.add(name);
                 }
             }
         }
+
+        // Check added attributes for duplicates with existing and with each other
+        for (final ExpandedName addedName : state.addedAttrs) {
+            if (!finalAttrs.add(addedName)) {
+                // XUDY0021: duplicate attribute name
+                throw new XPathException(state.firstExpr, ErrorCodes.XUDY0021,
+                        "Duplicate attribute name after update: " +
+                                (addedName.prefix.isEmpty() ? "" : addedName.prefix + ":") +
+                                addedName.localName);
+            }
+        }
+    }
+
+    /**
+     * XUDY0023/XUDY0024: check the element's new namespace bindings against
+     * its existing in-scope bindings and against each other.
+     */
+    private static void checkNamespaceConflicts(final ElementAttrState state) throws XPathException {
+        // Collect existing in-scope namespace bindings for this element
+        final Map<String, String> existingNsBindings = collectInScopeNamespaces(state.elementNode);
+
+        // XUDY0023: check new bindings against existing bindings
+        for (final NsBinding binding : state.newNsBindings) {
+            if (isNonConflictingBinding(binding)) {
+                continue;
+            }
+            final String existingUri = existingNsBindings.get(binding.prefix);
+            if (existingUri != null && !existingUri.equals(binding.uri)) {
+                throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0023,
+                        "New namespace binding for prefix '" + binding.prefix +
+                                "' with URI '" + binding.uri +
+                                "' conflicts with existing binding to URI '" + existingUri + "'.");
+            }
+        }
+
+        // XUDY0024: check new bindings against each other
+        final Map<String, String> newBindingsMap = new HashMap<>();
+        for (final NsBinding binding : state.newNsBindings) {
+            if (isNonConflictingBinding(binding)) {
+                continue;
+            }
+            final String prevUri = newBindingsMap.put(binding.prefix, binding.uri);
+            if (prevUri != null && !prevUri.equals(binding.uri)) {
+                throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0024,
+                        "Conflicting namespace bindings for prefix '" + binding.prefix +
+                                "': URI '" + prevUri + "' vs '" + binding.uri + "'.");
+            }
+        }
+    }
+
+    /**
+     * A binding with no prefix (default namespace) or no URI cannot conflict
+     * for attribute purposes.
+     */
+    private static boolean isNonConflictingBinding(final NsBinding binding) {
+        return binding.prefix == null || binding.prefix.isEmpty()
+                || binding.uri == null || binding.uri.isEmpty();
     }
 
     /**
@@ -708,7 +730,7 @@ public class PendingUpdateList {
 
         // Apply in-memory updates (for copy-modify)
         if (!inMemoryPrimitives.isEmpty()) {
-            applyInMemory(context, inMemoryPrimitives);
+            applyInMemory(inMemoryPrimitives);
         }
 
         // Apply persistent updates
@@ -720,94 +742,27 @@ public class PendingUpdateList {
     /**
      * Apply updates to in-memory nodes (used in copy-modify expressions).
      */
-    private void applyInMemory(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
+    private void applyInMemory(final List<UpdatePrimitive> prims) throws XPathException {
         // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
         // Phase 1: upd:insertInto, upd:insertAttributes, upd:replaceValue (non-element), upd:rename
         // Phase 2: upd:insertBefore, upd:insertAfter, upd:insertIntoAsFirst, upd:insertIntoAsLast
         // Phase 3: upd:replaceNode
         // Phase 4: upd:replaceElementContent (replaceValue on elements)
         // Phase 5: upd:delete
-        final List<UpdatePrimitive> inserts = new ArrayList<>();
-        final List<UpdatePrimitive> renames = new ArrayList<>();
-        final List<UpdatePrimitive> replaceValues = new ArrayList<>();
-        final List<UpdatePrimitive> replaceElementContents = new ArrayList<>();
-        final List<UpdatePrimitive> replaceNodes = new ArrayList<>();
-        final List<UpdatePrimitive> deletes = new ArrayList<>();
+        final PhasePartition partition = partitionByPhase(prims);
+        final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
 
-        for (final UpdatePrimitive p : prims) {
-            switch (p.getType()) {
-                case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST,
-                     INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES:
-                    inserts.add(p);
-                    break;
-                case RENAME:
-                    renames.add(p);
-                    break;
-                case REPLACE_VALUE:
-                    // W3C spec distinguishes replaceValue (attr/text/comment/PI)
-                    // from replaceElementContent (element) — different application phase
-                    if (p.getTargetNode().getNodeType() == Node.ELEMENT_NODE) {
-                        replaceElementContents.add(p);
-                    } else {
-                        replaceValues.add(p);
-                    }
-                    break;
-                case REPLACE_NODE:
-                    replaceNodes.add(p);
-                    break;
-                case DELETE:
-                    deletes.add(p);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Collect elements targeted by replaceElementContent — per W3C spec,
-        // replaceElementContent replaces ALL children, so inserts of non-attribute
-        // children into these elements are redundant.
-        final Set<String> replaceElementContentTargets = new HashSet<>();
-        for (final UpdatePrimitive p : replaceElementContents) {
-            replaceElementContentTargets.add(nodeKey(p.getTargetNode()));
-        }
-
-        // Sort inserts by type priority per W3C spec Section 3.3.3:
-        // INSERT_INTO_AS_FIRST first, then BEFORE/AFTER/ATTRIBUTES/INTO, then INSERT_INTO_AS_LAST last.
-        inserts.sort((a, b) -> {
-            final int pa = insertPriority(a.getType());
-            final int pb = insertPriority(b.getType());
-            return Integer.compare(pa, pb);
-        });
-        for (final UpdatePrimitive p : inserts) {
-            // Skip non-attribute inserts into elements whose content will be replaced
-            if (!replaceElementContentTargets.isEmpty()) {
-                final Node insertTarget = p.getTargetNode();
-                final boolean isInsertIntoElement =
-                        (p.getType() == UpdatePrimitive.Type.INSERT_INTO ||
-                         p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST ||
-                         p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST) &&
-                        insertTarget.getNodeType() == Node.ELEMENT_NODE;
-                if (isInsertIntoElement && replaceElementContentTargets.contains(nodeKey(insertTarget))) {
-                    continue;
-                }
-            }
-            applyInMemoryInsert(p);
-        }
+        applyInMemoryInserts(partition.inserts, replaceElementContentTargets);
         // Pre-capture original attr indices for Phase 3 replaceNode BEFORE Phase 1
         // renames, which can change attribute QNames and create ambiguity.
         // We capture the index here (before any renames or removals).
-        final Map<UpdatePrimitive, Integer> attrReplaceIndices = new HashMap<>();
-        for (final UpdatePrimitive p : replaceNodes) {
-            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
-                attrReplaceIndices.put(p, ((org.exist.dom.memtree.AttrImpl) p.getTargetNode()).getNodeNumber());
-            }
-        }
+        final Map<UpdatePrimitive, Integer> attrReplaceIndices = captureAttributeReplaceIndices(partition.replaceNodes);
 
         // Phase 1: renames and non-element replaceValues
-        for (final UpdatePrimitive p : renames) {
+        for (final UpdatePrimitive p : partition.renames) {
             applyInMemoryRename(p);
         }
-        for (final UpdatePrimitive p : replaceValues) {
+        for (final UpdatePrimitive p : partition.replaceValues) {
             applyInMemoryReplaceValue(p);
         }
         // Phase 3: replaceNode — skip if the target's parent is targeted by
@@ -820,19 +775,91 @@ public class PendingUpdateList {
         // By processing highest index first, each removal only shifts indices above
         // the removed position, which we've already processed.
 
-        // Separate attribute and non-attribute replaceNodes
-        final List<UpdatePrimitive> attrReplaceNodes = new java.util.ArrayList<>();
-        final List<UpdatePrimitive> nonAttrReplaceNodes = new java.util.ArrayList<>();
+        applyInMemoryReplaceNodes(partition.replaceNodes, attrReplaceIndices, replaceElementContentTargets);
+        // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
+        // Apply in reverse document order to prevent cross-contamination when
+        // insertChildren appends text nodes at the end of the flat array for empty elements.
+        // Without reverse order, an appended text node for an earlier element may fall
+        // in the positional subtree range of a later sibling element.
+        applyInMemoryReplaceElementContents(partition.replaceElementContents);
+        // Phase 5: deletes in reverse document order
+        for (int i = partition.deletes.size() - 1; i >= 0; i--) {
+            applyInMemoryDelete(partition.deletes.get(i));
+        }
+
+        // Per W3C XQuery Update Facility spec: after applying all updates,
+        // merge adjacent text nodes and remove empty text nodes.
+        // Collect all affected documents, tracking which had structural changes.
+        mergeAndCompactAffectedDocuments(prims);
+    }
+
+    /**
+     * Sort insert primitives by W3C application priority and apply them,
+     * skipping non-attribute inserts into elements whose entire content will
+     * be replaced by a replaceElementContent primitive anyway.
+     */
+    private void applyInMemoryInserts(final List<UpdatePrimitive> inserts,
+            final Set<String> replaceElementContentTargets) throws XPathException {
+        // Sort inserts by type priority per W3C spec Section 3.3.3:
+        // INSERT_INTO_AS_FIRST first, then BEFORE/AFTER/ATTRIBUTES/INTO, then INSERT_INTO_AS_LAST last.
+        inserts.sort((a, b) -> {
+            final int pa = insertPriority(a.getType());
+            final int pb = insertPriority(b.getType());
+            return Integer.compare(pa, pb);
+        });
+        for (final UpdatePrimitive p : inserts) {
+            if (!isRedundantInsert(p, replaceElementContentTargets)) {
+                applyInMemoryInsert(p);
+            }
+        }
+    }
+
+    /**
+     * An insert into an element is redundant when that element's content is
+     * replaced wholesale by a replaceElementContent primitive.
+     */
+    private boolean isRedundantInsert(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
+        if (replaceElementContentTargets.isEmpty()) {
+            return false;
+        }
+        final Node insertTarget = p.getTargetNode();
+        final boolean isInsertIntoElement =
+                (p.getType() == UpdatePrimitive.Type.INSERT_INTO ||
+                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST ||
+                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST) &&
+                insertTarget.getNodeType() == Node.ELEMENT_NODE;
+        return isInsertIntoElement && replaceElementContentTargets.contains(nodeKey(insertTarget));
+    }
+
+    /**
+     * Capture the original attribute indices of attribute-targeted replaceNode
+     * primitives, before Phase 1 renames can change attribute QNames.
+     */
+    private static Map<UpdatePrimitive, Integer> captureAttributeReplaceIndices(final List<UpdatePrimitive> replaceNodes) {
+        final Map<UpdatePrimitive, Integer> attrReplaceIndices = new HashMap<>();
         for (final UpdatePrimitive p : replaceNodes) {
-            if (!replaceElementContentTargets.isEmpty()) {
-                final Node replTarget = p.getTargetNode();
-                final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
-                        ? ((Attr) replTarget).getOwnerElement()
-                        : replTarget.getParentNode();
-                if (parent != null && parent.getNodeType() == Node.ELEMENT_NODE
-                        && replaceElementContentTargets.contains(nodeKey(parent))) {
-                    continue;
-                }
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                attrReplaceIndices.put(p, ((org.exist.dom.memtree.AttrImpl) p.getTargetNode()).getNodeNumber());
+            }
+        }
+        return attrReplaceIndices;
+    }
+
+    /**
+     * Apply Phase 3 replaceNode primitives: attribute targets first in
+     * descending original-index order (removals shift the attr arrays), then
+     * the remaining targets. Targets whose parent is subject to
+     * replaceElementContent are skipped.
+     */
+    private void applyInMemoryReplaceNodes(final List<UpdatePrimitive> replaceNodes,
+            final Map<UpdatePrimitive, Integer> attrReplaceIndices,
+            final Set<String> replaceElementContentTargets) throws XPathException {
+        // Separate attribute and non-attribute replaceNodes
+        final List<UpdatePrimitive> attrReplaceNodes = new ArrayList<>();
+        final List<UpdatePrimitive> nonAttrReplaceNodes = new ArrayList<>();
+        for (final UpdatePrimitive p : replaceNodes) {
+            if (isReplaceNodeSuperseded(p, replaceElementContentTargets)) {
+                continue;
             }
             if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
                 attrReplaceNodes.add(p);
@@ -850,11 +877,30 @@ public class PendingUpdateList {
         for (final UpdatePrimitive p : nonAttrReplaceNodes) {
             applyInMemoryReplaceNode(p, null);
         }
-        // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
-        // Apply in reverse document order to prevent cross-contamination when
-        // insertChildren appends text nodes at the end of the flat array for empty elements.
-        // Without reverse order, an appended text node for an earlier element may fall
-        // in the positional subtree range of a later sibling element.
+    }
+
+    /**
+     * A replaceNode is superseded when its target's parent element is subject
+     * to replaceElementContent, which replaces ALL children anyway.
+     */
+    private boolean isReplaceNodeSuperseded(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
+        if (replaceElementContentTargets.isEmpty()) {
+            return false;
+        }
+        final Node replTarget = p.getTargetNode();
+        final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
+                ? ((Attr) replTarget).getOwnerElement()
+                : replTarget.getParentNode();
+        return parent != null && parent.getNodeType() == Node.ELEMENT_NODE
+                && replaceElementContentTargets.contains(nodeKey(parent));
+    }
+
+    /**
+     * Apply Phase 4 replaceElementContent primitives in reverse document order
+     * to prevent cross-contamination when insertChildren appends text nodes at
+     * the end of the flat array for empty elements.
+     */
+    private void applyInMemoryReplaceElementContents(final List<UpdatePrimitive> replaceElementContents) throws XPathException {
         replaceElementContents.sort((a, b) -> {
             final int aNum = ((org.exist.dom.memtree.NodeImpl) a.getTargetNode()).getNodeNumber();
             final int bNum = ((org.exist.dom.memtree.NodeImpl) b.getTargetNode()).getNodeNumber();
@@ -863,14 +909,13 @@ public class PendingUpdateList {
         for (final UpdatePrimitive p : replaceElementContents) {
             applyInMemoryReplaceValue(p);
         }
-        // Phase 5: deletes in reverse document order
-        for (int i = deletes.size() - 1; i >= 0; i--) {
-            applyInMemoryDelete(deletes.get(i));
-        }
+    }
 
-        // Per W3C XQuery Update Facility spec: after applying all updates,
-        // merge adjacent text nodes and remove empty text nodes.
-        // Collect all affected documents, tracking which had structural changes.
+    /**
+     * Per W3C XQuery Update Facility spec: after applying all updates, merge
+     * adjacent text nodes, and compact documents whose tree structure changed.
+     */
+    private void mergeAndCompactAffectedDocuments(final List<UpdatePrimitive> prims) {
         final Set<org.exist.dom.memtree.DocumentImpl> affectedDocs = new HashSet<>();
         final Set<org.exist.dom.memtree.DocumentImpl> structurallyChanged = new HashSet<>();
         for (final UpdatePrimitive p : prims) {
@@ -1103,123 +1148,7 @@ public class PendingUpdateList {
             // Apply within a transaction
             try (final Txn transaction = broker.continueOrBeginTransaction()) {
 
-                // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
-                // Phase 1: inserts, replaceValue (non-element), renames
-                // Phase 3: replaceNode
-                // Phase 4: replaceElementContent (replaceValue on elements)
-                // Phase 5: deletes
-                // Phase 6: puts
-                final List<UpdatePrimitive> inserts = new ArrayList<>();
-                final List<UpdatePrimitive> renames = new ArrayList<>();
-                final List<UpdatePrimitive> replaceValues = new ArrayList<>();
-                final List<UpdatePrimitive> replaceElementContents = new ArrayList<>();
-                final List<UpdatePrimitive> replaceNodes = new ArrayList<>();
-                final List<UpdatePrimitive> deletes = new ArrayList<>();
-                final List<UpdatePrimitive> puts = new ArrayList<>();
-
-                for (final UpdatePrimitive p : prims) {
-                    switch (p.getType()) {
-                        case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST,
-                             INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES:
-                            inserts.add(p);
-                            break;
-                        case RENAME:
-                            renames.add(p);
-                            break;
-                        case REPLACE_VALUE:
-                            if (p.getTargetNode().getNodeType() == Node.ELEMENT_NODE) {
-                                replaceElementContents.add(p);
-                            } else {
-                                replaceValues.add(p);
-                            }
-                            break;
-                        case REPLACE_NODE:
-                            replaceNodes.add(p);
-                            break;
-                        case DELETE:
-                            deletes.add(p);
-                            break;
-                        case PUT:
-                            puts.add(p);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                // Collect elements targeted by replaceElementContent — per W3C spec,
-                // replaceElementContent replaces ALL children, so inserts into these
-                // elements and replaceNode of their children are redundant.
-                final Set<String> replaceElementContentTargets = new HashSet<>();
-                for (final UpdatePrimitive p : replaceElementContents) {
-                    replaceElementContentTargets.add(nodeKey(p.getTargetNode()));
-                }
-
-                for (final UpdatePrimitive p : inserts) {
-                    // Skip non-attribute inserts into elements whose content will be replaced
-                    if (!replaceElementContentTargets.isEmpty()) {
-                        final Node insertTarget = p.getTargetNode();
-                        final boolean isInsertIntoElement =
-                                (p.getType() == UpdatePrimitive.Type.INSERT_INTO ||
-                                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST ||
-                                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST) &&
-                                insertTarget.getNodeType() == Node.ELEMENT_NODE;
-                        if (isInsertIntoElement && replaceElementContentTargets.contains(nodeKey(insertTarget))) {
-                            continue;
-                        }
-                    }
-                    applyPersistentInsert(context, transaction, p, modifiedDocuments);
-                }
-                for (final UpdatePrimitive p : renames) {
-                    applyPersistentRename(context, transaction, p, modifiedDocuments);
-                }
-                for (final UpdatePrimitive p : replaceValues) {
-                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
-                }
-                // Phase 3: replaceNode — skip if the target's parent is targeted by
-                // replaceElementContent (which will replace ALL children anyway)
-                for (final UpdatePrimitive p : replaceNodes) {
-                    if (!replaceElementContentTargets.isEmpty()) {
-                        final Node replTarget = p.getTargetNode();
-                        final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
-                                ? ((Attr) replTarget).getOwnerElement()
-                                : replTarget.getParentNode();
-                        if (parent != null && parent.getNodeType() == Node.ELEMENT_NODE
-                                && replaceElementContentTargets.contains(nodeKey(parent))) {
-                            continue;
-                        }
-                    }
-                    applyPersistentReplaceNode(context, transaction, p, modifiedDocuments);
-                }
-                // Phase 4: replaceElementContent (after replaceNode)
-                for (final UpdatePrimitive p : replaceElementContents) {
-                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
-                }
-                // Delete in reverse document order
-                for (int i = deletes.size() - 1; i >= 0; i--) {
-                    applyPersistentDelete(context, transaction, deletes.get(i), modifiedDocuments);
-                }
-                for (final UpdatePrimitive p : puts) {
-                    applyPersistentPut(context, transaction, p);
-                }
-
-                // Store all modified documents and send notifications
-                final NotificationService notifier2 = broker.getBrokerPool().getNotificationService();
-                final Iterator<DocumentImpl> storeIter = modifiedDocuments.getDocumentIterator();
-                while (storeIter.hasNext()) {
-                    final DocumentImpl doc = storeIter.next();
-                    broker.storeXMLResource(transaction, doc);
-                    notifier2.notifyUpdate(doc, UpdateListener.UPDATE);
-                }
-
-                // Finish triggers
-                final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-                while (iterator.hasNext()) {
-                    final DocumentImpl doc = iterator.next();
-                    context.addModifiedDoc(doc);
-                    finishTrigger(broker, triggers, doc);
-                }
-                triggers.clear();
+                applyPersistentPrimitives(context, broker, transaction, prims, modifiedDocuments, triggers);
 
                 transaction.commit();
             } catch (final TriggerException | org.exist.storage.txn.TransactionException e) {
@@ -1233,6 +1162,169 @@ public class PendingUpdateList {
                 lockedDocumentsLocks.close();
             }
         }
+    }
+
+
+    /**
+     * Partition the primitives by type and apply them in W3C application
+     * order within the given transaction, then store modified documents and
+     * finish triggers.
+     */
+    private void applyPersistentPrimitives(final XQueryContext context, final DBBroker broker,
+            final Txn transaction, final List<UpdatePrimitive> prims,
+            final MutableDocumentSet modifiedDocuments, final Int2ObjectMap<DocumentTrigger> triggers)
+            throws XPathException, TriggerException {
+        // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
+        // Phase 1: inserts, replaceValue (non-element), renames
+        // Phase 3: replaceNode
+        // Phase 4: replaceElementContent (replaceValue on elements)
+        // Phase 5: deletes
+        // Phase 6: puts
+        final PhasePartition partition = partitionByPhase(prims);
+        final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
+
+        applyPersistentInserts(context, transaction, partition.inserts, replaceElementContentTargets, modifiedDocuments);
+        for (final UpdatePrimitive p : partition.renames) {
+            applyPersistentRename(context, transaction, p, modifiedDocuments);
+        }
+        for (final UpdatePrimitive p : partition.replaceValues) {
+            applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
+        }
+        // Phase 3: replaceNode — skip if the target's parent is targeted by
+        // replaceElementContent (which will replace ALL children anyway)
+        applyPersistentReplaceNodes(context, transaction, partition.replaceNodes, replaceElementContentTargets, modifiedDocuments);
+        // Phase 4: replaceElementContent (after replaceNode)
+        for (final UpdatePrimitive p : partition.replaceElementContents) {
+            applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
+        }
+        // Delete in reverse document order
+        for (int i = partition.deletes.size() - 1; i >= 0; i--) {
+            applyPersistentDelete(context, transaction, partition.deletes.get(i), modifiedDocuments);
+        }
+        for (final UpdatePrimitive p : partition.puts) {
+            applyPersistentPut(context, transaction, p);
+        }
+
+        storeModifiedAndFinishTriggers(context, broker, transaction, modifiedDocuments, triggers);
+    }
+
+    /**
+     * Apply insert primitives, skipping non-attribute inserts into elements
+     * whose content will be replaced wholesale.
+     */
+    private void applyPersistentInserts(final XQueryContext context, final Txn transaction,
+            final List<UpdatePrimitive> inserts, final Set<String> replaceElementContentTargets,
+            final MutableDocumentSet modifiedDocuments) throws XPathException {
+        for (final UpdatePrimitive p : inserts) {
+            if (!isRedundantInsert(p, replaceElementContentTargets)) {
+                applyPersistentInsert(context, transaction, p, modifiedDocuments);
+            }
+        }
+    }
+
+    /**
+     * Apply replaceNode primitives, skipping targets whose parent element is
+     * subject to replaceElementContent.
+     */
+    private void applyPersistentReplaceNodes(final XQueryContext context, final Txn transaction,
+            final List<UpdatePrimitive> replaceNodes, final Set<String> replaceElementContentTargets,
+            final MutableDocumentSet modifiedDocuments) throws XPathException {
+        for (final UpdatePrimitive p : replaceNodes) {
+            if (!isReplaceNodeSuperseded(p, replaceElementContentTargets)) {
+                applyPersistentReplaceNode(context, transaction, p, modifiedDocuments);
+            }
+        }
+    }
+
+    /**
+     * Update primitives partitioned by their W3C application phase.
+     */
+    private static final class PhasePartition {
+        final List<UpdatePrimitive> inserts = new ArrayList<>();
+        final List<UpdatePrimitive> renames = new ArrayList<>();
+        final List<UpdatePrimitive> replaceValues = new ArrayList<>();
+        final List<UpdatePrimitive> replaceElementContents = new ArrayList<>();
+        final List<UpdatePrimitive> replaceNodes = new ArrayList<>();
+        final List<UpdatePrimitive> deletes = new ArrayList<>();
+        final List<UpdatePrimitive> puts = new ArrayList<>();
+
+        /**
+         * Collect the elements targeted by replaceElementContent — per W3C spec,
+         * replaceElementContent replaces ALL children, so inserts into these
+         * elements and replaceNode of their children are redundant.
+         *
+         * @return the node keys of the targeted elements
+         */
+        Set<String> replaceElementContentTargets() {
+            final Set<String> targets = new HashSet<>();
+            for (final UpdatePrimitive p : replaceElementContents) {
+                targets.add(nodeKey(p.getTargetNode()));
+            }
+            return targets;
+        }
+    }
+
+    /**
+     * Partition primitives by the W3C application phase they belong to.
+     * REPLACE_VALUE on elements is replaceElementContent (Phase 4); on other
+     * node kinds it is replaceValue (Phase 1).
+     */
+    private static PhasePartition partitionByPhase(final List<UpdatePrimitive> prims) {
+        final PhasePartition partition = new PhasePartition();
+        for (final UpdatePrimitive p : prims) {
+            switch (p.getType()) {
+                case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST,
+                     INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES:
+                    partition.inserts.add(p);
+                    break;
+                case RENAME:
+                    partition.renames.add(p);
+                    break;
+                case REPLACE_VALUE:
+                    if (p.getTargetNode().getNodeType() == Node.ELEMENT_NODE) {
+                        partition.replaceElementContents.add(p);
+                    } else {
+                        partition.replaceValues.add(p);
+                    }
+                    break;
+                case REPLACE_NODE:
+                    partition.replaceNodes.add(p);
+                    break;
+                case DELETE:
+                    partition.deletes.add(p);
+                    break;
+                case PUT:
+                    partition.puts.add(p);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return partition;
+    }
+
+    /**
+     * Store all modified documents, send update notifications, and finish the
+     * per-document triggers.
+     */
+    private void storeModifiedAndFinishTriggers(final XQueryContext context, final DBBroker broker,
+            final Txn transaction, final MutableDocumentSet modifiedDocuments,
+            final Int2ObjectMap<DocumentTrigger> triggers) throws TriggerException {
+        final NotificationService notifier = broker.getBrokerPool().getNotificationService();
+        final Iterator<DocumentImpl> storeIter = modifiedDocuments.getDocumentIterator();
+        while (storeIter.hasNext()) {
+            final DocumentImpl doc = storeIter.next();
+            broker.storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+        }
+
+        final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+        while (iterator.hasNext()) {
+            final DocumentImpl doc = iterator.next();
+            context.addModifiedDoc(doc);
+            finishTrigger(broker, triggers, doc);
+        }
+        triggers.clear();
     }
 
     private void applyPersistentInsert(final XQueryContext context, final Txn transaction,
@@ -1541,7 +1633,7 @@ public class PendingUpdateList {
             broker.saveCollection(transaction, collection);
 
             // Serialize the node to a string for storage
-            final org.exist.storage.serializers.Serializer serializer = broker.borrowSerializer();
+            final Serializer serializer = broker.borrowSerializer();
             final String serialized;
             try {
                 serialized = serializer.serialize(targetNode);

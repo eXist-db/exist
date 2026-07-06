@@ -68,6 +68,24 @@ public class XQUFRenameExpr extends AbstractExpression {
 
         final Sequence ctxSeq = contextItem != null ? contextItem.toSequence() : contextSequence;
 
+        final NodeValue targetNode = resolveTargetNode(ctxSeq);
+        final QName qname = resolveNewName(ctxSeq, targetNode.getNode().getNodeType());
+
+        final PendingUpdateList pul = context.getPendingUpdateList();
+        pul.addPrimitive(UpdatePrimitive.rename(targetNode.getNode(), qname, this));
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Evaluate and validate the rename target: a single element, attribute,
+     * or processing instruction node (XUDY0027/XUTY0012).
+     */
+    private NodeValue resolveTargetNode(final Sequence ctxSeq) throws XPathException {
         final Sequence targetSeq = target.eval(ctxSeq, null);
         if (targetSeq.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XUDY0027,
@@ -88,7 +106,14 @@ public class XQUFRenameExpr extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.XUTY0012,
                     "Target of rename expression must be an element, attribute, or processing instruction node.");
         }
+        return targetNode;
+    }
 
+    /**
+     * Evaluate the new-name expression and derive the QName for the rename
+     * (XPTY0004/XQDY0074), rejecting "xml" as a PI target name (XQDY0064).
+     */
+    private QName resolveNewName(final Sequence ctxSeq, final int nodeType) throws XPathException {
         // Evaluate new name — must be a single item castable to xs:QName
         final Sequence nameSeq = newName.eval(ctxSeq, null);
         if (nameSeq.isEmpty()) {
@@ -101,50 +126,43 @@ public class XQUFRenameExpr extends AbstractExpression {
         }
 
         // Atomize the new name expression per W3C spec
-        final Item nameItem;
         final Item rawItem = nameSeq.itemAt(0);
-        if (Type.subTypeOf(rawItem.getType(), Type.NODE)) {
-            nameItem = rawItem.atomize();
-        } else {
-            nameItem = rawItem;
-        }
+        final Item nameItem = Type.subTypeOf(rawItem.getType(), Type.NODE) ? rawItem.atomize() : rawItem;
 
-        final QName qname;
+        final QName qname = toQName(nameItem);
+
+        // XQDY0064: PI target name must not be "xml" (case-insensitive)
+        if (nodeType == Node.PROCESSING_INSTRUCTION_NODE && "xml".equalsIgnoreCase(qname.getLocalPart())) {
+            throw new XPathException(this, ErrorCodes.XQDY0064,
+                    "Processing instruction target name cannot be 'xml'.");
+        }
+        return qname;
+    }
+
+    /**
+     * Convert the atomized new-name item to a QName (XPTY0004/XQDY0074).
+     */
+    private QName toQName(final Item nameItem) throws XPathException {
         if (nameItem.getType() == Type.QNAME) {
-            qname = ((QNameValue) nameItem).getQName();
-        } else if (Type.subTypeOf(nameItem.getType(), Type.STRING) || nameItem.getType() == Type.UNTYPED_ATOMIC) {
+            return ((QNameValue) nameItem).getQName();
+        }
+        if (Type.subTypeOf(nameItem.getType(), Type.STRING) || nameItem.getType() == Type.UNTYPED_ATOMIC) {
             final String nameStr = nameItem.getStringValue().trim();
+            final QName qname;
             try {
                 qname = QName.parse(context, nameStr);
             } catch (final QName.IllegalQNameException e) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Invalid QName for rename: " + nameStr);
             }
             // Validate the name is a valid QName (NCName with optional prefix)
-            if (org.exist.dom.QName.isQName(nameStr) != QName.Validity.VALID.val) {
+            if (QName.isQName(nameStr) != QName.Validity.VALID.val) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Invalid QName for rename: " + nameStr);
             }
-        } else {
-            // Non-QName/string/untypedAtomic types are a type error (XPTY0004)
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "New name expression in rename must be of type xs:QName or xs:string; got " + Type.getTypeName(nameItem.getType()));
+            return qname;
         }
-
-        // XQDY0064: PI target name must not be "xml" (case-insensitive)
-        if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
-            if ("xml".equalsIgnoreCase(qname.getLocalPart())) {
-                throw new XPathException(this, ErrorCodes.XQDY0064,
-                        "Processing instruction target name cannot be 'xml'.");
-            }
-        }
-
-        final PendingUpdateList pul = context.getPendingUpdateList();
-        pul.addPrimitive(UpdatePrimitive.rename(targetNode.getNode(), qname, this));
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        }
-
-        return Sequence.EMPTY_SEQUENCE;
+        // Non-QName/string/untypedAtomic types are a type error (XPTY0004)
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "New name expression in rename must be of type xs:QName or xs:string; got " + Type.getTypeName(nameItem.getType()));
     }
 
     @Override
