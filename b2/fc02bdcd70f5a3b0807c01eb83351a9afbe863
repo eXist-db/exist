@@ -1,0 +1,37 @@
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ExpathPackageModule.java
+  s_a16a808e4ef4ca::t_f2508d993585ac 89,91
+extensions/modules/sql/src/main/java/org/exist/xquery/modules/sql/SQLModule.java
+  s_a16a808e4ef4ca::t_ebc7f2f2131339 292,294
+extensions/modules/xmldiff/src/main/java/org/exist/xquery/modules/xmldiff/XmlDiffModule.java
+  s_a16a808e4ef4ca::t_172b200984164f 101,103
+extensions/indexes/sort/src/main/java/org/exist/indexing/sort/SortIndex.java
+  s_a16a808e4ef4ca::t_196308169dfa7a 66
+exist-core/src/main/java/org/exist/xquery/functions/session/SessionModule.java
+  s_a16a808e4ef4ca::t_e2852db177dad4 90,92
+exist-core/src/main/java/org/exist/xquery/functions/response/ResponseModule.java
+  s_a16a808e4ef4ca::t_01e71658c4188e 86,88
+extensions/modules/cache/src/main/java/org/exist/xquery/modules/cache/CacheModule.java
+  s_a16a808e4ef4ca::t_1c51c0eb1e60fb 198,200
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_dbdb669b49fde8 1391
+exist-core/src/main/java/org/exist/xquery/functions/request/RequestModule.java
+  s_a16a808e4ef4ca::t_c12405858ef138 106,108
+exist-core/src/main/java/org/exist/xquery/functions/util/UtilModule.java
+  s_a16a808e4ef4ca::t_c6a38bb4a5d3a2 223,225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b2fc02bdcd70f5a3b0807c01eb83351a9afbe863",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
