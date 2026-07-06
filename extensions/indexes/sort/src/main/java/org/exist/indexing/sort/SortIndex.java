@@ -63,7 +63,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     public static final class Factory implements org.exist.indexing.IndexFactory {
         @Override public String getDefaultId() { return "sort-index"; }
-        @Override public Class<? extends org.exist.indexing.AbstractIndex> getIndexClass() { return SortIndex.class; }
+        @Override public Class<? extends AbstractIndex> getIndexClass() { return SortIndex.class; }
     }
 
     @Override
