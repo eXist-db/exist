@@ -280,10 +280,11 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $node := <root><a>old</a></root> " +
-                "return copy $c := $node " +
-                "modify replace value of node $c/a with 'new' " +
-                "return $c";
+                """
+                let $node := <root><a>old</a></root>
+                return copy $c := $node
+                modify replace value of node $c/a with 'new'
+                return $c""";
 
         final String result = queryAndGetString(service, query);
         assertTrue("Expected result to contain 'new', got: " + result,
@@ -297,11 +298,12 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $node := <root><a>original</a></root> " +
-                "let $copy := copy $c := $node " +
-                "             modify replace value of node $c/a with 'modified' " +
-                "             return $c " +
-                "return ($node/a/text(), '|', $copy/a/text())";
+                """
+                let $node := <root><a>original</a></root>
+                let $copy := copy $c := $node
+                             modify replace value of node $c/a with 'modified'
+                             return $c
+                return ($node/a/text(), '|', $copy/a/text())""";
 
         final ResourceSet result = service.query(query);
         assertEquals(3L, result.getSize());
@@ -314,10 +316,11 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $node := <root><a/><b/><c/></root> " +
-                "return copy $c := $node " +
-                "modify delete node $c/b " +
-                "return count($c/*)";
+                """
+                let $node := <root><a/><b/><c/></root>
+                return copy $c := $node
+                modify delete node $c/b
+                return count($c/*)""";
 
         final String result = queryAndGetString(service, query);
         assertEquals("2", result);
@@ -328,10 +331,11 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $node := <root><a/></root> " +
-                "return copy $c := $node " +
-                "modify insert node <b/> into $c " +
-                "return count($c/*)";
+                """
+                let $node := <root><a/></root>
+                return copy $c := $node
+                modify insert node <b/> into $c
+                return count($c/*)""";
 
         final String result = queryAndGetString(service, query);
         assertEquals("2", result);
@@ -342,10 +346,11 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $node := <root><old/></root> " +
-                "return copy $c := $node " +
-                "modify rename node $c/old as 'new' " +
-                "return local-name($c/*[1])";
+                """
+                let $node := <root><old/></root>
+                return copy $c := $node
+                modify rename node $c/old as 'new'
+                return local-name($c/*[1])""";
 
         final String result = queryAndGetString(service, query);
         assertEquals("new", result);
@@ -356,11 +361,12 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $a := <x>1</x> " +
-                "let $b := <y>2</y> " +
-                "return copy $ca := $a, $cb := $b " +
-                "modify (replace value of node $ca with '10', replace value of node $cb with '20') " +
-                "return ($ca, $cb)";
+                """
+                let $a := <x>1</x>
+                let $b := <y>2</y>
+                return copy $ca := $a, $cb := $b
+                modify (replace value of node $ca with '10', replace value of node $cb with '20')
+                return ($ca, $cb)""";
 
         final ResourceSet result = service.query(query);
         assertEquals(2L, result.getSize());
@@ -412,8 +418,9 @@ public class XQUFBasicTest {
 
         // Non-updating function containing an insert expression should fail with XUST0001
         service.queryResource(docName,
-                "declare function local:f($e as element()) { insert node <b/> into $e }; " +
-                "local:f(/root)");
+                """
+                declare function local:f($e as element()) { insert node <b/> into $e };
+                local:f(/root)""");
     }
 
     @Test(expected = XMLDBException.class)
@@ -466,10 +473,11 @@ public class XQUFBasicTest {
 
         // W3C 1.0 keyword syntax: declare updating function
         service.queryResource(docName,
-                "declare updating function local:add($e as element()) { " +
-                "  insert node <b/> into $e " +
-                "}; " +
-                "local:add(/root)");
+                """
+                declare updating function local:add($e as element()) {
+                  insert node <b/> into $e
+                };
+                local:add(/root)""");
         queryResource(service, docName, "/root/b", 1);
     }
 
@@ -480,10 +488,11 @@ public class XQUFBasicTest {
 
         // W3C 3.0 annotation syntax: declare %updating function
         service.queryResource(docName,
-                "declare %updating function local:add($e as element()) { " +
-                "  insert node <c/> into $e " +
-                "}; " +
-                "local:add(/root)");
+                """
+                declare %updating function local:add($e as element()) {
+                  insert node <c/> into $e
+                };
+                local:add(/root)""");
         queryResource(service, docName, "/root/c", 1);
     }
 
@@ -494,10 +503,11 @@ public class XQUFBasicTest {
 
         // XUST0028: updating function must not declare a return type
         service.queryResource(docName,
-                "declare updating function local:f() as item()* { " +
-                "  insert node <a/> into /root " +
-                "}; " +
-                "local:f()");
+                """
+                declare updating function local:f() as item()* {
+                  insert node <a/> into /root
+                };
+                local:f()""");
     }
 
     @Test(expected = XMLDBException.class)
@@ -507,10 +517,11 @@ public class XQUFBasicTest {
 
         // XUST0002: body of updating function must be updating or vacuous
         service.queryResource(docName,
-                "declare updating function local:f($x as xs:integer) { " +
-                "  $x + 1 " +
-                "}; " +
-                "local:f(1)");
+                """
+                declare updating function local:f($x as xs:integer) {
+                  $x + 1
+                };
+                local:f(1)""");
     }
 
     @Test
@@ -528,12 +539,13 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $doc := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee> " +
-                "return copy $c := $doc " +
-                "modify ( " +
-                "  insert node (<type>Part Time</type>,<age>26</age>) after $c/empnum[1], " +
-                "  insert node (<type>Full Time</type>,<age>30</age>) after $c/empnum[1] " +
-                ") return $c";
+                """
+                let $doc := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee>
+                return copy $c := $doc
+                modify (
+                  insert node (<type>Part Time</type>,<age>26</age>) after $c/empnum[1],
+                  insert node (<type>Full Time</type>,<age>30</age>) after $c/empnum[1]
+                ) return $c""";
 
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
@@ -581,23 +593,39 @@ public class XQUFBasicTest {
         // Full complex-deletes-q3 pattern with doc-level PIs,
         // using BrokerPool + XQuery service directly with context sequence (like the XQTS runner).
         final String xml =
-                "<!-- Comment-1 --><?a-pi pi-1?><!-- Comment-2 -->" +
-                "<far-north> text-1A\n" +
-                "    <!-- Comment-3 --> text-1B\n" +
-                "    <?a-pi pi-2?> text-1C\n" +
-                "  <north mark=\"n0\"> text-2A\n" +
-                "    <near-north> text-3A\n" +
-                "      <center mark=\"c0\"> text-4A\n" +
-                "        <near-south-west/> text-4B\n" +
-                "            <!--Comment-5--> text-4C\n" +
-                "            <?a-pi pi-4?> text-4D\n" +
-                "        <near-south> text-5A\n" +
-                "        </near-south> text-4E\n" +
-                "      </center> text-3E\n" +
-                "    </near-north> text-2D\n" +
-                "  </north> text-1D\n" +
-                "</far-north>\n" +
-                "<!-- Comment-6 --><?a-pi pi-6?><!-- Comment-7 -->";
+                """
+                <!-- Comment-1 --><?a-pi pi-1?><!-- Comment-2 -->\
+                <far-north> text-1A
+                \
+                    <!-- Comment-3 --> text-1B
+                \
+                    <?a-pi pi-2?> text-1C
+                \
+                  <north mark="n0"> text-2A
+                \
+                    <near-north> text-3A
+                \
+                      <center mark="c0"> text-4A
+                \
+                        <near-south-west/> text-4B
+                \
+                            <!--Comment-5--> text-4C
+                \
+                            <?a-pi pi-4?> text-4D
+                \
+                        <near-south> text-5A
+                \
+                        </near-south> text-4E
+                \
+                      </center> text-3E
+                \
+                    </near-north> text-2D
+                \
+                  </north> text-1D
+                \
+                </far-north>
+                \
+                <!-- Comment-6 --><?a-pi pi-6?><!-- Comment-7 -->""";
 
         // Parse using SAXAdapter (same as XQTS runner)
         final javax.xml.parsers.SAXParserFactory spf = javax.xml.parsers.SAXParserFactory.newInstance();
@@ -620,8 +648,9 @@ public class XQUFBasicTest {
                 final org.exist.xquery.XQueryContext ctx = new org.exist.xquery.XQueryContext(pool);
                 ctx.declareVariable("input-context", doc);
                 final org.exist.xquery.CompiledXQuery compiled = xqueryService.compile(ctx,
-                        "declare variable $input-context external; " +
-                                "delete nodes $input-context//processing-instruction('a-pi')");
+                        """
+                        declare variable $input-context external;
+                        delete nodes $input-context//processing-instruction('a-pi')""");
                 xqueryService.execute(broker, compiled, doc);
                 ctx.runCleanupTasks();
             }
@@ -646,8 +675,9 @@ public class XQUFBasicTest {
                 // Also get the individual text values for debug
                 final org.exist.xquery.XQueryContext ctx2 = new org.exist.xquery.XQueryContext(pool);
                 final org.exist.xquery.CompiledXQuery compiled2 = xqueryService.compile(ctx2,
-                        "for $t in .//(north | near-south)/preceding-sibling::text() " +
-                                "return concat('[', $t, ']')");
+                        """
+                        for $t in .//(north | near-south)/preceding-sibling::text()
+                        return concat('[', $t, ']')""");
                 final org.exist.xquery.value.Sequence result2 = xqueryService.execute(broker, compiled2, doc);
                 final StringBuilder texts = new StringBuilder();
                 for (int i = 0; i < result2.getItemCount(); i++) {
@@ -685,10 +715,11 @@ public class XQUFBasicTest {
 
         // Simulate complex-deletes-q3: delete PIs, then count preceding-sibling text nodes
         final String query =
-                "let $doc := <root>A<!-- c1 -->B<?pi x?>C<child/>D</root> " +
-                "return copy $c := $doc " +
-                "modify delete nodes $c//processing-instruction() " +
-                "return count($c/child/preceding-sibling::text())";
+                """
+                let $doc := <root>A<!-- c1 -->B<?pi x?>C<child/>D</root>
+                return copy $c := $doc
+                modify delete nodes $c//processing-instruction()
+                return count($c/child/preceding-sibling::text())""";
 
         final String result = queryAndGetString(service, query);
         // After deleting PI between B and C, B+C merge per W3C spec → 2 text nodes: A, BC
@@ -701,10 +732,11 @@ public class XQUFBasicTest {
 
         // Simulate complex-deletes-q10: delete element, count remaining text children
         final String query =
-                "let $doc := <root>A<a/>B<b/>C<target/>D</root> " +
-                "return copy $c := $doc " +
-                "modify delete nodes $c/target " +
-                "return count($c/text())";
+                """
+                let $doc := <root>A<a/>B<b/>C<target/>D</root>
+                return copy $c := $doc
+                modify delete nodes $c/target
+                return count($c/text())""";
 
         final String result = queryAndGetString(service, query);
         // After deleting <target/>, C+D merge per W3C spec → 3 text nodes: A, B, CD
@@ -717,10 +749,11 @@ public class XQUFBasicTest {
 
         // Full complex-deletes-q3 pattern: delete PIs, then use //child/preceding-sibling::text()
         final String query =
-                "let $doc := <root>A<!-- c1 -->B<?mypi x?>C<child/>D</root> " +
-                "return copy $c := $doc " +
-                "modify delete nodes $c//processing-instruction('mypi') " +
-                "return count($c//child/preceding-sibling::text())";
+                """
+                let $doc := <root>A<!-- c1 -->B<?mypi x?>C<child/>D</root>
+                return copy $c := $doc
+                modify delete nodes $c//processing-instruction('mypi')
+                return count($c//child/preceding-sibling::text())""";
 
         final String result = queryAndGetString(service, query);
         // After deleting PI between B and C, B+C merge per W3C spec → 2 text nodes: A, BC
@@ -734,29 +767,50 @@ public class XQUFBasicTest {
 
         // Uses the full TopMany.xml-like structure with mixed PIs, comments, text, elements
         final String query =
-                "let $doc := <far-north> text-1A\n" +
-                "    <!-- Comment-3 --> text-1B\n" +
-                "    <?a-pi pi-2?> text-1C\n" +
-                "  <north mark='n0'> text-2A\n" +
-                "    <near-north> text-3A\n" +
-                "      <center mark='c0'> text-4A\n" +
-                "        <near-south-west/> text-4B\n" +
-                "            <!--Comment-5--> text-4C\n" +
-                "            <?a-pi pi-4?> text-4D\n" +
-                "        <near-south> text-5A\n" +
-                "        </near-south> text-4E\n" +
-                "      </center> text-3E\n" +
-                "    </near-north> text-2D\n" +
-                "  </north> text-1D\n" +
-                "</far-north>\n" +
-                "return copy $c := $doc " +
-                "modify delete nodes $c//processing-instruction('a-pi') " +
-                "return (\n" +
-                "  let $a := $c//(north | near-south)/preceding-sibling::comment()\n" +
-                "  return <result count='{count($a)}'>{$a}</result>,\n" +
-                "  let $a := $c//(north | near-south)/preceding-sibling::text()\n" +
-                "  return <result count='{count($a)}'>{$a}</result>\n" +
-                ")";
+                """
+                let $doc := <far-north> text-1A
+                \
+                    <!-- Comment-3 --> text-1B
+                \
+                    <?a-pi pi-2?> text-1C
+                \
+                  <north mark='n0'> text-2A
+                \
+                    <near-north> text-3A
+                \
+                      <center mark='c0'> text-4A
+                \
+                        <near-south-west/> text-4B
+                \
+                            <!--Comment-5--> text-4C
+                \
+                            <?a-pi pi-4?> text-4D
+                \
+                        <near-south> text-5A
+                \
+                        </near-south> text-4E
+                \
+                      </center> text-3E
+                \
+                    </near-north> text-2D
+                \
+                  </north> text-1D
+                \
+                </far-north>
+                \
+                return copy $c := $doc
+                modify delete nodes $c//processing-instruction('a-pi')
+                return (
+                \
+                  let $a := $c//(north | near-south)/preceding-sibling::comment()
+                \
+                  return <result count='{count($a)}'>{$a}</result>,
+                \
+                  let $a := $c//(north | near-south)/preceding-sibling::text()
+                \
+                  return <result count='{count($a)}'>{$a}</result>
+                \
+                )""";
 
         final ResourceSet result = service.query(query);
         assertEquals("Expected 2 result elements", 2L, result.getSize());
@@ -787,10 +841,11 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $doc := <a x='1' y='2' z='3'/> " +
-                "return copy $c := $doc " +
-                "modify delete nodes $c/@y " +
-                "return count($c/@*)";
+                """
+                let $doc := <a x='1' y='2' z='3'/>
+                return copy $c := $doc
+                modify delete nodes $c/@y
+                return count($c/@*)""";
 
         assertEquals("2", queryAndGetString(service, query));
     }
@@ -801,10 +856,11 @@ public class XQUFBasicTest {
 
         // Delete one attr from each of two elements
         final String query =
-                "let $doc := <root><a x='1' y='2' z='3'/><b p='4' q='5' r='6'/></root> " +
-                "return copy $c := $doc " +
-                "modify delete nodes ($c/a/@y, $c/b/@q) " +
-                "return (count($c/a/@*), count($c/b/@*))";
+                """
+                let $doc := <root><a x='1' y='2' z='3'/><b p='4' q='5' r='6'/></root>
+                return copy $c := $doc
+                modify delete nodes ($c/a/@y, $c/b/@q)
+                return (count($c/a/@*), count($c/b/@*))""";
 
         final ResourceSet result = service.query(query);
         assertEquals("a should have 2 attrs", "2", result.getResource(0).getContent().toString());
@@ -816,14 +872,15 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "let $doc := <root>" +
-                "  <a mark='w0' a1='v1' a2='v2' a3='v3'/>" +
-                "  <b mark='c0' b1='v1' b2='v2' b3='v3'/>" +
-                "  <c mark='s0' c1='v1' c2='v2'/>" +
-                "</root> " +
-                "return copy $c := $doc " +
-                "modify delete nodes ($c/a/@a2, $c/b/@b2, $c/c/@c2) " +
-                "return (count($c/a/@*), count($c/b/@*), count($c/c/@*))";
+                """
+                let $doc := <root>\
+                  <a mark='w0' a1='v1' a2='v2' a3='v3'/>\
+                  <b mark='c0' b1='v1' b2='v2' b3='v3'/>\
+                  <c mark='s0' c1='v1' c2='v2'/>\
+                </root>
+                return copy $c := $doc
+                modify delete nodes ($c/a/@a2, $c/b/@b2, $c/c/@c2)
+                return (count($c/a/@*), count($c/b/@*), count($c/c/@*))""";
 
         final ResourceSet result = service.query(query);
         assertEquals("a", "3", result.getResource(0).getContent().toString());
@@ -841,11 +898,12 @@ public class XQUFBasicTest {
 
         // Two insert-before expressions targeting the same node — this should not hang
         queryResource(service, docName,
-                "let $var := /employee " +
-                "return ( " +
-                "  insert node (<type>Part Time</type>,<age>26</age>) before $var/empnum[1], " +
-                "  insert node (<type>Full Time</type>,<age>30</age>) before $var/empnum[1] " +
-                ")", 0);
+                """
+                let $var := /employee
+                return (
+                  insert node (<type>Part Time</type>,<age>26</age>) before $var/empnum[1],
+                  insert node (<type>Full Time</type>,<age>30</age>) before $var/empnum[1]
+                )""", 0);
 
         // Verify the inserts happened
         final ResourceSet result = service.queryResource(docName, "count(/employee/*)");
@@ -861,37 +919,42 @@ public class XQUFBasicTest {
 
         // Test insert into in copy-modify
         assertEquals("insert into", "2", service.query(
-                "copy $c := <employee><empnum>E1</empnum></employee> " +
-                "modify insert node <type>PT</type> into $c " +
-                "return count($c/*)").getResource(0).getContent().toString());
+                """
+                copy $c := <employee><empnum>E1</empnum></employee>
+                modify insert node <type>PT</type> into $c
+                return count($c/*)""").getResource(0).getContent().toString());
 
         // Test insert after in copy-modify
         assertEquals("insert after", "4", service.query(
-                "copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee> " +
-                "modify insert node <type>PT</type> after $c/empnum[1] " +
-                "return count($c/*)").getResource(0).getContent().toString());
+                """
+                copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee>
+                modify insert node <type>PT</type> after $c/empnum[1]
+                return count($c/*)""").getResource(0).getContent().toString());
 
         // Test insert before in copy-modify
         assertEquals("insert before", "4", service.query(
-                "copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee> " +
-                "modify insert node <type>Part Time</type> before $c/empnum[1] " +
-                "return count($c/*)").getResource(0).getContent().toString());
+                """
+                copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee>
+                modify insert node <type>Part Time</type> before $c/empnum[1]
+                return count($c/*)""").getResource(0).getContent().toString());
 
         // Test insert as first into in copy-modify
         assertEquals("insert as first", "4", service.query(
-                "copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee> " +
-                "modify insert node <type>PT</type> as first into $c " +
-                "return count($c/*)").getResource(0).getContent().toString());
+                """
+                copy $c := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee>
+                modify insert node <type>PT</type> as first into $c
+                return count($c/*)""").getResource(0).getContent().toString());
 
         // Now test two inserts using comma expression
         final String query =
-                "let $doc := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee> " +
-                "return copy $c := $doc " +
-                "modify ( " +
-                "  insert node (<type>Part Time</type>,<age>26</age>) before $c/empnum[1], " +
-                "  insert node (<type>Full Time</type>,<age>30</age>) before $c/empnum[1] " +
-                ") " +
-                "return count($c/*)";
+                """
+                let $doc := <employee><empnum>E1</empnum><pnum>P1</pnum><hours>40</hours></employee>
+                return copy $c := $doc
+                modify (
+                  insert node (<type>Part Time</type>,<age>26</age>) before $c/empnum[1],
+                  insert node (<type>Full Time</type>,<age>30</age>) before $c/empnum[1]
+                )
+                return count($c/*)""";
 
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
@@ -950,19 +1013,32 @@ public class XQUFBasicTest {
             xml = java.nio.file.Files.readAllBytes(books3.toPath());
         } else {
             // Fallback simplified version
-            xml = ("<?xml version=\"1.0\"?>\n" +
-                    "<BOOKLIST xmlns=\"http://ns.example.com/books\">\n" +
-                    "<BOOKS>\n" +
-                    "\t<ITEM CAT=\"MMP\">\n" +
-                    "\t    <!-- the first book -->\n" +
-                    "\t    <?pi data?>\n" +
-                    "\t    <TITLE>Pride and Prejudice</TITLE>\n" +
-                    "\t</ITEM>\n" +
-                    "</BOOKS>\n" +
-                    "<CATEGORIES DESC=\"Miscellaneous categories\">\n" +
-                    "   <CATEGORY CODE=\"P\" DESC=\"Paperback\"/>\n" +
-                    "</CATEGORIES>\n" +
-                    "</BOOKLIST>").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            xml = ("""
+                <?xml version="1.0"?>
+                \
+                <BOOKLIST xmlns="http://ns.example.com/books">
+                \
+                <BOOKS>
+                \
+                \t<ITEM CAT="MMP">
+                \
+                \t    <!-- the first book -->
+                \
+                \t    <?pi data?>
+                \
+                \t    <TITLE>Pride and Prejudice</TITLE>
+                \
+                \t</ITEM>
+                \
+                </BOOKS>
+                \
+                <CATEGORIES DESC="Miscellaneous categories">
+                \
+                   <CATEGORY CODE="P" DESC="Paperback"/>
+                \
+                </CATEGORIES>
+                \
+                </BOOKLIST>""").getBytes(java.nio.charset.StandardCharsets.UTF_8);
         }
         final org.exist.dom.memtree.SAXAdapter adapter = new org.exist.dom.memtree.SAXAdapter();
         final javax.xml.parsers.SAXParserFactory spf = javax.xml.parsers.SAXParserFactory.newInstance();
@@ -993,8 +1069,9 @@ public class XQUFBasicTest {
             {
                 final org.exist.xquery.XQueryContext ctx = new org.exist.xquery.XQueryContext(pool);
                 final org.exist.xquery.CompiledXQuery compiled = xqueryService.compile(ctx,
-                        "declare namespace books='http://ns.example.com/books'; " +
-                        "insert node attribute ITEMS { count(.//books:ITEM) } into .//books:BOOKS");
+                        """
+                        declare namespace books='http://ns.example.com/books';
+                        insert node attribute ITEMS { count(.//books:ITEM) } into .//books:BOOKS""");
                 xqueryService.execute(broker, compiled, doc);
                 ctx.runCleanupTasks();
             }
@@ -1025,14 +1102,15 @@ public class XQUFBasicTest {
                 final org.exist.xquery.XQueryContext ctx = new org.exist.xquery.XQueryContext(pool);
                 ctx.declareVariable("result", verifyResult);
                 final org.exist.xquery.CompiledXQuery compiled = xqueryService.compile(ctx,
-                        "declare variable $result external; " +
-                        "let $local:default-serialization := " +
-                        "  <output:serialization-parameters xmlns:output='http://www.w3.org/2010/xslt-xquery-serialization'>" +
-                        "    <output:method value='xml'/>" +
-                        "    <output:indent value='no'/>" +
-                        "    <output:omit-xml-declaration value='yes'/>" +
-                        "  </output:serialization-parameters> " +
-                        "return fn:serialize($result, $local:default-serialization)");
+                        """
+                        declare variable $result external;
+                        let $local:default-serialization :=
+                          <output:serialization-parameters xmlns:output='http://www.w3.org/2010/xslt-xquery-serialization'>\
+                            <output:method value='xml'/>\
+                            <output:indent value='no'/>\
+                            <output:omit-xml-declaration value='yes'/>\
+                          </output:serialization-parameters>
+                        return fn:serialize($result, $local:default-serialization)""");
                 final org.exist.xquery.value.Sequence result = xqueryService.execute(broker, compiled, null);
                 final String serialized = result.itemAt(0).getStringValue();
                 System.out.println("Test 094 serialized length: " + serialized.length());
@@ -1085,9 +1163,10 @@ public class XQUFBasicTest {
             {
                 final org.exist.xquery.XQueryContext ctx = new org.exist.xquery.XQueryContext(pool);
                 final org.exist.xquery.CompiledXQuery compiled = xqueryService.compile(ctx,
-                        "insert node <first/> as first into ./root," +
-                        "insert node <last/> as last into ./root," +
-                        "insert node <mid/> into ./root");
+                        """
+                        insert node <first/> as first into ./root,\
+                        insert node <last/> as last into ./root,\
+                        insert node <mid/> into ./root""");
                 xqueryService.execute(broker, compiled, doc);
                 ctx.runCleanupTasks();
             }
@@ -1199,8 +1278,9 @@ public class XQUFBasicTest {
     public void replaceNodeParentlessElementXUDY0009() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService("xudy0009.xml", "<dummy/>");
         final String query =
-                "let $var := <hours/> " +
-                "return replace node $var with <other/>";
+                """
+                let $var := <hours/>
+                return replace node $var with <other/>""";
         try {
             service.query(query);
             fail("Expected XUDY0009 error for parentless element");
@@ -1217,8 +1297,9 @@ public class XQUFBasicTest {
     public void replaceNodeMultipleTargetsXUTY0008() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService("xuty0008.xml", "<root><a/><b/></root>");
         final String query =
-                "let $doc := doc('/db/test/xuty0008.xml') " +
-                "return replace node $doc/root/child::* with <c/>";
+                """
+                let $doc := doc('/db/test/xuty0008.xml')
+                return replace node $doc/root/child::* with <c/>""";
         try {
             service.query(query);
             fail("Expected XUTY0008 error for multiple targets");
@@ -1239,11 +1320,12 @@ public class XQUFBasicTest {
 
         // replace value of element replaces ALL children; replaceNode of child should be skipped
         service.query(
-                "let $var := doc('/db/test/compat027.xml')/employee " +
-                "return ( " +
-                "  replace value of node $var with 'on leave', " +
-                "  replace node $var/empnum with <empnum>on leave</empnum> " +
-                ")");
+                """
+                let $var := doc('/db/test/compat027.xml')/employee
+                return (
+                  replace value of node $var with 'on leave',
+                  replace node $var/empnum with <empnum>on leave</empnum>
+                )""");
 
         final ResourceSet result = service.query("doc('/db/test/compat027.xml')/employee");
         assertEquals(1L, result.getSize());
@@ -1261,11 +1343,12 @@ public class XQUFBasicTest {
                 "<employee name=\"Jane\"><empnum>E1</empnum></employee>");
 
         service.query(
-                "let $var := doc('/db/test/compat029.xml')/employee " +
-                "return ( " +
-                "  replace value of node $var with 'on leave', " +
-                "  insert node <!-- this employee is on leave --> into $var " +
-                ")");
+                """
+                let $var := doc('/db/test/compat029.xml')/employee
+                return (
+                  replace value of node $var with 'on leave',
+                  insert node <!-- this employee is on leave --> into $var
+                )""");
 
         final ResourceSet result = service.query("doc('/db/test/compat029.xml')/employee");
         assertEquals(1L, result.getSize());
@@ -1283,10 +1366,14 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "declare copy-namespaces preserve, inherit;\n" +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/>\n" +
-                "modify insert node <w/> into $data\n" +
-                "return namespace-uri-for-prefix('a', $data/w)";
+                """
+                declare copy-namespaces preserve, inherit;
+                \
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                \
+                modify insert node <w/> into $data
+                \
+                return namespace-uri-for-prefix('a', $data/w)""";
 
         final ResourceSet result = service.query(query);
         assertEquals("Expected single result", 1L, result.getSize());
@@ -1300,22 +1387,38 @@ public class XQUFBasicTest {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
-                "declare copy-namespaces preserve, inherit;\n" +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/>\n" +
-                "modify\n" +
-                "  insert node <w><x xmlns:a=\"a-two\"><y xmlns:b=\"b-two\"><z/></y></x></w> into $data\n" +
-                "return\n" +
-                "  let $w := $data/w\n" +
-                "  let $x := $w/x\n" +
-                "  let $y := $x/y\n" +
-                "  let $z := $y/z\n" +
-                "  return\n" +
-                "    <result>\n" +
-                "      <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>\n" +
-                "      <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>\n" +
-                "      <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>\n" +
-                "      <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>\n" +
-                "    </result>";
+                """
+                declare copy-namespaces preserve, inherit;
+                \
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                \
+                modify
+                \
+                  insert node <w><x xmlns:a="a-two"><y xmlns:b="b-two"><z/></y></x></w> into $data
+                \
+                return
+                \
+                  let $w := $data/w
+                \
+                  let $x := $w/x
+                \
+                  let $y := $x/y
+                \
+                  let $z := $y/z
+                \
+                  return
+                \
+                    <result>
+                \
+                      <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                \
+                      <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                \
+                      <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                \
+                      <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                \
+                    </result>""";
 
         final ResourceSet result = service.query(query);
         assertEquals("Expected single result", 1L, result.getSize());
@@ -1332,17 +1435,18 @@ public class XQUFBasicTest {
     public void propagateNamespaces01XqtsExact() throws XMLDBException {
         // Exact XQTS propagateNamespaces01 query with boundary-space preserve
         final XQueryService service = testCollection.getService(XQueryService.class);
-        final String query = "declare copy-namespaces preserve, inherit; " +
-                "declare boundary-space preserve; " +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
-                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
-                "return <result> " +
-                "<w>{namespace-uri-for-prefix(\"a\", $w), namespace-uri-for-prefix(\"b\",$w)}</w> " +
-                "<x>{namespace-uri-for-prefix(\"a\", $x), namespace-uri-for-prefix(\"b\",$x)}</x> " +
-                "<y>{namespace-uri-for-prefix(\"a\", $y), namespace-uri-for-prefix(\"b\",$y)}</y> " +
-                "<z>{namespace-uri-for-prefix(\"a\", $z), namespace-uri-for-prefix(\"b\",$z)}</z> " +
-                "</result>";
+        final String query = """
+                declare copy-namespaces preserve, inherit;
+                declare boundary-space preserve;
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z
+                return <result>
+                <w>{namespace-uri-for-prefix("a", $w), namespace-uri-for-prefix("b",$w)}</w>
+                <x>{namespace-uri-for-prefix("a", $x), namespace-uri-for-prefix("b",$x)}</x>
+                <y>{namespace-uri-for-prefix("a", $y), namespace-uri-for-prefix("b",$y)}</y>
+                <z>{namespace-uri-for-prefix("a", $z), namespace-uri-for-prefix("b",$z)}</z>
+                </result>""";
 
         final ResourceSet result = service.query(query);
         System.err.println("propagateNamespaces01_xqts_exact: result size = " + result.getSize());
@@ -1359,16 +1463,26 @@ public class XQUFBasicTest {
         // applyUpdates-001 pattern but with copy-modify (in-memory path)
         final XQueryService service = testCollection.getService(XQueryService.class);
         final String query =
-                "copy $data := <employee name=\"Jane Doe 1\" gender=\"female\">\n" +
-                "   <empnum>E1</empnum>\n" +
-                "   <pnum>P1</pnum>\n" +
-                "   <hours>40</hours>\n" +
-                "</employee>\n" +
-                "modify (\n" +
-                "  insert node comment { 'Testing' } into $data/hours,\n" +
-                "  delete node $data/hours/text()\n" +
-                ")\n" +
-                "return $data/hours";
+                """
+                copy $data := <employee name="Jane Doe 1" gender="female">
+                \
+                   <empnum>E1</empnum>
+                \
+                   <pnum>P1</pnum>
+                \
+                   <hours>40</hours>
+                \
+                </employee>
+                \
+                modify (
+                \
+                  insert node comment { 'Testing' } into $data/hours,
+                \
+                  delete node $data/hours/text()
+                \
+                )
+                \
+                return $data/hours""";
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1382,16 +1496,26 @@ public class XQUFBasicTest {
         // applyUpdates-013: insert attribute name="Sylvia" and delete @name
         final XQueryService service = testCollection.getService(XQueryService.class);
         final String query =
-                "copy $data := <employee name=\"Jane Doe 1\" gender=\"female\">\n" +
-                "   <empnum>E1</empnum>\n" +
-                "   <pnum>P1</pnum>\n" +
-                "   <hours>40</hours>\n" +
-                "</employee>\n" +
-                "modify (\n" +
-                "  insert node attribute name {'Sylvia'} into $data,\n" +
-                "  delete node $data/@name\n" +
-                ")\n" +
-                "return $data";
+                """
+                copy $data := <employee name="Jane Doe 1" gender="female">
+                \
+                   <empnum>E1</empnum>
+                \
+                   <pnum>P1</pnum>
+                \
+                   <hours>40</hours>
+                \
+                </employee>
+                \
+                modify (
+                \
+                  insert node attribute name {'Sylvia'} into $data,
+                \
+                  delete node $data/@name
+                \
+                )
+                \
+                return $data""";
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1404,19 +1528,28 @@ public class XQUFBasicTest {
     public void applyUpdates001PersistentInsertThenDelete() throws XMLDBException {
         // applyUpdates-001: insert comment into hours, delete hours/text()
         final XQueryService service = storeXMLStringAndGetQueryService("works-mod.xml",
-                "<employee name=\"Jane Doe 1\" gender=\"female\">\n" +
-                "   <empnum>E1</empnum>\n" +
-                "   <pnum>P1</pnum>\n" +
-                "   <hours>40</hours>\n" +
-                "</employee>");
+                """
+                <employee name="Jane Doe 1" gender="female">
+                \
+                   <empnum>E1</empnum>
+                \
+                   <pnum>P1</pnum>
+                \
+                   <hours>40</hours>
+                \
+                </employee>""");
 
         // Run the update: insert comment into hours AND delete hours/text()
         service.query(
-                "let $var := doc('/db/test/works-mod.xml')/employee " +
-                "return (\n" +
-                "  insert node comment { 'Testing' } into $var/hours,\n" +
-                "  delete node $var/hours/text()\n" +
-                ")");
+                """
+                let $var := doc('/db/test/works-mod.xml')/employee
+                return (
+                \
+                  insert node comment { 'Testing' } into $var/hours,
+                \
+                  delete node $var/hours/text()
+                \
+                )""");
 
         // Verify: hours should have comment but no text node
         final ResourceSet result = service.query(
@@ -1432,10 +1565,14 @@ public class XQUFBasicTest {
     public void transformExpr034CopyDocumentRename() throws XMLDBException {
         // id-transform-expr-034: copy a document, rename its root element
         final String query =
-                "let $doc := document { <works><employee name=\"Jane\"/></works> }\n" +
-                "return copy $var1 := $doc\n" +
-                "       modify rename node $var1/works as \"workers\"\n" +
-                "       return $var1";
+                """
+                let $doc := document { <works><employee name="Jane"/></works> }
+                \
+                return copy $var1 := $doc
+                \
+                       modify rename node $var1/works as "workers"
+                \
+                       return $var1""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1447,10 +1584,14 @@ public class XQUFBasicTest {
     public void transformExpr035CopyAttributeReplaceValue() throws XMLDBException {
         // id-transform-expr-035: copy an attribute, replace its value
         final String query =
-                "let $var := <employee name=\"Jane Doe 1\"/>\n" +
-                "return copy $var1 := $var/@name\n" +
-                "       modify replace value of node $var1 with \"Ursula Le Guin\"\n" +
-                "       return <newemp>{ $var1 }</newemp>";
+                """
+                let $var := <employee name="Jane Doe 1"/>
+                \
+                return copy $var1 := $var/@name
+                \
+                       modify replace value of node $var1 with "Ursula Le Guin"
+                \
+                       return <newemp>{ $var1 }</newemp>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1461,10 +1602,14 @@ public class XQUFBasicTest {
     public void transformExprXUDY0014TargetOutsideCopy() throws XMLDBException {
         // XUDY0014: update target must be created by the copy clause
         final String query =
-                "let $outside := <root><a>1</a></root>\n" +
-                "return copy $c := <x><y/></x>\n" +
-                "       modify replace value of node $outside/a with \"2\"\n" +
-                "       return $c";
+                """
+                let $outside := <root><a>1</a></root>
+                \
+                return copy $c := <x><y/></x>
+                \
+                       modify replace value of node $outside/a with "2"
+                \
+                       return $c""";
         try {
             existEmbeddedServer.executeQuery(query);
             fail("Expected XUDY0014");
@@ -1478,25 +1623,44 @@ public class XQUFBasicTest {
         // id-comma-expr-015: two replace value ops referencing each other's targets
         // Tests W3C snapshot semantics: content expressions evaluated BEFORE updates applied
         final String query =
-                "let $doc := <works>\n" +
-                "  <employee name=\"Jane\">\n" +
-                "    <hours>40</hours>\n" +
-                "  </employee>\n" +
-                "  <employee name=\"John\">\n" +
-                "    <hours>70</hours>\n" +
-                "    <hours>20</hours>\n" +
-                "  </employee>\n" +
-                "</works>\n" +
-                "return copy $c := $doc\n" +
-                "modify (\n" +
-                "  let $var1 := $c/employee[1]\n" +
-                "  let $var2 := $c/employee[2]\n" +
-                "  return (\n" +
-                "    replace value of node $var1/hours[1] with $var2/hours[1],\n" +
-                "    replace value of node $var2/hours[2] with $var1/hours[1]\n" +
-                "  )\n" +
-                ")\n" +
-                "return ($c/employee[1]/hours, $c/employee[2]/hours)";
+                """
+                let $doc := <works>
+                \
+                  <employee name="Jane">
+                \
+                    <hours>40</hours>
+                \
+                  </employee>
+                \
+                  <employee name="John">
+                \
+                    <hours>70</hours>
+                \
+                    <hours>20</hours>
+                \
+                  </employee>
+                \
+                </works>
+                \
+                return copy $c := $doc
+                \
+                modify (
+                \
+                  let $var1 := $c/employee[1]
+                \
+                  let $var2 := $c/employee[2]
+                \
+                  return (
+                \
+                    replace value of node $var1/hours[1] with $var2/hours[1],
+                \
+                    replace value of node $var2/hours[2] with $var1/hours[1]
+                \
+                  )
+                \
+                )
+                \
+                return ($c/employee[1]/hours, $c/employee[2]/hours)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(3L, result.getSize());
         // employee[1]/hours[1]: was 40, replaced with $var2/hours[1]=70
@@ -1511,16 +1675,26 @@ public class XQUFBasicTest {
     public void replaceNode029ReplaceTextNodes() throws XMLDBException {
         // id-replace-expr-029: replace text nodes
         final String query =
-                "copy $c := <employee name=\"Jane Doe 1\" gender=\"female\">\n" +
-                "   <empnum>E1</empnum>\n" +
-                "   <pnum>P1</pnum>\n" +
-                "   <hours>40</hours>\n" +
-                "</employee>\n" +
-                "modify (\n" +
-                "  replace node $c/empnum[1]/text() with \"E1000\",\n" +
-                "  replace node $c/hours[1]/text() with 10\n" +
-                ")\n" +
-                "return $c";
+                """
+                copy $c := <employee name="Jane Doe 1" gender="female">
+                \
+                   <empnum>E1</empnum>
+                \
+                   <pnum>P1</pnum>
+                \
+                   <hours>40</hours>
+                \
+                </employee>
+                \
+                modify (
+                \
+                  replace node $c/empnum[1]/text() with "E1000",
+                \
+                  replace node $c/hours[1]/text() with 10
+                \
+                )
+                \
+                return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1532,15 +1706,24 @@ public class XQUFBasicTest {
     public void deleteMultipleAttributesForLoop() throws XMLDBException {
         // Delete attributes on multiple elements using for loop (workaround for //(@attr) bug)
         final String query =
-                "let $doc := <root>\n" +
-                "  <a x=\"1\" y=\"2\" z=\"3\"/>\n" +
-                "  <b x=\"4\" y=\"5\" z=\"6\"/>\n" +
-                "</root>\n" +
-                "return copy $c := $doc\n" +
-                "modify (\n" +
-                "  for $e in $c//* return delete nodes ($e/@y, $e/@z)\n" +
-                ")\n" +
-                "return $c";
+                """
+                let $doc := <root>
+                \
+                  <a x="1" y="2" z="3"/>
+                \
+                  <b x="4" y="5" z="6"/>
+                \
+                </root>
+                \
+                return copy $c := $doc
+                \
+                modify (
+                \
+                  for $e in $c//* return delete nodes ($e/@y, $e/@z)
+                \
+                )
+                \
+                return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1557,10 +1740,14 @@ public class XQUFBasicTest {
     public void deleteDocumentNodeIsNoOp() throws XMLDBException {
         // complex-deletes-q14: delete document node is a no-op
         final String query =
-                "let $doc := document { <root><a/><b/></root> }\n" +
-                "return copy $c := $doc\n" +
-                "modify delete nodes $c\n" +
-                "return $c";
+                """
+                let $doc := document { <root><a/><b/></root> }
+                \
+                return copy $c := $doc
+                \
+                modify delete nodes $c
+                \
+                return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1572,9 +1759,12 @@ public class XQUFBasicTest {
     public void replaceValueOfElementWithMarkup() throws XMLDBException {
         // complex-replacevalues-q14: replace value with string that looks like markup
         final String query =
-                "copy $c := <root><target>old</target></root>\n" +
-                "modify replace value of node $c/target with \"<notANode>value</notANode>\"\n" +
-                "return $c/target";
+                """
+                copy $c := <root><target>old</target></root>
+                \
+                modify replace value of node $c/target with "<notANode>value</notANode>"
+                \
+                return $c/target""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1593,12 +1783,18 @@ public class XQUFBasicTest {
     @Test
     public void applyUpdates001InsertCommentDeleteText() throws XMLDBException {
         final String query =
-                "copy $c := <employee><hours>40</hours></employee>\n" +
-                "modify (\n" +
-                "  insert node comment { 'Testing' } into $c/hours,\n" +
-                "  delete node $c/hours/text()\n" +
-                ")\n" +
-                "return $c/hours";
+                """
+                copy $c := <employee><hours>40</hours></employee>
+                \
+                modify (
+                \
+                  insert node comment { 'Testing' } into $c/hours,
+                \
+                  delete node $c/hours/text()
+                \
+                )
+                \
+                return $c/hours""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1615,12 +1811,18 @@ public class XQUFBasicTest {
     @Test
     public void applyUpdates002DeleteTextInsertComment() throws XMLDBException {
         final String query =
-                "copy $c := <employee><hours>40</hours></employee>\n" +
-                "modify (\n" +
-                "  delete node $c/hours/text(),\n" +
-                "  insert node comment { 'Testing' } into $c/hours\n" +
-                ")\n" +
-                "return $c/hours";
+                """
+                copy $c := <employee><hours>40</hours></employee>
+                \
+                modify (
+                \
+                  delete node $c/hours/text(),
+                \
+                  insert node comment { 'Testing' } into $c/hours
+                \
+                )
+                \
+                return $c/hours""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1636,12 +1838,18 @@ public class XQUFBasicTest {
     @Test
     public void renameInMemoryElementSingleFromMultiple() throws XMLDBException {
         final String query =
-                "copy $c := <root><a mark='1'/><a mark='2'/></root>\n" +
-                "modify rename node ($c//a)[1] as 'b'\n" +
-                "return <result>\n" +
-                "  <a-count>{count($c//a)}</a-count>\n" +
-                "  <b-count>{count($c//b)}</b-count>\n" +
-                "</result>";
+                """
+                copy $c := <root><a mark='1'/><a mark='2'/></root>
+                \
+                modify rename node ($c//a)[1] as 'b'
+                \
+                return <result>
+                \
+                  <a-count>{count($c//a)}</a-count>
+                \
+                  <b-count>{count($c//b)}</b-count>
+                \
+                </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1657,9 +1865,12 @@ public class XQUFBasicTest {
     @Test
     public void replaceValueInMemoryElementsForLoop() throws XMLDBException {
         final String query =
-                "copy $c := <root><item>old1</item><item>old2</item></root>\n" +
-                "modify for $a in $c//item return replace value of node $a with 'new'\n" +
-                "return $c";
+                """
+                copy $c := <root><item>old1</item><item>old2</item></root>
+                \
+                modify for $a in $c//item return replace value of node $a with 'new'
+                \
+                return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1678,8 +1889,10 @@ public class XQUFBasicTest {
         // Simulates the structure: document has root element, then comments after it
         // Basic test: just make sure >> operator works
         final String followsTest =
-                "let $doc := parse-xml('<root><a/><b/></root>')\n" +
-                "return count($doc/root/*[. >> $doc/root/a])";
+                """
+                let $doc := parse-xml('<root><a/><b/></root>')
+                \
+                return count($doc/root/*[. >> $doc/root/a])""";
         final ResourceSet result = existEmbeddedServer.executeQuery(followsTest);
         assertEquals(1L, result.getSize());
         assertEquals("1", result.getResource(0).getContent().toString());
@@ -1698,14 +1911,19 @@ public class XQUFBasicTest {
 
         // Update: replace value of all se elements
         queryService.query(
-                "let $doc := doc('" + testCollection.getName() + "/topMany.xml')\n" +
-                "for $a in $doc//se\n" +
-                "return replace value of node $a with 'content'");
+                "let $doc := doc('" + testCollection.getName() + """
+                /topMany.xml')
+                \
+                for $a in $doc//se
+                \
+                return replace value of node $a with 'content'""");
 
         // Verify
         final ResourceSet result = queryService.query(
-                "let $doc := doc('" + testCollection.getName() + "/topMany.xml')\n" +
-                "return <result>{$doc//se}</result>");
+                "let $doc := doc('" + testCollection.getName() + """
+                /topMany.xml')
+                \
+                return <result>{$doc//se}</result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
         System.err.println("replaceValuePersistent: " + xml);
@@ -1730,11 +1948,16 @@ public class XQUFBasicTest {
 
         // Step 1: use copy-modify to simulate top-level PUL on in-memory doc
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                "let $doc := parse-xml('<root><se mark=\"1se\"/><se mark=\"2se\"/></root>')\n" +
-                "return\n" +
-                "  copy $c := $doc\n" +
-                "  modify for $a in $c//se return replace value of node $a with 'content'\n" +
-                "  return <result>{$c//se}</result>");
+                """
+                let $doc := parse-xml('<root><se mark="1se"/><se mark="2se"/></root>')
+                \
+                return
+                \
+                  copy $c := $doc
+                \
+                  modify for $a in $c//se return replace value of node $a with 'content'
+                \
+                  return <result>{$c//se}</result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
         System.err.println("replaceValueTopLevelPUL: " + xml);
@@ -1757,17 +1980,25 @@ public class XQUFBasicTest {
 
         // Update: rename all se elements to 'renamed'
         queryService.query(
-                "let $doc := doc('" + testCollection.getName() + "/topMany.xml')\n" +
-                "for $a in $doc//se\n" +
-                "return rename node $a as 'renamed'");
+                "let $doc := doc('" + testCollection.getName() + """
+                /topMany.xml')
+                \
+                for $a in $doc//se
+                \
+                return rename node $a as 'renamed'""");
 
         // Verify
         final ResourceSet result = queryService.query(
-                "let $doc := doc('" + testCollection.getName() + "/topMany.xml')\n" +
-                "return <result>\n" +
-                "  <se-count>{count($doc//se)}</se-count>\n" +
-                "  <renamed-count>{count($doc//renamed)}</renamed-count>\n" +
-                "</result>");
+                "let $doc := doc('" + testCollection.getName() + """
+                /topMany.xml')
+                \
+                return <result>
+                \
+                  <se-count>{count($doc//se)}</se-count>
+                \
+                  <renamed-count>{count($doc//renamed)}</renamed-count>
+                \
+                </result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
         System.err.println("renamePersistent: " + xml);
@@ -1781,15 +2012,16 @@ public class XQUFBasicTest {
     @Test
     public void updateKeywordsAsVariableNames() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                "let $ascending := 1 let $descending := 2 let $greatest := 3 " +
-                "let $least := 4 let $satisfies := 5 let $revalidation := 6 " +
-                "let $skip := 7 let $strict := 8 let $lax := 9 " +
-                "let $insert := 10 let $delete := 11 let $replace := 12 " +
-                "let $rename := 13 let $copy := 14 let $modify := 15 " +
-                "let $value := 16 let $into := 17 let $with := 18 " +
-                "let $after := 19 let $before := 20 let $first := 21 " +
-                "let $last := 22 let $nodes := 23 let $updating := 24 " +
-                "return $ascending + $descending");
+                """
+                let $ascending := 1 let $descending := 2 let $greatest := 3
+                let $least := 4 let $satisfies := 5 let $revalidation := 6
+                let $skip := 7 let $strict := 8 let $lax := 9
+                let $insert := 10 let $delete := 11 let $replace := 12
+                let $rename := 13 let $copy := 14 let $modify := 15
+                let $value := 16 let $into := 17 let $with := 18
+                let $after := 19 let $before := 20 let $first := 21
+                let $last := 22 let $nodes := 23 let $updating := 24
+                return $ascending + $descending""");
         assertEquals(1L, result.getSize());
         assertEquals("3", result.getResource(0).getContent().toString());
     }
@@ -1800,20 +2032,34 @@ public class XQUFBasicTest {
     @Test
     public void propagateNamespacesPreserveInherit() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                "declare copy-namespaces preserve, inherit;\n" +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/>\n" +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data\n" +
-                "return\n" +
-                "  let $w := $data/w\n" +
-                "  let $x := $w/x\n" +
-                "  let $y := $x/y\n" +
-                "  let $z := $y/z\n" +
-                "  return <result>\n" +
-                "    <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>\n" +
-                "    <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>\n" +
-                "    <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>\n" +
-                "    <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>\n" +
-                "  </result>");
+                """
+                declare copy-namespaces preserve, inherit;
+                \
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                \
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                \
+                return
+                \
+                  let $w := $data/w
+                \
+                  let $x := $w/x
+                \
+                  let $y := $x/y
+                \
+                  let $z := $y/z
+                \
+                  return <result>
+                \
+                    <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                \
+                    <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                \
+                    <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                \
+                    <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                \
+                  </result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
         System.err.println("propagateNamespaces: " + xml);
@@ -1831,23 +2077,33 @@ public class XQUFBasicTest {
     @Test
     public void replaceValueEmptyElementsFollowingSiblingAxis() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                "let $doc := parse-xml('" +
-                "<center mark=\"c0\">" +
-                "  <near-south> text-5A" +
-                "    <south mark=\"s0\"> text-6A <far-south/> text-6B </south> text-5B" +
-                "  </near-south> text-4E" +
-                "  <south-east mark=\"1se\"/> text-4G" +
-                "  <south-east mark=\"2se\"/> text-4H" +
-                "</center>')\n" +
-                "return\n" +
-                "  copy $c := $doc\n" +
-                "  modify for $a in $c//south-east return replace value of node $a with 'very south east'\n" +
-                "  return (\n" +
-                "    let $a := $c//near-south/following-sibling::node()\n" +
-                "    return <result count=\"{count($a)}\">{$a}</result>,\n" +
-                "    let $a := $c//south-east[. = 'very south east']\n" +
-                "    return <result count=\"{count($a)}\">{$a}</result>\n" +
-                "  )");
+                """
+                let $doc := parse-xml('\
+                <center mark="c0">\
+                  <near-south> text-5A\
+                    <south mark="s0"> text-6A <far-south/> text-6B </south> text-5B\
+                  </near-south> text-4E\
+                  <south-east mark="1se"/> text-4G\
+                  <south-east mark="2se"/> text-4H\
+                </center>')
+                \
+                return
+                \
+                  copy $c := $doc
+                \
+                  modify for $a in $c//south-east return replace value of node $a with 'very south east'
+                \
+                  return (
+                \
+                    let $a := $c//near-south/following-sibling::node()
+                \
+                    return <result count="{count($a)}">{$a}</result>,
+                \
+                    let $a := $c//south-east[. = 'very south east']
+                \
+                    return <result count="{count($a)}">{$a}</result>
+                \
+                  )""");
 
         assertEquals(2L, result.getSize());
         final String r1 = result.getResource(0).getContent().toString();
@@ -1872,39 +2128,58 @@ public class XQUFBasicTest {
     public void parenthesizedAttributeUnionWithDescendant() throws XMLDBException {
         // //@x (non-parenthesized) should work correctly
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                "let $doc := <root>" +
-                "  <a x='1' y='2'/>" +
-                "  <b><c x='3' z='4'/></b>" +
-                "</root>\n" +
-                "return <r>{count($doc//@x)}</r>");
+                """
+                let $doc := <root>\
+                  <a x='1' y='2'/>\
+                  <b><c x='3' z='4'/></b>\
+                </root>
+                \
+                return <r>{count($doc//@x)}</r>""");
         assertEquals(1L, result.getSize());
         assertEquals("//@x should find 2", "<r>2</r>", result.getResource(0).getContent().toString());
 
         // //(element-name | element-name) should find descendants
         final ResourceSet result2 = existEmbeddedServer.executeQuery(
-                "let $doc := <root><a><b>1</b><c>2</c></a><d><b>3</b></d></root>\n" +
-                "return <r>{count($doc//(b | c))}</r>");
+                """
+                let $doc := <root><a><b>1</b><c>2</c></a><d><b>3</b></d></root>
+                \
+                return <r>{count($doc//(b | c))}</r>""");
         assertEquals(1L, result2.getSize());
         assertEquals("//(b | c) should find 3 elements", "<r>3</r>",
                 result2.getResource(0).getContent().toString());
 
         // //(element-union) in nested structure should find all matching descendants
         final ResourceSet result3 = existEmbeddedServer.executeQuery(
-                "let $doc := <far-north>\n" +
-                "    <!-- Comment-3 -->\n" +
-                "  <north mark='n0'>\n" +
-                "    <near-north>\n" +
-                "      <center mark='c0'>\n" +
-                "        <!--Comment-5-->\n" +
-                "        <near-south/>\n" +
-                "      </center>\n" +
-                "    </near-north>\n" +
-                "  </north>\n" +
-                "</far-north>\n" +
-                "return (\n" +
-                "  <found>{for $n in $doc//(north | near-south) return local-name($n)}</found>,\n" +
-                "  <comments>{count($doc//(north | near-south)/preceding-sibling::comment())}</comments>\n" +
-                ")");
+                """
+                let $doc := <far-north>
+                \
+                    <!-- Comment-3 -->
+                \
+                  <north mark='n0'>
+                \
+                    <near-north>
+                \
+                      <center mark='c0'>
+                \
+                        <!--Comment-5-->
+                \
+                        <near-south/>
+                \
+                      </center>
+                \
+                    </near-north>
+                \
+                  </north>
+                \
+                </far-north>
+                \
+                return (
+                \
+                  <found>{for $n in $doc//(north | near-south) return local-name($n)}</found>,
+                \
+                  <comments>{count($doc//(north | near-south)/preceding-sibling::comment())}</comments>
+                \
+                )""");
         assertEquals(2L, result3.getSize());
         assertTrue("Should find both elements",
                 result3.getResource(0).getContent().toString().contains("north")
@@ -1921,8 +2196,9 @@ public class XQUFBasicTest {
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         try {
             queryService.query(
-                    "let $doc := <root><a/></root> " +
-                    "return (update insert <b/> into $doc, insert node <c/> into $doc)");
+                    """
+                    let $doc := <root><a/></root>
+                    return (update insert <b/> into $doc, insert node <c/> into $doc)""");
             fail("Should reject mixing legacy and XQUF syntax");
         } catch (final XMLDBException e) {
             assertTrue("Should report syntax conflict",
@@ -1936,8 +2212,9 @@ public class XQUFBasicTest {
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         try {
             queryService.query(
-                    "let $doc := <root><a/></root> " +
-                    "return (insert node <b/> into $doc, update insert <c/> into $doc)");
+                    """
+                    let $doc := <root><a/></root>
+                    return (insert node <b/> into $doc, update insert <c/> into $doc)""");
             fail("Should reject mixing XQUF and legacy syntax");
         } catch (final XMLDBException e) {
             assertTrue("Should report syntax conflict",
@@ -1951,9 +2228,10 @@ public class XQUFBasicTest {
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         // Should not throw - pure XQUF is fine
         queryService.query(
-                "copy $c := <root><a/></root> " +
-                "modify insert node <b/> into $c " +
-                "return $c");
+                """
+                copy $c := <root><a/></root>
+                modify insert node <b/> into $c
+                return $c""");
     }
 
     @Test
@@ -1974,17 +2252,18 @@ public class XQUFBasicTest {
     @Test
     public void propagateNamespaces01PreserveInherit() throws XMLDBException {
         final String query =
-                "declare copy-namespaces preserve, inherit; " +
-                "declare boundary-space preserve; " +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
-                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
-                "return <result> " +
-                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
-                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
-                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
-                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
-                "</result>";
+                """
+                declare copy-namespaces preserve, inherit;
+                declare boundary-space preserve;
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z
+                return <result>
+                  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2004,17 +2283,18 @@ public class XQUFBasicTest {
     @Test
     public void propagateNamespaces02PreserveNoInherit() throws XMLDBException {
         final String query =
-                "declare copy-namespaces preserve, no-inherit; " +
-                "declare boundary-space preserve; " +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
-                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
-                "return <result> " +
-                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
-                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
-                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
-                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
-                "</result>";
+                """
+                declare copy-namespaces preserve, no-inherit;
+                declare boundary-space preserve;
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z
+                return <result>
+                  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2034,17 +2314,18 @@ public class XQUFBasicTest {
     @Test
     public void propagateNamespaces03NoPreserveInherit() throws XMLDBException {
         final String query =
-                "declare copy-namespaces no-preserve, inherit; " +
-                "declare boundary-space preserve; " +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
-                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
-                "return <result> " +
-                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
-                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
-                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
-                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
-                "</result>";
+                """
+                declare copy-namespaces no-preserve, inherit;
+                declare boundary-space preserve;
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z
+                return <result>
+                  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2063,17 +2344,18 @@ public class XQUFBasicTest {
     @Test
     public void propagateNamespaces04NoPreserveNoInherit() throws XMLDBException {
         final String query =
-                "declare copy-namespaces no-preserve, no-inherit; " +
-                "declare boundary-space preserve; " +
-                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
-                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
-                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
-                "return <result> " +
-                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
-                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
-                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
-                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
-                "</result>";
+                """
+                declare copy-namespaces no-preserve, no-inherit;
+                declare boundary-space preserve;
+                copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
+                modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
+                return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z
+                return <result>
+                  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
+                  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
+                  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
+                  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
+                </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2092,14 +2374,15 @@ public class XQUFBasicTest {
     @Test
     public void attributeReplaceSwap() throws XMLDBException {
         final String query =
-                "copy $in := <employee name=\"Jane Doe 1\" gender=\"female\">" +
-                "  <empnum>E1</empnum><pnum>P1</pnum>" +
-                "</employee> " +
-                "modify (" +
-                "  replace node $in/@name with attribute {'salary'} {'10'}," +
-                "  replace node $in/@gender with attribute {'name'} {'Blodwyn Jones'}" +
-                ") " +
-                "return $in";
+                """
+                copy $in := <employee name="Jane Doe 1" gender="female">\
+                  <empnum>E1</empnum><pnum>P1</pnum>\
+                </employee>
+                modify (\
+                  replace node $in/@name with attribute {'salary'} {'10'},\
+                  replace node $in/@gender with attribute {'name'} {'Blodwyn Jones'}\
+                )
+                return $in""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2117,13 +2400,14 @@ public class XQUFBasicTest {
     @Test
     public void followingAxisFromDocElementBaseline() throws XMLDBException {
         final String query =
-                "let $doc := document { " +
-                "  <!--Comment-1-->, <?a-pi pi-1?>, " +
-                "  <root><child/></root>, " +
-                "  <!--Comment-2-->, <?b-pi pi-2?> " +
-                "} " +
-                "return let $a := $doc/*/following::node() " +
-                "return <result count=\"{count($a)}\">{$a}</result>";
+                """
+                let $doc := document {
+                  <!--Comment-1-->, <?a-pi pi-1?>,
+                  <root><child/></root>,
+                  <!--Comment-2-->, <?b-pi pi-2?>
+                }
+                return let $a := $doc/*/following::node()
+                return <result count="{count($a)}">{$a}</result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2137,15 +2421,16 @@ public class XQUFBasicTest {
     @Test
     public void followingAxisAfterDeleteTrailingComments() throws XMLDBException {
         final String query =
-                "let $doc := document { " +
-                "  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->, " +
-                "  <root><child/></root>, " +
-                "  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4--> " +
-                "} " +
-                "return copy $d := $doc " +
-                "modify delete nodes $d/comment()[. >> $d/*] " +
-                "return let $a := $d/*/following::node() " +
-                "return <result count=\"{count($a)}\">{$a}</result>";
+                """
+                let $doc := document {
+                  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->,
+                  <root><child/></root>,
+                  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4-->
+                }
+                return copy $d := $doc
+                modify delete nodes $d/comment()[. >> $d/*]
+                return let $a := $d/*/following::node()
+                return <result count="{count($a)}">{$a}</result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2161,18 +2446,19 @@ public class XQUFBasicTest {
     @Test
     public void followingAxisAfterReplaceTrailingCommentValues() throws XMLDBException {
         final String query =
-                "let $doc := document { " +
-                "  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->, " +
-                "  <root><child/></root>, " +
-                "  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4--> " +
-                "} " +
-                "return copy $d := $doc " +
-                "modify ( " +
-                "  for $c in $d/comment()[. >> $d/*] " +
-                "  return replace value of node $c with 'Replaced' " +
-                ") " +
-                "return let $a := $d/*/following::node() " +
-                "return <result count=\"{count($a)}\">{$a}</result>";
+                """
+                let $doc := document {
+                  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->,
+                  <root><child/></root>,
+                  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4-->
+                }
+                return copy $d := $doc
+                modify (
+                  for $c in $d/comment()[. >> $d/*]
+                  return replace value of node $c with 'Replaced'
+                )
+                return let $a := $d/*/following::node()
+                return <result count="{count($a)}">{$a}</result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2190,26 +2476,27 @@ public class XQUFBasicTest {
     @Test
     public void precedingAxisAfterReplaceTextWithEmpty() throws XMLDBException {
         final String query =
-                "let $doc := document { " +
-                "  <root>" +
-                "    <a>text-a</a>" +
-                "    <!--comment-1-->" +
-                "    text-after-comment" +
-                "    <b>" +
-                "      <c>text-c</c>" +
-                "      <?pi-1 data?>" +
-                "      text-after-pi" +
-                "      <target/>" +
-                "    </b>" +
-                "  </root> " +
-                "} " +
-                "return copy $d := $doc " +
-                "modify ( " +
-                "  for $t in $d//text()[preceding-sibling::node()[1]/(self::comment() | self::processing-instruction())] " +
-                "  return replace value of node $t with '' " +
-                ") " +
-                "return let $a := $d//target/preceding::text() " +
-                "return <result count=\"{count($a)}\">{for $t in $a return <t>{$t}</t>}</result>";
+                """
+                let $doc := document {
+                  <root>\
+                    <a>text-a</a>\
+                    <!--comment-1-->\
+                    text-after-comment\
+                    <b>\
+                      <c>text-c</c>\
+                      <?pi-1 data?>\
+                      text-after-pi\
+                      <target/>\
+                    </b>\
+                  </root>
+                }
+                return copy $d := $doc
+                modify (
+                  for $t in $d//text()[preceding-sibling::node()[1]/(self::comment() | self::processing-instruction())]
+                  return replace value of node $t with ''
+                )
+                return let $a := $d//target/preceding::text()
+                return <result count="{count($a)}">{for $t in $a return <t>{$t}</t>}</result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();

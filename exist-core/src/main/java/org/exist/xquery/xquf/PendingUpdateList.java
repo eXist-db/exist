@@ -195,9 +195,8 @@ public class PendingUpdateList {
             return true;
         }
         // memtree nodes: compare by document identity + nodeNumber
-        if (a instanceof org.exist.dom.memtree.NodeImpl && b instanceof org.exist.dom.memtree.NodeImpl) {
-            final org.exist.dom.memtree.NodeImpl memA = (org.exist.dom.memtree.NodeImpl) a;
-            final org.exist.dom.memtree.NodeImpl memB = (org.exist.dom.memtree.NodeImpl) b;
+        if (a instanceof final org.exist.dom.memtree.NodeImpl memA
+                && b instanceof final org.exist.dom.memtree.NodeImpl memB) {
             return memA.getOwnerDocument() == memB.getOwnerDocument()
                     && memA.getNodeNumber() == memB.getNodeNumber();
         }
@@ -233,36 +232,33 @@ public class PendingUpdateList {
             final Expression expr = p.getSourceExpression();
 
             switch (p.getType()) {
-                case RENAME:
+                case RENAME -> {
                     if (!renameTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0015,
                                 "Multiple rename primitives applied to the same target node.");
                     }
-                    break;
-
-                case REPLACE_NODE:
+                }
+                case REPLACE_NODE -> {
                     if (!replaceNodeTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0016,
                                 "Multiple replace node primitives applied to the same target node.");
                     }
-                    break;
-
-                case REPLACE_VALUE:
+                }
+                case REPLACE_VALUE -> {
                     if (!replaceValueTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0017,
                                 "Multiple replace value primitives applied to the same target node.");
                     }
-                    break;
-
-                case PUT:
+                }
+                case PUT -> {
                     if (!putUris.add(p.getUri())) {
                         throw new XPathException(expr, ErrorCodes.XUDY0031,
                                 "Multiple fn:put primitives with the same URI: " + p.getUri());
                     }
-                    break;
-
-                default:
-                    break;
+                }
+                default -> {
+                    // other primitive types have no same-target compatibility constraint
+                }
             }
         }
 
@@ -297,20 +293,15 @@ public class PendingUpdateList {
 
         for (final UpdatePrimitive p : primitives) {
             switch (p.getType()) {
-                case INSERT_INTO:
-                case INSERT_INTO_AS_FIRST:
-                case INSERT_INTO_AS_LAST: {
+                case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST -> {
                     // Target is the element; content may include attributes
                     final Node target = p.getTargetNode();
                     if (target.getNodeType() == Node.ELEMENT_NODE) {
                         final ElementAttrState state = getOrCreateState(elementStates, target);
                         addContentAttributes(state, p);
                     }
-                    break;
                 }
-
-                case INSERT_BEFORE:
-                case INSERT_AFTER: {
+                case INSERT_BEFORE, INSERT_AFTER -> {
                     // For attribute insertion before/after, the target's parent is the element
                     final Node target = p.getTargetNode();
                     final Node parent = target.getNodeType() == Node.ATTRIBUTE_NODE
@@ -320,20 +311,16 @@ public class PendingUpdateList {
                         final ElementAttrState state = getOrCreateState(elementStates, parent);
                         addContentAttributes(state, p);
                     }
-                    break;
                 }
-
-                case INSERT_ATTRIBUTES: {
+                case INSERT_ATTRIBUTES -> {
                     // Target is the element
                     final Node target = p.getTargetNode();
                     if (target.getNodeType() == Node.ELEMENT_NODE) {
                         final ElementAttrState state = getOrCreateState(elementStates, target);
                         addContentAttributes(state, p);
                     }
-                    break;
                 }
-
-                case REPLACE_NODE: {
+                case REPLACE_NODE -> {
                     final Node target = p.getTargetNode();
                     if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
                         final Node parent = ((Attr) target).getOwnerElement();
@@ -345,10 +332,8 @@ public class PendingUpdateList {
                             addContentAttributes(state, p);
                         }
                     }
-                    break;
                 }
-
-                case DELETE: {
+                case DELETE -> {
                     final Node target = p.getTargetNode();
                     if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
                         final Node parent = ((Attr) target).getOwnerElement();
@@ -357,10 +342,8 @@ public class PendingUpdateList {
                             state.removedAttrs.add(getExpandedName(target));
                         }
                     }
-                    break;
                 }
-
-                case RENAME: {
+                case RENAME -> {
                     final Node target = p.getTargetNode();
                     final QName newName = p.getNewName();
                     if (target.getNodeType() == Node.ATTRIBUTE_NODE && newName != null) {
@@ -379,11 +362,10 @@ public class PendingUpdateList {
                         final ElementAttrState state = getOrCreateState(elementStates, target);
                         addNamespaceBinding(state, newName.getPrefix(), newName.getNamespaceURI(), p);
                     }
-                    break;
                 }
-
-                default:
-                    break;
+                default -> {
+                    // other primitive types do not affect attributes or namespace bindings
+                }
             }
         }
 
@@ -519,8 +501,9 @@ public class PendingUpdateList {
         @Override
         public boolean equals(final Object o) {
             if (this == o) return true;
-            if (!(o instanceof ExpandedName)) return false;
-            final ExpandedName that = (ExpandedName) o;
+            if (!(o instanceof final ExpandedName that)) {
+                return false;
+            }
             return namespaceURI.equals(that.namespaceURI) && localName.equals(that.localName);
         }
 
@@ -541,14 +524,11 @@ public class PendingUpdateList {
      * so we can't rely on object identity.
      */
     private static String nodeKey(final Node node) {
-        if (node instanceof org.exist.dom.memtree.NodeImpl) {
-            final org.exist.dom.memtree.NodeImpl memNode = (org.exist.dom.memtree.NodeImpl) node;
+        if (node instanceof final org.exist.dom.memtree.NodeImpl memNode) {
             return "mem:" + System.identityHashCode(memNode.getOwnerDocument()) + ":" + memNode.getNodeNumber();
-        } else if (node instanceof IStoredNode) {
-            final IStoredNode<?> storedNode = (IStoredNode<?>) node;
+        } else if (node instanceof final IStoredNode<?> storedNode) {
             return "db:" + storedNode.getOwnerDocument().getDocId() + ":" + storedNode.getNodeId();
-        } else if (node instanceof NodeProxy) {
-            final NodeProxy proxy = (NodeProxy) node;
+        } else if (node instanceof final NodeProxy proxy) {
             return "db:" + proxy.getOwnerDocument().getDocId() + ":" + proxy.getNodeId();
         } else {
             // Fallback: use identity hash
@@ -657,15 +637,13 @@ public class PendingUpdateList {
             }
 
             // Check namespace declarations on this element
-            if (current instanceof org.exist.dom.memtree.ElementImpl) {
+            if (current instanceof final org.exist.dom.memtree.ElementImpl memElem) {
                 final Map<String, String> map = new LinkedHashMap<>();
-                ((org.exist.dom.memtree.ElementImpl) current).getNamespaceMap(map);
+                memElem.getNamespaceMap(map);
                 for (final Map.Entry<String, String> e : map.entrySet()) {
                     nsBindings.putIfAbsent(e.getKey(), e.getValue());
                 }
-            } else if (current instanceof ElementImpl) {
-                final ElementImpl elemImpl =
-                        (ElementImpl) current;
+            } else if (current instanceof final ElementImpl elemImpl) {
                 if (elemImpl.declaresNamespacePrefixes()) {
                     for (final Iterator<String> iter = elemImpl.getPrefixes(); iter.hasNext(); ) {
                         final String p = iter.next();
@@ -951,23 +929,14 @@ public class PendingUpdateList {
         }
 
         switch (p.getType()) {
-            case INSERT_INTO, INSERT_INTO_AS_LAST:
-                doc.insertChildren(target.getNodeNumber(), content, false);
-                break;
-            case INSERT_INTO_AS_FIRST:
-                doc.insertChildren(target.getNodeNumber(), content, true);
-                break;
-            case INSERT_BEFORE:
-                doc.insertSiblings(target.getNodeNumber(), content, true);
-                break;
-            case INSERT_AFTER:
-                doc.insertSiblings(target.getNodeNumber(), content, false);
-                break;
-            case INSERT_ATTRIBUTES:
-                doc.insertAttributes(target.getNodeNumber(), content, false);
-                break;
-            default:
-                break;
+            case INSERT_INTO, INSERT_INTO_AS_LAST -> doc.insertChildren(target.getNodeNumber(), content, false);
+            case INSERT_INTO_AS_FIRST -> doc.insertChildren(target.getNodeNumber(), content, true);
+            case INSERT_BEFORE -> doc.insertSiblings(target.getNodeNumber(), content, true);
+            case INSERT_AFTER -> doc.insertSiblings(target.getNodeNumber(), content, false);
+            case INSERT_ATTRIBUTES -> doc.insertAttributes(target.getNodeNumber(), content, false);
+            default -> {
+                // not an insert primitive
+            }
         }
     }
 
@@ -983,22 +952,23 @@ public class PendingUpdateList {
     private static void validateNodeContent(final short nodeType, final String value,
                                             final Expression expr) throws XPathException {
         switch (nodeType) {
-            case Node.COMMENT_NODE:
+            case Node.COMMENT_NODE -> {
                 // XML spec: comment content must not contain "--" or end with "-"
                 if (value.contains("--") || value.endsWith("-")) {
                     throw new XPathException(expr, ErrorCodes.XQDY0072,
                             "Comment content must not contain '--' or end with '-'.");
                 }
-                break;
-            case Node.PROCESSING_INSTRUCTION_NODE:
+            }
+            case Node.PROCESSING_INSTRUCTION_NODE -> {
                 // XML spec: PI content must not contain "?>"
                 if (value.contains("?>")) {
                     throw new XPathException(expr, ErrorCodes.XQDY0026,
                             "Processing instruction content must not contain '?>'.");
                 }
-                break;
-            default:
-                break;
+            }
+            default -> {
+                // other node kinds have no content constraints
+            }
         }
     }
 
@@ -1030,8 +1000,8 @@ public class PendingUpdateList {
      * IS the document node (getOwnerDocument() returns null for document nodes).
      */
     private static org.exist.dom.memtree.DocumentImpl getDocument(final org.exist.dom.memtree.NodeImpl node) {
-        if (node instanceof org.exist.dom.memtree.DocumentImpl) {
-            return (org.exist.dom.memtree.DocumentImpl) node;
+        if (node instanceof final org.exist.dom.memtree.DocumentImpl doc) {
+            return doc;
         }
         return node.getOwnerDocument();
     }
@@ -1119,8 +1089,8 @@ public class PendingUpdateList {
         final Set<DocumentImpl> affectedDocs = new LinkedHashSet<>();
         for (final UpdatePrimitive p : prims) {
             final Node node = p.getTargetNode();
-            if (node instanceof StoredNode) {
-                affectedDocs.add(((StoredNode) node).getOwnerDocument());
+            if (node instanceof final StoredNode<?> storedNode) {
+                affectedDocs.add(storedNode.getOwnerDocument());
             }
         }
 
@@ -1274,30 +1244,21 @@ public class PendingUpdateList {
         for (final UpdatePrimitive p : prims) {
             switch (p.getType()) {
                 case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST,
-                     INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES:
-                    partition.inserts.add(p);
-                    break;
-                case RENAME:
-                    partition.renames.add(p);
-                    break;
-                case REPLACE_VALUE:
+                     INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES -> partition.inserts.add(p);
+                case RENAME -> partition.renames.add(p);
+                case REPLACE_VALUE -> {
                     if (p.getTargetNode().getNodeType() == Node.ELEMENT_NODE) {
                         partition.replaceElementContents.add(p);
                     } else {
                         partition.replaceValues.add(p);
                     }
-                    break;
-                case REPLACE_NODE:
-                    partition.replaceNodes.add(p);
-                    break;
-                case DELETE:
-                    partition.deletes.add(p);
-                    break;
-                case PUT:
-                    partition.puts.add(p);
-                    break;
-                default:
-                    break;
+                }
+                case REPLACE_NODE -> partition.replaceNodes.add(p);
+                case DELETE -> partition.deletes.add(p);
+                case PUT -> partition.puts.add(p);
+                default -> {
+                    // no other primitive types exist
+                }
             }
         }
         return partition;
@@ -1338,27 +1299,21 @@ public class PendingUpdateList {
 
         try {
             switch (p.getType()) {
-                case INSERT_INTO, INSERT_INTO_AS_LAST:
-                    node.appendChildren(transaction, contentList, -1);
-                    break;
-                case INSERT_INTO_AS_FIRST:
-                    node.appendChildren(transaction, contentList, 1);
-                    break;
-                case INSERT_BEFORE: {
+                case INSERT_INTO, INSERT_INTO_AS_LAST -> node.appendChildren(transaction, contentList, -1);
+                case INSERT_INTO_AS_FIRST -> node.appendChildren(transaction, contentList, 1);
+                case INSERT_BEFORE -> {
                     final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
                     if (parent != null) {
                         parent.insertBefore(transaction, contentList, node);
                     }
-                    break;
                 }
-                case INSERT_AFTER: {
+                case INSERT_AFTER -> {
                     final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
                     if (parent != null) {
                         parent.insertAfter(transaction, contentList, node);
                     }
-                    break;
                 }
-                case INSERT_ATTRIBUTES: {
+                case INSERT_ATTRIBUTES -> {
                     final ElementImpl elem = (ElementImpl) node;
                     for (int i = 0; i < contentList.getLength(); i++) {
                         final Node attrNode = contentList.item(i);
@@ -1375,10 +1330,10 @@ public class PendingUpdateList {
                             }
                         }
                     }
-                    break;
                 }
-                default:
-                    break;
+                default -> {
+                    // not an insert primitive
+                }
             }
 
             doc.setLastModified(System.currentTimeMillis());
@@ -1395,19 +1350,12 @@ public class PendingUpdateList {
         checkWritePermission(context, doc, p.getSourceExpression());
 
         try {
-            final NamedNode newNode;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
-                    break;
-                case Node.ATTRIBUTE_NODE:
-                    newNode = new AttrImpl(node.getExpression(),
-                            (AttrImpl) node);
-                    break;
-                default:
-                    throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0012,
-                            "Target of rename must be an element, attribute, or processing instruction node.");
-            }
+            final NamedNode newNode = switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
+                case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
+                default -> throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0012,
+                        "Target of rename must be an element, attribute, or processing instruction node.");
+            };
             newNode.setNodeName(p.getNewName(), context.getBroker().getBrokerPool().getSymbols());
 
             final Node parent = getParent(node);
@@ -1438,22 +1386,20 @@ public class PendingUpdateList {
             validateNodeContent(node.getNodeType(), newValue, p.getSourceExpression());
 
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE: {
+                case Node.ELEMENT_NODE -> {
                     // Replace all children of element with a single text node
                     final NodeListImpl content = new NodeListImpl();
                     content.add(new TextImpl(node.getExpression(), newValue));
                     ((ElementImpl) node).update(transaction, content);
-                    break;
                 }
-                case Node.TEXT_NODE: {
+                case Node.TEXT_NODE -> {
                     final ElementImpl parent = (ElementImpl) node.getParentNode();
                     final TextImpl text =
                             new TextImpl(node.getExpression(), newValue);
                     text.setOwnerDocument(doc);
                     parent.updateChild(transaction, node, text);
-                    break;
                 }
-                case Node.ATTRIBUTE_NODE: {
+                case Node.ATTRIBUTE_NODE -> {
                     final AttrImpl oldAttr =
                             (AttrImpl) node;
                     final ElementImpl parent = (ElementImpl) ((Attr) node).getOwnerElement();
@@ -1464,9 +1410,8 @@ public class PendingUpdateList {
                         newAttr.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, newAttr);
                     }
-                    break;
                 }
-                case Node.COMMENT_NODE: {
+                case Node.COMMENT_NODE -> {
                     final Node parent = node.getParentNode();
                     final CommentImpl newComment =
                             new CommentImpl(node.getExpression(), newValue);
@@ -1476,9 +1421,8 @@ public class PendingUpdateList {
                         newComment.setOwnerDocument(doc);
                         parentDoc.updateChild(transaction, node, newComment);
                     }
-                    break;
                 }
-                case Node.PROCESSING_INSTRUCTION_NODE: {
+                case Node.PROCESSING_INSTRUCTION_NODE -> {
                     final Node parent = node.getParentNode();
                     final ProcessingInstructionImpl newPI =
                             new ProcessingInstructionImpl(
@@ -1489,10 +1433,8 @@ public class PendingUpdateList {
                         newPI.setOwnerDocument(doc);
                         parentDoc.updateChild(transaction, node, newPI);
                     }
-                    break;
                 }
-                default:
-                    throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0007,
+                default -> throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0007,
                             "Target of replace value must be an element, attribute, text, comment, or processing instruction node.");
             }
 
@@ -1521,23 +1463,13 @@ public class PendingUpdateList {
             final Sequence contentSeq = deepCopy(context, p.getContent());
 
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE: {
-                    if (contentSeq.getItemCount() > 0) {
-                        final Item newItem = contentSeq.itemAt(0);
-                        if (Type.subTypeOf(newItem.getType(), Type.NODE)) {
-                            final Node newNode = ((NodeValue) newItem).getNode();
-                            ((ElementImpl) parent).replaceChild(transaction, newNode, node);
-                        }
-                    }
-                    break;
-                }
-                case Node.TEXT_NODE: {
+                case Node.TEXT_NODE -> {
                     final TextImpl text =
                             new TextImpl(node.getExpression(), contentSeq.getStringValue());
                     ((ElementImpl) parent).updateChild(transaction, node, text);
-                    break;
                 }
-                case Node.ATTRIBUTE_NODE: {
+                // elements, attributes, and all other node kinds replace via the parent
+                default -> {
                     if (contentSeq.getItemCount() > 0) {
                         final Item newItem = contentSeq.itemAt(0);
                         if (Type.subTypeOf(newItem.getType(), Type.NODE)) {
@@ -1545,17 +1477,6 @@ public class PendingUpdateList {
                             ((ElementImpl) parent).replaceChild(transaction, newNode, node);
                         }
                     }
-                    break;
-                }
-                default: {
-                    if (contentSeq.getItemCount() > 0) {
-                        final Item newItem = contentSeq.itemAt(0);
-                        if (Type.subTypeOf(newItem.getType(), Type.NODE)) {
-                            final Node newNode = ((NodeValue) newItem).getNode();
-                            ((ElementImpl) parent).replaceChild(transaction, newNode, node);
-                        }
-                    }
-                    break;
                 }
             }
 

@@ -233,8 +233,8 @@ public class XQUFTransformExpr extends AbstractExpression {
             final Document docNode = (Document) item;
             Node child = docNode.getFirstChild();
             while (child != null) {
-                if (child instanceof org.exist.dom.memtree.NodeImpl) {
-                    ((org.exist.dom.memtree.NodeImpl) child).copyTo(context.getBroker(), receiver);
+                if (child instanceof final org.exist.dom.memtree.NodeImpl memChild) {
+                    memChild.copyTo(context.getBroker(), receiver);
                 }
                 child = child.getNextSibling();
             }
@@ -273,20 +273,18 @@ public class XQUFTransformExpr extends AbstractExpression {
                 ? builder.getDocument().getLastAttr()
                 : builder.getDocument().getNode(last + 1);
 
-        // Add inherited namespace bindings to the copied root element
-        if (inheritedNs != null && !inheritedNs.isEmpty()
-                && copied instanceof org.exist.dom.memtree.NodeImpl) {
-            addInheritedNamespaces(builder.getDocument(),
-                    ((org.exist.dom.memtree.NodeImpl) copied).getNodeNumber(), inheritedNs);
-        }
+        if (copied instanceof final org.exist.dom.memtree.NodeImpl memCopied) {
+            // Add inherited namespace bindings to the copied root element
+            if (inheritedNs != null && !inheritedNs.isEmpty()) {
+                addInheritedNamespaces(builder.getDocument(), memCopied.getNodeNumber(), inheritedNs);
+            }
 
-        // W3C copy-namespaces no-preserve: strip namespace declarations
-        // not used by element/attribute names from the copied subtree
-        if (!context.preserveNamespaces()
-                && copied instanceof org.exist.dom.memtree.NodeImpl
-                && ((org.exist.dom.memtree.NodeImpl) copied).getNode().getNodeType() == Node.ELEMENT_NODE) {
-            builder.getDocument().stripUnusedNamespacesInSubtree(
-                    ((org.exist.dom.memtree.NodeImpl) copied).getNodeNumber());
+            // W3C copy-namespaces no-preserve: strip namespace declarations
+            // not used by element/attribute names from the copied subtree
+            if (!context.preserveNamespaces()
+                    && memCopied.getNode().getNodeType() == Node.ELEMENT_NODE) {
+                builder.getDocument().stripUnusedNamespacesInSubtree(memCopied.getNodeNumber());
+            }
         }
         return copied;
     }

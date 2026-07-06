@@ -1785,13 +1785,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void renameNode(final int nodeNum, final QName newName) {
         final short kind = nodeKind[nodeNum];
         switch (kind) {
-            case Node.ELEMENT_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                nodeName[nodeNum] = namePool.getSharedName(newName);
-                break;
-            default:
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                        "Cannot rename node of type " + kind);
+            case Node.ELEMENT_NODE, Node.PROCESSING_INSTRUCTION_NODE ->
+                    nodeName[nodeNum] = namePool.getSharedName(newName);
+            default -> throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                    "Cannot rename node of type " + kind);
         }
     }
 
@@ -1815,19 +1812,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void replaceValue(final int nodeNum, final String value) {
         final short kind = nodeKind[nodeNum];
         switch (kind) {
-            case Node.TEXT_NODE:
-            case Node.COMMENT_NODE:
-            case Node.CDATA_SECTION_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                // Replace the character content
-                setCharacterContent(nodeNum, value);
-                break;
-            case Node.ELEMENT_NODE:
-                replaceElementContent(nodeNum, value);
-                break;
-            default:
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                        "Cannot replace value of node of type " + kind);
+            case Node.TEXT_NODE, Node.COMMENT_NODE, Node.CDATA_SECTION_NODE, Node.PROCESSING_INSTRUCTION_NODE ->
+                    // Replace the character content
+                    setCharacterContent(nodeNum, value);
+            case Node.ELEMENT_NODE -> replaceElementContent(nodeNum, value);
+            default -> throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                    "Cannot replace value of node of type " + kind);
         }
     }
 
@@ -2689,42 +2679,34 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      */
     private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level,
                                       final Map<String, String> scopeNamespaces) {
-        switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-                return copyElementIntoDocument(node, parentNodeNum, level, scopeNamespaces);
-            case Node.TEXT_NODE: {
-                final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.TEXT_NODE, level, null);
-                addChars(nodeNum, text.toCharArray(), 0, text.length());
-                next[nodeNum] = parentNodeNum;
-                return nodeNum;
-            }
-            case Node.COMMENT_NODE: {
-                final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.COMMENT_NODE, level, null);
-                addChars(nodeNum, text.toCharArray(), 0, text.length());
-                next[nodeNum] = parentNodeNum;
-                return nodeNum;
-            }
-            case Node.PROCESSING_INSTRUCTION_NODE: {
+        return switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE -> copyElementIntoDocument(node, parentNodeNum, level, scopeNamespaces);
+            case Node.TEXT_NODE -> copyCharacterNodeIntoDocument(Node.TEXT_NODE, node.getTextContent(), parentNodeNum, level);
+            case Node.COMMENT_NODE -> copyCharacterNodeIntoDocument(Node.COMMENT_NODE, node.getTextContent(), parentNodeNum, level);
+            case Node.PROCESSING_INSTRUCTION_NODE -> {
                 final String target = node.getNodeName();
                 final String data = node.getNodeValue() != null ? node.getNodeValue() : "";
                 final QName qname = new QName(target, "", "");
                 final int nodeNum = addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qname);
                 addChars(nodeNum, data.toCharArray(), 0, data.length());
                 next[nodeNum] = parentNodeNum;
-                return nodeNum;
+                yield nodeNum;
             }
-            case Node.CDATA_SECTION_NODE: {
-                final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.CDATA_SECTION_NODE, level, null);
-                addChars(nodeNum, text.toCharArray(), 0, text.length());
-                next[nodeNum] = parentNodeNum;
-                return nodeNum;
-            }
-            default:
-                return -1;
-        }
+            case Node.CDATA_SECTION_NODE -> copyCharacterNodeIntoDocument(Node.CDATA_SECTION_NODE, node.getTextContent(), parentNodeNum, level);
+            default -> -1;
+        };
+    }
+
+    /**
+     * Copy a character-content node (text, comment, or CDATA) into this document.
+     *
+     * @return the node number of the copied node
+     */
+    private int copyCharacterNodeIntoDocument(final short kind, final String text, final int parentNodeNum, final short level) {
+        final int nodeNum = addNode(kind, level, null);
+        addChars(nodeNum, text.toCharArray(), 0, text.length());
+        next[nodeNum] = parentNodeNum;
+        return nodeNum;
     }
 
     /**
