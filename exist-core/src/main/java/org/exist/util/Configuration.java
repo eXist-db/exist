@@ -1388,7 +1388,7 @@ public class Configuration implements ErrorHandler {
         if ("no".equalsIgnoreCase(vectorModels.getAttribute("enabled"))) {
             return;
         }
-        final org.w3c.dom.NodeList models = vectorModels.getElementsByTagName("model");
+        final NodeList models = vectorModels.getElementsByTagName("model");
         final Map<String, String[]> entries = new HashMap<>();
         for (int i = 0; i < models.getLength(); i++) {
             final Element model = (Element) models.item(i);

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 
 /**
  * Module function definitions for transform module.
@@ -104,8 +105,8 @@ public class RequestModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
-    public static final class Factory implements org.exist.xquery.ModuleFactory {
+    public static final class Factory implements ModuleFactory {
         @Override public String getNamespaceURI() { return NAMESPACE_URI; }
-        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return RequestModule.class; }
+        @Override public Class<? extends Module> getModuleClass() { return RequestModule.class; }
     }
 }

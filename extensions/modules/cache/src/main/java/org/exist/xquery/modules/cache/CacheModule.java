@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -195,8 +196,8 @@ public class CacheModule extends AbstractInternalModule {
         return lazyCacheConfig;
     }
 
-    public static final class Factory implements org.exist.xquery.ModuleFactory {
+    public static final class Factory implements ModuleFactory {
         @Override public String getNamespaceURI() { return NAMESPACE_URI; }
-        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return CacheModule.class; }
+        @Override public Class<? extends Module> getModuleClass() { return CacheModule.class; }
     }
 }
