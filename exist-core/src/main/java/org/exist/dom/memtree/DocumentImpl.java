@@ -2565,17 +2565,59 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      * @param level the tree level for the new node(s)
      * @return list of top-level node numbers that were inserted
      */
+    /**
+     * Collect the namespace bindings in scope at the given element node
+     * (nearest declaration wins) by walking up this document's parent chain.
+     * Used to materialize namespace undeclarations on content inserted under
+     * {@code copy-namespaces no-inherit}.
+     *
+     * @param nodeNum the element node number to start from (inclusive)
+     * @return prefix-to-URI map of the in-scope namespace bindings
+     */
+    private Map<String, String> inScopeNamespaces(final int nodeNum) {
+        final Map<String, String> inScope = new java.util.LinkedHashMap<>();
+        int current = nodeNum;
+        while (current > 0 && nodeKind[current] == Node.ELEMENT_NODE) {
+            if (getNode(current) instanceof ElementImpl el) {
+                final String nsUri = el.getNamespaceURI();
+                if (nsUri != null && !nsUri.isEmpty()) {
+                    final String prefix = el.getPrefix() == null ? "" : el.getPrefix();
+                    inScope.putIfAbsent(prefix, nsUri);
+                }
+                for (final Map.Entry<String, String> e : el.getNamespaceMap().entrySet()) {
+                    inScope.putIfAbsent(e.getKey(), e.getValue());
+                }
+            }
+            current = getParentNodeFor(current);
+        }
+        return inScope;
+    }
+
     private java.util.List<Integer> copyItemIntoDocument(final org.exist.xquery.value.Item item,
                                                           final int parentNodeNum, final short level)
             throws XPathException {
-        // When no-inherit is active, pass an empty scope map to materialize namespaces
-        // within inserted subtrees (so FunInScopePrefixes self-only mode still finds them)
-        final java.util.Map<String, String> scopeNs =
-                (context != null && !context.inheritNamespaces())
-                        ? new java.util.LinkedHashMap<>() : null;
+        // When no-inherit is active, pass a scope map to materialize namespaces
+        // within inserted subtrees. Seed it with namespace undeclarations
+        // (prefix -> "") for every binding in scope at the insertion target:
+        // fn:in-scope-prefixes traverses the full ancestor chain (see
+        // FunInScopePrefixes) and relies on explicit undeclarations to block
+        // namespace inheritance across the insertion point under no-inherit.
+        final Map<String, String> scopeNs;
+        if (context != null && !context.inheritNamespaces()) {
+            scopeNs = new java.util.LinkedHashMap<>();
+            for (final Map.Entry<String, String> e : inScopeNamespaces(parentNodeNum).entrySet()) {
+                if (!e.getValue().isEmpty()
+                        && !XMLConstants.XML_NS_PREFIX.equals(e.getKey())
+                        && !XMLConstants.XMLNS_ATTRIBUTE.equals(e.getKey())) {
+                    scopeNs.put(e.getKey(), "");
+                }
+            }
+        } else {
+            scopeNs = null;
+        }
 
         final java.util.List<Integer> result = new java.util.ArrayList<>();
-        if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
+        if (Type.subTypeOf(item.getType(), Type.NODE)) {
             final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
             if (node.getNodeType() == Node.DOCUMENT_NODE) {
                 // For document nodes: insert the document's children, not the document itself
@@ -2598,10 +2640,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             }
         }
         return result;
-    }
-
-    private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level) {
-        return copyNodeIntoDocument(node, parentNodeNum, level, null);
     }
 
     /**
@@ -2687,13 +2725,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 }
 
                 // No-inherit materialization: add ancestor namespace bindings from within
-                // the subtree that are not already declared on this element
+                // the subtree that are not already declared on this element. Empty-URI
+                // entries are namespace undeclarations (seeded from the insertion target's
+                // scope) and must never be stamped on an element whose own name or
+                // attributes need that prefix bound.
                 if (scopeNamespaces != null) {
-                    for (final java.util.Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
+                    for (final Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
                         if (!selfNsDecls.containsKey(e.getKey())) {
-                            if (!noPreserve || usedPrefixes.contains(e.getKey())) {
+                            final boolean isUndeclaration = e.getValue().isEmpty();
+                            final boolean prefixNeededBySelf = usedPrefixes.contains(e.getKey())
+                                    && !(e.getKey().equals(prefix) && nsUri.isEmpty());
+                            final boolean add = isUndeclaration
+                                    ? !prefixNeededBySelf
+                                    : (!noPreserve || usedPrefixes.contains(e.getKey()));
+                            if (add) {
                                 final QName nsQName = new QName(e.getKey(), e.getValue(),
-                                        javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                                        XMLConstants.XMLNS_ATTRIBUTE);
                                 addNamespace(nodeNum, nsQName);
                                 selfNsDecls.put(e.getKey(), e.getValue());
                             }
