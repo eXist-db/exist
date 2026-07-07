@@ -281,42 +281,7 @@ public class RESTServer {
             request.setCharacterEncoding(formEncoding);
         }
 
-        String option;
-        if ((option = getParameter(request, Release)) != null) {
-            final Subject subject = broker.getCurrentSubject();
-            // DBA-only "force reaper": evict every cached entry, bypassing
-            // the subject-match check, so a DBA can recover from cases where
-            // entries are stranded by failed client sessions and would
-            // otherwise wait for the per-entry 2-minute timeout.
-            if ("all".equalsIgnoreCase(option) || "*".equals(option)) {
-                if (!subject.hasDbaRole()) {
-                    throw new PermissionDeniedException(
-                            "Releasing all cached query results requires DBA privileges.");
-                }
-                final long evicted = sessionManager.releaseAll();
-                LOG.info("DBA '{}' force-released all cached query results ({} entries).",
-                        subject.getName(), evicted);
-                response.setStatus(HttpServletResponse.SC_OK);
-                return;
-            }
-            final long sessionId;
-            try {
-                sessionId = Long.parseLong(option);
-            } catch (final NumberFormatException e) {
-                throw new BadRequestException("Invalid session id passed in release request: " + option);
-            }
-            // DBA callers may release any entry, regardless of which
-            // subject created it; non-DBA callers are restricted to their
-            // own entries by the subject-match check in release().
-            if (subject.hasDbaRole()) {
-                sessionManager.releaseAny(sessionId);
-            } else {
-                sessionManager.release(subject.getId(), sessionId);
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Released session {}", sessionId);
-            }
-            response.setStatus(HttpServletResponse.SC_OK);
+        if (handleSessionRelease(broker, request, response)) {
             return;
         }
 
@@ -351,6 +316,7 @@ public class RESTServer {
             writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, query, path, x);
         }
 
+        String option;
         if ((option = getParameter(request, HowMany)) != null) {
             try {
                 howmany = Integer.parseInt(option);
@@ -603,6 +569,62 @@ public class RESTServer {
                 lockedDocument.close();
             }
         }
+    }
+
+    /**
+     * Handles the {@code _release} parameter of a GET request, i.e. a
+     * request to release the cached results of a previously executed query.
+     *
+     * @param broker the database broker
+     * @param request the request
+     * @param response the response
+     *
+     * @return true if a session release was requested and handled, false otherwise
+     *
+     * @throws BadRequestException if an invalid session id is passed in the request
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     */
+    private boolean handleSessionRelease(final DBBroker broker, final HttpServletRequest request,
+            final HttpServletResponse response) throws BadRequestException, PermissionDeniedException {
+        final String option = getParameter(request, Release);
+        if (option == null) {
+            return false;
+        }
+        final Subject subject = broker.getCurrentSubject();
+        // DBA-only "force reaper": evict every cached entry, bypassing
+        // the subject-match check, so a DBA can recover from cases where
+        // entries are stranded by failed client sessions and would
+        // otherwise wait for the per-entry 2-minute timeout.
+        if ("all".equalsIgnoreCase(option) || "*".equals(option)) {
+            if (!subject.hasDbaRole()) {
+                throw new PermissionDeniedException(
+                        "Releasing all cached query results requires DBA privileges.");
+            }
+            final long evicted = sessionManager.releaseAll();
+            LOG.info("DBA '{}' force-released all cached query results ({} entries).",
+                    subject.getName(), evicted);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return true;
+        }
+        final long sessionId;
+        try {
+            sessionId = Long.parseLong(option);
+        } catch (final NumberFormatException e) {
+            throw new BadRequestException("Invalid session id passed in release request: " + option);
+        }
+        // DBA callers may release any entry, regardless of which
+        // subject created it; non-DBA callers are restricted to their
+        // own entries by the subject-match check in release().
+        if (subject.hasDbaRole()) {
+            sessionManager.releaseAny(sessionId);
+        } else {
+            sessionManager.release(subject.getId(), sessionId);
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Released session {}", sessionId);
+        }
+        response.setStatus(HttpServletResponse.SC_OK);
+        return true;
     }
 
     public void doHead(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
