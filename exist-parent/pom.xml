@@ -151,6 +151,9 @@
         <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
         <skipUnitTests>false</skipUnitTests>
 
+        <!-- Shared by Surefire/Failsafe: must exist on disk for every module (not only test-classes). -->
+        <exist.log4j.testConfigurationFile>${project.parent.basedir}/log4j2-test.xml</exist.log4j.testConfigurationFile>
+
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
 
@@ -1083,7 +1086,7 @@
                             <user.language>en</user.language>
                             <user.timezone>Europe/Berlin</user.timezone>
                             <java.locale.providers>CLDR,SPI</java.locale.providers>
-                            <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                            <log4j.configurationFile>${exist.log4j.testConfigurationFile}</log4j.configurationFile>
                             <log4j2.disableJmx>false</log4j2.disableJmx>
                             <xml.catalog.alwaysResolve>false</xml.catalog.alwaysResolve>
                         </systemPropertyVariables>
