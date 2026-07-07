@@ -1,0 +1,39 @@
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_58f202f9264da8 61
+schema/conf.xsd
+  s_a16a808e4ef4ca::t_1b3d38ff24a1ec 1396-1398
+  s_a16a808e4ef4ca::t_322bf3f35a3e01 847
+  s_a16a808e4ef4ca::t_34d3cf6ea838c8 376
+  s_a16a808e4ef4ca::t_b53484e62d80f7 1437
+  s_a16a808e4ef4ca::t_348612662b33d2 695-696,703-704,708,711-713
+  s_a16a808e4ef4ca::t_a127a37c3115c8 1272-1274,1281-1283,1290-1292
+  s_a16a808e4ef4ca::t_1785dbe2d4bf39 653-655,662-664
+  s_a16a808e4ef4ca::t_b591e9cc10ee60 483
+  s_a16a808e4ef4ca::t_b18e1cb871ae75 108
+  s_a16a808e4ef4ca::t_8e4b9787378852 301
+  s_a16a808e4ef4ca::t_b8be154ed5ae4e 185
+  s_a16a808e4ef4ca::t_4c61578e87077d 1175,1178
+  s_a16a808e4ef4ca::t_6221ad667ab237 11
+  s_a16a808e4ef4ca::t_02c9388f0aaeeb 200
+  s_a16a808e4ef4ca::t_7b5e64fe76d5ab 337
+  s_a16a808e4ef4ca::t_a7bbd25f204d84 1494
+  s_a16a808e4ef4ca::t_3082f55b525961 115
+  s_a16a808e4ef4ca::t_968f0b116d15b6 1344-1348,1355-1360
+  s_a16a808e4ef4ca::t_6a868f1e151ada 22-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e66974cd3dfe2c233b247abc9562ac0b4b62ba61",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

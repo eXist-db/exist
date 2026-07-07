@@ -1,0 +1,47 @@
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ExpathPackageModule.java
+  s_a16a808e4ef4ca::t_f2508d993585ac 90,92
+  s_a16a808e4ef4ca::t_7d9d13efb7a2e0 27
+extensions/modules/sql/src/main/java/org/exist/xquery/modules/sql/SQLModule.java
+  s_a16a808e4ef4ca::t_f454cd94bf2be4 41
+  s_a16a808e4ef4ca::t_ebc7f2f2131339 293,295
+extensions/modules/cache/src/main/java/org/exist/xquery/modules/cache/CacheModule.java
+  s_a16a808e4ef4ca::t_88f49209323999 33
+  s_a16a808e4ef4ca::t_1c51c0eb1e60fb 199,201
+extensions/indexes/sort/src/main/java/org/exist/indexing/sort/SortIndex.java
+  s_a16a808e4ef4ca::t_196308169dfa7a 66
+extensions/modules/xmldiff/src/main/java/org/exist/xquery/modules/xmldiff/XmlDiffModule.java
+  s_a16a808e4ef4ca::t_172b200984164f 102,104
+  s_a16a808e4ef4ca::t_a787d7966d1bc8 40
+exist-core/src/main/java/org/exist/xquery/functions/request/RequestModule.java
+  s_a16a808e4ef4ca::t_8bbace5d88c8e5 30
+  s_a16a808e4ef4ca::t_c12405858ef138 107,109
+exist-core/src/main/java/org/exist/xquery/functions/response/ResponseModule.java
+  s_a16a808e4ef4ca::t_ffe3909d7158a9 30
+  s_a16a808e4ef4ca::t_01e71658c4188e 87,89
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_dbdb669b49fde8 1391
+exist-core/src/main/java/org/exist/xquery/functions/util/UtilModule.java
+  s_a16a808e4ef4ca::t_c6a38bb4a5d3a2 224,226
+  s_a16a808e4ef4ca::t_1058d0c887f98f 29
+exist-core/src/main/java/org/exist/xquery/functions/session/SessionModule.java
+  s_a16a808e4ef4ca::t_e2852db177dad4 91,93
+  s_a16a808e4ef4ca::t_0f989528b434f9 30
+exist-core/src/main/java/org/exist/util/SaxonConfiguration.java
+  s_a16a808e4ef4ca::t_b3975ff76d83ff 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "66fe2c50f59de71250fd0b2c8fc6249f49f03446",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

@@ -1,0 +1,28 @@
+exist-core/src/main/java/org/exist/resolver/ResolverFactory.java
+  s_56954b91ebe638::t_0d0106f5184f5c 87
+  s_bdbc9a24e676d8::t_7644464f2131e0 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "b5c473b617c54608fe5035ff247abf9f87949461",
+  "prompts": {},
+  "sessions": {
+    "s_56954b91ebe638": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_114903f14ffef4IbzoSoyVEXA9",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

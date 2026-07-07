@@ -1,0 +1,30 @@
+extensions/webdav/pom.xml
+  s_7cdf0e373ff9b9::t_50eba471f14418 141-143,150,159
+extensions/debuggee/pom.xml
+  s_7cdf0e373ff9b9::t_50eba471f14418 105-107,114,123
+extensions/modules/file/pom.xml
+  s_7cdf0e373ff9b9::t_50eba471f14418 163-165,172,181
+extensions/modules/persistentlogin/pom.xml
+  s_7cdf0e373ff9b9::t_50eba471f14418 127-129,136,145
+extensions/exquery/restxq/pom.xml
+  s_7cdf0e373ff9b9::t_50eba471f14418 227-229,236,245
+exist-parent/pom.xml
+  s_7cdf0e373ff9b9::t_fde52c532f99a8 1735-1790
+  s_7cdf0e373ff9b9::t_09db6236472fd0 168-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "0135b910598f306ef2fdadeb89553d84b4cdf9fd",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
