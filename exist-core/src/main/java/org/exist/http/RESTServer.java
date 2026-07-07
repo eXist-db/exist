@@ -1382,15 +1382,8 @@ public class RESTServer {
             LOG.debug("Got xupdate request: {}", content);
         }
 
-        if(xupdateSubmission == EXistServlet.FeatureEnabled.FALSE) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        if (rejectForbiddenXUpdate(broker, response)) {
             return;
-        } else if(xupdateSubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
-            final Subject currentSubject = broker.getCurrentSubject();
-            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
         }
 
         final MutableDocumentSet docs = new DefaultDocumentSet();
@@ -1427,6 +1420,31 @@ public class RESTServer {
         // FD : Returns an XML doc
         writeXUpdateResult(response, encoding, mods);
         // END FD
+    }
+
+    /**
+     * Checks whether XUpdate submissions are forbidden for the current
+     * subject.
+     *
+     * If they are forbidden, the response status is set to 403 Forbidden.
+     *
+     * @param broker the database broker
+     * @param response the response
+     *
+     * @return true if the XUpdate submission was rejected, false otherwise
+     */
+    private boolean rejectForbiddenXUpdate(final DBBroker broker, final HttpServletResponse response) {
+        if(xupdateSubmission == EXistServlet.FeatureEnabled.FALSE) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return true;
+        } else if(xupdateSubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
+            final Subject currentSubject = broker.getCurrentSubject();
+            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return true;
+            }
+        }
+        return false;
     }
 
     private ElementImpl parseXML(final BrokerPool pool, final String content,
