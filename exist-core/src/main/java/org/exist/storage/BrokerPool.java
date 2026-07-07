@@ -371,7 +371,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private final Lock globalXUpdateLock = new ReentrantLock();
 
     private Subject serviceModeUser = null;
-    private boolean inServiceMode = false;
+    // volatile: enterServiceMode/exitServiceMode write from the caller's thread;
+    // isInServiceMode() can be called from any thread without holding the monitor.
+    private volatile boolean inServiceMode = false;
 
     //the time that the database was started
     private final Calendar startupTime = Calendar.getInstance();
