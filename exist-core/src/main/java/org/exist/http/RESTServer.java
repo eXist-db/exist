@@ -305,151 +305,7 @@ public class RESTServer {
             return;
         }
         // Process the request
-        LockedDocument lockedDocument = null;
-        DocumentImpl resource = null;
-        final XmldbURI pathUri = XmldbURI.create(path);
-        try {
-            // check if path leads to an XQuery resource
-            final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
-            final String xproc_mime_type = MimeType.XPROC_TYPE.getName();
-            lockedDocument = getResourceForRequest(broker, pathUri);
-            resource = lockedDocument == null ? null : lockedDocument.getDocument();
-
-            if (null != resource && !isExecutableType(resource)) {
-                // return regular resource that is not an xquery and not is xproc
-                writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding, null,
-                        outputProperties, request, response);
-                return;
-            }
-            if (resource == null) { // could be request for a Collection
-
-                // no document: check if path points to a collection
-                try(final Collection collection = broker.openCollection(pathUri, LockMode.READ_LOCK)) {
-                    if (collection != null) {
-                        if (safeMode || !collection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
-                            throw new PermissionDeniedException("Not allowed to read collection");
-                        }
-                        // return a listing of the collection contents
-                        try {
-                            writeCollection(response, options.encoding, broker, collection);
-                            return;
-                        } catch (final LockException le) {
-                            writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType, options.encoding,
-                                    options.query, path, new XPathException((Expression) null, le.getMessage(), le));
-                        }
-
-                    } else if (options.source) {
-                        // didn't find regular resource, or user wants source
-                        // on a possible xquery resource that was not found
-                        throw new NotFoundException("Document " + path + " not found");
-                    }
-                }
-            }
-
-            XmldbURI servletPath = pathUri;
-
-            // if resource is still null, work up the url path to find an
-            // xquery or xproc resource
-            while (null == resource) {
-                // traverse up the path looking for xquery objects
-                servletPath = servletPath.removeLastSegment();
-                if (servletPath == XmldbURI.EMPTY_URI) {
-                    break;
-                }
-
-                lockedDocument = getResourceForRequest(broker, servletPath);
-                resource = lockedDocument == null ? null : lockedDocument.getDocument();
-                if (null != resource && isExecutableType(resource)) {
-                    break;
-
-                } else if (null != resource) {
-                    //unlocked at finally block
-
-                    // not an xquery resource. This means we have a path
-                    // that cannot contain an xquery object even if we keep
-                    // moving up the path, so bail out now
-                    throw new NotFoundException("Document " + path + " not found");
-                }
-            }
-
-            if (null == resource) { // path search failed
-                throw new NotFoundException("Document " + path + " not found");
-            }
-
-            // found an XQuery or XProc resource, fixup request values
-            final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
-
-            // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
-            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
-            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
-
-            // Should we display the source of the XQuery or XProc or execute it
-            final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-            if (options.source) {
-                // show the source
-
-                // check are we allowed to show the xquery source -
-                // descriptor.xml
-                if ((null != descriptor)
-                        && descriptor.allowSource(path)
-                        && resource.getPermissions().validate(
-                        broker.getCurrentSubject(), Permission.READ)) {
-
-                    // TODO: change writeResourceAs to use a serializer
-                    // that will serialize xquery to syntax coloured
-                    // xhtml, replace the asMimeType parameter with a
-                    // method for specifying the serializer, or split
-                    // the code into two methods. - deliriumsky
-
-                    if (xquery_mime_type.equals(resource.getMimeType())) {
-                        // Show the source of the XQuery
-                        writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
-                                MimeType.TEXT_TYPE.getName(), outputProperties,
-                                request, response);
-                    } else if (xproc_mime_type.equals(resource.getMimeType())) {
-                        // Show the source of the XProc
-                        writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
-                                MimeType.XML_TYPE.getName(), outputProperties,
-                                request, response);
-                    }
-                } else {
-                    // we are not allowed to show the source - query not
-                    // allowed in descriptor.xml
-                    // or descriptor not found, so assume source view not
-                    // allowed
-                    response
-                            .sendError(
-                            HttpServletResponse.SC_FORBIDDEN,
-                            "Permission to view XQuery source for: "
-                            + path
-                            + " denied. Must be explicitly defined in descriptor.xml");
-                    return;
-                }
-            } else {
-                try {
-                    if (xquery_mime_type.equals(resource.getMimeType())) {
-                        // Execute the XQuery
-                        executeXQuery(broker, transaction, resource, request, response,
-                                outputProperties, servletPath.toString(), pathInfo);
-                    } else if (xproc_mime_type.equals(resource.getMimeType())) {
-                        // Execute the XProc
-                        executeXProc(broker, transaction, resource, request, response,
-                                outputProperties, servletPath.toString(), pathInfo);
-                    }
-                } catch (final XPathException e) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(e.getMessage(), e);
-                    }
-                    writeQueryError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mimeType, options.encoding,
-                            options.query, path, e);
-                }
-            }
-        } finally {
-            if (lockedDocument != null) {
-                lockedDocument.close();
-            }
-        }
+        serveResource(broker, transaction, request, response, path, options, outputProperties, mimeType);
     }
 
     /**
@@ -732,6 +588,294 @@ public class RESTServer {
             encoding = DEFAULT_ENCODING;
         }
         return encoding;
+    }
+
+    /**
+     * Serves the resource or collection addressed by the path of a GET
+     * request, or executes it if it addresses an XQuery or XProc resource.
+     *
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @param options the parsed options of the request
+     * @param outputProperties the serialization properties
+     * @param mimeType the media type of the response
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
+     */
+    private void serveResource(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
+            final HttpServletResponse response, final String path, final QueryRequestOptions options,
+            final Properties outputProperties, final String mimeType)
+            throws BadRequestException, PermissionDeniedException, NotFoundException, IOException {
+        LockedDocument lockedDocument = null;
+        final XmldbURI pathUri = XmldbURI.create(path);
+        try {
+            // check if path leads to an XQuery resource
+            lockedDocument = getResourceForRequest(broker, pathUri);
+            DocumentImpl resource = lockedDocument == null ? null : lockedDocument.getDocument();
+
+            if (null != resource && !isExecutableType(resource)) {
+                // return regular resource that is not an xquery and not is xproc
+                writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding, null,
+                        outputProperties, request, response);
+                return;
+            }
+
+            XmldbURI servletPath = pathUri;
+            if (resource == null) { // could be request for a Collection
+                if (serveCollection(broker, response, path, pathUri, options, mimeType)) {
+                    return;
+                }
+
+                // work up the url path to find an xquery or xproc resource
+                final ResolvedExecutable resolved = resolveExecutable(broker, pathUri, path);
+                lockedDocument = resolved.lockedDocument;
+                resource = resolved.resource;
+                servletPath = resolved.servletPath;
+            }
+
+            if (null == resource) { // path search failed
+                throw new NotFoundException("Document " + path + " not found");
+            }
+
+            // found an XQuery or XProc resource, fixup request values
+            final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
+
+            // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
+            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
+            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+
+            // Should we display the source of the XQuery or XProc or execute it
+            final Descriptor descriptor = Descriptor.getDescriptorSingleton();
+            if (options.source) {
+                serveSource(broker, transaction, resource, descriptor, request, response, path, options,
+                        outputProperties);
+            } else {
+                executeResource(broker, transaction, resource, request, response, path, options,
+                        outputProperties, mimeType, servletPath, pathInfo);
+            }
+        } finally {
+            if (lockedDocument != null) {
+                lockedDocument.close();
+            }
+        }
+    }
+
+    /**
+     * Serves a listing of the contents of the collection addressed by
+     * the path of a GET request, if any.
+     *
+     * @param broker the database broker
+     * @param response the response
+     * @param path the path of the request
+     * @param pathUri the path of the request as an URI
+     * @param options the parsed options of the request
+     * @param mimeType the media type of the response
+     *
+     * @return true if a collection listing was written to the response, false otherwise
+     *
+     * @throws NotFoundException if the source view of a non-existent resource was requested
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws IOException if an I/O error occurs
+     */
+    private boolean serveCollection(final DBBroker broker, final HttpServletResponse response,
+            final String path, final XmldbURI pathUri, final QueryRequestOptions options, final String mimeType)
+            throws NotFoundException, PermissionDeniedException, IOException {
+        // no document: check if path points to a collection
+        try(final Collection collection = broker.openCollection(pathUri, LockMode.READ_LOCK)) {
+            if (collection != null) {
+                if (safeMode || !collection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
+                    throw new PermissionDeniedException("Not allowed to read collection");
+                }
+                // return a listing of the collection contents
+                try {
+                    writeCollection(response, options.encoding, broker, collection);
+                    return true;
+                } catch (final LockException le) {
+                    writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType, options.encoding,
+                            options.query, path, new XPathException((Expression) null, le.getMessage(), le));
+                }
+
+            } else if (options.source) {
+                // didn't find regular resource, or user wants source
+                // on a possible xquery resource that was not found
+                throw new NotFoundException("Document " + path + " not found");
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Holder for the result of resolving the executable resource
+     * addressed by the path of a request.
+     */
+    private static class ResolvedExecutable {
+        final LockedDocument lockedDocument;
+        final DocumentImpl resource;
+        final XmldbURI servletPath;
+
+        ResolvedExecutable(final LockedDocument lockedDocument, final DocumentImpl resource,
+                final XmldbURI servletPath) {
+            this.lockedDocument = lockedDocument;
+            this.resource = resource;
+            this.servletPath = servletPath;
+        }
+    }
+
+    /**
+     * Works up the url path of a GET request to find an XQuery
+     * or XProc resource.
+     *
+     * The locked document of the returned result, if any, must be
+     * closed by the caller.
+     *
+     * @param broker the database broker
+     * @param pathUri the path of the request as an URI
+     * @param path the path of the request
+     *
+     * @return the resolution result, its members are null if no executable resource was found
+     *
+     * @throws NotFoundException if the path leads to a resource that is not executable
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     */
+    private ResolvedExecutable resolveExecutable(final DBBroker broker, final XmldbURI pathUri, final String path)
+            throws NotFoundException, PermissionDeniedException {
+        XmldbURI servletPath = pathUri;
+        LockedDocument lockedDocument = null;
+        DocumentImpl resource = null;
+        while (null == resource) {
+            // traverse up the path looking for xquery objects
+            servletPath = servletPath.removeLastSegment();
+            if (servletPath == XmldbURI.EMPTY_URI) {
+                break;
+            }
+
+            lockedDocument = getResourceForRequest(broker, servletPath);
+            resource = lockedDocument == null ? null : lockedDocument.getDocument();
+            if (null != resource && isExecutableType(resource)) {
+                break;
+
+            } else if (null != resource) {
+                // not an xquery resource. This means we have a path
+                // that cannot contain an xquery object even if we keep
+                // moving up the path, so bail out now
+                lockedDocument.close();
+                throw new NotFoundException("Document " + path + " not found");
+            }
+        }
+        return new ResolvedExecutable(lockedDocument, resource, servletPath);
+    }
+
+    /**
+     * Serves the source of the XQuery or XProc resource addressed by
+     * the path of a GET request, if allowed by the descriptor.
+     *
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param resource the resource to serve the source of
+     * @param descriptor the descriptor, or null if there is none
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @param options the parsed options of the request
+     * @param outputProperties the serialization properties
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws IOException if an I/O error occurs
+     */
+    private void serveSource(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
+            final Descriptor descriptor, final HttpServletRequest request, final HttpServletResponse response,
+            final String path, final QueryRequestOptions options, final Properties outputProperties)
+            throws BadRequestException, PermissionDeniedException, IOException {
+        // show the source
+
+        // check are we allowed to show the xquery source -
+        // descriptor.xml
+        if ((null != descriptor)
+                && descriptor.allowSource(path)
+                && resource.getPermissions().validate(
+                broker.getCurrentSubject(), Permission.READ)) {
+
+            // TODO: change writeResourceAs to use a serializer
+            // that will serialize xquery to syntax coloured
+            // xhtml, replace the asMimeType parameter with a
+            // method for specifying the serializer, or split
+            // the code into two methods. - deliriumsky
+
+            if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
+                // Show the source of the XQuery
+                writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
+                        MimeType.TEXT_TYPE.getName(), outputProperties,
+                        request, response);
+            } else if (MimeType.XPROC_TYPE.getName().equals(resource.getMimeType())) {
+                // Show the source of the XProc
+                writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
+                        MimeType.XML_TYPE.getName(), outputProperties,
+                        request, response);
+            }
+        } else {
+            // we are not allowed to show the source - query not
+            // allowed in descriptor.xml
+            // or descriptor not found, so assume source view not
+            // allowed
+            response
+                    .sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Permission to view XQuery source for: "
+                    + path
+                    + " denied. Must be explicitly defined in descriptor.xml");
+        }
+    }
+
+    /**
+     * Executes the XQuery or XProc resource addressed by the path of a
+     * GET request and writes its results to the response.
+     *
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param resource the resource to execute
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @param options the parsed options of the request
+     * @param outputProperties the serialization properties
+     * @param mimeType the media type of the response
+     * @param servletPath the path of the executable resource
+     * @param pathInfo the remainder of the request path
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws IOException if an I/O error occurs
+     */
+    private void executeResource(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
+            final HttpServletRequest request, final HttpServletResponse response, final String path,
+            final QueryRequestOptions options, final Properties outputProperties, final String mimeType,
+            final XmldbURI servletPath, final String pathInfo)
+            throws BadRequestException, PermissionDeniedException, IOException {
+        try {
+            if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
+                // Execute the XQuery
+                executeXQuery(broker, transaction, resource, request, response,
+                        outputProperties, servletPath.toString(), pathInfo);
+            } else if (MimeType.XPROC_TYPE.getName().equals(resource.getMimeType())) {
+                // Execute the XProc
+                executeXProc(broker, transaction, resource, request, response,
+                        outputProperties, servletPath.toString(), pathInfo);
+            }
+        } catch (final XPathException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(e.getMessage(), e);
+            }
+            writeQueryError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mimeType, options.encoding,
+                    options.query, path, e);
+        }
     }
 
     public void doHead(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
