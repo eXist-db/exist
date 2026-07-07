@@ -286,132 +286,23 @@ public class RESTServer {
         }
 
         // Process special parameters
-
-        int howmany = 10;
-        int start = 1;
-        boolean typed = false;
-        boolean wrap = true;
-        boolean source = false;
-        boolean cache = false;
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
-
-        String query = null;
-        if (!safeMode) {
-            query = getParameter(request, XPath);
-            if (query == null) {
-                query = getParameter(request, Query);
-            }
-        }
-        final String _var = getParameter(request, Variables);
-        List /*<Namespace>*/ namespaces = null;
-        ElementImpl variables = null;
-        try {
-            if (_var != null) {
-                final NamespaceExtractor nsExtractor = new NamespaceExtractor();
-                variables = parseXML(broker.getBrokerPool(), _var, nsExtractor);
-                namespaces = nsExtractor.getNamespaces();
-            }
-        } catch (final SAXException e) {
-            final XPathException x = new XPathException(variables != null ? variables.getExpression() : null, e.toString());
-            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, query, path, x);
-        }
-
-        String option;
-        if ((option = getParameter(request, HowMany)) != null) {
-            try {
-                howmany = Integer.parseInt(option);
-            } catch (final NumberFormatException nfe) {
-                throw new BadRequestException(
-                        "Parameter _howmany should be an int");
-            }
-        }
-        if ((option = getParameter(request, Start)) != null) {
-            try {
-                start = Integer.parseInt(option);
-            } catch (final NumberFormatException nfe) {
-                throw new BadRequestException(
-                        "Parameter _start should be an int");
-            }
-        }
-        if ((option = getParameter(request, Typed)) != null) {
-            if ("yes".equals(option.toLowerCase())) {
-                typed = true;
-            }
-        }
-        if ((option = getParameter(request, Wrap)) != null) {
-            wrap = "yes".equals(option);
-            outputProperties.setProperty("_wrap", option);
-        }
-        if ((option = getParameter(request, Cache)) != null) {
-            cache = "yes".equals(option);
-        }
-        if ((option = getParameter(request, Indent)) != null) {
-            outputProperties.setProperty(OutputKeys.INDENT, option);
-        }
-        if ((option = getParameter(request, Output_Doctype)) != null) {
-            // take user query-string specified output-doctype setting
-            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, option);
-        } else {
-            // set output-doctype by configuration
-            final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
-            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, outputDocType);
-        }
-        if ((option = getParameter(request, Omit_Xml_Declaration)) != null) {
-            // take user query-string specified omit-xml-declaration setting
-            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, option);
-        } else {
-            // set omit-xml-declaration by configuration
-            final String omitXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_XML_DECLARATION, "yes");
-            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDeclaration);
-        }
-        if ((option = getParameter(request, Omit_Original_Xml_Declaration)) != null) {
-            // take user query-string specified omit-original-xml-declaration setting
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, option);
-        } else {
-            // set omit-original-xml-declaration by configuration
-            final String omitOriginalXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, "no");
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-        }
-        if ((option = getParameter(request, Source)) != null && !safeMode) {
-            source = "yes".equals(option);
-        }
-        if ((option = getParameter(request, Session)) != null) {
-            outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, option);
-        }
-        String stylesheet;
-        if ((stylesheet = getParameter(request, XSL)) != null) {
-            if ("no".equals(stylesheet)) {
-                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-                outputProperties.remove(EXistOutputKeys.STYLESHEET);
-                stylesheet = null;
-            } else {
-                outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
-            }
-        } else {
-            outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
-        }
-        LOG.debug("stylesheet = {}", stylesheet);
-        LOG.debug("query = {}", query);
-        String encoding;
-        if ((encoding = getParameter(request, Encoding)) != null) {
-            outputProperties.setProperty(OutputKeys.ENCODING, encoding);
-        } else {
-            encoding = DEFAULT_ENCODING;
-        }
+        final QueryRequestOptions options = parseGetRequestOptions(broker, request, response, path, outputProperties);
 
         final String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 
-        if (query != null) {
+        if (options.query != null) {
             // query parameter specified, search method does all the rest of the work
             try {
-                search(broker, transaction, query, path, namespaces, variables, howmany, start, typed, outputProperties,
-                        wrap, cache, request, response);
+                search(broker, transaction, options.query, path, options.namespaces, options.variables,
+                        options.howmany, options.start, options.typed, outputProperties,
+                        options.wrap, options.cache, request, response);
 
             } catch (final XPathException e) {
                 if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                    writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
+                    writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, e);
                 } else {
-                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
+                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, e);
                 }
             }
             return;
@@ -429,7 +320,7 @@ public class RESTServer {
 
             if (null != resource && !isExecutableType(resource)) {
                 // return regular resource that is not an xquery and not is xproc
-                writeResourceAs(resource, broker, transaction, stylesheet, encoding, null,
+                writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding, null,
                         outputProperties, request, response);
                 return;
             }
@@ -443,17 +334,17 @@ public class RESTServer {
                         }
                         // return a listing of the collection contents
                         try {
-                            writeCollection(response, encoding, broker, collection);
+                            writeCollection(response, options.encoding, broker, collection);
                             return;
                         } catch (final LockException le) {
                             if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
+                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, new XPathException((Expression) null, le.getMessage(), le));
                             } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
+                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, new XPathException((Expression) null, le.getMessage(), le));
                             }
                         }
 
-                    } else if (source) {
+                    } else if (options.source) {
                         // didn't find regular resource, or user wants source
                         // on a possible xquery resource that was not found
                         throw new NotFoundException("Document " + path + " not found");
@@ -501,7 +392,7 @@ public class RESTServer {
 
             // Should we display the source of the XQuery or XProc or execute it
             final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-            if (source) {
+            if (options.source) {
                 // show the source
 
                 // check are we allowed to show the xquery source -
@@ -519,12 +410,12 @@ public class RESTServer {
 
                     if (xquery_mime_type.equals(resource.getMimeType())) {
                         // Show the source of the XQuery
-                        writeResourceAs(resource, broker, transaction, stylesheet, encoding,
+                        writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
                                 MimeType.TEXT_TYPE.getName(), outputProperties,
                                 request, response);
                     } else if (xproc_mime_type.equals(resource.getMimeType())) {
                         // Show the source of the XProc
-                        writeResourceAs(resource, broker, transaction, stylesheet, encoding,
+                        writeResourceAs(resource, broker, transaction, options.stylesheet, options.encoding,
                                 MimeType.XML_TYPE.getName(), outputProperties,
                                 request, response);
                     }
@@ -557,9 +448,9 @@ public class RESTServer {
                         LOG.debug(e.getMessage(), e);
                     }
                     if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                        writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, query, path, e);
+                        writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, options.encoding, options.query, path, e);
                     } else {
-                        writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, query,
+                        writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, options.encoding, options.query,
                                 path, e);
                     }
                 }
@@ -625,6 +516,232 @@ public class RESTServer {
         }
         response.setStatus(HttpServletResponse.SC_OK);
         return true;
+    }
+
+    /**
+     * Holder for the scalar options controlling the processing
+     * of a REST Server query request.
+     */
+    private static class QueryRequestOptions {
+        String query = null;
+        List<Namespace> namespaces = null;
+        ElementImpl variables = null;
+        int howmany = 10;
+        int start = 1;
+        boolean typed = false;
+        boolean wrap = true;
+        boolean source = false;
+        boolean cache = false;
+        String stylesheet = null;
+        String encoding = null;
+    }
+
+    /**
+     * Parses the predefined parameters from the query string of a GET request.
+     *
+     * Output related parameters are set on the given outputProperties,
+     * the scalar options are returned in a {@link QueryRequestOptions} holder.
+     *
+     * @param broker the database broker
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @param outputProperties the serialization properties
+     *
+     * @return the parsed options
+     *
+     * @throws BadRequestException if a parameter has an invalid value
+     * @throws IOException if an I/O error occurs
+     */
+    private QueryRequestOptions parseGetRequestOptions(final DBBroker broker, final HttpServletRequest request,
+            final HttpServletResponse response, final String path, final Properties outputProperties)
+            throws BadRequestException, IOException {
+        final QueryRequestOptions options = new QueryRequestOptions();
+
+        if (!safeMode) {
+            options.query = getParameter(request, XPath);
+            if (options.query == null) {
+                options.query = getParameter(request, Query);
+            }
+        }
+        parseVariablesParameter(broker, request, response, path, options);
+
+        options.howmany = parseIntParameter(request, HowMany, options.howmany);
+        options.start = parseIntParameter(request, Start, options.start);
+
+        String option;
+        if ((option = getParameter(request, Typed)) != null) {
+            if ("yes".equals(option.toLowerCase())) {
+                options.typed = true;
+            }
+        }
+        if ((option = getParameter(request, Wrap)) != null) {
+            options.wrap = "yes".equals(option);
+            outputProperties.setProperty("_wrap", option);
+        }
+        if ((option = getParameter(request, Cache)) != null) {
+            options.cache = "yes".equals(option);
+        }
+        setOutputPropertyIfPresent(request, outputProperties, Indent, OutputKeys.INDENT);
+        setOutputProperty(broker, request, outputProperties, Output_Doctype,
+                EXistOutputKeys.OUTPUT_DOCTYPE, Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
+        setOutputProperty(broker, request, outputProperties, Omit_Xml_Declaration,
+                OutputKeys.OMIT_XML_DECLARATION, Serializer.PROPERTY_OMIT_XML_DECLARATION, "yes");
+        setOutputProperty(broker, request, outputProperties, Omit_Original_Xml_Declaration,
+                EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, "no");
+        if ((option = getParameter(request, Source)) != null && !safeMode) {
+            options.source = "yes".equals(option);
+        }
+        setOutputPropertyIfPresent(request, outputProperties, Session, Serializer.PROPERTY_SESSION_ID);
+
+        options.stylesheet = parseStylesheetParameter(request, outputProperties);
+        LOG.debug("stylesheet = {}", options.stylesheet);
+        LOG.debug("query = {}", options.query);
+
+        options.encoding = parseEncodingParameter(request, outputProperties);
+
+        return options;
+    }
+
+    /**
+     * Parses the {@code _variables} parameter from the query string
+     * of a GET request.
+     *
+     * Sets both the variables and the namespaces members of the
+     * given options.
+     *
+     * @param broker the database broker
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @param options the options to store the parsed variables in
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void parseVariablesParameter(final DBBroker broker, final HttpServletRequest request,
+            final HttpServletResponse response, final String path, final QueryRequestOptions options)
+            throws IOException {
+        final String _var = getParameter(request, Variables);
+        try {
+            if (_var != null) {
+                final NamespaceExtractor nsExtractor = new NamespaceExtractor();
+                options.variables = parseXML(broker.getBrokerPool(), _var, nsExtractor);
+                options.namespaces = nsExtractor.getNamespaces();
+            }
+        } catch (final SAXException e) {
+            final XPathException x = new XPathException(options.variables != null ? options.variables.getExpression() : null, e.toString());
+            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, options.query, path, x);
+        }
+    }
+
+    /**
+     * Parses an integer parameter from the query string of a GET request.
+     *
+     * @param request the request
+     * @param parameter the parameter to parse
+     * @param defaultValue the value to return if the parameter is not present
+     *
+     * @return the parsed value, or the default value if the parameter is not present
+     *
+     * @throws BadRequestException if the parameter value is not an int
+     */
+    private int parseIntParameter(final HttpServletRequest request, final RESTServerParameter parameter,
+            final int defaultValue) throws BadRequestException {
+        final String option = getParameter(request, parameter);
+        if (option == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(option);
+        } catch (final NumberFormatException nfe) {
+            throw new BadRequestException(
+                    "Parameter " + parameter.queryStringKey() + " should be an int");
+        }
+    }
+
+    /**
+     * Sets an output property from a parameter in the query string of a
+     * GET request, falling back to the configured default if the parameter
+     * is not present.
+     *
+     * @param broker the database broker
+     * @param request the request
+     * @param outputProperties the serialization properties
+     * @param parameter the parameter to read
+     * @param outputKey the key of the output property to set
+     * @param configKey the key of the configured default value
+     * @param configDefault the default value if nothing is configured
+     */
+    private void setOutputProperty(final DBBroker broker, final HttpServletRequest request,
+            final Properties outputProperties, final RESTServerParameter parameter,
+            final String outputKey, final String configKey, final String configDefault) {
+        final String option = getParameter(request, parameter);
+        if (option != null) {
+            // take the user query-string specified setting
+            outputProperties.setProperty(outputKey, option);
+        } else {
+            // set the property by configuration
+            outputProperties.setProperty(outputKey, broker.getConfiguration().getProperty(configKey, configDefault));
+        }
+    }
+
+    /**
+     * Sets an output property from a parameter in the query string
+     * of a GET request, if the parameter is present.
+     *
+     * @param request the request
+     * @param outputProperties the serialization properties
+     * @param parameter the parameter to read
+     * @param outputKey the key of the output property to set
+     */
+    private void setOutputPropertyIfPresent(final HttpServletRequest request, final Properties outputProperties,
+            final RESTServerParameter parameter, final String outputKey) {
+        final String option = getParameter(request, parameter);
+        if (option != null) {
+            outputProperties.setProperty(outputKey, option);
+        }
+    }
+
+    /**
+     * Parses the {@code _xsl} parameter from the query string of a GET request.
+     *
+     * @param request the request
+     * @param outputProperties the serialization properties
+     *
+     * @return the stylesheet to apply, or null if none was requested
+     */
+    private String parseStylesheetParameter(final HttpServletRequest request, final Properties outputProperties) {
+        String stylesheet;
+        if ((stylesheet = getParameter(request, XSL)) != null) {
+            if ("no".equals(stylesheet)) {
+                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+                outputProperties.remove(EXistOutputKeys.STYLESHEET);
+                stylesheet = null;
+            } else {
+                outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
+            }
+        } else {
+            outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+        }
+        return stylesheet;
+    }
+
+    /**
+     * Parses the {@code _encoding} parameter from the query string of a GET request.
+     *
+     * @param request the request
+     * @param outputProperties the serialization properties
+     *
+     * @return the character encoding to use for the response
+     */
+    private String parseEncodingParameter(final HttpServletRequest request, final Properties outputProperties) {
+        String encoding;
+        if ((encoding = getParameter(request, Encoding)) != null) {
+            outputProperties.setProperty(OutputKeys.ENCODING, encoding);
+        } else {
+            encoding = DEFAULT_ENCODING;
+        }
+        return encoding;
     }
 
     public void doHead(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
