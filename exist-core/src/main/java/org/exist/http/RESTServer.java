@@ -299,11 +299,8 @@ public class RESTServer {
                         options.wrap, options.cache, request, response);
 
             } catch (final XPathException e) {
-                if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                    writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, e);
-                } else {
-                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, e);
-                }
+                writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType, options.encoding,
+                        options.query, path, e);
             }
             return;
         }
@@ -337,11 +334,8 @@ public class RESTServer {
                             writeCollection(response, options.encoding, broker, collection);
                             return;
                         } catch (final LockException le) {
-                            if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, new XPathException((Expression) null, le.getMessage(), le));
-                            } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, options.encoding, options.query, path, new XPathException((Expression) null, le.getMessage(), le));
-                            }
+                            writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType, options.encoding,
+                                    options.query, path, new XPathException((Expression) null, le.getMessage(), le));
                         }
 
                     } else if (options.source) {
@@ -447,12 +441,8 @@ public class RESTServer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(e.getMessage(), e);
                     }
-                    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                        writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, options.encoding, options.query, path, e);
-                    } else {
-                        writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, options.encoding, options.query,
-                                path, e);
-                    }
+                    writeQueryError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mimeType, options.encoding,
+                            options.query, path, e);
                 }
             }
         } finally {
@@ -894,12 +884,7 @@ public class RESTServer {
                         }
 
                     } catch (final XPathException e) {
-                        if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                            writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, null, path, e);
-
-                        } else {
-                            writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, null, path, e);
-                        }
+                        writeQueryError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mimeType, encoding, null, path, e);
                     }
                     return;
                 }
@@ -1053,13 +1038,8 @@ public class RESTServer {
                                     howmany, start, typed, outputProperties,
                                     enclose, cache, request, response);
                         } catch (final XPathException e) {
-                            if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST,
-                                        encoding, null, path, e);
-                            } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST,
-                                        encoding, null, path, e);
-                            }
+                            writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType,
+                                    encoding, null, path, e);
                         }
 
                     } else {
@@ -2098,6 +2078,32 @@ public class RESTServer {
      * @param e
      *
      */
+    /**
+     * Writes an XPathException to the http response.
+     *
+     * The exception is written as XML or HTML depending on the
+     * given media type of the response.
+     *
+     * @param response the response
+     * @param httpStatusCode the HTTP status code to set on the response
+     * @param mimeType the media type of the response
+     * @param encoding the character encoding
+     * @param query the query that caused the exception, or null
+     * @param path the path of the request
+     * @param e the exception to write
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeQueryError(final HttpServletResponse response, final int httpStatusCode,
+        final String mimeType, final String encoding, final String query,
+        final String path, final XPathException e) throws IOException {
+        if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+            writeXPathException(response, httpStatusCode, encoding, query, path, e);
+        } else {
+            writeXPathExceptionHtml(response, httpStatusCode, encoding, query, path, e);
+        }
+    }
+
     private void writeXPathExceptionHtml(final HttpServletResponse response,
         final int httpStatusCode, final String encoding, final String query,
         final String path, final XPathException e) throws IOException {
