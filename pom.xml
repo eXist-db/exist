@@ -114,6 +114,13 @@
                             <goal>validate</goal>
                         </goals>
                         <configuration>
+                            <!-- Forces a failure (rather than a silent live fetch) if any
+                                 reference can't be resolved through the catalog below -
+                                 guarantees this check stays offline. -->
+                            <catalogHandling>strict</catalogHandling>
+                            <catalogs>
+                                <catalog>${project.basedir}/exist-jetty-config/src/main/resources/webapp/WEB-INF/catalog.xml</catalog>
+                            </catalogs>
                             <validationSets>
                                 <validationSet>
                                     <dir>${project.basedir}/exist-distribution/src/main/config</dir>
@@ -153,6 +160,18 @@
                                         <include>mime-types.xml</include>
                                     </includes>
                                     <systemId>${project.basedir}/schema/mime-types.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <!-- Self-check (#5541-inspired): every native XSD we ship must itself be
+                                     a legal schema document per the W3C XSD 1.1 meta-schema (vendored
+                                     at exist-jetty-config/.../entities/XMLSchema.xsd). Catches malformed
+                                     schema authoring (e.g. misplaced xs:assert, bad @version) before release. -->
+                                <validationSet>
+                                    <dir>${project.basedir}/schema</dir>
+                                    <includes>
+                                        <include>**/*.xsd</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/exist-jetty-config/src/main/resources/webapp/WEB-INF/entities/XMLSchema.xsd</systemId>
                                     <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
                                 </validationSet>
                             </validationSets>

@@ -1082,6 +1082,64 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 </executions>
             </plugin>
 
+            <!--
+                Generates org/exist/util/GeneratedSchemaVersions.java from each canonical XSD's
+                xs:schema/@version (see ../schema/generate-schema-version.xsl), runs on every
+                normal build. Unlike ../schema/governance.xsl (phase=none, CI-invoked-only), this
+                means SchemaVersion.java's version constants can never silently drift from
+                schema/*.xsd.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>schema-version-codegen</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../schema</dir>
+                                    <includes>
+                                        <include>GeneratedSchemaVersions.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/../schema/generate-schema-version.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-sources/schema-version/org/exist/util</outputDir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                            <targetExtension>.java</targetExtension>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-schema-version-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/schema-version</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

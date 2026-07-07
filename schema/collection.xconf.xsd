@@ -6,7 +6,7 @@
            xmlns:dcterms="http://purl.org/dc/terms/"
            elementFormDefault="qualified"
            targetNamespace="http://exist-db.org/collection-config/1.0"
-           version="1.2.1">
+           version="1.2.2">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -14,7 +14,7 @@
         <xs:documentation>Schema for eXist-db Collection Configuration files /db/system/config/db/**/collection.xconf</xs:documentation>
         <xs:appinfo>
             <dcterms:title>Schema for eXist-db Collection Configuration Files</dcterms:title>
-            <dcterms:created xsi:type="dcterms:W3CDTF">2011-10-09T18:47:21.319+01:00</dcterms:created>
+            <dcterms:created>2011-10-09T18:47:21.319+01:00</dcterms:created>
             <dcterms:creator>Adam Retter</dcterms:creator>
         </xs:appinfo>
     </xs:annotation>
