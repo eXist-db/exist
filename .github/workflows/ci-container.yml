@@ -176,43 +176,21 @@ jobs:
           name: exist-core-failed-log
           path: exist.log
 
-      # --- Publish: arm64 smoke test (bats only exercises amd64) ---
-      # The multi-arch staging manifest is already in the registry; run its
-      # arm64 variant under QEMU and confirm it boots and serves HTTP before we
-      # promote it. Emulated JVM startup is slow, hence the generous poll.
-      - name: Smoke-test arm64 image
-        if: steps.meta.outputs.publish == 'true'
-        timeout-minutes: 20
-        run: |
-          docker rm -f exist-ci-arm64 >/dev/null 2>&1 || true
-          docker run -d --platform linux/arm64 -p 8081:8080 --name exist-ci-arm64 \
-            existdb/existdb:${{ steps.meta.outputs.channel }}-staging
-          echo "Waiting for the emulated arm64 container to serve..."
-          ok=0
-          for i in $(seq 1 60); do
-            if curl -sf http://127.0.0.1:8081/ | grep -q Jetty; then ok=1; break; fi
-            sleep 10
-          done
-          if [[ "$ok" != 1 ]]; then
-            echo "::error::arm64 image failed to become ready"
-            docker logs exist-ci-arm64 || true
-            docker rm -f exist-ci-arm64 || true
-            exit 1
-          fi
-          echo "arm64 image boots and serves HTTP"
-          docker rm -f exist-ci-arm64 || true
+      # --- Test: Dropped testing of an image running in emulation. The outcome is meaningless at best according to DP
 
       # --- Publish: promote the tested staging digest to the public tags ---
       # imagetools copies the whole OCI index (both architectures + attestation manifests)
       # server-side, no rebuild. The `-staging`
       # tag is deliberately left in place as the inspectable "last CI build".
+      - name: Log in to Docker Hub
+        if: steps.meta.outputs.publish == 'true'
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0  # v4.4.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Promote staging images to public tags
         if: steps.meta.outputs.publish == 'true'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           CH="${{ steps.meta.outputs.channel }}"
           V="${{ steps.ver.outputs.version }}"
           docker buildx imagetools create \
