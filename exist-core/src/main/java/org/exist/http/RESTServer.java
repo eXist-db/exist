@@ -2391,14 +2391,6 @@ public class RESTServer {
     }
 
     /**
-     * @param response
-     * @param encoding
-     * @param query
-     * @param path
-     * @param e
-     *
-     */
-    /**
      * Writes an XPathException to the http response.
      *
      * The exception is written as XML or HTML depending on the
