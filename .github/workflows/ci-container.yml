@@ -41,13 +41,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3  # v4
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
         with:
           platforms: linux/amd64,linux/arm64
       - name: Verify containerd snapshotter is active
         run: docker info -f '{{.DriverStatus}}'
       - name: Make BuildKit default
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5  # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings
         with:
