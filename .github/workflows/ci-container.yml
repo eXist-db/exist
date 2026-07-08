@@ -123,27 +123,45 @@ jobs:
       # --- Publish: build & push the multi-arch, attested staging images ---
       # Pushed as <channel>-staging (+ <channel>-debug-staging) so nothing
       # un-suffixed reaches Docker Hub until the tests below pass.
-      - name: Build & push staging images
+      #
+      # The build context and both Dockerfiles are produced by the Maven
+      # `package` above (assembly + shade + resource filtering resolve the
+      # OCI LABELs and the version-stamped context dir). docker/build-push-action
+      # only builds & pushes that pre-assembled context — it does not re-run Maven.
+      - name: Log in to Docker Hub
         if: steps.meta.outputs.publish == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          REVISION_ARG=""
-          if [[ -n "${{ steps.meta.outputs.version }}" ]]; then
-            REVISION_ARG="-Drevision=${{ steps.meta.outputs.version }}"
-          fi
-          mvn --no-transfer-progress -q \
-            -Pdocker \
-            -DskipTests -Ddependency-check.skip=true \
-            $REVISION_ARG \
-            -Ddocker.tag=${{ steps.meta.outputs.channel }}-staging \
-            -Ddocker.debug.tag=${{ steps.meta.outputs.channel }}-debug-staging \
-            -Ddocker.sbom=true -Ddocker.provenance=true \
-            -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD \
-            -Ddocker.filter=exist,exist-debug \
-            docker:build docker:push
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0  # v4.4.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push staging image (main)
+        if: steps.meta.outputs.publish == 'true'
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
+          file: exist-docker/target/classes/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: existdb/existdb:${{ steps.meta.outputs.channel }}-staging
+
+      - name: Build & push staging image (DEBUG)
+        if: steps.meta.outputs.publish == 'true'
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
+          file: exist-docker/target/classes/Dockerfile-DEBUG
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: existdb/existdb:${{ steps.meta.outputs.channel }}-debug-staging
 
       - name: Pull & tag staging image for tests
         if: steps.meta.outputs.publish == 'true'
@@ -182,12 +200,7 @@ jobs:
       # imagetools copies the whole OCI index (both architectures + attestation manifests)
       # server-side, no rebuild. The `-staging`
       # tag is deliberately left in place as the inspectable "last CI build".
-      - name: Log in to Docker Hub
-        if: steps.meta.outputs.publish == 'true'
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0  # v4.4.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # (Docker Hub login already happened before the staging build & push above.)
       - name: Promote staging images to public tags
         if: steps.meta.outputs.publish == 'true'
         run: |
