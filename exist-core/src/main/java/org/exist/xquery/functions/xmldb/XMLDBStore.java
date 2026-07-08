@@ -189,7 +189,14 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                         // whole value into a heap byte[] (a multi-GB upload would OOM). The local
                         // resource keeps the BinaryValue and the store streams it via the
                         // (disk-backed by default) binary cache instead of materializing it.
-                        resource.setContent((BinaryValue) item);
+                        final BinaryValue binaryValue = (BinaryValue) item;
+                        // The resource is only lent the value: closing the resource (on exit from
+                        // this try-with-resources) closes the value it was given, but the query
+                        // that produced the value may still need to read it afterwards. Take a
+                        // shared reference on the resource's behalf so its close() releases only
+                        // that reference.
+                        binaryValue.incrementSharedReferences();
+                        resource.setContent(binaryValue);
                     } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
                         if (mimeType.isXMLType()) {
                             final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();

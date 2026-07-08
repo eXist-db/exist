@@ -54,6 +54,14 @@ public class BinaryValueFromFile extends BinaryValue {
     private final MappedByteBuffer buf;
     private final Optional<BiConsumer<Boolean, Path>> closeListener;
 
+    // Number of outstanding references. Starts at 1 (the value itself); incremented when the value is
+    // shared out of an enclosed expression and decremented by each close(). The underlying channel is
+    // released only once it reaches zero, mirroring the reference counting in
+    // AbstractFilterInputStreamCache (used by BinaryValueFromInputStream). Without this, exitEnclosedExpr
+    // would close a still-referenced value -- e.g. an uploaded file's value (request:get-uploaded-file-data)
+    // closed before a deferred xmldb:store could read it.
+    private int sharedReferences = 1;
+
     protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Optional<BiConsumer<Boolean, Path>> closeListener) throws XPathException {
         this(null, manager, binaryValueType, file, closeListener);
     }
@@ -128,6 +136,11 @@ public class BinaryValueFromFile extends BinaryValue {
 
     @Override
     public void close() throws IOException {
+        sharedReferences--;
+        if (sharedReferences > 0 || !channel.isOpen()) {
+            // still referenced (e.g. shared out of an enclosed expression), or already released
+            return;
+        }
         boolean closed = false;
         try {
             channel.close();
@@ -176,6 +189,6 @@ public class BinaryValueFromFile extends BinaryValue {
 
     @Override
     public void incrementSharedReferences() {
-        // we don't need reference counting, as there is nothing to cleanup when all references are returned
+        sharedReferences++;
     }
 }
