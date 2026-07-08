@@ -596,35 +596,20 @@ public class XQUFBasicTest {
                 """
                 <!-- Comment-1 --><?a-pi pi-1?><!-- Comment-2 -->\
                 <far-north> text-1A
-                \
                     <!-- Comment-3 --> text-1B
-                \
                     <?a-pi pi-2?> text-1C
-                \
                   <north mark="n0"> text-2A
-                \
                     <near-north> text-3A
-                \
                       <center mark="c0"> text-4A
-                \
                         <near-south-west/> text-4B
-                \
                             <!--Comment-5--> text-4C
-                \
                             <?a-pi pi-4?> text-4D
-                \
                         <near-south> text-5A
-                \
                         </near-south> text-4E
-                \
                       </center> text-3E
-                \
                     </near-north> text-2D
-                \
                   </north> text-1D
-                \
                 </far-north>
-                \
                 <!-- Comment-6 --><?a-pi pi-6?><!-- Comment-7 -->""";
 
         // Parse using SAXAdapter (same as XQTS runner)
@@ -769,47 +754,27 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $doc := <far-north> text-1A
-                \
                     <!-- Comment-3 --> text-1B
-                \
                     <?a-pi pi-2?> text-1C
-                \
                   <north mark='n0'> text-2A
-                \
                     <near-north> text-3A
-                \
                       <center mark='c0'> text-4A
-                \
                         <near-south-west/> text-4B
-                \
                             <!--Comment-5--> text-4C
-                \
                             <?a-pi pi-4?> text-4D
-                \
                         <near-south> text-5A
-                \
                         </near-south> text-4E
-                \
                       </center> text-3E
-                \
                     </near-north> text-2D
-                \
                   </north> text-1D
-                \
                 </far-north>
-                \
                 return copy $c := $doc
                 modify delete nodes $c//processing-instruction('a-pi')
                 return (
-                \
                   let $a := $c//(north | near-south)/preceding-sibling::comment()
-                \
                   return <result count='{count($a)}'>{$a}</result>,
-                \
                   let $a := $c//(north | near-south)/preceding-sibling::text()
-                \
                   return <result count='{count($a)}'>{$a}</result>
-                \
                 )""";
 
         final ResourceSet result = service.query(query);
@@ -1015,29 +980,17 @@ public class XQUFBasicTest {
             // Fallback simplified version
             xml = ("""
                 <?xml version="1.0"?>
-                \
                 <BOOKLIST xmlns="http://ns.example.com/books">
-                \
                 <BOOKS>
-                \
                 \t<ITEM CAT="MMP">
-                \
                 \t    <!-- the first book -->
-                \
                 \t    <?pi data?>
-                \
                 \t    <TITLE>Pride and Prejudice</TITLE>
-                \
                 \t</ITEM>
-                \
                 </BOOKS>
-                \
                 <CATEGORIES DESC="Miscellaneous categories">
-                \
                    <CATEGORY CODE="P" DESC="Paperback"/>
-                \
                 </CATEGORIES>
-                \
                 </BOOKLIST>""").getBytes(java.nio.charset.StandardCharsets.UTF_8);
         }
         final org.exist.dom.memtree.SAXAdapter adapter = new org.exist.dom.memtree.SAXAdapter();
@@ -1368,11 +1321,8 @@ public class XQUFBasicTest {
         final String query =
                 """
                 declare copy-namespaces preserve, inherit;
-                \
                 copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
-                \
                 modify insert node <w/> into $data
-                \
                 return namespace-uri-for-prefix('a', $data/w)""";
 
         final ResourceSet result = service.query(query);
@@ -1389,35 +1339,20 @@ public class XQUFBasicTest {
         final String query =
                 """
                 declare copy-namespaces preserve, inherit;
-                \
                 copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
-                \
                 modify
-                \
                   insert node <w><x xmlns:a="a-two"><y xmlns:b="b-two"><z/></y></x></w> into $data
-                \
                 return
-                \
                   let $w := $data/w
-                \
                   let $x := $w/x
-                \
                   let $y := $x/y
-                \
                   let $z := $y/z
-                \
                   return
-                \
                     <result>
-                \
                       <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
-                \
                       <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
-                \
                       <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
-                \
                       <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
-                \
                     </result>""";
 
         final ResourceSet result = service.query(query);
@@ -1465,23 +1400,14 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $data := <employee name="Jane Doe 1" gender="female">
-                \
                    <empnum>E1</empnum>
-                \
                    <pnum>P1</pnum>
-                \
                    <hours>40</hours>
-                \
                 </employee>
-                \
                 modify (
-                \
                   insert node comment { 'Testing' } into $data/hours,
-                \
                   delete node $data/hours/text()
-                \
                 )
-                \
                 return $data/hours""";
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
@@ -1498,23 +1424,14 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $data := <employee name="Jane Doe 1" gender="female">
-                \
                    <empnum>E1</empnum>
-                \
                    <pnum>P1</pnum>
-                \
                    <hours>40</hours>
-                \
                 </employee>
-                \
                 modify (
-                \
                   insert node attribute name {'Sylvia'} into $data,
-                \
                   delete node $data/@name
-                \
                 )
-                \
                 return $data""";
         final ResourceSet result = service.query(query);
         assertEquals(1L, result.getSize());
@@ -1530,13 +1447,9 @@ public class XQUFBasicTest {
         final XQueryService service = storeXMLStringAndGetQueryService("works-mod.xml",
                 """
                 <employee name="Jane Doe 1" gender="female">
-                \
                    <empnum>E1</empnum>
-                \
                    <pnum>P1</pnum>
-                \
                    <hours>40</hours>
-                \
                 </employee>""");
 
         // Run the update: insert comment into hours AND delete hours/text()
@@ -1544,11 +1457,8 @@ public class XQUFBasicTest {
                 """
                 let $var := doc('/db/test/works-mod.xml')/employee
                 return (
-                \
                   insert node comment { 'Testing' } into $var/hours,
-                \
                   delete node $var/hours/text()
-                \
                 )""");
 
         // Verify: hours should have comment but no text node
@@ -1567,11 +1477,8 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $doc := document { <works><employee name="Jane"/></works> }
-                \
                 return copy $var1 := $doc
-                \
                        modify rename node $var1/works as "workers"
-                \
                        return $var1""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1586,11 +1493,8 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $var := <employee name="Jane Doe 1"/>
-                \
                 return copy $var1 := $var/@name
-                \
                        modify replace value of node $var1 with "Ursula Le Guin"
-                \
                        return <newemp>{ $var1 }</newemp>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1604,11 +1508,8 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $outside := <root><a>1</a></root>
-                \
                 return copy $c := <x><y/></x>
-                \
                        modify replace value of node $outside/a with "2"
-                \
                        return $c""";
         try {
             existEmbeddedServer.executeQuery(query);
@@ -1625,41 +1526,23 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $doc := <works>
-                \
                   <employee name="Jane">
-                \
                     <hours>40</hours>
-                \
                   </employee>
-                \
                   <employee name="John">
-                \
                     <hours>70</hours>
-                \
                     <hours>20</hours>
-                \
                   </employee>
-                \
                 </works>
-                \
                 return copy $c := $doc
-                \
                 modify (
-                \
                   let $var1 := $c/employee[1]
-                \
                   let $var2 := $c/employee[2]
-                \
                   return (
-                \
                     replace value of node $var1/hours[1] with $var2/hours[1],
-                \
                     replace value of node $var2/hours[2] with $var1/hours[1]
-                \
                   )
-                \
                 )
-                \
                 return ($c/employee[1]/hours, $c/employee[2]/hours)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(3L, result.getSize());
@@ -1677,23 +1560,14 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <employee name="Jane Doe 1" gender="female">
-                \
                    <empnum>E1</empnum>
-                \
                    <pnum>P1</pnum>
-                \
                    <hours>40</hours>
-                \
                 </employee>
-                \
                 modify (
-                \
                   replace node $c/empnum[1]/text() with "E1000",
-                \
                   replace node $c/hours[1]/text() with 10
-                \
                 )
-                \
                 return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1708,21 +1582,13 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $doc := <root>
-                \
                   <a x="1" y="2" z="3"/>
-                \
                   <b x="4" y="5" z="6"/>
-                \
                 </root>
-                \
                 return copy $c := $doc
-                \
                 modify (
-                \
                   for $e in $c//* return delete nodes ($e/@y, $e/@z)
-                \
                 )
-                \
                 return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1742,11 +1608,8 @@ public class XQUFBasicTest {
         final String query =
                 """
                 let $doc := document { <root><a/><b/></root> }
-                \
                 return copy $c := $doc
-                \
                 modify delete nodes $c
-                \
                 return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1761,9 +1624,7 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <root><target>old</target></root>
-                \
                 modify replace value of node $c/target with "<notANode>value</notANode>"
-                \
                 return $c/target""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1785,15 +1646,10 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <employee><hours>40</hours></employee>
-                \
                 modify (
-                \
                   insert node comment { 'Testing' } into $c/hours,
-                \
                   delete node $c/hours/text()
-                \
                 )
-                \
                 return $c/hours""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1813,15 +1669,10 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <employee><hours>40</hours></employee>
-                \
                 modify (
-                \
                   delete node $c/hours/text(),
-                \
                   insert node comment { 'Testing' } into $c/hours
-                \
                 )
-                \
                 return $c/hours""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1840,15 +1691,10 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <root><a mark='1'/><a mark='2'/></root>
-                \
                 modify rename node ($c//a)[1] as 'b'
-                \
                 return <result>
-                \
                   <a-count>{count($c//a)}</a-count>
-                \
                   <b-count>{count($c//b)}</b-count>
-                \
                 </result>""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1867,9 +1713,7 @@ public class XQUFBasicTest {
         final String query =
                 """
                 copy $c := <root><item>old1</item><item>old2</item></root>
-                \
                 modify for $a in $c//item return replace value of node $a with 'new'
-                \
                 return $c""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1L, result.getSize());
@@ -1891,7 +1735,6 @@ public class XQUFBasicTest {
         final String followsTest =
                 """
                 let $doc := parse-xml('<root><a/><b/></root>')
-                \
                 return count($doc/root/*[. >> $doc/root/a])""";
         final ResourceSet result = existEmbeddedServer.executeQuery(followsTest);
         assertEquals(1L, result.getSize());
@@ -1913,16 +1756,13 @@ public class XQUFBasicTest {
         queryService.query(
                 "let $doc := doc('" + testCollection.getName() + """
                 /topMany.xml')
-                \
                 for $a in $doc//se
-                \
                 return replace value of node $a with 'content'""");
 
         // Verify
         final ResourceSet result = queryService.query(
                 "let $doc := doc('" + testCollection.getName() + """
                 /topMany.xml')
-                \
                 return <result>{$doc//se}</result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1950,13 +1790,9 @@ public class XQUFBasicTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 """
                 let $doc := parse-xml('<root><se mark="1se"/><se mark="2se"/></root>')
-                \
                 return
-                \
                   copy $c := $doc
-                \
                   modify for $a in $c//se return replace value of node $a with 'content'
-                \
                   return <result>{$c//se}</result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -1982,22 +1818,16 @@ public class XQUFBasicTest {
         queryService.query(
                 "let $doc := doc('" + testCollection.getName() + """
                 /topMany.xml')
-                \
                 for $a in $doc//se
-                \
                 return rename node $a as 'renamed'""");
 
         // Verify
         final ResourceSet result = queryService.query(
                 "let $doc := doc('" + testCollection.getName() + """
                 /topMany.xml')
-                \
                 return <result>
-                \
                   <se-count>{count($doc//se)}</se-count>
-                \
                   <renamed-count>{count($doc//renamed)}</renamed-count>
-                \
                 </result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2034,31 +1864,18 @@ public class XQUFBasicTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 """
                 declare copy-namespaces preserve, inherit;
-                \
                 copy $data := <v xmlns:a="a-one" xmlns:b="b-one"/>
-                \
                 modify insert node <w> <x xmlns:a="a-two"> <y xmlns:b="b-two"><z/></y> </x> </w> into $data
-                \
                 return
-                \
                   let $w := $data/w
-                \
                   let $x := $w/x
-                \
                   let $y := $x/y
-                \
                   let $z := $y/z
-                \
                   return <result>
-                \
                     <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w>
-                \
                     <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x>
-                \
                     <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y>
-                \
                     <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z>
-                \
                   </result>""");
         assertEquals(1L, result.getSize());
         final String xml = result.getResource(0).getContent().toString();
@@ -2078,31 +1895,22 @@ public class XQUFBasicTest {
     public void replaceValueEmptyElementsFollowingSiblingAxis() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 """
-                let $doc := parse-xml('\
-                <center mark="c0">\
-                  <near-south> text-5A\
-                    <south mark="s0"> text-6A <far-south/> text-6B </south> text-5B\
-                  </near-south> text-4E\
-                  <south-east mark="1se"/> text-4G\
-                  <south-east mark="2se"/> text-4H\
+                let $doc := parse-xml('
+                <center mark="c0">
+                  <near-south> text-5A
+                    <south mark="s0"> text-6A <far-south/> text-6B </south> text-5B
+                  </near-south> text-4E
+                  <south-east mark="1se"/> text-4G
+                  <south-east mark="2se"/> text-4H
                 </center>')
-                \
                 return
-                \
                   copy $c := $doc
-                \
                   modify for $a in $c//south-east return replace value of node $a with 'very south east'
-                \
                   return (
-                \
                     let $a := $c//near-south/following-sibling::node()
-                \
                     return <result count="{count($a)}">{$a}</result>,
-                \
                     let $a := $c//south-east[. = 'very south east']
-                \
                     return <result count="{count($a)}">{$a}</result>
-                \
                   )""");
 
         assertEquals(2L, result.getSize());
@@ -2129,11 +1937,10 @@ public class XQUFBasicTest {
         // //@x (non-parenthesized) should work correctly
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 """
-                let $doc := <root>\
-                  <a x='1' y='2'/>\
-                  <b><c x='3' z='4'/></b>\
+                let $doc := <root>
+                  <a x='1' y='2'/>
+                  <b><c x='3' z='4'/></b>
                 </root>
-                \
                 return <r>{count($doc//@x)}</r>""");
         assertEquals(1L, result.getSize());
         assertEquals("//@x should find 2", "<r>2</r>", result.getResource(0).getContent().toString());
@@ -2142,7 +1949,6 @@ public class XQUFBasicTest {
         final ResourceSet result2 = existEmbeddedServer.executeQuery(
                 """
                 let $doc := <root><a><b>1</b><c>2</c></a><d><b>3</b></d></root>
-                \
                 return <r>{count($doc//(b | c))}</r>""");
         assertEquals(1L, result2.getSize());
         assertEquals("//(b | c) should find 3 elements", "<r>3</r>",
@@ -2152,33 +1958,19 @@ public class XQUFBasicTest {
         final ResourceSet result3 = existEmbeddedServer.executeQuery(
                 """
                 let $doc := <far-north>
-                \
                     <!-- Comment-3 -->
-                \
                   <north mark='n0'>
-                \
                     <near-north>
-                \
                       <center mark='c0'>
-                \
                         <!--Comment-5-->
-                \
                         <near-south/>
-                \
                       </center>
-                \
                     </near-north>
-                \
                   </north>
-                \
                 </far-north>
-                \
                 return (
-                \
                   <found>{for $n in $doc//(north | near-south) return local-name($n)}</found>,
-                \
                   <comments>{count($doc//(north | near-south)/preceding-sibling::comment())}</comments>
-                \
                 )""");
         assertEquals(2L, result3.getSize());
         assertTrue("Should find both elements",

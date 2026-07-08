@@ -500,11 +500,10 @@ public class PendingUpdateList {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (!(o instanceof final ExpandedName that)) {
-                return false;
+            if (o instanceof final ExpandedName that) {
+                return namespaceURI.equals(that.namespaceURI) && localName.equals(that.localName);
             }
-            return namespaceURI.equals(that.namespaceURI) && localName.equals(that.localName);
+            return false;
         }
 
         @Override
@@ -524,16 +523,16 @@ public class PendingUpdateList {
      * so we can't rely on object identity.
      */
     private static String nodeKey(final Node node) {
-        if (node instanceof final org.exist.dom.memtree.NodeImpl memNode) {
-            return "mem:" + System.identityHashCode(memNode.getOwnerDocument()) + ":" + memNode.getNodeNumber();
-        } else if (node instanceof final IStoredNode<?> storedNode) {
-            return "db:" + storedNode.getOwnerDocument().getDocId() + ":" + storedNode.getNodeId();
-        } else if (node instanceof final NodeProxy proxy) {
-            return "db:" + proxy.getOwnerDocument().getDocId() + ":" + proxy.getNodeId();
-        } else {
+        return switch (node) {
+            case final org.exist.dom.memtree.NodeImpl memNode ->
+                    "mem:" + System.identityHashCode(memNode.getOwnerDocument()) + ":" + memNode.getNodeNumber();
+            case final IStoredNode<?> storedNode ->
+                    "db:" + storedNode.getOwnerDocument().getDocId() + ":" + storedNode.getNodeId();
+            case final NodeProxy proxy ->
+                    "db:" + proxy.getOwnerDocument().getDocId() + ":" + proxy.getNodeId();
             // Fallback: use identity hash
-            return "id:" + System.identityHashCode(node);
-        }
+            case null, default -> "id:" + System.identityHashCode(node);
+        };
     }
 
     private static ExpandedName getExpandedName(final Node node) {
@@ -637,29 +636,33 @@ public class PendingUpdateList {
             }
 
             // Check namespace declarations on this element
-            if (current instanceof final org.exist.dom.memtree.ElementImpl memElem) {
-                final Map<String, String> map = new LinkedHashMap<>();
-                memElem.getNamespaceMap(map);
-                for (final Map.Entry<String, String> e : map.entrySet()) {
-                    nsBindings.putIfAbsent(e.getKey(), e.getValue());
-                }
-            } else if (current instanceof final ElementImpl elemImpl) {
-                if (elemImpl.declaresNamespacePrefixes()) {
-                    for (final Iterator<String> iter = elemImpl.getPrefixes(); iter.hasNext(); ) {
-                        final String p = iter.next();
-                        nsBindings.putIfAbsent(p, elemImpl.getNamespaceForPrefix(p));
+            switch (current) {
+                case final org.exist.dom.memtree.ElementImpl memElem -> {
+                    final Map<String, String> map = new LinkedHashMap<>();
+                    memElem.getNamespaceMap(map);
+                    for (final Map.Entry<String, String> e : map.entrySet()) {
+                        nsBindings.putIfAbsent(e.getKey(), e.getValue());
                     }
                 }
-            } else {
-                // Generic DOM: check attributes for xmlns declarations
-                final org.w3c.dom.NamedNodeMap attrs = current.getAttributes();
-                if (attrs != null) {
-                    for (int i = 0; i < attrs.getLength(); i++) {
-                        final Node attr = attrs.item(i);
-                        if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
-                            final String attrLocal = attr.getLocalName();
-                            final String p = XMLConstants.XMLNS_ATTRIBUTE.equals(attrLocal) ? "" : attrLocal;
-                            nsBindings.putIfAbsent(p, attr.getNodeValue());
+                case final ElementImpl elemImpl -> {
+                    if (elemImpl.declaresNamespacePrefixes()) {
+                        for (final Iterator<String> iter = elemImpl.getPrefixes(); iter.hasNext(); ) {
+                            final String p = iter.next();
+                            nsBindings.putIfAbsent(p, elemImpl.getNamespaceForPrefix(p));
+                        }
+                    }
+                }
+                default -> {
+                    // Generic DOM: check attributes for xmlns declarations
+                    final org.w3c.dom.NamedNodeMap attrs = current.getAttributes();
+                    if (attrs != null) {
+                        for (int i = 0; i < attrs.getLength(); i++) {
+                            final Node attr = attrs.item(i);
+                            if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                                final String attrLocal = attr.getLocalName();
+                                final String p = XMLConstants.XMLNS_ATTRIBUTE.equals(attrLocal) ? "" : attrLocal;
+                                nsBindings.putIfAbsent(p, attr.getNodeValue());
+                            }
                         }
                     }
                 }
