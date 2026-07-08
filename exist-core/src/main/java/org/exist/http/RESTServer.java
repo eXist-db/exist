@@ -641,9 +641,6 @@ public class RESTServer {
                 throw new NotFoundException("Document " + path + " not found");
             }
 
-            // found an XQuery or XProc resource, fixup request values
-            final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
-
             // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
             outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -656,7 +653,7 @@ public class RESTServer {
                         outputProperties);
             } else {
                 executeResource(broker, transaction, resource, request, response, path, options,
-                        outputProperties, servletPath, pathInfo);
+                        outputProperties, servletPath);
             }
         } finally {
             if (lockedDocument != null) {
@@ -844,7 +841,6 @@ public class RESTServer {
      * @param options the parsed options of the request
      * @param outputProperties the serialization properties
      * @param servletPath the path of the executable resource
-     * @param pathInfo the remainder of the request path
      *
      * @throws BadRequestException if a bad request is made
      * @throws PermissionDeniedException if the request has insufficient permissions
@@ -853,8 +849,9 @@ public class RESTServer {
     private void executeResource(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
             final HttpServletRequest request, final HttpServletResponse response, final String path,
             final QueryRequestOptions options, final Properties outputProperties,
-            final XmldbURI servletPath, final String pathInfo)
+            final XmldbURI servletPath)
             throws BadRequestException, PermissionDeniedException, IOException {
+        final String pathInfo = XmldbURI.create(path).trimFromBeginning(servletPath).toString();
         try {
             if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
                 // Execute the XQuery
@@ -991,7 +988,7 @@ public class RESTServer {
 
                 if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
                     processQueryDocument(broker, transaction, request, response, path, root, nsExtractor,
-                            outputProperties, encoding, mimeType);
+                            outputProperties, mimeType);
                 } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
                     processXUpdate(broker, transaction, response, pathUri, encoding, content);
                 } else {
@@ -1156,7 +1153,6 @@ public class RESTServer {
      * @param root the root element of the submitted query document
      * @param nsExtractor the namespace extractor that parsed the query document
      * @param outputProperties the serialization properties
-     * @param encoding the character encoding
      * @param defaultMimeType the media type of the response, if not overridden by the query document
      *
      * @throws BadRequestException if no query is specified
@@ -1166,7 +1162,7 @@ public class RESTServer {
     private void processQueryDocument(final DBBroker broker, final Txn transaction,
             final HttpServletRequest request, final HttpServletResponse response, final String path,
             final ElementImpl root, final NamespaceExtractor nsExtractor,
-            final Properties outputProperties, final String encoding, final String defaultMimeType)
+            final Properties outputProperties, final String defaultMimeType)
             throws BadRequestException, PermissionDeniedException, IOException {
         String mimeType = defaultMimeType;
         final QueryRequestOptions options = new QueryRequestOptions();
@@ -1212,7 +1208,7 @@ public class RESTServer {
                 search(broker, transaction, path, options, outputProperties, request, response);
             } catch (final XPathException e) {
                 writeQueryError(response, HttpServletResponse.SC_BAD_REQUEST, mimeType,
-                        encoding, null, path, e);
+                        getEncoding(outputProperties), null, path, e);
             }
 
         } else {
@@ -1831,7 +1827,7 @@ public class RESTServer {
                     }
                 }
 
-                writeResults(response, broker, transaction, resultSequence, options.howmany, options.start,
+                writeResults(response, broker, transaction, resultSequence, new ResultRange(options.start, options.howmany),
                         options.typed, outputProperties, options.wrap, new QueryTimings(compilationTime, executionTime));
 
             } finally {
@@ -1900,7 +1896,7 @@ public class RESTServer {
                 final Sequence cached = sessionManager.get(broker.getCurrentSubject().getId(), options.query, sessionId);
                 if (cached != null) {
                     LOG.debug("Returning cached query result");
-                    writeResults(response, broker, transaction, cached, options.howmany, options.start,
+                    writeResults(response, broker, transaction, cached, new ResultRange(options.start, options.howmany),
                             options.typed, outputProperties, options.wrap, new QueryTimings(0, 0));
                 } else {
                     LOG.debug("Cached query result not found. Probably timed out. Repeating query.");
@@ -2206,7 +2202,7 @@ public class RESTServer {
                 try {
                     final long executeStart = System.currentTimeMillis();
                     final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-                    writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, wrap, new QueryTimings(compilationTime, System.currentTimeMillis() - executeStart));
+                    writeResults(response, broker, transaction, result, new ResultRange(1, -1), false, outputProperties, wrap, new QueryTimings(compilationTime, System.currentTimeMillis() - executeStart));
 
                 } finally {
                     context.runCleanupTasks();
@@ -2289,7 +2285,7 @@ public class RESTServer {
             try {
                 final long executeStart = System.currentTimeMillis();
                 final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-                writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, false, new QueryTimings(compilationTime, System.currentTimeMillis() - executeStart));
+                writeResults(response, broker, transaction, result, new ResultRange(1, -1), false, outputProperties, false, new QueryTimings(compilationTime, System.currentTimeMillis() - executeStart));
             } finally {
                 context.runCleanupTasks();
 
@@ -2827,8 +2823,17 @@ public class RESTServer {
     private record QueryTimings(long compilation, long execution) {
     }
 
+    /**
+     * Holder for the requested window into a result sequence.
+     *
+     * @param start the 1-based start position
+     * @param howmany the maximum number of items to return
+     */
+    private record ResultRange(int start, int howmany) {
+    }
+
     protected void writeResults(final HttpServletResponse response, final DBBroker broker, final Txn transaction,
-            final Sequence results, final int howmany, final int start, final boolean typed,
+            final Sequence results, final ResultRange window, final boolean typed,
             final Properties outputProperties, final boolean wrap, final QueryTimings timings)
             throws BadRequestException {
 
@@ -2838,6 +2843,9 @@ public class RESTServer {
         if (response.isCommitted()) {
             return;
         }
+
+        final int start = window.start();
+        final int howmany = window.howmany();
 
         // calculate number of results to return
         final int effectiveHowmany;
@@ -2860,7 +2868,7 @@ public class RESTServer {
         if ("json".equals(method)) {
             writeResultJSON(response, broker, results, effectiveHowmany, start, outputProperties, timings.compilation(), timings.execution());
         } else {
-            writeResultXML(response, broker, results, effectiveHowmany, start, typed, outputProperties, wrap, timings.compilation(), timings.execution());
+            writeResultXML(response, broker, results, effectiveHowmany, start, typed, outputProperties, wrap, timings);
         }
 
     }
@@ -2872,7 +2880,7 @@ public class RESTServer {
     private void writeResultXML(final HttpServletResponse response,
         final DBBroker broker, final Sequence results, final int howmany,
         final int start, final boolean typed, final Properties outputProperties,
-        final boolean wrap, final long compilationTime, final long executionTime) throws BadRequestException {
+        final boolean wrap, final QueryTimings timings) throws BadRequestException {
 
         // serialize the results to the response output stream
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
@@ -2900,7 +2908,7 @@ public class RESTServer {
             final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, writer);
 
             //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
-            serializer.serialize(results, start, howmany, wrap, typed, compilationTime, executionTime);
+            serializer.serialize(results, start, howmany, wrap, typed, timings.compilation(), timings.execution());
 
             writer.flush();
             writer.close();
