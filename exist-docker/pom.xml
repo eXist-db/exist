@@ -58,6 +58,11 @@
         <docker.sbom>false</docker.sbom>
         <docker.provenance>false</docker.provenance>
 
+        <!-- base images: single source of truth for each Dockerfile's FROM and its
+             org.opencontainers.image.base.name label (filtered into the Dockerfile). -->
+        <docker.base.image>gcr.io/distroless/java21-debian13:latest</docker.base.image>
+        <docker.base.image.debug>eclipse-temurin:21-jdk-noble</docker.base.image.debug>
+
         <!-- container metadata -->
         <docker.source>https://github.com/exist-db/exist.git</docker.source>
         <!-- where to find more detailed information regarding this image -->

@@ -166,7 +166,7 @@ jobs:
       - name: Pull & tag staging image for tests
         if: steps.meta.outputs.publish == 'true'
         run: |
-          docker pull --platform linux/amd64 existdb/existdb:${{ steps.meta.outputs.channel }}-staging
+          docker pull existdb/existdb:${{ steps.meta.outputs.channel }}-staging
           docker tag existdb/existdb:${{ steps.meta.outputs.channel }}-staging existdb/existdb:ci
 
       # --- Common: run the bats suite against the amd64 image under test (:ci) ---

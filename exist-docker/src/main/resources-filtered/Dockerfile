@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-FROM gcr.io/distroless/java21-debian13:latest
+FROM ${docker.base.image}
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
@@ -41,7 +41,7 @@ LABEL org.opencontainers.image.created="${maven.build.timestamp}" \
       org.opencontainers.image.vendor="${docker.vendor}" \
       org.opencontainers.image.licenses="${docker.licenses}" \
       org.opencontainers.image.title="${docker.title}" \
-      org.opencontainers.image.base.name=gcr.io/distroless/java21-debian13:latest
+      org.opencontainers.image.base.name=${docker.base.image}
 
 EXPOSE 8080 8443
 
