@@ -93,7 +93,7 @@ jobs:
           fi
           mvn -V -B --no-transfer-progress \
             -Pdocker,skip-build-dist-archives \
-            -DskipTests -Ddependency-check.skip=true \
+            -DskipTests \
             $REVISION_ARG \
             clean package
 
@@ -103,7 +103,7 @@ jobs:
         run: |
           v="${{ steps.meta.outputs.version }}"
           if [[ -z "$v" ]]; then
-            v=$(mvn -q -N -Ddependency-check.skip=true \
+            v=$(mvn -q -N \
               help:evaluate -Dexpression=project.version -DforceStdout)
           fi
           echo "version=$v" >> "$GITHUB_OUTPUT"
