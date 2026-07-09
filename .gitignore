@@ -29,7 +29,7 @@ work/
 # Claude planning files
 plans/
 .codacy/
-.moderne/
+.moderne/*
 !.moderne/context/
 !.moderne/moderne.yml
 .github/instructions/
