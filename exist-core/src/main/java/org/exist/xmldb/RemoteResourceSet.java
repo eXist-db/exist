@@ -304,15 +304,6 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
-
     class NewResourceIterator implements ResourceIterator {
         long pos = 0;
 

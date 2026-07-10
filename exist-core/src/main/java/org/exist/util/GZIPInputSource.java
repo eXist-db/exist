@@ -145,15 +145,6 @@ public final class GZIPInputSource extends EXistInputSource {
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		try {
-			close();
-		} finally {
-			super.finalize();
-		}
-	}
-
-	@Override
 	public void close() {
 		if(!isClosed()) {
 			try {
