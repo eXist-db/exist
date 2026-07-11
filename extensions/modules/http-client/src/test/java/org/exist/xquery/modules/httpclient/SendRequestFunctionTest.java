@@ -24,6 +24,7 @@ package org.exist.xquery.modules.httpclient;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -36,7 +37,6 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -240,7 +240,7 @@ public class SendRequestFunctionTest {
             byte[] bodyBytes = "gzipped content".getBytes(StandardCharsets.UTF_8);
 
             if (acceptEncoding != null && acceptEncoding.contains("gzip")) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
                 try (java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(baos)) {
                     gzip.write(bodyBytes);
                 }
@@ -317,11 +317,11 @@ public class SendRequestFunctionTest {
         // UTF-8 — corrupted by the old String-based splitter
         server.createContext("/multipart-binary", exchange -> {
             final String boundary = "bnd";
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.writeBytes(("--" + boundary + "\r\nContent-Type: application/octet-stream\r\n\r\n")
+            final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
+            baos.write(("--" + boundary + "\r\nContent-Type: application/octet-stream\r\n\r\n")
                     .getBytes(StandardCharsets.US_ASCII));
-            baos.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xFE});
-            baos.writeBytes(("\r\n--" + boundary + "\r\nContent-Type: text/plain\r\n\r\nhello\r\n--"
+            baos.write(new byte[]{(byte) 0xFF, (byte) 0xFE});
+            baos.write(("\r\n--" + boundary + "\r\nContent-Type: text/plain\r\n\r\nhello\r\n--"
                     + boundary + "--\r\n").getBytes(StandardCharsets.US_ASCII));
             final byte[] bodyBytes = baos.toByteArray();
             exchange.getResponseHeaders().set("Content-Type", "multipart/mixed; boundary=" + boundary);
