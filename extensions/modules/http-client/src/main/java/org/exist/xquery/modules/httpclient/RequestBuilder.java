@@ -433,19 +433,20 @@ public class RequestBuilder {
                 throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
                         "http:body with method='" + bodyMethod + "' requires base64-encoded content: " + e.getMessage());
             }
-        }
-        if ("hex".equals(bodyMethod)) {
+        } else if ("hex".equals(bodyMethod)) {
             try {
                 return HttpRequest.BodyPublishers.ofByteArray(HexFormat.of().parseHex(bodyContent.strip()));
             } catch (final IllegalArgumentException e) {
                 throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
                         "http:body with method='hex' requires hexadecimal content: " + e.getMessage());
             }
+        } else {
+            // text/xml/xhtml/html (or no @method): send as a string in the media-type's charset
+            final Charset charset = bodyMediaType != null
+                    ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
+                    : StandardCharsets.UTF_8;
+            return HttpRequest.BodyPublishers.ofString(bodyContent, charset);
         }
-        final Charset charset = bodyMediaType != null
-                ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
-                : StandardCharsets.UTF_8;
-        return HttpRequest.BodyPublishers.ofString(bodyContent, charset);
     }
 
     /**
