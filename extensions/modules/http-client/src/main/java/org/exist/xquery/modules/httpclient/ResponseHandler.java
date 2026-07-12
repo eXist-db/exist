@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -185,7 +186,10 @@ public class ResponseHandler {
 
     private static void addBody(final ValueSequence result, final byte[] bodyBytes,
                                  final String contentType, final BasicFunction callerFunc) throws XPathException {
-        if (ContentTypeHelper.isXml(contentType)) {
+        if (ContentTypeHelper.extractMediaType(contentType).startsWith("multipart/")) {
+            // a nested multipart part: recurse so its sub-parts are typed individually
+            addMultipartBodies(result, bodyBytes, contentType, callerFunc);
+        } else if (ContentTypeHelper.isXml(contentType)) {
             result.add(parseXml(bodyBytes, callerFunc));
         } else if (ContentTypeHelper.isHtml(contentType)) {
             result.add(parseHtml(bodyBytes, contentType, callerFunc));
@@ -271,26 +275,79 @@ public class ResponseHandler {
         return boundary.trim();
     }
 
+    /**
+     * Splits a multipart body into its parts, operating on the raw bytes so a binary part is not
+     * corrupted (a String round-trip through a charset would mangle non-text bytes). The CRLF that
+     * terminates each delimiter line, and the CRLF that precedes the next delimiter, belong to the
+     * boundary and are stripped; the preamble, the closing {@code --boundary--}, and the epilogue are
+     * discarded.
+     */
     private static byte[][] splitMultipart(final byte[] body, final String boundary) {
-        final String bodyStr = new String(body, StandardCharsets.UTF_8);
-        final String delimiter = "--" + boundary;
-        final String[] rawParts = bodyStr.split(delimiter);
+        final byte[] delim = ("--" + boundary).getBytes(StandardCharsets.US_ASCII);
         final List<byte[]> parts = new java.util.ArrayList<>();
-        for (final String part : rawParts) {
-            final String trimmed = part.trim();
-            if (trimmed.isEmpty() || trimmed.equals("--")) {
-                continue; // Skip preamble and closing delimiter
+        int pos = indexOf(body, delim, 0);
+        // a delimiter followed by "--" is the closing delimiter and ends the multipart
+        while (pos >= 0 && !isClosingDelimiter(body, pos + delim.length)) {
+            // the CRLF ending the delimiter line, and the CRLF before the next delimiter, belong
+            // to the boundary, not the part
+            final int partStart = skipLineEnding(body, pos + delim.length);
+            final int nextDelim = indexOf(body, delim, partStart);
+            final int partEnd = trimTrailingLineEnding(body, nextDelim < 0 ? body.length : nextDelim, partStart);
+            if (partEnd > partStart) {
+                parts.add(Arrays.copyOfRange(body, partStart, partEnd));
             }
-            parts.add(part.getBytes(StandardCharsets.UTF_8));
+            pos = nextDelim;
         }
         return parts.toArray(new byte[0][]);
     }
 
+    private static boolean isClosingDelimiter(final byte[] body, final int afterDelim) {
+        return afterDelim + 1 < body.length && body[afterDelim] == '-' && body[afterDelim + 1] == '-';
+    }
+
+    private static int skipLineEnding(final byte[] body, final int pos) {
+        int p = pos;
+        if (p < body.length && body[p] == '\r') {
+            p++;
+        }
+        if (p < body.length && body[p] == '\n') {
+            p++;
+        }
+        return p;
+    }
+
+    private static int trimTrailingLineEnding(final byte[] body, final int end, final int floor) {
+        int e = end;
+        if (e > floor && body[e - 1] == '\n') {
+            e--;
+        }
+        if (e > floor && body[e - 1] == '\r') {
+            e--;
+        }
+        return e;
+    }
+
+    /**
+     * The index of the first body byte in a part (just past the blank line separating the part
+     * headers from the part body), or 0 if the part has no header section.
+     */
+    private static int partHeaderEnd(final byte[] part) {
+        final int crlfcrlf = indexOf(part, new byte[]{'\r', '\n', '\r', '\n'}, 0);
+        if (crlfcrlf >= 0) {
+            return crlfcrlf + 4;
+        }
+        final int lflf = indexOf(part, new byte[]{'\n', '\n'}, 0);
+        if (lflf >= 0) {
+            return lflf + 2;
+        }
+        return 0;
+    }
+
     private static String extractPartContentType(final byte[] part) {
-        final String partStr = new String(part, StandardCharsets.UTF_8);
-        final String[] lines = partStr.split("\r?\n");
-        for (final String line : lines) {
-            if (line.toLowerCase().startsWith("content-type:")) {
+        // Part headers are ASCII; decode only the header region (ISO-8859-1 is a total byte->char map)
+        final String headers = new String(part, 0, partHeaderEnd(part), StandardCharsets.ISO_8859_1);
+        for (final String line : headers.split("\r?\n")) {
+            if (line.regionMatches(true, 0, "content-type:", 0, 13)) {
                 return line.substring(13).trim();
             }
         }
@@ -298,21 +355,28 @@ public class ResponseHandler {
     }
 
     private static byte[] extractPartBody(final byte[] part) {
-        final String partStr = new String(part, StandardCharsets.UTF_8);
-        // Body starts after the first blank line (double CRLF or double LF)
-        int bodyStart = partStr.indexOf("\r\n\r\n");
-        if (bodyStart >= 0) {
-            bodyStart += 4;
-        } else {
-            bodyStart = partStr.indexOf("\n\n");
-            if (bodyStart >= 0) {
-                bodyStart += 2;
-            } else {
-                return new byte[0];
+        return Arrays.copyOfRange(part, partHeaderEnd(part), part.length);
+    }
+
+    /**
+     * Finds the first occurrence of {@code target} in {@code data} at or after {@code from}.
+     */
+    private static int indexOf(final byte[] data, final byte[] target, final int from) {
+        for (int i = Math.max(from, 0); i <= data.length - target.length; i++) {
+            if (matchesAt(data, target, i)) {
+                return i;
             }
         }
-        final String bodyStr = partStr.substring(bodyStart);
-        return bodyStr.getBytes(StandardCharsets.UTF_8);
+        return -1;
+    }
+
+    private static boolean matchesAt(final byte[] data, final byte[] target, final int offset) {
+        for (int j = 0; j < target.length; j++) {
+            if (data[offset + j] != target[j]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
