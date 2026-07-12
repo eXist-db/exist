@@ -138,6 +138,35 @@ public class FunTransformTest {
             URIResolution.resolveURI(relative, remoteBase));
     }
 
+    @Test
+    public void resolutionAgainstCollection() throws XPathException, URISyntaxException {
+        final AnyURIValue relative = new AnyURIValue("functions1.xsl");
+
+        // the last segment of a collection has no extension, so it is kept when resolving against it
+        final AnyURIValue collectionBase = new AnyURIValue("/db/apps/fn_transform");
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, collectionBase));
+
+        final AnyURIValue xmldbCollectionBase = new AnyURIValue("xmldb:exist:///db/apps/fn_transform");
+        assertEquals(new AnyURIValue("xmldb:exist:/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, xmldbCollectionBase));
+
+        // a collection that already ends in a slash is not given a second one
+        final AnyURIValue slashedBase = new AnyURIValue("/db/apps/fn_transform/");
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, slashedBase));
+
+        // the last segment of a document has an extension, so it is discarded when resolving against it
+        final AnyURIValue documentBase = new AnyURIValue("/db/apps/fn_transform/tei-toc2.xsl");
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, documentBase));
+
+        // outside of the database RFC 3986 applies, so the last segment is discarded regardless
+        final AnyURIValue httpBase = new AnyURIValue("https://127.0.0.1:8088/db/apps/fn_transform");
+        assertEquals(new AnyURIValue("https://127.0.0.1:8088/db/apps/functions1.xsl"),
+            URIResolution.resolveURI(relative, httpBase));
+    }
+
     /**
      * Create some UT coverage of the CompileTimeURIResolver
      * This is more significantly exercised by XQTS tests
