@@ -52,22 +52,29 @@ public class URIResolution {
      * @throws URISyntaxException if resolution is not possible
      */
     static AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws URISyntaxException, XPathException {
-        var relativeURI = new URI(relative.getStringValue());
+        final URI relativeURI = new URI(relative.getStringValue());
         if (relativeURI.isAbsolute()) {
             return relative;
         }
-        var baseString = base.getStringValue();
-        var baseURI = new URI(baseString);
-        // Treat database paths (starting with "/" or "xmldb:") as absolute for resolution
-        var isAbsoluteBase = baseURI.isAbsolute() || baseString.startsWith("/") || baseString.startsWith("xmldb:");
+        final String baseString = base.getStringValue();
+        final URI baseURI = new URI(baseString);
+        // a database path such as /db/apps/app has no scheme, so URI#isAbsolute is false,
+        // yet it is an absolute location within the database and can be resolved against
+        final boolean isAbsoluteBase = baseURI.isAbsolute() || baseString.startsWith("/");
         if (!isAbsoluteBase) {
             return relative;
         }
         try {
-            var xBase = XmldbURI.xmldbUriFor(baseURI);
-            var resolved = xBase.getURI().resolve(relativeURI);
+            final XmldbURI xBase = XmldbURI.xmldbUriFor(baseURI);
+            // NOTE: for an xmldb: base, XmldbURI#getURI has already stripped the xmldb: prefix,
+            // but for the short form (xmldb:/db/...) it has not; only add the prefix if it is absent,
+            // otherwise the result doubles up as xmldb:xmldb:/db/...
+            final URI resolved = xBase.getURI().resolve(relativeURI);
+            if (XmldbURI.XMLDB_SCHEME.equals(resolved.getScheme())) {
+                return new AnyURIValue(resolved.toString());
+            }
             return new AnyURIValue(XmldbURI.XMLDB_URI_PREFIX + resolved);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             return new AnyURIValue(baseURI.resolve(relativeURI));
         }
     }
@@ -88,7 +95,7 @@ public class URIResolution {
             try {
                 final AnyURIValue baseURI = new AnyURIValue(base);
                 final AnyURIValue hrefURI = new AnyURIValue(href);
-                var resolved = resolveURI(hrefURI, baseURI);
+                final AnyURIValue resolved = resolveURI(hrefURI, baseURI);
                 return resolveDocument(resolved.getStringValue());
             } catch (URISyntaxException e) {
                 throw new TransformerException(

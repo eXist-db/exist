@@ -114,6 +114,30 @@ public class FunTransformTest {
             URIResolution.resolveURI(relative5, base5));
     }
 
+    @Test
+    public void resolutionAgainstDatabasePath() throws XPathException, URISyntaxException {
+        final AnyURIValue relative = new AnyURIValue("functions1.xsl");
+
+        // a database path has no scheme, yet it is an absolute location within the database
+        final AnyURIValue databaseBase = new AnyURIValue("/db/apps/fn_transform/tei-toc2.xsl");
+        final AnyURIValue resolved = URIResolution.resolveURI(relative, databaseBase);
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions1.xsl"), resolved);
+
+        // a resolved stylesheet becomes the base for the relative xsl:import it contains,
+        // so resolving against an xmldb: base must not prepend a second xmldb: prefix
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions2.xsl"),
+            URIResolution.resolveURI(new AnyURIValue("functions2.xsl"), resolved));
+
+        final AnyURIValue shortBase = new AnyURIValue("xmldb:/db/apps/fn_transform/tei-toc2.xsl");
+        assertEquals(new AnyURIValue("xmldb:/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, shortBase));
+
+        // the instance name and authority of an xmldb: base are preserved
+        final AnyURIValue remoteBase = new AnyURIValue("xmldb:exist://localhost:8080/db/apps/fn_transform/tei-toc2.xsl");
+        assertEquals(new AnyURIValue("xmldb:exist://localhost:8080/db/apps/fn_transform/functions1.xsl"),
+            URIResolution.resolveURI(relative, remoteBase));
+    }
+
     /**
      * Create some UT coverage of the CompileTimeURIResolver
      * This is more significantly exercised by XQTS tests
