@@ -552,13 +552,12 @@ class Options {
                     "Can not access '" + location + "'" + e.getMessage());
         }
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
-            if (document instanceof NodeProxy) {
-                final DOMSource source = new DOMSource(((NodeProxy) document).getNode());
+            if (document instanceof NodeProxy nodeProxy) {
+                final DOMSource source = new DOMSource(nodeProxy.getNode());
                 source.setSystemId(location);
                 return Tuple(location, source);
             }
-            else if (document.itemAt(0) instanceof Node) {
-                final Node node = (Node) document.itemAt(0);
+            else if (document.itemAt(0) instanceof Node node) {
                 final DOMSource source = new DOMSource(node);
                 source.setSystemId(location);
                 return Tuple(location, source);
