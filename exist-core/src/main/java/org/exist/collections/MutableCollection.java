@@ -1434,15 +1434,8 @@ public class MutableCollection implements Collection {
      * {@code lexicalDelegate}, bypassing the validator -- see {@link
      * #validateWithXsd11Schema(XMLReader, Schema, Resolver, IndexInfo, InputSource)} for why.
      */
-    private static final class Xsd11LexicalHandlerForwarder implements ContentHandler, LexicalHandler {
-
-        private final ContentHandler contentDelegate;
-        private final LexicalHandler lexicalDelegate;
-
-        private Xsd11LexicalHandlerForwarder(final ContentHandler contentDelegate, final LexicalHandler lexicalDelegate) {
-            this.contentDelegate = contentDelegate;
-            this.lexicalDelegate = lexicalDelegate;
-        }
+    private record Xsd11LexicalHandlerForwarder(ContentHandler contentDelegate, LexicalHandler lexicalDelegate)
+            implements ContentHandler, LexicalHandler {
 
         @Override
         public void setDocumentLocator(final Locator locator) {
