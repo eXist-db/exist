@@ -1262,6 +1262,10 @@ public class Configuration implements ErrorHandler {
         // SPI: auto-discover index modules whose id is not explicitly listed in conf.xml
         for (final IndexFactory factory : ServiceLoader.load(IndexFactory.class, Configuration.class.getClassLoader())) {
             final String id = factory.getDefaultId();
+            if (id == null || id.isBlank()) {
+                LOG.warn("IndexFactory {} returned a null or blank default id; skipping SPI registration", factory.getClass().getName());
+                continue;
+            }
             if (configuredIds.contains(id) || disabledIds.contains(id)) {
                 continue;
             }
