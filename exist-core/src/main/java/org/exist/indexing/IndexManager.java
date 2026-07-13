@@ -142,7 +142,7 @@ public class IndexManager implements BrokerPoolService {
             }
             final AbstractIndex index = (AbstractIndex) clazz.newInstance();
             index.configure(pool, dataDir, config);
-            if (index.getIndexName() == null) {
+            if (index.getIndexName() == null && id != null && !id.isBlank()) {
                 index.setName(id);
             }
             index.open();
