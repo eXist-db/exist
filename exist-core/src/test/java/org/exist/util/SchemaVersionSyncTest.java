@@ -27,7 +27,6 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,14 +44,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class SchemaVersionSyncTest {
 
-    private static final Map<String, String> SCHEMA_FILE_TO_CONSTANT = new LinkedHashMap<>();
-    static {
-        SCHEMA_FILE_TO_CONSTANT.put("conf.xsd", SchemaVersion.CONF);
-        SCHEMA_FILE_TO_CONSTANT.put("collection.xconf.xsd", SchemaVersion.COLLECTION_XCONF);
-        SCHEMA_FILE_TO_CONSTANT.put("descriptor.xsd", SchemaVersion.DESCRIPTOR);
-        SCHEMA_FILE_TO_CONSTANT.put("mime-types.xsd", SchemaVersion.MIME_TYPES);
-        SCHEMA_FILE_TO_CONSTANT.put("controller-config.xsd", SchemaVersion.CONTROLLER_CONFIG);
-    }
+    private static final Map<String, String> SCHEMA_FILE_TO_CONSTANT = Map.of(
+            "conf.xsd", SchemaVersion.CONF,
+            "collection.xconf.xsd", SchemaVersion.COLLECTION_XCONF,
+            "descriptor.xsd", SchemaVersion.DESCRIPTOR,
+            "mime-types.xsd", SchemaVersion.MIME_TYPES,
+            "controller-config.xsd", SchemaVersion.CONTROLLER_CONFIG);
 
     @Test
     public void schemaVersionConstantsMatchXsds() throws Exception {
