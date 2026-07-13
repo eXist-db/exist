@@ -103,9 +103,6 @@ public class MutableCollection implements Collection {
     private static final Logger LOG = LogManager.getLogger(Collection.class);
     private static final int SHALLOW_SIZE = 550;
     private static final int DOCUMENT_SIZE = 450;
-    private static final String XML_SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
-    private static final String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
-
     /**
      * Caches, per namespace, whether the system catalog's grammar for that namespace needs an
      * XSD 1.1-capable loader -- see {@link #resolveXsd11SchemaForNamespace(Resolver, String)}.
@@ -169,7 +166,7 @@ public class MutableCollection implements Collection {
         private static final Schema INSTANCE;
         static {
             try {
-                INSTANCE = SchemaFactory.newInstance(XSD_1_1_NS).newSchema();
+                INSTANCE = SchemaFactory.newInstance(Namespaces.XSD_1_1_NS).newSchema();
             } catch (final SAXException e) {
                 throw new ExceptionInInitializerError(e);
             }
@@ -1287,7 +1284,7 @@ public class MutableCollection implements Collection {
                 } catch (final SAXException loadsAs10Failure) {
                     final Source compileSource = catalogResolver.resolve(namespace, null);
                     if (compileSource != null) {
-                        final SchemaFactory xsd11Factory = SchemaFactory.newInstance(XSD_1_1_NS);
+                        final SchemaFactory xsd11Factory = SchemaFactory.newInstance(Namespaces.XSD_1_1_NS);
                         xsd11Factory.setResourceResolver(catalogResolver);
                         result = Optional.of(xsd11Factory.newSchema(compileSource));
                     }
