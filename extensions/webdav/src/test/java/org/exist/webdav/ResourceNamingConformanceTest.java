@@ -21,6 +21,8 @@
  */
 package org.exist.webdav;
 
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.AfterClass;
@@ -30,6 +32,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -56,28 +59,33 @@ import static org.junit.Assert.fail;
  * fixes land you remove entries from {@code KNOWN_FAILURES} to lock in each improvement — the test
  * tells you exactly which ones when they start passing.
  *
- * Surfaces covered in this first increment:
+ * Surfaces covered:
  * <ul>
  *   <li><b>WebDAV</b> (Apache Jackrabbit server since PR #6364) — probed via {@link HttpClient}.</li>
  *   <li><b>REST</b> — via {@link HttpClient}.</li>
+ *   <li><b>XML-RPC</b> — create ({@code parse}) and read ({@code getDocument}) via the
+ *       {@code org.apache.xmlrpc} client against {@code /xmlrpc}.</li>
  *   <li>an <b>oracle</b> for the stored name — eXist's native REST collection listing (no XQuery module
  *       needed; the WebDAV module's test conf.xml registers no XQuery builtin-modules), reporting what
  *       name actually got stored under the test collection.</li>
  * </ul>
  *
- * <p>The harness is module- and WebDAV-client-independent: the test collection is created by a REST PUT
- * (which auto-creates it), and all probes go over {@link HttpClient}. Request URLs are built with the
+ * <p>Two tests run over the same corpus. {@link #crossSurfaceNamingConformance()} is the original ratchet:
+ * store via WebDAV, read back by the requested name via WebDAV and REST. {@link #fullCrossSurfaceMatrix()}
+ * is the full N&times;N matrix: create via each surface, then read back — by the requested name — via every
+ * surface, ratcheted against {@link #KNOWN_MATRIX_FAILURES}. Together they show that WebDAV and REST agree
+ * on every corpus name, while XML-RPC diverges for names containing {@code %} or {@code #}.</p>
+ *
+ * <p>The HTTP harness is WebDAV-client-independent: the test collection is created by a REST PUT (which
+ * auto-creates it), and WebDAV/REST probes go over {@link HttpClient}. Request URLs are built with the
  * multi-argument {@link URI} constructor, which percent-encodes the path; note this leaves RFC 3986
  * sub-delimiters ({@code + @ & ( ) '}) literal on the wire, which is itself part of the encoding
  * behavior this harness characterizes. Probe content is valid XML because the corpus names end in
  * {@code .xml} and eXist parses {@code .xml} resources on store.</p>
  *
- * TODO (follow-up increments, see the resource-naming tasking):
- * <ul>
- *   <li>XML-RPC surface (create/read via {@code org.apache.xmlrpc} client against {@code /xmlrpc}).</li>
- *   <li>Full N×N cross-surface matrix (create-via-X then read-via-every-Y).</li>
- *   <li>existdb-openapi lives in a separate repo; its special-char suite is PR F there.</li>
- * </ul>
+ * <p>Related: {@code org.exist.backup.BackupRestoreNamingConformanceTest} (exist-core) extends the same
+ * corpus to the backup&rarr;restore round-trip. existdb-openapi's special-character suite lives in that
+ * repo (a separate PR). See issue #6463 and issues #3795, #3665, #1824, #5299, #1612.</p>
  */
 public class ResourceNamingConformanceTest {
 
@@ -134,6 +142,46 @@ public class ResourceNamingConformanceTest {
      * (issues #3795, #3665, #1824, #5299, #1612).</p>
      */
     private static final Set<String> KNOWN_FAILURES = Set.of();
+
+    /** The three remote surfaces the full N&times;N matrix drives. */
+    private enum Surface { WEBDAV, REST, XMLRPC }
+
+    /** Lazily-built XML-RPC client (against {@code /xmlrpc}); reused across probes. */
+    private static XmlRpcClient xmlrpcClient;
+
+    /**
+     * Ratchet allowlist for the full N&times;N matrix: the {@code create&gt;read:probe} cells that do NOT
+     * round-trip (a resource created via one surface, read back by the requested name via another). The set
+     * of failing cells must equal this exactly — same guard, at N&times;N scale, as {@link #KNOWN_FAILURES}.
+     * Populated from the characterized behavior; entries drop out as naming fixes land.
+     */
+    private static final Set<String> KNOWN_MATRIX_FAILURES = Set.of(
+            // XML-RPC is the divergent surface for names containing '%' or '#'. This is the documented current
+            // behavior; entries drop out of this allowlist as the naming contract (issue #6463) reaches the
+            // XML-RPC path. WebDAV and REST agree on every corpus name — no cross-surface failures between them.
+
+            // (a) a '%'- or '#'-name stored via HTTP (WebDAV/REST) cannot be read back via XML-RPC:
+            "WEBDAV>XMLRPC:literal-percent",   // a%b.xml
+            "WEBDAV>XMLRPC:encoded-space",     // a%20b.xml
+            "WEBDAV>XMLRPC:hash",              // a#b.xml
+            "REST>XMLRPC:literal-percent",
+            "REST>XMLRPC:encoded-space",
+            "REST>XMLRPC:hash",
+
+            // (b) XML-RPC create rejects a literal '%' (a%b.xml) outright, so no surface can read it:
+            "XMLRPC>WEBDAV:literal-percent",
+            "XMLRPC>REST:literal-percent",
+            "XMLRPC>XMLRPC:literal-percent",
+
+            // (c) XML-RPC stores 'a%20b.xml' under a form only XML-RPC itself reads back (HTTP surfaces miss it):
+            "XMLRPC>WEBDAV:encoded-space",
+            "XMLRPC>REST:encoded-space",
+
+            // (d) XML-RPC stores 'a#b.xml' but no surface — not even XML-RPC — reads it back by that name:
+            "XMLRPC>WEBDAV:hash",
+            "XMLRPC>REST:hash",
+            "XMLRPC>XMLRPC:hash"
+    );
 
     @BeforeClass
     public static void createTestCollection() {
@@ -382,6 +430,131 @@ public class ResourceNamingConformanceTest {
     private static String basicAuth() {
         return "Basic " + java.util.Base64.getEncoder().encodeToString(
                 (TestUtils.ADMIN_DB_USER + ":" + TestUtils.ADMIN_DB_PWD).getBytes(UTF_8));
+    }
+
+    // ==== full N×N cross-surface matrix (create-via-X, read-via-every-Y) ====
+
+    /**
+     * For every corpus name, create it via each surface and read it back — by the requested name — via
+     * every surface, producing the full create&times;read matrix across WebDAV, REST and XML-RPC. Prints
+     * the matrix (visible in CI) and enforces the same ratchet as {@link #crossSurfaceNamingConformance()}:
+     * the set of cells that fail to round-trip must equal {@link #KNOWN_MATRIX_FAILURES} exactly.
+     */
+    @Test
+    public void fullCrossSurfaceMatrix() {
+        final Surface[] surfaces = Surface.values();
+        final StringBuilder out = new StringBuilder(
+                "\n=== Resource-naming: full N×N cross-surface matrix (create-via-row, read-via-column) ===\n");
+        final Set<String> failing = new LinkedHashSet<>();
+
+        for (final Surface create : surfaces) {
+            out.append("\n-- created via ").append(create).append(" --\n");
+            out.append(String.format("%-16s %-18s %-8s", "probe", "requested", "created"));
+            for (final Surface read : surfaces) {
+                out.append(String.format(" %-9s", "read:" + read));
+            }
+            out.append('\n');
+
+            for (final Map.Entry<String, String> probe : CORPUS.entrySet()) {
+                final String label = probe.getKey();
+                final String name = probe.getValue();
+
+                freshCollection();
+                final boolean created = createVia(create, name);
+                out.append(String.format("%-16s %-18s %-8s", label, name, created ? "ok" : "FAIL"));
+
+                for (final Surface read : surfaces) {
+                    final boolean ok = created && readVia(read, name);
+                    out.append(String.format(" %-9s", ok ? "PASS" : "FAIL"));
+                    if (!ok) {
+                        // a cell fails when a resource created via `create` cannot be read back by the
+                        // requested name via `read` (create failing counts as every read-cell failing).
+                        failing.add(cell(create, read, label));
+                    }
+                }
+                out.append('\n');
+            }
+        }
+        System.out.println(out);
+
+        final Set<String> regressions = new LinkedHashSet<>(failing);
+        regressions.removeAll(KNOWN_MATRIX_FAILURES);           // failing but expected to pass -> regression
+        final Set<String> nowFixed = new LinkedHashSet<>(KNOWN_MATRIX_FAILURES);
+        nowFixed.removeAll(failing);                            // listed as broken but now passing -> tighten
+
+        final StringBuilder msg = new StringBuilder();
+        if (!regressions.isEmpty()) {
+            msg.append(regressions.size()).append(" cross-surface cell(s) regressed (create>read:probe):\n    ")
+                    .append(String.join("\n    ", regressions)).append('\n');
+        }
+        if (!nowFixed.isEmpty()) {
+            msg.append(nowFixed.size()).append(" cell(s) now round-trip but are still listed as known failures.\n")
+                    .append("Remove them from KNOWN_MATRIX_FAILURES so they become regression-guarded:\n    ")
+                    .append(String.join("\n    ", nowFixed)).append('\n');
+        }
+        if (msg.length() > 0) {
+            fail(msg.append("--- current matrix ---").append(out).toString());
+        }
+    }
+
+    private static String cell(final Surface create, final Surface read, final String label) {
+        return create + ">" + read + ":" + label;
+    }
+
+    /** Create {@code name} in the test collection via surface {@code s}; true if the surface reports success. */
+    private boolean createVia(final Surface s, final String name) {
+        final String dbPath = TEST_COLLECTION + "/" + name;
+        return switch (s) {
+            case WEBDAV -> {
+                final int code = webdavPut(dbPath, CONTENT, new StringBuilder());
+                yield code == 200 || code == 201 || code == 204;
+            }
+            case REST -> {
+                final int code = restPut(dbPath, CONTENT);
+                yield code == 200 || code == 201;
+            }
+            case XMLRPC -> {
+                try {
+                    final Object ok = xmlrpc().execute("parse", List.of(CONTENT.getBytes(UTF_8), dbPath, 1));
+                    yield Boolean.TRUE.equals(ok);
+                } catch (final Exception e) {
+                    restoreInterrupt(e);
+                    yield false;
+                }
+            }
+        };
+    }
+
+    /** Read {@code name} by the requested name via surface {@code s}; true if the content round-trips. */
+    private boolean readVia(final Surface s, final String name) {
+        final String dbPath = TEST_COLLECTION + "/" + name;
+        return switch (s) {
+            case WEBDAV -> Boolean.TRUE.equals(webdavGet(dbPath));
+            case REST -> Boolean.TRUE.equals(restGet(dbPath));
+            case XMLRPC -> {
+                try {
+                    final byte[] bytes = (byte[]) xmlrpc().execute("getDocument", List.of(dbPath, Map.of()));
+                    yield bytes != null && new String(bytes, UTF_8).contains(MARKER);
+                } catch (final Exception e) {
+                    restoreInterrupt(e);
+                    yield false;
+                }
+            }
+        };
+    }
+
+    private static XmlRpcClient xmlrpc() throws Exception {
+        if (xmlrpcClient == null) {
+            final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setServerURL(new URL("http", "localhost", existWebServer.getPort(), "/xmlrpc"));
+            config.setBasicUserName(TestUtils.ADMIN_DB_USER);
+            config.setBasicPassword(TestUtils.ADMIN_DB_PWD);
+            config.setEnabledForExtensions(true);
+            final XmlRpcClient client = new XmlRpcClient();
+            client.setConfig(config);
+            xmlrpcClient = client;
+        }
+        return xmlrpcClient;
     }
 
     // ---- matrix rendering ----
