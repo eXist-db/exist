@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java
+  s_a16a808e4ef4ca::t_3bdf212bb6177b 47-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "fe93edee631668793446cfe292710bd8d0164510",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
