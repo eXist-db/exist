@@ -400,6 +400,12 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private Source source = null;
 
+    /**
+     * How much of a failed execution may be disclosed to the caller. Recomputed from the current
+     * subject on every execution and never cached with the compiled query, see {@link ErrorDisclosure}.
+     */
+    private ErrorDisclosure errorDisclosure = ErrorDisclosure.FULL;
+
     private DebuggeeJoint debuggeeJoint = null;
 
     private int xqueryVersion = 31;
@@ -3647,6 +3653,27 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void setSource(final Source source) {
         this.source = source;
+    }
+
+    /**
+     * Get how much of a failed execution may be disclosed to the caller.
+     *
+     * @return the error disclosure level, never null
+     */
+    public ErrorDisclosure getErrorDisclosure() {
+        return errorDisclosure;
+    }
+
+    /**
+     * Set how much of a failed execution may be disclosed to the caller.
+     *
+     * This must be recomputed from the current subject on every execution — a compiled query is
+     * pooled and shared between users, so the level of a previous execution must never be reused.
+     *
+     * @param errorDisclosure the error disclosure level
+     */
+    public void setErrorDisclosure(final ErrorDisclosure errorDisclosure) {
+        this.errorDisclosure = errorDisclosure;
     }
 
     @Override

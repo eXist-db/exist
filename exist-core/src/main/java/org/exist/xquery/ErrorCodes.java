@@ -287,6 +287,12 @@ public class ErrorCodes {
     public static final ErrorCode EXXQDY0008 = new EXistErrorCode("EXXQDY0008", "Invalid argument.");
     public static final ErrorCode EXXQDY0009 = new EXistErrorCode("EXXQDY0009", "Permission denied.");
 
+    // --- Execute-without-read confidentiality error codes ---
+    // The single error reported to a caller which may EXECUTE but not READ a query: it carries
+    // nothing derived from the source, only a correlation id for the error logged server-side.
+    // See {@link ErrorDisclosure}.
+    public static final ErrorCode EXXQDY0010 = new EXistErrorCode("EXXQDY0010", "Query execution failed.");
+
     public static final ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
 
     public static class ErrorCode {
