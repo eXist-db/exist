@@ -197,12 +197,14 @@ public class XQuery {
      */
     private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
 
-        //check read permission
-        if (context.getSource() instanceof DBSource) {
-            ((DBSource) context.getSource()).validate(Permission.READ);
+        //check execute permission: the source is compiled on the caller's behalf, so it needs
+        //EXECUTE and not READ, exactly as a kernel reads a --x binary for a process which cannot
+        //read it. Reading a query as data still requires READ, see DBBroker#getResourceForExecution
+        if (context.getSource() instanceof DBSource dbSource) {
+            dbSource.validate(Permission.EXECUTE);
         }
-        
-        
+
+
     	//TODO: move XQueryContext.getUserFromHttpSession() here, have to check if servlet.jar is in the classpath
     	//before compiling/executing that code though to avoid a dependency on servlet.jar - reflection? - deliriumsky
     	
