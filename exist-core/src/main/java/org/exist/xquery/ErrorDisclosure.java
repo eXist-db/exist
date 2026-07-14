@@ -23,7 +23,9 @@ package org.exist.xquery;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.security.Permission;
 import org.exist.security.Subject;
+import org.exist.source.DBSource;
 import org.exist.source.Source;
 
 import javax.annotation.Nullable;
@@ -57,6 +59,28 @@ public enum ErrorDisclosure {
     GENERIC;
 
     private static final Logger LOG = LogManager.getLogger(ErrorDisclosure.class);
+
+    /**
+     * The level which applies to a subject executing a query from the given source.
+     *
+     * A stored query which the subject cannot read is {@link #GENERIC}; everything else — a query
+     * typed in by the caller, a query from the file system or the classpath, a stored query the
+     * subject can read — is {@link #FULL}, as its source is not confidential from that caller.
+     *
+     * Entry points must apply this to the context BEFORE compiling: a compile error never reaches
+     * {@link XQuery#execute}, which can only recompute the level for a runtime failure.
+     *
+     * @param source the source of the query, or null if it is unknown
+     * @param subject the subject executing the query, or null if it is unknown
+     *
+     * @return the level which may be disclosed to that subject
+     */
+    public static ErrorDisclosure of(@Nullable final Source source, @Nullable final Subject subject) {
+        if (!(source instanceof DBSource dbSource) || subject == null) {
+            return FULL;
+        }
+        return dbSource.getPermissions().validate(subject, Permission.READ) ? FULL : GENERIC;
+    }
 
     /**
      * Filter an error according to the disclosure level of the context it was raised in.

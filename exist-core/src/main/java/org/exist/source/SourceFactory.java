@@ -39,6 +39,7 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ExecutableResource;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
@@ -75,6 +76,37 @@ public class SourceFactory {
      * @throws IOException if a general I/O error occurs whilst accessing the resource.
      */
     public static @Nullable Source getSource(final DBBroker broker, @Nullable final String contextPath, final String location, final boolean checkXQEncoding) throws IOException, PermissionDeniedException {
+        return getSource(broker, contextPath, location, checkXQEncoding, false);
+    }
+
+    /**
+     * Create a {@link Source} object for a resource which is about to be COMPILED AND EXECUTED as an
+     * XQuery, rather than read as data.
+     *
+     * A resource in the database is resolved on {@link org.exist.security.Permission#EXECUTE} instead
+     * of {@link org.exist.security.Permission#READ}, so that a caller which may run a stored query but
+     * not read it gets its source — the database reads it on their behalf, as a kernel reads a
+     * {@code --x} binary. Resources outside the database are unaffected.
+     *
+     * The caller must derive the error disclosure level from the returned source before it compiles,
+     * see {@link org.exist.xquery.ErrorDisclosure#of(Source, org.exist.security.Subject)}.
+     *
+     * @param broker the eXist-db DBBroker
+     * @param contextPath the context path of the resource.
+     * @param location the location of the resource (relative to the {@code contextPath}).
+     * @param checkXQEncoding where we need to check the encoding of the XQuery.
+     *
+     * @return The Source of the resource, or null if the resource cannot be found.
+     *
+     * @throws PermissionDeniedException if the resource resides in the database and the calling user
+     *     may not execute it.
+     * @throws IOException if a general I/O error occurs whilst accessing the resource.
+     */
+    public static @Nullable Source getSourceForExecution(final DBBroker broker, @Nullable final String contextPath, final String location, final boolean checkXQEncoding) throws IOException, PermissionDeniedException {
+        return getSource(broker, contextPath, location, checkXQEncoding, true);
+    }
+
+    private static @Nullable Source getSource(final DBBroker broker, @Nullable final String contextPath, final String location, final boolean checkXQEncoding, final boolean forExecution) throws IOException, PermissionDeniedException {
         Source source = null;
 
         /* resource: */
@@ -105,7 +137,7 @@ public class SourceFactory {
             }
 
             if (pathUri != null) {
-                source = getSource_fromDb(broker, pathUri);
+                source = getSource_fromDb(broker, pathUri, forExecution);
             }
         }
 
@@ -119,7 +151,7 @@ public class SourceFactory {
             } else {
                 pathUri = XmldbURI.create(contextPath).append(location);
             }
-            source = getSource_fromDb(broker, pathUri);
+            source = getSource_fromDb(broker, pathUri, forExecution);
         }
 
         /* file:// or location without scheme (:/) is assumed to be a file */
@@ -190,7 +222,24 @@ public class SourceFactory {
      *
      * @return the source, or null if there is no such resource in the db indicated by {@code path}.
      */
-    private static @Nullable Source getSource_fromDb(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException, IOException {
+    private static @Nullable Source getSource_fromDb(final DBBroker broker, final XmldbURI path, final boolean forExecution) throws PermissionDeniedException, IOException {
+        if (forExecution) {
+            // gate on EXECUTE, not READ: the source is compiled on the caller's behalf
+            try (final ExecutableResource executable = broker.getResourceForExecution(path, LockMode.READ_LOCK)) {
+                if (executable == null) {
+                    return null;
+                }
+
+                final DocumentImpl resource = executable.document().getDocument();
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    return new DBSource(broker.getBrokerPool(), (BinaryDocument) resource, true);
+                }
+
+                // an XML resource is not a stored query: serializing it is a data read, so fall
+                // through to the READ-gated path below
+            }
+        }
+
         Source source = null;
         try(final LockedDocument lockedResource = broker.getXMLResource(path, LockMode.READ_LOCK)) {
             if (lockedResource != null) {

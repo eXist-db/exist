@@ -48,6 +48,7 @@ import org.exist.source.StringSource;
 import org.exist.source.URLSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ExecutableResource;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedCollectionLock;
@@ -86,6 +87,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -456,7 +458,7 @@ public class RESTServer {
             // check if path leads to an XQuery resource
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
             final String xproc_mime_type = MimeType.XPROC_TYPE.getName();
-            lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            lockedDocument = getResourceForRequest(broker, pathUri);
             resource = lockedDocument == null ? null : lockedDocument.getDocument();
 
             if (null != resource && !isExecutableType(resource)) {
@@ -504,7 +506,7 @@ public class RESTServer {
                     break;
                 }
 
-                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                lockedDocument = getResourceForRequest(broker, servletPath);
                 resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource && isExecutableType(resource)) {
                     break;
@@ -697,7 +699,7 @@ public class RESTServer {
             // if yes, the resource is loaded and the XQuery executed.
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
             final String xproc_mime_type = MimeType.XPROC_TYPE.getName();
-            lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            lockedDocument = getResourceForRequest(broker, pathUri);
             resource = lockedDocument == null ? null : lockedDocument.getDocument();
 
             XmldbURI servletPath = pathUri;
@@ -711,7 +713,7 @@ public class RESTServer {
                     break;
                 }
 
-                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                lockedDocument = getResourceForRequest(broker, servletPath);
                 resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource
                         && (resource.getResourceType() == DocumentImpl.BINARY_FILE
@@ -1267,7 +1269,7 @@ public class RESTServer {
         // xquery resource
         while (resource == null) {
             // traverse up the path looking for xquery objects
-            lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+            lockedDocument = getResourceForRequest(broker, servletPath);
             resource = lockedDocument == null ? null : lockedDocument.getDocument();
             if (resource != null
                     && (resource.getResourceType() == DocumentImpl.BINARY_FILE
@@ -1558,6 +1560,45 @@ public class RESTServer {
     }
 
     /**
+     * Get the document a request addresses.
+     *
+     * A regular resource requires READ, as it always did. A stored XQuery is additionally resolved
+     * on EXECUTE via {@link DBBroker#getResourceForExecution(XmldbURI, LockMode)}, so that a caller
+     * which may run it but not read it gets to run it. Reading a query as data — the {@code ?_source}
+     * view — is unaffected and still validates READ separately.
+     *
+     * @return the locked document, or null if there is none at that path
+     *
+     * @throws PermissionDeniedException if the caller may neither read the resource nor, when it is a
+     *     stored query, execute it
+     */
+    private @Nullable LockedDocument getResourceForRequest(final DBBroker broker, final XmldbURI uri) throws PermissionDeniedException {
+        try {
+            return broker.getXMLResource(uri, LockMode.READ_LOCK);
+        } catch (final PermissionDeniedException readDenied) {
+            final ExecutableResource executable;
+            try {
+                executable = broker.getResourceForExecution(uri, LockMode.READ_LOCK);
+            } catch (final PermissionDeniedException executeDenied) {
+                // neither readable nor executable, so report the failure to read it
+                throw readDenied;
+            }
+
+            if (executable == null) {
+                return null;
+            }
+
+            // only a stored query may be reached without READ; anything else is a data read
+            if (!MimeType.XQUERY_TYPE.getName().equals(executable.document().getDocument().getMimeType())) {
+                executable.close();
+                throw readDenied;
+            }
+
+            return executable.document();
+        }
+    }
+
+    /**
      * Directly execute an XQuery stored as a binary document in the database.
      *
      * @throws PermissionDeniedException
@@ -1586,6 +1627,12 @@ public class RESTServer {
                 context.prepareForReuse();
             }
 
+            // a caller which may execute but not read the query must not learn anything about its
+            // source from a failure. Recomputed per request from the current subject, as the compiled
+            // query is pooled and shared between users, and set before the query is compiled, since a
+            // compile error never reaches XQuery#execute (which computes the level for runtime errors)
+            context.setErrorDisclosure(ErrorDisclosure.of(source, broker.getCurrentSubject()));
+
             // TODO: don't hardcode this?
             context.setModuleLoadPath(
                     XmldbURI.EMBEDDED_SERVER_URI.append(
@@ -1598,31 +1645,37 @@ public class RESTServer {
             reqw.setServletPath(servletPath);
             reqw.setPathInfo(pathInfo);
 
-            final long compilationTime;
-            if (compiled == null) {
-                try {
-                    final long compilationStart = System.currentTimeMillis();
-                    compiled = xquery.compile(context, source);
-                    compilationTime = System.currentTimeMillis() - compilationStart;
-                } catch (final IOException e) {
-                    throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
-                }
-            } else {
-                compilationTime = 0;
-            }
-
-            DebuggeeFactory.checkForDebugRequest(request, context);
-
-            boolean wrap = outputProperties.getProperty("_wrap") != null
-                    && "yes".equals(outputProperties.getProperty("_wrap"));
-
             try {
-                final long executeStart = System.currentTimeMillis();
-                final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-                writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, wrap, compilationTime, System.currentTimeMillis() - executeStart);
+                final long compilationTime;
+                if (compiled == null) {
+                    try {
+                        final long compilationStart = System.currentTimeMillis();
+                        compiled = xquery.compile(context, source);
+                        compilationTime = System.currentTimeMillis() - compilationStart;
+                    } catch (final IOException e) {
+                        throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
+                    }
+                } else {
+                    compilationTime = 0;
+                }
 
-            } finally {
-                context.runCleanupTasks();
+                DebuggeeFactory.checkForDebugRequest(request, context);
+
+                boolean wrap = outputProperties.getProperty("_wrap") != null
+                        && "yes".equals(outputProperties.getProperty("_wrap"));
+
+                try {
+                    final long executeStart = System.currentTimeMillis();
+                    final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                    writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, wrap, compilationTime, System.currentTimeMillis() - executeStart);
+
+                } finally {
+                    context.runCleanupTasks();
+                }
+            } catch (final XPathException e) {
+                // compile and runtime failures alike are filtered: a read-blind caller learns only
+                // that the execution failed, the real error is logged with a correlation id
+                throw ErrorDisclosure.disclose(context, e);
             }
         } finally {
             if (compiled != null) {
