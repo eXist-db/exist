@@ -2534,6 +2534,40 @@ public class NativeBroker implements DBBroker {
     }
 
     @Override
+    public @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI, final LockMode lockMode) throws PermissionDeniedException {
+        if (docURI == null) {
+            return null;
+        }
+        docURI = prepend(docURI.toCollectionPathURI());
+        final XmldbURI collUri = docURI.removeLastSegment();
+        final XmldbURI docUri = docURI.lastSegment();
+        final LockMode collectionLockMode = lockManager.relativeCollectionLockMode(LockMode.READ_LOCK, lockMode);
+        try (final Collection collection = openCollection(collUri, collectionLockMode)) {
+            if (collection == null) {
+                LOG.debug("Collection '{}' not found!", collUri);
+                return null;
+            }
+
+            try {
+                // gate on EXECUTE, not READ: the database reads the source on the caller's behalf
+                final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, lockMode, Permission.EXECUTE);
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
+
+                if (lockedDocument == null) {
+                    return null;
+                }
+
+                final boolean callerCanRead = lockedDocument.getDocument().getPermissions().validate(getCurrentSubject(), Permission.READ);
+                return new ExecutableResource(lockedDocument, callerCanRead);
+            } catch (final LockException e) {
+                throw new PermissionDeniedException(e);
+            }
+        }
+    }
+
+    @Override
     public void readBinaryResource(final BinaryDocument blob, final OutputStream os)
             throws IOException {
         try (final Txn transaction = continueOrBeginTransaction()) {
