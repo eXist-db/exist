@@ -135,10 +135,13 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.pathInfo = servletRequest.getPathInfo();
         this.servletPath = servletRequest.getServletPath();
 
-        // Determine if request is a multipart
-
+        // Determine if request is a multipart.
+        // Any HTTP method may carry a multipart/form-data body (e.g. PUT and PATCH,
+        // not just POST); the presence of the multipart content type is what matters.
+        // See https://github.com/eXist-db/exist/issues/6580 and
+        // https://github.com/eXist-db/exist/issues/6578
         @Nullable final String contentType = servletRequest.getContentType();
-        isMultipartContent = "POST".equalsIgnoreCase(servletRequest.getMethod()) && contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
+        isMultipartContent = contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
 
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so

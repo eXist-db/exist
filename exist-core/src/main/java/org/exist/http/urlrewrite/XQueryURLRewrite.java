@@ -934,7 +934,11 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private void declareVariables(final XQueryContext context, final SourceInfo sourceInfo, final URLRewrite staticRewrite, final String basePath, final RequestWrapper request, final HttpServletResponse response) throws XPathException {
-        final HttpRequestWrapper reqw = new HttpRequestWrapper(request, UTF_8.name(), UTF_8.name(), false);
+        // parseMultipart=true so that multipart/form-data uploads (including file parts)
+        // are exposed to controllers and RESTXQ resource functions for every HTTP method,
+        // not only POST. See https://github.com/eXist-db/exist/issues/6580 and
+        // https://github.com/eXist-db/exist/issues/6578
+        final HttpRequestWrapper reqw = new HttpRequestWrapper(request, UTF_8.name(), UTF_8.name(), true);
         final HttpResponseWrapper respw = new HttpResponseWrapper(response);
         // context.declareNamespace(RequestModule.PREFIX,
         // RequestModule.NAMESPACE_URI);
