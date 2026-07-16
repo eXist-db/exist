@@ -604,6 +604,29 @@ public class HttpRequestWrapper implements RequestWrapper {
         return files;
     }
 
+    @Override
+    public List<Map<String, String>> getUploadedFileHeaders(final String name) {
+        if (!isFormDataParsed) {
+            return null;
+        }
+
+        final Object o = params.get(name);
+        if (o == null) {
+            return null;
+        }
+
+        final List<Part> parts = getFileItem(o);
+        final List<Map<String, String>> fileHeaders = new ArrayList<>(parts.size());
+        for (final Part part : parts) {
+            final Map<String, String> headers = new LinkedHashMap<>();
+            for (final String headerName : part.getHeaderNames()) {
+                headers.put(headerName, part.getHeader(headerName));
+            }
+            fileHeaders.add(headers);
+        }
+        return fileHeaders;
+    }
+
     /**
      * @see jakarta.servlet.http.HttpServletRequest#getParameterNames()
      */

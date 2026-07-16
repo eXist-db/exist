@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 public interface RequestWrapper {
 
@@ -578,4 +579,18 @@ public interface RequestWrapper {
      * @return the list of file names.
      */
     List<String> getUploadedFileName(String name);
+
+    /**
+     * Get the part headers of each uploaded file submitted under a parameter name.
+     *
+     * There is one map per uploaded file (in submission order), aligned with the entries
+     * returned by {@link #getUploadedFileName(String)} and {@link #getFileUploadParam(String)}.
+     * Each map holds the file part's own headers (for example {@code Content-Type} and
+     * {@code Content-Disposition}), keyed by header name as submitted.
+     *
+     * @param name the parameter name
+     *
+     * @return the list of header maps, one per uploaded file.
+     */
+    List<Map<String, String>> getUploadedFileHeaders(String name);
 }

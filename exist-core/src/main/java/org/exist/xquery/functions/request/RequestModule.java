@@ -62,6 +62,7 @@ public class RequestModule extends AbstractInternalModule {
             new FunctionDef(GetQueryString.signature, GetQueryString.class),
             new FunctionDef(GetUploadedFile.signatures[0], GetUploadedFile.class),
             new FunctionDef(GetUploadedFileName.signature, GetUploadedFileName.class),
+            new FunctionDef(GetUploadedFileHeaders.signature, GetUploadedFileHeaders.class),
             new FunctionDef(GetUploadedFileSize.signature, GetUploadedFileSize.class),
             new FunctionDef(GetURI.signatures[0], GetURI.class),
             new FunctionDef(GetURI.signatures[1], GetURI.class),
