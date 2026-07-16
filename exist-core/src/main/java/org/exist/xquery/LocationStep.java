@@ -59,6 +59,17 @@ public class LocationStep extends Step {
     protected UpdateListener listener = null;
     protected Expression parent = null;
 
+    /**
+     * Whether this step is the initial (first) step of its parent expression,
+     * as determined during {@link #analyze(AnalyzeContextInfo)}. This is cached
+     * because the parent's child list may be rewritten after analysis (for
+     * example, {@link Function#checkArgument} wraps a function argument in a
+     * {@link DynamicCardinalityCheck} or type-check expression), which would
+     * otherwise make a lazy {@code parent.getSubExpression(0) == this} test in
+     * {@link #getDependencies()} report the wrong answer at evaluation time.
+     */
+    private boolean initialStep = false;
+
     //private int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
     private boolean preloadedData = false;
     protected boolean optimized = false;
@@ -95,10 +106,12 @@ public class LocationStep extends Step {
         int deps = Dependency.CONTEXT_SET;
 
         // self axis has an obvious dependency on the context item
-        // likewise we depend on the context item if this is a single path step (outside a predicate)
+        // likewise we depend on the context item if this is the initial step of
+        // the enclosing expression (outside a predicate). initialStep is captured
+        // during analyze, before the parent's child list may be rewritten (e.g. a
+        // function argument being wrapped in a cardinality/type check). See #6521.
         if (!this.inPredicate &&
-                (this.axis == Constants.SELF_AXIS ||
-                        (parent != null && parent.getSubExpressionCount() > 0 && parent.getSubExpression(0) == this))) {
+                (this.axis == Constants.SELF_AXIS || this.initialStep)) {
             deps = deps | Dependency.CONTEXT_ITEM;
         }
 
@@ -326,6 +339,13 @@ public class LocationStep extends Step {
 
         // TODO : log somewhere ?
         super.analyze(contextInfo);
+
+        // Capture whether this step is the initial step of its parent expression
+        // now, while the parent's child list still reflects the source structure.
+        // It may be rewritten afterwards (e.g. Function.checkArgument wrapping the
+        // argument), so deferring this test to getDependencies() is unreliable.
+        this.initialStep = parent != null && parent.getSubExpressionCount() > 0
+                && parent.getSubExpression(0) == this;
     }
 
     @Override

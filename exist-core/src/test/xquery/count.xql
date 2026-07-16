@@ -34,6 +34,15 @@ declare variable $cnt:COLLECTION1_NAME := "test-count-1";
 declare variable $cnt:COLLECTION2_NAME := "test-count-2";
 declare variable $cnt:COLLECTION1 := $cnt:TEST_COLLECTION || "/" || $cnt:COLLECTION1_NAME;
 declare variable $cnt:COLLECTION2 := $cnt:TEST_COLLECTION || "/" || $cnt:COLLECTION2_NAME;
+declare variable $cnt:AUTHORS_DOC := $cnt:TEST_COLLECTION || "/authors.xml";
+
+declare variable $cnt:AUTHORS :=
+    document {
+        <authors>
+            <author><places><place/><place/></places></author>
+            <author><places><place/><place/><place/></places></author>
+        </authors>
+    };
 
 declare
     %test:setUp
@@ -42,7 +51,8 @@ function cnt:setup() {
     xmldb:create-collection($cnt:TEST_COLLECTION, $cnt:COLLECTION1_NAME),
     xmldb:store($cnt:COLLECTION1, "test1.xml", <test/>),
     xmldb:create-collection($cnt:TEST_COLLECTION, $cnt:COLLECTION2_NAME),
-    xmldb:store($cnt:COLLECTION2, "test2xml", <test/>)
+    xmldb:store($cnt:COLLECTION2, "test2xml", <test/>),
+    xmldb:store($cnt:TEST_COLLECTION, "authors.xml", $cnt:AUTHORS)
 };
 
 declare 
@@ -57,8 +67,42 @@ function cnt:arg-self-on-stored() {
     (collection($cnt:COLLECTION1)/*, collection($cnt:COLLECTION2)/*)/count(.)
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1)
 function cnt:arg-self-on-constructed() {
     (<a/>, <b/>, <c/>)/count(.)
+};
+
+(:~
+ : A trailing fn:count() step whose argument is a relative child step must be
+ : evaluated once per context item, even when the context is a *stored*
+ : (persistent) node set. Previously the persistent case collapsed to the
+ : whole-context branch and counted every descendant once (returning a single 5
+ : instead of (2, 3)). See https://github.com/eXist-db/exist/issues/6521
+ :)
+declare
+    %test:assertEquals(2, 3)
+function cnt:arg-child-on-stored() {
+    doc($cnt:AUTHORS_DOC)/authors/author/places/count(place)
+};
+
+(: the same query over an in-memory document was already correct; guard it :)
+declare
+    %test:assertEquals(2, 3)
+function cnt:arg-child-on-constructed() {
+    $cnt:AUTHORS/authors/author/places/count(place)
+};
+
+(: Martin's workaround with the simple map operator; locks the path that works :)
+declare
+    %test:assertEquals(2, 3)
+function cnt:arg-child-on-stored-simple-map() {
+    doc($cnt:AUTHORS_DOC)/authors/author/places ! count(place)
+};
+
+(: Martin's workaround copying the persistent tree into memory first :)
+declare
+    %test:assertEquals(2, 3)
+function cnt:arg-child-on-stored-wrapped() {
+    <a>{doc($cnt:AUTHORS_DOC)}</a>/authors/author/places/count(place)
 };
