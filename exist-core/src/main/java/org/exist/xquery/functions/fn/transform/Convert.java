@@ -158,6 +158,7 @@ class Convert {
             final DocumentBuilder sourceBuilder = newDocumentBuilder();
             try {
                 if (node instanceof Document) {
+                    // a document node (in-memory or persistent) can be built directly
                     return sourceBuilder.build(new DOMSource(node));
                 } else {
                     //The source must be part of a document

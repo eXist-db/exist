@@ -32,9 +32,12 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmValue;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.memtree.NamespaceNode;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.fn.FnTransform;
 import org.exist.xquery.functions.map.MapType;
@@ -166,7 +169,12 @@ class Options {
             stylesheetBaseUri = xsltSource._1;
         }
         if (!StringUtils.isEmpty(stylesheetBaseUri)) {
-            resolvedStylesheetBaseURI = Optional.of(resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI()));
+            // Only resolve if it's not already absolute (database URIs start with "/" or "xmldb:")
+            if (stylesheetBaseUri.startsWith("/") || stylesheetBaseUri.startsWith("xmldb:") || stylesheetBaseUri.startsWith("exist://")) {
+                resolvedStylesheetBaseURI = Optional.of(new AnyURIValue(stylesheetBaseUri));
+            } else {
+                resolvedStylesheetBaseURI = Optional.of(resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI()));
+            }
         } else {
             resolvedStylesheetBaseURI = Optional.empty();
         }
@@ -467,7 +475,7 @@ class Options {
         final List<Tuple2<String, Source>> results = new ArrayList<>(1);
         final Optional<String> stylesheetLocation = Options.STYLESHEET_LOCATION.get(options).map(StringValue::getStringValue);
         if (stylesheetLocation.isPresent()) {
-            results.add(Tuple(stylesheetLocation.get(), resolveStylesheetLocation(stylesheetLocation.get())));
+            results.add(resolveStylesheetLocation(stylesheetLocation.get()));
         }
 
         final Optional<Node> stylesheetNode = Options.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
@@ -496,19 +504,67 @@ class Options {
      *     It may be a dynamically configured document.
      *     Or a document within the database.
      * </p>
+     * <p>
+     *     A relative location is first resolved the way {@code fn:doc} resolves
+     *     relative paths: against the base URI of the query (where a collection
+     *     path is treated as a "directory") and/or the location of the querying
+     *     module within the database. If that does not find a document, the
+     *     location is resolved strictly against the static base URI according
+     *     to RFC 3986 (e.g. for file: or http: base URIs).
+     *     See <a href="https://github.com/eXist-db/exist/issues/5052">issue 5052</a>.
+     * </p>
      * @param stylesheetLocation path or URI of stylesheet
-     * @return a source wrapping the contents of the stylesheet
+     * @return a Tuple whose first value is the actual location of the resolved
+     *     stylesheet, and whose second value is a source wrapping its contents
      * @throws XPathException if there is a problem resolving the location.
      */
-    private Source resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
+    private Tuple2<String, Source> resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
 
         final URI uri = URI.create(stylesheetLocation);
         if (uri.isAbsolute()) {
-            return URIResolution.resolveDocument(stylesheetLocation, context, fnTransform);
-        } else {
-            final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
-            return URIResolution.resolveDocument(resolved.getStringValue(), context, fnTransform);
+            return resolvePossibleStylesheetLocation(stylesheetLocation);
         }
+
+        try {
+            return resolvePossibleStylesheetLocation(stylesheetLocation);
+        } catch (final XPathException e) {
+            final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
+            return resolvePossibleStylesheetLocation(resolved.getStringValue());
+        }
+    }
+
+    /**
+     * Resolve a stylesheet location
+     *
+     * @param location of the stylesheet
+     * @return a Tuple whose first value is the actual location of the resolved
+     *     stylesheet (used as its base URI), and whose second value is the
+     *     resolved stylesheet as a source
+     * @throws XPathException if the item does not exist, or is not a document
+     */
+    private Tuple2<String, Source> resolvePossibleStylesheetLocation(final String location) throws XPathException {
+
+        Sequence document;
+        try {
+            document = DocUtils.getDocument(context, location);
+        } catch (final PermissionDeniedException e) {
+            throw new XPathException(fnTransform, ErrorCodes.FODC0002,
+                    "Can not access '" + location + "'" + e.getMessage());
+        }
+        if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
+            if (document instanceof NodeProxy nodeProxy) {
+                final DOMSource source = new DOMSource(nodeProxy.getNode());
+                source.setSystemId(location);
+                return Tuple(location, source);
+            }
+            else if (document.itemAt(0) instanceof Node node) {
+                final DOMSource source = new DOMSource(node);
+                source.setSystemId(location);
+                return Tuple(location, source);
+            }
+        }
+        throw new XPathException(fnTransform, ErrorCodes.FODC0002,
+            "Location '"+ location + "' returns an item which is not a document node");
     }
 
     /**

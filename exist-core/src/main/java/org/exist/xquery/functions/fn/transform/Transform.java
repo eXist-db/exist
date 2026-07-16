@@ -167,7 +167,7 @@ public class Transform {
                 xslt30Transformer.setResultDocumentHandler(resultDocumentURI -> {
                     final Delivery resultDelivery = new Delivery(context, options.deliveryFormat, serializationProperties);
                     resultDocuments.put(resultDocumentURI, resultDelivery);
-                    return resultDelivery.createDestination(xslt30Transformer, true);
+                    return resultDelivery.createDestination(xslt30Transformer);
                 });
 
                 if (options.globalContextItem.isPresent()) {
@@ -330,7 +330,7 @@ public class Transform {
             this.options = options;
             this.sourceNode = sourceNode;
             this.delivery = delivery;
-            this.destination = delivery.createDestination(xslt30Transformer, false);
+            this.destination = delivery.createDestination(xslt30Transformer);
             this.xslt30Transformer = xslt30Transformer;
             this.resultDocuments = resultDocuments;
         }
