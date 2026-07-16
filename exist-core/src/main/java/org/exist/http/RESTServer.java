@@ -632,9 +632,9 @@ public class RESTServer {
 
                 // work up the url path to find an xquery or xproc resource
                 final ResolvedExecutable resolved = resolveExecutable(broker, pathUri, path);
-                lockedDocument = resolved.lockedDocument;
-                resource = resolved.resource;
-                servletPath = resolved.servletPath;
+                lockedDocument = resolved.lockedDocument();
+                resource = resolved.resource();
+                servletPath = resolved.servletPath();
             }
 
             if (null == resource) { // path search failed
@@ -710,17 +710,7 @@ public class RESTServer {
      * Holder for the result of resolving the executable resource
      * addressed by the path of a request.
      */
-    private static class ResolvedExecutable {
-        final LockedDocument lockedDocument;
-        final DocumentImpl resource;
-        final XmldbURI servletPath;
-
-        ResolvedExecutable(final LockedDocument lockedDocument, final DocumentImpl resource,
-                final XmldbURI servletPath) {
-            this.lockedDocument = lockedDocument;
-            this.resource = resource;
-            this.servletPath = servletPath;
-        }
+    private record ResolvedExecutable(LockedDocument lockedDocument, DocumentImpl resource, XmldbURI servletPath) {
     }
 
     /**
@@ -1111,21 +1101,21 @@ public class RESTServer {
             final XmldbURI pathUri, final Properties outputProperties, final String encoding, final String mimeType)
             throws BadRequestException, PermissionDeniedException, IOException {
         final ResolvedExecutable resolved = resolvePostExecutable(broker, pathUri);
-        final DocumentImpl resource = resolved.resource;
+        final DocumentImpl resource = resolved.resource();
         try {
             // either xquery binary file or xproc xml file
             if (resource != null && isPostExecutableType(resource)) {
                 // found an XQuery resource, fixup request values
-                final String pathInfo = pathUri.trimFromBeginning(resolved.servletPath).toString();
+                final String pathInfo = pathUri.trimFromBeginning(resolved.servletPath()).toString();
                 try {
                     if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
                         // Execute the XQuery
                         executeXQuery(broker, transaction, resource, request, response,
-                                outputProperties, resolved.servletPath.toString(), pathInfo);
+                                outputProperties, resolved.servletPath().toString(), pathInfo);
                     } else {
                         // Execute the XProc
                         executeXProc(broker, transaction, resource, request, response,
-                                outputProperties, resolved.servletPath.toString(), pathInfo);
+                                outputProperties, resolved.servletPath().toString(), pathInfo);
                     }
 
                 } catch (final XPathException e) {
@@ -1135,8 +1125,8 @@ public class RESTServer {
             }
             return false;
         } finally {
-            if (resolved.lockedDocument != null) {
-                resolved.lockedDocument.close();
+            if (resolved.lockedDocument() != null) {
+                resolved.lockedDocument().close();
             }
         }
     }
@@ -1674,21 +1664,21 @@ public class RESTServer {
         }
 
         final ResolvedExecutable resolved = resolveXQueryTarget(broker, path);
-        if (resolved.resource == null) {
+        if (resolved.resource() == null) {
             return false;
         }
 
         // found an XQuery resource, fixup request values
-        final String pathInfo = path.trimFromBeginning(resolved.servletPath).toString();
+        final String pathInfo = path.trimFromBeginning(resolved.servletPath()).toString();
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
         try {
             // Execute the XQuery
-            executeXQuery(broker, transaction, resolved.resource, request, response,
-                    outputProperties, resolved.servletPath.toString(), pathInfo);
+            executeXQuery(broker, transaction, resolved.resource(), request, response,
+                    outputProperties, resolved.servletPath().toString(), pathInfo);
         } catch (final XPathException e) {
             writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, null, path.toString(), e);
         } finally {
-            resolved.lockedDocument.close();
+            resolved.lockedDocument().close();
         }
         return true;
     }
