@@ -28,6 +28,7 @@ import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.SchemaVersion;
 import org.exist.util.SingleInstanceConfiguration;
 import org.exist.xquery.Expression;
 import org.w3c.dom.Document;
@@ -137,6 +138,8 @@ public class Descriptor implements ErrorHandler {
             reader.parse(src);
 
             final Document doc = adapter.getDocument();
+
+            SchemaVersion.logDocumentVersion(LOG, doc.getDocumentElement(), SchemaVersion.DESCRIPTOR, "descriptor.xml");
 
             //load <xquery-app> attribue settings
             if ("true".equals(doc.getDocumentElement().getAttribute("request-replay-log"))) {

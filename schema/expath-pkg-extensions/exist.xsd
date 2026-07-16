@@ -5,13 +5,14 @@
     xmlns:eepkg="http://exist-db.org/ns/expath-pkg"
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
-    targetNamespace="http://exist-db.org/ns/expath-pkg">
+    targetNamespace="http://exist-db.org/ns/expath-pkg"
+    version="1.0.1">
     
     <xs:annotation>
         <xs:documentation>A schema for eXist-db extensions to EXPath Packaging.</xs:documentation>
         <xs:appinfo>
             <dcterms:title>eXist-db extensions to EXPath Packaging</dcterms:title>
-            <dcterms:created xsi:type="dcterms:W3CDTF">2013-11-03T11:36:19.343+01:00</dcterms:created>
+            <dcterms:created>2013-11-03T11:36:19.343+01:00</dcterms:created>
             <dcterms:creator>Adam Retter</dcterms:creator>
         </xs:appinfo>
     </xs:annotation>

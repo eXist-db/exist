@@ -301,7 +301,6 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.2</version>
             <classifier>jdk14-xml-schema-1.1</classifier>
             <exclusions>
                 <exclusion> <!-- conflicts with Java 17's javax.xml module -->
@@ -348,7 +347,6 @@
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>${xmlresolver.version}</version>
             <exclusions>
                 <exclusion> <!-- conflicts with Java 17's javax.xml module -->
                     <groupId>xml-apis</groupId>
@@ -360,7 +358,6 @@
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>${xmlresolver.version}</version>
             <classifier>data</classifier>
             <scope>runtime</scope>
             <exclusions>
@@ -376,13 +373,11 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
             <artifactId>xpath2</artifactId>
-            <version>1.2.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>edu.princeton.cup</groupId>
             <artifactId>java-cup</artifactId>
-            <version>10k</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -676,9 +671,21 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <!-- Only the codegen stylesheets, not unrelated .xsl test fixtures
+                         like tei-toc.xsl/transform-catalog-test-lib.xsl elsewhere in this tree. -->
+                    <exclude>**/*-fixture.xsl</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
                 <filtering>true</filtering>
             </testResource>
         </testResources>
@@ -1082,6 +1089,150 @@ The BaseX Team. The original license statement is also included below.]]></pream
                             <fileMask>XQueryLexer.java</fileMask>
                             <findRegex>new Integer</findRegex>
                             <replaceValue>Integer.valueOf</replaceValue>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                Generates org/exist/util/GeneratedSchemaVersions.java from each canonical XSD's
+                xs:schema/@version (see ../schema/generate-schema-version.xsl), runs on every
+                normal build. Unlike ../schema/governance.xsl (phase=none, CI-invoked-only), this
+                means SchemaVersion.java's version constants can never silently drift from
+                schema/*.xsd.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>schema-version-codegen</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../schema</dir>
+                                    <includes>
+                                        <include>GeneratedSchemaVersions.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/../schema/generate-schema-version.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-sources/schema-version/org/exist/util</outputDir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                            <targetExtension>.java</targetExtension>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Generates this module's test controller-config.xml from the
+                        exist-jetty-config standalone-webapp template via
+                        src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+                        (which imports schema/generate-controller-config-fixture.xsl, see that
+                        stylesheet's header). Runs before process-test-resources.
+                    -->
+                    <execution>
+                        <id>controller-config-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/standalone-webapp/WEB-INF</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Generates this module's test conf.xml/collection.xconf.init fixtures from
+                        canonical via the matching src/test/resources-filtered/.../conf-fixture.xsl
+                        (which imports ../schema/generate-conf-fixture.xsl, see that stylesheet's
+                        header). Runs before process-test-resources, so the standard testResource
+                        filtering above (the ${basedir} substitution) still applies.
+                    -->
+                    <execution>
+                        <id>conf-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/storage/statistics/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/storage/statistics</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/transform</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>collection.xconf.init</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/../schema/generate-conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-schema-version-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/schema-version</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>

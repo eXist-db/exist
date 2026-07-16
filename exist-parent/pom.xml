@@ -137,6 +137,9 @@
         <lucene.version>10.5.0</lucene.version>
         <nekohtml.version>2.1.3</nekohtml.version>
         <saxon.version>12.5</saxon.version>
+        <xerces.version>2.12.2</xerces.version>
+        <xpath2.version>1.2.0</xpath2.version>
+        <java-cup.version>10k</java-cup.version>
         <xmlresolver.version>6.0.23</xmlresolver.version>
         <xmlunit.version>2.12.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
@@ -162,6 +165,11 @@
         <sonar.organization>exist-db</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
+
+        <!-- Set to true in a module to prevent the conf-fixture-codegen profile from
+             generating an additional conf.xml (needed for modules with non-standard output
+             paths, e.g. expathrepo, or modules that manage their own full execution set). -->
+        <skip.conf.fixture.profile>false</skip.conf.fixture.profile>
     </properties>
 
     <dependencyManagement>
@@ -227,6 +235,56 @@
                 <groupId>net.sf.saxon</groupId>
                 <artifactId>Saxon-HE</artifactId>
                 <version>${saxon.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.exist-db.thirdparty.xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${xerces.version}</version>
+                <classifier>jdk14-xml-schema-1.1</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+                <artifactId>xpath2</artifactId>
+                <version>${xpath2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>edu.princeton.cup</groupId>
+                <artifactId>java-cup</artifactId>
+                <version>${java-cup.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlresolver</groupId>
+                <artifactId>xmlresolver</artifactId>
+                <version>${xmlresolver.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlresolver</groupId>
+                <artifactId>xmlresolver</artifactId>
+                <version>${xmlresolver.version}</version>
+                <classifier>data</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -905,12 +963,37 @@
                     <version>1.2.1</version>
                     <configuration>
                         <transformerFactory>net.sf.saxon.TransformerFactoryImpl</transformerFactory>
+                        <catalogs>
+                            <catalog>${maven.multiModuleProjectDirectory}/schema/catalog.xml</catalog>
+                        </catalogs>
                     </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>net.sf.saxon</groupId>
                             <artifactId>Saxon-HE</artifactId>
                             <version>${saxon.version}</version>
+                        </dependency>
+                        <!-- XSD 1.1 validation (xs:assert) for xml:validate -->
+                        <dependency>
+                            <groupId>org.exist-db.thirdparty.xerces</groupId>
+                            <artifactId>xercesImpl</artifactId>
+                            <version>${xerces.version}</version>
+                            <classifier>jdk14-xml-schema-1.1</classifier>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+                            <artifactId>xpath2</artifactId>
+                            <version>${xpath2.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>edu.princeton.cup</groupId>
+                            <artifactId>java-cup</artifactId>
+                            <version>${java-cup.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.xmlresolver</groupId>
+                            <artifactId>xmlresolver</artifactId>
+                            <version>${xmlresolver.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -1647,6 +1730,62 @@
                             </execution>
                         </executions>
                         <version>3.2.0</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!--
+                Activated automatically whenever a module has src/test/resources-filtered/conf-fixture.xsl.
+                Runs the standard single-conf-xml codegen (canonical conf.xml → fixture XSLT →
+                target/generated-test-resources/conf.xml) without requiring any xml-maven-plugin
+                boilerplate in the module's own pom.xml.
+
+                Defined in exist-parent (not the reactor root) so Maven evaluates the <file>
+                activation path relative to EACH CHILD MODULE's basedir — file-based activation
+                in a profile defined in the reactor root pom would evaluate against the root's
+                basedir instead, which would never match a child module's source tree.
+
+                Modules with MULTIPLE conf fixtures (exist-core, etc.) or a non-standard output
+                directory (expathrepo) keep their own xml-maven-plugin execution and can set
+                skip.conf.fixture.profile=true to prevent this profile from generating a second
+                copy to the wrong location.
+            -->
+            <id>conf-fixture-codegen</id>
+            <activation>
+                <file>
+                    <exists>src/test/resources-filtered/conf-fixture.xsl</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>conf-fixture-codegen</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skip.conf.fixture.profile}</skip>
+                                    <forceCreation>true</forceCreation>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${maven.multiModuleProjectDirectory}/exist-distribution/src/main/config</dir>
+                                            <includes>
+                                                <include>conf.xml</include>
+                                            </includes>
+                                            <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
+                                            <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

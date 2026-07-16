@@ -156,6 +156,7 @@
             </fileset>
             <fileset targetdir="$INSTALL_PATH/etc" dir="etc"/>
             <fileset targetdir="$INSTALL_PATH/lib" dir="lib"/>
+            <fileset targetdir="$INSTALL_PATH/schema" dir="schema"/>
             <fileset os="windows" targetdir="$INSTALL_PATH/lib" dir="@{izpack.resources.target}">
                 <include name="icon.ico"/>
             </fileset>

@@ -84,13 +84,54 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*-fixture.xsl</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>
+            <!--
+                Generates this module's test controller-config.xml from the canonical
+                standalone-webapp/WEB-INF/controller-config.xml via the fixture stylesheet.
+                conf.xml codegen is handled by the root pom's conf-fixture-codegen profile.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>controller-config-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${maven.multiModuleProjectDirectory}/exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/standalone-webapp/WEB-INF</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

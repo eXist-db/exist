@@ -8,8 +8,10 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="1.0.0">
-    
+           version="2.1.1">
+
+    <xs:include schemaLocation="schema-version-type.xsd"/>
+
     <!-- Shared types -->
     <xs:simpleType name="yes_no">
         <xs:restriction base="xs:string">
@@ -1413,6 +1415,7 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
+            <xs:attribute name="schemaVersion" type="schemaVersionType" use="optional"/>
         </xs:complexType>
     </xs:element>
 
