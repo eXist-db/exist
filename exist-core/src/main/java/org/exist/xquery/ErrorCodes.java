@@ -280,6 +280,13 @@ public class ErrorCodes {
     public static final ErrorCode EXXQDY0007 = new EXistErrorCode("EXXQDY0007", "I/O error while streaming a binary resource to the response.");
     public static final ErrorCode EXXQST0001 = new EXistErrorCode("EXXQST0001", "Unable to find function implementation.");
 
+    // --- Security / permission error codes ---
+    // Distinct codes so callers (e.g. HTTP API layers) can map a permission failure to
+    // 403 and an invalid-argument failure to 400 by branching on $err:code, instead of
+    // matching message text. Used by the sm: permission functions (PermissionsFunction).
+    public static final ErrorCode EXXQDY0008 = new EXistErrorCode("EXXQDY0008", "Invalid argument.");
+    public static final ErrorCode EXXQDY0009 = new EXistErrorCode("EXXQDY0009", "Permission denied.");
+
     public static final ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
 
     public static class ErrorCode {

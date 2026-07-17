@@ -1759,7 +1759,14 @@ public class XQueryTest {
                 XPathQueryService.class);
         ResourceSet result = service.query(query);
         assertEquals(1, result.getSize());
-        assertEquals("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">" + "ccc" + "</c:C>", result.getResource(0).getContent().toString());
+        // XQuery 3.1 §2: "the relative order of namespace nodes that share a parent is also implementation dependent."
+        final Source expected = Input.fromString("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">ccc</c:C>").build();
+        final Source actual = Input.fromString(result.getResource(0).getContent().toString()).build();
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
+                .checkForIdentical()
+                .build();
+        assertFalse(diff.toString(), diff.hasDifferences());
     }
 
     @Test
@@ -2969,8 +2976,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">ccc</c:C>",
-                result.getResource(0).getContent().toString());
+        // XQuery 3.1 §2: "the relative order of namespace nodes that share a parent is also implementation dependent."
+        final Source expected = Input.fromString("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">ccc</c:C>").build();
+        final Source actual = Input.fromString(result.getResource(0).getContent().toString()).build();
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
+                .checkForIdentical()
+                .build();
+        assertFalse(query + "\n" + diff.toString(), diff.hasDifferences());
     }
 
     /**

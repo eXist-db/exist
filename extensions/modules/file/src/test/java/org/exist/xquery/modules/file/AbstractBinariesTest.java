@@ -86,6 +86,125 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     /**
+     * A file-backed binary (file:read-binary -&gt; BinaryValueFromFile) used in an element constructor and
+     * then read again must remain readable. Without BinaryValueFromFile's shared-reference reference
+     * counting, XQueryContext.exitEnclosedExpr() closed the channel immediately after the constructor and
+     * the second read failed with "Underlying channel has been closed". {@code count($w)} forces the
+     * constructor to be evaluated before {@code $b} is read again.
+     *
+     * <p>This must run as a <em>root-context main module</em> to reproduce, which is why it is a Java
+     * (executeXQuery) test rather than an XQSuite function: in a {@code ModuleContext} (an XQSuite test
+     * function, or {@code util:eval}) {@code registerBinaryValueInstance()} delegates to the parent/root
+     * context while {@code enterEnclosedExpr()}/{@code exitEnclosedExpr()} act on the {@code ModuleContext}'s
+     * own (empty) deque, so the constructor's {@code exitEnclosedExpr()} never sees the binary there and the
+     * premature close does not occur (it defers harmlessly to {@code popLocalVariables} after the read).
+     * Both {@code executeXQuery()} implementations here run the query as a main module (embedded and REST),
+     * so {@code exitEnclosedExpr()} and the binary share one context and the bug is exercised.</p>
+     */
+    @Test
+    public void readBinaryUsedInElementConstructorThenReadAgain() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                let $b := file:read-binary('%s')
+                let $w := <a>{$b}</a>
+                return (count($w), $b)[2]""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * A file-backed binary (file:read-binary -&gt; BinaryValueFromFile) stored with xmldb:store and then
+     * read again must remain readable. xmldb:store wraps its Resource in try-with-resources, and
+     * LocalBinaryResource.doClose() close()s the binary value it was given; without XMLDBStore taking a
+     * shared reference on the value it lends to the resource, that close() released the <em>caller's</em>
+     * value and the second read failed with "Underlying channel has been closed".
+     *
+     * <p>Like {@link #readBinaryUsedInElementConstructorThenReadAgain()}, this must run as a root-context
+     * main module (see that test's javadoc for the ModuleContext rationale).</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
+     */
+    @Test
+    public void readBinaryStoreThenReadAgain() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                let $b := file:read-binary('%s')
+                return (xmldb:store('%s', 'stored-file-backed.bin', $b, 'application/octet-stream'), $b)[2]""".formatted(tmpFile.toAbsolutePath(), TEST_COLLECTION);
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * The same premature close as {@link #readBinaryStoreThenReadAgain()}, but for a database-backed
+     * binary (util:binary-doc -&gt; BinaryValueFromInputStream): without the shared reference taken by
+     * XMLDBStore, the second read failed with "The underlying InputStream has been closed".
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
+     */
+    @Test
+    public void binaryDocStoreThenReadAgain() throws Exception {
+        final String query = """
+                let $b := util:binary-doc('%s')
+                return (xmldb:store('%s', 'stored-db-backed.bin', $b, 'application/octet-stream'), $b)[2]""".formatted(TEST_COLLECTION.append(BIN1_FILENAME), TEST_COLLECTION);
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(BIN1_CONTENT, getBytes(item));
+        });
+    }
+
+    /**
+     * Storing the same binary value twice (e.g. a staging copy and a final copy) must work: without the
+     * shared reference taken by XMLDBStore, the first xmldb:store closed the value and the second failed
+     * in LocalBinaryResource.getStreamLength() with "error while obtaining length of binary value".
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
+     */
+    @Test
+    public void readBinaryStoredTwice() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                let $b := file:read-binary('%1$s')
+                return (
+                    xmldb:store('%2$s', 'stored-twice-1.bin', $b, 'application/octet-stream'),
+                    xmldb:store('%2$s', 'stored-twice-2.bin', $b, 'application/octet-stream'),
+                    $b
+                )[3]""".formatted(tmpFile.toAbsolutePath(), TEST_COLLECTION);
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
      */
     @Test

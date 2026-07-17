@@ -97,6 +97,8 @@ public class SendRequestFunction extends BasicFunction {
         // Parse request element
         final RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.parse(requestNode, hrefParam, bodiesParam);
+        // Resolve an http:body/@src resource (if any) to the body bytes; needs the broker
+        requestBuilder.resolveBodySource(context);
         final HttpRequest httpRequest = requestBuilder.build();
 
         final RequestOptions allOptions = requestBuilder.getOptions();

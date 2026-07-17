@@ -46,27 +46,82 @@ public class URIResolution {
 
     /**
      * URI resolution, the core should be the same as for fn:resolve-uri
+     * <p>
+     *     A location within the database is resolved against the base as if the base
+     *     were a collection whenever {@link #assumeCollection(String)} holds, and as
+     *     if it were a document otherwise. A base outside the database (for instance a
+     *     {@code file:} or {@code http:} URI) is always resolved strictly according to
+     *     RFC 3986, that is, as if it were a document.
+     * </p>
      * @param relative URI to resolve
      * @param base to resolve against
      * @return resolved URI
      * @throws URISyntaxException if resolution is not possible
      */
     static AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws URISyntaxException, XPathException {
-        var relativeURI = new URI(relative.getStringValue());
+        final URI relativeURI = new URI(relative.getStringValue());
         if (relativeURI.isAbsolute()) {
             return relative;
         }
-        var baseURI = new URI(base.getStringValue() );
-        if (!baseURI.isAbsolute()) {
+        final String baseString = base.getStringValue();
+        final URI baseURI = new URI(baseString);
+        // a database path such as /db/apps/app has no scheme, so URI#isAbsolute is false,
+        // yet it is an absolute location within the database and can be resolved against
+        final boolean isAbsoluteBase = baseURI.isAbsolute() || baseString.startsWith("/");
+        if (!isAbsoluteBase) {
             return relative;
         }
         try {
-            var xBase = XmldbURI.xmldbUriFor(baseURI);
-            var resolved = xBase.getURI().resolve(relativeURI);
+            final XmldbURI xBase = XmldbURI.xmldbUriFor(baseURI);
+            // NOTE: for an xmldb: base, XmldbURI#getURI has already stripped the xmldb: prefix,
+            // but for the short form (xmldb:/db/...) it has not; only add the prefix if it is absent,
+            // otherwise the result doubles up as xmldb:xmldb:/db/...
+            final URI resolved = asResolutionBase(xBase.getURI()).resolve(relativeURI);
+            if (XmldbURI.XMLDB_SCHEME.equals(resolved.getScheme())) {
+                return new AnyURIValue(resolved.toString());
+            }
             return new AnyURIValue(XmldbURI.XMLDB_URI_PREFIX + resolved);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             return new AnyURIValue(baseURI.resolve(relativeURI));
         }
+    }
+
+    /**
+     * Prepare a location within the database to be resolved against.
+     * <p>
+     *     RFC 3986 discards the last segment of the base unless it is empty, which is
+     *     correct for a document but not for a collection: resolving {@code style.xsl}
+     *     against the collection {@code /db/apps/app} would yield {@code /db/apps/style.xsl}.
+     *     A collection is therefore given the trailing slash that marks it as a
+     *     "directory" before it is resolved against.
+     * </p>
+     *
+     * @param base location within the database
+     * @return the location to resolve against
+     */
+    private static URI asResolutionBase(final URI base) {
+        final String baseString = base.toString();
+        if (!baseString.endsWith("/") && assumeCollection(baseString)) {
+            return URI.create(baseString + "/");
+        }
+        return base;
+    }
+
+    /**
+     * Whether a location within the database is assumed to be a collection.
+     * <p>
+     *     A collection and a document are not distinguishable by their path alone, so
+     *     the absence of an extension in the last segment is taken to mean a collection.
+     *     This is a heuristic: a document stored without an extension (which is legal,
+     *     if unusual) is mistaken for a collection.
+     * </p>
+     *
+     * @param location within the database
+     * @return true if the location is assumed to be a collection
+     */
+    private static boolean assumeCollection(final String location) {
+        final String lastSegment = location.substring(location.lastIndexOf('/') + 1);
+        return lastSegment.indexOf('.') == -1;
     }
 
     public static class CompileTimeURIResolver implements URIResolver {
@@ -85,7 +140,7 @@ public class URIResolution {
             try {
                 final AnyURIValue baseURI = new AnyURIValue(base);
                 final AnyURIValue hrefURI = new AnyURIValue(href);
-                var resolved = resolveURI(hrefURI, baseURI);
+                final AnyURIValue resolved = resolveURI(hrefURI, baseURI);
                 return resolveDocument(resolved.getStringValue());
             } catch (URISyntaxException e) {
                 throw new TransformerException(
@@ -123,10 +178,14 @@ public class URIResolution {
         }
         if (document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             if (document instanceof NodeProxy proxy) {
-                return new DOMSource(proxy.getNode());
+                final DOMSource source = new DOMSource(proxy.getNode());
+                source.setSystemId(location);
+                return source;
             }
             else if (document.itemAt(0) instanceof Node node) {
-                return new DOMSource(node);
+                final DOMSource source = new DOMSource(node);
+                source.setSystemId(location);
+                return source;
             }
         }
         throw new XPathException(containingExpression, ErrorCodes.FODC0002,

@@ -35,6 +35,7 @@ import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -289,8 +290,10 @@ public class PermissionsFunction extends BasicFunction {
                 
                 transaction.commit();
                 
-            } catch(final TransactionException | PermissionDeniedException e) {
-              throw new XPathException(this, e);
+            } catch(final PermissionDeniedException pde) {
+              throw new XPathException(this, ErrorCodes.EXXQDY0009, pde);
+            } catch(final TransactionException te) {
+              throw new XPathException(this, te);
             }
         }
 
@@ -301,7 +304,7 @@ public class PermissionsFunction extends BasicFunction {
         try {
             return permissionsToXml(getPermissions(pathUri));
         } catch(final PermissionDeniedException pde) {
-            throw new XPathException(this, "Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
+            throw new XPathException(this, ErrorCodes.EXXQDY0009, "Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
         }
     }
 
@@ -367,7 +370,7 @@ public class PermissionsFunction extends BasicFunction {
     
     private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws XPathException {
         if(modeStr == null || modeStr.isEmpty() || modeStr.length() > 3) {
-            throw new XPathException(this, "Mode string must be partial i.e. rwx not rwxrwxrwx");
+            throw new XPathException(this, ErrorCodes.EXXQDY0008, "Mode string must be partial i.e. rwx not rwxrwxrwx");
         }
         
         int mode = 0;
@@ -399,7 +402,7 @@ public class PermissionsFunction extends BasicFunction {
             final String octal = mode == 0 ? "0" : "0" + Integer.toOctalString(mode);
             return new StringValue(this, octal);
         } catch(final SyntaxException se) {
-            throw new XPathException(this, se.getMessage(), se);
+            throw new XPathException(this, ErrorCodes.EXXQDY0008, se.getMessage(), se);
         }
     }
     

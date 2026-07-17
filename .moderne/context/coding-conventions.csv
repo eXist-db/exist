@@ -122,6 +122,7 @@ imports,Static imports from org.junit.jupiter.api,org.junit.jupiter.api.Assertio
 imports,Static imports from org.exist.test.runner,org.exist.test.runner.AbstractTestRunner.checkDescription,,project-wide
 imports,Static imports from org.exist.management.client,org.exist.management.client.JMXtoXML.JMX_NAMESPACE,,project-wide
 imports,Static imports from org.xmlunit.matchers,org.xmlunit.matchers.HasXPathMatcher.hasXPath,,project-wide
+imports,Static imports from org.xmldb.api.security,org.xmldb.api.security.Permission.GROUP_EXECUTE,,project-wide
 imports,Static imports from org.custommonkey.xmlunit,org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo,,project-wide
 imports,Static imports from com.ibm.icu.impl,com.ibm.icu.impl.Assert.fail,,project-wide
 imports,Static imports from org.exist.xquery.InternalModuleTest,org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*,,project-wide

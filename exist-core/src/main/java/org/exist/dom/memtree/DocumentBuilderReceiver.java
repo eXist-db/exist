@@ -107,6 +107,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void setDocumentLocator(Locator locator) {
+        // no-op: in-memory builder does not surface source-location information.
     }
 
     @Override
@@ -206,10 +207,125 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         try {
-            builder.addAttribute(checkNS(false, qname), value);
+            // Attribute namespace handling must be independent of the checkNS
+            // flag: when an attribute is copied into a new element constructor
+            // (XQuery 3.1 §3.9.1.3, default copy-namespaces preserve), the
+            // attribute's prefix MUST be rebound if it conflicts with an
+            // in-scope binding on the new element, and its (prefix, URI)
+            // mapping MUST be reflected as a namespace node on that element.
+            final QName resolved = qname.hasNamespace()
+                    ? resolveAttributeQName(qname)
+                    : qname;
+            builder.addAttribute(resolved, value);
         } catch(final DOMException e) {
             throw new SAXException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Resolves a namespaced attribute QName against the current in-scope
+     * namespaces, rebinding to a freshly generated prefix on prefix-to-URI
+     * conflict, and emitting a namespace node on the parent element to make
+     * the binding visible to the serializer.
+     */
+    private QName resolveAttributeQName(final QName qname) {
+        final XQueryContext context = builder.getContext();
+        final String uri = qname.getNamespaceURI();
+        String prefix = qname.getPrefix();
+        if (prefix == null || prefix.isEmpty()) {
+            // Attribute with namespace but no prefix: pick an existing prefix
+            // mapped to this URI, or generate a fresh one.
+            final String existing = context == null ? null : context.getInScopePrefix(uri);
+            if (existing != null && !existing.isEmpty()) {
+                prefix = existing;
+            } else {
+                prefix = generatePrefix(context, null);
+                if (context != null) {
+                    context.declareInScopeNamespace(prefix, uri);
+                }
+                emitNamespaceNode(prefix, uri);
+                return new QName(qname.getLocalPart(), uri, prefix);
+            }
+        } else if (context != null) {
+            final String boundUri = context.getInScopeNamespace(prefix);
+            if (boundUri == null) {
+                // Prefix is not in scope -> declare it
+                context.declareInScopeNamespace(prefix, uri);
+            } else if (!boundUri.equals(uri)) {
+                // Prefix is bound to a different URI -> generate a fresh prefix
+                String reuse = context.getInScopePrefix(uri);
+                if (reuse == null || reuse.isEmpty()) {
+                    prefix = generatePrefix(context, null);
+                    context.declareInScopeNamespace(prefix, uri);
+                } else {
+                    prefix = reuse;
+                }
+            }
+        }
+        emitNamespaceNode(prefix, uri);
+        return new QName(qname.getLocalPart(), uri, prefix);
+    }
+
+    /**
+     * Adds an xmlns:prefix=uri namespace node to the current element when not
+     * already declared there. No-op for the {@code xml} prefix or when the
+     * parent node is not an element.
+     */
+    private void emitNamespaceNode(final String prefix, final String uri) {
+        if (prefix == null || prefix.isEmpty() || XMLConstants.XML_NS_PREFIX.equals(prefix)) {
+            return;
+        }
+        final DocumentImpl doc = builder.getDocument();
+        final int parent = doc.getLastNode();
+        if (!isElementParent(doc, parent)) {
+            return;
+        }
+        if (isParentSelfDeclaration(doc, parent, prefix, uri)) {
+            return;
+        }
+        if (hasExistingPrefixDeclaration(doc, parent, prefix)) {
+            return;
+        }
+        builder.namespaceNode(prefix, uri);
+    }
+
+    private static boolean isElementParent(final DocumentImpl doc, final int parent) {
+        return parent >= 0 && doc.getNodeType(parent) == org.w3c.dom.Node.ELEMENT_NODE;
+    }
+
+    /**
+     * The parent element already carries the prefix-to-uri binding via its
+     * own name (e.g. parent is {@code <c:foo xmlns:c="..."/>} and we're being
+     * asked to emit {@code xmlns:c="..."} for the same URI). The declaration
+     * is redundant.
+     */
+    private static boolean isParentSelfDeclaration(final DocumentImpl doc, final int parent,
+                                                   final String prefix, final String uri) {
+        final QName parentName = doc.nodeName[parent];
+        return parentName != null
+                && prefix.equals(parentName.getPrefix())
+                && uri.equals(parentName.getNamespaceURI());
+    }
+
+    /**
+     * Scan the namespace declarations already attached to {@code parent} and
+     * return true if any of them binds the same {@code prefix}.
+     */
+    private static boolean hasExistingPrefixDeclaration(final DocumentImpl doc, final int parent,
+                                                       final String prefix) {
+        final int firstNs = doc.alphaLen[parent];
+        if (firstNs < 0) {
+            return false;
+        }
+        for (int ns = firstNs;
+             ns < doc.nextNamespace && doc.namespaceParent[ns] == parent;
+             ns++) {
+            final QName nsName = doc.namespaceCode[ns];
+            if (nsName != null && prefix.equals(nsName.getLocalPart())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -231,18 +347,22 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void skippedEntity(final String name) throws SAXException {
+        // no-op: entity references are not surfaced through the in-memory builder.
     }
 
     @Override
     public void endCDATA() throws SAXException {
+        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void endDTD() throws SAXException {
+        // no-op: DTD declarations are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startCDATA() throws SAXException {
+        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
@@ -257,14 +377,17 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endEntity(final String name) throws SAXException {
+        // no-op: entity boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startEntity(final String name) throws SAXException {
+        // no-op: entity boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
+        // no-op: DTD declarations are not surfaced through the in-memory builder.
     }
 
     @Override
@@ -308,18 +431,18 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         return qname;
     }
 
-    private String generatePrefix(final XQueryContext context, String prefix) {
-        int i = 0;
-        while(prefix == null) {
-            prefix = "XXX";
-            if(i > 0) {
-                prefix += String.valueOf(i);
-            }
-            if(context.getInScopeNamespace(prefix) != null) {
-                prefix = null;
-                i++;
-            }
+    private String generatePrefix(final XQueryContext context, final String requestedPrefix) {
+        if (requestedPrefix != null) {
+            return requestedPrefix;
         }
-        return prefix;
+        // Generate "XXX", "XXX1", "XXX2", ... until we find one not already
+        // bound in scope.
+        String candidate = "XXX";
+        int i = 0;
+        while (context.getInScopeNamespace(candidate) != null) {
+            i++;
+            candidate = "XXX" + i;
+        }
+        return candidate;
     }
 }

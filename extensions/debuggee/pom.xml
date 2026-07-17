@@ -55,7 +55,7 @@
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
-            <version>2.1.12</version>
+            <version>2.1.13</version>
         </dependency>
 
         <dependency>
@@ -98,7 +98,7 @@
                     <argLine>@{jacocoArgLine}</argLine>
                     <systemPropertyVariables>
                         <java.locale.providers>CLDR,SPI</java.locale.providers>
-                        <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                        <log4j.configurationFile>${exist.log4j.testConfigurationFile}</log4j.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
                     </systemPropertyVariables>
                 </configuration>

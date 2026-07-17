@@ -65,14 +65,17 @@ public class Restore {
         }
 
         //get the backup descriptors, can be more than one if it was an incremental backup
-        final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
+        final BackupPlan plan = getBackupDescriptors(f);
+        final Deque<BackupDescriptor> descriptors = plan.restoreQueue();
 
         final Set<String> appsToSkip = overwriteApps ? Collections.emptySet() : AppRestoreUtils.checkApps(broker, descriptors);
 
-        // count all files
+        // Count from roots only: each root's getNumberOfFiles() recursively covers its entire subtree,
+        // so summing only roots avoids double-counting the pre-queued /db/system hierarchy while still
+        // including arbitrary collections like /db/apps that are not pre-queued.
         long totalNrOfFiles = 0;
-        for (BackupDescriptor backupDescriptor : descriptors) {
-            totalNrOfFiles += backupDescriptor.getNumberOfFiles();
+        for (final BackupDescriptor root : plan.roots()) {
+            totalNrOfFiles += root.getNumberOfFiles();
         }
 
         // continue restore
@@ -107,13 +110,17 @@ public class Restore {
         }
     }
     
-    private Deque<BackupDescriptor> getBackupDescriptors(Path contents) throws IOException {
+    private record BackupPlan(Deque<BackupDescriptor> restoreQueue, List<BackupDescriptor> roots) {}
+
+    private BackupPlan getBackupDescriptors(Path contents) throws IOException {
         final Deque<BackupDescriptor> descriptors = new ArrayDeque<>();
-        
+        final List<BackupDescriptor> roots = new ArrayList<>();
+
         do {
 
             final BackupDescriptor bd = getBackupDescriptor(contents);
             descriptors.push(bd);
+            roots.add(bd);
 
             // check if the /db/system collection is in the backup. This must be processed before other /db collections
             //TODO : find a way to make a correspondence with DBRoker's named constants
@@ -150,8 +157,8 @@ public class Restore {
                 }
             }
         } while(contents != null);
-        
-        return descriptors;
+
+        return new BackupPlan(descriptors, roots);
     }
     
     private BackupDescriptor getBackupDescriptor(final Path f) throws IOException {

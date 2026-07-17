@@ -24,13 +24,18 @@ package org.exist.xquery.modules.httpclient;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.exist.xmldb.EXistResource;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,6 +47,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.*;
 
 /**
@@ -234,7 +240,7 @@ public class SendRequestFunctionTest {
             byte[] bodyBytes = "gzipped content".getBytes(StandardCharsets.UTF_8);
 
             if (acceptEncoding != null && acceptEncoding.contains("gzip")) {
-                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
                 try (java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(baos)) {
                     gzip.write(bodyBytes);
                 }
@@ -269,6 +275,9 @@ public class SendRequestFunctionTest {
             }
         });
 
+        // Multipart byte-safety + nesting endpoints (extracted to keep startHttpServer's complexity down)
+        registerMultipartTestEndpoints(httpServer);
+
         // OPTIONS endpoint
         httpServer.createContext("/options", exchange -> {
             exchange.getResponseHeaders().set("Allow", "GET, POST, OPTIONS");
@@ -297,6 +306,45 @@ public class SendRequestFunctionTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
+    }
+
+    /**
+     * Registers the multipart response endpoints used by the byte-safety and nesting tests, kept out
+     * of startHttpServer so that method's complexity is not inflated.
+     */
+    private static void registerMultipartTestEndpoints(final HttpServer server) {
+        // Multipart response with a binary part (bytes 0xFF 0xFE, base64 "//4=") that is not valid
+        // UTF-8 — corrupted by the old String-based splitter
+        server.createContext("/multipart-binary", exchange -> {
+            final String boundary = "bnd";
+            final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
+            baos.write(("--" + boundary + "\r\nContent-Type: application/octet-stream\r\n\r\n")
+                    .getBytes(StandardCharsets.US_ASCII));
+            baos.write(new byte[]{(byte) 0xFF, (byte) 0xFE});
+            baos.write(("\r\n--" + boundary + "\r\nContent-Type: text/plain\r\n\r\nhello\r\n--"
+                    + boundary + "--\r\n").getBytes(StandardCharsets.US_ASCII));
+            final byte[] bodyBytes = baos.toByteArray();
+            exchange.getResponseHeaders().set("Content-Type", "multipart/mixed; boundary=" + boundary);
+            exchange.sendResponseHeaders(200, bodyBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bodyBytes);
+            }
+        });
+
+        // Nested multipart: outer multipart/mixed whose first part is itself a multipart/mixed
+        server.createContext("/multipart-nested", exchange -> {
+            final String inner = "--inner\r\nContent-Type: text/plain\r\n\r\nA\r\n"
+                    + "--inner\r\nContent-Type: text/plain\r\n\r\nB\r\n--inner--\r\n";
+            final String body = "--outer\r\nContent-Type: multipart/mixed; boundary=inner\r\n\r\n"
+                    + inner + "\r\n"
+                    + "--outer\r\nContent-Type: text/plain\r\n\r\nC\r\n--outer--\r\n";
+            exchange.getResponseHeaders().set("Content-Type", "multipart/mixed; boundary=outer");
+            final byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bodyBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bodyBytes);
+            }
+        });
     }
 
     private static void sendResponse(HttpExchange exchange, int status, String contentType,
@@ -743,6 +791,72 @@ public class SendRequestFunctionTest {
                 "return contains(parse-json($response[2])?body, 'hello server')");
         assertEquals("POST body should be transmitted",
                 "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * The http:body @src attribute (EXPath HTTP Client 3.1) sends the linked database resource as the
+     * request body. Regression for eXist-db/exist#6510, where @src was silently ignored and an empty
+     * body was sent.
+     */
+    @Test
+    public void bodySrcSendsResourceContent() throws XMLDBException {
+        storeBinaryResource("http-src-body.txt", "abracadabra");
+        try {
+            final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                    let $response := http:send-request(
+                      <http:request method='POST' href='%s/echo'>
+                        <http:body media-type='text/plain' src='/db/http-src-body.txt'/>
+                      </http:request>)
+                    return parse-json($response[2])?body""".formatted(baseUrl()));
+            assertEquals("http:body/@src content should be sent as the request body",
+                    "abracadabra", result.getResource(0).getContent().toString());
+        } finally {
+            removeResource("http-src-body.txt");
+        }
+    }
+
+    private static void storeBinaryResource(final String name, final String content) throws XMLDBException {
+        final Collection root = existEmbeddedServer.getRoot();
+        final BinaryResource res = root.createResource(name, BinaryResource.class);
+        ((EXistResource) res).setMimeType("text/plain");
+        res.setContent(content.getBytes(StandardCharsets.UTF_8));
+        root.storeResource(res);
+    }
+
+    private static void removeResource(final String name) throws XMLDBException {
+        final Collection root = existEmbeddedServer.getRoot();
+        final Resource res = root.getResource(name);
+        if (res != null) {
+            root.removeResource(res);
+        }
+    }
+
+    /**
+     * Per EXPath HTTP Client 3.1, combining @src with body content is err:HC004.
+     */
+    @Test
+    public void bodySrcWithContentThrowsHC004() {
+        assertThatExceptionOfType(XMLDBException.class)
+                .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
+                        http:send-request(
+                          <http:request method='POST' href='%s/echo'>
+                            <http:body media-type='text/plain' src='/db/http-src-body.txt'>inline</http:body>
+                          </http:request>)""".formatted(baseUrl())))
+                .withStackTraceContaining("HC004");
+    }
+
+    /**
+     * media-type is mandatory on an http:body that uses @src (request-validity error err:HC005).
+     */
+    @Test
+    public void bodySrcWithoutMediaTypeThrowsHC005() {
+        assertThatExceptionOfType(XMLDBException.class)
+                .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
+                        http:send-request(
+                          <http:request method='POST' href='%s/echo'>
+                            <http:body src='/db/http-src-body.txt'/>
+                          </http:request>)""".formatted(baseUrl())))
+                .withStackTraceContaining("HC005");
     }
 
     @Test
@@ -1409,5 +1523,38 @@ public class SendRequestFunctionTest {
                 "return exists($response[1]/http:multipart)");
         assertEquals("Multipart response element should contain http:multipart",
                 "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * A binary multipart part is returned byte-for-byte (base64Binary), not corrupted by a UTF-8
+     * String round-trip. The first part is the two bytes 0xFF 0xFE (base64 "//4="); the second is text.
+     */
+    @Test
+    public void multipartBinaryPartIsByteSafe() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $r := http:send-request(\n" +
+                "  <http:request method='GET' href='" + baseUrl() + "/multipart-binary'/>)\n" +
+                "return $r[2] instance of xs:base64Binary\n" +
+                "  and string($r[2]) = '//4='\n" +
+                "  and $r[3] = 'hello'");
+        assertEquals("binary multipart part should round-trip byte-for-byte",
+                "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * A nested multipart part is parsed recursively, so its sub-parts surface as individual items:
+     * outer = [ multipart[ "A", "B" ], "C" ] yields the three leaf text items A, B, C.
+     */
+    @Test
+    public void multipartNestedIsParsedRecursively() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                HTTP_NS +
+                "let $r := http:send-request(\n" +
+                "  <http:request method='GET' href='" + baseUrl() + "/multipart-nested'/>)\n" +
+                "let $bodies := $r[position() gt 1]\n" +
+                "return string-join($bodies, ',')");
+        assertEquals("nested multipart should yield the leaf parts A,B,C",
+                "A,B,C", result.getResource(0).getContent().toString());
     }
 }

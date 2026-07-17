@@ -23,7 +23,11 @@ package org.exist.xquery.modules.httpclient;
 
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.httpclient.config.RequestOptions;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
 import org.exist.xquery.modules.httpclient.config.ResponseOptions;
@@ -31,8 +35,12 @@ import org.exist.xquery.modules.httpclient.config.UserCredentials;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.io.StringWriter;
 import java.net.URI;
@@ -74,6 +82,8 @@ public class RequestBuilder {
     private final List<String[]> headers = new ArrayList<>();
     private String bodyMediaType;
     private String bodyContent;
+    private String bodySrc;
+    private byte[] bodyResourceBytes;
     private String multipartMediaType;
     private final List<BodyPart> multipartBodies = new ArrayList<>();
 
@@ -103,7 +113,7 @@ public class RequestBuilder {
         return this;
     }
 
-    private void parseChildren(final Element reqElem) {
+    private void parseChildren(final Element reqElem) throws XPathException {
         final NodeList children = reqElem.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
@@ -114,14 +124,100 @@ public class RequestBuilder {
             if ("header".equals(localName)) {
                 addHeader((Element) child);
             } else if ("body".equals(localName)) {
-                final Element bodyElem = (Element) child;
-                bodyMediaType = bodyElem.getAttribute("media-type");
-                bodyContent = getBodyContent(bodyElem);
+                parseBody((Element) child);
             } else if ("multipart".equals(localName)) {
                 final Element multipartElem = (Element) child;
                 multipartMediaType = getAttr(multipartElem, "media-type");
                 parseMultipart(multipartElem);
             }
+        }
+    }
+
+    /**
+     * Parses an {@code http:body} element. When a {@code @src} attribute is present the body content
+     * is the linked resource (resolved later in {@link #resolveBodySource(XQueryContext)}); per the
+     * EXPath HTTP Client spec (3.1) the body must then have no content and no attribute other than
+     * {@code media-type}, which is required -- otherwise {@code err:HC004}.
+     */
+    private void parseBody(final Element bodyElem) throws XPathException {
+        bodyMediaType = bodyElem.getAttribute("media-type");
+        bodySrc = getAttr(bodyElem, "src");
+        if (bodySrc == null) {
+            // Body content is the text/XML content of the body element
+            bodyContent = getBodyContent(bodyElem);
+            return;
+        }
+        if (hasNonWhitespaceContent(bodyElem)) {
+            throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC004,
+                    "http:body with a src attribute must not also contain body content");
+        }
+        if (hasDisallowedSrcAttribute(bodyElem)) {
+            throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC004,
+                    "http:body with a src attribute may only carry the media-type attribute");
+        }
+        // media-type is mandatory on http:body (HC005, a request-validity error -- HC004 is reserved
+        // for the src/content conflict above). Matches the EXPath reference behavior (BaseX).
+        if (bodyMediaType.isEmpty()) {
+            throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
+                    "http:body with a src attribute requires the media-type attribute");
+        }
+    }
+
+    private static boolean hasNonWhitespaceContent(final Element bodyElem) {
+        final NodeList children = bodyElem.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            final Node node = children.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                return true;
+            }
+            if (node.getNodeType() == Node.TEXT_NODE && node.getNodeValue() != null && !node.getNodeValue().isBlank()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasDisallowedSrcAttribute(final Element bodyElem) {
+        final NamedNodeMap attrs = bodyElem.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            final Node attr = attrs.item(i);
+            // ignore namespace declarations
+            if ("xmlns".equals(attr.getPrefix()) || "xmlns".equals(attr.getNodeName())) {
+                continue;
+            }
+            final String name = attr.getLocalName() != null ? attr.getLocalName() : attr.getNodeName();
+            if (!"media-type".equals(name) && !"src".equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolves an {@code http:body/@src} resource to the bytes used as the request body. {@code @src}
+     * is a URI reference resolved like {@code fn:doc}: a database path ({@code /db/...} or
+     * {@code xmldb:}), a {@code file:} URI, or an {@code http:}/classpath location. No-op when there is
+     * no {@code @src}.
+     *
+     * @param context the query context (supplies the broker used to read the resource)
+     * @throws XPathException err:HC005 if the resource cannot be resolved or read
+     */
+    public void resolveBodySource(final XQueryContext context) throws XPathException {
+        if (bodySrc == null) {
+            return;
+        }
+        try {
+            final Source source = SourceFactory.getSource(context.getBroker(), null, bodySrc, false);
+            if (source == null) {
+                throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
+                        "Could not resolve http:body/@src: " + bodySrc);
+            }
+            try (final InputStream is = source.getInputStream()) {
+                bodyResourceBytes = is.readAllBytes();
+            }
+        } catch (final IOException | PermissionDeniedException e) {
+            throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
+                    "Failed to read http:body/@src '" + bodySrc + "': " + e.getMessage(), e);
         }
     }
 
@@ -233,11 +329,25 @@ public class RequestBuilder {
     private void applyBody(final HttpRequest.Builder builder, final String upperMethod, final boolean isMultipart) {
         if (isMultipart) {
             applyMultipartBody(builder, upperMethod);
+        } else if (bodyResourceBytes != null) {
+            applyResourceBody(builder, upperMethod);
         } else if (bodyContent != null && !bodyContent.isEmpty()) {
             applySingleBody(builder, upperMethod);
         } else {
             builder.method(upperMethod, HttpRequest.BodyPublishers.noBody());
         }
+    }
+
+    /**
+     * Body sourced from {@code http:body/@src} (resolved by {@link #resolveBodySource(XQueryContext)}):
+     * the linked resource's raw bytes are sent verbatim, with {@code @media-type} as the Content-Type
+     * (required by HC004, so it is always present here) unless a Content-Type header was set explicitly.
+     */
+    private void applyResourceBody(final HttpRequest.Builder builder, final String upperMethod) {
+        if (!bodyMediaType.isEmpty() && headers.stream().noneMatch(h -> "Content-Type".equalsIgnoreCase(h[0]))) {
+            builder.header("Content-Type", bodyMediaType);
+        }
+        builder.method(upperMethod, HttpRequest.BodyPublishers.ofByteArray(bodyResourceBytes));
     }
 
     /**
