@@ -50,16 +50,17 @@ import org.xmldb.api.modules.BinaryResource;
 public class GetUploadedFileHeadersTest extends RESTTest {
 
     private static final String XQUERY =
-            "xquery version \"3.1\";\n"
-          + "let $file-headers := request:get-uploaded-file-headers(\"fileUpload\")\n"
-          + "let $field-headers := request:get-uploaded-file-headers(\"param1\")\n"
-          + "return string-join((\n"
-          + "  \"file-count=\" || count($file-headers),\n"
-          + "  \"field-count=\" || count($field-headers),\n"
-          + "  for $m in $file-headers\n"
-          + "    for $k in map:keys($m)\n"
-          + "    return \"header:\" || $k || \"=\" || $m($k)\n"
-          + "), \"|\")";
+            """
+            xquery version "3.1";
+            let $file-headers := request:get-uploaded-file-headers("fileUpload")
+            let $field-headers := request:get-uploaded-file-headers("param1")
+            return string-join((
+              "file-count=" || count($file-headers),
+              "field-count=" || count($field-headers),
+              for $m in $file-headers
+                for $k in map:keys($m)
+                return "header:" || $k || "=" || $m($k)
+            ), "|")""";
     private static final String XQUERY_FILENAME = "test-get-uploaded-file-headers.xql";
 
     private static final String TEST_FILE_NAME = "helloworld.txt";
