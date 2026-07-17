@@ -365,10 +365,11 @@ public class XQuery {
 
             // a caller which may execute but not read the query must not learn anything about its
             // source from a failure. Recomputed here on every execution, as the compiled query is
-            // pooled and shared between users.
+            // pooled and shared between users. Fail closed: an unknown subject is treated as
+            // unable to read.
             final Subject currentSubject = broker.getCurrentSubject();
-            final boolean callerCanRead = currentSubject == null
-                    || dbSource.getPermissions().validate(currentSubject, Permission.READ);
+            final boolean callerCanRead = currentSubject != null
+                    && dbSource.getPermissions().validate(currentSubject, Permission.READ);
             expression.getContext().setErrorDisclosure(callerCanRead ? ErrorDisclosure.FULL : ErrorDisclosure.GENERIC);
         }
 

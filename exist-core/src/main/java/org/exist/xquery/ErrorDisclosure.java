@@ -76,10 +76,12 @@ public enum ErrorDisclosure {
      * @return the level which may be disclosed to that subject
      */
     public static ErrorDisclosure of(@Nullable final Source source, @Nullable final Subject subject) {
-        if (!(source instanceof DBSource dbSource) || subject == null) {
+        if (!(source instanceof DBSource dbSource)) {
+            // not a stored query, so its source is not confidential from the caller
             return FULL;
         }
-        return dbSource.getPermissions().validate(subject, Permission.READ) ? FULL : GENERIC;
+        // fail closed: a stored query whose reader we cannot determine is treated as unreadable
+        return subject != null && dbSource.getPermissions().validate(subject, Permission.READ) ? FULL : GENERIC;
     }
 
     /**

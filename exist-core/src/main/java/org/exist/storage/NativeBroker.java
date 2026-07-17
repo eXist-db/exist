@@ -2559,7 +2559,10 @@ public class NativeBroker implements DBBroker {
                     return null;
                 }
 
-                final boolean callerCanRead = lockedDocument.getDocument().getPermissions().validate(getCurrentSubject(), Permission.READ);
+                // fail closed: an unknown subject is treated as unable to read the source
+                final Subject currentSubject = getCurrentSubject();
+                final boolean callerCanRead = currentSubject != null
+                        && lockedDocument.getDocument().getPermissions().validate(currentSubject, Permission.READ);
                 return new ExecutableResource(lockedDocument, callerCanRead);
             } catch (final LockException e) {
                 throw new PermissionDeniedException(e);
