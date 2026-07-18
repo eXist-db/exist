@@ -115,6 +115,12 @@ public class SendRequestFunctionTest {
         });
 
         // HTML endpoint
+        // Non-well-formed HTML (unclosed <p>, void <br>, unclosed <li>) — not valid XML
+        httpServer.createContext("/malformed-html", exchange -> {
+            sendResponse(exchange, 200, "text/html",
+                    "<html><body><p>Hello<br>World<ul><li>a<li>b</ul></body></html>");
+        });
+
         httpServer.createContext("/html", exchange -> {
             sendResponse(exchange, 200, "text/html",
                     "<html><head><title>Test</title></head><body><p>Hello</p></body></html>");
@@ -710,6 +716,22 @@ public class SendRequestFunctionTest {
                 ")\n" +
                 "return $response[2] instance of document-node()");
         assertEquals("text/html response should be parsed as document",
+                "true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * A non-well-formed text/html response is parsed to a document node via eXist's configured
+     * HTML-to-XML parser (NekoHTML), not returned as a raw string.
+     */
+    @Test
+    public void malformedHtmlResponseIsParsedToDocument() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
+                let $doc := http:send-request(
+                  <http:request method='GET' href='%s/malformed-html'/>)[2]
+                return $doc instance of document-node()
+                  and exists($doc//*[local-name() = 'body'])
+                  and count($doc//*[local-name() = 'li']) = 2""".formatted(baseUrl()));
+        assertEquals("non-well-formed text/html should be parsed to a navigable document",
                 "true", result.getResource(0).getContent().toString());
     }
 

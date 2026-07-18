@@ -72,6 +72,12 @@
             <artifactId>log4j-api</artifactId>
         </dependency>
 
+        <!-- used by ResponseHandler via HtmlToXmlParser (Either) -->
+        <dependency>
+            <groupId>com.evolvedbinary.j8fu</groupId>
+            <artifactId>j8fu</artifactId>
+        </dependency>
+
         <!-- test dependencies -->
         <dependency>
             <groupId>org.exist-db</groupId>

@@ -24,7 +24,10 @@ package org.exist.xquery.modules.httpclient;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.Configuration;
+import org.exist.util.HtmlToXmlParser;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -49,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Converts an {@link HttpResponse} into the EXPath HTTP Client XDM return sequence.
@@ -225,14 +229,43 @@ public class ResponseHandler {
 
     private static Item parseHtml(final byte[] bodyBytes, final String contentType,
                                    final BasicFunction callerFunc) throws XPathException {
-        // Try parsing as XML first (XHTML), fall back to string if it fails
+        // Well-formed XHTML parses directly as XML.
         try {
             return parseXml(bodyBytes, callerFunc);
-        } catch (XPathException e) {
-            // HTML that isn't well-formed XML — return as string
+        } catch (final XPathException xmlError) {
+            // Otherwise use eXist's configured HTML-to-XML parser (NekoHTML) to turn tag-soup HTML
+            // into a document node, the same parser util:parse-html uses. If no parser is configured
+            // or it cannot parse the input, degrade to returning the body as a string (the prior
+            // behavior) rather than failing.
+            final Item parsed = parseHtmlToDocument(bodyBytes, callerFunc);
+            if (parsed != null) {
+                return parsed;
+            }
             final String charset = ContentTypeHelper.extractCharset(contentType);
-            return new StringValue(callerFunc,
-                    new String(bodyBytes, Charset.forName(charset)));
+            return new StringValue(callerFunc, new String(bodyBytes, Charset.forName(charset)));
+        }
+    }
+
+    /**
+     * Parses HTML to a document node using eXist's configured HTML-to-XML parser, or returns
+     * {@code null} if no parser is configured or the input cannot be parsed (so the caller can
+     * degrade to a string).
+     */
+    private static Item parseHtmlToDocument(final byte[] bodyBytes, final BasicFunction callerFunc) {
+        try {
+            final Configuration config = callerFunc.getContext().getBroker().getConfiguration();
+            final Optional<Either<Throwable, XMLReader>> maybeReader = HtmlToXmlParser.getHtmlToXmlParser(config);
+            if (maybeReader.isEmpty() || maybeReader.get().isLeft()) {
+                return null;
+            }
+            final XMLReader reader = maybeReader.get().right().get();
+            final SAXAdapter adapter = new SAXAdapter(callerFunc);
+            reader.setContentHandler(adapter);
+            reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
+            reader.parse(new InputSource(new ByteArrayInputStream(bodyBytes)));
+            return adapter.getDocument();
+        } catch (final Exception e) {
+            return null;
         }
     }
 

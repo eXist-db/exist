@@ -49,4 +49,15 @@
         </builtin-modules>
     </xquery>
 
+    <!-- HTML-to-XML parser, so http:send-request can parse text/html responses to a document
+         (NekoHTML), matching the default eXist configuration. -->
+    <parser>
+        <html-to-xml class="org.codelibs.nekohtml.parsers.SAXParser">
+            <properties>
+                <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
+                <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>
+            </properties>
+        </html-to-xml>
+    </parser>
+
 </exist>
