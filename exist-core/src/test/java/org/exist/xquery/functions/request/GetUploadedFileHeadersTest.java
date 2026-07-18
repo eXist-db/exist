@@ -46,25 +46,31 @@ import org.xmldb.api.modules.BinaryResource;
 
 /**
  * Tests request:get-uploaded-file-headers() — the file part headers of a multipart upload.
+ *
+ * <p>The stored query inspects the upload parameter named by the {@code inspect} URL query
+ * parameter (defaulting to {@code fileUpload}) and reports, for that name: the number of
+ * uploaded files, the file names (from request:get-uploaded-file-name, to check positional
+ * alignment), and each file's Content-Type / Content-Disposition (looked up case-insensitively,
+ * since header-name casing is the servlet container's to decide).</p>
  */
 public class GetUploadedFileHeadersTest extends RESTTest {
 
     private static final String XQUERY =
             """
             xquery version "3.1";
-            let $file-headers := request:get-uploaded-file-headers("fileUpload")
-            let $field-headers := request:get-uploaded-file-headers("param1")
+            let $name := request:get-parameter("inspect", "fileUpload")
+            let $headers := request:get-uploaded-file-headers($name)
+            let $names := request:get-uploaded-file-name($name)
             return string-join((
-              "file-count=" || count($file-headers),
-              "field-count=" || count($field-headers),
-              for $m in $file-headers
-                for $k in map:keys($m)
-                return "header:" || $k || "=" || $m($k)
+              "count=" || count($headers),
+              "names=[" || string-join($names, ",") || "]",
+              for $i in 1 to count($headers)
+                let $m := $headers[$i]
+                let $ct := $m(map:keys($m)[lower-case(.) = "content-type"])
+                let $cd := $m(map:keys($m)[lower-case(.) = "content-disposition"])
+                return "file" || $i || ":ct=" || ($ct, "")[1] || ":cd=" || ($cd, "")[1]
             ), "|")""";
     private static final String XQUERY_FILENAME = "test-get-uploaded-file-headers.xql";
-
-    private static final String TEST_FILE_NAME = "helloworld.txt";
-    private static final String TEST_FILE_CONTENT = "hello world";
 
     private static Collection root;
 
@@ -86,32 +92,79 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @Test
-    public void fileHeadersAreExposedAndFieldsHaveNone() throws IOException {
-        final MultipartBodyPublisher multipart = MultipartBodyPublisher.newBuilder()
+    public void singleFileExposesItsHeaders() throws IOException {
+        final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
                 .textPart("param1", "value1")
-                .formPart("fileUpload", TEST_FILE_NAME,
-                        MoreBodyPublishers.ofMediaType(
-                                HttpRequest.BodyPublishers.ofByteArray(TEST_FILE_CONTENT.getBytes(UTF_8)),
-                                MediaType.TEXT_PLAIN))
+                .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
                 .build();
 
-        final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
-                .header("Content-Type", multipart.mediaType().toString())
-                .POST(multipart)
+        final String result = post(body, "fileUpload");
+        assertTrue("one header map for the single uploaded file: " + result, result.contains("count=1"));
+        assertTrue("file names aligned: " + result, result.contains("names=[helloworld.txt]"));
+        assertTrue("Content-Type exposed: " + result, result.contains("file1:ct=text/plain:"));
+        assertTrue("Content-Disposition exposed with filename: " + result, result.contains("filename=\"helloworld.txt\""));
+    }
+
+    @Test
+    public void plainFormFieldHasNoFileHeaders() throws IOException {
+        final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
+                .textPart("param1", "value1")
+                .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
                 .build();
 
-        final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, post));
+        final String result = post(body, "param1");
+        assertTrue("a plain form field is not a file part, so no header maps: " + result, result.contains("count=0"));
+    }
+
+    @Test
+    public void multipleFilesEachHaveHeadersPositionallyAligned() throws IOException {
+        final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
+                .formPart("fileUpload", "first.xml", filePart("<a/>", MediaType.APPLICATION_XML))
+                .formPart("fileUpload", "second.json", filePart("{}", MediaType.APPLICATION_JSON))
+                .build();
+
+        final String result = post(body, "fileUpload");
+        assertTrue("one header map per uploaded file: " + result, result.contains("count=2"));
+        assertTrue("both file names present and ordered: " + result, result.contains("names=[first.xml,second.json]"));
+        // header map i aligns with file name i
+        assertTrue("first file's headers align with first.xml: " + result,
+                result.contains("file1:ct=application/xml:") && result.contains("filename=\"first.xml\""));
+        assertTrue("second file's headers align with second.json: " + result,
+                result.contains("file2:ct=application/json:") && result.contains("filename=\"second.json\""));
+    }
+
+    @Test
+    public void nonExistentParameterReturnsEmpty() throws IOException {
+        final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
+                .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
+                .build();
+
+        final String result = post(body, "doesNotExist");
+        assertTrue("an unknown parameter yields the empty sequence: " + result, result.contains("count=0"));
+    }
+
+    @Test
+    public void nonMultipartRequestReturnsEmpty() throws IOException {
+        // A plain GET is not a multipart request, so request:get-uploaded-file-headers() must be empty.
+        final HttpRequest get = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + "?inspect=fileUpload"))
+                .GET()
+                .build();
+        final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, get));
         assertEquals(200, result.statusCode());
-        final String body = result.body();
+        assertTrue("a non-multipart request yields the empty sequence: " + result.body(), result.body().contains("count=0"));
+    }
 
-        // one map for the single uploaded file, none for the plain form field
-        assertTrue("expected one file header map: " + body, body.contains("file-count=1"));
-        assertTrue("plain form field must not report file headers: " + body, body.contains("field-count=0"));
-        // the file part's own Content-Type is exposed
-        assertTrue("file part Content-Type should be exposed: " + body,
-                body.toLowerCase().contains("header:content-type=text/plain"));
-        // the Content-Disposition (carrying the filename) is exposed
-        assertTrue("file part Content-Disposition should be exposed: " + body,
-                body.toLowerCase().contains("header:content-disposition=") && body.contains(TEST_FILE_NAME));
+    private static HttpRequest.BodyPublisher filePart(final String content, final MediaType mediaType) {
+        return MoreBodyPublishers.ofMediaType(HttpRequest.BodyPublishers.ofByteArray(content.getBytes(UTF_8)), mediaType);
+    }
+
+    private String post(final MultipartBodyPublisher body, final String inspect) throws IOException {
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + "?inspect=" + inspect))
+                .header("Content-Type", body.mediaType().toString())
+                .POST(body)
+                .build();
+        final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, request));
+        assertEquals(200, result.statusCode());
+        return result.body();
     }
 }
