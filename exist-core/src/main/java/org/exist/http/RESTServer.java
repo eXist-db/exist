@@ -1588,8 +1588,12 @@ public class RESTServer {
                 return null;
             }
 
-            // only a stored query may be reached without READ; anything else is a data read
-            if (!MimeType.XQUERY_TYPE.getName().equals(executable.document().getDocument().getMimeType())) {
+            // only a stored XQuery may be reached without READ; anything else is a data read. Require
+            // the binary resource type as well as the mime type, so an XML resource merely labelled
+            // application/xquery is not admitted (it would fail the BinaryDocument cast downstream)
+            final DocumentImpl document = executable.document().getDocument();
+            if (document.getResourceType() != DocumentImpl.BINARY_FILE
+                    || !MimeType.XQUERY_TYPE.getName().equals(document.getMimeType())) {
                 executable.close();
                 throw readDenied;
             }
@@ -1615,14 +1619,11 @@ public class RESTServer {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
             compiled = pool.borrowCompiledXQuery(broker, source);
 
-            XQueryContext context;
+            final boolean cached = compiled != null;
+            final XQueryContext context;
             if (compiled == null) {
-                // special header to indicate that the query is not returned from
-                // cache
-                response.setHeader("X-XQuery-Cached", "false");
                 context = new XQueryContext(broker.getBrokerPool());
             } else {
-                response.setHeader("X-XQuery-Cached", "true");
                 context = compiled.getContext();
                 context.prepareForReuse();
             }
@@ -1631,7 +1632,14 @@ public class RESTServer {
             // source from a failure. Recomputed per request from the current subject, as the compiled
             // query is pooled and shared between users, and set before the query is compiled, since a
             // compile error never reaches XQuery#execute (which computes the level for runtime errors)
-            context.setErrorDisclosure(ErrorDisclosure.of(source, broker.getCurrentSubject()));
+            final ErrorDisclosure disclosure = ErrorDisclosure.of(source, broker.getCurrentSubject());
+            context.setErrorDisclosure(disclosure);
+
+            // X-XQuery-Cached reveals whether another user recently executed this shared query; do not
+            // disclose it to a read-blind caller (plan §4.6 — suppress X-XQuery-* for GENERIC)
+            if (disclosure == ErrorDisclosure.FULL) {
+                response.setHeader("X-XQuery-Cached", Boolean.toString(cached));
+            }
 
             // TODO: don't hardcode this?
             context.setModuleLoadPath(
@@ -1676,6 +1684,15 @@ public class RESTServer {
                 // compile and runtime failures alike are filtered: a read-blind caller learns only
                 // that the execution failed, the real error is logged with a correlation id
                 throw ErrorDisclosure.disclose(context, e);
+            } catch (final BadRequestException | PermissionDeniedException | RuntimeException e) {
+                // a failure of an authorized query which is not an XPathException — serialization
+                // (BadRequestException), a runtime permission failure, or any RuntimeException — still
+                // carries source-derived detail, so branch on the disclosure level, not the Java type
+                final XPathException generic = ErrorDisclosure.discloseGeneric(context, e);
+                if (generic != null) {
+                    throw generic;
+                }
+                throw e;
             }
         } finally {
             if (compiled != null) {

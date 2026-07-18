@@ -101,7 +101,34 @@ public enum ErrorDisclosure {
         if (context == null || context.getErrorDisclosure() == FULL) {
             return original;
         }
+        return sanitize(context, original);
+    }
 
+    /**
+     * Filter an arbitrary failure of an authorized query, for the transports which catch more than
+     * {@link XPathException}.
+     *
+     * A query which was allowed to run can fail in ways that are not an {@link XPathException} — a
+     * serialization {@code BadRequestException} or {@code SAXException}, a runtime
+     * {@link org.exist.security.PermissionDeniedException}, a {@link RuntimeException} — and every one
+     * of those carries source-derived detail that must not reach a read-blind caller. The transport
+     * must branch on the disclosure level (this method), never on the Java type of the failure.
+     *
+     * @param context the context the query executed in, or null if it is unknown
+     * @param original the failure raised by the query
+     *
+     * @return the sanitized generic error to throw instead when {@link #GENERIC}, or {@code null} when
+     *     {@link #FULL}, which signals the caller to rethrow {@code original} unchanged so its own type
+     *     and HTTP status are preserved
+     */
+    public static @Nullable XPathException discloseGeneric(@Nullable final XQueryContext context, final Throwable original) {
+        if (context == null || context.getErrorDisclosure() == FULL) {
+            return null;
+        }
+        return sanitize(context, original);
+    }
+
+    private static XPathException sanitize(final XQueryContext context, final Throwable original) {
         final String correlationId = UUID.randomUUID().toString();
         LOG.warn("Read-blind query execution failed [{}] resource={} realUser={} effectiveUser={}",
                 correlationId, sourceOf(context), realUserOf(context), effectiveUserOf(context), original);

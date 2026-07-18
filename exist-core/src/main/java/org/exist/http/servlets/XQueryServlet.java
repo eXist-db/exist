@@ -39,6 +39,7 @@ import org.exist.util.MimeTable;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.xml.sax.SAXException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -534,10 +535,22 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             
             if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
                 request.setAttribute(requestAttr, resultSequence);
-                
+
             } else {
-                XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
-                serializer.serialize(resultSequence);
+                final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
+                try {
+                    // serialization runs the tail of a lazily-evaluated query, so a runtime failure can
+                    // surface here rather than in execute() above; it must be filtered just the same
+                    serializer.serialize(resultSequence);
+                } catch (final XPathException e) {
+                    throw ErrorDisclosure.disclose(context, e);
+                } catch (final SAXException e) {
+                    final XPathException generic = ErrorDisclosure.discloseGeneric(context, e);
+                    if (generic != null) {
+                        throw generic;
+                    }
+                    throw e;
+                }
             }
             
 		} catch (final PermissionDeniedException e) {

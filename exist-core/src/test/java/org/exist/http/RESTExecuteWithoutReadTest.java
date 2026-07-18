@@ -53,6 +53,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -92,8 +94,15 @@ public class RESTExecuteWithoutReadTest {
     /** rw-r--r-- — the default mode of a stored resource: readable, but NOT executable */
     private static final XmldbURI NOT_EXECUTABLE = TEST_COLLECTION.append("not-executable.xq");
 
+    /** compiles and runs, then fails when the result is serialized (a function item is not serializable) */
+    private static final XmldbURI EXEC_ONLY_SERIALIZE_FAIL = TEST_COLLECTION.append("exec-only-serialize-fail.xq");
+    private static final XmldbURI READABLE_SERIALIZE_FAIL = TEST_COLLECTION.append("readable-serialize-fail.xq");
+
     private static final String VALID_QUERY = "xquery version \"3.1\";\n<result>{ sum(1 to 3) }</result>";
     private static final String BROKEN_QUERY = "xquery version \"3.1\";\nlet $secret := 1\nreturn $secret +";
+    // returns a function item; execute() succeeds but serialization of the result fails with SENR0001,
+    // which is the path that escaped ErrorDisclosure before the fix
+    private static final String SERIALIZE_FAIL_QUERY = "xquery version \"3.1\";\nlet $secret := 1\nreturn function() { $secret }";
 
     private static String credentials;
 
@@ -119,6 +128,8 @@ public class RESTExecuteWithoutReadTest {
             storeQuery(broker, transaction, READABLE_VALID, VALID_QUERY, "rwxr-xr-x");
             storeQuery(broker, transaction, READABLE_BROKEN, BROKEN_QUERY, "rwxr-xr-x");
             storeQuery(broker, transaction, NOT_EXECUTABLE, VALID_QUERY, "rw-r--r--");
+            storeQuery(broker, transaction, EXEC_ONLY_SERIALIZE_FAIL, SERIALIZE_FAIL_QUERY, "rwx--x--x");
+            storeQuery(broker, transaction, READABLE_SERIALIZE_FAIL, SERIALIZE_FAIL_QUERY, "rwxr-xr-x");
 
             transaction.commit();
         }
@@ -155,6 +166,53 @@ public class RESTExecuteWithoutReadTest {
                 response.body.contains("XPST0003"));
         assertFalse("and is not fobbed off with the generic error: " + response.body,
                 response.body.contains("Query execution failed"));
+    }
+
+    /**
+     * A failure that surfaces while the result is being serialized — not during execute() — must be
+     * sanitized just the same. Before the fix this escaped the disclosure filter, because it is
+     * raised outside the narrow try that caught XPathException from execute().
+     */
+    @Test
+    public void executeOnlySerializationFailureIsGeneric() throws IOException {
+        final Response response = get(EXEC_ONLY_SERIALIZE_FAIL, null);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.status);
+        assertTrue("a serialization failure of an unreadable query must also be generic: " + response.body,
+                response.body.contains("Query execution failed"));
+        assertFalse("the serialization error code must not leak: " + response.body,
+                response.body.contains("SENR0001"));
+        assertNoLeak(response.body);
+    }
+
+    @Test
+    public void readableSerializationFailureShowsTheRealError() throws IOException {
+        final Response response = get(READABLE_SERIALIZE_FAIL, null);
+
+        // a readable caller keeps the original failure's status and detail — here a serialization
+        // BadRequestException, which the servlet maps to 400. Only the read-blind path is normalized
+        // to a uniform 500 + generic message (executeOnlySerializationFailureIsGeneric)
+        assertTrue("a readable caller gets a real error status, not 200: " + response.status,
+                response.status >= 400);
+        assertFalse("a caller which may read the query is not fobbed off with the generic error: " + response.body,
+                response.body.contains("Query execution failed"));
+    }
+
+    /**
+     * X-XQuery-Cached reveals whether another user recently ran the shared query, so it must not be
+     * sent to a read-blind caller (plan §4.6). A read-capable caller still gets it.
+     */
+    @Test
+    public void theCacheHeaderIsSuppressedForAReadBlindCaller() throws IOException {
+        final Response readBlind = get(EXEC_ONLY_VALID, null);
+        assertEquals(HttpStatus.OK_200, readBlind.status);
+        assertFalse("the shared-pool activity oracle must not reach a read-blind caller",
+                readBlind.headers.containsKey("X-XQuery-Cached"));
+
+        final Response readable = get(READABLE_VALID, null);
+        assertEquals(HttpStatus.OK_200, readable.status);
+        assertTrue("a read-capable caller still gets the cache header",
+                readable.headers.containsKey("X-XQuery-Cached"));
     }
 
     /**
@@ -220,13 +278,13 @@ public class RESTExecuteWithoutReadTest {
             final InputStream is = status < 400 ? connection.getInputStream() : connection.getErrorStream();
             final String body = is == null ? "" : new String(is.readAllBytes(), UTF_8);
 
-            return new Response(status, body);
+            return new Response(status, body, connection.getHeaderFields());
         } finally {
             connection.disconnect();
         }
     }
 
-    private record Response(int status, String body) {
+    private record Response(int status, String body, Map<String, List<String>> headers) {
     }
 
     private static void storeQuery(final DBBroker broker, final Txn transaction, final XmldbURI uri, final String query, final String modeStr)

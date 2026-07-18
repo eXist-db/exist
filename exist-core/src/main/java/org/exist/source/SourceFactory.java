@@ -43,6 +43,7 @@ import org.exist.storage.ExecutableResource;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
@@ -230,13 +231,15 @@ public class SourceFactory {
                     return null;
                 }
 
+                // resolve on EXECUTE only for something that is actually a stored query: a binary
+                // resource with the xquery mime type. Anything else (an XML resource, or a binary of
+                // another type merely labelled otherwise) is not an execution target, so fall through
+                // to the READ-gated path — matching RESTServer.getResourceForRequest
                 final DocumentImpl resource = executable.document().getDocument();
-                if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE
+                        && MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
                     return new DBSource(broker.getBrokerPool(), (BinaryDocument) resource, true);
                 }
-
-                // an XML resource is not a stored query: serializing it is a data read, so fall
-                // through to the READ-gated path below
             }
         }
 
