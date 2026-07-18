@@ -54,7 +54,7 @@
         <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-xqts-runner_2.13</artifactId>
-            <version>2.0.0-RC2</version>
+            <version>2.0.0-RC3</version>
             <exclusions>
                 <!-- use the exist-core version of this project instead -->
                 <exclusion>
