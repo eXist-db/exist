@@ -215,31 +215,16 @@ public class DynamicTypeCheck extends AbstractExpression {
      * The "to" column must match R exactly (the required type must be the primitive type).
      */
     static boolean isXQ4ImplicitCast(final int sourceType, final int requiredType) {
-        // xs:string → xs:anyURI
-        if (Type.subTypeOf(sourceType, Type.STRING) && requiredType == Type.ANY_URI) {
-            return true;
-        }
-        // xs:hexBinary ↔ xs:base64Binary
-        if (Type.subTypeOf(sourceType, Type.HEX_BINARY) && requiredType == Type.BASE64_BINARY) {
-            return true;
-        }
-        if (Type.subTypeOf(sourceType, Type.BASE64_BINARY) && requiredType == Type.HEX_BINARY) {
-            return true;
-        }
-        // Bidirectional numeric: xs:double → xs:decimal, xs:float → xs:decimal
-        // (Note: decimal→float, decimal→double, float→double already handled by XQ 3.1 rules)
-        if (Type.subTypeOf(sourceType, Type.DOUBLE) && requiredType == Type.DECIMAL) {
-            return true;
-        }
-        if (Type.subTypeOf(sourceType, Type.FLOAT) && requiredType == Type.DECIMAL) {
-            return true;
-        }
-        // XQ4 also allows any numeric → any other numeric
-        // "any numeric type to be implicitly converted to any other"
-        if (Type.subTypeOfUnion(sourceType, Type.NUMERIC) && Type.subTypeOfUnion(requiredType, Type.NUMERIC)) {
-            return true;
-        }
-        return false;
+        return
+                // xs:string → xs:anyURI
+                (Type.subTypeOf(sourceType, Type.STRING) && requiredType == Type.ANY_URI)
+                // xs:hexBinary ↔ xs:base64Binary
+                || (Type.subTypeOf(sourceType, Type.HEX_BINARY) && requiredType == Type.BASE64_BINARY)
+                || (Type.subTypeOf(sourceType, Type.BASE64_BINARY) && requiredType == Type.HEX_BINARY)
+                // any numeric type → any other numeric type. This subsumes the specific cases such as
+                // xs:double → xs:decimal and xs:float → xs:decimal; decimal→float, decimal→double and
+                // float→double are already permitted by the XQuery 3.1 numeric type promotion rules.
+                || (Type.subTypeOfUnion(sourceType, Type.NUMERIC) && Type.subTypeOfUnion(requiredType, Type.NUMERIC));
     }
 
     /**
@@ -255,12 +240,9 @@ public class DynamicTypeCheck extends AbstractExpression {
         }
         try {
             final int requiredPrimitive = Type.primitiveTypeOf(requiredType);
-            // Relabeling only applies when R is a derived type (not a primitive itself)
-            if (requiredPrimitive == requiredType) {
-                return false;
-            }
-            // J must be an instance of the same primitive type P
-            return Type.subTypeOf(sourceType, requiredPrimitive);
+            // Relabeling only applies when R is a derived type (not a primitive itself),
+            // and J must be an instance of the same primitive type P.
+            return requiredPrimitive != requiredType && Type.subTypeOf(sourceType, requiredPrimitive);
         } catch (final IllegalArgumentException e) {
             return false;
         }
