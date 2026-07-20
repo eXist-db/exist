@@ -34,7 +34,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ExecutableResource;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.ErrorDisclosure;
@@ -53,7 +52,7 @@ class XQueryCompiler {
 
         // a resource function module is resolved for execution, so it needs EXECUTE and not READ. This
         // lets an execute-only module register, and matches the gate XQuery.compile now applies
-        try (final ExecutableResource executable = broker.getResourceForExecution(XmldbURI.create(xqueryLocation), LockMode.READ_LOCK)) {
+        try (final ExecutableResource executable = broker.getResourceForExecution(XmldbURI.create(xqueryLocation))) {
             if (executable != null) {
                 return compile(broker, executable.document().getDocument());
             } else {

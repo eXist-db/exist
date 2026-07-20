@@ -445,15 +445,17 @@ public interface DBBroker extends AutoCloseable {
      * ({@link ExecutableResource#callerCanRead()}), which callers use to decide how much of
      * an execution failure they may disclose.
      *
+     * The document is always resolved with a read lock: execution never writes to the resource
+     * being executed, so there is no write-lock variant to choose.
+     *
      * @param docURI absolute path to the resource in the database
-     * @param lockMode the mode of the lock to acquire on the document
      *
      * @return the executable resource, or null if no document could be found at the specified
      *     location. The caller must {@link ExecutableResource#close()} it to release the lock.
      *
      * @throws PermissionDeniedException if the current subject does not have EXECUTE on the resource
      */
-    @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI, LockMode lockMode)
+    @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI)
         throws PermissionDeniedException;
 
     /**

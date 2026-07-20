@@ -1563,7 +1563,7 @@ public class RESTServer {
      * Get the document a request addresses.
      *
      * A regular resource requires READ, as it always did. A stored XQuery is additionally resolved
-     * on EXECUTE via {@link DBBroker#getResourceForExecution(XmldbURI, LockMode)}, so that a caller
+     * on EXECUTE via {@link DBBroker#getResourceForExecution(XmldbURI)}, so that a caller
      * which may run it but not read it gets to run it. Reading a query as data — the {@code ?_source}
      * view — is unaffected and still validates READ separately.
      *
@@ -1578,7 +1578,7 @@ public class RESTServer {
         } catch (final PermissionDeniedException readDenied) {
             final ExecutableResource executable;
             try {
-                executable = broker.getResourceForExecution(uri, LockMode.READ_LOCK);
+                executable = broker.getResourceForExecution(uri);
             } catch (final PermissionDeniedException executeDenied) {
                 // neither readable nor executable, so report the failure to read it
                 throw readDenied;

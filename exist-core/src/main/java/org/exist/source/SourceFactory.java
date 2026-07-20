@@ -226,7 +226,7 @@ public class SourceFactory {
     private static @Nullable Source getSource_fromDb(final DBBroker broker, final XmldbURI path, final boolean forExecution) throws PermissionDeniedException, IOException {
         if (forExecution) {
             // gate on EXECUTE, not READ: the source is compiled on the caller's behalf
-            try (final ExecutableResource executable = broker.getResourceForExecution(path, LockMode.READ_LOCK)) {
+            try (final ExecutableResource executable = broker.getResourceForExecution(path)) {
                 if (executable == null) {
                     return null;
                 }

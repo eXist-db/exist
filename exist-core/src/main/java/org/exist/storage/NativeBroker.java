@@ -2534,15 +2534,17 @@ public class NativeBroker implements DBBroker {
     }
 
     @Override
-    public @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI, final LockMode lockMode) throws PermissionDeniedException {
+    public @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI) throws PermissionDeniedException {
         if (docURI == null) {
             return null;
         }
         docURI = prepend(docURI.toCollectionPathURI());
         final XmldbURI collUri = docURI.removeLastSegment();
         final XmldbURI docUri = docURI.lastSegment();
-        final LockMode collectionLockMode = lockManager.relativeCollectionLockMode(LockMode.READ_LOCK, lockMode);
-        try (final Collection collection = openCollection(collUri, collectionLockMode)) {
+        // a document is only ever resolved for execution, never for writing, so both the collection and
+        // document locks are always read locks (relativeCollectionLockMode(READ_LOCK, READ_LOCK) can only
+        // ever answer READ_LOCK)
+        try (final Collection collection = openCollection(collUri, LockMode.READ_LOCK)) {
             if (collection == null) {
                 LOG.debug("Collection '{}' not found!", collUri);
                 return null;
@@ -2550,7 +2552,7 @@ public class NativeBroker implements DBBroker {
 
             try {
                 // gate on EXECUTE, not READ: the database reads the source on the caller's behalf
-                final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, lockMode, Permission.EXECUTE);
+                final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, LockMode.READ_LOCK, Permission.EXECUTE);
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collection.close();

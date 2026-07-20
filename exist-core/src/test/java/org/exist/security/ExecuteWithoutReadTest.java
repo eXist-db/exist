@@ -253,7 +253,7 @@ public class ExecuteWithoutReadTest {
             throws PermissionDeniedException, XPathException, IOException {
         final BrokerPool pool = broker.getBrokerPool();
 
-        try (final ExecutableResource resource = broker.getResourceForExecution(uri, LockMode.READ_LOCK)) {
+        try (final ExecutableResource resource = broker.getResourceForExecution(uri)) {
             assertNotNull("the caller holds EXECUTE, so the query must resolve", resource);
 
             final XQueryContext context = new XQueryContext(pool);

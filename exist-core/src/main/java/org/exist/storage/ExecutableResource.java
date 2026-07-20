@@ -26,7 +26,7 @@ import org.exist.security.Permission;
 
 /**
  * A resource which the current subject is allowed to EXECUTE, as resolved by
- * {@link DBBroker#getResourceForExecution(org.exist.xmldb.XmldbURI, org.exist.storage.lock.Lock.LockMode)}.
+ * {@link DBBroker#getResourceForExecution(org.exist.xmldb.XmldbURI)}.
  *
  * Holding this handle means the subject has {@link Permission#EXECUTE} on the document;
  * it does not imply {@link Permission#READ}. {@link #callerCanRead()} reports whether the

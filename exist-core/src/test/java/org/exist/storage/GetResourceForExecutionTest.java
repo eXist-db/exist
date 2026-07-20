@@ -60,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * {@link DBBroker#getResourceForExecution(XmldbURI, LockMode)} is the single boundary at which a
+ * {@link DBBroker#getResourceForExecution(XmldbURI)} is the single boundary at which a
  * stored query is authorized for execution: it gates on EXECUTE rather than READ, so that the
  * database can compile a query on behalf of a caller which may run it but not read it — as a Unix
  * kernel reads a {@code --x} binary for a process which cannot read it.
@@ -117,7 +117,7 @@ public class GetResourceForExecutionTest {
     @Test
     public void executeOnlyResourceIsResolvedAndReportsThatTheCallerCannotRead() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker();
-             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY, LockMode.READ_LOCK)) {
+             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY)) {
 
             assertNotNull("EXECUTE alone must be enough to resolve a query for execution", resource);
             assertNotNull(resource.document().getDocument());
@@ -129,7 +129,7 @@ public class GetResourceForExecutionTest {
     @Test
     public void readableResourceIsResolvedAndReportsThatTheCallerCanRead() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker();
-             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_AND_READ, LockMode.READ_LOCK)) {
+             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_AND_READ)) {
 
             assertNotNull(resource);
             assertTrue("the caller may read the source, so failures may be disclosed in full",
@@ -140,7 +140,7 @@ public class GetResourceForExecutionTest {
     @Test
     public void readWithoutExecuteIsDenied() throws EXistException, AuthenticationException {
         try (final DBBroker broker = testUserBroker()) {
-            broker.getResourceForExecution(READ_ONLY, LockMode.READ_LOCK);
+            broker.getResourceForExecution(READ_ONLY);
             fail("Execution must require EXECUTE, being able to read the query is not enough");
         } catch (final PermissionDeniedException expected) {
             // expected
@@ -150,7 +150,7 @@ public class GetResourceForExecutionTest {
     @Test
     public void missingResourceIsNotFoundRatherThanDenied() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker()) {
-            assertNull(broker.getResourceForExecution(NOT_STORED, LockMode.READ_LOCK));
+            assertNull(broker.getResourceForExecution(NOT_STORED));
         }
     }
 
@@ -158,7 +158,7 @@ public class GetResourceForExecutionTest {
     public void theDbaCanExecuteAndReadEverything() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = server.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY, LockMode.READ_LOCK)) {
+             final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY)) {
 
             assertNotNull(resource);
             assertTrue("a DBA is never read-blind", resource.callerCanRead());
