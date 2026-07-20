@@ -54,6 +54,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +85,7 @@ public class RequestBuilder {
     private String bodyContent;
     private String bodySrc;
     private byte[] bodyResourceBytes;
+    private String bodyMethod;
     private String multipartMediaType;
     private final List<BodyPart> multipartBodies = new ArrayList<>();
 
@@ -143,8 +145,12 @@ public class RequestBuilder {
         bodyMediaType = bodyElem.getAttribute("media-type");
         bodySrc = getAttr(bodyElem, "src");
         if (bodySrc == null) {
-            // Body content is the text/XML content of the body element
-            bodyContent = getBodyContent(bodyElem);
+            bodyMethod = getAttr(bodyElem, "method");
+            // For binary/base64/hex/text the body is the string value of the content (the base64/hex
+            // lexical, or the text serialization; decoded as needed in applyBody); for xml/xhtml/html
+            // (or no @method) the child elements are XML-serialized.
+            bodyContent = isRawContentMethod(bodyMethod)
+                    ? stringValue(bodyElem) : getBodyContent(bodyElem);
             return;
         }
         if (hasNonWhitespaceContent(bodyElem)) {
@@ -326,7 +332,7 @@ public class RequestBuilder {
         }
     }
 
-    private void applyBody(final HttpRequest.Builder builder, final String upperMethod, final boolean isMultipart) {
+    private void applyBody(final HttpRequest.Builder builder, final String upperMethod, final boolean isMultipart) throws XPathException {
         if (isMultipart) {
             applyMultipartBody(builder, upperMethod);
         } else if (bodyResourceBytes != null) {
@@ -348,6 +354,37 @@ public class RequestBuilder {
             builder.header("Content-Type", bodyMediaType);
         }
         builder.method(upperMethod, HttpRequest.BodyPublishers.ofByteArray(bodyResourceBytes));
+    }
+
+    /**
+     * The http:body @method values whose content is sent as raw bytes (binary/base64/hex) or as a
+     * plain string (text), rather than XML-serialized.
+     */
+    private static boolean isRawContentMethod(final String method) {
+        return switch (method) {
+            case "binary", "base64", "hex", "text" -> true;
+            case null, default -> false;
+        };
+    }
+
+    /**
+     * The string value of an element: the concatenation of all descendant text, computed explicitly
+     * because the in-memory DOM's getTextContent does not recurse into element children for a
+     * constructed http:body.
+     */
+    private static String stringValue(final Node node) {
+        final StringBuilder sb = new StringBuilder();
+        final NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            final Node child = children.item(i);
+            final short type = child.getNodeType();
+            if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE) {
+                sb.append(child.getNodeValue());
+            } else if (type == Node.ELEMENT_NODE) {
+                sb.append(stringValue(child));
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -373,17 +410,47 @@ public class RequestBuilder {
         builder.method(upperMethod, publisher);
     }
 
-    private void applySingleBody(final HttpRequest.Builder builder, final String upperMethod) {
-        final Charset charset = bodyMediaType != null
-                ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
-                : StandardCharsets.UTF_8;
-        final HttpRequest.BodyPublisher bodyPublisher =
-                HttpRequest.BodyPublishers.ofString(bodyContent, charset);
+    private void applySingleBody(final HttpRequest.Builder builder, final String upperMethod) throws XPathException {
+        final HttpRequest.BodyPublisher bodyPublisher = bodyPublisherForMethod();
         // Set Content-Type if not already set via headers
         if (bodyMediaType != null && headers.stream().noneMatch(h -> "Content-Type".equalsIgnoreCase(h[0]))) {
             builder.header("Content-Type", bodyMediaType);
         }
         builder.method(upperMethod, bodyPublisher);
+    }
+
+    /**
+     * Builds the body publisher for a single (non-multipart) body, honoring http:body/@method (EXPath
+     * HTTP Client 3.1). {@code binary}/{@code base64} decode the body's text content from base64 and
+     * {@code hex} from hexadecimal -- both sent as raw bytes; {@code text}/{@code xml}/{@code xhtml}/
+     * {@code html} (or no @method) are sent as a string in the media-type's charset (default UTF-8).
+     */
+    private HttpRequest.BodyPublisher bodyPublisherForMethod() throws XPathException {
+        return switch (bodyMethod) {
+            case "binary", "base64" -> {
+                try {
+                    yield HttpRequest.BodyPublishers.ofByteArray(Base64.getMimeDecoder().decode(bodyContent.strip()));
+                } catch (final IllegalArgumentException e) {
+                    throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
+                            "http:body with method='" + bodyMethod + "' requires base64-encoded content: " + e.getMessage());
+                }
+            }
+            case "hex" -> {
+                try {
+                    yield HttpRequest.BodyPublishers.ofByteArray(HexFormat.of().parseHex(bodyContent.strip()));
+                } catch (final IllegalArgumentException e) {
+                    throw new XPathException((org.exist.xquery.Expression) null, HttpClientModule.HC005,
+                            "http:body with method='hex' requires hexadecimal content: " + e.getMessage());
+                }
+            }
+            // text/xml/xhtml/html (or no @method): send as a string in the media-type's charset
+            case null, default -> {
+                final Charset charset = bodyMediaType != null
+                        ? Charset.forName(ContentTypeHelper.extractCharset(bodyMediaType))
+                        : StandardCharsets.UTF_8;
+                yield HttpRequest.BodyPublishers.ofString(bodyContent, charset);
+            }
+        };
     }
 
     /**
