@@ -5,7 +5,8 @@
     xmlns:cxan="http://cxan.org/ns/package"
     xmlns:dcterms="http://purl.org/dc/terms/"
     elementFormDefault="qualified"
-    targetNamespace="http://cxan.org/ns/package">
+    targetNamespace="http://cxan.org/ns/package"
+    version="1.0.0">
     
     <xs:annotation>
         <xs:documentation>A schema for the EXPath Packaging CXAN concept.</xs:documentation>

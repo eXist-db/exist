@@ -137,6 +137,9 @@
         <lucene.version>10.5.0</lucene.version>
         <nekohtml.version>2.1.3</nekohtml.version>
         <saxon.version>12.5</saxon.version>
+        <xerces.version>2.12.2</xerces.version>
+        <xpath2.version>1.2.0</xpath2.version>
+        <java-cup.version>10k</java-cup.version>
         <xmlresolver.version>6.0.23</xmlresolver.version>
         <xmlunit.version>2.12.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
@@ -227,6 +230,56 @@
                 <groupId>net.sf.saxon</groupId>
                 <artifactId>Saxon-HE</artifactId>
                 <version>${saxon.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.exist-db.thirdparty.xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${xerces.version}</version>
+                <classifier>jdk14-xml-schema-1.1</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+                <artifactId>xpath2</artifactId>
+                <version>${xpath2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>edu.princeton.cup</groupId>
+                <artifactId>java-cup</artifactId>
+                <version>${java-cup.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlresolver</groupId>
+                <artifactId>xmlresolver</artifactId>
+                <version>${xmlresolver.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlresolver</groupId>
+                <artifactId>xmlresolver</artifactId>
+                <version>${xmlresolver.version}</version>
+                <classifier>data</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -911,6 +964,28 @@
                             <groupId>net.sf.saxon</groupId>
                             <artifactId>Saxon-HE</artifactId>
                             <version>${saxon.version}</version>
+                        </dependency>
+                        <!-- XSD 1.1 validation (xs:assert) for xml:validate -->
+                        <dependency>
+                            <groupId>org.exist-db.thirdparty.xerces</groupId>
+                            <artifactId>xercesImpl</artifactId>
+                            <version>${xerces.version}</version>
+                            <classifier>jdk14-xml-schema-1.1</classifier>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+                            <artifactId>xpath2</artifactId>
+                            <version>${xpath2.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>edu.princeton.cup</groupId>
+                            <artifactId>java-cup</artifactId>
+                            <version>${java-cup.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.xmlresolver</groupId>
+                            <artifactId>xmlresolver</artifactId>
+                            <version>${xmlresolver.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>

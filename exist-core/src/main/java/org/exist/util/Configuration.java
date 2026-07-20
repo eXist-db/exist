@@ -345,6 +345,9 @@ public class Configuration implements ErrorHandler {
 
             final Document doc = adapter.getDocument();
 
+            SchemaVersion.logDocumentVersion(LOG, doc.getDocumentElement(), SchemaVersion.CONF,
+                    configFilePath.map(p -> "conf.xml (" + p + ")").orElse("conf.xml"));
+
             //indexer settings
             configureElement(doc, Indexer.CONFIGURATION_ELEMENT_NAME, element -> configureIndexer(doc, element));
             //scheduler settings

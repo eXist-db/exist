@@ -6,7 +6,8 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="1.0.0">
+           version="1.2.1">
+    <xs:include schemaLocation="schema-version-type.xsd"/>
     <xs:element name="mime-types">
         <xs:complexType>
             <xs:sequence>
@@ -17,7 +18,7 @@
                             <xs:element name="extensions">
                                 <xs:simpleType>
                                     <xs:restriction base="xs:string">
-                                        <xs:pattern value="\.[a-z0-9]+(,\.[a-z0-9]+)*"/>
+                                        <xs:pattern value="(\.[a-zA-Z0-9][a-zA-Z0-9.\-]*)+(,\.[a-zA-Z0-9][a-zA-Z0-9.\-]*)*"/>
                                     </xs:restriction>
                                 </xs:simpleType>
                             </xs:element>
@@ -55,6 +56,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <xs:attribute name="schemaVersion" type="schemaVersionType" use="optional"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

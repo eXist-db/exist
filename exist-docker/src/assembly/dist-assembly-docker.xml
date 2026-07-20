@@ -37,6 +37,7 @@
                 <include>autodeploy/**</include>
                 <include>etc/**</include>
                 <include>logs/**</include>
+                <include>schema/**</include>
                 <include>LICENSE</include>
             </includes>
         </fileSet>

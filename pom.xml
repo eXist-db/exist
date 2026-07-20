@@ -67,6 +67,99 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+
+            <!-- Canonical config templates vs native XSDs (also drives CI governance via schema/governance.xsl) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <!--
+                        Schema-version governance: compares old vs current xs:schema/@version
+                        for any native XSD/canonical-template pair touched in a diff. Reads
+                        validate-canonical-instances' validationSets below for the pairing, plus
+                        a context.xml written by .github/scripts/prepare-governance-context.sh.
+
+                        phase=none is deliberate: this must NOT run on an ordinary `mvn install`/
+                        `mvn test` (no context.xml will exist outside CI). It only runs when
+                        invoked directly: `mvn xml:transform@schema-governance`.
+                    -->
+                    <execution>
+                        <id>schema-governance</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.build.directory}/governance</dir>
+                                    <includes>
+                                        <include>context.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/schema/governance.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/governance</outputDir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                            <targetExtension>.report.xml</targetExtension>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>validate-canonical-instances</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                        <configuration>
+                            <validationSets>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/conf.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>collection.xconf.init</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/collection.xconf.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>descriptor.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/descriptor.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-jetty-config/src/main/resources/webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/controller-config.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                                <validationSet>
+                                    <dir>${project.basedir}/exist-core/src/main/resources/org/exist/util</dir>
+                                    <includes>
+                                        <include>mime-types.xml</include>
+                                    </includes>
+                                    <systemId>${project.basedir}/schema/mime-types.xsd</systemId>
+                                    <schemaLanguage>http://www.w3.org/XML/XMLSchema/v1.1</schemaLanguage>
+                                </validationSet>
+                            </validationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

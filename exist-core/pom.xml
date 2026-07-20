@@ -301,7 +301,6 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.2</version>
             <classifier>jdk14-xml-schema-1.1</classifier>
             <exclusions>
                 <exclusion> <!-- conflicts with Java 17's javax.xml module -->
@@ -348,7 +347,6 @@
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>${xmlresolver.version}</version>
             <exclusions>
                 <exclusion> <!-- conflicts with Java 17's javax.xml module -->
                     <groupId>xml-apis</groupId>
@@ -360,7 +358,6 @@
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>${xmlresolver.version}</version>
             <classifier>data</classifier>
             <scope>runtime</scope>
             <exclusions>
@@ -376,13 +373,11 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
             <artifactId>xpath2</artifactId>
-            <version>1.2.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>edu.princeton.cup</groupId>
             <artifactId>java-cup</artifactId>
-            <version>10k</version>
             <scope>runtime</scope>
         </dependency>
 
