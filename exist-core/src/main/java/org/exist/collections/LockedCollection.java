@@ -327,6 +327,11 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name, final Lock.LockMode lockMode, final int requiredMode) throws LockException, PermissionDeniedException {
+        return collection.getDocumentWithLock(broker, name, lockMode, requiredMode);
+    }
+
+    @Override
     @Deprecated
     public DocumentImpl getDocumentNoLock(final DBBroker broker, final String rawPath) throws PermissionDeniedException {
         return collection.getDocumentNoLock(broker, rawPath);

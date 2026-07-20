@@ -558,6 +558,24 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
             throws LockException, PermissionDeniedException;
 
     /**
+     * Retrieve a child resource after putting a lock on it, validating the given
+     * access mode instead of {@link Permission#READ}.
+     *
+     * With this method, access to the received document object is safe.
+     *
+     * @param broker   The database broker
+     * @param name     The name of the document (without collection path)
+     * @param lockMode The mode of the lock to acquire
+     * @param requiredMode The access mode which the current subject must hold on the
+     *     document, e.g. {@link Permission#READ} or {@link Permission#EXECUTE}
+     * @return The locked document or null if it doesn't exist
+     * @throws PermissionDeniedException if the current subject does not hold {@code requiredMode}
+     * @throws LockException if broker is locked
+     */
+    @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode, int requiredMode)
+            throws LockException, PermissionDeniedException;
+
+    /**
      * Get a child resource as identified by path. This method doesn't put
      * a lock on the document nor does it recognize locks held by other threads.
      * There's no guarantee that the document still exists when accessing it.

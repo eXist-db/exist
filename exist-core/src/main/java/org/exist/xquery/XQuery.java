@@ -197,12 +197,14 @@ public class XQuery {
      */
     private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
 
-        //check read permission
-        if (context.getSource() instanceof DBSource) {
-            ((DBSource) context.getSource()).validate(Permission.READ);
+        //check execute permission: the source is compiled on the caller's behalf, so it needs
+        //EXECUTE and not READ, exactly as a kernel reads a --x binary for a process which cannot
+        //read it. Reading a query as data still requires READ, see DBBroker#getResourceForExecution
+        if (context.getSource() instanceof DBSource dbSource) {
+            dbSource.validate(Permission.EXECUTE);
         }
-        
-        
+
+
     	//TODO: move XQueryContext.getUserFromHttpSession() here, have to check if servlet.jar is in the classpath
     	//before compiling/executing that code though to avoid a dependency on servlet.jar - reflection? - deliriumsky
     	
@@ -358,10 +360,19 @@ public class XQuery {
     public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple3<QName, List<Expression>, Optional<ErrorCodes.ErrorCode>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
-        if (expression.getContext().getSource() instanceof DBSource) {
-            ((DBSource) expression.getContext().getSource()).validate(Permission.EXECUTE);
+        if (expression.getContext().getSource() instanceof DBSource dbSource) {
+            dbSource.validate(Permission.EXECUTE);
+
+            // a caller which may execute but not read the query must not learn anything about its
+            // source from a failure. Recomputed here on every execution, as the compiled query is
+            // pooled and shared between users. Fail closed: an unknown subject is treated as
+            // unable to read.
+            final Subject currentSubject = broker.getCurrentSubject();
+            final boolean callerCanRead = currentSubject != null
+                    && dbSource.getPermissions().validate(currentSubject, Permission.READ);
+            expression.getContext().setErrorDisclosure(callerCanRead ? ErrorDisclosure.FULL : ErrorDisclosure.GENERIC);
         }
-        
+
         final long start = System.currentTimeMillis();
     	
         final XQueryContext context = expression.getContext();

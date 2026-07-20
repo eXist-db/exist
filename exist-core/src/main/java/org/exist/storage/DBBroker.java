@@ -431,6 +431,34 @@ public interface DBBroker extends AutoCloseable {
         throws PermissionDeniedException;
 
     /**
+     * Resolve a stored resource for the purpose of EXECUTING it, i.e. compiling and
+     * running it as an XQuery.
+     *
+     * Requires {@link org.exist.security.Permission#EXECUTE} on the resource, and — unlike
+     * {@link #getXMLResource(XmldbURI, LockMode)} and {@link #getResource(XmldbURI, int)} —
+     * does not require {@link org.exist.security.Permission#READ}. This mirrors Unix, where
+     * the kernel reads a {@code --x} binary on behalf of a process which cannot read it.
+     * The getters used for data access keep their READ semantics, so reading a query as data
+     * (download, {@code fn:unparsed-text}, {@code util:binary-doc}, …) still requires READ.
+     *
+     * The returned handle also reports whether the current subject may read the source
+     * ({@link ExecutableResource#callerCanRead()}), which callers use to decide how much of
+     * an execution failure they may disclose.
+     *
+     * The document is always resolved with a read lock: execution never writes to the resource
+     * being executed, so there is no write-lock variant to choose.
+     *
+     * @param docURI absolute path to the resource in the database
+     *
+     * @return the executable resource, or null if no document could be found at the specified
+     *     location. The caller must {@link ExecutableResource#close()} it to release the lock.
+     *
+     * @throws PermissionDeniedException if the current subject does not have EXECUTE on the resource
+     */
+    @Nullable ExecutableResource getResourceForExecution(XmldbURI docURI)
+        throws PermissionDeniedException;
+
+    /**
      * Get a new document id that does not yet exist within the collection.
      *
      * @param transaction the transaction

@@ -46,6 +46,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -692,6 +693,11 @@ public class MutableCollection implements Collection {
 
     @Override
     public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name, final LockMode lockMode) throws LockException, PermissionDeniedException {
+        return getDocumentWithLock(broker, name, lockMode, Permission.READ);
+    }
+
+    @Override
+    public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name, final LockMode lockMode, final int requiredMode) throws LockException, PermissionDeniedException {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
 
             // lock the document
@@ -722,9 +728,10 @@ public class MutableCollection implements Collection {
                 unlockFn.run();
                 return null;
             } else {
-                if(!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                if(!doc.getPermissions().validate(broker.getCurrentSubject(), requiredMode)) {
                     unlockFn.run();
-                    throw new PermissionDeniedException("Permission denied to read + document: " + name);
+                    throw new PermissionDeniedException("Permission denied, '" + broker.getCurrentSubject().getName()
+                            + "' does not have '" + new UnixStylePermissionAider(requiredMode) + "' access to document: " + name);
                 }
 
                 return new LockedDocument(documentLock, doc);

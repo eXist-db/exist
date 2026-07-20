@@ -30,12 +30,13 @@ import java.io.IOException;
 import java.net.URI;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ExecutableResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.ErrorDisclosure;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -48,11 +49,12 @@ class XQueryCompiler {
     public final static String XQUERY_MIME_TYPE = "application/xquery";
     
     public static CompiledXQuery compile(final DBBroker broker, final URI xqueryLocation) throws RestXqServiceCompilationException {
-        
-        try {
-            final DocumentImpl document = broker.getResource(XmldbURI.create(xqueryLocation), Permission.READ);
-            if(document != null) {
-                return compile(broker, document);
+
+        // a resource function module is resolved for execution, so it needs EXECUTE and not READ. This
+        // lets an execute-only module register, and matches the gate XQuery.compile now applies
+        try (final ExecutableResource executable = broker.getResourceForExecution(XmldbURI.create(xqueryLocation))) {
+            if (executable != null) {
+                return compile(broker, executable.document().getDocument());
             } else {
                 throw new RestXqServiceCompilationException("Invalid document location for XQuery: " + xqueryLocation.toString());
             }
@@ -73,8 +75,16 @@ class XQueryCompiler {
 
                     //set the module load path for any module imports that are relative
                     context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment());
-                    
-                    return broker.getBrokerPool().getXQueryService().compile(context, source);
+
+                    // a caller which may execute but not read the module must not learn anything about
+                    // its source from a compile failure
+                    context.setErrorDisclosure(ErrorDisclosure.of(source, broker.getCurrentSubject()));
+
+                    try {
+                        return broker.getBrokerPool().getXQueryService().compile(context, source);
+                    } catch (final XPathException xpe) {
+                        throw ErrorDisclosure.disclose(context, xpe);
+                    }
                 } else {
                     throw new RestXqServiceCompilationException("Invalid mimetype '" +  document.getMimeType() + "' for XQuery: "  + document.getURI().toString());
                 }
