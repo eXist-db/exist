@@ -138,7 +138,7 @@ public class SourceFactory {
             }
 
             if (pathUri != null) {
-                source = getSource_fromDb(broker, pathUri, forExecution);
+                source = getSourceFromDb(broker, pathUri, forExecution);
             }
         }
 
@@ -152,7 +152,7 @@ public class SourceFactory {
             } else {
                 pathUri = XmldbURI.create(contextPath).append(location);
             }
-            source = getSource_fromDb(broker, pathUri, forExecution);
+            source = getSourceFromDb(broker, pathUri, forExecution);
         }
 
         /* file:// or location without scheme (:/) is assumed to be a file */
@@ -223,7 +223,7 @@ public class SourceFactory {
      *
      * @return the source, or null if there is no such resource in the db indicated by {@code path}.
      */
-    private static @Nullable Source getSource_fromDb(final DBBroker broker, final XmldbURI path, final boolean forExecution) throws PermissionDeniedException, IOException {
+    private static @Nullable Source getSourceFromDb(final DBBroker broker, final XmldbURI path, final boolean forExecution) throws PermissionDeniedException, IOException {
         if (forExecution) {
             // gate on EXECUTE, not READ: the source is compiled on the caller's behalf
             try (final ExecutableResource executable = broker.getResourceForExecution(path)) {

@@ -1619,7 +1619,6 @@ public class RESTServer {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
             compiled = pool.borrowCompiledXQuery(broker, source);
 
-            final boolean cached = compiled != null;
             final XQueryContext context;
             if (compiled == null) {
                 context = new XQueryContext(broker.getBrokerPool());
@@ -1638,7 +1637,7 @@ public class RESTServer {
             // X-XQuery-Cached reveals whether another user recently executed this shared query; do not
             // disclose it to a read-blind caller (plan §4.6 — suppress X-XQuery-* for GENERIC)
             if (disclosure == ErrorDisclosure.FULL) {
-                response.setHeader("X-XQuery-Cached", Boolean.toString(cached));
+                response.setHeader("X-XQuery-Cached", Boolean.toString(compiled != null));
             }
 
             // TODO: don't hardcode this?
