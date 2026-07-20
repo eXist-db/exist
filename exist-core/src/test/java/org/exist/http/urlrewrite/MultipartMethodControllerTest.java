@@ -74,16 +74,16 @@ public class MultipartMethodControllerTest extends AbstractHttpTest {
             """;
 
     @Test
-    public void multipartFormDataIsParsedForPostAndPut() throws IOException {
+    public void multipartFormDataIsParsedForBodyMethods() throws IOException {
         final String coll = "multipart-method-controller";
         store(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER);
 
-        // A multipart/form-data body must be parsed identically regardless of HTTP method:
+        // A multipart/form-data body must be parsed identically for every body-carrying method:
         // both the form field ("path") and the uploaded file ("file") must be visible, and
-        // request:is-multipart-content() must report true. Prior to the fix, PUT reported
+        // request:is-multipart-content() must report true. Prior to the fix, PUT/PATCH reported
         // is-multipart-content()=false and exposed neither the file nor its part (#6580),
         // and the controller/RESTXQ path never exposed the uploaded file at all (#6578).
-        for (final String method : new String[]{"POST", "PUT"}) {
+        for (final String method : new String[]{"POST", "PUT", "PATCH"}) {
             final String body = send(coll, method);
             assertTrue(method + ": is-multipart-content() should be true: " + body,
                     body.contains("is-multipart=\"true\""));
@@ -92,6 +92,22 @@ public class MultipartMethodControllerTest extends AbstractHttpTest {
             assertTrue(method + ": uploaded file 'file' should be visible: " + body,
                     body.contains("uploaded-files=\"17410105.xml\""));
         }
+    }
+
+    @Test
+    public void multipartFormDataIsNotParsedForGet() throws IOException {
+        final String coll = "multipart-method-controller-get";
+        store(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER);
+
+        // GET is a safe method with no defined semantics for a request body (RFC 9110 §9.3.1),
+        // so a multipart/form-data body on GET must not be parsed: is-multipart-content() is false
+        // and no uploaded file is exposed to the handler. (Non-file form fields may still leak via
+        // the servlet container's parameter map — a pre-existing quirk this fix does not change.)
+        final String body = send(coll, "GET");
+        assertTrue("GET: is-multipart-content() must be false: " + body,
+                body.contains("is-multipart=\"false\""));
+        assertTrue("GET: uploaded file must not be exposed: " + body,
+                body.contains("uploaded-files=\"\""));
     }
 
     private void store(final String coll, final String name, final String mediaType, final String content) throws IOException {
