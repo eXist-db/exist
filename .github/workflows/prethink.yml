@@ -48,7 +48,7 @@ jobs:
         run: mod build .
 
       - name: Run Prethink (deterministic, no AI)
-        run: mod run . --recipe io.moderne.prethink.UpdatePrethinkContextNoAiStarter
+        run: mod run . --recipe io.moderne.prethink.UpdatePrethinkContextStarter
 
       - name: Apply changes
         run: mod git apply . --last-recipe-run
