@@ -740,6 +740,21 @@ public class MutableCollection implements Collection {
     }
 
     @Override
+    public Optional<Long> getDocumentLastModified(final XmldbURI name) throws LockException {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path);
+                final ManagedDocumentLock docLock = lockManager.acquireDocumentReadLock(getURI().append(name.lastSegment()))) {
+
+            final DocumentImpl doc = documents.get(name.lastSegmentString());
+
+            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+            collectionLock.close();
+
+            // NOTE: deliberately no permission check — see Collection#getDocumentLastModified
+            return doc == null ? Optional.empty() : Optional.of(doc.getLastModified());
+        }
+    }
+
+    @Override
     public DocumentImpl getDocumentNoLock(final DBBroker broker, final String rawPath) throws PermissionDeniedException {
         final DocumentImpl doc = documents.get(rawPath);
         if(doc != null) {

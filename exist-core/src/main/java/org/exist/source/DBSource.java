@@ -26,14 +26,12 @@ import java.io.*;
 import org.exist.EXistException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
@@ -79,23 +77,32 @@ public class DBSource extends AbstractSource {
         return lastModified;
     }
 
+    /**
+     * Whether this source is unchanged since it was read.
+     *
+     * This asks about staleness only, never about permission: the answer has to be the same for
+     * every subject, or a caller which may execute but not read the resource would judge it INVALID
+     * and evict the compiled query that the {@link org.exist.storage.XQueryPool} shares with all
+     * users. The probe therefore checks no permission on the document and obtains nothing but its
+     * timestamp; permission to execute the query, or to read an imported module, is a separate gate
+     * enforced by the caller.
+     *
+     * @return INVALID if the resource has changed or is gone, VALID otherwise
+     */
     @Override
     public Validity isValid() {
-        Validity result;
-        try (final DBBroker broker = brokerPool.getBroker();
-             final LockedDocument lockedDoc = broker.getXMLResource(doc.getURI(), LockMode.READ_LOCK)) {
-            if (lockedDoc == null) {
-                result = Validity.INVALID;
-            } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
-                result = Validity.INVALID;
-            } else {
-                result = Validity.VALID;
-            }
-        } catch (final EXistException | PermissionDeniedException pde) {
-            result = Validity.INVALID;
+        try (final DBBroker broker = brokerPool.getBroker()) {
+            return broker.getDocumentLastModified(doc.getURI())
+                    .map(docLastModified -> docLastModified > lastModified ? Validity.INVALID : Validity.VALID)
+                    .orElse(Validity.INVALID);
+        } catch (final EXistException e) {
+            return Validity.INVALID;
+        } catch (final PermissionDeniedException e) {
+            // the subject may not traverse to the resource, so it cannot observe a change. Reporting
+            // INVALID here would evict an entry that is shared with subjects which can — and access is
+            // refused by the gates around this call in any case
+            return Validity.VALID;
         }
-
-        return result;
     }
 
     @Override

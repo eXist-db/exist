@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Just a Delegate to a {@link Collection} which allows us to also hold a lock
@@ -329,6 +330,11 @@ public class LockedCollection implements Collection {
     @Override
     public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name, final Lock.LockMode lockMode, final int requiredMode) throws LockException, PermissionDeniedException {
         return collection.getDocumentWithLock(broker, name, lockMode, requiredMode);
+    }
+
+    @Override
+    public Optional<Long> getDocumentLastModified(final XmldbURI name) throws LockException {
+        return collection.getDocumentLastModified(name);
     }
 
     @Override

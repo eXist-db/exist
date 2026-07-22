@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
 import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
@@ -574,6 +575,23 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      */
     @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode, int requiredMode)
             throws LockException, PermissionDeniedException;
+
+    /**
+     * Get the last modified time of a child resource, without checking any permission on it.
+     *
+     * This is a narrow staleness probe: whether a resource has changed is not a permission
+     * question, and no handle on the document escapes — only its timestamp. It is used to decide
+     * whether a cached artefact derived from the resource (e.g. a compiled XQuery in the
+     * {@link org.exist.storage.XQueryPool}) is out of date, which must give the same answer for
+     * every subject.
+     *
+     * @param name The name of the document (without collection path)
+     *
+     * @return the last modified time of the document, or empty if there is no such document
+     *
+     * @throws LockException if the document could not be locked
+     */
+    Optional<Long> getDocumentLastModified(XmldbURI name) throws LockException;
 
     /**
      * Get a child resource as identified by path. This method doesn't put

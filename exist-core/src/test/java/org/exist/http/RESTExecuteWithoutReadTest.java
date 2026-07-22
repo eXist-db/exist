@@ -57,6 +57,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -68,6 +70,9 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -106,12 +111,16 @@ public class RESTExecuteWithoutReadTest {
     private static final XmldbURI EXEC_ONLY_SERIALIZE_FAIL = TEST_COLLECTION.append("exec-only-serialize-fail.xq");
     private static final XmldbURI READABLE_SERIALIZE_FAIL = TEST_COLLECTION.append("readable-serialize-fail.xq");
 
+    /** execute-only, and overwritten by {@link #aChangedQueryIsRecompiledForAReadBlindCallerToo()} */
+    private static final XmldbURI EXEC_ONLY_STALENESS = TEST_COLLECTION.append("exec-only-staleness.xq");
+
     /** an XQuery library module, execute-only for "other" (rwx--x--x) — NOT readable by the test user */
     private static final XmldbURI LIB_MODULE = TEST_COLLECTION.append("lib.xqm");
     /** a main query that imports {@link #LIB_MODULE}, likewise execute-only for the test user */
     private static final XmldbURI IMPORTS_LIB = TEST_COLLECTION.append("imports-lib.xq");
 
     private static final String VALID_QUERY = "xquery version \"3.1\";\n<result>{ sum(1 to 3) }</result>";
+    private static final String CHANGED_QUERY = "xquery version \"3.1\";\n<result>{ sum(1 to 4) }</result>";
     private static final String BROKEN_QUERY = "xquery version \"3.1\";\nlet $secret := 1\nreturn $secret +";
     // returns a function item; execute() succeeds but serialization of the result fails with SENR0001,
     // which is the path that escaped ErrorDisclosure before the fix
@@ -150,6 +159,7 @@ public class RESTExecuteWithoutReadTest {
             storeQuery(broker, transaction, READABLE_VALID, VALID_QUERY, "rwxr-xr-x");
             storeQuery(broker, transaction, READABLE_BROKEN, BROKEN_QUERY, "rwxr-xr-x");
             storeQuery(broker, transaction, NOT_EXECUTABLE, VALID_QUERY, "rw-r--r--");
+            storeQuery(broker, transaction, EXEC_ONLY_STALENESS, VALID_QUERY, "rwx--x--x");
             storeQuery(broker, transaction, EXEC_ONLY_SERIALIZE_FAIL, SERIALIZE_FAIL_QUERY, "rwx--x--x");
             storeQuery(broker, transaction, READABLE_SERIALIZE_FAIL, SERIALIZE_FAIL_QUERY, "rwxr-xr-x");
 
@@ -287,14 +297,15 @@ public class RESTExecuteWithoutReadTest {
      * A read-blind caller cannot run a query that {@code import module ... at}'s a module it cannot
      * READ — and this holds whether or not the shared compiled-query pool is already warm.
      *
-     * One might expect a warm pool to help: another user compiles the query, the module is linked into
-     * the pooled {@link org.exist.xquery.CompiledXQuery}, and the read-blind caller borrows it under
-     * EXECUTE without re-reading the module. It does not. {@link XQueryPool#borrowCompiledXQuery}
-     * revalidates the pooled query through {@link DBSource#isValid()}, which re-opens EACH imported
-     * module with a {@code getXMLResource(READ_LOCK)} under the CALLING subject. The read-blind caller
-     * is denied there, the entry is judged invalid and evicted, and the query is recompiled — which
-     * resolves the module on READ ({@link org.exist.source.SourceFactory#getSource}) and is denied
-     * again. So the outcome is deterministic, not cache-warmth-dependent.
+     * Running a module-importing query without READ on the module is a separate feature (see #6594,
+     * "Not in this issue"); what this test pins down is that it fails the SAME way cold and warm, and
+     * that the warm attempt leaves the pool as it found it.
+     *
+     * Cold, the compile is denied at the import gate ({@link org.exist.source.SourceFactory#getSource},
+     * READ). Warm, {@link XQueryPool#borrowCompiledXQuery} applies that very gate to the imported
+     * module sources of the pooled query, declines to serve it, puts it back, and lets the caller take
+     * the cold path — so a cache hit can never authorize what a cold compile would refuse, and the
+     * entry survives for the users which may read the module.
      */
     @Test
     public void aReadBlindCallerCannotRunAQueryImportingAnUnreadableModule() throws Exception {
@@ -307,20 +318,117 @@ public class RESTExecuteWithoutReadTest {
                 HttpStatus.INTERNAL_SERVER_ERROR_500, cold.status);
         assertTrue("cold failure is generic for a read-blind caller: " + cold.body,
                 cold.body.contains("Query execution failed"));
-        assertFalse("no result when the import failed: " + cold.body, cold.body.contains("42"));
+        assertFalse("no result when the import failed: " + cold.body, cold.body.contains("<result>42</result>"));
 
-        // WARM: the system subject has already compiled and pooled the query (module linked in), yet
-        // the read-blind caller STILL fails identically — the pool's validity check re-reads the module
-        // under the caller's READ. This is the asymmetry hypothesis being empirically refuted.
+        // WARM: a read-capable principal has compiled and pooled the query (module linked in). The
+        // read-blind caller still fails identically — and the pooled entry is untouched.
         xqPool.clear();
         primeQueryPool(IMPORTS_LIB);
+        final CompiledXQuery pooled = peekPooledQuery(IMPORTS_LIB);
+        assertNotNull("the read-capable principal left an entry in the shared pool", pooled);
+
         final Response warm = get(IMPORTS_LIB, null);
-        assertEquals("warm: pool validity re-reads the module under the caller's READ, still denied: " + warm.body,
+        assertEquals("warm: the module gate refuses what a cold compile would refuse: " + warm.body,
                 HttpStatus.INTERNAL_SERVER_ERROR_500, warm.status);
         assertTrue("warm failure is generic, exactly as cold: " + warm.body,
                 warm.body.contains("Query execution failed"));
         assertFalse("a pooled module-importing query is not reusable by a read-blind caller: " + warm.body,
-                warm.body.contains("42"));
+                warm.body.contains("<result>42</result>"));
+
+        assertSame("the refused caller must not evict the entry others can use",
+                pooled, peekPooledQuery(IMPORTS_LIB));
+    }
+
+    /**
+     * The pool is shared with every other user, so a read-blind caller must get real cache hits out of
+     * it and leave it as it found it. Before the fix each such request judged the entry INVALID — the
+     * validity probe resolved the document through the READ-gated getter under the calling subject —
+     * evicting it and forcing a recompile for everybody.
+     */
+    @Test
+    public void aReadBlindCallerReusesThePooledQueryInsteadOfEvictingIt() throws Exception {
+        final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
+        xqPool.clear();
+
+        assertEquals(HttpStatus.OK_200, get(EXEC_ONLY_VALID, null).status);
+        final CompiledXQuery pooled = peekPooledQuery(EXEC_ONLY_VALID);
+        assertNotNull("the first run leaves a compiled query in the shared pool", pooled);
+
+        for (int i = 0; i < 3; i++) {
+            final Response response = get(EXEC_ONLY_VALID, null);
+            assertEquals(HttpStatus.OK_200, response.status);
+            assertTrue(response.body.contains("<result>6</result>"));
+            assertSame("run " + (i + 1) + " must be a pool hit, not an eviction and recompile",
+                    pooled, peekPooledQuery(EXEC_ONLY_VALID));
+        }
+    }
+
+    /**
+     * A caller which may not execute the query at all is refused before the cache is touched, so the
+     * pooled entry survives its attempt untouched.
+     */
+    @Test
+    public void aCallerWithoutExecuteLeavesThePooledEntryIntact() throws Exception {
+        final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
+        xqPool.clear();
+        primeQueryPool(NOT_EXECUTABLE);
+
+        final CompiledXQuery pooled = peekPooledQuery(NOT_EXECUTABLE);
+        assertNotNull(pooled);
+
+        assertEquals(HttpStatus.FORBIDDEN_403, get(NOT_EXECUTABLE, null).status);
+
+        assertSame("a caller with no EXECUTE must not perturb shared pool state",
+                pooled, peekPooledQuery(NOT_EXECUTABLE));
+    }
+
+    /**
+     * Permission-free validity must not cost us staleness: overwriting a stored query still evicts the
+     * pooled compilation, for a read-blind caller as for any other.
+     */
+    @Test
+    public void aChangedQueryIsRecompiledForAReadBlindCallerToo() throws Exception {
+        final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
+        xqPool.clear();
+
+        assertTrue(get(EXEC_ONLY_STALENESS, null).body.contains("<result>6</result>"));
+        final CompiledXQuery pooled = peekPooledQuery(EXEC_ONLY_STALENESS);
+        assertNotNull(pooled);
+
+        overwriteQuery(EXEC_ONLY_STALENESS, CHANGED_QUERY, "rwx--x--x");
+
+        final Response afterChange = get(EXEC_ONLY_STALENESS, null);
+        assertEquals(HttpStatus.OK_200, afterChange.status);
+        assertTrue("the changed query is recompiled, not served from the pool: " + afterChange.body,
+                afterChange.body.contains("<result>10</result>"));
+        assertNotSame("the stale entry is evicted", pooled, peekPooledQuery(EXEC_ONLY_STALENESS));
+    }
+
+    /**
+     * Borrows the pooled compilation of a stored query as the system subject and immediately returns
+     * it, so that a test can identify the entry without changing what the pool holds.
+     */
+    private static @Nullable CompiledXQuery peekPooledQuery(final XmldbURI uri) throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final LockedDocument locked = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
+            final Source source = new DBSource(pool, (BinaryDocument) locked.getDocument(), true);
+            final XQueryPool xqPool = pool.getXQueryPool();
+            final CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, source);
+            if (compiled != null) {
+                xqPool.returnCompiledXQuery(source, compiled);
+            }
+            return compiled;
+        }
+    }
+
+    private static void overwriteQuery(final XmldbURI uri, final String query, final String modeStr) throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            storeQuery(broker, transaction, uri, query, modeStr);
+            transaction.commit();
+        }
     }
 
     /**
