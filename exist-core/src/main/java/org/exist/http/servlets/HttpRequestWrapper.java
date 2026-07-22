@@ -62,11 +62,11 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     private static final Logger LOG = LogManager.getLogger(HttpRequestWrapper.class);
 
-    // HTTP methods whose request may legitimately carry a multipart/form-data body. GET, HEAD and
-    // DELETE are deliberately excluded: a body on those methods has no defined semantics (RFC 9110
-    // §9.3.1), and parsing one would expose attacker-suppliable multipart content (including file
-    // uploads) to handlers not written to expect a body.
-    private static final Set<String> MULTIPART_METHODS = Set.of("POST", "PUT", "PATCH");
+    // HTTP methods whose request may legitimately carry a request body. GET, HEAD and DELETE are
+    // deliberately excluded: a body on those methods has no defined semantics (RFC 9110 §9.3.1),
+    // and parsing one would expose attacker-suppliable multipart content (including file uploads)
+    // to handlers not written to expect a body.
+    private static final Set<String> METHODS_WITH_REQUEST_BODY = Set.of("POST", "PUT", "PATCH");
 
     private static final Path TMP_DIR;
     static {
@@ -144,10 +144,10 @@ public class HttpRequestWrapper implements RequestWrapper {
         // Determine if request is a multipart. A multipart/form-data body may accompany any
         // body-carrying method (e.g. PUT and PATCH, not just POST), so recognize the whole
         // allow-list rather than POST alone — while still excluding GET/HEAD/DELETE (see
-        // MULTIPART_METHODS). See https://github.com/eXist-db/exist/issues/6580 and
+        // METHODS_WITH_REQUEST_BODY). See https://github.com/eXist-db/exist/issues/6580 and
         // https://github.com/eXist-db/exist/issues/6578
         @Nullable final String contentType = servletRequest.getContentType();
-        isMultipartContent = MULTIPART_METHODS.contains(servletRequest.getMethod().toUpperCase(Locale.ENGLISH))
+        isMultipartContent = METHODS_WITH_REQUEST_BODY.contains(servletRequest.getMethod().toUpperCase(Locale.ENGLISH))
                 && contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
 
         // Get multi-part formdata parameters when it is a mpfd request
