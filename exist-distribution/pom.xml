@@ -481,30 +481,6 @@
                 <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>delete-jetty-dest-before-rename</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>delete-mac-bundle-jetty-dest-before-rename</id>
-                        <phase>${mac.bundle.phase}</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>copy files</id>
                         <phase>package</phase>
                         <goals>
