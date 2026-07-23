@@ -86,7 +86,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         final FeatureEnabled xupdateSubmission = parseFeatureEnabled(config, "xupdate-submission", FeatureEnabled.TRUE);
 
         // Instantiate REST Server
-        srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), "yes".equalsIgnoreCase(useDynamicContentType)
+        srvREST = new RESTServer(getFormEncoding(), getContainerEncoding(), "yes".equalsIgnoreCase(useDynamicContentType)
                 || "true".equalsIgnoreCase(useDynamicContentType), isInternalOnly(), xquerySubmission, xupdateSubmission);
 
         // XML lib checks....
