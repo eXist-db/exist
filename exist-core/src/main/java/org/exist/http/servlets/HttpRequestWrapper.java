@@ -966,12 +966,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * wrapper is no longer reachable. Registered with a {@link Cleaner}; holds only the map of
      * temporary files (never the wrapper), so it does not keep the wrapper alive.
      */
-    private static final class TemporaryUploadedFilesCleaner implements Runnable {
-        private final Map<Part, Path> temporaryUploadedFiles;
-
-        private TemporaryUploadedFilesCleaner(final Map<Part, Path> temporaryUploadedFiles) {
-            this.temporaryUploadedFiles = temporaryUploadedFiles;
-        }
+    private record TemporaryUploadedFilesCleaner(Map<Part, Path> temporaryUploadedFiles) implements Runnable {
 
         @Override
         public void run() {
