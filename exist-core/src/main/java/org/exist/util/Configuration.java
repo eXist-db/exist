@@ -271,11 +271,12 @@ public class Configuration implements ErrorHandler {
                 if (is != null) {
                     LOG.info("Reading configuration from classloader");
                     configFilePath = Optional.of(Path.of(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
+                    existHome = configFilePath.map(p -> p.getParent().getParent());
                 }
             } catch (final Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
                 // file name for configFileName
-                LOG.debug(e);
+                LOG.debug("Error reading configuration from classloader: {}", e.getMessage(), e);
             }
 
             existHomeDirname = existHomeDirname.map(Path::normalize);
