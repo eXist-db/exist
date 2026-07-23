@@ -263,60 +263,62 @@ public class Configuration implements ErrorHandler {
                 configFilename = DatabaseImpl.CONF_XML;
             }
 
-            // firstly, try to read the configuration from a file within the
-            // classpath
-            try {
-                is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
-
-                if (is != null) {
-                    LOG.info("Reading configuration from classloader");
-                    configFilePath = Optional.of(Path.of(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
-                    existHome = configFilePath.map(p -> p.getParent().getParent());
-                }
-            } catch (final Exception e) {
-                // EB: ignore and go forward, e.g. in case there is an absolute
-                // file name for configFileName
-                LOG.debug("Error reading configuration from classloader: {}", e.getMessage(), e);
-            }
-
             existHomeDirname = existHomeDirname.map(Path::normalize);
 
-            // otherwise, secondly try to read configuration from file. Guess the
+            // firstly, try to read configuration from file. Guess the
             // location if necessary
-            if (is == null) {
-                existHome = existHomeDirname.map(Optional::of)
-                        .orElse(ConfigurationHelper.getExistHome(configFilename));
+            existHome = existHomeDirname.map(Optional::of)
+                    .orElse(ConfigurationHelper.getExistHome(configFilename));
 
-                if (existHome.isEmpty()) {
+            if (existHome.isEmpty()) {
 
-                    // EB: try to create existHome based on location of config file
-                    // when config file points to absolute file location
-                    final Path absoluteConfigFile = Path.of(configFilename);
+                // EB: try to create existHome based on location of config file
+                // when config file points to absolute file location
+                final Path absoluteConfigFile = Path.of(configFilename);
 
-                    if (absoluteConfigFile.isAbsolute() && Files.exists(absoluteConfigFile) && Files.isReadable(absoluteConfigFile)) {
-                        existHome = Optional.of(absoluteConfigFile.getParent());
-                        configFilename = FileUtils.fileName(absoluteConfigFile);
-                    }
+                if (absoluteConfigFile.isAbsolute() && Files.exists(absoluteConfigFile) && Files.isReadable(absoluteConfigFile)) {
+                    existHome = Optional.of(absoluteConfigFile.getParent());
+                    configFilename = FileUtils.fileName(absoluteConfigFile);
                 }
+            }
 
-                Path configFile = Path.of(configFilename);
+            Path configFile = Path.of(configFilename);
 
-                if (!configFile.isAbsolute() && existHome.isPresent()) {
+            if (!configFile.isAbsolute() && existHome.isPresent()) {
 
-                    // try the passed or constructed existHome first
-                    configFile = existHome.get().resolve(configFilename);
+                // try the passed or constructed existHome first
+                configFile = existHome.get().resolve(configFilename);
 
-                    if (!Files.exists(configFile)) {
-                        configFile = existHome.get().resolve(Main.CONFIG_DIR_NAME).resolve(configFilename);
-                    }
+                if (!Files.exists(configFile)) {
+                    configFile = existHome.get().resolve(Main.CONFIG_DIR_NAME).resolve(configFilename);
                 }
+            }
 
-                if (!Files.exists(configFile) || !Files.isReadable(configFile)) {
-                    throw new DatabaseConfigurationException("Unable to read configuration file at " + configFile);
-                }
-
+            if (Files.exists(configFile) && Files.isReadable(configFile)) {
                 configFilePath = Optional.of(configFile.toAbsolutePath());
                 is = Files.newInputStream(configFile);
+            }
+
+            // otherwise, secondly try to read the configuration from a file within the
+            // classpath
+            if (is == null) {
+                try {
+                    is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
+
+                    if (is != null) {
+                        LOG.info("Reading configuration from classloader");
+                        configFilePath = Optional.of(Path.of(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
+                        existHome = configFilePath.map(p -> p.getParent().getParent());
+                    }
+                } catch (final Exception e) {
+                    // EB: ignore and go forward, e.g. in case there is an absolute
+                    // file name for configFileName
+                    LOG.debug("Error reading configuration from classloader: {}", e.getMessage(), e);
+                }
+            }
+
+            if (is == null) {
+                throw new DatabaseConfigurationException("Unable to read configuration file at " + configFile);
             }
 
             LOG.info("Reading configuration from file {}", configFilePath.map(Path::toString).orElse("Unknown"));
