@@ -158,11 +158,14 @@ exist-indexes-jmh/
 
 `conf.xml` is generated at build time by `xml-maven-plugin` from `extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf.xml` plus the XSLT in `src/main/xslt/conf-jmh.xslt`. Mirroring the `exist-docker` pattern keeps the conf in sync with upstream rather than vendored as a literal copy.
 
+## Continuous tracking
+
+[`.github/workflows/ci-benchmarks.yml`](../.github/workflows/ci-benchmarks.yml) runs this suite weekly (and on manual dispatch) with reduced iteration counts (`-wi 2 -i 5 -f 1` — a trend signal, not a publishable number) and publishes JSON results via [`benchmark-action/github-action-benchmark`](https://github.com/benchmark-action/github-action-benchmark) to the `gh-pages` branch, under `dev/bench/indexes`. Once GitHub Pages is enabled for this repository, the dashboard is served at `https://exist-db.github.io/exist/dev/bench/indexes/`.
+
 ## Roadmap
 
 Planned follow-ups (not in this PR):
 
 - Larger corpus via on-demand XMark generation (`xmlgen -f 0.1 / 1 / 10`)
-- CI nightly job posting numbers to a tracking issue
 - `range:eq` / `range:field-eq` family extensions (`range:gt`, `range:starts-with`, etc.) if regressions turn out to be operator-specific
 - Diagnostics that explain *why* range, range-field, and lucene are immune to the bug ngram exhibits &mdash; the surface explanation ("their `getDependencies()` returns the right thing") is true but not actionable; the underlying difference would inform the GH-2204 fix design
