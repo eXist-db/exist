@@ -268,7 +268,27 @@
                             <excludes>
                                 <exclude>**/log4j2.xml</exclude>
                                 <exclude>**/conf.xml</exclude>
+                                <!--
+                                    eXist-db-authored fixture codegen stylesheets, not derived
+                                    from the original EXQuery/RESTXQ BSD-3 licensed sources
+                                -->
+                                <exclude>src/test/resources-filtered/conf-fixture.xsl</exclude>
+                                <exclude>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</exclude>
                             </excludes>
+                        </licenseSet>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+
+                                Applies to the fixture codegen stylesheets above: they are new
+                                eXist-db tooling, not modifications of Adam Retter's original
+                                BSD-3 conf.xml/controller-config.xml.
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <includes>
+                                <include>src/test/resources-filtered/conf-fixture.xsl</include>
+                                <include>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</include>
+                            </includes>
                         </licenseSet>
                     </licenseSets>
                 </configuration>
