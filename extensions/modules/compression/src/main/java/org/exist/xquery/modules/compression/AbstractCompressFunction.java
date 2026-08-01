@@ -100,10 +100,6 @@ public abstract class AbstractCompressFunction extends BasicFunction {
     private final static Logger logger = LogManager.getLogger(AbstractCompressFunction.class);
     public static final String METHOD_STORE = "store";
 
-    /** Serialization options from the optional map argument; reset on each eval and applied to XML
-     *  entries after (so overriding) the prolog {@code declare option exist:serialize}. */
-    private Properties serializationProperties = new Properties();
-
     public AbstractCompressFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -142,8 +138,9 @@ public abstract class AbstractCompressFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        // serialization options for XML entries (optional map argument); reset on each call
-        serializationProperties = parseSerializationOptions(args);
+        // serialization options for XML entries (optional map argument), threaded through the
+        // compress* calls below so that no per-evaluation state is held on this function instance
+        final Properties serializationProperties = parseSerializationOptions(args);
 
         // use a hierarchy in the tar file?
         final boolean useHierarchy = args[1].effectiveBooleanValue();
@@ -171,9 +168,9 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                     final Item item = i.nextItem();
 
                     if (item instanceof final Element element) {
-                        compressElement(os, element, useHierarchy, stripOffset);
+                        compressElement(os, element, useHierarchy, stripOffset, serializationProperties);
                     } else {
-                        compressFromUri(os, ((AnyURIValue) item).toURI(), useHierarchy, stripOffset, "", null);
+                        compressFromUri(os, ((AnyURIValue) item).toURI(), useHierarchy, stripOffset, "", null, serializationProperties);
                     }
                 }
 
@@ -190,7 +187,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         }
     }
 
-    private void compressFromUri(final OutputStream os, final URI uri, final boolean useHierarchy, final String stripOffset, final String method, final String resourceName) throws XPathException {
+    private void compressFromUri(final OutputStream os, final URI uri, final boolean useHierarchy, final String stripOffset, final String method, final String resourceName, final Properties serializationProperties) throws XPathException {
         try {
             if ("file".equals(uri.getScheme())) {
 
@@ -211,7 +208,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                 // try for a collection
                 try (final Collection collection = context.getBroker().openCollection(xmldburi, LockMode.READ_LOCK)) {
                     if (collection != null) {
-                        compressCollection(os, collection, useHierarchy, stripOffset);
+                        compressCollection(os, collection, useHierarchy, stripOffset, serializationProperties);
                         return;
                     }
                 } catch (final PermissionDeniedException | LockException | SAXException | IOException pde) {
@@ -234,7 +231,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                             throw new XPathException(this, "Invalid URI: " + uri);
                         }
 
-                        compressResource(os, doc.getDocument(), useHierarchy, stripOffset, method, resourceName);
+                        compressResource(os, doc.getDocument(), useHierarchy, stripOffset, method, resourceName, serializationProperties);
                     }
                 } catch (final PermissionDeniedException | LockException | SAXException | IOException pde) {
                     throw new XPathException(this, pde.getMessage());
@@ -303,7 +300,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
      *                     reflects the collection hierarchy
      */
     private void compressElement(final OutputStream os, final Element element, final boolean useHierarchy,
-                                 final String stripOffset) throws XPathException {
+                                 final String stripOffset, final Properties serializationProperties) throws XPathException {
 
         final String ns = element.getNamespaceURI();
         if ((ns != null && !ns.isEmpty()) || !"entry".equals(element.getNodeName())) {
@@ -321,7 +318,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         final String type = element.getAttribute("type");
 
         if ("uri".equals(type)) {
-            compressFromUri(os, URI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, element.getAttribute("method"), name);
+            compressFromUri(os, URI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, element.getAttribute("method"), name, serializationProperties);
             return;
         }
 
@@ -362,7 +359,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                         try {
                             serializer.setUser(context.getSubject());
                             serializer.setProperty("omit-xml-declaration", "no");
-                            getDynamicSerializerOptions(serializer);
+                            getDynamicSerializerOptions(serializer, serializationProperties);
                             value = serializer.serialize((NodeValue) content).getBytes();
                         } finally {
                             context.getBroker().returnSerializer(serializer);
@@ -393,7 +390,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         }
     }
 
-    private void getDynamicSerializerOptions(final Serializer serializer) throws SAXException {
+    private void getDynamicSerializerOptions(final Serializer serializer, final Properties serializationProperties) throws SAXException {
         final Option option = context.getOption(Option.SERIALIZE_QNAME);
         if (option != null) {
             final String[] params = option.tokenizeContents();
@@ -417,7 +414,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
      * @param useHierarchy Whether to use a folder hierarchy in the archive file that
      *                     reflects the collection hierarchy
      */
-    private void compressResource(final OutputStream os, final DocumentImpl doc, final boolean useHierarchy, final String stripOffset, final String method, final String name) throws IOException, SAXException {
+    private void compressResource(final OutputStream os, final DocumentImpl doc, final boolean useHierarchy, final String stripOffset, final String method, final String name, final Properties serializationProperties) throws IOException, SAXException {
         // create an entry in the Tar for the document
         final Object entry;
         if (name != null) {
@@ -437,7 +434,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
             try {
                 serializer.setUser(context.getSubject());
                 serializer.setProperty("omit-xml-declaration", "no");
-                getDynamicSerializerOptions(serializer);
+                getDynamicSerializerOptions(serializer, serializationProperties);
                 final String strDoc = serializer.serialize(doc);
                 value = strDoc.getBytes();
             } finally {
@@ -478,7 +475,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
      * @param useHierarchy Whether to use a folder hierarchy in the archive file that
      *                     reflects the collection hierarchy
      */
-    private void compressCollection(final OutputStream os, final Collection col, final boolean useHierarchy, final String stripOffset) throws IOException, SAXException, LockException, PermissionDeniedException {
+    private void compressCollection(final OutputStream os, final Collection col, final boolean useHierarchy, final String stripOffset, final Properties serializationProperties) throws IOException, SAXException, LockException, PermissionDeniedException {
         // iterate over child documents
         final DBBroker broker = context.getBroker();
         final LockManager lockManager = broker.getBrokerPool().getLockManager();
@@ -487,7 +484,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
         for (final Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext(); ) {
             final DocumentImpl childDoc = itChildDocs.next();
             try (final ManagedDocumentLock updateLock = lockManager.acquireDocumentReadLock(childDoc.getURI())) {
-                compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
+                compressResource(os, childDoc, useHierarchy, stripOffset, "", null, serializationProperties);
             }
         }
         // iterate over child collections
@@ -496,7 +493,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
             final XmldbURI childColURI = itChildCols.next();
             final Collection childCol = broker.getCollection(col.getURI().append(childColURI));
             // recurse
-            compressCollection(os, childCol, useHierarchy, stripOffset);
+            compressCollection(os, childCol, useHierarchy, stripOffset, serializationProperties);
         }
     }
 
