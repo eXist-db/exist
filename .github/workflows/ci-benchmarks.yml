@@ -1,0 +1,100 @@
+name: JMH Benchmarks
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly, Sunday 04:00 UTC - distinct from ci-container.yml (daily 06:00)
+    # and prethink.yml (Monday 06:00) so runners aren't all queued together.
+    - cron: '0 4 * * 0'
+
+permissions:
+  contents: read  # default; the benchmarks job declares write explicitly
+
+# Only one publish to gh-pages at a time; a manual dispatch overlapping the
+# scheduled run would otherwise race pushing the benchmark-data commit.
+concurrency:
+  group: jmh-benchmarks-gh-pages
+  cancel-in-progress: false
+
+env:
+  DEV_JDK: '21'
+  # Kept small enough that both benchmark suites fit in the job timeout on a
+  # shared GitHub-hosted runner; not intended to produce publishable numbers,
+  # only a consistent trend line. See exist-core-jmh/README.md and
+  # exist-indexes-jmh/README.md for slower, more precise local invocations.
+  JMH_ARGS: '-wi 2 -i 5 -f 1'
+
+jobs:
+  benchmarks:
+    name: Run JMH benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write  # github-action-benchmark pushes the data series to gh-pages
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+
+      - uses: ./.github/actions/maven-cache
+
+      - name: Build exist-core-jmh
+        run: >
+          mvn -B install -pl exist-core-jmh -am -DskipTests
+          -Ddependency-check.skip=true -Ddocker=false
+
+      - name: Run exist-core-jmh benchmarks
+        run: >
+          java -jar exist-core-jmh/target/exist-core-jmh-*-benchmarks.jar
+          -rf json -rff exist-core-jmh/target/jmh-result.json
+          ${{ env.JMH_ARGS }}
+
+      - name: Track exist-core-jmh results on gh-pages
+        if: github.repository == 'eXist-db/exist'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: 'exist-core-jmh'
+          tool: 'jmh'
+          output-file-path: exist-core-jmh/target/jmh-result.json
+          benchmark-data-dir-path: dev/bench/core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Report-only: flag regressions, never fail the run.
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+          summary-always: true
+
+      - name: Build exist-indexes-jmh
+        run: >
+          mvn -B install -pl exist-indexes-jmh -am -DskipTests
+          -Ddependency-check.skip=true -Ddocker=false
+
+      - name: Run exist-indexes-jmh benchmarks
+        run: >
+          mvn -B exec:exec -pl exist-indexes-jmh
+          -Dbenchmark.args="-rf json -rff target/jmh-result.json ${{ env.JMH_ARGS }}"
+
+      - name: Track exist-indexes-jmh results on gh-pages
+        if: github.repository == 'eXist-db/exist'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: 'exist-indexes-jmh'
+          tool: 'jmh'
+          output-file-path: exist-indexes-jmh/target/jmh-result.json
+          benchmark-data-dir-path: dev/bench/indexes
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+          summary-always: true
+
+      - name: Save Maven cache
+        if: github.event_name == 'schedule'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.m2
+          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
