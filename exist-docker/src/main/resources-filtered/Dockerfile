@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-FROM gcr.io/distroless/java21-debian13:latest
+FROM ${docker.base.image}
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
@@ -31,16 +31,18 @@ COPY logs /exist/logs
 COPY schema /exist/schema
 
 
-# Build-time metadata as defined at http://label-schema.org
-# and used by autobuilder @hooks/build
-LABEL org.label-schema.build-date=${maven.build.timestamp} \
-      org.label-schema.description="${project.description}" \
-      org.label-schema.name="existdb" \
-      org.label-schema.schema-version="1.0" \
-      org.label-schema.url="${project.url}" \
-      org.label-schema.vcs-ref=${git.commit.id.abbrev} \
-      org.label-schema.vcs-url="${project.scm.url}" \
-      org.label-schema.vendor="existdb"
+# Build-time metadata as defined by OCI
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.created="${maven.build.timestamp}" \
+      org.opencontainers.image.description="${project.description}" \
+      org.opencontainers.image.revision=${git.commit.id} \
+      org.opencontainers.image.version=${project.version} \
+      org.opencontainers.image.url="${docker.url}" \
+      org.opencontainers.image.source="${docker.source}" \
+      org.opencontainers.image.vendor="${docker.vendor}" \
+      org.opencontainers.image.licenses="${docker.licenses}" \
+      org.opencontainers.image.title="${docker.title}" \
+      org.opencontainers.image.base.name=${docker.base.image}
 
 EXPOSE 8080 8443
 
