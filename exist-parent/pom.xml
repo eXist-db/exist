@@ -142,7 +142,7 @@
         <xpath2.version>1.2.0</xpath2.version>
         <java-cup.version>10k</java-cup.version>
         <xmlresolver.version>6.0.23</xmlresolver.version>
-        <xmlunit.version>2.12.0</xmlunit.version>
+        <xmlunit.version>2.13.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>6.1.2</junit.jupiter.version>
         <easymock.version>5.6.0</easymock.version>
