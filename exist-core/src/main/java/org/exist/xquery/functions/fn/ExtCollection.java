@@ -209,11 +209,7 @@ public class ExtCollection extends BasicFunction {
      * </p>
      */
     private void getFileCollectionItems(final URI collectionUri, final String rawQueryString, final Sequence items) throws XPathException {
-        // Security: only DBA users can access file: URIs
-        if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
-            throw new XPathException(this, ErrorCodes.FODC0002,
-                    "Permission denied: only DBA users can access file: URIs in fn:collection()");
-        }
+        requireDbaAccessForFileUris();
 
         // Parse Saxon-style query parameters from the raw query string.
         // We use rawQueryString (passed separately from the URI) because the query
@@ -229,6 +225,38 @@ public class ExtCollection extends BasicFunction {
             return;
         }
 
+        final List<Path> candidates = collectCandidateFiles(Paths.get(collectionUri.getPath()), params);
+
+        // Apply stable ordering (alphabetical by filename) when stable=yes (the default)
+        if (params.isStable()) {
+            candidates.sort(Comparator.comparing(p -> p.getFileName().toString()));
+        }
+
+        addParsedDocuments(candidates, items);
+    }
+
+    /**
+     * Direct file system access through {@code file:} URIs is restricted to DBA users.
+     *
+     * @throws XPathException FODC0002 if the calling user does not have the DBA role
+     */
+    private void requireDbaAccessForFileUris() throws XPathException {
+        if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Permission denied: only DBA users can access file: URIs in fn:collection()");
+        }
+    }
+
+    /**
+     * Lists the files in {@code dir} that pass the {@code select} glob and the optional
+     * {@code match} regex, in directory order.
+     *
+     * @param dir    the directory to scan
+     * @param params the parsed query string parameters
+     * @return the matching files, in the order the directory stream yielded them
+     * @throws XPathException FODC0002 if the directory does not exist or cannot be read
+     */
+    private List<Path> collectCandidateFiles(final Path dir, final CollectionQueryParameters params) throws XPathException {
         // Default glob pattern is *.xml (XML files only). User-supplied select overrides.
         final String globPattern = params.getSelect() != null ? params.getSelect() : "*.xml";
 
@@ -237,35 +265,45 @@ public class ExtCollection extends BasicFunction {
                 ? Pattern.compile(params.getMatch())
                 : null;
 
-        final Path dir = Paths.get(collectionUri.getPath());
         if (!Files.isDirectory(dir)) {
             throw new XPathException(this, ErrorCodes.FODC0002,
                     "Directory does not exist: " + dir);
         }
 
-        // Collect candidate files matching all filters
         final List<Path> candidates = new ArrayList<>();
         try (final DirectoryStream<Path> stream = Files.newDirectoryStream(dir, globPattern)) {
             for (final Path file : stream) {
-                if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
-                    continue;
+                if (isSelectableFile(file, matchPattern)) {
+                    candidates.add(file);
                 }
-                if (matchPattern != null && !matchPattern.matcher(file.getFileName().toString()).find()) {
-                    continue;
-                }
-                candidates.add(file);
             }
         } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.FODC0002,
                     "Error reading directory: " + e.getMessage());
         }
+        return candidates;
+    }
 
-        // Apply stable ordering (alphabetical by filename) when stable=yes (the default)
-        if (params.isStable()) {
-            candidates.sort(Comparator.comparing(p -> p.getFileName().toString()));
+    /**
+     * @param file         a candidate yielded by the directory stream
+     * @param matchPattern the compiled {@code match} regex, or null when none was supplied
+     * @return true if the file is a readable regular file whose name satisfies {@code matchPattern}
+     */
+    private boolean isSelectableFile(final Path file, final Pattern matchPattern) {
+        if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
+            return false;
         }
+        return matchPattern == null || matchPattern.matcher(file.getFileName().toString()).find();
+    }
 
-        // Parse each candidate as XML and add to items; skip non-parseable files
+    /**
+     * Parses each candidate as XML and appends it to {@code items}. Files that are not
+     * well-formed XML are skipped rather than failing the whole collection.
+     *
+     * @param candidates the files to parse
+     * @param items      the sequence to append the parsed in-memory documents to
+     */
+    private void addParsedDocuments(final List<Path> candidates, final Sequence items) {
         for (final Path file : candidates) {
             try (final InputStream is = Files.newInputStream(file)) {
                 final org.exist.dom.memtree.DocumentImpl doc =

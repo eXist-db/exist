@@ -83,85 +83,109 @@ public class FunUriCollection extends BasicFunction {
     }
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence result;
         if (args.length == 0 || args[0].isEmpty() || args[0].toString().isEmpty()) {
-            result = new AnyURIValue(XmldbURI.ROOT_COLLECTION);
-        } else {
-            final List<String> resultUris = new ArrayList<>();
-
-            final String uriWithQueryString = args[0].toString();
-            final int queryStringIndex = uriWithQueryString.indexOf('?');
-            final String uriWithoutQueryString = (queryStringIndex >= 0) ? uriWithQueryString.substring(0, queryStringIndex) : uriWithQueryString;
-            final String uriWithoutStableQueryString = CollectionQueryParameters.stripStableParameter(uriWithQueryString);
-
-            final XmldbURI uri;
-            try {
-                uri = XmldbURI.xmldbUriFor(uriWithoutQueryString);
-            } catch (URISyntaxException e) {
-                throw new XPathException(this, ErrorCodes.FODC0004, "\"%s\" is not a valid URI.".formatted(args[0].toString()));
-            }
-
-            final CollectionQueryParameters params = CollectionQueryParameters.parse(
-                    uriWithQueryString, CollectionQueryParameters.URI_COLLECTION_KEYS, this);
-
-            if (params.isStable() && context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
-                result = context.getCachedUriCollectionResults().get(uriWithoutStableQueryString);
-            } else {
-                final boolean binaryUrisIncluded = params.includesBinaryDocuments();
-                final boolean subcollectionUrisIncluded = params.includesSubcollections();
-                final boolean xmlUrisIncluded = params.includesXmlDocuments();
-
-                try (final Collection collection = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
-                    if (collection != null) {
-                        if (binaryUrisIncluded || xmlUrisIncluded) {
-                            final Iterator<DocumentImpl> documentIterator = collection.iterator(context.getBroker());
-                            while (documentIterator.hasNext()) {
-                                final DocumentImpl document = documentIterator.next();
-                                if ((xmlUrisIncluded && !(document instanceof BinaryDocument)) ||
-                                        (binaryUrisIncluded && document instanceof BinaryDocument)) {
-                                    resultUris.add(document.getURI().toString());
-                                }
-                            }
-                        }
-
-                        if (subcollectionUrisIncluded) {
-                            final Iterator<XmldbURI> collectionsIterator = collection.collectionIterator(context.getBroker());
-                            while (collectionsIterator.hasNext()) {
-                                resultUris.add(uri.append(collectionsIterator.next()).toString());
-                            }
-                        }
-                    } else {
-                        throw new XPathException(this, ErrorCodes.FODC0002, "Collection \"%s\" not found.".formatted(uri));
-                    }
-                } catch (final LockException | PermissionDeniedException e) {
-                    throw new XPathException(this, ErrorCodes.FODC0002, e);
-                }
-
-                if (params.getMatch() != null && !params.getMatch().isEmpty()) {
-                    final Pattern pattern = PatternFactory.getInstance().getPattern(params.getMatch());
-                    final List<String> matchedResultUris = resultUris.stream().filter(resultUri -> pattern.matcher(resultUri).find()).collect(Collectors.toList());
-                    if (matchedResultUris.isEmpty()) {
-                        result = Sequence.EMPTY_SEQUENCE;
-                    } else {
-                        result = new ValueSequence();
-                        for (String resultUri : matchedResultUris) {
-                            result.add(new AnyURIValue(resultUri));
-                        }
-                    }
-                } else {
-                    result = new ValueSequence();
-                    for (String resultUri : resultUris) {
-                        result.add(new AnyURIValue(resultUri));
-                    }
-                }
-
-                // only store the result if they were not previously stored - otherwise we loose stability!
-                if (!context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
-                    context.getCachedUriCollectionResults().put(uriWithoutStableQueryString, result);
-                }
-            }
+            return new AnyURIValue(XmldbURI.ROOT_COLLECTION);
         }
 
+        final String uriWithQueryString = args[0].toString();
+        final int queryStringIndex = uriWithQueryString.indexOf('?');
+        final String uriWithoutQueryString = (queryStringIndex >= 0) ? uriWithQueryString.substring(0, queryStringIndex) : uriWithQueryString;
+        final String uriWithoutStableQueryString = CollectionQueryParameters.stripStableParameter(uriWithQueryString);
+
+        final XmldbURI uri;
+        try {
+            uri = XmldbURI.xmldbUriFor(uriWithoutQueryString);
+        } catch (final URISyntaxException e) {
+            throw new XPathException(this, ErrorCodes.FODC0004, "\"%s\" is not a valid URI.".formatted(args[0].toString()));
+        }
+
+        final CollectionQueryParameters params = CollectionQueryParameters.parse(
+                uriWithQueryString, CollectionQueryParameters.URI_COLLECTION_KEYS, this);
+
+        if (params.isStable() && context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
+            return context.getCachedUriCollectionResults().get(uriWithoutStableQueryString);
+        }
+
+        final Sequence result = toUriSequence(collectUris(uri, params), params);
+
+        // only store the result if they were not previously stored - otherwise we loose stability!
+        if (!context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
+            context.getCachedUriCollectionResults().put(uriWithoutStableQueryString, result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Collects the URIs of the documents and/or sub-collections of {@code uri} that the
+     * {@code content-type} parameters select.
+     *
+     * @param uri    the collection to list
+     * @param params the parsed query string parameters
+     * @return the selected URIs, in collection iteration order
+     * @throws XPathException FODC0002 if the collection does not exist or cannot be read
+     */
+    private List<String> collectUris(final XmldbURI uri, final CollectionQueryParameters params) throws XPathException {
+        final boolean binaryUrisIncluded = params.includesBinaryDocuments();
+        final boolean subcollectionUrisIncluded = params.includesSubcollections();
+        final boolean xmlUrisIncluded = params.includesXmlDocuments();
+
+        final List<String> resultUris = new ArrayList<>();
+        try (final Collection collection = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+            if (collection == null) {
+                throw new XPathException(this, ErrorCodes.FODC0002, "Collection \"%s\" not found.".formatted(uri));
+            }
+
+            if (binaryUrisIncluded || xmlUrisIncluded) {
+                final Iterator<DocumentImpl> documentIterator = collection.iterator(context.getBroker());
+                while (documentIterator.hasNext()) {
+                    final DocumentImpl document = documentIterator.next();
+                    if ((xmlUrisIncluded && !(document instanceof BinaryDocument)) ||
+                            (binaryUrisIncluded && document instanceof BinaryDocument)) {
+                        resultUris.add(document.getURI().toString());
+                    }
+                }
+            }
+
+            if (subcollectionUrisIncluded) {
+                final Iterator<XmldbURI> collectionsIterator = collection.collectionIterator(context.getBroker());
+                while (collectionsIterator.hasNext()) {
+                    resultUris.add(uri.append(collectionsIterator.next()).toString());
+                }
+            }
+        } catch (final LockException | PermissionDeniedException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002, e);
+        }
+        return resultUris;
+    }
+
+    /**
+     * Applies the optional {@code match} regex and converts the surviving URIs into a sequence
+     * of {@code xs:anyURI}.
+     *
+     * @param resultUris the collected URIs
+     * @param params     the parsed query string parameters
+     * @return the empty sequence when a {@code match} regex filtered everything out, otherwise a
+     *         {@link ValueSequence} of the selected URIs
+     * @throws XPathException if a URI cannot be added to the result sequence
+     */
+    private Sequence toUriSequence(final List<String> resultUris, final CollectionQueryParameters params) throws XPathException {
+        final List<String> selectedUris;
+        if (params.getMatch() != null && !params.getMatch().isEmpty()) {
+            final Pattern pattern = PatternFactory.getInstance().getPattern(params.getMatch());
+            selectedUris = resultUris.stream().filter(resultUri -> pattern.matcher(resultUri).find()).collect(Collectors.toList());
+            // an explicit match that selects nothing yields the empty sequence, not an empty ValueSequence
+            if (selectedUris.isEmpty()) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+        } else {
+            selectedUris = resultUris;
+        }
+
+        final Sequence result = new ValueSequence();
+        for (final String resultUri : selectedUris) {
+            result.add(new AnyURIValue(resultUri));
+        }
         return result;
     }
 }
