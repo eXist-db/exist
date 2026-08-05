@@ -35,6 +35,7 @@ package org.exist.storage;
 import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.Objects;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -44,11 +45,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.Holder;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 
 /**
  * Global pool for compiled XQuery expressions.
@@ -125,8 +128,9 @@ public class XQueryPool implements BrokerPoolService {
      * @param broker A database broker.
      * @param source The source identifying the XQuery to borrow.
      *
-     * @return The compiled XQuery identified by the source, or null if
-     *     there is no valid compiled representation in the XQuery pool.
+     * @return The compiled XQuery identified by the source, or null if there is no valid compiled
+     *     representation in the XQuery pool, or the caller may not read a module it imports — in
+     *     which case compiling the query itself would be denied at the import gate too.
      *
      * @throws PermissionDeniedException if the caller does not have execute
      *     permission for the compiled XQuery.
@@ -135,6 +139,12 @@ public class XQueryPool implements BrokerPoolService {
             throws PermissionDeniedException {
         if (broker == null || source == null) {
             return null;
+        }
+
+        // check execution permission BEFORE the cache is touched: a caller which may not execute the
+        // query must not be able to perturb the pool which is shared with every other user
+        if (source instanceof DBSource bSource) {
+            bSource.validate(Permission.EXECUTE);
         }
 
         // this will be set to non-null if we can borrow a query... allows us to escape the lamba, see https://github.com/ben-manes/caffeine/issues/192#issuecomment-337365618
@@ -168,19 +178,67 @@ public class XQueryPool implements BrokerPoolService {
             return null;
         }
 
-        //check execution permission
-        if (source instanceof DBSource bSource) {
-            bSource.validate(Permission.EXECUTE);
+        final CompiledXQuery compiledXQuery = borrowedCompiledQuery.value;
+
+        if (!callerMayUseModulesOf(broker, compiledXQuery)) {
+            // a cache hit must never authorize what a cold compile would refuse. The caller cannot read
+            // one of the imported modules, so compiling the query itself would be denied at the import
+            // gate (SourceFactory#getSource). Hand the entry back untouched — it is perfectly good for
+            // the users which may read the module — and let this caller take the cold path, where it
+            // fails exactly as it would with an empty pool
+            returnCompiledXQuery(source, compiledXQuery);
+            return null;
         }
 
-        return borrowedCompiledQuery.value;
+        return compiledXQuery;
+    }
+
+    /**
+     * Determines whether the caller could have resolved every module imported by a pooled compiled
+     * XQuery, had it compiled the query itself.
+     *
+     * A cold compile resolves each imported module through
+     * {@link org.exist.source.SourceFactory#getSource(DBBroker, String, String, boolean)}, which
+     * requires READ on the module. The same gate is applied here, so that borrowing from the pool
+     * grants no access which compiling would not.
+     *
+     * @param broker the database broker
+     * @param compiledXQuery the compiled query to check the imported modules of
+     *
+     * @return true if the caller may read every imported module, false otherwise.
+     */
+    private static boolean callerMayUseModulesOf(final DBBroker broker, final CompiledXQuery compiledXQuery) {
+        final XQueryContext context = compiledXQuery.getContext();
+        if (context == null) {
+            return true;
+        }
+
+        final Subject subject = broker.getCurrentSubject();
+        for (final Iterator<Module> it = context.getAllModules(); it.hasNext(); ) {
+            final Module module = it.next();
+            if (module == null || module.isInternalModule()) {
+                continue;
+            }
+
+            if (((ExternalModule) module).getSource() instanceof DBSource moduleSource) {
+                try {
+                    moduleSource.validate(subject, Permission.READ);
+                } catch (final PermissionDeniedException e) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Not serving the pooled query, the caller may not read the imported module {}",
+                                moduleSource.pathOrShortIdentifier());
+                    }
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
      * Determines if a compiled XQuery is still valid.
      *
-     * @param broker the database broker
-     * @param source the source of the query
      * @param compiledXQuery the compiled query
      *
      * @return true if the compiled query is still valid, false otherwise.

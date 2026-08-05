@@ -459,6 +459,31 @@ public interface DBBroker extends AutoCloseable {
         throws PermissionDeniedException;
 
     /**
+     * Get the last modified time of a stored resource, for the purpose of deciding whether an
+     * artefact derived from it — a compiled XQuery in the {@link XQueryPool}, a cached URL rewrite,
+     * … — is out of date.
+     *
+     * Whether a resource has changed is not a permission question: it must be answered identically
+     * for every subject, or a caller which may execute but not read a resource evicts the cache
+     * entries shared with everybody else. So <strong>no permission is checked on the document</strong>
+     * and no handle on it escapes — only its timestamp. Reading the resource itself keeps its usual
+     * gates ({@link #getXMLResource(XmldbURI, LockMode)} for READ,
+     * {@link #getResourceForExecution(XmldbURI)} for EXECUTE).
+     *
+     * Locating the document still opens its Collection, which requires
+     * {@link org.exist.security.Permission#EXECUTE} on every Collection along the path, exactly as
+     * every other resolution does.
+     *
+     * @param docURI absolute path to the resource in the database
+     *
+     * @return the last modified time of the resource, or empty if there is no resource at that path
+     *
+     * @throws PermissionDeniedException if the current subject may not traverse the Collection
+     *     hierarchy to the resource
+     */
+    Optional<Long> getDocumentLastModified(XmldbURI docURI) throws PermissionDeniedException;
+
+    /**
      * Get a new document id that does not yet exist within the collection.
      *
      * @param transaction the transaction

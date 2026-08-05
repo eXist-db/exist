@@ -2573,6 +2573,28 @@ public class NativeBroker implements DBBroker {
     }
 
     @Override
+    public Optional<Long> getDocumentLastModified(XmldbURI docURI) throws PermissionDeniedException {
+        if (docURI == null) {
+            return Optional.empty();
+        }
+        docURI = prepend(docURI.toCollectionPathURI());
+        final XmldbURI collUri = docURI.removeLastSegment();
+        final XmldbURI docUri = docURI.lastSegment();
+        try (final Collection collection = openCollection(collUri, LockMode.READ_LOCK)) {
+            if (collection == null) {
+                return Optional.empty();
+            }
+
+            // no permission check on the document: staleness is not a permission question, and only
+            // the timestamp is handed out — see DBBroker#getDocumentLastModified
+            return collection.getDocumentLastModified(docUri);
+        } catch (final LockException e) {
+            LOG.error("Could not acquire lock on document {}", docURI, e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void readBinaryResource(final BinaryDocument blob, final OutputStream os)
             throws IOException {
         try (final Txn transaction = continueOrBeginTransaction()) {
