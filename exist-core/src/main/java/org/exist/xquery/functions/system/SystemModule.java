@@ -86,7 +86,8 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetUptime.signature, GetUptime.class),
             new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class),
             
-            new FunctionDef(ClearXQueryCache.signature, ClearXQueryCache.class)
+            new FunctionDef(ClearXQueryCache.signature, ClearXQueryCache.class),
+            new FunctionDef(GetJmxToken.signature, GetJmxToken.class)
     };
 	
 	public SystemModule(Map<String, List<?>> parameters) {
