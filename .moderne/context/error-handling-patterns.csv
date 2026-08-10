@@ -4656,6 +4656,7 @@ exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.c
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,getDocumentLastModified,throws-declaration,LockException,propagate,,
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,getDocumentNoLock,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,removeCollection,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,removeResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
@@ -4715,6 +4716,7 @@ exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collect
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentLastModified,throws-declaration,LockException,propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentNoLock,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,removeCollection,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,removeResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
@@ -4779,6 +4781,7 @@ exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentWithLock,throws-declaration,"LockException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentLastModified,throws-declaration,LockException,propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentNoLock,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentCount,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocumentCount,try-catch,LockException,log+recover,Log4j,WARN
@@ -5139,7 +5142,8 @@ exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.So
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,URISyntaxException,log,Log4j,TRACE
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,EXistException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,DEBUG
-exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,isValid,try-catch,EXistException | PermissionDeniedException,custom,,
+exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,isValid,try-catch,EXistException,recover,,
+exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,isValid,try-catch,PermissionDeniedException,recover,,
 exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,getReader,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,getReader,try-catch,EXistException,wrap,,
 exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,getInputStream,throws-declaration,IOException,propagate,,
@@ -5553,6 +5557,7 @@ exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.do
 exist-core/src/main/java/org/exist/storage/dom/RemoveValueLoggable.java,org.exist.storage.dom.RemoveValueLoggable,redo,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/dom/RemoveValueLoggable.java,org.exist.storage.dom.RemoveValueLoggable,undo,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/XQueryPool.java,org.exist.storage.XQueryPool,borrowCompiledXQuery,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/XQueryPool.java,org.exist.storage.XQueryPool,callerMayUseModulesOf,try-catch,PermissionDeniedException,log+recover,Log4j,DEBUG
 exist-core/src/main/java/org/exist/storage/SystemTaskManager.java,org.exist.storage.SystemTaskManager,processTasks,try-catch,Exception,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/SystemTaskManager.java,org.exist.storage.SystemTaskManager,runSystemTask,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/storage/sync/SyncTask.java,org.exist.storage.sync.SyncTask,configure,throws-declaration,EXistException,propagate,,
@@ -5978,6 +5983,8 @@ exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.N
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLResource,try-catch,LockException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceForExecution,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceForExecution,try-catch,LockException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getDocumentLastModified,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getDocumentLastModified,try-catch,LockException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,try-catch,TransactionException,wrap,Log4j,
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,throws-declaration,IOException,propagate,,
@@ -6110,6 +6117,7 @@ exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBro
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,getResourceById,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,getXMLResource,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,getResourceForExecution,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,getDocumentLastModified,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,getNextResourceId,throws-declaration,"EXistException, LockException",propagate,,
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,removeCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
 exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,removeResource,throws-declaration,"IOException, PermissionDeniedException",propagate,,
@@ -12645,6 +12653,13 @@ exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exis
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,theDisclosureLevelIsNotCachedWithTheCompiledQuery,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,theSourceOfAnExecuteOnlyQueryCannotBeViewed,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,aReadableButNonExecutableQueryIsDenied,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,aReadBlindCallerCannotRunAQueryImportingAnUnreadableModule,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,aReadBlindCallerReusesThePooledQueryInsteadOfEvictingIt,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,aCallerWithoutExecuteLeavesThePooledEntryIntact,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,aChangedQueryIsRecompiledForAReadBlindCallerToo,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,peekPooledQuery,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,overwriteQuery,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,primeQueryPool,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,get,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest$Response,storeQuery,throws-declaration,"EXistException, PermissionDeniedException, LockException, SAXException, IOException, SyntaxException",propagate,,
 exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest$Response,createUser,throws-declaration,"PermissionDeniedException, EXistException",propagate,,

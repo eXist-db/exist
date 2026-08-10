@@ -1056,14 +1056,14 @@ exist-core/src/main/java/org/exist/security/Permission.java,org.exist.security.P
 exist-core/src/main/java/org/exist/security/AbstractGroup.java,org.exist.security.AbstractGroup,225,19,3,50,5,0.15789473684210525,25,62.16866148130113
 exist-core/src/main/java/org/exist/security/EXistSchemaType.java,org.exist.security.EXistSchemaType,44,5,2,9,1,0.2,1,69.39634225043855
 exist-core/src/main/java/org/exist/collections/CollectionURI.java,org.exist.collections.CollectionURI,102,7,4,16,1,0.7142857142857143,2,59.976564691506496
-exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,438,77,2,78,1,1.0,5,74.58813147975198
+exist-core/src/main/java/org/exist/collections/LockedCollection.java,org.exist.collections.LockedCollection,443,78,2,79,1,1.0,5,74.61687558246606
 exist-core/src/main/java/org/exist/collections/CollectionConfigurationException.java,org.exist.collections.CollectionConfigurationException,39,4,1,4,4,0.0,1,73.47265463450431
 exist-core/src/main/java/org/exist/collections/IndexInfo.java,org.exist.collections.IndexInfo,93,14,7,18,3,0.21978021978021978,4,72.50248189292948
 exist-core/src/main/java/org/exist/collections/ManagedLocks.java,org.exist.collections.ManagedLocks,88,5,2,9,2,0.3,5,61.149984253321186
 exist-core/src/main/java/org/exist/collections/CollectionMetadata.java,org.exist.collections.CollectionMetadata,23,2,1,2,1,1.0,1,70.73714796232916
 exist-core/src/main/java/org/exist/collections/CollectionCache.java,org.exist.collections.CollectionCache,326,10,7,11,1,0.4222222222222222,13,54.49723304333634
-exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,1238,74,2,74,60,0.0,3,73.17635366511462
-exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,1950,103,12,291,8,0.1951265943270512,89,55.324402885359646
+exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,1255,75,2,75,61,0.0,3,73.17431324205901
+exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,1965,104,12,293,8,0.19977595220313668,89,55.34510222885497
 exist-core/src/main/java/org/exist/collections/triggers/STXTemplatesCache.java,org.exist.collections.triggers.STXTemplatesCache,100,4,4,7,2,0.3333333333333333,15,53.64056095378934
 exist-core/src/main/java/org/exist/collections/triggers/DeferrableFilteringTrigger.java,org.exist.collections.triggers.DeferrableFilteringTrigger,317,39,2,78,1,0.2807017543859649,20,68.08559655251793
 exist-core/src/main/java/org/exist/collections/triggers/SAXTrigger.java,org.exist.collections.triggers.SAXTrigger,184,28,5,50,3,0.36243386243386244,3,73.0890196289166
@@ -1100,7 +1100,7 @@ exist-core/src/main/java/org/exist/source/AbstractSource.java,org.exist.source.A
 exist-core/src/main/java/org/exist/source/Source.java,org.exist.source.Source,128,14,0,14,14,0.0,0,78.9004903299821
 exist-core/src/main/java/org/exist/source/FileSource.java,org.exist.source.FileSource,116,15,5,20,2,0.4666666666666667,9,69.90006134305244
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,416,7,1,91,1,0.14285714285714285,30,39.31806760639144
-exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,185,17,5,31,2,0.4852941176470588,20,63.63151352048614
+exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,194,17,5,31,2,0.4852941176470588,19,63.33864946805161
 exist-core/src/main/java/org/exist/source/URLSource.java,org.exist.source.URLSource,203,14,7,49,1,0.6813186813186813,14,59.314704662538325
 exist-core/src/main/java/org/exist/source/StringSource.java,org.exist.source.StringSource,50,8,1,8,4,0.35714285714285715,6,75.70178295600216
 exist-core/src/main/java/org/exist/backup/BackupWriter.java,org.exist.backup.BackupWriter,30,8,0,8,8,0.0,0,87.34359964461194
@@ -1173,7 +1173,7 @@ exist-core/src/main/java/org/exist/storage/dom/IRawNodeIterator.java,org.exist.s
 exist-core/src/main/java/org/exist/storage/dom/NodeIterator.java,org.exist.storage.dom.NodeIterator,256,8,12,38,3,0.32142857142857145,24,47.88067484770114
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,3452,85,35,462,4,0.3686274509803922,82,44.369950725911835
 exist-core/src/main/java/org/exist/storage/dom/RemoveValueLoggable.java,org.exist.storage.dom.RemoveValueLoggable,77,8,7,12,2,0.4642857142857143,6,64.97765795273625
-exist-core/src/main/java/org/exist/storage/XQueryPool.java,org.exist.storage.XQueryPool,156,5,11,14,1,0.6,16,51.242487404506456
+exist-core/src/main/java/org/exist/storage/XQueryPool.java,org.exist.storage.XQueryPool,211,6,11,23,1,0.5333333333333333,23,49.30157536448124
 exist-core/src/main/java/org/exist/storage/BufferStats.java,org.exist.storage.BufferStats,41,5,6,5,1,0.4,0,72.58495617172936
 exist-core/src/main/java/org/exist/storage/RangeIndexSpec.java,org.exist.storage.RangeIndexSpec,146,10,15,13,6,0.06666666666666667,1,66.21485642193757
 exist-core/src/main/java/org/exist/storage/SystemTaskManager.java,org.exist.storage.SystemTaskManager,76,4,3,14,1,0.5,12,56.67508647237996
@@ -1226,7 +1226,7 @@ exist-core/src/main/java/org/exist/storage/txn/Txn.java,org.exist.storage.txn.Tx
 exist-core/src/main/java/org/exist/storage/txn/TransactionException.java,org.exist.storage.txn.TransactionException,17,2,1,2,2,0.0,1,73.95703972261501
 exist-core/src/main/java/org/exist/storage/txn/TransactionManager.java,org.exist.storage.txn.TransactionManager,593,16,11,73,1,0.5,23,48.5947733428298
 exist-core/src/main/java/org/exist/storage/Indexable.java,org.exist.storage.Indexable,75,2,0,2,2,0.0,0,65.529635605721
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,4439,198,45,685,10,0.20196892785725273,177,52.83662730600944
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,4461,199,45,689,10,0.20333993198314806,177,52.83778482202125
 exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManager.java,org.exist.storage.BrokerPoolServicesManager,345,10,2,35,1,1.0,12,50.521046869698196
 exist-core/src/main/java/org/exist/storage/IndexSpec.java,org.exist.storage.IndexSpec,190,13,7,37,1,0.24358974358974358,20,59.20929103452573
 exist-core/src/main/java/org/exist/storage/TermMatcher.java,org.exist.storage.TermMatcher,11,1,0,1,1,1.0,0,77.14859449161779
@@ -1241,7 +1241,7 @@ exist-core/src/main/java/org/exist/storage/cache/BTreeCacheable.java,org.exist.s
 exist-core/src/main/java/org/exist/storage/cache/Cacheable.java,org.exist.storage.cache.Cacheable,95,10,1,10,10,0.0,0,78.53746951027766
 exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java,org.exist.storage.structural.NativeStructuralIndexWorker,772,43,6,110,13,0.19047619047619047,40,55.969893400332154
 exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndex.java,org.exist.storage.structural.NativeStructuralIndex,90,9,8,13,4,0.3055555555555556,13,65.43226548332788
-exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,1214,116,15,116,103,0.0,6,77.62047389221529
+exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,1239,117,15,117,103,0.0,6,77.50868284288394
 exist-core/src/main/java/org/exist/storage/IndexStats.java,org.exist.storage.IndexStats,26,4,2,4,1,0.8333333333333334,3,73.70137039681134
 exist-core/src/main/java/org/exist/storage/Signatures.java,org.exist.storage.Signatures,120,5,11,23,2,0.6,5,55.78683732126111
 exist-core/src/main/java/org/exist/storage/GeneralRangeIndexSpec.java,org.exist.storage.GeneralRangeIndexSpec,49,4,1,6,1,1.0,5,62.45433931871564
@@ -2065,7 +2065,7 @@ exist-core/src/test/java/org/exist/http/urlrewrite/URLRewriteTest.java,org.exist
 exist-core/src/test/java/org/exist/http/urlrewrite/ControllerTest.java,org.exist.http.urlrewrite.ControllerTest,77,5,4,5,1,0.4,11,58.12466816116522
 exist-core/src/test/java/org/exist/http/urlrewrite/MultipartMethodControllerTest.java,org.exist.http.urlrewrite.MultipartMethodControllerTest,95,4,4,5,1,0.3333333333333333,10,53.344286010680385
 exist-core/src/test/java/org/exist/http/urlrewrite/IfModifiedSinceHandoverControllerTest.java,org.exist.http.urlrewrite.IfModifiedSinceHandoverControllerTest,110,4,6,4,1,0.6666666666666666,10,52.229223701276986
-exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,253,14,15,17,1,0.16483516483516483,30,56.116820037069594
+exist-core/src/test/java/org/exist/http/RESTExecuteWithoutReadTest.java,org.exist.http.RESTExecuteWithoutReadTest,432,21,21,26,1,0.22380952380952382,37,54.227080932466855
 exist-core/src/test/java/org/exist/http/AuditTrailSessionListenerTest.java,org.exist.http.AuditTrailSessionListenerTest,108,6,6,7,1,0.5333333333333333,21,55.37354702468014
 exist-core/src/test/java/org/exist/http/RESTTest.java,org.exist.http.RESTTest,14,2,1,2,1,0.0,2,73.09392347264536
 exist-core/src/test/java/org/exist/http/AcceptHeaderTest.java,org.exist.http.AcceptHeaderTest,111,15,0,15,15,0.0,8,67.36810295668147
