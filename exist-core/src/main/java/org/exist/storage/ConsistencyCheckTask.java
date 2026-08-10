@@ -43,8 +43,6 @@ import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class ConsistencyCheckTask implements SystemTask {
 
     private final static Logger LOG = LogManager.getLogger(ConsistencyCheckTask.class);
@@ -227,7 +225,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private PrintWriter openLog() throws EXistException {
         try {
             final Path file = SystemExport.getUniqueFile("report", ".log", exportDir);
-            return new PrintWriter(Files.newBufferedWriter(file, UTF_8));
+            return new PrintWriter(Files.newBufferedWriter(file));
         } catch (final IOException e) {
             throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
         }

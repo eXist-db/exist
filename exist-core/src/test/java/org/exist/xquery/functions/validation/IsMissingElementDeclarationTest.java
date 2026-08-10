@@ -30,7 +30,6 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -79,9 +78,9 @@ public class IsMissingElementDeclarationTest {
     public void realCvcElt1aFailureIsRecognized() throws Exception {
         final Path tempDir = Files.createTempDirectory("is-missing-element-declaration-test");
         try {
-            Files.writeString(tempDir.resolve("schema.xsd"), XSD_1_1_ONLY_SCHEMA, StandardCharsets.UTF_8);
+            Files.writeString(tempDir.resolve("schema.xsd"), XSD_1_1_ONLY_SCHEMA);
             final Path instance = tempDir.resolve("instance.xml");
-            Files.writeString(instance, CONFORMING_INSTANCE, StandardCharsets.UTF_8);
+            Files.writeString(instance, CONFORMING_INSTANCE);
 
             final ValidationReport report = new ValidationReport();
 

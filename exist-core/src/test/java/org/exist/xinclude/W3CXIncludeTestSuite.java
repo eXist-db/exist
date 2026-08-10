@@ -43,7 +43,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -189,9 +190,10 @@ public class W3CXIncludeTestSuite {
         // Serialize with XInclude expansion
         // Use fn:serialize() to get proper XML output, not just text content
         final String xquery = String.format(
-                "let $doc := doc('%s')\n" +
-                "let $expanded := util:expand($doc, 'expand-xincludes=yes')\n" +
-                "return fn:serialize($expanded, map { 'method': 'xml', 'indent': false(), 'omit-xml-declaration': true() })",
+                """
+                let $doc := doc('%s')
+                let $expanded := util:expand($doc, 'expand-xincludes=yes')
+                return fn:serialize($expanded, map { 'method': 'xml', 'indent': false(), 'omit-xml-declaration': true() })""",
                 inputDocPath);
 
         if ("error".equals(type)) {
@@ -367,11 +369,11 @@ public class W3CXIncludeTestSuite {
         final URL url = W3CXIncludeTestSuite.class.getClassLoader().getResource(TEST_SUITE_DIR);
         if (url != null) {
             try {
-                return Paths.get(url.toURI());
+                return Path.of(url.toURI());
             } catch (final Exception e) {
                 // fall through
             }
         }
-        return Paths.get("src/test/resources", TEST_SUITE_DIR);
+        return Path.of("src/test/resources", TEST_SUITE_DIR);
     }
 }

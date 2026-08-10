@@ -47,7 +47,6 @@ import org.xmldb.api.modules.XQueryService;
 
 import javax.xml.transform.OutputKeys;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -103,7 +102,7 @@ public class TestDataGenerator {
                 final Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
 
                 final Serializer serializer = broker.borrowSerializer();
-                try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
+                try(final Writer out = Files.newBufferedWriter(generatedFiles[i])) {
                     final SAXSerializer sax = new SAXSerializer(out, outputProps);
                     serializer.setSAXHandlers(sax, sax);
                     for (final SequenceIterator iter = results.iterate(); iter.hasNext(); ) {
@@ -139,7 +138,7 @@ public class TestDataGenerator {
                 service.declareVariable("count", Integer.valueOf(i));
                 final ResourceSet result = service.execute(compiled);
 
-                try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
+                try(final Writer out = Files.newBufferedWriter(generatedFiles[i])) {
                     final SAXSerializer sax = new SAXSerializer(out, outputProps);
                     for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
                         try (XMLResource r = (XMLResource) iter.nextResource()) {

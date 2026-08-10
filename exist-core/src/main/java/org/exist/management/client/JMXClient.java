@@ -294,10 +294,10 @@ public class JMXClient {
                     values[2] != null ? values[2] : 0));
 
             final Object activeBrokersRaw = connection.getAttribute(name, "ActiveBrokersMap");
-            final CompositeData[] activeBrokers = activeBrokersRaw instanceof CompositeData[]
-                    ? (CompositeData[]) activeBrokersRaw
-                    : activeBrokersRaw instanceof TabularData
-                      ? ((TabularData) activeBrokersRaw).values().toArray(new CompositeData[0])
+            final CompositeData[] activeBrokers = activeBrokersRaw instanceof CompositeData[] cds
+                    ? cds
+                    : activeBrokersRaw instanceof TabularData td
+                      ? td.values().toArray(new CompositeData[0])
                       : new CompositeData[0];
             if (activeBrokers.length > 0) {
                 echo("\nCurrently active threads:");

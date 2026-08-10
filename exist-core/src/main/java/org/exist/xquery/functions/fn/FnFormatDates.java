@@ -650,7 +650,7 @@ public class FnFormatDates extends BasicFunction {
         // [ZN] / [Zn] / [ZNn] - timezone name with optional case modifier
         // (W3C XPath Functions 3.1 §9.8.4.7: second-position modifier selects letter case)
         if ("N".equals(timezonePicture) || "n".equals(timezonePicture) || "Nn".equals(timezonePicture)) {
-            final Locale locale = new Locale(language);
+            final Locale locale = Locale.of(language);
             final String tzName = formatNamedTimeZone(absHour, absMinute, isNegative, place, locale);
             if ("n".equals(timezonePicture)) {
                 return tzName.toLowerCase(locale);
@@ -699,7 +699,7 @@ public class FnFormatDates extends BasicFunction {
      */
     private AbstractDateTimeValue adjustForPlaceTimezone(final AbstractDateTimeValue dt,
             final Optional<String> place) throws XPathException {
-        if (!place.isPresent()) {
+        if (place.isEmpty()) {
             return dt;
         }
         try {
@@ -1438,8 +1438,8 @@ public class FnFormatDates extends BasicFunction {
             } else {
                 // Grouping separator
                 np.groupings.add(digitIndex);
-                sepCharsFromRight.add(0, cp);
-                sepPosFromRight.add(0, digitIndex);
+                sepCharsFromRight.addFirst(cp);
+                sepPosFromRight.addFirst(digitIndex);
             }
             i += charLen;
         }

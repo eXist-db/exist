@@ -34,8 +34,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Static utility methods used by the tests.
  *
@@ -78,7 +76,7 @@ public class DBUtils {
             throw new IllegalArgumentException("Cannot write to output file " + file.toAbsolutePath());
         }
 
-        try (final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
+        try (final Writer writer = Files.newBufferedWriter(file)) {
             final XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);
             gen.generateXML(writer);
         }

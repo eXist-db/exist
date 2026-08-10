@@ -49,7 +49,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.ThreadUtils.newGlobalThread;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 import static se.softhouse.jargo.Arguments.helpArgument;
@@ -600,7 +599,7 @@ public class ExportGUI extends javax.swing.JFrame {
     private void openLog(final String dir) {
         final Path file = SystemExport.getUniqueFile("report", ".log", dir);
         try {
-            logWriter = new PrintWriter(Files.newBufferedWriter(file, UTF_8));
+            logWriter = new PrintWriter(Files.newBufferedWriter(file));
         } catch(final IOException e) {
             System.err.println("ERROR: failed to create log file");
         }

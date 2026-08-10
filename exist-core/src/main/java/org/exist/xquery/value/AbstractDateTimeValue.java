@@ -404,11 +404,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         // primitive-type equality check rejects valid comparisons. The
         // AbstractDateTimeValue instance-check keeps this restricted to the
         // date/time family (no accidental cross-comparison with, say, durations).
-        if (other instanceof AbstractDateTimeValue
+        if (other instanceof AbstractDateTimeValue value
                 && (Type.subTypeOf(getType(), other.getType())
                         || Type.subTypeOf(other.getType(), getType()))) {
             // filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-            final int r = getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+            final int r = getImplicitCalendar().compare(value.getImplicitCalendar());
             if (r == DatatypeConstants.INDETERMINATE) {
                 throw new RuntimeException("indeterminate order between " + this + " and " + other);
             }

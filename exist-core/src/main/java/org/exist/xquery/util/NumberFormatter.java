@@ -194,11 +194,11 @@ public abstract class NumberFormatter {
 
     public static NumberFormatter getInstance(final String language) {
         return switch (language) {
-            case "de" -> new NumberFormatter_de(new Locale("de"));
-            case "fr" -> new NumberFormatter_fr(new Locale("fr"));
-            case "nl" -> new NumberFormatter_nl(new Locale("nl"));
-            case "ru" -> new NumberFormatter_ru(new Locale("ru"));
-            case "sv" -> new NumberFormatter_sv(new Locale("sv"));
+            case "de" -> new NumberFormatter_de(Locale.of("de"));
+            case "fr" -> new NumberFormatter_fr(Locale.of("fr"));
+            case "nl" -> new NumberFormatter_nl(Locale.of("nl"));
+            case "ru" -> new NumberFormatter_ru(Locale.of("ru"));
+            case "sv" -> new NumberFormatter_sv(Locale.of("sv"));
             // Unsupported languages fall back to English; using Locale.ENGLISH ensures
             // Month/DayOfWeek display names come back in full English form rather
             // than the JDK ROOT-locale abbreviated form.

@@ -70,7 +70,7 @@ public class ResourceAvailable extends BasicFunction {
         final String path = args[1].getStringValue();
 
         final Optional<ExistRepository> repo = context.getRepository();
-        if (!repo.isPresent()) {
+        if (repo.isEmpty()) {
             return BooleanValue.FALSE;
         }
 

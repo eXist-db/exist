@@ -169,7 +169,7 @@ public final class AcceptHeader {
         }
         final List<MediaRange> ranges = parse(header);
         if (ranges.isEmpty()) {
-            return Optional.of(available.get(0));  // no (parseable) preference -> first offer
+            return Optional.of(available.getFirst());  // no (parseable) preference -> first offer
         }
 
         String best = null;

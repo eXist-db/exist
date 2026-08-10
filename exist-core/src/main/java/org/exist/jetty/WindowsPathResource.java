@@ -29,7 +29,6 @@ import org.exist.util.OSUtil;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -113,7 +112,7 @@ public final class WindowsPathResource extends Resource {
             return this;
         }
         final URI resolvedUri = URIUtil.addPath(getURI(), subUriPath);
-        final Path path = Paths.get(resolvedUri);
+        final Path path = Path.of(resolvedUri);
         return wrapIfNeeded(resourceFactory.newResource(path), resourceFactory);
     }
 

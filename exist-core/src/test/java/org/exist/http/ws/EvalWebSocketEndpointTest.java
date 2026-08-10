@@ -221,7 +221,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-1\",\"query\":\"1 + 1\"}");
+                    """
+                            {"action":"eval","id":"q-1","query":"1 + 1"}""");
 
             assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
             assertEquals("2", resultData.get());
@@ -266,9 +267,10 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-2\"," +
-                    "\"query\":\"declare variable $x external; xs:integer($x) * 2\"," +
-                    "\"variables\":{\"x\":\"21\"}}");
+                    """
+                            {"action":"eval","id":"q-2",\
+                            "query":"declare variable $x external; xs:integer($x) * 2",\
+                            "variables":{"x":"21"}}""");
 
             assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
             assertNull("Should not have error: " + errorData.get(), errorData.get());
@@ -306,7 +308,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-3\",\"query\":\"let $x := retrun\"}");
+                    """
+                            {"action":"eval","id":"q-3","query":"let $x := retrun"}""");
 
             assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
             final Map<String, Object> error = errorMsg.get();
@@ -346,7 +349,8 @@ public class EvalWebSocketEndpointTest {
         try {
             // Valid query
             session.getBasicRemote().sendText(
-                    "{\"action\":\"compile\",\"id\":\"c-1\",\"query\":\"1 + 1\"}");
+                    """
+                            {"action":"compile","id":"c-1","query":"1 + 1"}""");
 
             assertTrue("Should receive compile result within 5s",
                     compileLatch.await(5, TimeUnit.SECONDS));
@@ -384,7 +388,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"compile\",\"id\":\"c-2\",\"query\":\"let $x := retrun\"}");
+                    """
+                            {"action":"compile","id":"c-2","query":"let $x := retrun"}""");
 
             assertTrue("Should receive compile result within 5s",
                     compileLatch.await(5, TimeUnit.SECONDS));
@@ -426,9 +431,10 @@ public class EvalWebSocketEndpointTest {
         try {
             // Generate 500 items with chunk-size 100 → expect 5 chunks
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-5\"," +
-                    "\"query\":\"1 to 500\"," +
-                    "\"chunk-size\":100,\"streaming\":true}");
+                    """
+                            {"action":"eval","id":"q-5",\
+                            "query":"1 to 500",\
+                            "chunk-size":100,"streaming":true}""");
 
             assertTrue("Should receive all chunks within 10s",
                     finalLatch.await(10, TimeUnit.SECONDS));
@@ -496,7 +502,8 @@ public class EvalWebSocketEndpointTest {
                     progressLatch.await(10, TimeUnit.SECONDS));
 
             session.getBasicRemote().sendText(
-                    "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
+                    """
+                            {"action":"cancel","id":"q-cancel"}""");
 
             // Await longer than max-execution-time so the watchdog safety net can fire on slow CI.
             assertTrue("Should receive cancelled/error within " + CANCEL_AWAIT_SEC + "s",
@@ -536,7 +543,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-timing\",\"query\":\"1 to 100\"}");
+                    """
+                            {"action":"eval","id":"q-timing","query":"1 to 100"}""");
 
             assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
             assertNotNull("Should have timing object", resultMsg.get().get("timing"));
@@ -575,7 +583,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-prog\",\"query\":\"1 to 100\"}");
+                    """
+                            {"action":"eval","id":"q-prog","query":"1 to 100"}""");
 
             assertTrue("Should complete within 5s", doneLatch.await(5, TimeUnit.SECONDS));
             assertFalse("Should have at least one progress message",
@@ -618,9 +627,10 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-ser\"," +
-                    "\"query\":\"<root><item>1</item></root>\"," +
-                    "\"serialization\":{\"method\":\"adaptive\"}}");
+                    """
+                            {"action":"eval","id":"q-ser",\
+                            "query":"<root><item>1</item></root>",\
+                            "serialization":{"method":"adaptive"}}""");
 
             assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
             assertNotNull("Should have result data", resultData.get());
@@ -732,7 +742,8 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-noquery\"}");
+                    """
+                            {"action":"eval","id":"q-noquery"}""");
 
             assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
         } finally {
@@ -776,9 +787,11 @@ public class EvalWebSocketEndpointTest {
         try {
             // Fire two queries concurrently on the same connection
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"conc-1\",\"query\":\"2 + 3\"}");
+                    """
+                            {"action":"eval","id":"conc-1","query":"2 + 3"}""");
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"conc-2\",\"query\":\"10 * 7\"}");
+                    """
+                            {"action":"eval","id":"conc-2","query":"10 * 7"}""");
 
             assertTrue("Both queries should complete within 5s",
                     doneLatch.await(5, TimeUnit.SECONDS));
@@ -883,8 +896,9 @@ public class EvalWebSocketEndpointTest {
         try {
             // xs:base64Binary('SGVsbG8=') is base64 for "Hello"
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-bin\"," +
-                    "\"query\":\"xs:base64Binary('SGVsbG8=')\"}");
+                    """
+                            {"action":"eval","id":"q-bin",\
+                            "query":"xs:base64Binary('SGVsbG8=')"}""");
 
             assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
             assertNull("Should not have error: " + errorData.get(), errorData.get());
@@ -932,9 +946,10 @@ public class EvalWebSocketEndpointTest {
 
         try {
             session.getBasicRemote().sendText(
-                    "{\"action\":\"eval\",\"id\":\"q-map\"," +
-                    "\"query\":\"map { 'key': 'value', 'nums': [1, 2, 3] }\"," +
-                    "\"serialization\":{\"method\":\"adaptive\"}}");
+                    """
+                            {"action":"eval","id":"q-map",\
+                            "query":"map { 'key': 'value', 'nums': [1, 2, 3] }",\
+                            "serialization":{"method":"adaptive"}}""");
 
             assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
             assertNull("Should not have error: " + errorData.get(), errorData.get());
@@ -1032,7 +1047,8 @@ public class EvalWebSocketEndpointTest {
         try {
             // non-DBA user tries admin-cancel
             session.getBasicRemote().sendText(
-                    "{\"action\":\"admin-cancel\",\"id\":\"12345\"}");
+                    """
+                            {"action":"admin-cancel","id":"12345"}""");
 
             assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
             assertTrue("Should mention permission denied",

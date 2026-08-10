@@ -38,6 +38,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
@@ -388,7 +389,7 @@ public class FunUnparsedText extends BasicFunction {
             // must go through SourceFactory which enforces security checks.
             if (resolvedFromBaseUri && resolvedUri.startsWith("file:")) {
                 final String filePath = resolvedUri.replaceFirst("^file:(?://[^/]*)?", "");
-                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                final Path path = Path.of(filePath);
                 if (java.nio.file.Files.isReadable(path)) {
                     return new FileSource(path, false);
                 }

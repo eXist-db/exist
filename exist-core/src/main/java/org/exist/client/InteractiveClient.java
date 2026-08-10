@@ -1170,7 +1170,7 @@ public class InteractiveClient {
 
             //lazy initialization
             if (lazyTraceWriter.isEmpty()) {
-                try (final Writer traceWriter = Files.newBufferedWriter(options.traceQueriesFile.get(), UTF_8)) {
+                try (final Writer traceWriter = Files.newBufferedWriter(options.traceQueriesFile.get())) {
                     traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
                     traceWriter.write("<query-log>" + EOL);
                     this.lazyTraceWriter = Optional.of(traceWriter);
@@ -1265,7 +1265,7 @@ public class InteractiveClient {
             messageln("cannot read file " + file.normalize().toAbsolutePath());
             return;
         }
-        final String commands = Files.readString(file, UTF_8);
+        final String commands = Files.readString(file);
         final XUpdateQueryService service = current.getService(XUpdateQueryService.class);
         final long modifications;
         if (resource == null) {
@@ -2411,7 +2411,7 @@ public class InteractiveClient {
         }
 
         final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-        try (final BufferedWriter writer = Files.newBufferedWriter(queryHistoryFile, UTF_8)) {
+        try (final BufferedWriter writer = Files.newBufferedWriter(queryHistoryFile)) {
             serializer.setOutput(writer, null);
             int p = 0;
             if (queryHistory.size() > 20) {

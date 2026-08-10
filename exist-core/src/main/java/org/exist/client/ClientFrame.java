@@ -138,7 +138,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.client.InteractiveClient.DATE_TIME_FORMATTER;
 import static org.exist.util.FileUtils.humanSize;
 
@@ -1279,7 +1278,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                         }
                     } else {
                         contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                        try (final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
+                        try (final Writer writer = Files.newBufferedWriter(file)) {
                             // write resource to contentSerializer
                             contentSerializer.setOutput(writer, properties);
                             ((EXistResource) resource).setLexicalHandler(contentSerializer);

@@ -53,8 +53,8 @@ class FileSystemBackupDescriptorTest {
         final Path dbDir = backupRoot.resolve("db");
         Files.createDirectories(dbDir);
 
-        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML, UTF_8);
-        Files.writeString(dbDir.resolve("doc1.xml"), "<test/>", UTF_8);
+        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML);
+        Files.writeString(dbDir.resolve("doc1.xml"), "<test/>");
         Files.write(dbDir.resolve("test.binary"), "test".getBytes(UTF_8));
 
         final FileSystemBackupDescriptor descriptor = new FileSystemBackupDescriptor(
@@ -71,11 +71,11 @@ class FileSystemBackupDescriptorTest {
         final Path nestedDir = dbDir.resolve("nested");
         Files.createDirectories(nestedDir);
 
-        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML, UTF_8);
-        Files.writeString(nestedDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML, UTF_8);
-        Files.writeString(dbDir.resolve("doc1.xml"), "<test/>", UTF_8);
+        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML);
+        Files.writeString(nestedDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML);
+        Files.writeString(dbDir.resolve("doc1.xml"), "<test/>");
         Files.write(dbDir.resolve("test.binary"), "test".getBytes(UTF_8));
-        Files.writeString(nestedDir.resolve("nested.xml"), "<nested/>", UTF_8);
+        Files.writeString(nestedDir.resolve("nested.xml"), "<nested/>");
 
         final FileSystemBackupDescriptor descriptor = new FileSystemBackupDescriptor(
                 backupRoot,
@@ -112,8 +112,8 @@ class FileSystemBackupDescriptorTest {
                     <exist:resource name="s4.xml" type="XMLResource" filename="s4.xml"/>
                 </exist:collection>
                 """;
-        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents, UTF_8);
-        Files.writeString(systemDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents, UTF_8);
+        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents);
+        Files.writeString(systemDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents);
 
         // root recursively includes /db/system: 3 + 5 = 8
         assertEquals(8,
@@ -130,9 +130,9 @@ class FileSystemBackupDescriptorTest {
         final Path appsDir = Files.createDirectories(dbDir.resolve("apps"));
         final Path fooStuffDir = Files.createDirectories(dbDir.resolve("foo").resolve("stuff"));
 
-        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML, UTF_8);         // 2 resources
-        Files.writeString(appsDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML, UTF_8); // 1 resource
-        Files.writeString(fooStuffDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML, UTF_8); // 1 resource
+        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML);         // 2 resources
+        Files.writeString(appsDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML); // 1 resource
+        Files.writeString(fooStuffDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML); // 1 resource
 
         // 2 (db) + 1 (apps) + 1 (foo/stuff) = 4
         assertEquals(4,
@@ -147,8 +147,8 @@ class FileSystemBackupDescriptorTest {
         final Path nestedDir = dbDir.resolve("nested");
         Files.createDirectories(nestedDir);
 
-        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML, UTF_8);
-        Files.writeString(nestedDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML, UTF_8);
+        Files.writeString(dbDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), CONTENTS_XML);
+        Files.writeString(nestedDir.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), NESTED_CONTENTS_XML);
 
         final FileSystemBackupDescriptor nestedDescriptor = new FileSystemBackupDescriptor(
                 backupRoot,

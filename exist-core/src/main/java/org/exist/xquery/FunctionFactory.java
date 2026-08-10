@@ -148,8 +148,8 @@ public class FunctionFactory {
         if (!isPartial) {
             return fc;
         }
-        if (fc instanceof CastExpression) {
-            fc = ((CastExpression) fc).toFunction();
+        if (fc instanceof CastExpression expression) {
+            fc = expression.toFunction();
         }
         if (!(fc instanceof FunctionCall)) {
             fc = FunctionFactory.wrap(context, (Function) fc);

@@ -29,7 +29,6 @@ import org.xmlresolver.Resolver;
 
 import javax.xml.parsers.SAXParserFactory;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -64,7 +63,7 @@ public class CatalogResolutionRegressionTest {
         final Path tempDir = Files.createTempDirectory("catalog-1975-test");
         try {
             final Path dtd = tempDir.resolve("greeting.dtd");
-            Files.writeString(dtd, "<!ENTITY greeting \"Hello from catalog\">", StandardCharsets.UTF_8);
+            Files.writeString(dtd, "<!ENTITY greeting \"Hello from catalog\">");
 
             final Path catalog = tempDir.resolve("catalog.xml");
             Files.writeString(catalog, """
@@ -72,7 +71,7 @@ public class CatalogResolutionRegressionTest {
                     <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
                         <public publicId="-//EXIST-TEST//GREETING//EN" uri="%s"/>
                     </catalog>
-                    """.formatted(dtd.toUri()), StandardCharsets.UTF_8);
+                    """.formatted(dtd.toUri()));
 
             final String resolved = parseWithCatalog(catalog.toUri().toString(),
                     "<!DOCTYPE root PUBLIC \"-//EXIST-TEST//GREETING//EN\" \"greeting.dtd\">"
@@ -104,7 +103,7 @@ public class CatalogResolutionRegressionTest {
                     <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
                         <public publicId="-//SOME//KNOWN//EN" uri="known.dtd"/>
                     </catalog>
-                    """, StandardCharsets.UTF_8);
+                    """);
 
             final Resolver resolver = ResolverFactory.newResolver(
                     List.of(Tuple(catalog.toUri().toString(), Optional.<InputSource>empty())));

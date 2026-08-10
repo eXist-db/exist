@@ -133,9 +133,11 @@ public class HtmlSerializerBenchmarkTest {
         // both runs should have identical per-char counts (the difference is
         // all in bulk string writes).
         final String script =
-                "function compare(a, b) { return a < b; }\n" +
-                "for (let i = 0; i < items.length; i++) { if (items[i] < threshold) found = true; }\n" +
-                "const html = '<div class=\"x\"><span>foo</span></div>';\n";
+                """
+                function compare(a, b) { return a < b; }
+                for (let i = 0; i < items.length; i++) { if (items[i] < threshold) found = true; }
+                const html = '<div class="x"><span>foo</span></div>';
+                """;
 
         final CountingWriter empty = serializeWithScript("");
         final CountingWriter withScript = serializeWithScript(script);

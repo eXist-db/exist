@@ -25,7 +25,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Hashtable;
@@ -69,7 +68,7 @@ public class Counters implements RawBackupSupport {
     private void loadStore() throws EXistException {
         try {
             if(Files.exists(store)) {
-                try(final BufferedReader br = Files.newBufferedReader(store, StandardCharsets.UTF_8)) {
+                try(final BufferedReader br = Files.newBufferedReader(store)) {
                     String line = "";
                     while ((line = br.readLine()) != null) {
                         //Use ; as a DELIMITER, counter names must be tested and rejected when they contain this character!
@@ -217,7 +216,7 @@ public class Counters implements RawBackupSupport {
      * @throws IOException
      */
     private synchronized void serializeTable() throws IOException {
-        try(final PrintWriter pw = new PrintWriter(Files.newBufferedWriter(store, StandardCharsets.UTF_8))) {
+        try(final PrintWriter pw = new PrintWriter(Files.newBufferedWriter(store))) {
             for(final Map.Entry<String, Long> counter : counters.entrySet()) {
                 pw.println(counter.getKey() + DELIMITER + counter.getValue().toString());
             }

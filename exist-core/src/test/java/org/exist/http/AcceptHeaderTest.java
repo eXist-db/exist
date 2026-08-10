@@ -40,7 +40,7 @@ public class AcceptHeaderTest {
     public void parseOrdersByQualityThenSpecificity() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/*;q=0.5, text/html, application/json;q=0.9, */*;q=0.1");
         assertEquals(4, ranges.size());
-        assertEquals("text/html", ranges.get(0).mediaType());        // q=1.0
+        assertEquals("text/html", ranges.getFirst().mediaType());        // q=1.0
         assertEquals("application/json", ranges.get(1).mediaType());  // q=0.9
         assertEquals("text/*", ranges.get(2).mediaType());           // q=0.5
         assertEquals("*/*", ranges.get(3).mediaType());              // q=0.1
@@ -50,14 +50,14 @@ public class AcceptHeaderTest {
     public void parseDefaultsQualityToOne() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html");
         assertEquals(1, ranges.size());
-        assertEquals(1.0, ranges.get(0).quality(), 0.0);
+        assertEquals(1.0, ranges.getFirst().quality(), 0.0);
     }
 
     @Test
     public void parseExtractsParametersExcludingQ() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html;level=1;q=0.8");
         assertEquals(1, ranges.size());
-        final MediaRange range = ranges.get(0);
+        final MediaRange range = ranges.getFirst();
         assertEquals(0.8, range.quality(), 0.0);
         assertEquals(1, range.parameters().size());
         assertEquals("1", range.parameters().get("level"));
@@ -67,7 +67,7 @@ public class AcceptHeaderTest {
     public void parseRetainsExplicitQZero() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html;q=0");
         assertEquals(1, ranges.size());
-        assertEquals(0.0, ranges.get(0).quality(), 0.0);
+        assertEquals(0.0, ranges.getFirst().quality(), 0.0);
     }
 
     @Test
