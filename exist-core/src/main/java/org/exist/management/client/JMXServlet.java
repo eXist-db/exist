@@ -30,7 +30,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
-import org.exist.util.UUIDGenerator;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -42,15 +41,12 @@ import javax.management.ReflectionException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Properties;
@@ -85,7 +81,6 @@ public class JMXServlet extends HttpServlet {
     protected final static Logger LOG = LogManager.getLogger(JMXServlet.class);
 
     private static final String TOKEN_KEY = "token";
-    private static final String TOKEN_FILE = "jmxservlet.token";
     private static final String WEBINF_DATA_DIR = "WEB-INF/data";
 
     private final static Properties defaultProperties = new Properties();
@@ -97,8 +92,7 @@ public class JMXServlet extends HttpServlet {
 
     private final Set<String> localhostAddresses = new HashSet<>();
     private JMXtoXML client;
-    private Path dataDir;
-    private Path tokenFile;
+    private JMXTokenProvider tokenProvider;
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
@@ -108,7 +102,7 @@ public class JMXServlet extends HttpServlet {
             // Localhost is always authorized to access
             LOG.debug("Local access granted");
 
-        } else if (hasSecretToken(request, getToken())) {
+        } else if (hasSecretToken(request, tokenProvider.getToken().orElse(null))) {
             // Correct token is provided
             LOG.debug("Correct token provided by {}", request.getRemoteHost());
 
@@ -199,21 +193,14 @@ public class JMXServlet extends HttpServlet {
         // Register all known localhost addresses
         registerLocalHostAddresses();
 
-        // Get directory for token file
-        final String jmxDataDir = client.getDataDir();
-        if (jmxDataDir == null) {
-            dataDir = Path.of(config.getServletContext().getRealPath(WEBINF_DATA_DIR)).normalize();
-        } else {
-            dataDir = Path.of(jmxDataDir).normalize();
-        }
-        if (!Files.isDirectory(dataDir) || !Files.isWritable(dataDir)) {
-            LOG.error("Cannot access directory {}", WEBINF_DATA_DIR);
-        }
+        // Resolve the token, backed by the DiskUsage MBean's DataDirectory, falling back to
+        // WEB-INF/data if that MBean attribute is unavailable. getRealPath() can return null
+        // (e.g. when the webapp isn't unpacked to disk), in which case there is no fallback.
+        final String realPath = config.getServletContext().getRealPath(WEBINF_DATA_DIR);
+        final Path fallbackDataDir = realPath != null ? Path.of(realPath).normalize() : null;
+        tokenProvider = new JMXTokenProvider(client, fallbackDataDir);
 
-        // Setup token and tokenfile
-        obtainTokenFileReference();
-
-        LOG.info("JMXservlet token: {}", getToken());
+        LOG.info("JMXservlet token: {}", tokenProvider.getToken().orElse(null));
 
     }
 
@@ -276,62 +263,6 @@ public class JMXServlet extends HttpServlet {
         }
         final String[] tokenValue = request.getParameterValues(TOKEN_KEY);
         return ArrayUtils.contains(tokenValue, token);
-    }
-
-    /**
-     * Obtain reference to token file
-     */
-    private void obtainTokenFileReference() {
-
-        if (tokenFile == null) {
-            tokenFile = dataDir.resolve(TOKEN_FILE);
-            LOG.info("Token file:  {}", tokenFile.toAbsolutePath().toAbsolutePath());
-        }
-    }
-
-    /**
-     * Get token from file, create if not existent. Data is read for each call so the file can be updated run-time.
-     *
-     * @return Toke for servlet
-     */
-    private String getToken() {
-
-        final Properties props = new Properties();
-        String token = null;
-
-        // Read if possible
-        if (Files.exists(tokenFile)) {
-
-            try (final InputStream is = Files.newInputStream(tokenFile)) {
-                props.load(is);
-                token = props.getProperty(TOKEN_KEY);
-            } catch (final IOException ex) {
-                LOG.error(ex.getMessage());
-            }
-
-        }
-
-        // Create and write when needed
-        if (!Files.exists(tokenFile) || token == null) {
-
-            // Create random token
-            token = UUIDGenerator.getUUIDversion4();
-
-            // Set value to properties
-            props.setProperty(TOKEN_KEY, token);
-
-            // Write data to file
-            try (final OutputStream os = Files.newOutputStream(tokenFile)) {
-                props.store(os, "JMXservlet token: http://localhost:8080/exist/status?token=......");
-            } catch (final IOException ex) {
-                LOG.error(ex.getMessage());
-            }
-
-            LOG.debug("Token written to file {}", tokenFile.toAbsolutePath().toString());
-
-        }
-
-        return token;
     }
 
 }
