@@ -142,7 +142,7 @@ jobs:
           context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
           file: exist-docker/target/classes/Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: true
+          outputs: type=image,oci-mediatypes=true,oci-artifact=true,push=true
           provenance: mode=max
           sbom: true
           cache-from: type=gha
@@ -156,7 +156,7 @@ jobs:
           context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
           file: exist-docker/target/classes/Dockerfile-DEBUG
           platforms: linux/amd64,linux/arm64
-          push: true
+          outputs: type=image,oci-mediatypes=true,oci-artifact=true,push=true
           provenance: mode=max
           sbom: true
           cache-from: type=gha
