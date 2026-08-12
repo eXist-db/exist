@@ -351,7 +351,7 @@ public class RESTExecuteWithoutReadTest {
         xqPool.clear();
 
         assertEquals(HttpStatus.OK_200, get(EXEC_ONLY_VALID, null).status);
-        final CompiledXQuery pooled = peekPooledQuery(EXEC_ONLY_VALID);
+        final CompiledXQuery pooled = awaitPooledQuery(EXEC_ONLY_VALID);
         assertNotNull("the first run leaves a compiled query in the shared pool", pooled);
 
         for (int i = 0; i < 3; i++) {
@@ -359,7 +359,7 @@ public class RESTExecuteWithoutReadTest {
             assertEquals(HttpStatus.OK_200, response.status);
             assertTrue(response.body.contains("<result>6</result>"));
             assertSame("run " + (i + 1) + " must be a pool hit, not an eviction and recompile",
-                    pooled, peekPooledQuery(EXEC_ONLY_VALID));
+                    pooled, awaitPooledQuery(EXEC_ONLY_VALID));
         }
     }
 
@@ -392,7 +392,7 @@ public class RESTExecuteWithoutReadTest {
         xqPool.clear();
 
         assertTrue(get(EXEC_ONLY_STALENESS, null).body.contains("<result>6</result>"));
-        final CompiledXQuery pooled = peekPooledQuery(EXEC_ONLY_STALENESS);
+        final CompiledXQuery pooled = awaitPooledQuery(EXEC_ONLY_STALENESS);
         assertNotNull(pooled);
 
         overwriteQuery(EXEC_ONLY_STALENESS, CHANGED_QUERY, "rwx--x--x");
@@ -401,7 +401,30 @@ public class RESTExecuteWithoutReadTest {
         assertEquals(HttpStatus.OK_200, afterChange.status);
         assertTrue("the changed query is recompiled, not served from the pool: " + afterChange.body,
                 afterChange.body.contains("<result>10</result>"));
-        assertNotSame("the stale entry is evicted", pooled, peekPooledQuery(EXEC_ONLY_STALENESS));
+        assertNotSame("the stale entry is evicted", pooled, awaitPooledQuery(EXEC_ONLY_STALENESS));
+    }
+
+    /**
+     * Polls the shared pool until it holds an entry for {@code uri}, or {@code timeoutMillis} elapses.
+     * A producing request only returns its compiled query to the pool after the response body is
+     * fully serialized, on the server's request-handling thread — which can still be unwinding the
+     * rest of {@code RESTServer#executeXQuery} after the client here has already read the full HTTP
+     * response on a different thread. A synchronous {@link #peekPooledQuery} right after such a
+     * response is therefore inherently racy under load; this absorbs that gap instead.
+     */
+    private static @Nullable CompiledXQuery awaitPooledQuery(final XmldbURI uri, final long timeoutMillis) throws Exception {
+        final long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (true) {
+            final CompiledXQuery compiled = peekPooledQuery(uri);
+            if (compiled != null || System.currentTimeMillis() >= deadline) {
+                return compiled;
+            }
+            Thread.sleep(10);
+        }
+    }
+
+    private static @Nullable CompiledXQuery awaitPooledQuery(final XmldbURI uri) throws Exception {
+        return awaitPooledQuery(uri, 1000);
     }
 
     /**
