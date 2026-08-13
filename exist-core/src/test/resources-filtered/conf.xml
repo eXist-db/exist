@@ -896,6 +896,8 @@
             <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
             <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />
 
+            <module uri="http://basex.org/modules/web" class="org.exist.http.restxq.xquery.WebModule" />
+
             <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
             <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
             <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
