@@ -130,7 +130,7 @@ final class Xsd11ValidationHelper {
             return cached.orElse(null);
         }
 
-        Optional<Schema> result = Optional.empty();
+        Schema result = null;
         try {
             final Source probeSource = catalogResolver.resolve(namespace, null);
             if (probeSource != null) {
@@ -142,7 +142,7 @@ final class Xsd11ValidationHelper {
                     if (compileSource != null) {
                         final SchemaFactory xsd11Factory = SchemaFactory.newInstance(Namespaces.XSD_1_1_NS);
                         xsd11Factory.setResourceResolver(catalogResolver);
-                        result = Optional.of(xsd11Factory.newSchema(compileSource));
+                        result = xsd11Factory.newSchema(compileSource);
                     }
                 }
             }
@@ -150,8 +150,8 @@ final class Xsd11ValidationHelper {
             throw new SAXException(e);
         }
 
-        Xsd11SchemaCache.put(namespace, result);
-        return result.orElse(null);
+        Xsd11SchemaCache.put(namespace, Optional.ofNullable(result));
+        return result;
     }
 
     /**
