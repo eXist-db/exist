@@ -146,7 +146,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void getServletPathSafely_returnsServletPath() {
+    public void getServletPathSafelyReturnsServletPath() {
         HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
 
         // XQueryURLRewrite is always mapped with url-pattern "/*" (see web.xml), a
@@ -170,7 +170,7 @@ public class XQueryURLRewriteTest
      * javadoc) -- see https://github.com/eXist-db/exist/issues/6618.
      */
     @Test
-    public void getServletPathSafely_toleratesAmbiguousUriException() {
+    public void getServletPathSafelyToleratesAmbiguousUriException() {
         HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
 
         expect(mockHttpServletRequest.getServletPath())
