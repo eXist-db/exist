@@ -889,6 +889,7 @@
             <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
                 <parameter name="evalDisabled" value="true"/>
             </module>
+            <module uri="http://expath.org/ns/binary" class="org.exist.xquery.modules.binary.BinaryModule"/>
         </builtin-modules>
     </xquery>
 

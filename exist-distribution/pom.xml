@@ -196,6 +196,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>exist-expath-binary</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exist-counter</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>

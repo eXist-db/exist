@@ -912,6 +912,7 @@
             <module uri="http://exist-db.org/xquery/console"    class="org.exist.xquery.functions.websocket.ConsoleCompatModule"/>
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
 
+            <module uri="http://expath.org/ns/binary" class="org.exist.xquery.modules.binary.BinaryModule"/>
         </builtin-modules>
     </xquery>
 
