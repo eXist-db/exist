@@ -750,6 +750,7 @@
 
         <builtin-modules>
             <module uri="https://my-organisation.com/exist-db/ns/app/my-java-module" class="org.exist.repo.ExampleModule"/>
+            <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
         </builtin-modules>
     </xquery>
 
