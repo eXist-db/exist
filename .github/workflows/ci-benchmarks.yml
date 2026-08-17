@@ -42,7 +42,7 @@ jobs:
 
       - name: Build exist-core-jmh
         run: >
-          mvn -B install -pl exist-core-jmh -am -DskipTests
+          mvn -B install -Pperf-tests -pl exist-core-jmh -am -DskipTests
           -Ddependency-check.skip=true -Ddocker=false
 
       - name: Run exist-core-jmh benchmarks
@@ -69,12 +69,12 @@ jobs:
 
       - name: Build exist-indexes-jmh
         run: >
-          mvn -B install -pl exist-indexes-jmh -am -DskipTests
+          mvn -B install -Pperf-tests -pl exist-indexes-jmh -am -DskipTests
           -Ddependency-check.skip=true -Ddocker=false
 
       - name: Run exist-indexes-jmh benchmarks
         run: >
-          mvn -B exec:exec -pl exist-indexes-jmh
+          mvn -B exec:exec -Pperf-tests -pl exist-indexes-jmh
           -Dbenchmark.args="-rf json -rff target/jmh-result.json ${{ env.JMH_ARGS }}"
 
       - name: Track exist-indexes-jmh results on gh-pages
