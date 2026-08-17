@@ -735,9 +735,9 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,eval,try-catch,XPathException,recover,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,eval,try-catch,SaxonApiException,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,compileExecutable,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,resolve,throws-declaration,TransformerException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,resolve,try-catch,IllegalArgumentException,wrap,Log4j,
-exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,resolve,try-catch,SaxonApiException,rethrow,Log4j,
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,compileExecutable,try-catch,IllegalArgumentException,rethrow,Log4j,
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,compileExecutable,try-catch,TransformerException,rethrow,Log4j,
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform,compileExecutable,try-catch,SaxonApiException,rethrow,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform$TemplateInvocation,invokeCallFunction,throws-declaration,"XPathException, SaxonApiException",propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform$TemplateInvocation,invokeCallTemplate,throws-declaration,"XPathException, SaxonApiException",propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java,org.exist.xquery.functions.fn.transform.Transform$TemplateInvocation,invokeApplyTemplates,throws-declaration,"XPathException, SaxonApiException",propagate,,
@@ -758,6 +758,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.j
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolve,throws-declaration,TransformerException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolve,try-catch,URISyntaxException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolve,try-catch,XPathException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolveViaCatalog,throws-declaration,TransformerException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolveDocument,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolveDocument,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/transform/URIResolution.java,org.exist.xquery.functions.fn.transform.URIResolution$CompileTimeURIResolver,resolveDocument,try-catch,PermissionDeniedException,wrap,,
@@ -1162,17 +1163,15 @@ exist-core/src/main/java/org/exist/xquery/functions/validation/GrammarTooling.ja
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jing.java,org.exist.xquery.functions.validation.Jing,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jing.java,org.exist.xquery.functions.validation.Jing,eval,try-catch,MalformedURLException,log,,ERROR
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jing.java,org.exist.xquery.functions.validation.Jing,eval,try-catch,Throwable,log,,ERROR
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,eval,try-catch,MalformedURLException,log,,ERROR
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,eval,try-catch,IOException,log,,ERROR
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,eval,try-catch,Throwable,log,,ERROR
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,getXMLReader,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,getXMLReader,try-catch,SAXException,log,,DEBUG
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$Xsd11DetectionCacheKey,setXmlReaderFeature,try-catch,SAXNotRecognizedException | SAXNotSupportedException,log,,ERROR
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,eval,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,eval,try-catch,MalformedURLException,log,,ERROR
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,eval,try-catch,IOException,log,,ERROR
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,eval,try-catch,Throwable,log,,ERROR
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,getXMLReader,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,getXMLReader,try-catch,SAXException,log,,DEBUG
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp,setXmlReaderFeature,try-catch,SAXNotRecognizedException | SAXNotSupportedException,log,,ERROR
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,peekIsXsd11ViaSchemaLocation,throws-declaration,"XPathException, IOException",propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,retryWithXsd11ValidatorIfNeeded,throws-declaration,"XPathException, IOException, SAXException",propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,isXsd11Schema,try-catch,URISyntaxException | IOException,log+recover,,DEBUG
-exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,peekRootAttributes,try-catch,XMLStreamException,log+recover,,DEBUG
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,newXsd11Validator,throws-declaration,SAXException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,newXsd11Validator,try-catch,SAXNotRecognizedException | SAXNotSupportedException,log,,DEBUG
 exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java,org.exist.xquery.functions.validation.Jaxp$ParseTarget,preparseDTD,throws-declaration,"IOException, TransformerConfigurationException, TransformerException",propagate,,
@@ -4949,6 +4948,30 @@ exist-core/src/main/java/org/exist/Indexer.java,org.exist.Indexer$ProcessTextPar
 exist-core/src/main/java/org/exist/Indexer.java,org.exist.Indexer$ProcessTextParent,startElement,try-catch,DOMException,wrap,Log4j,
 exist-core/src/main/java/org/exist/Indexer.java,org.exist.Indexer$ProcessTextParent,startElement,try-catch,DOMException,wrap,Log4j,
 exist-core/src/main/java/org/exist/Indexer.java,org.exist.Indexer$ProcessTextParent,warning,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,clearSchemaCache,try-catch,SAXException,wrap,Log4j,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,resolveXsd11SchemaForNamespace,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,resolveXsd11SchemaForNamespace,try-catch,TransformerException,wrap,Log4j,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,resolveXsd11SchemaForNamespace,try-catch,SAXException,custom,Log4j,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,parseOrValidateXmlSource,throws-declaration,"SAXException, IOException",propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,parseOrValidateXmlSource,try-catch,SAXException,log,Log4j,DEBUG
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11DynamicDiscoverySchemaHolder,validateWithXsd11Schema,throws-declaration,"SAXException, IOException",propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startDocument,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endDocument,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startPrefixMapping,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endPrefixMapping,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,characters,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,ignorableWhitespace,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,processingInstruction,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,skippedEntity,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startDTD,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endDTD,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startEntity,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endEntity,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,startCDATA,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,endCDATA,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/collections/Xsd11ValidationHelper.java,org.exist.collections.Xsd11ValidationHelper$Xsd11LexicalHandlerForwarder,comment,throws-declaration,SAXException,propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,setPermissions,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,isEmpty,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection,getDocumentCount,throws-declaration,PermissionDeniedException,propagate,,
@@ -6590,6 +6613,8 @@ exist-core/src/main/java/org/exist/validation/internal/node/NodeInputStream.java
 exist-core/src/main/java/org/exist/validation/internal/node/NodeInputStream.java,org.exist.validation.internal.node.NodeInputStream,read,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/validation/internal/node/NodeInputStream.java,org.exist.validation.internal.node.NodeInputStream,close,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/validation/internal/node/NodeInputStream.java,org.exist.validation.internal.node.NodeInputStream,available,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/validation/Xsd11SchemaDetection.java,org.exist.validation.Xsd11SchemaDetection$CacheKey,isXsd11Schema,try-catch,URISyntaxException | IOException,log+recover,Log4j,DEBUG
+exist-core/src/main/java/org/exist/validation/Xsd11SchemaDetection.java,org.exist.validation.Xsd11SchemaDetection$RootElementInfo,peekRootElement,try-catch,XMLStreamException | NullPointerException,log+recover,Log4j,DEBUG
 exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java,org.exist.validation.resolver.SearchResourceResolver,resolveEntity,throws-declaration,"XNIException, IOException",propagate,,
 exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java,org.exist.validation.resolver.SearchResourceResolver,resolveEntity,try-catch,SAXException | URISyntaxException,wrap,Log4j,
 exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java,org.exist.validation.resolver.SearchResourceResolver,resolveResource,try-catch,IOException,log+recover,Log4j,ERROR
@@ -6613,8 +6638,11 @@ exist-core/src/main/java/org/exist/validation/XmlLibraryChecker.java,org.exist.v
                           IllegalArgumentException | InvocationTargetException",log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,validateJing,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,validateJing,try-catch,SAXException,log,Log4j,DEBUG
-exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,validateParse,try-catch,ParserConfigurationException | SAXException | IOException | URISyntaxException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,getXMLReader,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
+exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,validateParseDefault,try-catch,ParserConfigurationException | SAXException | IOException | URISyntaxException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,tryValidateWithXsd11Schema,try-catch,IOException,log,Log4j,DEBUG
+exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator,validateWithXsd11Schema,try-catch,ParserConfigurationException | SAXException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator$Xsd11DynamicDiscoverySchemaHolder,getXsd11DynamicDiscoverySchema,try-catch,SAXException,wrap,Log4j,
+exist-core/src/main/java/org/exist/validation/Validator.java,org.exist.validation.Validator$Xsd11DynamicDiscoverySchemaHolder,getXMLReader,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
 exist-core/src/main/java/org/exist/util/XMLReaderPool.java,org.exist.util.XMLReaderPool,borrowXMLReader,try-catch,Exception,wrap,,
 exist-core/src/main/java/org/exist/util/XMLReaderPool.java,org.exist.util.XMLReaderPool,borrowObject,throws-declaration,Exception,propagate,,
 exist-core/src/main/java/org/exist/util/XMLReaderPool.java,org.exist.util.XMLReaderPool,returnXMLReader,try-catch,Exception,wrap,,
@@ -7166,8 +7194,10 @@ exist-core/src/main/java/org/exist/util/SingleInstanceConfiguration.java,org.exi
 exist-core/src/main/java/org/exist/util/SingleInstanceConfiguration.java,org.exist.util.SingleInstanceConfiguration,SingleInstanceConfiguration,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/util/SSLHelper.java,org.exist.util.SSLHelper,initialize,try-catch,NoSuchAlgorithmException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/util/SSLHelper.java,org.exist.util.SSLHelper,initialize,try-catch,KeyManagementException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration,readSaxonConfigurationFile,try-catch,XPathException | IOException,log,Log4j,WARN
-exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration,readSaxonConfigurationFile,try-catch,RuntimeException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration$CatalogResourceResolver,resolve,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration$CatalogResourceResolver,resolve,try-catch,TransformerException,wrap,Log4j,
+exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration$CatalogResourceResolver,readSaxonConfigurationFile,try-catch,XPathException | IOException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/util/SaxonConfiguration.java,org.exist.util.SaxonConfiguration$CatalogResourceResolver,readSaxonConfigurationFile,try-catch,RuntimeException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/util/CharSlice.java,org.exist.util.CharSlice,write,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/util/CharSlice.java,org.exist.util.CharSlice,write,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/util/io/VirtualTempPath.java,org.exist.util.io.VirtualTempPath,initOverflowOutputStream,throws-declaration,IOException,propagate,,
@@ -12158,6 +12188,15 @@ exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidat
 exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,invalidDocumentSystemCatalog,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,invalidDocumentSystemCatalog,try-catch,IOException,custom,,
 exist-core/src/test/java/org/exist/validation/internal/DatabaseResourcesTest.java,org.exist.validation.internal.DatabaseResourcesTest,cleanupRunsOnSuccessPath,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,createTestCollection,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,removeTestCollection,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,xsd11SchemaDocumentItselfStoresUnderValidation,try-catch,IOException,custom,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,conformingInstanceAgainstXsd11SchemaViaLocationHintStores,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,conformingInstanceAgainstXsd11SchemaViaLocationHintStores,try-catch,Exception,custom,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,commentAndCdataSurviveXsd11StoreTimeValidation,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,violatingInstanceAgainstXsd11SchemaViaLocationHintFails,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,violatingInstanceAgainstXsd11SchemaViaLocationHintFails,try-catch,IOException,custom,,
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java,org.exist.validation.Xsd11StoreTimeValidationTest,writeTempSchema,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/validation/TestTools.java,org.exist.validation.TestTools,insertDocumentToURL,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/validation/TestTools.java,org.exist.validation.TestTools,executeQuery,throws-declaration,"EXistException, PermissionDeniedException, XPathException",propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigSchema6000Test.java,org.exist.validation.CollectionConfigSchema6000Test,xsdAcceptsFieldWithoutType,throws-declaration,Exception,propagate,,
@@ -12175,6 +12214,9 @@ exist-core/src/test/java/org/exist/validation/DatabaseCollectionTest.java,org.ex
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,createCollection,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,storeCollectionXconf,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,insertInvalidCollectionXconf,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/validation/ValidatorXsd11Test.java,org.exist.validation.ValidatorXsd11Test,conformingInstanceAgainstXsd11SchemaViaLocationHintIsValid,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/ValidatorXsd11Test.java,org.exist.validation.ValidatorXsd11Test,violatingInstanceAgainstXsd11SchemaViaLocationHintIsNotValid,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/ValidatorXsd11Test.java,org.exist.validation.ValidatorXsd11Test,validate,throws-declaration,"IOException, AuthenticationException",propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationValidationModeTest.java,org.exist.validation.CollectionConfigurationValidationModeTest,tearDownClass,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationValidationModeTest.java,org.exist.validation.CollectionConfigurationValidationModeTest,setUp,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationValidationModeTest.java,org.exist.validation.CollectionConfigurationValidationModeTest,createCollection,throws-declaration,XMLDBException,propagate,,
@@ -12377,6 +12419,9 @@ exist-core/src/test/java/org/exist/util/serializer/HTML5WriterTest.java,org.exis
 exist-core/src/test/java/org/exist/util/serializer/HTML5WriterTest.java,org.exist.util.serializer.HTML5WriterTest,testAttributeQNameWithNonBooleanValue,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,htmlAscii_contains,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,javaUriCustomCollatorCanBeLoaded,throws-declaration,XPathException,propagate,,
+exist-core/src/test/java/org/exist/util/SchemaVersionTest.java,org.exist.util.SchemaVersionTest,logDocumentVersionAcceptsMatchingValue,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/util/SchemaVersionTest.java,org.exist.util.SchemaVersionTest,logDocumentVersionAcceptsMissingAttribute,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/util/SchemaVersionTest.java,org.exist.util.SchemaVersionTest,logDocumentVersionWarnsOnMismatch,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/util/DOMSerializerTest.java,org.exist.util.DOMSerializerTest,serialize,throws-declaration,"ParserConfigurationException, IOException, SAXException, TransformerException, URISyntaxException",propagate,,
 exist-core/src/test/java/org/exist/util/CodePointStringTest.java,org.exist.util.CodePointStringTest,insert,try-catch,IndexOutOfBoundsException,custom,,
 exist-core/src/test/java/org/exist/util/CodePointStringTest.java,org.exist.util.CodePointStringTest,insert,try-catch,IndexOutOfBoundsException,custom,,
@@ -12389,6 +12434,8 @@ exist-core/src/test/java/org/exist/util/AbstractXMLReaderSecurityTest.java,org.e
 exist-core/src/test/java/org/exist/util/AbstractXMLReaderSecurityTest.java,org.exist.util.AbstractXMLReaderSecurityTest,removeTestData,throws-declaration,"EXistException, PermissionDeniedException, IOException, TriggerException",propagate,,
 exist-core/src/test/java/org/exist/util/AbstractXMLReaderSecurityTest.java,org.exist.util.AbstractXMLReaderSecurityTest,serialize,throws-declaration,"TransformerException, IOException",propagate,,
 exist-core/src/test/java/org/exist/util/AbstractXMLReaderSecurityTest.java,org.exist.util.AbstractXMLReaderSecurityTest,createTempSecretFile,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/util/SchemaVersionFixtureAuditTest.java,org.exist.util.SchemaVersionFixtureAuditTest,reportFixturesMissingSchemaVersion,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/util/SchemaVersionFixtureAuditTest.java,org.exist.util.SchemaVersionFixtureAuditTest,findFixtures,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java,org.exist.util.SchemaVersionSyncTest,schemaVersionConstantsMatchXsds,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/util/MimeTableTest.java,org.exist.util.MimeTableTest,testDistributionVersionOfMimeTypesXml,throws-declaration,URISyntaxException,propagate,,
 exist-core/src/test/java/org/exist/util/MimeTableTest.java,org.exist.util.MimeTableTest,testWithDefaultResourceTypeFeature,throws-declaration,URISyntaxException,propagate,,
