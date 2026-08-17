@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<!--
+    OASIS XML catalog for the schema/ directory.
+
+    Provides stable URN aliases for the two codegen base stylesheets so that IDE tools
+    (oXygen, IntelliJ XML plugin, VS Code XML extension) can resolve xsl:import references
+    in per-module fixture stylesheets without requiring a specific relative path depth.
+
+    To enable in oXygen: Preferences → XML → XML Catalogs → Add → browse to this file.
+    To enable in IntelliJ: Settings → Languages & Frameworks → Schemas and DTDs → add this
+    catalog URI as a User Catalog.
+
+    Note: the Maven build does NOT use this catalog for the xml-maven-plugin transform
+    execution — per-module fixture stylesheets use depth-relative hrefs directly (e.g.
+    "../../../../schema/generate-conf-fixture.xsl").  These catalog entries are for IDE
+    tooling only.
+-->
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+    <!--
+        Base stylesheet for generating test conf.xml fixtures from the canonical
+        exist-distribution/src/main/config/conf.xml.
+        Per-fixture stylesheets can import via: xsl:import href="urn:exist-db:codegen:generate-conf-fixture"
+    -->
+    <uri name="urn:exist-db:codegen:generate-conf-fixture"
+         uri="generate-conf-fixture.xsl"/>
+
+    <!--
+        Base stylesheet for generating test controller-config.xml fixtures from the canonical
+        standalone-webapp/WEB-INF/controller-config.xml.
+        Per-fixture stylesheets can import via: xsl:import href="urn:exist-db:codegen:generate-controller-config-fixture"
+    -->
+    <uri name="urn:exist-db:codegen:generate-controller-config-fixture"
+         uri="generate-controller-config-fixture.xsl"/>
+
+</catalog>

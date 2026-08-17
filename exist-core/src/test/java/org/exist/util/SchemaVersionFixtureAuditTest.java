@@ -21,7 +21,7 @@
  */
 package org.exist.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,7 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Visibility check for test/sample fixture copies of the canonical config templates (the ones
@@ -44,12 +45,13 @@ import static org.junit.Assert.assertTrue;
  * so they can't be mechanically regenerated from canonical without destroying intentional
  * per-module customization).
  * <p>
- * None of these ~39 fixtures carry {@link SchemaVersion#ATTRIBUTE}, so none of them are checked
- * for drift the way {@link SchemaVersionSyncTest} checks {@link SchemaVersion} itself. This is
- * the cheaper "visibility before automation" interim step: list which fixtures are missing the
- * attribute, so the gap is visible in CI rather than silent. Actually adding {@code schemaVersion}
- * to all of them (via Maven resource filtering, so it can't drift once added) is a separate,
- * larger follow-up -- this test does not edit any fixture.
+ * Originally none of these ~39 fixtures carried {@link SchemaVersion#ATTRIBUTE}. Several have
+ * since been normalized -- the attribute was added as part of stripping an accidentally-added
+ * LGPL header and other boilerplate drift from a subset of them. {@link #REMAINING_WITHOUT_VERSION}
+ * is the known, explicit list of what's still missing it. This test fails if that set changes --
+ * either grows (a new undocumented fixture appeared) or shrinks without updating the list (a
+ * fixture got fixed but this tracker wasn't updated) -- so it stays an honest, current map of
+ * what's left, not a one-time snapshot.
  */
 public class SchemaVersionFixtureAuditTest {
 
@@ -61,14 +63,24 @@ public class SchemaVersionFixtureAuditTest {
             "exist-distribution/src/main/config/collection.xconf.init",
             "exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml");
 
+    /**
+     * Fixtures not yet normalized -- update this list (not the assertion) as more are fixed.
+     * {@code vector-it} and {@code http-client}'s {@code conf.xml} are deliberate, modern,
+     * hand-written-from-scratch minimal configs, not drift victims, left alone on purpose.
+     * {@code exist-core-jmh}'s {@code conf.xml} is a JMH benchmark resource, not a test fixture.
+     */
+    private static final Set<String> REMAINING_WITHOUT_VERSION = Set.of(
+            "exist-core-jmh/src/main/resources/conf.xml",
+            "extensions/indexes/vector-it/src/test/resources-filtered/conf.xml",
+            "extensions/modules/http-client/src/test/resources/conf.xml");
+
     @Test
     public void reportFixturesMissingSchemaVersion() throws Exception {
         final Path repoRoot = resolveRepoRoot();
 
         final List<Path> fixtures = findFixtures(repoRoot);
-        assertTrue("expected to find test/sample fixture copies of conf.xml/controller-config.xml/"
-                + "collection.xconf.init under " + repoRoot + " (found none -- is repo root resolution broken?)",
-                !fixtures.isEmpty());
+        assertTrue(!fixtures.isEmpty(), "expected to find test/sample fixture copies of conf.xml/controller-config.xml/"
+                + "collection.xconf.init under " + repoRoot + " (found none -- is repo root resolution broken?)");
 
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -78,18 +90,14 @@ public class SchemaVersionFixtureAuditTest {
             final Document doc = factory.newDocumentBuilder().parse(fixture.toFile());
             final String declared = doc.getDocumentElement().getAttribute(SchemaVersion.ATTRIBUTE);
             if (declared == null || declared.isEmpty()) {
-                missing.add(repoRoot.relativize(fixture).toString());
+                missing.add(repoRoot.relativize(fixture).toString().replace('\\', '/'));
             }
         }
 
-        // Not a hard failure (yet) -- every one of these is currently missing schemaVersion, by
-        // design (see class javadoc); this is the visibility step, not the enforcement step. The
-        // assertion just keeps the count itself from silently drifting (e.g. if a fixture
-        // unexpectedly starts carrying schemaVersion, or a new copy appears uninspected).
-        assertTrue("Found " + missing.size() + " fixture(s) without " + SchemaVersion.ATTRIBUTE
-                        + " (expected, see class javadoc -- this is a visibility check, not enforcement): "
-                        + missing,
-                missing.size() == fixtures.size());
+        assertEquals(REMAINING_WITHOUT_VERSION, Set.copyOf(missing),
+                "set of fixtures missing " + SchemaVersion.ATTRIBUTE + " changed -- if you fixed one, "
+                        + "remove it from REMAINING_WITHOUT_VERSION; if a new undocumented fixture appeared, "
+                        + "add it there (or better, give it schemaVersion to begin with): " + missing);
     }
 
     private static List<Path> findFixtures(final Path repoRoot) throws IOException {

@@ -38,6 +38,13 @@
     <name>eXist-db EXPath Repository Module</name>
     <description>eXist-db XQuery EXPath Repository Module</description>
 
+    <properties>
+        <!-- expathrepo uses target/generated-test-resources-conf (not the default
+             target/generated-test-resources) for conf.xml, to avoid mixing with the
+             binary .xar test resource. Skip the root profile's standard output path. -->
+        <skip.conf.fixture.profile>true</skip.conf.fixture.profile>
+    </properties>
+
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
@@ -100,9 +107,62 @@
             <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <!--
+                Separate from the (filtering=false, binary .xar) generated-test-resources dir
+                above: this one needs filtering=true for the ${basedir} substitution in the
+                generated conf.xml below.
+            -->
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources-conf</directory>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>
+            <!--
+                Generates this module's test conf.xml from the canonical
+                exist-distribution/.../conf.xml via src/test/resources-filtered/conf-fixture.xsl
+                (which imports schema/generate-conf-fixture.xsl, see that stylesheet's header).
+                Runs before process-test-resources, so the standard testResource filtering above
+                (the ${basedir} substitution) still applies to the generated output. Uses its own
+                output dir, separate from the (filtering=false) generated-test-resources used for
+                the binary .xar copy below.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>conf-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Explicit skip=false: this execution shares its ID with the
+                                 conf-fixture-codegen profile in exist-parent, so Maven merges
+                                 them. The profile's <skip>${skip.conf.fixture.profile}</skip>
+                                 (which is 'true' for this module) would otherwise be inherited
+                                 and silently suppress this transform. -->
+                            <skip>false</skip>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../../../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources-conf</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

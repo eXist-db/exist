@@ -224,8 +224,7 @@ public class Transform {
 
         // setResourceResolver() rather than setURIResolver() -- Saxon 12's XsltCompiler still
         // accepts setURIResolver() (it wraps via ResourceResolverWrappingURIResolver), but going
-        // directly to the ResourceResolver API avoids that extra layer. See #350 /
-        // plans/catalog-dtd.plan.md.
+        // directly to the ResourceResolver API avoids that extra layer. See #350.
         final URIResolution.CompileTimeURIResolver delegate = new URIResolution.CompileTimeURIResolver(context, fnTransform);
         xsltCompiler.setResourceResolver(request -> {
             // Prefer the literal, unresolved href (relativeUri) over Saxon's already-resolved uri

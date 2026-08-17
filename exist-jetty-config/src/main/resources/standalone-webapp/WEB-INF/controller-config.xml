@@ -8,21 +8,18 @@
   ++ handling. Use this configuration if you need a minimum setup with web content
   ++ stored in the db.
 -->
-<configuration xmlns="http://exist.sourceforge.net/NS/exist">
+<configuration xmlns="http://exist.sourceforge.net/NS/exist" schemaVersion="1.1.1">
     <!-- REST interface -->
     <forward pattern="/rest" servlet="EXistServlet"/>
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- WebDAV interface -->
 	<forward pattern="/webdav/" servlet="webdav"/>
-    
+
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
-    
-    <!-- betterFORM resource-servlet -->
-    <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
 
-    <!-- 
+    <!--
         ++ Main web application is served from the
         ++ database. URLs starting with /db are handled
         ++ by the REST servlet.

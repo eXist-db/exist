@@ -206,13 +206,54 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*-fixture.xsl</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>
+            <!--
+                Generates this module's test controller-config.xml from the canonical
+                standalone-webapp/WEB-INF/controller-config.xml via the fixture stylesheet.
+                conf.xml codegen is handled by the root pom's conf-fixture-codegen profile.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>controller-config-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${maven.multiModuleProjectDirectory}/exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>controller-config.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/standalone-webapp/WEB-INF</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -227,7 +268,27 @@
                             <excludes>
                                 <exclude>**/log4j2.xml</exclude>
                                 <exclude>**/conf.xml</exclude>
+                                <!--
+                                    eXist-db-authored fixture codegen stylesheets, not derived
+                                    from the original EXQuery/RESTXQ BSD-3 licensed sources
+                                -->
+                                <exclude>src/test/resources-filtered/conf-fixture.xsl</exclude>
+                                <exclude>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</exclude>
                             </excludes>
+                        </licenseSet>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+
+                                Applies to the fixture codegen stylesheets above: they are new
+                                eXist-db tooling, not modifications of Adam Retter's original
+                                BSD-3 conf.xml/controller-config.xml.
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <includes>
+                                <include>src/test/resources-filtered/conf-fixture.xsl</include>
+                                <include>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</include>
+                            </includes>
                         </licenseSet>
                     </licenseSets>
                 </configuration>

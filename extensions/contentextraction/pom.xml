@@ -106,10 +106,18 @@
             <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.xsl</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.build.directory}/generated-test-resources</directory>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
 
         <plugins>
+
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
