@@ -216,6 +216,12 @@
                     EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
                 -->
                 <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+
+                <!--
+                    OpenAPI startup trigger: scans /db/apps/ for controller.json
+                    files and registers routes for built-in OpenAPI routing.
+                -->
+                <trigger class="org.exist.http.openapi.OpenApiStartupTrigger"/>
                 
                 <!-- 
                     AutoDeploymentTrigger will install any .xar application package it finds
