@@ -119,6 +119,15 @@ public class MutableCollection implements Collection {
     @Deprecated private CollectionMetadata collectionMetadata = null;
 
     /**
+     * Discards all cached XSD 1.1 schema-by-namespace resolutions -- called alongside
+     * {@code Jaxp.clearXsd11DetectionCache()} by {@code validation:clear-grammar-cache()}
+     * so one admin action clears both XSD-1.1-detection caches, not just the schemaLocation-hint one.
+     */
+    public static void clearXsd11SchemaByNamespaceCache() {
+        Xsd11ValidationHelper.clearSchemaCache();
+    }
+
+    /**
      * Constructs a Collection Object (not yet persisted)
      *
      * @param broker The database broker
@@ -1147,9 +1156,8 @@ public class MutableCollection implements Collection {
             // Store XML Document
 
             final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> validatorFn = (xmlReader1, validateIndexInfo) -> {
-                validateIndexInfo.setReader(xmlReader1, null);
                 try {
-                      xmlReader1.parse(source);
+                    Xsd11ValidationHelper.parseOrValidateXmlSource(broker, xmlReader1, validateIndexInfo, source);
                 } catch(final SAXException e) {
                     throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
                 } catch(final IOException e) {
@@ -1159,8 +1167,7 @@ public class MutableCollection implements Collection {
 
             final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> parserFn = (xmlReader1, storeIndexInfo) -> {
                 try {
-                    storeIndexInfo.setReader(xmlReader1, null);
-                    xmlReader1.parse(source);
+                    Xsd11ValidationHelper.parseOrValidateXmlSource(broker, xmlReader1, storeIndexInfo, source);
                 } catch(final IOException e) {
                     throw new EXistException(e);
                 }

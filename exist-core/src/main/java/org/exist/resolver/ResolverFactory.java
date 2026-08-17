@@ -84,11 +84,7 @@ public interface ResolverFactory {
      * @throws URISyntaxException if one of the catalog URI is invalid
      */
     static Resolver newResolver(final List<Tuple2<String, Optional<InputSource>>> catalogs) throws URISyntaxException {
-        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
-        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
-        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
-        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
-        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+        final XMLResolverConfiguration resolverConfiguration = newCatalogConfiguration();
 
         for (final Tuple2<String, Optional<InputSource>> catalog : catalogs) {
             String strCatalogUri = catalog._1;
@@ -119,11 +115,7 @@ public interface ResolverFactory {
      * @throws URISyntaxException if one of the catalog URI is invalid
      */
     static Resolver newResolverFromSax(final List<Tuple2<String, Optional<SaxProducer>>> catalogs) throws URISyntaxException {
-        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
-        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
-        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
-        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
-        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+        final XMLResolverConfiguration resolverConfiguration = newCatalogConfiguration();
 
         final CatalogManager manager = resolverConfiguration.getFeature(ResolverFeature.CATALOG_MANAGER);
 
@@ -146,6 +138,24 @@ public interface ResolverFactory {
         }
 
         return new Resolver(resolverConfiguration);
+    }
+
+    /**
+     * Creates an {@link XMLResolverConfiguration} with the common features and catalog
+     * setup shared by {@link #newResolver(List)} and {@link #newResolverFromSax(List)}.
+     *
+     * @return a new resolver configuration, ready for catalogs to be added.
+     */
+    private static XMLResolverConfiguration newCatalogConfiguration() {
+        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
+        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
+        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
+        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
+        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+
+        resolverConfiguration.removeCatalog("./catalog.xml");
+
+        return resolverConfiguration;
     }
 
     /**

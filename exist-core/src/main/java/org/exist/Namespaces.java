@@ -39,6 +39,7 @@ public interface Namespaces {
 	String SCHEMA_NS = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";
 	String SCHEMA_INSTANCE_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
+    String XSD_1_1_NS = "http://www.w3.org/XML/XMLSchema/v1.1";
     
     // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
 	String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	

@@ -222,24 +222,43 @@ public class Transform {
             xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
         }
 
-        xsltCompiler.setURIResolver(new URIResolution.CompileTimeURIResolver(context, fnTransform) {
-            @Override  public Source resolve(final String href, final String base) throws TransformerException {
-                // Correct error from URI resolution when there is no base
-                try {
-                    final URI hrefURI = URI.create(href);
-                    if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
-                        final XPathException resolutionException = new XPathException(fnTransform,
-                            ErrorCodes.XTSE0165,
-                            """
-                            transform using a relative href,\s
-                            using option stylesheet-text, but without stylesheet-base-uri""");
-                        throw new TransformerException(resolutionException);
-                    }
-                } catch (final IllegalArgumentException e) {
-                    throw new TransformerException(e);
+        // setResourceResolver() rather than setURIResolver() -- Saxon 12's XsltCompiler still
+        // accepts setURIResolver() (it wraps via ResourceResolverWrappingURIResolver), but going
+        // directly to the ResourceResolver API avoids that extra layer. See #350 /
+        // plans/catalog-dtd.plan.md.
+        final URIResolution.CompileTimeURIResolver delegate = new URIResolution.CompileTimeURIResolver(context, fnTransform);
+        xsltCompiler.setResourceResolver(request -> {
+            // Prefer the literal, unresolved href (relativeUri) over Saxon's already-resolved uri
+            // whenever it's available -- matches Saxon's own ResourceRequest.resolve() convention.
+            // Deliberately NOT gated on baseUri also being non-null: a relative relativeUri with a
+            // null baseUri is exactly the case the XTSE0165 check below exists to catch: gating on
+            // baseUri here would fall back to the already-resolved/absolute uri instead and let
+            // that case slip past the check undetected.
+            final String href = request.relativeUri != null ? request.relativeUri : request.uri;
+            final String base = request.baseUri;
+            if (href == null) {
+                // Saxon supplied neither a literal href nor a resolved uri -- nothing to resolve.
+                throw net.sf.saxon.trans.XPathException.makeXPathException(
+                        new TransformerException("Could not resolve a Saxon ResourceRequest with no href (uri and relativeUri both null)"));
+            }
+            try {
+                final URI hrefURI = URI.create(href);
+                if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
+                    final XPathException resolutionException = new XPathException(fnTransform,
+                        ErrorCodes.XTSE0165,
+                        """
+                        transform using a relative href,\s
+                        using option stylesheet-text, but without stylesheet-base-uri""");
+                    throw net.sf.saxon.trans.XPathException.makeXPathException(new TransformerException(resolutionException));
                 }
-                // Checked the special error case, defer to eXist resolution
-                return super.resolve(href, base);
+            } catch (final IllegalArgumentException e) {
+                throw net.sf.saxon.trans.XPathException.makeXPathException(new TransformerException(e));
+            }
+            // Checked the special error case, defer to eXist resolution
+            try {
+                return delegate.resolve(href, base);
+            } catch (final TransformerException e) {
+                throw net.sf.saxon.trans.XPathException.makeXPathException(e);
             }
         });
 
