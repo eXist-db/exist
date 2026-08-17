@@ -47,6 +47,13 @@
 
     <properties>
         <assemble.dir>${project.build.directory}/${project.artifactId}-dir</assemble.dir>
+
+        <!-- Defaults for the explicitly invoked xqts-compare goal (see README.md) -->
+        <previous-result/>
+        <current-result/>
+        <previous-label>previous</previous-label>
+        <current-label>current</current-label>
+        <comparison-output-dir>${project.build.directory}/xqts-comparison</comparison-output-dir>
     </properties>
 
     <dependencies>
@@ -130,6 +137,47 @@
                                     </platforms>
                                 </daemon>
                             </daemons>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <!--
+                        Compares the results of two exist-xqts-runner runs and writes
+                        comparison-results.xml plus its GitHub-flavoured Markdown
+                        rendering comparison-results.md to ${comparison-output-dir}:
+
+                            mvn -pl exist-xqts exec:exec@xqts-compare \
+                                -Dprevious-result=<dir> -Dcurrent-result=<dir>
+
+                        phase=none is deliberate: the comparison must NOT run on an
+                        ordinary `mvn package`/`mvn install`, only when invoked
+                        directly. See README.md for the arguments.
+                    -->
+                    <execution>
+                        <id>xqts-compare</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${java.home}/bin/java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <!-- Saxon and its xmlresolver, provided via exist-core -->
+                                <classpath/>
+                                <argument>net.sf.saxon.Transform</argument>
+                                <argument>-xsl:${project.basedir}/src/main/xslt/compare.xslt</argument>
+                                <argument>-it:compare</argument>
+                                <argument>-o:${comparison-output-dir}/comparison-results.xml</argument>
+                                <argument>previous-result=${previous-result}</argument>
+                                <argument>current-result=${current-result}</argument>
+                                <argument>previous-label=${previous-label}</argument>
+                                <argument>current-label=${current-label}</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
