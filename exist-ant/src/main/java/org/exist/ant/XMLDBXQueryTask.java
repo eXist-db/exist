@@ -212,10 +212,10 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             }
 
             final Path file = dest.toPath().resolve(fname);
-            writer = Files.newBufferedWriter(file, UTF_8);
+            writer = Files.newBufferedWriter(file);
 
         } else {
-            writer = Files.newBufferedWriter(dest.toPath(), UTF_8);
+            writer = Files.newBufferedWriter(dest.toPath());
         }
         return writer;
     }

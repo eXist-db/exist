@@ -116,7 +116,7 @@ public class EvalWebSocketEndpoint {
 
             Subject subject = null;
             if (authHeaders != null && !authHeaders.isEmpty()) {
-                final String credentials = authHeaders.get(0);
+                final String credentials = authHeaders.getFirst();
                 if (credentials.toLowerCase().startsWith("basic ")) {
                     try {
                         final byte[] decoded = Base64.decodeBase64(

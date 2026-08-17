@@ -25,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -61,9 +60,9 @@ public class JaxpSchemaLocationSecurityTest {
     public static void setup() throws Exception {
         tempDir = Files.createTempDirectory("jaxp-security-test");
         final Path instance = tempDir.resolve("instance.xml");
-        Files.writeString(instance, "<root/>", StandardCharsets.UTF_8);
-        Files.writeString(tempDir.resolve("schema11.xsd"), XSD_1_1_SCHEMA, StandardCharsets.UTF_8);
-        Files.writeString(tempDir.resolve("schema10.xsd"), XSD_1_0_SCHEMA, StandardCharsets.UTF_8);
+        Files.writeString(instance, "<root/>");
+        Files.writeString(tempDir.resolve("schema11.xsd"), XSD_1_1_SCHEMA);
+        Files.writeString(tempDir.resolve("schema10.xsd"), XSD_1_0_SCHEMA);
         fileBaseUri = instance.toUri().toString();
     }
 

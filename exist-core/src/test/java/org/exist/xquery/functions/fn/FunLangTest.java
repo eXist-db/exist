@@ -54,13 +54,15 @@ public class FunLangTest {
     private static final String TEST_COLLECTION = "fun-lang-test";
 
     private static final String MODULE =
-        "module namespace mod = \"http://exist-db.org/test/fun-lang\";\n" +
-        "\n" +
-        "declare variable $mod:data := <root xml:lang=\"en\"><p>hello</p></root>;\n" +
-        "\n" +
-        "declare function mod:check-lang($lang as xs:string) as xs:boolean {\n" +
-        "    lang($lang, $mod:data/p)\n" +
-        "};\n";
+        """
+        module namespace mod = "http://exist-db.org/test/fun-lang";
+        
+        declare variable $mod:data := <root xml:lang="en"><p>hello</p></root>;
+        
+        declare function mod:check-lang($lang as xs:string) as xs:boolean {
+            lang($lang, $mod:data/p)
+        };
+        """;
 
     @BeforeClass
     public static void setUp() throws XMLDBException {

@@ -108,7 +108,7 @@ public class WebDavLockStore {
      */
     public LockInfo getLock(final String resourceUri) {
         final List<LockInfo> locks = getLocks(resourceUri);
-        return locks.isEmpty() ? null : locks.get(0);
+        return locks.isEmpty() ? null : locks.getFirst();
     }
 
     /**

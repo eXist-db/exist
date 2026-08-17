@@ -175,9 +175,9 @@ public class FnFormatNumbers extends BasicFunction {
 
         final Item optionsItem = args[2].itemAt(0);
 
-        if (optionsItem instanceof MapType) {
+        if (optionsItem instanceof MapType type) {
             // XQ4 map overload
-            return resolveDecimalFormatFromMap((MapType) optionsItem);
+            return resolveDecimalFormatFromMap(type);
         }
 
         // XQ3.1 string overload (decimal format name) — also accepts xs:QName

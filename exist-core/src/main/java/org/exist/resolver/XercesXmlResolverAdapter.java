@@ -149,14 +149,11 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
      * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
      */
     public static void setXmlReaderEntityResolver(final XMLReader xmlReader, @Nullable final org.w3c.dom.ls.LSResourceResolver resolver) throws SAXNotSupportedException, SAXNotRecognizedException {
-        if (resolver instanceof Resolver xmlResolver) {
-            setXmlReaderEntityResolver(xmlReader, xmlResolver);
-        } else if (resolver instanceof XMLEntityResolver xmlEntityResolver) {
-            setXmlReaderEntityResolver(xmlReader, xmlEntityResolver);
-        } else if (resolver == null) {
-            setXmlReaderEntityResolver(xmlReader, (XMLEntityResolver) null);
-        } else {
-            throw new SAXNotSupportedException("Unsupported LSResourceResolver implementation: " + resolver.getClass().getName());
+        switch (resolver) {
+            case null -> setXmlReaderEntityResolver(xmlReader, (XMLEntityResolver) null);
+            case Resolver xmlResolver -> setXmlReaderEntityResolver(xmlReader, xmlResolver);
+            case XMLEntityResolver xmlEntityResolver -> setXmlReaderEntityResolver(xmlReader, xmlEntityResolver);
+            default -> throw new SAXNotSupportedException("Unsupported LSResourceResolver implementation: " + resolver.getClass().getName());
         }
     }
 

@@ -54,7 +54,6 @@ import javax.annotation.Nullable;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Read document from embedded database as an InputStream.
@@ -132,7 +131,7 @@ public class EmbeddedInputStream extends InputStream {
                                 // serialize the XML to a temporary file
                                 final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
                                 final Path tempFile = tempFileManager.getTemporaryFile();
-                                try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+                                try (final Writer writer = Files.newBufferedWriter(tempFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
                                     serializer.serialize(resource, writer);
                                 }
 

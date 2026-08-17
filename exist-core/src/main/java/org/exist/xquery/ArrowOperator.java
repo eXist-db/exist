@@ -155,8 +155,7 @@ public class ArrowOperator extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         }
-        final FunctionReference fref = (FunctionReference) item0;
-        try {
+        try (final FunctionReference fref = (FunctionReference) item0) {
             final List<Expression> fparams = new ArrayList<>(parameters.size() + 1);
             fparams.add(new ContextParam(context, leftValue));
             fparams.addAll(parameters);
@@ -167,8 +166,6 @@ public class ArrowOperator extends AbstractExpression {
             fref.analyze(new AnalyzeContextInfo(cachedContextInfo));
             // Evaluate the function
             return fref.eval(null);
-        } finally {
-            fref.close();
         }
     }
 

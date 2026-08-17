@@ -24,7 +24,6 @@ package org.exist.xquery.functions.validation;
 import org.junit.After;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -58,9 +57,9 @@ public class JaxpXsd11DetectionCacheTest {
         final Path tempDir = Files.createTempDirectory("jaxp-xsd11-cache-test");
         try {
             final Path instance = tempDir.resolve("instance.xml");
-            Files.writeString(instance, "<root/>", StandardCharsets.UTF_8);
+            Files.writeString(instance, "<root/>");
             final Path schema = tempDir.resolve("schema.xsd");
-            Files.writeString(schema, XSD_1_1_SCHEMA, StandardCharsets.UTF_8);
+            Files.writeString(schema, XSD_1_1_SCHEMA);
 
             final String baseUri = instance.toUri().toString();
 
@@ -70,7 +69,7 @@ public class JaxpXsd11DetectionCacheTest {
             // Flip the on-disk content to XSD 1.0 without going through the cache -- if the second
             // call is actually served from cache, it must still report the stale (cached) "true",
             // not re-read this new content.
-            Files.writeString(schema, XSD_1_0_SCHEMA, StandardCharsets.UTF_8);
+            Files.writeString(schema, XSD_1_0_SCHEMA);
             assertTrue("second call should be served from cache, not re-read the changed file",
                     Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
 
@@ -91,9 +90,9 @@ public class JaxpXsd11DetectionCacheTest {
         final Path tempDir = Files.createTempDirectory("jaxp-xsd11-cache-subject-test");
         try {
             final Path instance = tempDir.resolve("instance.xml");
-            Files.writeString(instance, "<root/>", StandardCharsets.UTF_8);
+            Files.writeString(instance, "<root/>");
             final Path schema = tempDir.resolve("schema.xsd");
-            Files.writeString(schema, XSD_1_1_SCHEMA, StandardCharsets.UTF_8);
+            Files.writeString(schema, XSD_1_1_SCHEMA);
 
             final String baseUri = instance.toUri().toString();
 

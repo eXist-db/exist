@@ -593,7 +593,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             }
 
             final byte[] chunk;
-            if (res instanceof ExtendedResource) {
+            if (res instanceof ExtendedResource extendedResource) {
                 if(res instanceof AbstractRemoteResource resource) {
                     final long contentLen = resource.getContentLength();
                     if (contentLen != -1) {
@@ -603,7 +603,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                         chunk = new byte[MAX_UPLOAD_CHUNK];
                     }
                 } else {
-                    final long streamLen = ((ExtendedResource)res).getStreamLength();
+                    final long streamLen = extendedResource.getStreamLength();
                     if (streamLen != -1) {
                         // stream length is known
                         chunk = new byte[(int)Math.min(streamLen, MAX_UPLOAD_CHUNK)];

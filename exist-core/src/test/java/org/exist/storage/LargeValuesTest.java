@@ -48,7 +48,6 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
@@ -134,7 +133,7 @@ public class LargeValuesTest {
 
                 final Path tempFile = Files.createTempFile("eXist", ".xml");
                 final Serializer serializer = broker.borrowSerializer();
-                try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
+                try (final Writer writer = Files.newBufferedWriter(tempFile)) {
                     serializer.serialize(lockedDoc.getDocument(), writer);
                 } finally {
                     broker.returnSerializer(serializer);
@@ -175,7 +174,7 @@ public class LargeValuesTest {
 
     private Path createDocument() throws IOException {
         final Path file = Files.createTempFile("eXistTest", ".xml");
-        try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
+        try(final Writer writer = Files.newBufferedWriter(file)) {
             final Random r = new Random();
             writer.write("<test>");
             for(int i = 0; i < KEY_COUNT; i++) {

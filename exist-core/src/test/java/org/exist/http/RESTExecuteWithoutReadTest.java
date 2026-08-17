@@ -127,13 +127,16 @@ public class RESTExecuteWithoutReadTest {
     private static final String SERIALIZE_FAIL_QUERY = "xquery version \"3.1\";\nlet $secret := 1\nreturn function() { $secret }";
 
     private static final String LIB_MODULE_SRC =
-            "xquery version \"3.1\";\n" +
-            "module namespace lib = \"http://exist-db.org/test/execwithoutread/lib\";\n" +
-            "declare function lib:answer() as xs:integer { 42 };";
+            """
+            xquery version "3.1";
+            module namespace lib = "http://exist-db.org/test/execwithoutread/lib";
+            declare function lib:answer() as xs:integer { 42 };\
+            """;
     private static final String IMPORTS_LIB_SRC =
-            "xquery version \"3.1\";\n" +
-            "import module namespace lib = \"http://exist-db.org/test/execwithoutread/lib\" at \"lib.xqm\";\n" +
-            "<result>{ lib:answer() }</result>";
+            """
+            xquery version "3.1";
+            import module namespace lib = "http://exist-db.org/test/execwithoutread/lib" at "lib.xqm";
+            <result>{ lib:answer() }</result>""";
 
     private static String credentials;
 

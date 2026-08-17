@@ -184,8 +184,8 @@ public class SequenceType {
         // takes 1 arg, the key; map(K,V) carries 2 type parameters). Restrict the
         // function-arity/return check to plain function() tests so map and array
         // values continue to satisfy their typed tests.
-        if (primaryType == Type.FUNCTION && item instanceof FunctionReference
-                && !checkFunctionType((FunctionReference) item)) {
+        if (primaryType == Type.FUNCTION && item instanceof FunctionReference reference
+                && !checkFunctionType(reference)) {
             return false;
         }
 

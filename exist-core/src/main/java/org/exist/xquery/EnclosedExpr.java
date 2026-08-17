@@ -173,8 +173,7 @@ public class EnclosedExpr extends PathExpr {
                             // in-scope-prefixes() is neutralized for inherited namespace bindings.
                             if (noInherit && ancestorNS != null
                                     && next.getType() == Type.ELEMENT
-                                    && next instanceof NodeImpl) {
-                                final NodeImpl nodeImpl = (NodeImpl) next;
+                                    && next instanceof NodeImpl nodeImpl) {
                                 final boolean isPreExisting = (innerBuilder == null)
                                         || (nodeImpl.getOwnerDocument() != innerBuilder.getDocument());
                                 if (isPreExisting) {
