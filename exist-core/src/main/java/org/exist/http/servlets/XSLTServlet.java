@@ -347,7 +347,8 @@ public class XSLTServlet extends HttpServlet {
     /*
      * Please explain what this method is about. Write about assumptions / input.
      */
-    private @Nullable Path getCurrentDir(HttpServletRequest request) {
+    // package-private rather than private so it is directly testable without reflection
+    @Nullable Path getCurrentDir(HttpServletRequest request) {
         String path = request.getPathTranslated();
         if (path == null) {
             path = request.getRequestURI().substring(request.getContextPath().length());

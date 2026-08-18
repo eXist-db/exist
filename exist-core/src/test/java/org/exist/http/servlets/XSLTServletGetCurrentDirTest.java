@@ -23,11 +23,9 @@ package org.exist.http.servlets;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createNiceMock;
@@ -46,7 +44,7 @@ import static org.junit.Assert.assertNull;
 public class XSLTServletGetCurrentDirTest {
 
     @Test
-    public void nullPathTranslatedAndNullRealPathReturnsNullInsteadOfNPE() throws Exception {
+    public void nullPathTranslatedAndNullRealPathReturnsNullInsteadOfNPE() throws ServletException {
         final ServletContext mockContext = createNiceMock(ServletContext.class);
         expect(mockContext.getRealPath(anyString())).andReturn(null).anyTimes();
         replay(mockContext);
@@ -64,16 +62,8 @@ public class XSLTServletGetCurrentDirTest {
         expect(request.getContextPath()).andReturn("/exist").anyTimes();
         replay(request);
 
-        final Method getCurrentDir = XSLTServlet.class.getDeclaredMethod("getCurrentDir", HttpServletRequest.class);
-        getCurrentDir.setAccessible(true);
-
-        try {
-            // Before the fix: Path.of(null) throws NullPointerException, wrapped by reflection in
-            // InvocationTargetException.
-            final Object currentDir = getCurrentDir.invoke(servlet, request);
-            assertNull("no directory can be resolved when the container has no real path", currentDir);
-        } catch (final InvocationTargetException e) {
-            throw (Exception) e.getCause();
-        }
+        // Before the fix: Path.of(null) throws NullPointerException.
+        final Object currentDir = servlet.getCurrentDir(request);
+        assertNull("no directory can be resolved when the container has no real path", currentDir);
     }
 }

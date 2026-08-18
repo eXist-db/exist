@@ -25,9 +25,6 @@ import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import org.junit.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
@@ -46,7 +43,7 @@ import static org.junit.Assert.assertNull;
 public class XQueryURLRewriteFindSourceFromFsTest {
 
     @Test
-    public void nullRealPathReturnsNullInsteadOfNPE() throws Exception {
+    public void nullRealPathReturnsNullInsteadOfNPE() {
         final ServletContext mockContext = createNiceMock(ServletContext.class);
         expect(mockContext.getRealPath(anyString())).andReturn(null).anyTimes();
         replay(mockContext);
@@ -58,17 +55,8 @@ public class XQueryURLRewriteFindSourceFromFsTest {
         final XQueryURLRewrite rewrite = new XQueryURLRewrite();
         rewrite.init(mockConfig);
 
-        final Method findSourceFromFs = XQueryURLRewrite.class.getDeclaredMethod(
-                "findSourceFromFs", String.class, String[].class);
-        findSourceFromFs.setAccessible(true);
-
-        try {
-            // Before the fix: Path.of(null) throws NullPointerException, wrapped by reflection in
-            // InvocationTargetException.
-            final Object sourceInfo = findSourceFromFs.invoke(rewrite, "/", new String[]{"apps", "optimize.xql"});
-            assertNull("no filesystem controller can be found when the container has no real path", sourceInfo);
-        } catch (final InvocationTargetException e) {
-            throw (Exception) e.getCause();
-        }
+        // Before the fix: Path.of(null) throws NullPointerException.
+        final Object sourceInfo = rewrite.findSourceFromFs("/", new String[]{"apps", "optimize.xql"});
+        assertNull("no filesystem controller can be found when the container has no real path", sourceInfo);
     }
 }

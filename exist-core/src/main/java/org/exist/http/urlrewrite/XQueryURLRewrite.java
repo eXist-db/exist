@@ -861,7 +861,8 @@ public class XQueryURLRewrite extends HttpServlet {
         return findDbControllerXql(broker, collectionUri, subResourceUri);
     }
 
-    private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
+    // package-private rather than private so it is directly testable without reflection
+    SourceInfo findSourceFromFs(final String basePath, final String[] components) {
         final String realPath = config.getServletContext().getRealPath(basePath);
         // the Servlet API permits getRealPath() to return null when the container cannot map
         // basePath to a location on disk; there is no filesystem controller to find.

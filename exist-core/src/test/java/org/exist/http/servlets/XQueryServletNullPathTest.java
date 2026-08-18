@@ -43,7 +43,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -180,6 +179,7 @@ public class XQueryServletNullPathTest {
 
                 @Override
                 public void setWriteListener(final WriteListener writeListener) {
+                    // non-blocking I/O is not exercised by this test; nothing to wire up here
                 }
 
                 @Override
@@ -200,7 +200,7 @@ public class XQueryServletNullPathTest {
         }
 
         String getBodyAsString() {
-            return body.toString(StandardCharsets.UTF_8);
+            return body.toString(UTF_8);
         }
     }
 }
