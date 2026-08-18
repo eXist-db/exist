@@ -863,6 +863,12 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
         final String realPath = config.getServletContext().getRealPath(basePath);
+        // the Servlet API permits getRealPath() to return null when the container cannot map
+        // basePath to a location on disk; there is no filesystem controller to find.
+        if (realPath == null) {
+            LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
+            return null;
+        }
         final Path baseDir = Path.of(realPath);
         if (!Files.isDirectory(baseDir)) {
             LOG.warn("Base path for XQueryURLRewrite does not point to a directory");

@@ -117,11 +117,11 @@ public class ScaleImageJAI extends HttpServlet {
 			Path baseDir = getAbsolutePath(baseDirStr);
 			store = new FileSystemStorage(baseDir);
 		}
-		
+
 		String outputDirStr = config.getInitParameter("output-dir");
 		if (outputDirStr == null)
 			outputDirStr = "scaled";
-		
+
 		outputDir = getAbsolutePath(outputDirStr);
 		if (!Files.exists(outputDir)) {
 			try {
@@ -142,10 +142,16 @@ public class ScaleImageJAI extends HttpServlet {
 			caching = cacheStr.equalsIgnoreCase("yes") || cacheStr.equalsIgnoreCase("true");
 	}
 
-	private Path getAbsolutePath(String dirStr) {
+	private Path getAbsolutePath(String dirStr) throws ServletException {
 		Path dir = Paths.get(dirStr);
 		if (!dir.isAbsolute()) {
 			String path = getServletConfig().getServletContext().getRealPath(".");
+			// the Servlet API permits getRealPath() to return null when the webapp is not
+			// exploded on disk (e.g. served from a packed/embedded context).
+			if (path == null) {
+				throw new ServletException("Cannot resolve relative path '" + dirStr
+						+ "' to an absolute path: the servlet container has no real path for \".\"");
+			}
 			return Paths.get(path, dirStr);
 		}
 		return dir;

@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
+import javax.annotation.Nullable;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -229,7 +230,8 @@ public class XSLTServlet extends HttpServlet {
                 } else if (uri.startsWith("xmldb:exist://")) {
                     baseUri = XmldbURI.xmldbUriFor(uri).getCollectionPath();
                 } else {
-                    baseUri = getCurrentDir(request).toAbsolutePath().toString();
+                    final Path currentDir = getCurrentDir(request);
+                    baseUri = currentDir == null ? null : currentDir.toAbsolutePath().toString();
                 }
                 xinclude.setModuleLoadPath(baseUri);
 
@@ -321,7 +323,13 @@ public class XSLTServlet extends HttpServlet {
 
                 } else {
                     // relative path is relative to the current working directory
-                    f = getCurrentDir(request).resolve(stylesheet);
+                    final Path currentDir = getCurrentDir(request);
+                    if (currentDir == null) {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                                "Stylesheet not found (URL: " + stylesheet + ")");
+                        return null;
+                    }
+                    f = currentDir.resolve(stylesheet);
                     stylesheet = f.toUri().toASCIIString();
                 }
 
@@ -339,7 +347,7 @@ public class XSLTServlet extends HttpServlet {
     /*
      * Please explain what this method is about. Write about assumptions / input.
      */
-    private Path getCurrentDir(HttpServletRequest request) {
+    private @Nullable Path getCurrentDir(HttpServletRequest request) {
         String path = request.getPathTranslated();
         if (path == null) {
             path = request.getRequestURI().substring(request.getContextPath().length());
@@ -348,6 +356,12 @@ public class XSLTServlet extends HttpServlet {
                 path = path.substring(0, p);
             }
             path = getServletContext().getRealPath(path);
+            // the Servlet API permits both getPathTranslated() and getRealPath() to return null
+            // when the container cannot map the request to a location on disk (e.g. a request
+            // forwarded to a database-only resource); there is no directory to report.
+            if (path == null) {
+                return null;
+            }
         }
 
         final Path file = Path.of(path).normalize();
