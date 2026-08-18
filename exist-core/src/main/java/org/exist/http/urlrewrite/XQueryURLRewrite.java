@@ -320,7 +320,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
                     // store the original request URI to org.exist.forward.request-uri
                     modifiedRequest.setAttribute(RQ_ATTR_REQUEST_URI, request.getRequestURI());
-                    modifiedRequest.setAttribute(RQ_ATTR_SERVLET_PATH, request.getServletPath());
+                    modifiedRequest.setAttribute(RQ_ATTR_SERVLET_PATH, getServletPathSafely(request));
 
                 }
                 if (LOG.isTraceEnabled()) {
@@ -369,6 +369,29 @@ public class XQueryURLRewrite extends HttpServlet {
             throw new ServletException("An error occurred while processing request to " + request.getRequestURI() + ": "
                     + e.getMessage(), e);
 
+        }
+    }
+
+    /**
+     * Under Jetty 12's EE10 servlet module, {@link HttpServletRequest#getServletPath()}
+     * throws {@code IllegalArgumentException} (surfaced to the client as a 400 response)
+     * when the request URI contains an ambiguous path segment (e.g. a real '/' next to
+     * an encoded '%2F'), even though {@link HttpServletRequest#getRequestURI()} on the
+     * very same request remains safe to call. This servlet is always mapped with
+     * {@code url-pattern} {@code /*} (see web.xml), a path-prefix mapping with an empty
+     * prefix, so per the Jakarta Servlet spec {@code getServletPath()} is defined to
+     * always return {@code ""} here regardless of the request URI -- Jetty's own
+     * ambiguity check is a blanket refusal to answer, not a sign the answer differs.
+     * Fall back to that known value instead of failing the whole request.
+     *
+     * @see <a href="https://github.com/jetty/jetty.project/issues/12346">jetty/jetty.project#12346</a>
+     */
+    static String getServletPathSafely(final HttpServletRequest request) {
+        try {
+            return request.getServletPath();
+        } catch (final IllegalArgumentException e) {
+            LOG.debug("Falling back to \"\" for servlet path of ambiguous request URI {}: {}", request.getRequestURI(), e.getMessage());
+            return "";
         }
     }
 

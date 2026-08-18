@@ -144,4 +144,43 @@ public class XQueryURLRewriteTest
             assertArrayEquals(newTestParameterMap.get(paramName), wrapper.getParameterMap().get(paramName));
         }
     }
+
+    @Test
+    public void getServletPathSafelyReturnsServletPath() {
+        HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
+
+        // XQueryURLRewrite is always mapped with url-pattern "/*" (see web.xml), a
+        // path-prefix mapping with an empty prefix, so getServletPath() is "" in practice.
+        expect(mockHttpServletRequest.getServletPath()).andReturn("");
+
+        replay(mockHttpServletRequest);
+        String servletPath = XQueryURLRewrite.getServletPathSafely(mockHttpServletRequest);
+        verify(mockHttpServletRequest);
+
+        assertEquals("", servletPath);
+    }
+
+    /**
+     * Under Jetty 12's EE10 servlet module, {@code getServletPath()} throws
+     * {@link IllegalArgumentException} for a request whose URI carries a
+     * recorded ambiguity violation (e.g. a real '/' next to an encoded
+     * '%2F'). This must not propagate and fail the whole request. Since
+     * XQueryURLRewrite is always mapped with url-pattern "/*", the answer
+     * Jetty refuses to give is always "" anyway (see getServletPathSafely's
+     * javadoc) -- see https://github.com/eXist-db/exist/issues/6618.
+     */
+    @Test
+    public void getServletPathSafelyToleratesAmbiguousUriException() {
+        HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
+
+        expect(mockHttpServletRequest.getServletPath())
+                .andThrow(new IllegalArgumentException("400: Ambiguous URI encoding"));
+        expect(mockHttpServletRequest.getRequestURI()).andReturn("/exist/apps/foo/bar%2Fbaz");
+
+        replay(mockHttpServletRequest);
+        String servletPath = XQueryURLRewrite.getServletPathSafely(mockHttpServletRequest);
+        verify(mockHttpServletRequest);
+
+        assertEquals("", servletPath);
+    }
 }
