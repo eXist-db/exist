@@ -142,7 +142,12 @@ jobs:
           context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
           file: exist-docker/target/classes/Dockerfile
           platforms: linux/amd64,linux/arm64
-          outputs: type=image,oci-mediatypes=true,oci-artifact=true,push=true
+          # oci-artifact must stay false: Docker Hub/Scout ingestion drops
+          # subject-bearing artifact-style attestation manifests (empty config,
+          # vnd.oci.empty.v1+json), so images pushed with oci-artifact=true get
+          # no Scout analysis at all. BuildKit >=0.32 defaults it to true when
+          # oci-mediatypes=true, hence the explicit pin.
+          outputs: type=image,oci-mediatypes=true,oci-artifact=false,push=true
           provenance: mode=max
           sbom: true
           cache-from: type=gha
@@ -156,7 +161,8 @@ jobs:
           context: exist-docker/target/exist-docker-${{ steps.ver.outputs.version }}-docker-dir
           file: exist-docker/target/classes/Dockerfile-DEBUG
           platforms: linux/amd64,linux/arm64
-          outputs: type=image,oci-mediatypes=true,oci-artifact=true,push=true
+          # oci-artifact=false: see comment on the main image push above.
+          outputs: type=image,oci-mediatypes=true,oci-artifact=false,push=true
           provenance: mode=max
           sbom: true
           cache-from: type=gha
