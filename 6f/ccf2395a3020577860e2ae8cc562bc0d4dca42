@@ -1,0 +1,35 @@
+extensions/images/src/main/java/org/exist/http/servlets/ScaleImageJAI.java
+  s_071f4067c81bfa::t_2e77e9d2269959 120,124
+  s_071f4067c81bfa::t_1335aed4a11e54 145,149-154
+exist-core/src/test/java/org/exist/http/servlets/XSLTServletGetCurrentDirTest.java
+  s_071f4067c81bfa::t_b0781ff1dbc4af 1-79
+exist-core/src/main/java/org/exist/http/servlets/RedirectorServlet.java
+  s_071f4067c81bfa::t_c04e067dc777ab 163-167
+exist-core/src/main/java/org/exist/http/servlets/XSLTServlet.java
+  s_071f4067c81bfa::t_dda62621ab1b95 233-234
+  s_071f4067c81bfa::t_cd4642c8cefadd 326-332
+  s_071f4067c81bfa::t_20e8d9b776b5b5 51
+  s_071f4067c81bfa::t_0aa7000d614ba5 350,359-364
+exist-core/src/test/java/org/exist/http/urlrewrite/XQueryURLRewriteFindSourceFromFsTest.java
+  s_071f4067c81bfa::t_b493714f3822e8 1-74
+exist-core/src/main/java/org/exist/http/urlrewrite/RewriteConfig.java
+  s_071f4067c81bfa::t_0094bd6b629436 188-198
+exist-core/src/main/java/org/exist/http/urlrewrite/XQueryURLRewrite.java
+  s_071f4067c81bfa::t_9af811db7158e3 866-871
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6fccf2395a3020577860e2ae8cc562bc0d4dca42",
+  "prompts": {},
+  "sessions": {
+    "s_071f4067c81bfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89d902f6-f4c8-4589-98be-f8d143794498",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
