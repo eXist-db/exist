@@ -27,7 +27,13 @@ jobs:
   benchmarks:
     name: Run JMH benchmarks
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # Generous margin: several benchmarks were previously failing instantly
+    # (near-zero wall time) due to bugs fixed alongside this workflow change
+    # (missing Lucene index config, a broken conf.xml codegen path in
+    # exist-indexes-jmh) and will now run to their full configured duration.
+    # This is a report-only weekly/manual job that blocks no PR, so a longer
+    # timeout only costs CI minutes on a schedule, not developer time.
+    timeout-minutes: 180
     permissions:
       contents: write  # github-action-benchmark pushes the data series to gh-pages
     steps:
@@ -47,9 +53,8 @@ jobs:
 
       - name: Run exist-core-jmh benchmarks
         run: >
-          java -jar exist-core-jmh/target/exist-core-jmh-*-benchmarks.jar
-          -rf json -rff exist-core-jmh/target/jmh-result.json
-          ${{ env.JMH_ARGS }}
+          mvn -B exec:exec -Pperf-tests -pl exist-core-jmh
+          -Dbenchmark.args="-rf json -rff target/jmh-result.json ${{ env.JMH_ARGS }}"
 
       - name: Track exist-core-jmh results on gh-pages
         if: github.repository == 'eXist-db/exist'
