@@ -66,6 +66,14 @@ public class MapType extends AbstractMapType {
      * then this is set to {@link #MIXED_KEY_TYPES}.
      * <p>
      * Uses integer values from {@link org.exist.xquery.value.Type}.
+     * <p>
+     * This is reported via {@link #getKeyType()} but does NOT take part in key
+     * comparison. Lookups ({@link #get(AtomicValue)} / {@link #contains(AtomicValue)})
+     * delegate directly to the underlying map, whose comparator implements
+     * {@code op:same-key} (see {@link AbstractMapType#sameKey}). Keys are compared
+     * by their op:same-key family, never coerced to {@code keyType} - a key from a
+     * different family that shares a lexical value (e.g. the string {@code "12"}
+     * and the integer {@code 12}) is correctly treated as distinct.
      */
     private int keyType = UNKNOWN_KEY_TYPE;
 
@@ -251,12 +259,7 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
-    public Sequence get(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-
+    public Sequence get(final AtomicValue key) {
         return map.get(key, Sequence.EMPTY_SEQUENCE);
     }
 
@@ -267,12 +270,7 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
-    public boolean contains(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return false;
-        }
-
+    public boolean contains(final AtomicValue key) {
         return map.contains(key);
     }
 
@@ -373,17 +371,6 @@ public class MapType extends AbstractMapType {
                 break; // done, we only have to detect this once!
             }
         }
-    }
-
-    private AtomicValue convert(final AtomicValue key) {
-        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES) {
-            try {
-                return key.convertTo(keyType);
-            } catch (final XPathException e) {
-                return null;
-            }
-        }
-        return key;
     }
 
     @Override

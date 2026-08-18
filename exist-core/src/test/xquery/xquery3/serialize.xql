@@ -681,14 +681,16 @@ function ser:exist-output-doctype-QName($value as xs:boolean) {
         map { xs:QName("exist:output-doctype") : $value })
 };
 
+(: An eXist serialization parameter keyed by the prefixed string "exist:..." is
+ : NON-conformant and is now ignored - only the xs:QName key form is honored,
+ : because op:same-key treats a string key and a QName key as distinct. Passing
+ : true() via the string key therefore has no effect, so the default (no doctype)
+ : applies. The xs:QName form is exercised by ser:exist-output-doctype-QName above. :)
 declare
-    %test:args("true")
-    %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
-    %test:args("false")
     %test:assertXPath("not(contains($result, '-//OASIS//DTD DITA BookMap//EN')) and not(contains($result, 'bookmap.dtd'))")
-function ser:exist-output-doctype-string($value as xs:boolean) {
+function ser:exist-output-doctype-prefixed-string-ignored() {
     serialize(doc($ser:collection || "/test-with-doctype.xml"),
-        map { "exist:output-doctype" : $value })
+        map { "exist:output-doctype" : true() })
 };
 
 declare
@@ -701,14 +703,14 @@ function ser:exist-expand-xinclude-QName($value as xs:boolean) {
         map { xs:QName("exist:expand-xincludes"): $value })
 };
 
+(: Prefixed-string key is ignored (see note above); passing false() has no
+ : effect, so the default (expand-xincludes=true) applies and the include is
+ : expanded to its 'comment' content. :)
 declare
-    %test:args("true")
     %test:assertXPath("contains($result, 'comment')")
-    %test:args("false")
-    %test:assertXPath("contains($result, 'include')")
-function ser:exist-expand-xinclude-string($value as xs:boolean) {
+function ser:exist-expand-xinclude-prefixed-string-ignored() {
     serialize($ser:xi-doc,
-        map { "exist:expand-xincludes": $value })
+        map { "exist:expand-xincludes": false() })
 };
 
 declare
@@ -723,16 +725,13 @@ function ser:exist-add-exist-id-QName($value as xs:string) {
         map { xs:QName("exist:add-exist-id"): $value })
 };
 
+(: Prefixed-string key is ignored (see note above); passing "all" has no effect,
+ : so the default (add-exist-id=none) applies and no exist:id attributes appear. :)
 declare
-    %test:args("all")
-    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>')
-    %test:args("element")
-    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>')
-    %test:args("none")
     %test:assertXPath("not(contains($result, 'exist:id'))")
-function ser:exist-add-exist-id-string($value as xs:string) {
+function ser:exist-add-exist-id-prefixed-string-ignored() {
     serialize(doc($ser:collection || "/test.xml"),
-        map { "exist:add-exist-id": $value })
+        map { "exist:add-exist-id": "all" })
 };
 
 declare
@@ -750,17 +749,16 @@ function ser:exist-jsonp-QName($value as xs:string) {
     )
 };
 
+(: Prefixed-string key is ignored (see note above); passing "functionName" has
+ : no effect, so the default (no JSONP callback) applies and plain JSON results. :)
 declare
-    %test:args("functionName")
-    %test:assertEquals('functionName({"author":["John Doe","Robert Smith"]})')
-    %test:args("anotherName")
-    %test:assertEquals('anotherName({"author":["John Doe","Robert Smith"]})')
-function ser:exist-jsonp-string($value as xs:string) {
+    %test:assertEquals('{"author":["John Doe","Robert Smith"]}')
+function ser:exist-jsonp-prefixed-string-ignored() {
     serialize($ser:in-memory-book,
         map {
             "method": "json",
             "media-type": "application/json",
-            "exist:jsonp": $value
+            "exist:jsonp": "functionName"
         }
     )
 };
@@ -775,14 +773,13 @@ function ser:exist-process-xsl-pi-QName($value as xs:boolean) {
         map { xs:QName("exist:process-xsl-pi"): $value })
 };
 
+(: Prefixed-string key is ignored (see note above); passing false() has no
+ : effect, so the default (process-xsl-pi=true) applies and the PI is processed. :)
 declare
-    %test:args("true")
     %test:assertEquals('processed')
-    %test:args("false")
-    %test:assertXPath("contains($result, 'stylesheet')")
-function ser:exist-process-xsl-pi-string($value as xs:boolean) {
+function ser:exist-process-xsl-pi-prefixed-string-ignored() {
     serialize(doc($ser:collection || "/test-xsl.xml"),
-        map { "exist:process-xsl-pi": $value })
+        map { "exist:process-xsl-pi": false() })
 };
 
 declare
