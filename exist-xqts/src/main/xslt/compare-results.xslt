@@ -29,23 +29,21 @@
     exclude-result-prefixes="xs ri"
     version="2.0">
 
-    <xsl:param name="xqts.previous.junit-data-path" as="xs:string" required="yes"/>
-    <xsl:param name="xqts.current.junit-data-path" as="xs:string" required="yes"/>
-
-
     <xsl:output method="xml" version="1.0" omit-xml-declaration="no" indent="yes" encoding="UTF-8"/>
 
 
     <xsl:template name="compare-results" as="document-node(element(cr:comparison))">
-        <xsl:variable name="previous-summary" select="cr:summarise-results($xqts.previous.junit-data-path)" as="document-node(element(cr:results))"/>
-        <xsl:variable name="current-summary" select="cr:summarise-results($xqts.current.junit-data-path)" as="document-node(element(cr:results))"/>
+        <xsl:param name="previous-junit-data-path" as="xs:string" required="yes"/>
+        <xsl:param name="current-junit-data-path" as="xs:string" required="yes"/>
+        <xsl:variable name="previous-summary" select="cr:summarise-results($previous-junit-data-path)" as="document-node(element(cr:results))"/>
+        <xsl:variable name="current-summary" select="cr:summarise-results($current-junit-data-path)" as="document-node(element(cr:results))"/>
         <xsl:variable name="new-changes" as="element()+">
             <xsl:for-each select="('pass', 'skipped', 'failures', 'errors')">
                 <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
             </xsl:for-each>
         </xsl:variable>
-        <xsl:variable name="previous-runner-info" as="document-node()?" select="cr:load-runner-info($xqts.previous.junit-data-path)"/>
-        <xsl:variable name="current-runner-info" as="document-node()?" select="cr:load-runner-info($xqts.current.junit-data-path)"/>
+        <xsl:variable name="previous-runner-info" as="document-node()?" select="cr:load-runner-info($previous-junit-data-path)"/>
+        <xsl:variable name="current-runner-info" as="document-node()?" select="cr:load-runner-info($current-junit-data-path)"/>
         <xsl:document>
             <cr:comparison>
                 <xsl:variable name="warnings" as="element(cr:warning)*" select="cr:drift-warnings($previous-runner-info, $current-runner-info)"/>

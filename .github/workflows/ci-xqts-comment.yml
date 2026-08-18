@@ -1,0 +1,46 @@
+name: XQTS PR Comment
+# Posts the XQTS result comparison produced by ci-xqts.yml back onto the pull
+# request as a single, updating comment.
+#
+# This runs as a separate `workflow_run` workflow on purpose: the XQTS workflow
+# is triggered by `pull_request` and therefore receives a read-only GITHUB_TOKEN
+# for PRs opened from forks, so it cannot comment. A `workflow_run` workflow runs
+# in the context of the base repository and gets a write-enabled token, which is
+# what allows commenting on fork PRs as well. It never checks out or executes any
+# PR code — it only consumes the artifact uploaded by the trusted XQTS run.
+on:
+  workflow_run:
+    workflows: ["XQTS"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: Post XQTS comparison
+    runs-on: ubuntu-latest
+    # Only for PR-triggered XQTS runs that finished successfully and therefore
+    # uploaded the xqts-comparison artifact.
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Download XQTS Comparison
+        uses: actions/download-artifact@v7
+        with:
+          name: xqts-comparison
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: xqts-comparison
+      - name: Read PR Number
+        id: pr
+        run: echo "number=$(cat xqts-comparison/pr-number.txt)" >> "$GITHUB_OUTPUT"
+      - name: Post or Update Comparison Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: xqts-comparison
+          number: ${{ steps.pr.outputs.number }}
+          path: xqts-comparison/comparison-results.md
