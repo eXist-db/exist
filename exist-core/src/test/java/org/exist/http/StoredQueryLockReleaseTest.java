@@ -104,14 +104,16 @@ public class StoredQueryLockReleaseTest {
      * server fails instead of hanging forever.
      */
     private static String awaitQuery(final XmldbURI startedUri, final XmldbURI releaseUri) {
-        return "xquery version \"3.1\";\n" +
-                "declare function local:await($tries as xs:integer) as xs:string {\n" +
-                "    if (doc-available('" + releaseUri + "')) then 'old'\n" +
-                "    else if ($tries le 0) then 'timeout'\n" +
-                "    else (util:wait(25), local:await($tries - 1))\n" +
-                "};\n" +
-                "let $started := xmldb:store('" + startedUri.removeLastSegment() + "', '" + startedUri.lastSegment() + "', <started/>)\n" +
-                "return local:await(600)";
+        return """
+                xquery version "3.1";
+                declare function local:await($tries as xs:integer) as xs:string {
+                    if (doc-available('%s')) then 'old'
+                    else if ($tries le 0) then 'timeout'
+                    else (util:wait(25), local:await($tries - 1))
+                };
+                let $started := xmldb:store('%s', '%s', <started/>)
+                return local:await(600)"""
+                .formatted(releaseUri, startedUri.removeLastSegment(), startedUri.lastSegment());
     }
 
     @BeforeClass
