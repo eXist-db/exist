@@ -1,0 +1,25 @@
+exist-core-jmh/README.md
+  s_3aacd8d84f6942::t_3d28783cc3f840 23,31,34,37-42,44,46-48
+.github/workflows/ci-benchmarks.yml
+  s_3aacd8d84f6942::t_b13d46694731a1 56-57
+  s_3aacd8d84f6942::t_0142fc6e246b8a 30-36
+exist-indexes-jmh/README.md
+  s_3aacd8d84f6942::t_ad87c137e52a7e 159
+  s_3aacd8d84f6942::t_1b43a40d43b1d7 149-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "658026fcda7fde3c78325013760f27c68ba44d17",
+  "prompts": {},
+  "sessions": {
+    "s_3aacd8d84f6942": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36e97d6e-be83-4405-8588-47c93f714d0a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
