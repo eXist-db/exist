@@ -33,10 +33,10 @@
     requires — mirrors the precedent set by extensions/modules/expathrepo for its own
     non-standard output directory.
 
-    'lucene-index' is kept so LucenePhraseQueryBenchmark, UtilExpandHighlightingBenchmark, and
-    ReindexDeleteStrategyBenchmark can register the 'ft' prefix and per-collection lucene index
-    config without the module reaching into another module's private target directory (the
-    ensureExistHome() workaround this fixture replaces silently fell back to a conf.xml with no
+    'lucene-index' is kept so LucenePhraseQueryBenchmark and UtilExpandHighlightingBenchmark can
+    register the 'ft' prefix and per-collection lucene index config without the module reaching
+    into another module's private target directory (the ensureExistHome() workaround this
+    fixture replaces silently fell back to a conf.xml with no
     Lucene index registered whenever the lucene extension itself hadn't been built first, e.g.
     in ci-benchmarks.yml's `-pl exist-core-jmh -am` build).
 -->
