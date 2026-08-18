@@ -40,7 +40,14 @@
 
     <properties>
         <jmh.version>1.37</jmh.version>
-        <uberjar.name>benchmarks</uberjar.name>
+        <uberjar.name>${project.artifactId}-${project.version}-benchmarks</uberjar.name>
+        <!--
+            Override at the command line, e.g.
+              mvn exec:exec -pl exist-core-jmh \
+                  -Dbenchmark.args="ArrowOperatorBenchmark -prof gc"
+            See README.md for more recipes.
+        -->
+        <benchmark.args>ArrowOperatorBenchmark -prof gc</benchmark.args>
     </properties>
 
     <dependencies>
@@ -210,7 +217,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.artifactId}-${project.version}-benchmarks</finalName>
+                            <finalName>${uberjar.name}</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>org.openjdk.jmh.Main</mainClass>
@@ -234,6 +241,20 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!--
+                Run the benchmark uber-jar via `mvn exec:exec`. Default args
+                run ArrowOperatorBenchmark with JMH's GCProfiler enabled;
+                override with -Dbenchmark.args="..." (see README.md).
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <executable>${java.home}/bin/java</executable>
+                    <commandlineArgs>-jar ${project.build.directory}/${uberjar.name}.jar ${benchmark.args}</commandlineArgs>
+                </configuration>
             </plugin>
         </plugins>
     </build>
