@@ -1,0 +1,30 @@
+exist-core/src/test/java/org/exist/http/servlets/XQueryServletNullPathTest.java
+  s_071f4067c81bfa::t_0ea0b98f524181 182
+  s_071f4067c81bfa::t_43978606140dc1 203
+exist-core/src/main/java/org/exist/http/servlets/XSLTServlet.java
+  s_071f4067c81bfa::t_185229ab094c31 350-351
+exist-core/src/test/java/org/exist/http/servlets/XSLTServletGetCurrentDirTest.java
+  s_071f4067c81bfa::t_58a10439ac0bd6 47,65-67
+  s_071f4067c81bfa::t_8ae175a38c2ac2 26
+exist-core/src/main/java/org/exist/http/urlrewrite/XQueryURLRewrite.java
+  s_071f4067c81bfa::t_f4498cf2a488ef 864-865
+exist-core/src/test/java/org/exist/http/urlrewrite/XQueryURLRewriteFindSourceFromFsTest.java
+  s_071f4067c81bfa::t_1b9578df5b96f9 46
+  s_071f4067c81bfa::t_e1c294fdbcd3af 58-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4ee94fdc54ad100d526c33b17804786241d0c982",
+  "prompts": {},
+  "sessions": {
+    "s_071f4067c81bfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89d902f6-f4c8-4589-98be-f8d143794498",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
