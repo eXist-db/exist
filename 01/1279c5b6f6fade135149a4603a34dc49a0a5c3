@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/http/urlrewrite/XQueryURLRewrite.java
+  s_071f4067c81bfa::t_71d25e0c6e00bb 1203
+exist-core/src/test/java/org/exist/http/urlrewrite/XQueryURLRewriteRequestWrapperTest.java
+  s_071f4067c81bfa::t_397e1bfe86a526 1-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "011279c5b6f6fade135149a4603a34dc49a0a5c3",
+  "prompts": {},
+  "sessions": {
+    "s_071f4067c81bfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89d902f6-f4c8-4589-98be-f8d143794498",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
