@@ -481,30 +481,6 @@
                 <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>delete-jetty-dest-before-rename</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>delete-mac-bundle-jetty-dest-before-rename</id>
-                        <phase>${mac.bundle.phase}</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>copy files</id>
                         <phase>package</phase>
                         <goals>
@@ -579,6 +555,36 @@
                             </target>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>rename-jetty-etc-dir-for-appassembler</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <move file="${assemble.dir}/etc/org/exist/jetty/etc"
+                                      tofile="${assemble.dir}/etc/jetty"
+                                      failonerror="false" quiet="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>rename-jetty-etc-dir-for-mac-bundle</id>
+                        <phase>${mac.bundle.phase}</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <move file="${mac.bundle.resources.dir}/etc/org/exist/jetty/etc"
+                                      tofile="${mac.bundle.resources.dir}/etc/jetty"
+                                      failonerror="false" quiet="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -587,32 +593,6 @@
                 <artifactId>copy-rename-maven-plugin</artifactId>
                 <version>1.0</version>
                 <executions>
-                    <execution>
-                        <id>rename-jetty-etc-dir-for-appassembler</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>rename</goal>
-                        </goals>
-                        <configuration>
-                            <sourceFile>${assemble.dir}/etc/org/exist/jetty/etc</sourceFile>
-                            <destinationFile>${assemble.dir}/etc/jetty</destinationFile>
-                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>rename-jetty-etc-dir-for-mac-bundle</id>
-                        <phase>${mac.bundle.phase}</phase>
-                        <goals>
-                            <goal>rename</goal>
-                        </goals>
-                        <configuration>
-                            <sourceFile>${mac.bundle.resources.dir}/etc/org/exist/jetty/etc</sourceFile>
-                            <destinationFile>${mac.bundle.resources.dir}/etc/jetty</destinationFile>
-                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
-                        </configuration>
-                    </execution>
-
                     <execution>
                         <id>copy-readme-for-appassembler</id>
                         <phase>package</phase>
