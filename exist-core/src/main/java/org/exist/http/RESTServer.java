@@ -652,8 +652,8 @@ public class RESTServer {
                 serveSource(broker, resource, descriptor, request, response, path, options,
                         outputProperties);
             } else {
-                executeResource(broker, transaction, resource, request, response, path, options,
-                        outputProperties, servletPath);
+                executeResource(broker, transaction, resource, lockedDocument, request, response, path,
+                        options, outputProperties, servletPath);
             }
         } finally {
             if (lockedDocument != null) {
@@ -825,6 +825,8 @@ public class RESTServer {
      * @param broker the database broker
      * @param transaction the database transaction
      * @param resource the resource to execute
+     * @param lockedDocument the read lock held on {@code resource}, released at end-of-compile (#6593);
+     *                       the caller's own close of it afterwards is a no-op
      * @param request the request
      * @param response the response
      * @param path the path of the request
@@ -837,19 +839,19 @@ public class RESTServer {
      * @throws IOException if an I/O error occurs
      */
     private void executeResource(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
-            final HttpServletRequest request, final HttpServletResponse response, final String path,
-            final QueryRequestOptions options, final Properties outputProperties,
+            final LockedDocument lockedDocument, final HttpServletRequest request, final HttpServletResponse response,
+            final String path, final QueryRequestOptions options, final Properties outputProperties,
             final XmldbURI servletPath)
             throws BadRequestException, PermissionDeniedException, IOException {
         final String pathInfo = XmldbURI.create(path).trimFromBeginning(servletPath).toString();
         try {
             if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
                 // Execute the XQuery
-                executeXQuery(broker, transaction, resource, request, response,
+                executeXQuery(broker, transaction, resource, lockedDocument, request, response,
                         outputProperties, servletPath.toString(), pathInfo);
             } else if (MimeType.XPROC_TYPE.getName().equals(resource.getMimeType())) {
                 // Execute the XProc
-                executeXProc(broker, transaction, resource, request, response,
+                executeXProc(broker, transaction, resource, lockedDocument, request, response,
                         outputProperties, servletPath.toString(), pathInfo);
             }
         } catch (final XPathException e) {
@@ -1110,11 +1112,11 @@ public class RESTServer {
                 try {
                     if (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType())) {
                         // Execute the XQuery
-                        executeXQuery(broker, transaction, resource, request, response,
+                        executeXQuery(broker, transaction, resource, resolved.lockedDocument(), request, response,
                                 outputProperties, resolved.servletPath().toString(), pathInfo);
                     } else {
                         // Execute the XProc
-                        executeXProc(broker, transaction, resource, request, response,
+                        executeXProc(broker, transaction, resource, resolved.lockedDocument(), request, response,
                                 outputProperties, resolved.servletPath().toString(), pathInfo);
                     }
 
@@ -1673,7 +1675,7 @@ public class RESTServer {
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
         try {
             // Execute the XQuery
-            executeXQuery(broker, transaction, resolved.resource(), request, response,
+            executeXQuery(broker, transaction, resolved.resource(), resolved.lockedDocument(), request, response,
                     outputProperties, resolved.servletPath().toString(), pathInfo);
         } catch (final XPathException e) {
             writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, null, path.toString(), e);
@@ -2123,10 +2125,18 @@ public class RESTServer {
     /**
      * Directly execute an XQuery stored as a binary document in the database.
      *
+     * The document READ_LOCK held on the query by {@code lockedDocument} is only needed for a
+     * consistent snapshot across resolution, permission evaluation and compilation: it is
+     * released here as soon as a compiled query is obtained — never held through execution or
+     * result serialization, where the executor may block on further collection/document locks
+     * while a concurrent store of the query blocks on this one (#6593). Closing it again in a
+     * caller's {@code finally} is a harmless no-op, and covers the paths that fail before or
+     * during compilation.
+     *
      * @throws PermissionDeniedException
      */
     private void executeXQuery(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
-            final HttpServletRequest request, final HttpServletResponse response,
+            final LockedDocument lockedDocument, final HttpServletRequest request, final HttpServletResponse response,
             final Properties outputProperties, final String servletPath, final String pathInfo)
             throws XPathException, BadRequestException, PermissionDeniedException {
 
@@ -2172,16 +2182,21 @@ public class RESTServer {
 
             try {
                 final long compilationTime;
-                if (compiled == null) {
-                    try {
-                        final long compilationStart = System.currentTimeMillis();
-                        compiled = xquery.compile(context, source);
-                        compilationTime = System.currentTimeMillis() - compilationStart;
-                    } catch (final IOException e) {
-                        throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
+                try {
+                    if (compiled == null) {
+                        try {
+                            final long compilationStart = System.currentTimeMillis();
+                            compiled = xquery.compile(context, source);
+                            compilationTime = System.currentTimeMillis() - compilationStart;
+                        } catch (final IOException e) {
+                            throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
+                        }
+                    } else {
+                        compilationTime = 0;
                     }
-                } else {
-                    compilationTime = 0;
+                } finally {
+                    // compiled (or failed to): the query document's lock has done its job (#6593)
+                    lockedDocument.close();
                 }
 
                 DebuggeeFactory.checkForDebugRequest(request, context);
@@ -2221,10 +2236,15 @@ public class RESTServer {
     /**
      * Directly execute an XProc stored as a XML document in the database.
      *
+     * As in {@link #executeXQuery(DBBroker, Txn, DocumentImpl, LockedDocument, HttpServletRequest,
+     * HttpServletResponse, Properties, String, String)}, the READ_LOCK held on the pipeline
+     * document by {@code lockedDocument} is released once the driver query is compiled, before
+     * execution begins (#6593).
+     *
      * @throws PermissionDeniedException
      */
     private void executeXProc(final DBBroker broker, final Txn transaction, final DocumentImpl resource,
-            final HttpServletRequest request, final HttpServletResponse response,
+            final LockedDocument lockedDocument, final HttpServletRequest request, final HttpServletResponse response,
             final Properties outputProperties, final String servletPath, final String pathInfo)
             throws XPathException, BadRequestException, PermissionDeniedException {
 
@@ -2259,17 +2279,22 @@ public class RESTServer {
             reqw.setPathInfo(pathInfo);
 
             final long compilationTime;
-            if (compiled == null) {
-                try {
-                    final long compilationStart = System.currentTimeMillis();
-                    compiled = xquery.compile(context, source);
-                    compilationTime = System.currentTimeMillis() - compilationStart;
-                } catch (final IOException e) {
-                    throw new BadRequestException("Failed to read query from "
-                            + source.getURL(), e);
+            try {
+                if (compiled == null) {
+                    try {
+                        final long compilationStart = System.currentTimeMillis();
+                        compiled = xquery.compile(context, source);
+                        compilationTime = System.currentTimeMillis() - compilationStart;
+                    } catch (final IOException e) {
+                        throw new BadRequestException("Failed to read query from "
+                                + source.getURL(), e);
+                    }
+                } else {
+                    compilationTime = 0;
                 }
-            } else {
-                compilationTime = 0;
+            } finally {
+                // compiled (or failed to): the pipeline document's lock has done its job (#6593)
+                lockedDocument.close();
             }
 
             try {
