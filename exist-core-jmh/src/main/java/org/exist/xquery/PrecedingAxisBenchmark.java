@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>craigberry's #2129 follow-up reproduced position-dependence for the
  * wildcard preceding axis on a 50,000-element flat document: a query at
- * {@code @xml:id='45000'} took roughly twice as long as the same query at
- * {@code @xml:id='25000'}. The K-bounded sliding window in
+ * {@code @id='45000'} took roughly twice as long as the same query at
+ * {@code @id='25000'}. The K-bounded sliding window in
  * {@code LocationStep.PrecedingFilter} caps the retained match set at K,
  * eliminating the unbounded accumulation that produced the late-position
  * tax.</p>
@@ -87,7 +87,7 @@ public class PrecedingAxisBenchmark {
 
         xqs.query(
                 """
-                let $words := for $i in (1 to 50000) return <w xml:id="{$i}">{$i}</w>
+                let $words := for $i in (1 to 50000) return <w id="{$i}">{$i}</w>
                 return xmldb:store('/db', 'words-large.xml', document {<words>{$words}</words>})
                 """);
     }
@@ -124,7 +124,7 @@ public class PrecedingAxisBenchmark {
         return xqs.query(
                 ("""
                 xquery version "3.1";
-                let $w := doc('%s')//w[@xml:id='%d']
+                let $w := doc('%s')//w[@id='%d']
                 return for $i in (1 to 5) return $w/preceding::*[5 + 1 - $i][self::w]/text()
                 """).formatted(LARGE_DOC, refPosition)
         ).getSize();
@@ -144,7 +144,7 @@ public class PrecedingAxisBenchmark {
         return xqs.query(
                 ("""
                 xquery version "3.1";
-                let $w := doc('%s')//w[@xml:id='%d']
+                let $w := doc('%s')//w[@id='%d']
                 return for $i in (1 to 5) return $w/preceding-sibling::w[$i]/text()
                 """).formatted(LARGE_DOC, refPosition)
         ).getSize();
