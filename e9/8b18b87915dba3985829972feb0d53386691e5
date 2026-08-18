@@ -1,0 +1,21 @@
+exist-indexes-jmh/src/main/resources-filtered/conf-fixture.xsl
+  s_3aacd8d84f6942::t_2636ff77f10aaa 1-65
+exist-indexes-jmh/pom.xml
+  s_3aacd8d84f6942::t_f03351ea08b61d 182-185,200,204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e98b18b87915dba3985829972feb0d53386691e5",
+  "prompts": {},
+  "sessions": {
+    "s_3aacd8d84f6942": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36e97d6e-be83-4405-8588-47c93f714d0a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
