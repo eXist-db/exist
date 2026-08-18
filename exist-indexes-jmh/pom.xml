@@ -179,10 +179,10 @@
             </plugin>
 
             <!--
-                Generate conf.xml from the canonical indexes-integration-tests
-                conf.xml by adding the plain range index module via XSLT.
-                This mirrors the exist-docker pattern for log4j2.xml and avoids
-                drift between this module's conf and the upstream test conf.
+                Generate conf.xml from canonical (exist-distribution/src/main/config/conf.xml)
+                via src/main/resources-filtered/conf-fixture.xsl, with the lucene, ngram, and
+                range indexes/modules registered. See that stylesheet for why this no longer
+                sources from indexes-integration-tests's own fixture input.
             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -197,11 +197,11 @@
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
-                                    <dir>${project.basedir}/../extensions/indexes/indexes-integration-tests/src/test/resources-filtered</dir>
+                                    <dir>${maven.multiModuleProjectDirectory}/exist-distribution/src/main/config</dir>
                                     <includes>
                                         <include>conf.xml</include>
                                     </includes>
-                                    <stylesheet>${project.basedir}/src/main/xslt/conf-jmh.xslt</stylesheet>
+                                    <stylesheet>${project.basedir}/src/main/resources-filtered/conf-fixture.xsl</stylesheet>
                                     <outputDir>${project.build.directory}/generated-resources/conf</outputDir>
                                 </transformationSet>
                             </transformationSets>
