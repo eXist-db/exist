@@ -240,12 +240,17 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         //first, adjust the path
         String path = request.getPathTranslated();
-        if(path == null) {
-            path = request.getRequestURI().substring(request.getContextPath().length());
-            final int p = path.lastIndexOf(';');
+        // the request path relative to the context, e.g. "/db/apps/optimize.xql" -- kept around
+        // (regardless of whether pathTranslated already gave us a disk path) so that a request
+        // which cannot be resolved to a file on disk can still be tried against the database.
+        String contextRelativePath = request.getRequestURI().substring(request.getContextPath().length());
+        {
+            final int p = contextRelativePath.lastIndexOf(';');
             if(p != Constants.STRING_NOT_FOUND)
-                {path = path.substring(0, p);}
-            path = getServletContext().getRealPath(path);
+                {contextRelativePath = contextRelativePath.substring(0, p);}
+        }
+        if(path == null) {
+            path = getServletContext().getRealPath(contextRelativePath);
         }
         
         //second, perform descriptor actions
@@ -358,18 +363,32 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 sendError(output, "Error", e.getMessage());
             }
         } else {
-            final Path f = Path.of(path);
-            if(!Files.isReadable(f)) {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                sendError(output, "Cannot read source file", path);
-                return;
+            final Path f = path == null ? null : Path.of(path);
+            if (f != null && Files.isReadable(f)) {
+                source = new FileSource(f, Charset.forName(encoding), true);
+            } else {
+                // No readable file on disk (or no disk path at all -- the Servlet API allows both
+                // HttpServletRequest#getPathTranslated() and ServletContext#getRealPath(String) to
+                // return null, which happens e.g. for a request forwarded to a resource that only
+                // exists in the database). Fall back to resolving it there before giving up.
+                // See https://github.com/eXist-db/exist/issues/6615
+                try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
+                    source = SourceFactory.getSourceForExecution(broker, null, contextRelativePath, true);
+                } catch (final EXistException | IOException | PermissionDeniedException e) {
+                    getLog().error(e.getMessage(), e);
+                }
+                if (source == null) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    sendError(output, "Cannot read source file", path != null ? path : contextRelativePath);
+                    return;
+                }
             }
-            source = new FileSource(f, Charset.forName(encoding), true);
         }
-        
+
         if (source == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             sendError(output, "Source not found", path);
+            return;
         }
         
         boolean reportErrors = false;

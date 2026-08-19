@@ -185,11 +185,17 @@ public class RewriteConfig {
             }
         } else {
             try {
-                final Path d = Path.of(urlRewrite.getConfig().getServletContext().getRealPath("/")).normalize();
-                final Path configFile = d.resolve(controllerConfig);
-                if (Files.isReadable(configFile)) {
-                    final Document doc = parseConfig(configFile);
-                    parse(doc);
+                final String rootRealPath = urlRewrite.getConfig().getServletContext().getRealPath("/");
+                // the Servlet API permits getRealPath() to return null when the webapp is not
+                // exploded on disk (e.g. served from a packed/embedded context); in that case
+                // there is no filesystem controller-config.xml to load.
+                if (rootRealPath != null) {
+                    final Path d = Path.of(rootRealPath).normalize();
+                    final Path configFile = d.resolve(controllerConfig);
+                    if (Files.isReadable(configFile)) {
+                        final Document doc = parseConfig(configFile);
+                        parse(doc);
+                    }
                 }
             } catch (final ParserConfigurationException | IOException | SAXException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);

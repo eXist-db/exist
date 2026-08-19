@@ -160,6 +160,11 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
             }
         // Try to find the XQuery
         final String qpath = getServletContext().getRealPath(query);
+        // the Servlet API permits getRealPath() to return null when the webapp is not exploded
+        // on disk (e.g. served from a packed/embedded context).
+        if (qpath == null) {
+            throw new ServletException("Cannot read XQuery source from " + query);
+        }
         final Path p = Path.of(qpath);
         if (!(Files.isReadable(p) && Files.isRegularFile(p))) {
             throw new ServletException("Cannot read XQuery source from " + p.toAbsolutePath());

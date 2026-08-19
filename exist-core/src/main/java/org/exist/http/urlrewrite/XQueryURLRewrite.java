@@ -861,8 +861,15 @@ public class XQueryURLRewrite extends HttpServlet {
         return findDbControllerXql(broker, collectionUri, subResourceUri);
     }
 
-    private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
+    // package-private rather than private so it is directly testable without reflection
+    SourceInfo findSourceFromFs(final String basePath, final String[] components) {
         final String realPath = config.getServletContext().getRealPath(basePath);
+        // the Servlet API permits getRealPath() to return null when the container cannot map
+        // basePath to a location on disk; there is no filesystem controller to find.
+        if (realPath == null) {
+            LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
+            return null;
+        }
         final Path baseDir = Path.of(realPath);
         if (!Files.isDirectory(baseDir)) {
             LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
@@ -1200,10 +1207,7 @@ public class XQueryURLRewrite extends HttpServlet {
         public String getPathTranslated() {
             final String pathInfo = getPathInfo();
             if (pathInfo == null) {
-                super.getPathTranslated();
-            }
-            if (pathInfo == null) {
-                return (null);
+                return super.getPathTranslated();
             }
             return super.getSession().getServletContext().getRealPath(pathInfo);
         }
