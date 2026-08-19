@@ -25,7 +25,7 @@ jobs:
           # Pinned to avoid the Maven Central propagation race observed on 2026-05-08, where
           # the parent moderne-cli metadata advertised a release before the platform-specific
           # moderne-cli-linux binary had CDN-synced. Bump intentionally as new releases stabilize.
-          MODERNE_CLI_VERSION: '4.2.3'
+          MODERNE_CLI_VERSION: '4.4.0'
         run: |
           curl -sSL https://app.moderne.io/cli | bash
           echo "$HOME/.moderne/cli/bin" >> $GITHUB_PATH
