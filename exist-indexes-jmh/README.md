@@ -146,8 +146,8 @@ exist-indexes-jmh/
     │   ├── RangeFieldEqWhereClauseBenchmark.java
     │   ├── LuceneWhereClauseBenchmark.java
     │   └── GeneralComparisonWhereClauseBenchmark.java
-    ├── xslt/
-    │   └── conf-jmh.xslt                         (transforms indexes-integration-tests conf.xml: adds plain range index module)
+    ├── resources-filtered/
+    │   └── conf-fixture.xsl                       (generates conf.xml from canonical, with lucene/ngram/range registered)
     └── resources/
         └── org/exist/indexing/jmh/
             ├── hamlet.xml                        (vendored from exist-samples/.../shakespeare/)
@@ -156,7 +156,7 @@ exist-indexes-jmh/
             └── collection.xconf                  (ngram + range + range field + lucene)
 ```
 
-`conf.xml` is generated at build time by `xml-maven-plugin` from `extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf.xml` plus the XSLT in `src/main/xslt/conf-jmh.xslt`. Mirroring the `exist-docker` pattern keeps the conf in sync with upstream rather than vendored as a literal copy.
+`conf.xml` is generated at build time by `xml-maven-plugin` from canonical (`exist-distribution/src/main/config/conf.xml`) via `src/main/resources-filtered/conf-fixture.xsl` — the same `schema/generate-conf-fixture.xsl` mechanism used by ~35 other test fixtures across the repo (and by `exist-core-jmh`), rather than a bespoke transform of another module's own fixture input.
 
 ## Continuous tracking
 

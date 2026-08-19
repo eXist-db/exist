@@ -57,8 +57,6 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -146,7 +144,6 @@ public class UtilExpandHighlightingBenchmark {
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
             PermissionDeniedException, CollectionConfigurationException, LockException,
             SAXException, TriggerException, XPathException {
-        ensureExistHome();
         final Properties configProperties = new Properties();
         // BrokerPool expects a Long for this property (see BrokerPool.PROPERTY_SHUTDOWN_DELAY).
         configProperties.put("wait-before-shutdown", 0L);
@@ -178,21 +175,6 @@ public class UtilExpandHighlightingBenchmark {
             throws XPathException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         return xquery.compile(context, query);
-    }
-
-    private static void ensureExistHome() {
-        if (System.getProperty("exist.home") != null) {
-            return;
-        }
-        // Prefer the Lucene extension's own test conf (it registers the Lucene index/module and
-        // the 'ft' function prefix); fall back to exist-core's if run outside a full checkout.
-        final Path luceneHome = Path.of("extensions", "indexes", "lucene", "src", "test", "resources-filtered")
-                .toAbsolutePath()
-                .normalize();
-        final Path existHome = Files.exists(luceneHome.resolve("conf.xml"))
-                ? luceneHome
-                : Path.of("exist-core", "src", "test", "resources-filtered").toAbsolutePath().normalize();
-        System.setProperty("exist.home", existHome.toString());
     }
 
     @TearDown(Level.Trial)

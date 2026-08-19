@@ -53,16 +53,6 @@ import java.util.concurrent.TimeUnit;
  * and re-analyzed a function reference per evaluation): {@code arrow*} should be at parity with
  * {@code direct*}, and must not regress.</p>
  *
- * <p>Run via the unshaded jar plus the runtime classpath; the shaded benchmark jar trips a log4j2
- * caller-class assertion when booting a {@code BrokerPool} (see {@code AxisBenchmark}):</p>
- * <pre>{@code
- *   mvn -pl exist-core-jmh dependency:build-classpath \
- *       -Dmdep.outputFile=$PWD/exist-core-jmh/target/classpath.txt
- *   CP="$PWD/exist-core-jmh/target/classes:\
- *   $PWD/exist-core-jmh/target/exist-core-jmh-*-SNAPSHOT.jar:\
- *   $(cat $PWD/exist-core-jmh/target/classpath.txt)"
- *   java -cp "$CP" org.openjdk.jmh.Main ArrowOperatorBenchmark
- * }</pre>
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

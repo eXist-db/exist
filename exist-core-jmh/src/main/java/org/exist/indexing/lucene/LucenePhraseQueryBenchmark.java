@@ -58,8 +58,6 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -144,7 +142,6 @@ public class LucenePhraseQueryBenchmark {
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
             PermissionDeniedException, CollectionConfigurationException, LockException,
             SAXException, TriggerException, XPathException {
-        ensureExistHome();
         final Properties configProperties = new Properties();
         // BrokerPool expects a Long for this property (see BrokerPool.PROPERTY_SHUTDOWN_DELAY).
         configProperties.put("wait-before-shutdown", 0L);
@@ -162,21 +159,6 @@ public class LucenePhraseQueryBenchmark {
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
             compiledQuery = xquery.compile(context, query);
         }
-    }
-
-    private static void ensureExistHome() {
-        if (System.getProperty("exist.home") != null) {
-            return;
-        }
-        // Default for running the JMH jar from the project root.
-        // Prefer the Lucene extension's test conf (it enables the Lucene index/module).
-        final Path luceneHome = Path.of("extensions", "indexes", "lucene", "src", "test", "resources-filtered")
-                .toAbsolutePath()
-                .normalize();
-        final Path existHome = Files.exists(luceneHome.resolve("conf.xml"))
-                ? luceneHome
-                : Path.of("exist-core", "src", "test", "resources-filtered").toAbsolutePath().normalize();
-        System.setProperty("exist.home", existHome.toString());
     }
 
     @TearDown(Level.Trial)
@@ -224,7 +206,7 @@ public class LucenePhraseQueryBenchmark {
             mgr.addConfiguration(tx, broker, col2, LUCENE_CONFIG);
 
             for (int i = 1; i <= docCount; i++) {
-                final boolean matches = (i % matchEvery) == 1;
+                final boolean matches = ((i - 1) % matchEvery) == 0;
                 final Collection target = (i % 2 == 0) ? col2 : col1;
                 broker.storeDocument(tx, XmldbURI.create("doc-" + i + ".xml"),
                         new StringInputSource(generateDocument(i, matches)), MimeType.XML_TYPE, target);

@@ -59,19 +59,6 @@ import java.util.concurrent.TimeUnit;
  *   <li>{@code 100_500} - 100 parents x 500 b-children (high fan-out per
  *       parent, the case most sensitive to per-context sibling-walk cost)</li>
  * </ul>
- *
- * <p>Run via the unshaded jar plus the runtime classpath; the shaded
- * benchmark jar trips a log4j2 caller-class assertion when booting a
- * {@code BrokerPool} (the existing pure-Java benchmarks do not exercise this
- * path). PR #6296 proposes the proper module-level fix; until that lands:
- * <pre>{@code
- *   mvn -pl exist-core-jmh dependency:build-classpath \
- *       -Dmdep.outputFile=$PWD/exist-core-jmh/target/classpath.txt
- *   CP="$PWD/exist-core-jmh/target/classes:\
- *   $PWD/exist-core-jmh/target/exist-core-jmh-*-SNAPSHOT.jar:\
- *   $(cat $PWD/exist-core-jmh/target/classpath.txt)"
- *   java -cp "$CP" org.openjdk.jmh.Main AxisBenchmark
- * }</pre>
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

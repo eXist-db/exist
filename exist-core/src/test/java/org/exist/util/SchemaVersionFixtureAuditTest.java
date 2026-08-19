@@ -67,10 +67,11 @@ public class SchemaVersionFixtureAuditTest {
      * Fixtures not yet normalized -- update this list (not the assertion) as more are fixed.
      * {@code vector-it} and {@code http-client}'s {@code conf.xml} are deliberate, modern,
      * hand-written-from-scratch minimal configs, not drift victims, left alone on purpose.
-     * {@code exist-core-jmh}'s {@code conf.xml} is a JMH benchmark resource, not a test fixture.
+     * {@code exist-core-jmh}'s hand-maintained {@code conf.xml} was replaced by one generated
+     * from canonical (see {@code exist-core-jmh/src/main/resources-filtered/conf-fixture.xsl}),
+     * so it carries schemaVersion like canonical and dropped off this list.
      */
     private static final Set<String> REMAINING_WITHOUT_VERSION = Set.of(
-            "exist-core-jmh/src/main/resources/conf.xml",
             "extensions/indexes/vector-it/src/test/resources-filtered/conf.xml",
             "extensions/modules/http-client/src/test/resources/conf.xml");
 
