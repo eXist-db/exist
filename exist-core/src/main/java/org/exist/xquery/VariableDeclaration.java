@@ -47,7 +47,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     /** True for an external variable declaration ({@code declare variable $x external [:= ...]}). When
      *  it carries a default value, eval() prefers a value supplied by the external environment over
      *  that default, per XQuery 3.1 §4.15. */
-    private boolean external = false;
+    private boolean isExternal = false;
 
     public VariableDeclaration(final XQueryContext context, final QName qname, final Expression expr) {
         super(context);
@@ -66,7 +66,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      * @param external whether this declaration is external
      */
     public void setExternal(final boolean external) {
-        this.external = external;
+        this.isExternal = external;
     }
 
     /**
@@ -171,7 +171,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
                     // An external variable declared *with* a default value: a value supplied by the
                     // external environment takes precedence over the default (XQuery 3.1 §4.15). A
                     // plain (non-external) global declaration always evaluates its expression.
-                    final Variable supplied = external && myModule == null
+                    final Variable supplied = isExternal && myModule == null
                             ? suppliedExternalValue() : null;
                     if (supplied != null) {
                         supplied.setSequenceType(sequenceType);
