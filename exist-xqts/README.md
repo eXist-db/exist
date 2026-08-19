@@ -47,9 +47,14 @@ a comparable result folder.
 Two files are written to `comparison-output-dir`:
 
 - `comparison-results.xml` — the comparison data: totals, deltas, the newly
-  passing/failing/erroring/skipped test cases, and warnings when the two runs'
-  `runner-info.xml` metadata indicates environment drift
-  (see [#6326](https://github.com/eXist-db/exist/issues/6326));
+  passing/failing/erroring/skipped test cases (only tests recorded in both
+  runs whose outcome changed, each annotated with its previous status), test
+  cases recorded in only one of the two runs (the runner's JUnit output is
+  not fully deterministic, see
+  [exist-xqts-runner#74](https://github.com/eXist-db/exist-xqts-runner/issues/74)),
+  and warnings when the runs' `runner-info.xml` metadata indicates environment
+  drift (see [#6326](https://github.com/eXist-db/exist/issues/6326)) or the
+  recorded test sets differ;
 - `comparison-results.md` — the same information rendered as GitHub-flavoured
   Markdown, as posted on pull requests by the `ci-xqts-comment.yml` workflow.
 
