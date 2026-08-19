@@ -31,6 +31,8 @@
 
     <xsl:output method="xml" version="1.0" omit-xml-declaration="no" indent="yes" encoding="UTF-8"/>
 
+    <!-- Look up a test case by name across the four category containers of a run summary -->
+    <xsl:key name="cr:testcase-by-name" match="cr:results/*/testcase" use="@name"/>
 
     <xsl:template name="compare-results" as="document-node(element(cr:comparison))">
         <xsl:param name="previous-junit-data-path" as="xs:string" required="yes"/>
@@ -39,14 +41,18 @@
         <xsl:variable name="current-summary" select="cr:summarise-results($current-junit-data-path)" as="document-node(element(cr:results))"/>
         <xsl:variable name="new-changes" as="element()+">
             <xsl:for-each select="('pass', 'skipped', 'failures', 'errors')">
-                <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
+                <xsl:sequence select="cr:transition-changes($previous-summary, $current-summary, .)"/>
             </xsl:for-each>
         </xsl:variable>
+        <xsl:variable name="only-previous" as="element()*" select="cr:unrecorded($previous-summary, $current-summary)"/>
+        <xsl:variable name="only-current" as="element()*" select="cr:unrecorded($current-summary, $previous-summary)"/>
         <xsl:variable name="previous-runner-info" as="document-node()?" select="cr:load-runner-info($previous-junit-data-path)"/>
         <xsl:variable name="current-runner-info" as="document-node()?" select="cr:load-runner-info($current-junit-data-path)"/>
         <xsl:document>
             <cr:comparison>
-                <xsl:variable name="warnings" as="element(cr:warning)*" select="cr:drift-warnings($previous-runner-info, $current-runner-info)"/>
+                <xsl:variable name="warnings" as="element(cr:warning)*" select="(
+                    cr:drift-warnings($previous-runner-info, $current-runner-info),
+                    cr:recording-drift-warning($only-previous, $only-current))"/>
                 <xsl:if test="exists($warnings)">
                     <cr:warnings>
                         <xsl:sequence select="$warnings"/>
@@ -76,6 +82,16 @@
                     <cr:new>
                         <xsl:sequence select="$new-changes"/>
                     </cr:new>
+                    <xsl:if test="exists($only-previous) or exists($only-current)">
+                        <cr:recording-drift>
+                            <cr:only-previous>
+                                <xsl:sequence select="$only-previous"/>
+                            </cr:only-previous>
+                            <cr:only-current>
+                                <xsl:sequence select="$only-current"/>
+                            </cr:only-current>
+                        </cr:recording-drift>
+                    </xsl:if>
                 </cr:change>
             </cr:comparison>
         </xsl:document>
@@ -128,23 +144,60 @@
         </xsl:choose>
     </xsl:function>
 
-    <xsl:function name="cr:new-changes">
-        <xsl:param name="previous-results" as="element(cr:results)" required="yes"/>
-        <xsl:param name="current-results" as="element(cr:results)" required="yes"/>
-        <xsl:param name="attr-name" as="xs:string" required="yes"/>
-        <xsl:variable name="elem-name" as="xs:QName" select="xs:QName(concat('cr:', $attr-name))"/>
-        <xsl:variable name="previous-results-names" as="xs:string*" select="$previous-results/element()[node-name(.) eq $elem-name]/testcase/@name/string(.)"/>
-        <xsl:element name="cr:{$attr-name}">
-            <xsl:apply-templates mode="simple" select="$current-results/element()[node-name(.) eq $elem-name]/testcase[not(@name = $previous-results-names)]"/>
+    <!--
+        Test cases of the given category in the current run whose outcome
+        genuinely changed: the case was also recorded in the previous run,
+        but under a different category (noted in @previous-status). Cases
+        absent from one run's JUnit output are recording drift, not outcome
+        changes, and are reported separately via cr:unrecorded — see
+        https://github.com/eXist-db/exist-xqts-runner/issues/74.
+    -->
+    <xsl:function name="cr:transition-changes" as="element()">
+        <xsl:param name="previous-summary" as="document-node(element(cr:results))" required="yes"/>
+        <xsl:param name="current-summary" as="document-node(element(cr:results))" required="yes"/>
+        <xsl:param name="category" as="xs:string" required="yes"/>
+        <xsl:variable name="elem-name" as="xs:QName" select="xs:QName(concat('cr:', $category))"/>
+        <xsl:element name="cr:{$category}">
+            <xsl:for-each select="$current-summary/cr:results/element()[node-name(.) eq $elem-name]/testcase">
+                <xsl:variable name="previous-category" as="xs:string" select="local-name(key('cr:testcase-by-name', @name, $previous-summary)[1]/parent::*)"/>
+                <xsl:if test="$previous-category ne '' and $previous-category ne $category">
+                    <xsl:copy>
+                        <xsl:copy-of select="@name"/>
+                        <xsl:attribute name="previous-status" select="$previous-category"/>
+                        <xsl:copy-of select="failure|error"/>
+                    </xsl:copy>
+                </xsl:if>
+            </xsl:for-each>
         </xsl:element>
     </xsl:function>
 
-    <xsl:template match="testcase" mode="simple">
-        <xsl:copy>
-            <xsl:copy-of select="@name"/>
-            <xsl:copy-of select="failure|error"/>
-        </xsl:copy>
-    </xsl:template>
+    <!--
+        Test cases recorded in one run's JUnit output but entirely absent
+        from the other's — not passed, failed, errored, or skipped there.
+    -->
+    <xsl:function name="cr:unrecorded" as="element()*">
+        <xsl:param name="summary" as="document-node(element(cr:results))" required="yes"/>
+        <xsl:param name="other-summary" as="document-node(element(cr:results))" required="yes"/>
+        <xsl:for-each select="$summary/cr:results/*/testcase[empty(key('cr:testcase-by-name', @name, $other-summary))]">
+            <testcase name="{@name}" status="{local-name(parent::*)}"/>
+        </xsl:for-each>
+    </xsl:function>
+
+    <xsl:function name="cr:recording-drift-warning" as="element(cr:warning)?">
+        <xsl:param name="only-previous" as="element()*"/>
+        <xsl:param name="only-current" as="element()*"/>
+        <xsl:if test="exists($only-previous) or exists($only-current)">
+            <cr:warning kind="recording-drift">
+                <cr:summary>
+                    <xsl:value-of select="concat(
+                        count($only-previous) + count($only-current),
+                        ' test cases were recorded in only one of the two runs (',
+                        count($only-previous), ' only in the previous run, ',
+                        count($only-current), ' only in the current run). The runner''s JUnit output is not fully deterministic (see https://github.com/eXist-db/exist-xqts-runner/issues/74), so totals and per-category deltas include recording noise; the newly passing/failing lists count only tests recorded in both runs.')"/>
+                </cr:summary>
+            </cr:warning>
+        </xsl:if>
+    </xsl:function>
 
     <!--
         Locate `runner-info.xml` next to the run's output dir. The junit data

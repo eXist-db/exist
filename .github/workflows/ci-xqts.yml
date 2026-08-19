@@ -1,5 +1,13 @@
 name: XQTS
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Keep a fresh baseline on develop: the xqts-logs artifact expires after
+    # 14 days, so during quiet periods on develop the PR comparison would
+    # otherwise lose its baseline (and drift ever further from the PR base).
+    - cron: '17 2 * * 0,3'
 permissions:
   contents: read
 
@@ -47,6 +55,7 @@ jobs:
           retention-days: 1
           path: /tmp/*.hprof.zst
       - name: Find Latest Successful XQTS Run on Develop
+        id: find-baseline
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -60,22 +69,38 @@ jobs:
             --jq '.[0].databaseId')
 
           if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-            echo "::error::Could not find a previous successful XQTS run on develop"
-            exit 1
+            echo "::warning::Could not find a previous successful XQTS run on develop — skipping the comparison"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found develop run: ${RUN_ID}"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
           fi
-
-          echo "Found develop run: ${RUN_ID}"
-          echo "$RUN_ID" > /tmp/previous_run_id.txt
       - name: Download Previous XQTS Logs
+        id: download-baseline
+        if: steps.find-baseline.outputs.found == 'true'
+        # The baseline's xqts-logs artifact may have expired (14-day
+        # retention). Treat that as "no baseline" rather than failing, so
+        # runs on develop can still publish a fresh baseline artifact —
+        # otherwise an expired baseline would permanently fail every run.
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh run download \
             --repo eXist-db/exist \
-            "$(cat /tmp/previous_run_id.txt)" \
+            "${{ steps.find-baseline.outputs.run-id }}" \
             --name xqts-logs \
             --dir /tmp/previous-xqts-output
+      - name: Note Missing Baseline
+        if: steps.download-baseline.outcome != 'success'
+        run: |
+          {
+            echo "> [!WARNING]"
+            echo "> No usable XQTS comparison baseline for \`develop\` was available (no successful run found, or its \`xqts-logs\` artifact expired) — the comparison was skipped. The next successful run on \`develop\` publishes a fresh baseline."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Compare Previous and Current XQTS Results
+        if: steps.download-baseline.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -86,18 +111,20 @@ jobs:
             -Dprevious-label='`develop`' \
             -Dcurrent-label='this run'
       - name: Show Comparison Results
+        if: steps.download-baseline.outcome == 'success'
         run: cat /tmp/xqts-comparison/comparison-results.xml
       - name: Publish Comparison Summary
         # Surface the report on the run's Summary tab (works for fork PRs too)
+        if: steps.download-baseline.outcome == 'success'
         run: cat /tmp/xqts-comparison/comparison-results.md >> "$GITHUB_STEP_SUMMARY"
       - name: Save PR Number
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.download-baseline.outcome == 'success'
         run: echo "${{ github.event.pull_request.number }}" > /tmp/xqts-comparison/pr-number.txt
       - name: Upload XQTS Comparison
         # Consumed by the ci-xqts-comment.yml workflow_run, which posts the
         # comparison as a PR comment with a write-enabled token (needed for
         # PRs from forks, where this workflow's token is read-only).
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.download-baseline.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: xqts-comparison

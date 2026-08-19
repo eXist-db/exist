@@ -133,18 +133,26 @@
             ' | ', cr:signed-int($chg/@tests),
             ' |', $nl, $nl)"/>
 
-        <!-- Newly changed test cases relative to develop -->
+        <!--
+            Test cases recorded in both runs whose outcome changed. Cases
+            recorded in only one run's JUnit output (recording drift, see
+            https://github.com/eXist-db/exist-xqts-runner/issues/74) are
+            listed separately below and flagged by a warning above.
+        -->
         <xsl:variable name="new-pass" select="cr:change/cr:new/cr:pass/testcase" as="element()*"/>
         <xsl:variable name="new-failures" select="cr:change/cr:new/cr:failures/testcase" as="element()*"/>
         <xsl:variable name="new-errors" select="cr:change/cr:new/cr:errors/testcase" as="element()*"/>
         <xsl:variable name="new-skipped" select="cr:change/cr:new/cr:skipped/testcase" as="element()*"/>
+        <xsl:variable name="only-previous" select="cr:change/cr:recording-drift/cr:only-previous/testcase" as="element()*"/>
+        <xsl:variable name="only-current" select="cr:change/cr:recording-drift/cr:only-current/testcase" as="element()*"/>
 
         <xsl:value-of select="concat(
             'Relative to ', $previous-label, ': ',
             '**', cr:int(count($new-pass)), '** newly passing, ',
             '**', cr:int(count($new-failures)), '** newly failing, ',
             '**', cr:int(count($new-errors)), '** new errors, ',
-            '**', cr:int(count($new-skipped)), '** newly skipped.', $nl, $nl)"/>
+            '**', cr:int(count($new-skipped)), '** newly skipped',
+            ' — counting only tests recorded in both runs whose outcome changed.', $nl, $nl)"/>
 
         <xsl:call-template name="cr:detail-list">
             <xsl:with-param name="heading" select="'🔴 Newly failing tests'"/>
@@ -157,6 +165,14 @@
         <xsl:call-template name="cr:detail-list">
             <xsl:with-param name="heading" select="'🟢 Newly passing tests'"/>
             <xsl:with-param name="cases" select="$new-pass"/>
+        </xsl:call-template>
+        <xsl:call-template name="cr:detail-list">
+            <xsl:with-param name="heading" select="concat('⚪ Recorded only in ', $current-label)"/>
+            <xsl:with-param name="cases" select="$only-current"/>
+        </xsl:call-template>
+        <xsl:call-template name="cr:detail-list">
+            <xsl:with-param name="heading" select="concat('⚪ Recorded only in ', $previous-label)"/>
+            <xsl:with-param name="cases" select="$only-previous"/>
         </xsl:call-template>
 
         <xsl:value-of select="concat($nl, '&lt;sub>Runtime: ',
@@ -172,7 +188,7 @@
             <xsl:value-of select="concat('&lt;details>', $nl,
                 '&lt;summary>', $heading, ' (', cr:int(count($cases)), ')&lt;/summary>', $nl, $nl)"/>
             <xsl:for-each select="$cases[position() le $max-listed]">
-                <xsl:value-of select="concat('- `', @name, '`', $nl)"/>
+                <xsl:value-of select="concat('- `', @name, '`', cr:annotation(.), $nl)"/>
             </xsl:for-each>
             <xsl:if test="count($cases) gt $max-listed">
                 <xsl:value-of select="concat('- … and ', cr:int(count($cases) - $max-listed), ' more', $nl)"/>
@@ -180,5 +196,27 @@
             <xsl:value-of select="concat($nl, '&lt;/details>', $nl, $nl)"/>
         </xsl:if>
     </xsl:template>
+
+    <!--
+        Parenthesised note for a listed test case: its category in the other
+        run (@previous-status, for outcome changes) or in the only run that
+        recorded it (@status, for recording drift).
+    -->
+    <xsl:function name="cr:annotation" as="xs:string">
+        <xsl:param name="case" as="element()"/>
+        <xsl:sequence select="
+            if ($case/@previous-status) then concat(' (was ', cr:status-label($case/@previous-status), ')')
+            else if ($case/@status) then concat(' (', cr:status-label($case/@status), ')')
+            else ''"/>
+    </xsl:function>
+
+    <xsl:function name="cr:status-label" as="xs:string">
+        <xsl:param name="status" as="xs:string"/>
+        <xsl:sequence select="
+            if ($status eq 'pass') then 'passing'
+            else if ($status eq 'failures') then 'failing'
+            else if ($status eq 'errors') then 'in error'
+            else $status"/>
+    </xsl:function>
 
 </xsl:stylesheet>
