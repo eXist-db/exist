@@ -1220,7 +1220,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>add-schema-version-source</id>
