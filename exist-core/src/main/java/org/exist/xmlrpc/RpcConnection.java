@@ -1997,17 +1997,8 @@ public class RpcConnection implements RpcAPI {
 
         final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
 
-        return this.<Map<String, Object>>readDocument(XmldbURI.createInternal(pathToQuery)).apply((document, broker, transaction) -> {
-            final BinaryDocument xquery = (BinaryDocument) document;
-            if (xquery.getResourceType() != DocumentImpl.BINARY_FILE) {
-                throw new EXistException("Document " + pathToQuery + " is not a binary resource");
-            }
-
-            if (!xquery.getPermissions().validate(user, Permission.READ | Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Insufficient privileges to access resource");
-            }
-
-            final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
+        return withDb((broker, transaction) -> {
+            final Source source = resolveStoredXQuery(broker, transaction, pathToQuery);
 
             try {
                 final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
@@ -2025,17 +2016,8 @@ public class RpcConnection implements RpcAPI {
 
         final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
 
-        return this.<Map<String, Object>>readDocument(XmldbURI.createInternal(pathToQuery)).apply((document, broker, transaction) -> {
-            final BinaryDocument xquery = (BinaryDocument) document;
-            if (xquery.getResourceType() != DocumentImpl.BINARY_FILE) {
-                throw new EXistException("Document " + pathToQuery + " is not a binary resource");
-            }
-
-            if (!xquery.getPermissions().validate(user, Permission.READ | Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Insufficient privileges to access resource");
-            }
-
-            final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
+        return withDb((broker, transaction) -> {
+            final Source source = resolveStoredXQuery(broker, transaction, pathToQuery);
 
             try {
                 final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
@@ -2044,6 +2026,36 @@ public class RpcConnection implements RpcAPI {
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
+        });
+    }
+
+    /**
+     * Resolves a stored XQuery to a {@link Source}, holding the document READ_LOCK only while
+     * the document is resolved and its permissions are checked. The lock is released on return,
+     * before the query is compiled and executed: holding the query document's lock while the
+     * executor goes on to acquire further collection/document locks is one edge of the
+     * save-while-running deadlock (#6593).
+     *
+     * @param broker the broker to use for the operation
+     * @param transaction the transaction to use for the operation
+     * @param pathToQuery the database path of the stored query
+     *
+     * @return the source of the stored query
+     *
+     * @throws EXistException if the document is missing or is not a binary resource
+     * @throws PermissionDeniedException if the current user may not execute the stored query
+     */
+    private Source resolveStoredXQuery(final DBBroker broker, final Txn transaction, final String pathToQuery) throws EXistException, PermissionDeniedException {
+        return this.<Source>readDocument(broker, transaction, XmldbURI.createInternal(pathToQuery)).apply((document, broker1, transaction1) -> {
+            if (document.getResourceType() != DocumentImpl.BINARY_FILE) {
+                throw new EXistException("Document " + pathToQuery + " is not a binary resource");
+            }
+
+            if (!document.getPermissions().validate(user, Permission.READ | Permission.EXECUTE)) {
+                throw new PermissionDeniedException("Insufficient privileges to access resource");
+            }
+
+            return new DBSource(broker1.getBrokerPool(), (BinaryDocument) document, true);
         });
     }
 
