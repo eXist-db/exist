@@ -115,7 +115,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
         } catch (InstantiationException ex) {
             LOG.error(ex.getMessage(), ex);
         }
-        return null;
+        return InputStream.nullInputStream();
     }
 
     @Override
