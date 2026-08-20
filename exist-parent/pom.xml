@@ -682,7 +682,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.22.1</version>
+                <version>2.22.2</version>
             </dependency>
             <!-- Align Bouncy Castle with exist-core; overrides Tika 3.3.1's bouncycastle.version=1.84
                  (bcutil/bcpkix/bcjmail). Mixed 1.84+1.85 on CLASSPATH=/exist/lib/* causes
