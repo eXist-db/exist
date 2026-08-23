@@ -1,0 +1,22 @@
+exist-core-jmh/src/main/java/org/exist/xquery/PrecedingAxisBenchmark.java
+  s_3aacd8d84f6942::t_b8093e3dc7ef62 90
+  s_3aacd8d84f6942::t_00ff734d1de7ac 39-40
+  s_3aacd8d84f6942::t_496cb326e55e42 127
+  s_3aacd8d84f6942::t_005c7e4c68ab69 147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7457e6c021ba6b6439cf7650e42f5016978f60ae",
+  "prompts": {},
+  "sessions": {
+    "s_3aacd8d84f6942": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36e97d6e-be83-4405-8588-47c93f714d0a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
