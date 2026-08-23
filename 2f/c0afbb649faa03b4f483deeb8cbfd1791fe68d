@@ -1,0 +1,28 @@
+AGENTS.md
+  s_4ae47a8df5d50d::t_e531fe77f78149 20,23
+  s_4ae47a8df5d50d::t_f8c944cd9d007e 84
+exist-distribution/pom.xml
+  s_4ae47a8df5d50d::t_0679286fd33e10 971-973
+.github/workflows/ci-container.yml
+  s_4ae47a8df5d50d::t_876f01175578b4 63-64
+pom.xml
+  s_4ae47a8df5d50d::t_64a4b724e89e2a 77,85-86,108
+exist-versioning-release.md
+  ai_agent 120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2fc0afbb649faa03b4f483deeb8cbfd1791fe68d",
+  "prompts": {},
+  "sessions": {
+    "s_4ae47a8df5d50d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c36fe8b-9396-40e7-8fd4-337a463741b4",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": null
+    }
+  }
+}

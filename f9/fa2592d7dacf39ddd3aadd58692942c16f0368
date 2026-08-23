@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  s_402b1f194ddd18::t_9a8c4562d8f36e 119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f9fa2592d7dacf39ddd3aadd58692942c16f0368",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

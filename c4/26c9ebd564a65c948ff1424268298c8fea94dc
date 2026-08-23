@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_a16a808e4ef4ca::t_ff462dadf8eb3c 127
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_a16a808e4ef4ca::t_3ae3a6989116f7 163-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c426c9ebd564a65c948ff1424268298c8fea94dc",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

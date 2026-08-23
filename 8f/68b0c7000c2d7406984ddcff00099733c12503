@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java
+  s_7cdf0e373ff9b9::t_fe5c5bf77ca73c 72
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_7cdf0e373ff9b9::t_ffeed8aceb9b81 1258,1260
+  s_7cdf0e373ff9b9::t_4b65f1ebdd9661 1269
+  s_7cdf0e373ff9b9::t_14bc233c11831b 1259
+exist-core/src/main/java/org/exist/storage/txn/TransactionManager.java
+  s_7cdf0e373ff9b9::t_4f8fd7a3b44399 575-579
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "8f68b0c7000c2d7406984ddcff00099733c12503",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

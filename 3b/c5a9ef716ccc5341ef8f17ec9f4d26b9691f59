@@ -1,0 +1,27 @@
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java
+  dd267fc11decf911 87,108,147,150-156
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  dd267fc11decf911 92-97,455-458,462-469,474-476,506-523
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java
+  dd267fc11decf911 1-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "3bc5a9ef716ccc5341ef8f17ec9f4d26b9691f59",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 88,
+      "total_deletions": 8,
+      "accepted_lines": 100,
+      "overriden_lines": 0
+    }
+  }
+}

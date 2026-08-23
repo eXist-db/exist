@@ -1,0 +1,33 @@
+.github/workflows/ci-release.yml
+  s_e13ac5be3246f1::t_cccf01d9db1e28 81
+  s_e13ac5be3246f1::t_f853cfa1747a57 159
+  s_e13ac5be3246f1::t_0e4274dd16b208 5-6
+exist-distribution/pom.xml
+  s_e13ac5be3246f1::t_0238cb21a2a5c8 598
+  s_e13ac5be3246f1::t_71349c4b1cf125 448
+  s_e13ac5be3246f1::t_3ae32d50c0501b 60-63
+  s_e13ac5be3246f1::t_be55f66cf16c0c 777
+  s_e13ac5be3246f1::t_bc3bebf9aed16c 635
+  s_e13ac5be3246f1::t_e682a01c09a19c 736
+  s_e13ac5be3246f1::t_baa6c37972063e 881
+  s_e13ac5be3246f1::t_f1765327d7aa5b 713
+  s_e13ac5be3246f1::t_267c7b460867a9 1167-1169
+  s_e13ac5be3246f1::t_e092f6d76120a5 494-504
+  s_e13ac5be3246f1::t_58db093efe2941 1051-1053
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "b0919a15f20f3898c7a6e77974ab1c63269e3c77",
+  "prompts": {},
+  "sessions": {
+    "s_e13ac5be3246f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68dcd257-670e-4a1c-9f2f-788614bb4de6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

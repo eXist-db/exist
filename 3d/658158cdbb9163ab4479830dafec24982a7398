@@ -1,0 +1,30 @@
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_ea9ff5491e93b6 38-39
+  s_b371cd7261149b::t_7d664d2b3441b4 197,202-222,256-257
+  s_b371cd7261149b::t_1f03bad0ed7726 231,234-235,250,254
+  s_b371cd7261149b::t_de6b3dd32b5939 261,236,244,246,255,262,271-272,278-279,282-283,238
+  s_b371cd7261149b::t_e634881d8edab0 34-35
+  s_b371cd7261149b::t_042413afe82a8e 198,201
+  s_b371cd7261149b::t_eac38cc3d45584 227
+  s_b371cd7261149b::t_80b8f01fc68843 199
+  s_b371cd7261149b::t_c3146d6f462231 200
+  s_b371cd7261149b::t_b44521f89a8e59 253
+  s_b371cd7261149b::t_650b40a36c95ef 264-270,273-277,280-281
+  s_b371cd7261149b::t_d8f753f7a26440 226,228-230,232-233,237,240-243,245,247-249,251-252,258-260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3d658158cdbb9163ab4479830dafec24982a7398",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

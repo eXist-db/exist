@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7339eb93078c0b::t_590ae3c3c430e4 484-494
+  s_7339eb93078c0b::t_2a22c8f7e0c7b4 665-673,676-684,691,693-696
+  s_7339eb93078c0b::t_553f17d9b7b415 247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "b8b2097c1f96f2a99a658a24a7489c8d136213bf",
+  "prompts": {},
+  "sessions": {
+    "s_7339eb93078c0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ddb5ce6-410c-4e1e-a33c-069141ab181c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

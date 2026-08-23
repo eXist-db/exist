@@ -1,0 +1,37 @@
+exist-core-jmh/pom.xml
+  s_66d4dce90f3454::t_e3c458e3b870c6 164
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java
+  s_66d4dce90f3454::t_8cb95ebe5c3143 138-139
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LucenePhraseQueryBenchmark.java
+  s_66d4dce90f3454::t_96d6f1f944c674 61
+  s_66d4dce90f3454::t_d7444983a432d5 249,252,258
+  s_66d4dce90f3454::t_3e617f9590a424 41,43,107-108,135-137,141,160-165,194,219-226,229,231,236-248,250-251,253-257,259-263
+  s_66d4dce90f3454::t_1582edda40ddd2 62-63,148,166-172,175-176,180
+  s_66d4dce90f3454::t_4ce0d826b937e6 150-151
+  s_66d4dce90f3454::t_d51008d30f6c0f 177
+  s_66d4dce90f3454::t_1a7356cb9f1b72 1-40,42,44-60,64-77,97-106,109-134,138-140,142-146,149,152-159,181-193,197-200,205-218,227-228,230,232-235,264-275
+  s_66d4dce90f3454::t_4ca0fb25e3d48c 195
+  s_66d4dce90f3454::t_3c007454a9b969 196,201-204
+  s_66d4dce90f3454::t_e1f67d2a934853 78-96
+  s_66d4dce90f3454::t_fa69383b4c47e9 173-174,178-179
+  s_66d4dce90f3454::t_e1ed5eb81dfbbb 147
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java
+  s_66d4dce90f3454::t_50fcb0f7279613 127
+  s_66d4dce90f3454::t_788635903dd727 34,47,64-78,84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "c099aa3f4ad98fa5c6f083b7a4d3d09cdc88f71c",
+  "prompts": {},
+  "sessions": {
+    "s_66d4dce90f3454": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae600e59-ac05-4793-9e7b-db876b5fd073",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

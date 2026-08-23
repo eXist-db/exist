@@ -1,0 +1,40 @@
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_09e005f02f2380 1212,1216-1222,1234,1236
+  s_a16a808e4ef4ca::t_16dadfd8dd1ac2 845-850
+  s_a16a808e4ef4ca::t_9d0ed00b1df15f 594-599
+  s_a16a808e4ef4ca::t_7a5c536a77d4fe 1122-1127
+schema/generate-conf-fixture.xsl
+  s_a16a808e4ef4ca::t_26a1f3875a899b 128-131,142-144,156-157,161
+schema/conf.xsd
+  s_a16a808e4ef4ca::t_8b254913f24633 840-846
+  s_a16a808e4ef4ca::t_3af364e0f9a00f 1238-1244
+  s_a16a808e4ef4ca::t_293f3fe91843e7 11
+  s_a16a808e4ef4ca::t_7b4e5f36a6cc6e 647-653
+  s_a16a808e4ef4ca::t_37ccb8dd6e6b06 67-73
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_0fd4f6869723d9 255
+  s_a16a808e4ef4ca::t_a04106898d676a 550
+  s_a16a808e4ef4ca::t_f0a63b771442c4 953
+  s_a16a808e4ef4ca::t_e858fe2a31612d 61
+  s_a16a808e4ef4ca::t_1584bce5b0a950 996-997
+  s_a16a808e4ef4ca::t_c7322a177f77f7 1053
+  s_a16a808e4ef4ca::t_1451247da95edb 572
+  s_a16a808e4ef4ca::t_af5e3a85cb60e6 1047
+  s_a16a808e4ef4ca::t_d38a415fac6e58 1004,1007
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "e69acaa9c2e058e8a7004532b318aabd1de5d429",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

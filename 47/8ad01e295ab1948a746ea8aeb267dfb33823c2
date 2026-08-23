@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/storage/txn/TransactionManager.java
+  s_7cdf0e373ff9b9::t_a20679467ab8eb 226
+  s_7cdf0e373ff9b9::t_61e0210857c925 427-439
+exist-core/src/main/java/org/exist/storage/txn/Txn.java
+  s_7cdf0e373ff9b9::t_8147ef3feaf618 54-56,73
+  s_7cdf0e373ff9b9::t_e49112a1be4baa 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "478ad01e295ab1948a746ea8aeb267dfb33823c2",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

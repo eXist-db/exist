@@ -1,0 +1,21 @@
+schema/generate-conf-fixture.xsl
+  s_a16a808e4ef4ca::t_3fffa1722fd93e 162-164
+exist-core/src/main/java/org/exist/util/ParametersExtractor.java
+  s_a16a808e4ef4ca::t_f0814498114192 258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e229716e40b19753fc7bdca90f0faa388fd62550",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

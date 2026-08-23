@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/backup/Restore.java
+  s_82beb792003e58::t_c906ea43740f6b 160-161
+  s_82beb792003e58::t_ffe02b1a43841d 113-115,117-118,123
+  s_82beb792003e58::t_40f7a6767206ee 68-69,73-75,77-78
+exist-core/src/test/java/org/exist/backup/FileSystemBackupDescriptorTest.java
+  s_82beb792003e58::t_ca0bd69761a2af 68,84-85
+  s_82beb792003e58::t_d42e916ceebae2 89-92,118-135,137-140
+exist-core/src/main/java/org/exist/backup/FileSystemBackupDescriptor.java
+  s_82beb792003e58::t_67a2c5513c20e9 199-203,206-209,211-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "17f7564c28db14bfe1d2c8a0dfc1badc198f144a",
+  "prompts": {},
+  "sessions": {
+    "s_82beb792003e58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1d74ec86-9236-4df2-a3ee-d20fb49be6c9",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

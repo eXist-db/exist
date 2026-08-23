@@ -1,0 +1,30 @@
+exist-core/src/test/java/org/exist/xquery/XQueryUpdateTest.java
+  s_7cdf0e373ff9b9::t_747d3dc72bc9a3 484,498
+  s_7cdf0e373ff9b9::t_2bd76d4bf854bd 32,64-65,99,103,107,148,152-153,202,206-207,256,260,264,308,312,316,328,332,336,358,362,366,398,402-403,418,422-423,450,454-455,470,476-480,482,485-486,490-493,499-502,506
+  s_7cdf0e373ff9b9::t_d0d56a84ffaffa 481
+  s_7cdf0e373ff9b9::t_f96bef5973555d 494
+exist-core/src/main/java/org/exist/storage/txn/TransactionManager.java
+  s_7cdf0e373ff9b9::t_4f8fd7a3b44399 575-579
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_7cdf0e373ff9b9::t_dba55a4e508c52 236-242
+  s_7cdf0e373ff9b9::t_27dbdf7c204670 114
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_7cdf0e373ff9b9::t_14bc233c11831b 1259
+  s_7cdf0e373ff9b9::t_4b65f1ebdd9661 1269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "a2510edf998b0e10ac8a2350b0860906a59157a7",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

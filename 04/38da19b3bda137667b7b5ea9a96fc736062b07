@@ -1,0 +1,36 @@
+exist-core/pom.xml
+  s_df30998873e606::t_0aaecadb467fe8 1209,1236
+extensions/debuggee/pom.xml
+  s_df30998873e606::t_f25c5102a906b9 101
+extensions/vector/pom.xml
+  s_df30998873e606::t_eaafeba3162f4c 105
+extensions/modules/file/pom.xml
+  s_df30998873e606::t_9e034eda5061a0 191
+extensions/modules/persistentlogin/pom.xml
+  s_df30998873e606::t_b5aa7747e59cee 150,162
+exist-parent/log4j2-test.xml
+  s_df30998873e606::t_fdb708f8b1029d 1-38
+extensions/webdav/pom.xml
+  s_df30998873e606::t_6de6fe6f6d9894 178
+exist-parent/pom.xml
+  s_df30998873e606::t_0ffe2067b20ff5 154-156
+  s_df30998873e606::t_3de40b40d32a45 1083
+extensions/exquery/restxq/pom.xml
+  s_df30998873e606::t_4c26f03a470319 263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "0438da19b3bda137667b7b5ea9a96fc736062b07",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

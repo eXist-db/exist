@@ -1,0 +1,22 @@
+exist-core/src/main/java/org/exist/jetty/WindowsCompatibleResource.java
+  s_402b1f194ddd18::t_b6eccea510b7e0 1-131
+exist-core/src/main/java/org/exist/jetty/WebAppContext.java
+  s_402b1f194ddd18::t_cecbc7515ea7dc 56-64
+  s_402b1f194ddd18::t_4667508998d0ee 24-25,28-29,36-38,41-55,65-69,71-73,75-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "23250a45e978b6e6ec008283b0b9091c6e496606",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

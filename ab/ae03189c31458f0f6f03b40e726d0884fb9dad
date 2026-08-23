@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/value/AnyURITest.java
+  s_40014b7ff3566d::t_332605acdbb674 54-56,58-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "abae03189c31458f0f6f03b40e726d0884fb9dad",
+  "prompts": {},
+  "sessions": {
+    "s_40014b7ff3566d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a680342bffeaj0BtMHCWSoz3M",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

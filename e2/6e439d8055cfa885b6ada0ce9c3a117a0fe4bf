@@ -1,0 +1,51 @@
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_033f8a50977d21::t_b92d88207ab93d 66-68
+  s_033f8a50977d21::t_b7636509222acb 106
+  s_033f8a50977d21::t_4a1fcd60d515b6 225-229,231-237,239-244
+  s_033f8a50977d21::t_446dc87f524a40 238
+  s_033f8a50977d21::t_b91df30ee8059f 58-65,69-85
+  s_033f8a50977d21::t_4f39281cab0c5c 230
+  s_033f8a50977d21::t_fc85fe9eba9627 127-129
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_033f8a50977d21::t_efa5816f6e046e 557-559,562-563,577-578,584-585
+  s_033f8a50977d21::t_ebe796b9ddb859 35
+  s_033f8a50977d21::t_0373adc27c714f 88
+  s_033f8a50977d21::t_6c8684f1247f55 219
+  s_033f8a50977d21::t_9309afa2eba64a 321-332
+  s_033f8a50977d21::t_6151d50ff0ac89 484-489
+  s_033f8a50977d21::t_e8f8679cfa9e3b 510-556,574-576,586-643
+  s_033f8a50977d21::t_342bac0b4cd6f5 652
+  s_033f8a50977d21::t_bc123edd22d169 287-304,306-308,312,314-320,333-360
+  s_033f8a50977d21::t_b9d1db1a7ad06b 25,27-28,30-32,34,42-45
+  s_033f8a50977d21::t_d96c22f6c1a5d7 111
+  s_033f8a50977d21::t_73bb6e6730fdd2 253-258
+  s_033f8a50977d21::t_c938dbd49590a9 560-561,564-573,579-583
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxv.java
+  s_033f8a50977d21::t_2b4c3ea748179d 240-244,258-260
+  s_033f8a50977d21::t_1309de34e470fc 40
+  s_033f8a50977d21::t_9b01260c5a68f3 86-88
+exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java
+  s_033f8a50977d21::t_27f5469dacb65f 36-37,43,46,59-67,70
+  s_033f8a50977d21::t_9504d8036f6398 177-317
+exist-core/src/test/xquery/validation/jaxv.xql
+  s_033f8a50977d21::t_547a46e5b387ce 247,254
+  s_033f8a50977d21::t_fd18e5a3a67fe8 206-210
+  s_033f8a50977d21::t_5af31f03697cdf 146-149,156-157
+  s_033f8a50977d21::t_1083b908794461 202-205,211-246,248-253,255-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "e26e439d8055cfa885b6ada0ce9c3a117a0fe4bf",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

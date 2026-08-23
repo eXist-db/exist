@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java
+  s_7cdf0e373ff9b9::t_fe5c5bf77ca73c 72
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_7cdf0e373ff9b9::t_c072f359025d46 106,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "fbf758903bf3d0ed0332fec5b6590fab2076b7f5",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

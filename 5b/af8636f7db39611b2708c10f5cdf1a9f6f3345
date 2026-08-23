@@ -1,0 +1,40 @@
+exist-core/src/main/java/org/exist/storage/IndexSpec.java
+  s_cc91f600c392c3::t_23fd2ddcb63f6d 150-153
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_cc91f600c392c3::t_cb4b437adc6f17 209-211
+  s_cc91f600c392c3::t_5549785ca9c9dc 222,224-234
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java
+  s_cc91f600c392c3::t_8f7a74ba8dcaa2 183-184,187
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_c9c5877bed2a02 2090
+  s_cc91f600c392c3::t_8fdf373e8bccf2 2138,2195-2196,2208-2209,2215-2217,2143,2154,2158,2161
+  s_cc91f600c392c3::t_535762bbbd28b4 2139,2178,2197,2200-2204,141-144,1797,2091-2094,2142,2144-2151,2163
+  s_9a183dbdc45354::t_3b5d1146efcd43 2171-2177,2179-2187,2141
+  s_cc91f600c392c3::t_e30ea5732e1af4 2064-2065,2113-2118,2166,2190-2194
+  s_cc91f600c392c3::t_dc3b8f8b590c7e 2066
+  s_cc91f600c392c3::t_3059c8bf798365 2152-2153,2155-2157,2159-2160,2162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "5baf8636f7db39611b2708c10f5cdf1a9f6f3345",
+  "prompts": {},
+  "sessions": {
+    "s_9a183dbdc45354": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8e0b3ea4-fd85-41de-a1fb-93cab7ce38d8",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

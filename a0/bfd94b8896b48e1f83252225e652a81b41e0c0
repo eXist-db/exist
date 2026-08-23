@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_8f96b502a60cd9::t_41207a28265179 127
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_8f96b502a60cd9::t_259aa040878dfd 155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a0bfd94b8896b48e1f83252225e652a81b41e0c0",
+  "prompts": {},
+  "sessions": {
+    "s_8f96b502a60cd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "849dcbd4-9969-4655-9667-eab90a1ef57d",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

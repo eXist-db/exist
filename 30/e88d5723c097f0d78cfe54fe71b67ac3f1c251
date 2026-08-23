@@ -1,0 +1,32 @@
+AGENTS.md
+  d860c86ca9c322d9 19,26,35,38,41,48-49
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 47,81
+exist-parent/pom.xml
+  d860c86ca9c322d9 1420-1434
+exist-distribution/pom.xml
+  d860c86ca9c322d9 489-495,901-903,984-985,992-1004,1013
+exist-versioning-release.md
+  d860c86ca9c322d9 112,114,116,118-122,124-126,128,130,132,134-153,160
+pom.xml
+  d860c86ca9c322d9 75,79-87,109,119,126-127,132-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "30e88d5723c097f0d78cfe54fe71b67ac3f1c251",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 74,
+      "total_deletions": 121,
+      "accepted_lines": 63,
+      "overriden_lines": 0
+    }
+  }
+}

@@ -1,0 +1,26 @@
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_bf3b51b8da57f7::t_2bf7784fe82ddf 517-523
+  s_bf3b51b8da57f7::t_aa823472372e79 567-569
+  s_bf3b51b8da57f7::t_fc0a02531c1a52 363-392
+  s_bf3b51b8da57f7::t_194f8719ac5b9b 716-726
+extensions/indexes/lucene/src/test/xquery/lucene/field-expression-context.xqm
+  s_bf3b51b8da57f7::t_2a210b9c7127d8 133-135,137-140
+  s_bf3b51b8da57f7::t_a9608a15b521af 49-52,54,80-86,136
+  s_bf3b51b8da57f7::t_d354516b5cf4ed 48,53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "87876086d55bc30e10be58e8df8f33e9d61d4c6a",
+  "prompts": {},
+  "sessions": {
+    "s_bf3b51b8da57f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3304cc8e-0b9f-48fd-b1e0-355dc8ba0ec0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

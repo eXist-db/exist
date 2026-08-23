@@ -1,0 +1,28 @@
+exist-core/src/test/java/org/exist/storage/lock/DeadlockIT.java
+  s_df30998873e606::t_430d4e875e7fae 405
+  s_df30998873e606::t_2680b4bf893b95 414-416
+  s_df30998873e606::t_84c98bcaa1c94a 29
+  s_df30998873e606::t_ad52f7bd3d61ac 225-226,240-248
+  s_df30998873e606::t_84a88b7e0180cb 125-126
+  s_df30998873e606::t_7d9453bb5954e2 62
+  s_df30998873e606::t_4b67f095fc9ae3 122,124,127-128
+  s_df30998873e606::t_df7652b3996b99 266,269,275,277-278,282,304,309,318-320
+  s_df30998873e606::t_fb9eca0afed4f6 100,102,106-121
+  s_df30998873e606::t_7ba7559313b271 123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "ef372d97be698dc03d8f63c69dad1a5293b7a460",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

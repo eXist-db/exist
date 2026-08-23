@@ -1,0 +1,164 @@
+extensions/modules/cache/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 82-88,91-125
+extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_88f1083d04a823 1-25
+extensions/modules/mail/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_316e88e65eb6c6 1-16
+extensions/indexes/ngram/pom.xml
+  s_7cdf0e373ff9b9::t_f18c20453ceea5 83-89,92-126
+extensions/modules/cache/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_035e3fefb33092 1-20
+extensions/modules/xmldiff/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 92-98,103-135
+extensions/webdav/pom.xml
+  s_7cdf0e373ff9b9::t_0a58e039a3a5e1 130-136,140-167,176-180
+  s_7cdf0e373ff9b9::t_7b9a4348978874 123-125
+  s_7cdf0e373ff9b9::t_168a784908c1f0 168-175
+extensions/modules/persistentlogin/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_eb1101e55ca166 1-12
+extensions/xqdoc/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 104-110,115-147
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Transform.java
+  s_7cdf0e373ff9b9::t_a5953801b12cb1 227
+extensions/exquery/restxq/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_d504a5a455b5c9 1-22
+extensions/contentextraction/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 110-116,121-153
+extensions/modules/xmldiff/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_052743c1c9e671 1-20
+extensions/modules/image/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 94-100,105-137
+extensions/exquery/restxq/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_8acb2078eb8dfc 1-21
+exist-core/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_776bacc975ddfd 1-12
+extensions/modules/file/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_417f748fa06bc7 1-12
+extensions/modules/compression/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 98-104,107-141
+extensions/debuggee/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_ec6205304779f8 1-11
+extensions/xqdoc/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_e6b5cd7a5a4b3d 1-21
+extensions/debuggee/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_54688e6a921b64 1-12
+extensions/contentextraction/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_94887c380d3e1f 1-20
+extensions/indexes/lucene/pom.xml
+  s_7cdf0e373ff9b9::t_7df25a1c4cbd10 180-186,191-223
+extensions/modules/counter/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 83-89,94-126
+extensions/modules/image/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_90edb6c6f68cd1 1-21
+extensions/indexes/lucene/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_0a62eca041c321 1-22,28-29
+  s_7cdf0e373ff9b9::t_54ecdd53fc1555 23-27
+extensions/indexes/sort/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_747524764d6ad4 2
+  s_7cdf0e373ff9b9::t_a4be13854f0743 1,3-23
+extensions/modules/xslfo/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_06e47b7f6426a1 1-20
+extensions/modules/compression/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_d0ea5b809179be 1-20
+extensions/webdav/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_6bd9eca8cfcebd 1-11
+extensions/modules/expathrepo/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_49ceafb495f2c0 1-21
+extensions/modules/sql/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_c568cf71b6fc8f 1-12
+extensions/modules/mail/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 150-156,161-193
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_1676b652608109 1-12
+schema/generate-controller-config-fixture.xsl
+  s_7cdf0e373ff9b9::t_d1d54e455b3041 28-29
+  s_7cdf0e373ff9b9::t_4dc7decfc884d0 1-27,30-35,37-75
+  s_7cdf0e373ff9b9::t_a4bc66cf86e83c 36
+extensions/modules/counter/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_bc026672659cdb 1-12
+extensions/indexes/ngram/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_0894fcc04e1f11 1-23
+extensions/modules/file/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_526b04086e93c7 1-20
+extensions/exquery/restxq/pom.xml
+  s_7cdf0e373ff9b9::t_7736a77a75a24b 209-211,253-260
+  s_7cdf0e373ff9b9::t_0a58e039a3a5e1 216-222,226-252,261-266
+extensions/modules/xslfo/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 121-127,130-164
+extensions/indexes/range/pom.xml
+  s_7cdf0e373ff9b9::t_41293ef2243633 155-161,166-198
+extensions/indexes/range/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_64334941ce635d 1-25
+exist-ant/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 111-117,120-154
+extensions/modules/sql/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 119-125,130-162
+extensions/modules/persistentlogin/pom.xml
+  s_7cdf0e373ff9b9::t_7736a77a75a24b 109-111,153-160
+  s_7cdf0e373ff9b9::t_0a58e039a3a5e1 116-122,126-152,161-166
+exist-ant/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_0df03f5e031894 1-19
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7cdf0e373ff9b9::t_83204074e4e0a4 241-242
+extensions/expath/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_d6fb43cb9e57dd 1-20
+extensions/modules/file/pom.xml
+  s_7cdf0e373ff9b9::t_0a58e039a3a5e1 152-158,162-188,197-202
+  s_7cdf0e373ff9b9::t_7736a77a75a24b 145-147,189-196
+extensions/modules/persistentlogin/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_84ba21c4f04320 1-19
+extensions/debuggee/pom.xml
+  s_7cdf0e373ff9b9::t_7736a77a75a24b 87-89,131-138
+  s_7cdf0e373ff9b9::t_0a58e039a3a5e1 94-100,104-130,139-144
+exist-core/pom.xml
+  s_7cdf0e373ff9b9::t_723e34d34a2c7c 1128-1154
+  s_7cdf0e373ff9b9::t_dae4f74cd9762a 674-676,682-683
+  s_7cdf0e373ff9b9::t_99c33bd11db8db 685
+extensions/indexes/spatial/pom.xml
+  s_7cdf0e373ff9b9::t_2a0c46f126a160 160-166,171-203
+extensions/expath/pom.xml
+  s_7cdf0e373ff9b9::t_11b0861024b041 82-88,91-125
+exist-core/src/test/java/org/exist/util/SchemaVersionFixtureAuditTest.java
+  s_7cdf0e373ff9b9::t_feb124fee22bf7 49-50
+  s_7cdf0e373ff9b9::t_b35a4a9af107e6 69
+extensions/modules/expathrepo/expathrepo-trigger-test/pom.xml
+  s_7cdf0e373ff9b9::t_04c434779dc1c1 101-114,116-149
+extensions/indexes/spatial/src/test/resources-filtered/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_c5516d59c03d94 17-22
+  s_7cdf0e373ff9b9::t_6bf10bcb18c9b0 1-16,23
+extensions/indexes/sort/pom.xml
+  s_7cdf0e373ff9b9::t_46b644bf0eba5c 77-83,86-89,93-120,122
+  s_7cdf0e373ff9b9::t_039ce39b7b90f4 90-92
+schema/generate-conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_342afee714ff9a 105-111
+  s_7cdf0e373ff9b9::t_3a39a627c8e0fd 1-28,30-41,43-53,55-56,58-66,83-104,112-114,122,126-137
+  s_7cdf0e373ff9b9::t_b40f5511edf7c2 75-82
+  s_7cdf0e373ff9b9::t_e23c61d0559956 29
+  s_7cdf0e373ff9b9::t_00d6c19bab8ce9 42,54,57,123-125
+  s_7cdf0e373ff9b9::t_1ce545373962f2 115-121
+  s_7cdf0e373ff9b9::t_0b06461c2ebb11 67-74
+extensions/modules/expathrepo/pom.xml
+  s_7cdf0e373ff9b9::t_ed6271ef8849dc 103-114,118-152
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_7cdf0e373ff9b9::t_0b326c8e39a9e1 29-30
+extensions/indexes/indexes-integration-tests/pom.xml
+  s_7cdf0e373ff9b9::t_6f6c8cc4bc1ba9 143-149,154-186
+extensions/modules/expathrepo/expathrepo-trigger-test/src/test/resources/conf-fixture.xsl
+  s_7cdf0e373ff9b9::t_0b11927ca941c5 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "f1b1e1c368e13889a5674c1e1198e528b2de3812",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

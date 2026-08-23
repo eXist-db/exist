@@ -1,0 +1,18 @@
+exist-core/src/main/java/org/exist/util/HSort.java
+  h_058c4ed50bd6c9 31-38
+exist-core/src/main/java/org/exist/util/InsertionSort.java
+  h_058c4ed50bd6c9 30-38
+exist-core/src/main/java/org/exist/http/filter/PathFilter.java
+  h_058c4ed50bd6c9 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "b7bcdb031c86c101db976447cb520c614eb48741",
+  "prompts": {},
+  "humans": {
+    "h_058c4ed50bd6c9": {
+      "author": "duncdrum"
+    }
+  }
+}

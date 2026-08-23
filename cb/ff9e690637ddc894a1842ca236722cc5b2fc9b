@@ -1,0 +1,31 @@
+exist-core/src/main/java/org/exist/client/ClientFrame.java
+  s_b371cd7261149b::t_1356b163a53986 147
+exist-core/src/main/java/org/exist/client/InteractiveClient.java
+  s_b371cd7261149b::t_ee855190d1a92e 2237
+  s_b371cd7261149b::t_2d2150a9610c9f 293
+  s_b371cd7261149b::t_cabefdc10ed560 603
+  s_b371cd7261149b::t_26f543c29422b4 2061
+  s_b371cd7261149b::t_6db71f15dd7d15 629-634
+  s_b371cd7261149b::t_29070538331304 273-275,277-280
+  s_b371cd7261149b::t_8fd9c44adc3f73 316
+  s_b371cd7261149b::t_b7b27909b2d6f3 571-572
+  s_b371cd7261149b::t_a5fd8a09b9444c 2126
+  s_b371cd7261149b::t_f37d3c171b4c6b 489
+  s_b371cd7261149b::t_b33672bef53a7f 716-717
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "cbff9e690637ddc894a1842ca236722cc5b2fc9b",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

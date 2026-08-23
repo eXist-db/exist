@@ -1,0 +1,34 @@
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java
+  s_7cdf0e373ff9b9::t_6c1ddcd8e957f0 39-41
+  s_7cdf0e373ff9b9::t_5c7c5557eb448d 1-23,33,35-37,49-66,78-83,92-107,109,113-115,146-147,158-160,162-163,167-169,184-186,189,204,212-213
+  s_7cdf0e373ff9b9::t_b83f9a1320086a 110
+  s_7cdf0e373ff9b9::t_b642bc4298bfc8 116-121,131-136,139-145
+  s_7cdf0e373ff9b9::t_8b38cf8121ecb3 170-175,180-183,187-188,191,195,198-203,205-211
+  s_7cdf0e373ff9b9::t_8f5ea75772b74a 24-32,34,38,42-48,67-77,84-91,108,111-112,122-130,137-138,148-157,161,164-166,176-179,190,192-194,196-197
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7cdf0e373ff9b9::t_d2333cd4a020b4 433,438
+  s_7cdf0e373ff9b9::t_18954fbb789397 387
+  s_7cdf0e373ff9b9::t_3dff652bb23882 518-520,523,527-529,532
+  s_7cdf0e373ff9b9::t_652659da6e9045 61
+exist-core/src/main/java/org/exist/validation/Xsd11SchemaDetection.java
+  s_7cdf0e373ff9b9::t_db4342f3de760d 1-255
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_7cdf0e373ff9b9::t_d079e285055d7a 64,75,87-88
+  s_7cdf0e373ff9b9::t_9e28d7722898b1 1208-1216,1219-1224,1226,1228-1229,1232,1234-1235,1242-1293,1332-1354,1368,1371-1382,1390-1396
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "ad054ede6092bc946f67528c84db7da7a0302bee",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

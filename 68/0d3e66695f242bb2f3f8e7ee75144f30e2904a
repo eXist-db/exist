@@ -1,0 +1,40 @@
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_cc91f600c392c3::t_cb4b437adc6f17 209-211
+  s_cc91f600c392c3::t_5549785ca9c9dc 222,224-234
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_c9c5877bed2a02 2092
+  s_cc91f600c392c3::t_3059c8bf798365 2140,2154-2155,2157-2159,2161-2162,2164
+  s_9a183dbdc45354::t_3b5d1146efcd43 2173-2179,2181-2189,2143
+  s_cc91f600c392c3::t_535762bbbd28b4 2180,2199,2202-2206,142-145,1799,2093-2096,2144,2146-2153,2165
+  s_cc91f600c392c3::t_8fdf373e8bccf2 2197-2198,2210-2211,2217-2219,2145,2156,2160,2163
+  s_cc91f600c392c3::t_e30ea5732e1af4 2066-2067,2115-2120,2168,2192-2196
+  s_cc91f600c392c3::t_dc3b8f8b590c7e 2068
+exist-core/src/main/java/org/exist/storage/IndexSpec.java
+  s_cc91f600c392c3::t_23fd2ddcb63f6d 150-153
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java
+  s_cc91f600c392c3::t_8f7a74ba8dcaa2 183-184,187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "680d3e66695f242bb2f3f8e7ee75144f30e2904a",
+  "prompts": {},
+  "sessions": {
+    "s_9a183dbdc45354": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8e0b3ea4-fd85-41de-a1fb-93cab7ce38d8",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

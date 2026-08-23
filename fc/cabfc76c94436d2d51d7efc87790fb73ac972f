@@ -1,0 +1,36 @@
+exist-core/src/main/java/org/exist/xquery/functions/map/AbstractMapType.java
+  s_bd595ba62069bc::t_912695ad233a21 289-290
+  s_bd595ba62069bc::t_11ca6aca736b09 288
+exist-core/src/test/java/org/exist/xquery/FunctionTypeInElementContentTest.java
+  s_bd595ba62069bc::t_1ed8ffe5b96b34 133-135
+extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/SendEmailFunction.java
+  s_bd595ba62069bc::t_9387eab409f307 245-248
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_bd595ba62069bc::t_96f6ec83c4689a 208-220,924,927-929,931
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextHighlighter.java
+  s_bd595ba62069bc::t_93c53f8d12627c 73-74
+exist-core/src/main/java/org/exist/xquery/Predicate.java
+  s_bd595ba62069bc::t_44c2a5ae3b1712 240
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunDocumentURI.java
+  s_bd595ba62069bc::t_9c80da691704a2 112-113
+exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java
+  s_bd595ba62069bc::t_f3612374b494a1 112
+extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/GMLHSQLIndexWorker.java
+  s_bd595ba62069bc::t_40f8a30206e77d 173-174,176-181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "fccabfc76c94436d2d51d7efc87790fb73ac972f",
+  "prompts": {},
+  "sessions": {
+    "s_bd595ba62069bc": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a81d6c30-30b8-40ef-bf2f-d33f24256e5d",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

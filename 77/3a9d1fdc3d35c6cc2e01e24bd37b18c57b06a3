@@ -1,0 +1,95 @@
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_ba9e8a349f87fb 2-9,11
+extensions/indexes/lucene/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_9ced2d563a2eb5 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/contentextraction/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_2d8f83a1fb478a 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/file/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_61eac7fad529f7 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/image/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_4855ba9920ce7a 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/persistentlogin/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_64207938f207fe 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-ant/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_253c239ad6c05c 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/xslfo/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_86696a9a6650dd 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/file/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_3addb18538968d 2-9,11
+extensions/modules/compression/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_6ddc92bcbe503b 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/expathrepo/expathrepo-trigger-test/src/test/resources/conf.xml
+  s_7cdf0e373ff9b9::t_4ed21d22d413f1 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/indexes/sort/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_73e3a015baa610 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/exquery/restxq/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_0f7232b7a5f162 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/indexes/spatial/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_f2dac25e3974b9 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/debuggee/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_92b6aa65194cae 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources-filtered/org/exist/xquery/conf.xml
+  s_7cdf0e373ff9b9::t_900b2569a646c3 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_f39e5306797656 2-9,11
+extensions/exquery/restxq/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_d9e617a2ef9029 2-9,11
+extensions/modules/mail/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_0f689ba7e458f6 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/xqdoc/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_6c2b627c5ecd7c 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/cache/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_3cc3dcd353cd40 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/indexes/ngram/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_ee6d010fddd21b 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/xmldiff/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_9079d1ddc69073 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_3c7d18c110b648 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources-filtered/org/exist/xquery/functions/transform/conf.xml
+  s_7cdf0e373ff9b9::t_0dbc885a51c4e7 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/expath/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_5d3ef90fc1900e 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_2e93f83d2dbc49 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources/collection.xconf.init
+  s_7cdf0e373ff9b9::t_5b33774e2ad392 2
+extensions/debuggee/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_4219fb745f6176 2-9,11
+exist-core/src/test/java/org/exist/util/SchemaVersionFixtureAuditTest.java
+  s_7cdf0e373ff9b9::t_56c879bb35332f 38
+  s_7cdf0e373ff9b9::t_fb8091ba8dcde0 67-73,77
+  s_7cdf0e373ff9b9::t_451fc58bff1d04 48-55,74-76,78,96,100-103
+extensions/modules/sql/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_5152fecd9d0641 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/persistentlogin/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_4e1c0a14145109 2-9,11
+extensions/indexes/range/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_e37367c0148bcb 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_7cdf0e373ff9b9::t_6b8871403b94d3 11,18,22
+extensions/webdav/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_7e5041ebac34f3 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/counter/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_5fedb42786f6c3 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+exist-core/src/test/resources-filtered/org/exist/storage/statistics/conf.xml
+  s_7cdf0e373ff9b9::t_f8043a08f6d360 7,9,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+extensions/modules/expathrepo/src/test/resources-filtered/conf.xml
+  s_7cdf0e373ff9b9::t_f1a98ab8a95b48 7,9,15,18,28-29,34-37,39,41-42,44,47,49-52,54,56,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "773a9d1fdc3d35c6cc2e01e24bd37b18c57b06a3",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

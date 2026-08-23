@@ -1,0 +1,25 @@
+exist-distribution/src/main/scripts/create-dmg-mac.sh
+  s_e13ac5be3246f1::t_957fe62b15715f 47,50,53,56-66,69,72,75,78,81,84
+exist-service/bin/README.md
+  s_e13ac5be3246f1::t_36bd0413abd354 12,21-22
+exist-distribution/src/main/scripts/create-dmg-unix.sh
+  s_e13ac5be3246f1::t_7ef2f7f7aa7e17 56,59,63-64,68-69,72,75-89,92,95,98,101,104,107
+exist-distribution/pom.xml
+  s_e13ac5be3246f1::t_2645738455732a 927
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a79d1e56f5487781b700b08f0a98db48284da7e4",
+  "prompts": {},
+  "sessions": {
+    "s_e13ac5be3246f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68dcd257-670e-4a1c-9f2f-788614bb4de6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

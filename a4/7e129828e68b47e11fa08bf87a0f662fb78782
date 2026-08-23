@@ -1,0 +1,45 @@
+extensions/indexes/lucene/src/main/resources/META-INF/services/org.exist.indexing.IndexFactory
+  s_a16a808e4ef4ca::t_b4d6c2ef5f6238 1
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndex.java
+  s_a16a808e4ef4ca::t_38a7b215282dc2 46-50
+extensions/indexes/range/src/main/resources/META-INF/services/org.exist.indexing.IndexFactory
+  s_a16a808e4ef4ca::t_8d543e471810f0 1
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_5593bc8bfde719 549-551,553,555-557,560,562-563
+extensions/indexes/sort/src/main/resources/META-INF/services/org.exist.indexing.IndexFactory
+  s_a16a808e4ef4ca::t_4655f8c113c012 1
+exist-core/src/main/java/org/exist/indexing/IndexFactory.java
+  s_a16a808e4ef4ca::t_bbbdf5730c43a9 1-42
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_a16a808e4ef4ca::t_9cb7cbfe3a4c6e 94-109,119-121
+  s_a16a808e4ef4ca::t_b30e8442950d69 122-123
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndex.java
+  s_a16a808e4ef4ca::t_746906918e5e50 61-70,74-76
+  s_a16a808e4ef4ca::t_f3299eaaf0c1af 77-78
+extensions/indexes/sort/src/main/java/org/exist/indexing/sort/SortIndex.java
+  s_a16a808e4ef4ca::t_e391824d956b62 64-68
+extensions/indexes/ngram/src/main/resources/META-INF/services/org.exist.indexing.IndexFactory
+  s_a16a808e4ef4ca::t_96ab2f474d6bba 1
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_13ae3831962924 1234-1235,1239,1243-1244,1258,1261-1262,1264-1271
+  s_a16a808e4ef4ca::t_d2ec7304a3f0f2 54
+  s_a16a808e4ef4ca::t_0bb3eb35fc7635 81,86
+  s_a16a808e4ef4ca::t_e3550e4bdc54ca 1263
+  s_a16a808e4ef4ca::t_155c7e81a00917 1388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a47e129828e68b47e11fa08bf87a0f662fb78782",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

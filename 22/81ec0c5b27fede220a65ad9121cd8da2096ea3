@@ -1,0 +1,24 @@
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_7cdf0e373ff9b9::t_ffeed8aceb9b81 1258-1260
+exist-core/src/test/java/org/exist/xquery/XQueryUpdateTest.java
+  s_7cdf0e373ff9b9::t_2b148708afa3d3 499-501,510-512
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_7cdf0e373ff9b9::t_38ea4909857b58 230-238
+  s_7cdf0e373ff9b9::t_65eaf8b3385aea 206-210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "2281ec0c5b27fede220a65ad9121cd8da2096ea3",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

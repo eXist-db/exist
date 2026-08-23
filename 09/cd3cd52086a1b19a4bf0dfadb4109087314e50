@@ -1,0 +1,42 @@
+exist-ant/src/test/java/org/exist/ant/XmldbTaskTest.java
+  s_ab1ccad1ee1b46::t_7f5a9071721a4e 28
+  s_ab1ccad1ee1b46::t_5ebfdf071c228d 323-324,327
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractIntegrationTest.java
+  s_ab1ccad1ee1b46::t_afb2fb7e563d6d 154-155,157-165
+exist-start/src/test/java/org/exist/start/CompatibleJavaVersionCheckTest.java
+  s_ab1ccad1ee1b46::t_3126a4622d2638 233,235-239,244-248,253-257,262-266
+  s_ab1ccad1ee1b46::t_9918d9c95be3b5 148,150-155,157,159-164,166,168-178,180,182-187,189,191-201
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/SelfImportCircularDependencyIntegrationTest.java
+  s_ab1ccad1ee1b46::t_e919eca600786d 29,35-37
+  s_ab1ccad1ee1b46::t_807b9e2936bf35 78,83-84,86
+exist-core/src/test/java/org/exist/security/AbstractSecurityManagerRoundtripTest.java
+  s_ab1ccad1ee1b46::t_5ddb2e3b6ebd3a 262-273
+  s_ab1ccad1ee1b46::t_5580e230d67e0a 35-36
+exist-core/src/test/java/org/exist/xmldb/XmldbURITest.java
+  s_ab1ccad1ee1b46::t_01ecee8ed57ebd 700,702,708,710,712-714
+  s_ab1ccad1ee1b46::t_dd76a215c75c77 612-616,618
+exist-core/src/test/java/org/exist/xmldb/RemoteDatabaseImplTest.java
+  s_ab1ccad1ee1b46::t_f50eb79ca8878a 72-74
+  s_ab1ccad1ee1b46::t_08f1bd608069e1 75-77
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/GroupManagementFunctionRemoveGroupTest.java
+  s_ab1ccad1ee1b46::t_1ac60c03b0276b 235-240
+  s_ab1ccad1ee1b46::t_b998393699c4da 216-220
+exist-ant/src/test/java/org/exist/ant/ServerTaskTest.java
+  s_ab1ccad1ee1b46::t_c59127c3f39a42 80,88-89,91-93,96-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "09cd3cd52086a1b19a4bf0dfadb4109087314e50",
+  "prompts": {},
+  "sessions": {
+    "s_ab1ccad1ee1b46": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ee70bc50ffe4wUTK59eHapURQ",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

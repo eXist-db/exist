@@ -1,0 +1,33 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java
+  s_1962010ff61c1b::t_46e5c0ec90db23 75-88,116-149
+  s_1962010ff61c1b::t_629a6233e9d4e9 452-476
+  s_1962010ff61c1b::t_342ca070dc9190 482-489,495-503
+  s_1962010ff61c1b::t_a2308024ffbbb3 490-494
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_1962010ff61c1b::t_fd410683ecafec 851-852,854
+  s_1962010ff61c1b::t_5b61d69a4fd26e 856
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_1962010ff61c1b::t_6de47d70d001c0 1551-1552,1554
+extensions/indexes/lucene/src/test/xquery/lucene/ft-attr-context.xql
+  s_1962010ff61c1b::t_a2dc8e61565b18 162,165,170,173
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1962010ff61c1b::t_f770c1d7d34a08 589,597
+exist-core/src/test/java/org/exist/dom/persistent/NodeProxyTest.java
+  s_1962010ff61c1b::t_7141e560231527 25,31,96-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "a0de72bab11b698dc3402e1d7fc9537ffbca0105",
+  "prompts": {},
+  "sessions": {
+    "s_1962010ff61c1b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "00ae7258-3d6b-4fca-abba-b081bffabf37",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

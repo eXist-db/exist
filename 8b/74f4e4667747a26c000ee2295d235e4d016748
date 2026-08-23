@@ -1,0 +1,20 @@
+.github/workflows/ci-oidc-smoke.yml
+  s_4ae47a8df5d50d::t_34e22156e40464 16-17,19,21-22,28-39,42,44-46,52-62
+  s_4ae47a8df5d50d::t_1fe30356d93ad2 1-15,18,20,23-27,40-41,43,47-51,63-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8b74f4e4667747a26c000ee2295d235e4d016748",
+  "prompts": {},
+  "sessions": {
+    "s_4ae47a8df5d50d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c36fe8b-9396-40e7-8fd4-337a463741b4",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

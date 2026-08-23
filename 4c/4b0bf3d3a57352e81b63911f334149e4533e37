@@ -1,0 +1,30 @@
+schema/collection.xconf.xsd
+  s_16a04778857c54::t_0fab9baf6a60b0 270
+schema/descriptor.xsd
+  s_16a04778857c54::t_ae138c2a3d34c7 38
+pom.xml
+  s_16a04778857c54::t_fe1d6bf72238b0 70-128
+exist-parent/pom.xml
+  s_16a04778857c54::t_8e6152b9bb617d 236-272
+  s_16a04778857c54::t_3be3b6da427175 977-998
+  s_16a04778857c54::t_8febbf8722add8 143-145
+  s_16a04778857c54::t_9f2bb145e82eb6 273-284
+schema/mime-types.xsd
+  s_16a04778857c54::t_6e13efd322de8c 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "4c4b0bf3d3a57352e81b63911f334149e4533e37",
+  "prompts": {},
+  "sessions": {
+    "s_16a04778857c54": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d0904c21-548e-4266-8776-9008c4aa6c5a",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

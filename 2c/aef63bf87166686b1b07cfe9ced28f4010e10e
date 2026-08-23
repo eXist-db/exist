@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunXmlToJson.java
+  s_cc91f600c392c3::t_462a9bc2d27996 48
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java
+  s_cc91f600c392c3::t_faf58efc849706 1-67,72,74-93,105-115,117-142,144-147,151,154-174,177-187,196-197,199-202,216-217
+  s_cc91f600c392c3::t_72428bac24afff 68
+  s_cc91f600c392c3::t_c870663f7cf232 94-104
+  s_cc91f600c392c3::t_073ed437c7c5b2 143,149-150
+  s_cc91f600c392c3::t_75e14a855b8fab 175-176,188-195,198
+  s_cc91f600c392c3::t_e2e5053a6dc026 203-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "2caef63bf87166686b1b07cfe9ced28f4010e10e",
+  "prompts": {},
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

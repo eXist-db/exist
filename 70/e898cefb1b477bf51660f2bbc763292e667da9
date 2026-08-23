@@ -1,0 +1,36 @@
+exist-docker/src/assembly/dist-assembly-docker.xml
+  s_bdbc9a24e676d8::t_1691144cc17a1e 40
+exist-docker/src/main/resources-filtered/Dockerfile
+  s_bdbc9a24e676d8::t_ef85ba3d77964f 31
+exist-distribution/pom.xml
+  s_bdbc9a24e676d8::t_153033e8c1818a 519,526-531
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_bdbc9a24e676d8::t_6e42c2a7e81f61 9
+exist-distribution/src/main/config/descriptor.xml
+  s_bdbc9a24e676d8::t_f6da52309d9040 10
+exist-installer/src/main/izpack/install.xml
+  s_bdbc9a24e676d8::t_542da8314228c0 158
+exist-docker/src/main/resources-filtered/Dockerfile-DEBUG
+  s_bdbc9a24e676d8::t_9559787098930c 33
+exist-jetty-config/src/main/resources/webapp/WEB-INF/catalog.xml
+  s_bdbc9a24e676d8::t_9247b04faf1aca 10-15,19
+  s_bdbc9a24e676d8::t_48711de480a9a9 16-18
+exist-distribution/src/main/config/conf.xml
+  s_bdbc9a24e676d8::t_e3a845c20b9112 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "70e898cefb1b477bf51660f2bbc763292e667da9",
+  "prompts": {},
+  "sessions": {
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

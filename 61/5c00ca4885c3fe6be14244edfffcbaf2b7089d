@@ -1,0 +1,28 @@
+exist-parent/pom.xml
+  s_83fc5f0afd32a2::t_f0136de2799205 1202
+exist-versioning-release.md
+  s_83fc5f0afd32a2::t_af47784ca3252c 113-115
+  s_83fc5f0afd32a2::t_5a87fffd4eeb91 242
+exist-distribution/pom.xml
+  s_83fc5f0afd32a2::t_0d267870d006cd 1335-1339
+  s_83fc5f0afd32a2::t_635707cc749eea 1321-1322,1328,1331-1334,1340
+exist-installer/pom.xml
+  s_83fc5f0afd32a2::t_388f9fbdb5bb17 184-185,191,195,201
+  s_83fc5f0afd32a2::t_3965b6f4c5988e 194,196-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "615c00ca4885c3fe6be14244edfffcbaf2b7089d",
+  "prompts": {},
+  "sessions": {
+    "s_83fc5f0afd32a2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a5b8fe4-be25-4eba-9b97-cb21147178a6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

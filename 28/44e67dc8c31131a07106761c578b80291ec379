@@ -1,0 +1,36 @@
+exist-installer/pom.xml
+  s_402b1f194ddd18::t_335a1dfc13432c 120
+exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF/web.xml
+  s_402b1f194ddd18::t_bbb340ae9ee260 84,86-87
+  s_402b1f194ddd18::t_4148ea33cbfe8b 151-156
+BUILD.md
+  s_402b1f194ddd18::t_e1a8ff8742f721 31-71,73,75,77-82
+  s_402b1f194ddd18::t_436e5919c8447b 93
+extensions/webdav/pom.xml
+  s_402b1f194ddd18::t_68a862c5c96525 146
+extensions/webdav/src/test/java/org/exist/webdav/WebDavHttpTest.java
+  s_402b1f194ddd18::t_9737ff2ac54c18 24-28,32-67,76-77,80-83
+  s_402b1f194ddd18::t_f81045ce8c41a5 68-74
+extensions/webdav/src/test/java/org/exist/webdav/WebDavRoundTripTest.java
+  s_402b1f194ddd18::t_900d8cb944153a 31,36,38-42,54,61,65,82,84-87,89-92,99,103-106,109-111,128-131
+  s_402b1f194ddd18::t_7b83e160be1ab6 32-33,59-60,69-77,97,100,102,107-108,113,115-125,127
+  s_402b1f194ddd18::t_932112074b446c 83,88,93,98,101
+  s_402b1f194ddd18::t_2109ca79a31383 112
+  s_402b1f194ddd18::t_bcffa0953bf235 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "2844e67dc8c31131a07106761c578b80291ec379",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": null
+    }
+  }
+}

@@ -1,0 +1,34 @@
+exist-core-jmh/pom.xml
+  dd267fc11decf911 53-56,134-142
+  s_cc91f600c392c3::t_c0ad4564e7de51 72,57,61
+  c36e6eedba036f88 58-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "0cafc5ed9f31de572f205c7a2e8df52309a061d5",
+  "prompts": {
+    "c36e6eedba036f88": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "70694cdd-26be-4e6a-b73a-70b65e1185ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 5,
+      "total_deletions": 0,
+      "accepted_lines": 3,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

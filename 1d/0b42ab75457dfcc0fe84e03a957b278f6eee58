@@ -1,0 +1,23 @@
+exist-installer/src/main/izpack/install.xml
+  s_08d6af7ddefee1::t_f79a175c6d0771 82
+exist-start/src/main/java/org/exist/start/Main.java
+  s_08d6af7ddefee1::t_572d7ed944a926 247-249
+exist-distribution/pom.xml
+  s_08d6af7ddefee1::t_3a9d405bdbdfd6 926
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1d0b42ab75457dfcc0fe84e03a957b278f6eee58",
+  "prompts": {},
+  "sessions": {
+    "s_08d6af7ddefee1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5583ab8d-f7dc-4ed7-98e3-279ca01baa91",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

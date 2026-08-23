@@ -1,0 +1,19 @@
+schema/conf.xsd
+  s_a16a808e4ef4ca::t_4ec8c791cee9dc 1437-1460,1469-1475,1480-1497,1502-1515,1526-1528
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f72d9ef0dd3b8227b6ad28da128a776e90bb9712",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xquery/XQueryWatchDog.java
+  s_7cdf0e373ff9b9::t_b7cbf966fe1e43 60-62
+exist-core/src/test/java/org/exist/http/ws/EvalWebSocketEndpointTest.java
+  s_7cdf0e373ff9b9::t_9d39447deb42db 484-489,493-496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "4f859bd73818932c813f4373d96052e9705687aa",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

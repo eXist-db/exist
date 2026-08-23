@@ -1,0 +1,15 @@
+exist-jetty-config/src/main/resources/org/exist/jetty/etc/standalone-jetty-deploy.xml
+  ai_agent 15
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  ai_agent 1-132
+exist-core/src/main/java/org/exist/jetty/WebAppContext.java
+  ai_agent 24-25,29-30,32,37-39,42-44,46-53,55-56
+exist-jetty-config/src/main/resources/org/exist/jetty/etc/jetty-deploy.xml
+  ai_agent 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "2bc743a74057468caca46eb96c9abf88ce897f0f",
+  "prompts": {}
+}

@@ -1,0 +1,25 @@
+exist-core/src/test/resources/org/exist/validation/entities/xml.xsd
+  s_7cdf0e373ff9b9::t_c9195d10bf88bd 4
+exist-core/src/test/resources/org/exist/validation/entities/XMLSchema.xsd
+  s_7cdf0e373ff9b9::t_c9195d10bf88bd 23,133,181,186,497,508,744,762,775-776,779-780,783,823,826,885,902,1763,1898,2032,2043,2079,2090,2092,2095,2099,2102,2105,2109,2366,2368-2369
+exist-jetty-config/src/main/resources/webapp/WEB-INF/entities/XMLSchema.xsd
+  s_7cdf0e373ff9b9::t_c9195d10bf88bd 23,133,181,186,497,508,744,762,775-776,779-780,783,823,826,885,902,1763,1898,2032,2043,2079,2090,2092,2095,2099,2102,2105,2109,2366,2368-2369
+exist-jetty-config/src/main/resources/webapp/WEB-INF/entities/xml.xsd
+  s_7cdf0e373ff9b9::t_c9195d10bf88bd 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "eddfbcdc28e8e4378d5357949fffbb9352cebec9",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

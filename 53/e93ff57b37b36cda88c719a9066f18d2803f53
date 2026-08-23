@@ -1,0 +1,89 @@
+exist-core/src/test/java/org/exist/xquery/functions/request/PatchTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 24-27,95,105,115,125,135,142,156-157,161
+exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 31-33,68,77,79
+exist-core/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 1172-1173
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 592-593,658-659,663-664
+extensions/expath/src/main/java/org/expath/exist/SendRequestFunction.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 26
+extensions/debuggee/src/main/java/org/exist/debugger/HttpSession.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 24-26,49,52-53
+exist-core/src/test/java/org/exist/xquery/functions/response/StreamBinaryTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 32-34,53,55-56
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_402b1f194ddd18::t_834d455146abb8 70,72
+  s_402b1f194ddd18::t_322b1c20c86e85 71
+  s_402b1f194ddd18::t_4c34f884e3c24d 107
+  s_402b1f194ddd18::t_23ce2a436d2c71 108-109
+  s_402b1f194ddd18::t_d6e3c0997d2971 114-116
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 117,24-32,50,151
+  s_402b1f194ddd18::t_90a5e1e4435d2a 155
+extensions/modules/persistentlogin/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 103-104,109-110
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/MediaTypeIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29-34,135-136,140,143
+exist-core/src/test/java/org/exist/management/JmxRemoteTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 27-33,49,61,103,107-108,115
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/RestBinariesTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 28-29,32-34,56-57,117,142,155,160,171,174,181,192,199,202,207-208
+exist-core/src/test/java/org/exist/dom/persistent/CDataIntergationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 25-28,47,70-71,74,76,80,83,85
+extensions/debuggee/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 62-64
+exist-core/src/test/java/org/exist/xquery/functions/session/AttributeTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 36-39,56,59,64,67,73,76,80,83,91,94,100,103,107,110,118,121,126,129,134,137,145,148,153,156,164,167,172,175,181,185,190,193,201,204,210,214,219,222,227
+exist-core/src/test/java/org/exist/security/RestApiSecurityTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 28-33,64,66,106,108,142-143,148,160-161,166,179,181,191
+exist-parent/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 121-122,339-353
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 24-30,215,218,225,230,234
+exist-core/src/test/java/org/exist/xquery/RestBinariesTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 27-33,51-52,69,84,106,118,123,134,137,144,155,162,165,170-171
+exist-core/src/test/java/org/exist/xquery/functions/request/GetDataTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 26-30,85,96,100-101,109,120,132,145,149-150,158,169,181,193,203,214,216
+extensions/expath/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 67-68
+exist-core/src/test/java/org/exist/xquery/functions/request/GetParameterTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 31-37,319,326,356,388,422,429-430
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractInstanceIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 146,113-114,116-137,144-145,156-157,176-177,186
+  s_402b1f194ddd18::t_ad41527c000f5c 112
+extensions/exquery/restxq/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 176-177,188
+  s_402b1f194ddd18::t_bdd0989140c63b 186-187
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 31-32,35-36,39,117,125,133,144
+extensions/modules/file/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 125-126,138
+  s_402b1f194ddd18::t_c237d6ee258516 136-137
+extensions/webdav/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 113-117
+exist-core/src/test/java/org/exist/http/urlrewrite/URLRewritingTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 26-29,68,70,75,77,83,92,96,105,108
+exist-core/src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 36-39,84,87,92,95,100,103,127,130,135,138,162,165,170,173,197,200,205,208,213,216,221,224,248,251,256,259,264,267,272,275,299,302,307,311,316,319,343,346,351,355,360,363,384
+exist-core/src/test/java/org/exist/http/urlrewrite/ControllerTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 27-30,98,101,108,110-111
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractClassIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "53e93ff57b37b36cda88c719a9066f18d2803f53",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

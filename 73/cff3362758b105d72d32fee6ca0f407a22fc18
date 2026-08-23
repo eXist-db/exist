@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-edge.xqm
+  dd267fc11decf911 61,86-111,142-145,160-162,281-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "73cff3362758b105d72d32fee6ca0f407a22fc18",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 58,
+      "total_deletions": 1,
+      "accepted_lines": 58,
+      "overriden_lines": 0
+    }
+  }
+}

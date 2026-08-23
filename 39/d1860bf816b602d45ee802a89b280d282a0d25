@@ -1,0 +1,44 @@
+exist-core/src/test/java/org/exist/storage/lock/DeadlockIT.java
+  s_df30998873e606::t_3533de60ef7213 33
+  s_5907fd3603f296::t_bc23cbc3fed622 269-270
+  s_df30998873e606::t_7d9453bb5954e2 62
+  s_5907fd3603f296::t_cc8a43dac98b43 226
+  s_df30998873e606::t_84a88b7e0180cb 125-126
+  s_df30998873e606::t_84c98bcaa1c94a 29
+  s_df30998873e606::t_430d4e875e7fae 392
+  s_5907fd3603f296::t_8d1328b4a91ba3 304
+  s_df30998873e606::t_7ba7559313b271 123
+  s_df30998873e606::t_9bbbb990ef6517 223
+  s_df30998873e606::t_ad52f7bd3d61ac 225,240-248
+  s_df30998873e606::t_65caf026119b1b 389,405-406,408-412
+  s_df30998873e606::t_2680b4bf893b95 401-403
+  s_df30998873e606::t_bfa10313a16eb4 97-99,101,103-105
+  s_df30998873e606::t_df7652b3996b99 266,291,296,305-307
+  s_df30998873e606::t_2f587ffb0806b4 372
+  s_df30998873e606::t_fb9eca0afed4f6 100,102,106-121
+  s_df30998873e606::t_4b67f095fc9ae3 122,124,127-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "39d1860bf816b602d45ee802a89b280d282a0d25",
+  "prompts": {},
+  "sessions": {
+    "s_5907fd3603f296": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34018a82-c856-4631-bd63-bccc9b3fdef5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    },
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

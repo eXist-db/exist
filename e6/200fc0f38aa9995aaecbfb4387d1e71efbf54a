@@ -1,0 +1,14 @@
+CITATION.cff
+  h_058c4ed50bd6c9 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "e6200fc0f38aa9995aaecbfb4387d1e71efbf54a",
+  "prompts": {},
+  "humans": {
+    "h_058c4ed50bd6c9": {
+      "author": "duncdrum"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+exist-core/src/main/java/org/exist/util/MimeTable.java
+  s_bdbc9a24e676d8::t_3fda06690740af 268,279,285,289,297-298,307-308,312-315,323
+  s_bdbc9a24e676d8::t_67871170549b58 146-148
+.github/scripts/governance-lib.sh
+  s_bdbc9a24e676d8::t_8fd10e5eeda999 1-20
+schema/governance-schemas.xsl
+  s_bdbc9a24e676d8::t_d13cbf06c4d25b 15-18,20,23,27,34
+schema/mime-types.xsd
+  s_bdbc9a24e676d8::t_a07b227a440f0d 9-10
+schema/controller-config.xsd
+  s_bdbc9a24e676d8::t_aae6c708e6a155 7-8
+schema/governance-pairs.xsl
+  s_bdbc9a24e676d8::t_ea5bff7268fa3f 39-79
+schema/governance-check.xsl
+  s_bdbc9a24e676d8::t_83710fa4c9b504 17-22,25-32,35,56,70
+schema/schema-version-type.xsd
+  s_bdbc9a24e676d8::t_20c0edbb061a99 1-9,12-22
+  s_bdbc9a24e676d8::t_1c6e867c90c6d3 10-11
+schema/descriptor.xsd
+  s_bdbc9a24e676d8::t_263f56d66b54b9 9-10
+exist-core/src/main/resources/org/exist/util/mime-types.xml
+  s_bdbc9a24e676d8::t_d80887dc01692f 40
+schema/README.md
+  s_bdbc9a24e676d8::t_de3d0230a4c211 27-29
+exist-core/src/main/java/org/exist/util/SchemaVersion.java
+  s_bdbc9a24e676d8::t_b2cab461fa52e1 59,65
+  s_bdbc9a24e676d8::t_93207e6bda6b17 36-40
+exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java
+  s_bdbc9a24e676d8::t_fd918842eebef5 1-89
+.github/workflows/ci-schema-checks.yml
+  s_bdbc9a24e676d8::t_44ae7fd16be91c 67-69
+  s_bdbc9a24e676d8::t_211774dfc8c8c5 10,18
+exist-distribution/src/main/config/collection.xconf.init
+  s_bdbc9a24e676d8::t_43053cfc2b59ef 2
+schema/collection.xconf.xsd
+  s_bdbc9a24e676d8::t_1d17eacac44709 9,11
+exist-distribution/src/main/config/conf.xml
+  s_bdbc9a24e676d8::t_3e539357547252 61
+.github/scripts/run-governance-check.sh
+  s_bdbc9a24e676d8::t_c2b141da6d3095 3,15-16,24,32
+exist-distribution/src/main/config/descriptor.xml
+  s_bdbc9a24e676d8::t_dacfdf67bff433 10
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_bdbc9a24e676d8::t_8397cc449f02a0 9
+schema/conf.xsd
+  s_bdbc9a24e676d8::t_9e74bcc3f7b4b3 11-14
+.github/scripts/prepare-governance-env.sh
+  s_bdbc9a24e676d8::t_a6e934156b215b 5
+  s_bdbc9a24e676d8::t_1f2b54d4159ad2 60
+  s_bdbc9a24e676d8::t_165f155fb38f6b 76-77
+  s_bdbc9a24e676d8::t_e58ac3263ba420 22-26,28-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "5c47472790cabca4b9de69aebde2dcbb573b4f0b",
+  "prompts": {},
+  "sessions": {
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

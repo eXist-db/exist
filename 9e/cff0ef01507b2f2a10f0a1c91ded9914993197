@@ -1,0 +1,35 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_8f96b502a60cd9::t_5a0294f77fb08d 124,126-127,136,150
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_8f96b502a60cd9::t_399473c2876494 2073-2074
+  s_8f96b502a60cd9::t_f5f47bc030a953 2075,2082
+extensions/indexes/lucene/src/test/xquery/lucene/field-expression-context.xqm
+  s_8f96b502a60cd9::t_c8ebd0b56a7cbe 25-30,35,40,42,44,48,52,56-73,80-81,97-119
+  s_8f96b502a60cd9::t_446a5c78855cc5 1-24,31-34,36-39,41,43,45-47,49-51,53-55,74-79,82-96
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_8f96b502a60cd9::t_09fa0d9eac9408 360,362-363,378,387
+  s_8f96b502a60cd9::t_1f6e299f762bf6 30
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneIndexingTests.java
+  s_8f96b502a60cd9::t_55399e29e9e912 36-37
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_8f96b502a60cd9::t_9ca596c351b758 102,104,119
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFacetConfig.java
+  s_8f96b502a60cd9::t_b9abafd912c819 26
+  s_8f96b502a60cd9::t_b604b6f7e48c39 119,121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "9ecff0ef01507b2f2a10f0a1c91ded9914993197",
+  "prompts": {},
+  "sessions": {
+    "s_8f96b502a60cd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "849dcbd4-9969-4655-9667-eab90a1ef57d",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

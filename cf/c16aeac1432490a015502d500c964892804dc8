@@ -1,0 +1,48 @@
+extensions/pom.xml
+  d860c86ca9c322d9 75
+extensions/xqdoc/pom.xml
+  d860c86ca9c322d9 116
+pom.xml
+  d860c86ca9c322d9 79,83-91,113,123,130-131,136-137
+exist-start/pom.xml
+  d860c86ca9c322d9 66,85,109-112
+exist-core-jmh/pom.xml
+  d860c86ca9c322d9 77,89
+exist-distribution/pom.xml
+  d860c86ca9c322d9 488-494,900-902,983-984,991-1003,1012
+extensions/modules/mail/pom.xml
+  d860c86ca9c322d9 183,195
+extensions/modules/xmldiff/pom.xml
+  d860c86ca9c322d9 105,119
+exist-core/pom.xml
+  d860c86ca9c322d9 707,851,890
+extensions/contentextraction/pom.xml
+  d860c86ca9c322d9 123,133
+extensions/modules/sql/pom.xml
+  d860c86ca9c322d9 132,151
+exist-samples/pom.xml
+  d860c86ca9c322d9 83
+exist-service/pom.xml
+  d860c86ca9c322d9 68,93-96
+.mvn/maven-user.properties
+  d860c86ca9c322d9 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "cfc16aeac1432490a015502d500c964892804dc8",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 43,
+      "total_deletions": 15,
+      "accepted_lines": 28,
+      "overriden_lines": 0
+    }
+  }
+}

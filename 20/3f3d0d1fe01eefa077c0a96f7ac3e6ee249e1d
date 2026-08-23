@@ -1,0 +1,32 @@
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_b371cd7261149b::t_94d13fe6646d03 553
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_b371cd7261149b::t_2a78ff081c3b21 27
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_ea6eec16e44fdc 36
+  s_b371cd7261149b::t_eac38cc3d45584 231
+  s_b371cd7261149b::t_7d664d2b3441b4 250
+  s_b371cd7261149b::t_3d1f350ca5b645 310-311,316-317,319-325
+  s_b371cd7261149b::t_1dda13c078615c 45
+  s_b371cd7261149b::t_e1968488e86bcc 202
+  s_b371cd7261149b::t_1f03bad0ed7726 348
+  s_b371cd7261149b::t_de6b3dd32b5939 349-361
+  s_b371cd7261149b::t_6eaaa5d21380d8 232-236,257-258,264-265,278
+  s_b371cd7261149b::t_b859f46343ab4d 230,239-240,245-249,252-253,266,268-269,271,274-276,280-282,285-306,313-315,326,329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "203f3d0d1fe01eefa077c0a96f7ac3e6ee249e1d",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

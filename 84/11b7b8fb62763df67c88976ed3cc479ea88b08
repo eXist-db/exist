@@ -1,0 +1,26 @@
+.github/workflows/ci-release.yml
+  s_1264426024174d::t_b6fe87ac572fc5 264
+  s_1264426024174d::t_e7a17465e7dd3b 133-139,142-143,155-157,160-162
+exist-versioning-release.md
+  s_1264426024174d::t_763ddc2f82a80e 130,132-134
+exist-parent/pom.xml
+  s_1264426024174d::t_dd98b16742dd9a 842,847
+exist-distribution/pom.xml
+  s_1264426024174d::t_d6140963331111 1194-1199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8411b7b8fb62763df67c88976ed3cc479ea88b08",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

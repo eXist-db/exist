@@ -1,0 +1,20 @@
+exist-core/src/main/java/org/exist/xquery/functions/websocket/WebSocketEndpoint.java
+  s_f399d34c0173eb::t_0efe5fff285382 203
+  s_f399d34c0173eb::t_651c602d1dccde 113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "79356a3b8e491c9d9c6957af0a84ce049d22af0f",
+  "prompts": {},
+  "sessions": {
+    "s_f399d34c0173eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c2f2963-eabf-4cbd-ab4f-31407a36487f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

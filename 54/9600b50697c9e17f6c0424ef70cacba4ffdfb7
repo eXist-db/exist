@@ -1,0 +1,33 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-edge.xqm
+  dd267fc11decf911 35,43,49,60,62-84,136-141,146-147,158-159,165-169,174-178,183-187,192-196,200-202,204-208,211-218,221-227,203,233-234,237-238,241,245-246,249-250,252-253,257-258,261-262,267,271-272,275-276,279,113-118,209-210,219-220,228-229,239,251,263,277,89-92,94,96-97,99-101,103,105-109,142-145,160-162,283-284,287-291,295-296,300-303
+  s_cc91f600c392c3::t_96ad1729ad6637 230,231-232,235-236,240,242-244,247-248,254-256,259-260,264-266,268-270,273-274,278,280,119-120,88,93,95,98,102,104,110-111,281-282,285-286,292-294,297-299,304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "549600b50697c9e17f6c0424ef70cacba4ffdfb7",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 58,
+      "total_deletions": 1,
+      "accepted_lines": 39,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

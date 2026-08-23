@@ -1,0 +1,26 @@
+exist-core/src/test/java/org/exist/storage/lock/DeadlockIT.java
+  s_df30998873e606::t_8dcfd0e1531bd2 289
+  s_df30998873e606::t_e32fa49867a16a 231-239
+  s_df30998873e606::t_bfa10313a16eb4 95-103
+  s_df30998873e606::t_2f587ffb0806b4 355
+  s_df30998873e606::t_9bbbb990ef6517 198
+  s_df30998873e606::t_3533de60ef7213 32
+  s_df30998873e606::t_65caf026119b1b 372,375,386-387,389-393
+  s_df30998873e606::t_834a02edb20bac 240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "cea16240c2734e5fbefc8c90657741aec1c9219e",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

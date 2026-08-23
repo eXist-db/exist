@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/client/IndexDialog.java
+  8be28f47155c9a3c 41,275-279,281,285,287-298,301
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "ef87e3677a628cc1ecfecdeff746690bbf9212ab",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "premium"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 22,
+      "overriden_lines": 0
+    }
+  }
+}

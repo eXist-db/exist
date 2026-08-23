@@ -1,0 +1,19 @@
+schema/expath-pkg.xsd
+  s_fe716659ecd7ce::t_2a92230e655ae6 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "38d2dd127e01322d34454abce9d45d45a0fa08ff",
+  "prompts": {},
+  "sessions": {
+    "s_fe716659ecd7ce": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "58e79e88-8a9f-4ce1-b5a7-3d52ca1ff1c5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

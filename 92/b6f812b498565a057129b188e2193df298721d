@@ -1,0 +1,35 @@
+exist-core/src/main/java/org/exist/storage/vector/VectorStoreServiceImpl.java
+  s_a16a808e4ef4ca::t_606476f56a9f4b 58-69
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_a16a808e4ef4ca::t_878221bfe0abdf 237,382-383,1369,1371-1387
+exist-distribution/src/main/config/conf.xml
+  s_a16a808e4ef4ca::t_ee3af2dd86680f 1115-1122,1124
+  s_a16a808e4ef4ca::t_40f888183a349f 61
+extensions/vector/src/main/java/org/exist/vector/ModelRegistry.java
+  s_a16a808e4ef4ca::t_4c72a8e337c318 26,74-100,110-111,113
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/VectorModule.java
+  s_a16a808e4ef4ca::t_b17eb02473705a 99-103
+extensions/vector/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_b8b6af5aa141ad 1
+schema/conf.xsd
+  s_a16a808e4ef4ca::t_c92c3863ce5a11 1475-1498,1507-1513,1518-1535,1540-1553,1559-1569
+  s_a16a808e4ef4ca::t_2263171bb68af1 11
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_a16a808e4ef4ca::t_e548e9c674b2d6 30,32,46,127-133,152-160,162,167-169,186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "92b6f812b498565a057129b188e2193df298721d",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

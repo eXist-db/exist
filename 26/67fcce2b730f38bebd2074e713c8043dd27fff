@@ -1,0 +1,44 @@
+extensions/modules/persistentlogin/src/main/resources/org/exist/xquery/modules/persistentlogin/login.xql
+  s_402b1f194ddd18::t_c6d4fc0e3a03fe 143
+  s_402b1f194ddd18::t_bd52fa14bb14b0 101-112,121
+extensions/modules/persistentlogin/src/main/java/org/exist/xquery/modules/persistentlogin/PersistentLogin.java
+  s_402b1f194ddd18::t_61c9a54da79c3e 146
+  s_402b1f194ddd18::t_adda80b9be44fe 111
+  s_402b1f194ddd18::t_481773ffb22864 240
+  s_402b1f194ddd18::t_c5e9a17bec3e20 65-72
+exist-core/src/main/java/org/exist/http/servlets/HttpResponseWrapper.java
+  s_402b1f194ddd18::t_f93a23c5e8a30f 81,84-97
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_402b1f194ddd18::t_b24c37761b075c 28-29
+  s_402b1f194ddd18::t_9ceed58fe152b5 90-92
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_402b1f194ddd18::t_322b1c20c86e85 72
+  s_402b1f194ddd18::t_d6e3c0997d2971 121-124
+  s_402b1f194ddd18::t_834d455146abb8 71,73
+  s_402b1f194ddd18::t_23ce2a436d2c71 109-110,113-117
+  s_402b1f194ddd18::t_a898304c5d26fb 111-112
+  s_402b1f194ddd18::t_534b6f029042a2 26-27,29,31
+  s_402b1f194ddd18::t_4c34f884e3c24d 108
+  s_402b1f194ddd18::t_90a5e1e4435d2a 151,157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "2667fcce2b730f38bebd2074e713c8043dd27fff",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": null
+    }
+  }
+}

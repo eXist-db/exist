@@ -1,0 +1,30 @@
+exist-core/src/test/java/org/exist/storage/ConcurrentStoreTest.java
+  8be28f47155c9a3c 97
+exist-core/src/test/java/org/exist/backup/XMLDBRestoreTest.java
+  8be28f47155c9a3c 346,568-573
+exist-core/src/test/java/org/exist/storage/AbstractUpdateTest.java
+  8be28f47155c9a3c 101,109
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  8be28f47155c9a3c 844
+exist-core/src/main/java/org/exist/xmlrpc/RpcConnection.java
+  8be28f47155c9a3c 3423
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "7b7bb990242329f2c777eaf27c2b1c086847c284",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "premium"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 34,
+      "total_deletions": 35,
+      "accepted_lines": 12,
+      "overriden_lines": 0
+    }
+  }
+}

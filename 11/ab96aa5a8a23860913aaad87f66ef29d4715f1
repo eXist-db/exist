@@ -1,0 +1,143 @@
+extensions/xqdoc/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/exquery/restxq/pom.xml
+  s_1264426024174d::t_005204455eb6c6 35
+extensions/modules/expathrepo/expathrepo-trigger-test/pom.xml
+  s_1264426024174d::t_005204455eb6c6 32
+extensions/modules/xslfo/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-start/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/file/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/webdav/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/exi/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-samples/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-core/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/spatial/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/exquery/modules/pom.xml
+  s_1264426024174d::t_005204455eb6c6 35
+extensions/modules/counter/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/vector/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/expathrepo/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/exquery/modules/request/pom.xml
+  s_1264426024174d::t_005204455eb6c6 36
+exist-distribution/pom.xml
+  s_1264426024174d::t_005204455eb6c6 32
+  s_1264426024174d::t_22fa8a9b7a51e1 1066,1068-1069
+  s_1264426024174d::t_347b8dc5a2293d 1190-1194,1197-1214
+extensions/modules/image/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/xmldiff/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/contentextraction/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-service/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/sql/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/compression/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/cqlparser/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/simpleql/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/exiftool/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/security/ldap/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/jndi/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/scheduler/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/lucene/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/sql-oracle/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/vector-it/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+pom.xml
+  s_1264426024174d::t_d7d91f190def91 115-123
+  s_1264426024174d::t_459905b4b88cea 74,76-78,82-95
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/security/activedirectory/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-core-jcstress/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-jetty-config/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-indexes-jmh/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-installer/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/expath/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-xqts/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/ngram/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/example/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-core-jmh/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/indexes-integration-tests/pom.xml
+  s_1264426024174d::t_005204455eb6c6 32
+exist-parent/pom.xml
+  s_1264426024174d::t_82fb07f9f4e64a 837-840
+  s_1264426024174d::t_de156e018e2663 1217-1240
+  s_1264426024174d::t_fd9eb8b2a26dc1 1482-1574
+  s_1264426024174d::t_005204455eb6c6 30
+  s_1264426024174d::t_d05277760b3351 108-109
+extensions/modules/cache/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/mail/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/process/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-docker/pom.xml
+  s_1264426024174d::t_005204455eb6c6 33
+extensions/exquery/pom.xml
+  s_1264426024174d::t_005204455eb6c6 35
+extensions/indexes/range/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/security/iprange/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/security/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/modules/persistentlogin/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+exist-ant/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+extensions/indexes/sort/pom.xml
+  s_1264426024174d::t_005204455eb6c6 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "11ab96aa5a8a23860913aaad87f66ef29d4715f1",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

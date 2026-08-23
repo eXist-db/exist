@@ -1,0 +1,24 @@
+exist-core/src/test/xquery/simple-map-predicate.xq
+  s_857086dc329e08::t_f2758b66d4b677 28,60,81,92,102,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "d7eac740b302d2099bfe81ed76c122e2109a2890",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_857086dc329e08": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7d655c-e1c3-49a0-920d-aba9862b5075",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

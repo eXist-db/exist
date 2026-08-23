@@ -1,0 +1,24 @@
+exist-distribution/pom.xml
+  d860c86ca9c322d9 489-495,901-903,984-998,1007
+pom.xml
+  d860c86ca9c322d9 75,79-87,109,119,126-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "15d0fb395723df4ac6d8d17294618bc2349053e0",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 45,
+      "total_deletions": 5,
+      "accepted_lines": 42,
+      "overriden_lines": 0
+    }
+  }
+}

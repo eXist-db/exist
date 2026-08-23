@@ -1,0 +1,27 @@
+exist-start/pom.xml
+  d860c86ca9c322d9 109-112
+.mvn/maven-user.properties
+  d860c86ca9c322d9 1-3
+exist-samples/pom.xml
+  d860c86ca9c322d9 48,52,58-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "b75824c43006a5d7d780ab681b06cdfec54d820d",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 43,
+      "total_deletions": 15,
+      "accepted_lines": 43,
+      "overriden_lines": 0
+    }
+  }
+}

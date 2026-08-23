@@ -1,0 +1,31 @@
+exist-core/src/test/java/org/exist/storage/lock/DeadlockIT.java
+  s_df30998873e606::t_2f587ffb0806b4 355
+  s_df30998873e606::t_3533de60ef7213 32
+  s_df30998873e606::t_9bbbb990ef6517 198
+  s_df30998873e606::t_bfa10313a16eb4 95-103
+  s_df30998873e606::t_e32fa49867a16a 231-240
+  s_df30998873e606::t_65caf026119b1b 372,375,386-387,389-393
+  s_df30998873e606::t_8dcfd0e1531bd2 289
+exist-core/src/main/java/org/exist/util/XMLReaderObjectFactory.java
+  s_df30998873e606::t_284ddb5dfbe049 56
+exist-core/src/test/java/org/exist/util/XMLReaderPoolTest.java
+  s_df30998873e606::t_293696152431f2 803
+  s_df30998873e606::t_980d175c21194e 351
+  s_df30998873e606::t_b142d8d9ef2c5c 369,833
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "bbf15e935c9cb6370e49a7f2d29cc6c75bac590a",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

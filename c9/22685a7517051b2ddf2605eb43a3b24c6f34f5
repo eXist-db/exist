@@ -1,0 +1,28 @@
+exist-core/src/main/java/org/exist/xquery/WhereClause.java
+  s_66d4dce90f3454::t_e74f0f43106498 203-206,209-211
+  s_66d4dce90f3454::t_e952f3a65ec25d 163,167,171-177,180-182,185,189
+  s_66d4dce90f3454::t_126401033e026c 227,232-234
+  s_66d4dce90f3454::t_a72d41843905c4 36,38,138,141,156,160-162,164-165,178-179,183-184,186,188,190-191,193-195,198-199,220,222-223,241,243-253
+  s_66d4dce90f3454::t_aae145f4ec20bd 238-240,242,255
+  s_66d4dce90f3454::t_bd6b5484e3c662 25-30,139-140,207-208
+  s_66d4dce90f3454::t_f5a3422860409c 187,192
+  s_66d4dce90f3454::t_e61a50fb4afa1c 196-197,200-202,212-219,221,224-226,228-231,235-237,254
+extensions/indexes/lucene/src/test/xquery/lucene/util-expand-highlight.xqm
+  s_66d4dce90f3454::t_74979d0dcccb06 367-372,394-402
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "c922685a7517051b2ddf2605eb43a3b24c6f34f5",
+  "prompts": {},
+  "sessions": {
+    "s_66d4dce90f3454": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae600e59-ac05-4793-9e7b-db876b5fd073",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

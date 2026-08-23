@@ -1,0 +1,39 @@
+.github/workflows/ci-snapshots.yml
+  d860c86ca9c322d9 33
+mvnw
+  d860c86ca9c322d9 2-19
+mvnw.cmd
+  d860c86ca9c322d9 1-25
+.github/workflows/ci-test.yml
+  d860c86ca9c322d9 20,49
+BUILD.md
+  d860c86ca9c322d9 15,26-30,42,52,54
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 43,47,81,89
+.github/workflows/ci-xqts.yml
+  d860c86ca9c322d9 26
+AGENTS.md
+  d860c86ca9c322d9 19,26,35,38,41,48
+.github/workflows/sonarcloud.yml
+  d860c86ca9c322d9 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "7ea79fae0949f8c79308e07d038d61acdbefc771",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 71,
+      "total_deletions": 23,
+      "accepted_lines": 67,
+      "overriden_lines": 0
+    }
+  }
+}

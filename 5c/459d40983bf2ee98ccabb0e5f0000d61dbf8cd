@@ -1,0 +1,21 @@
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_66d4dce90f3454::t_04ff20a6efeb7f 66-67,143-147,930-938,944,946-953,960-967
+  s_66d4dce90f3454::t_87a74640ac9e95 926-929,939-943,954-959
+  s_66d4dce90f3454::t_06dae387b1441d 945
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "5c459d40983bf2ee98ccabb0e5f0000d61dbf8cd",
+  "prompts": {},
+  "sessions": {
+    "s_66d4dce90f3454": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae600e59-ac05-4793-9e7b-db876b5fd073",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

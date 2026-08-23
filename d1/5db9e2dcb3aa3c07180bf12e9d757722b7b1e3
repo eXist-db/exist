@@ -1,0 +1,34 @@
+exist-core-jmh/pom.xml
+  d860c86ca9c322d9 76,88
+extensions/modules/mail/pom.xml
+  d860c86ca9c322d9 182,194
+extensions/xqdoc/pom.xml
+  d860c86ca9c322d9 115
+extensions/contentextraction/pom.xml
+  d860c86ca9c322d9 122,132
+extensions/modules/xmldiff/pom.xml
+  d860c86ca9c322d9 104,118
+extensions/modules/sql/pom.xml
+  d860c86ca9c322d9 131,150
+exist-core/pom.xml
+  d860c86ca9c322d9 707,853,892,1199,1226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "d15db9e2dcb3aa3c07180bf12e9d757722b7b1e3",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 2,
+      "total_deletions": 20,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}

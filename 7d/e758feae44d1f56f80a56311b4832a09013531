@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xmldb/XmldbURITest.java
+  s_c5f898d7a0a66e::t_133de4d67c13a0 700-705
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "7de758feae44d1f56f80a56311b4832a09013531",
+  "prompts": {},
+  "sessions": {
+    "s_c5f898d7a0a66e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a694c9f5ffemNDFiO5yHumee4",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceModeTest.java
+  s_7cdf0e373ff9b9::t_5fd90fa775bbe3 66-68,109-115,119-123,131-133,135-136,138-142
+  s_7cdf0e373ff9b9::t_a5418dc3937034 1-65,69-108,116-118,124-130,134,137,143-150
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_7cdf0e373ff9b9::t_bbf1012918670e 374-376
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "788d4be40bf4fe694a6c59ee5bbd43c7b4d10661",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

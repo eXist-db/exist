@@ -1,0 +1,23 @@
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_a16a808e4ef4ca::t_0105ed0e372219 127-133
+  s_a16a808e4ef4ca::t_a52a35a12d27e5 30,32
+  s_a16a808e4ef4ca::t_206c04e4a3522f 152-160,162-166
+  s_a16a808e4ef4ca::t_cc42445a333df1 183
+  s_a16a808e4ef4ca::t_4254366c72ed48 46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2d0cb90f65d6ee32f84a553a3e85ac8335afcf8d",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

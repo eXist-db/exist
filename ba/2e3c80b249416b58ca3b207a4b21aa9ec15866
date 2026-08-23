@@ -1,0 +1,21 @@
+extensions/vector/src/main/resources/META-INF/services/org.exist.xquery.ModuleFactory
+  s_a16a808e4ef4ca::t_78b86addccccac 1
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/VectorModule.java
+  s_a16a808e4ef4ca::t_73a2d1b11ca6e5 99-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ba2e3c80b249416b58ca3b207a4b21aa9ec15866",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

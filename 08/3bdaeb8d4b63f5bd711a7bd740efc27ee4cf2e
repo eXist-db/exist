@@ -1,0 +1,28 @@
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 47,81,84
+exist-parent/pom.xml
+  d860c86ca9c322d9 1420-1432,1503-1504
+.github/workflows/ci-release.yml
+  d860c86ca9c322d9 1-70
+.github/actions/maven-github-settings/action.yml
+  d860c86ca9c322d9 4,9-16,25-32,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "083bdaeb8d4b63f5bd711a7bd740efc27ee4cf2e",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 267,
+      "total_deletions": 5,
+      "accepted_lines": 161,
+      "overriden_lines": 0
+    }
+  }
+}

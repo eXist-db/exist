@@ -1,0 +1,24 @@
+exist-core/src/main/java/org/exist/util/SwapVals.java
+  318cfd99a2666a92 27-32
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java
+  318cfd99a2666a92 116,118,147,149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "0647bca83064d47792f0564efbe701bce1af2eb9",
+  "prompts": {
+    "318cfd99a2666a92": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae656cd7-bdec-4883-90a8-34063dbff621",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 10,
+      "total_deletions": 13,
+      "accepted_lines": 10,
+      "overriden_lines": 0
+    }
+  }
+}

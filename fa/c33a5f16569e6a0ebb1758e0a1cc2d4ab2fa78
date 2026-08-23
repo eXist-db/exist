@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/xmlrpc/RpcConnection.java
+  s_7cdf0e373ff9b9::t_846a72ba3822d6 3290
+exist-core/src/main/java/org/exist/validation/Validator.java
+  s_7cdf0e373ff9b9::t_4387714769eab8 229-240,248,252
+  s_7cdf0e373ff9b9::t_e4c79908901190 71-80
+  s_7cdf0e373ff9b9::t_fa055c0bdc0425 49-52
+  s_7cdf0e373ff9b9::t_2424564b8a7c29 249-251
+  s_7cdf0e373ff9b9::t_20da24b4f516b1 338-378
+  s_7cdf0e373ff9b9::t_14d074659a0c24 241,254-255,257-263
+  s_7cdf0e373ff9b9::t_7967ee5c84bac3 132-148,163
+  s_7cdf0e373ff9b9::t_a45ad73394286e 390,405-412,414
+  s_7cdf0e373ff9b9::t_aa228e4ce0ca33 337,379-389,391-404,413,415-447
+exist-core/src/test/java/org/exist/validation/ValidatorXsd11Test.java
+  s_7cdf0e373ff9b9::t_9b51a7f4fa9105 118
+  s_7cdf0e373ff9b9::t_94f7a2705bc99a 1-24,26-117,119-130
+  s_7cdf0e373ff9b9::t_e91f992b3c1d9b 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "fac33a5f16569e6a0ebb1758e0a1cc2d4ab2fa78",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

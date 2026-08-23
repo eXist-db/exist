@@ -1,0 +1,27 @@
+.github/workflows/ci-release-prepare.yml
+  s_1264426024174d::t_80b1e8eb0c2ff9 1-63
+.github/workflows/ci-release.yml
+  s_1264426024174d::t_68ea98e6e72055 1-307
+.github/actions/maven-github-settings/action.yml
+  s_1264426024174d::t_6384981cbeb58e 1-2,5,10-17,23-25,29-40,58
+exist-versioning-release.md
+  s_1264426024174d::t_df91d902c6d03a 87-91,94
+  s_1264426024174d::t_4f72d040cd6549 100-107,109,111-116,118,120,122-138,142-158,161,166
+  s_1264426024174d::t_49abb02e451463 237-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "bbab0bbab54d95b0d3a2c191c9f40346e7f41705",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+exist-core/src/test/java/org/exist/util/SchemaVersionTest.java
+  s_a16a808e4ef4ca::t_6c41720c590eb0 26,31
+exist-core/src/test/java/org/exist/util/SchemaVersionSyncTest.java
+  s_a16a808e4ef4ca::t_b5607ce2eef38e 74-75,77
+  s_a16a808e4ef4ca::t_75b8f1d48d84a4 69
+  s_a16a808e4ef4ca::t_c75e064da6c72a 60-61
+  s_a16a808e4ef4ca::t_7a6091f24d4473 24,33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a7507b15d4984a2a81bce219d467590c735ddd5a",
+  "prompts": {},
+  "sessions": {
+    "s_a16a808e4ef4ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "137e2e75-2403-49ee-a9e9-c1618f087904",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

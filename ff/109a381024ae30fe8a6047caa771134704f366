@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_67daa601ab02f0 197-200
+  s_b371cd7261149b::t_1f03bad0ed7726 225-242,246-249,251-253,255-256,258-260,262-264,266-283
+  s_b371cd7261149b::t_ea9ff5491e93b6 36-37
+  s_b371cd7261149b::t_7d664d2b3441b4 196,201-221,243-245,250,254,257,261,265,284
+  s_b371cd7261149b::t_c19d8322decf37 35,38
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_b371cd7261149b::t_fba4a151ad912f 71,78,80,83-88,93-94
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_b371cd7261149b::t_17fc2a6cc6dc4e 135,137
+  s_b371cd7261149b::t_e50328ac3263cd 148-152,154-156
+  s_b371cd7261149b::t_606ec82eb44012 153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "ff109a381024ae30fe8a6047caa771134704f366",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

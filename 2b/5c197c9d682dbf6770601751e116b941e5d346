@@ -1,0 +1,21 @@
+.github/workflows/ci-container.yml
+  s_c5f898d7a0a66e::t_0cf2d596d00616 79,87
+.github/workflows/prethink.yml
+  s_c5f898d7a0a66e::t_1cbcc5dd12b675 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "2b5c197c9d682dbf6770601751e116b941e5d346",
+  "prompts": {},
+  "sessions": {
+    "s_c5f898d7a0a66e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a694c9f5ffemNDFiO5yHumee4",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

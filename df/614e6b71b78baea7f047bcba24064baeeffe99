@@ -1,0 +1,33 @@
+exist-core/src/test/java/org/exist/xquery/functions/validation/JaxpSchemaLocationSecurityTest.java
+  s_7339eb93078c0b::t_0a53e9d53136b1 36,42-43,79-80,84-85,89,95,99,102,106,110
+exist-core/src/main/java/org/exist/resolver/RecordingContentHandler.java
+  s_392f5cbc577d99::t_050da0ceed11f7 47-48
+exist-core/src/test/java/org/exist/xquery/functions/validation/JaxpXsd11DetectionCacheTest.java
+  s_7339eb93078c0b::t_0a53e9d53136b1 36-40,68,75,81,89-108
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_7339eb93078c0b::t_9db76b6bb6af36 37-39,114-140,477,482,563-564,567,589,602-603,629-633,635,647,678-679,682-683,687-689,692
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "df614e6b71b78baea7f047bcba24064baeeffe99",
+  "prompts": {},
+  "sessions": {
+    "s_392f5cbc577d99": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1256b99f3ffeST9peY5YPWcBVH",
+        "model": "big-pickle"
+      },
+      "human_author": null
+    },
+    "s_7339eb93078c0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ddb5ce6-410c-4e1e-a33c-069141ab181c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java
+  s_df30998873e606::t_ca40fae65e9dd3 32
+  s_df30998873e606::t_f0fe8b2d0451ff 110
+  s_df30998873e606::t_e4f93b3179a4b7 124
+  s_df30998873e606::t_4b2542b1a23276 107-109,116-120,122-123,125-126
+  s_df30998873e606::t_da7f6337b4308d 111-112,114
+  s_df30998873e606::t_356fe5f36a572f 113,115,121
+  s_df30998873e606::t_8fa9e537f9e15f 33
+exist-core/src/test/java/org/exist/http/ws/EvalWebSocketEndpointTest.java
+  s_df30998873e606::t_11e5775e6a670b 1265
+  s_df30998873e606::t_298264f387ef70 79-81
+  s_df30998873e606::t_b8cc344b0b5838 648,667-668
+  s_df30998873e606::t_14a866c57e897a 71,74,76
+exist-core/src/main/java/org/exist/http/ws/QueryExecutor.java
+  s_df30998873e606::t_64d96959d4f2b0 163,169-170,178,185-189,193-194,197-199
+  s_df30998873e606::t_be8bfb890408f9 356
+  s_df30998873e606::t_401b00ac793459 231-240,256-264,267,269-283,287-298
+  s_df30998873e606::t_8695137e8286a6 60-62
+  s_df30998873e606::t_448066d0d9db0a 164
+  s_df30998873e606::t_1f5bd3ed5ddb02 117-124
+  s_df30998873e606::t_056b52a538ebc2 48
+  s_df30998873e606::t_fe486e85a3d66e 357-359,368,371-372,391-398,410-411
+  s_df30998873e606::t_0c824ba8ea1a5d 139-140,145
+  s_df30998873e606::t_1e7f01a2ce77d4 299
+exist-core/src/test/java/org/exist/http/ws/WallClockQueryTimeoutTest.java
+  s_df30998873e606::t_261e3091ffeafe 1-52
+exist-core/src/main/java/org/exist/http/ws/WallClockQueryTimeout.java
+  s_df30998873e606::t_e28ee0b6001490 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "cf51306527dd3b966fc5809d857a62b4bbe0a689",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

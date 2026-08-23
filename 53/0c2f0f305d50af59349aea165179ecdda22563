@@ -1,0 +1,21 @@
+exist-distribution/pom.xml
+  s_e13ac5be3246f1::t_862051cf4efafb 1140-1159
+exist-distribution/src/main/scripts/codesign-jansi-mac.sh
+  s_e13ac5be3246f1::t_2bfc19e3fb0c43 49-52,59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "530c2f0f305d50af59349aea165179ecdda22563",
+  "prompts": {},
+  "sessions": {
+    "s_e13ac5be3246f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68dcd257-670e-4a1c-9f2f-788614bb4de6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

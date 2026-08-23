@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_e634881d8edab0 34-35
+  s_b371cd7261149b::t_042413afe82a8e 199-201
+  s_b371cd7261149b::t_de6b3dd32b5939 246,249,252,261-262,264,273-306
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_b371cd7261149b::t_562144acd2b15d 347
+  s_b371cd7261149b::t_5722557b74597a 515,517,526-527,547
+  s_b371cd7261149b::t_e8b21e0cc2d21b 511-514,516,518-525,528-546,548-555
+  s_b371cd7261149b::t_60a24e3e988958 348
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "39d900b58416ff3662345e5e4c253467983db63c",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

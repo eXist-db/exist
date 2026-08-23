@@ -1,0 +1,30 @@
+.github/workflows/ci-snapshots.yml
+  d860c86ca9c322d9 33-36
+BUILD.md
+  d860c86ca9c322d9 15,26-30,42,52,54,56-68
+pom.xml
+  d860c86ca9c322d9 79,83-91,113,123,130-131,136-137
+exist-versioning-release.md
+  d860c86ca9c322d9 112,114,116,118-122,124-126,145,147,149,151-170,177
+.github/workflows/ci-release.yml
+  d860c86ca9c322d9 1-48,56-57,60-65,70-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "6168e3fe57b1007b71dad09e7918bac1c293ede6",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 41,
+      "total_deletions": 3,
+      "accepted_lines": 41,
+      "overriden_lines": 0
+    }
+  }
+}

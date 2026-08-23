@@ -1,0 +1,85 @@
+exist-core/src/test/xquery/validation/jaxp.xql
+  s_bdbc9a24e676d8::t_d9c05cf6e008ff 1-39,45-70,74-82,86-91,97-102,107-111
+  s_033f8a50977d21::t_27d2431abb0d27 71-73,83-85,92-96,103-106
+  s_033f8a50977d21::t_e588ad2b8873ec 40-44
+  s_033f8a50977d21::t_791a77887ad6e5 122
+  s_033f8a50977d21::t_67fdeba71b096b 112-121,123
+exist-core/src/main/java/org/exist/validation/ValidationReport.java
+  s_bdbc9a24e676d8::t_7dd257661b0996 138,140-145,147-148
+  s_033f8a50977d21::t_d1615f8b6ddf4e 139,146
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxp.java
+  s_bdbc9a24e676d8::t_6a12a691b04cb5 410,417-420,426,428-432,476,479,485,535,539,545,552,737-739,744,748,752-755,765-770,772,781-786
+  s_bdbc9a24e676d8::t_3bd19f51fd3f17 91
+  s_bdbc9a24e676d8::t_8cfb1a42190db8 280-281,297,299,309-310
+  s_bdbc9a24e676d8::t_6063299e8ffd8b 40,54-55,58-60
+  s_033f8a50977d21::t_cddbe27255490a 33,89,94,110-111,140-155,157,174,187,198,211,236-237,360,368,386-396,433-435,442-445,447-451,453-458
+  s_7339eb93078c0b::t_590ae3c3c430e4 514-524
+  s_7339eb93078c0b::t_2a22c8f7e0c7b4 745-753,756-764,771,773-776
+  s_7339eb93078c0b::t_553f17d9b7b415 277
+exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java
+  s_bdbc9a24e676d8::t_7644464f2131e0 41,126,131,134
+  s_033f8a50977d21::t_455786e20a6e22 127,129
+exist-core/src/main/java/org/exist/resolver/ResolverFactory.java
+  s_bdbc9a24e676d8::t_7644464f2131e0 49,53,103-134,141-142
+  s_033f8a50977d21::t_c9fb81f7349096 36-46,48,55-56,60,63,67
+  s_033f8a50977d21::t_4e3b87569e9c67 135-140,151-192,198-199,201-202,205-206,214-217,220,222-224,227-228,230,237,239-263
+  s_7339eb93078c0b::t_4f8598ad7442c9 193-197,200,203-204,207-213,218-219,221,225-226,229,231-236,238
+exist-core/src/main/java/org/exist/xquery/functions/validation/ValidationModule.java
+  s_bdbc9a24e676d8::t_15741281005b42 55-56
+exist-core/src/main/java/org/exist/xquery/functions/validation/Jaxv.java
+  s_bdbc9a24e676d8::t_82ebbe4e871b00 180-181,184,190,201,207,218,221,226,232,241,244
+  s_bdbc9a24e676d8::t_7a0dfef327a3cf 287
+  s_bdbc9a24e676d8::t_0fd7eada62df8b 35
+  s_bdbc9a24e676d8::t_c8b4c8fbbaff39 233-235,245,247
+  s_bdbc9a24e676d8::t_a86d84c90c2b08 115-117,119-132,145,159-162,164-175,177
+  s_033f8a50977d21::t_bba36aa552318a 135,148,163
+  s_033f8a50977d21::t_3d3816f0c6be02 59-81
+  s_033f8a50977d21::t_58d9ab6d2af72b 196
+  s_033f8a50977d21::t_fa6554214d91d4 118
+exist-core/src/test/xquery/validation/jaxv.xql
+  s_bdbc9a24e676d8::t_cc8f2a4a32b6d8 97-98,105-128,130-144,151-155,158-159,163-168,174,176,178-179,184,186,189-190,195-201
+  s_bdbc9a24e676d8::t_576cff89b11d8f 129
+  s_bdbc9a24e676d8::t_7cc74c944bc916 175,177
+  s_bdbc9a24e676d8::t_fe495f9baf61ec 185,187-188
+  s_bdbc9a24e676d8::t_9923d0609fe27e 99-104
+  s_033f8a50977d21::t_bf5a47c488b51d 68-72,79-81,88-90
+  s_033f8a50977d21::t_813e9be9e6c287 24-28
+  s_033f8a50977d21::t_c68b2377623a25 145,150,160-162,169-173,180-183,191-194
+exist-core/src/main/java/org/exist/validation/ValidationContentHandler.java
+  s_033f8a50977d21::t_a822151540eb99 27,40,51-53,66-73
+exist-core/src/main/java/org/exist/resolver/RecordingContentHandler.java
+  s_7339eb93078c0b::t_b0a02634b43941 24-35,45-47,62,68,73,78,83,88,93,98,103,108,113,118
+  s_7339eb93078c0b::t_9f01e02b7ca720 1-23,36-44,48-61,63-67,69-72,74-77,79-82,84-87,89-92,94-97,99-102,104-107,109-112,114-117,119-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "530ada9004e1500f7c6f50317deec4183348ecfe",
+  "prompts": {},
+  "sessions": {
+    "s_033f8a50977d21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6eda4a-e445-4f89-9f02-aa69f901e6e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_7339eb93078c0b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ddb5ce6-410c-4e1e-a33c-069141ab181c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    },
+    "s_bdbc9a24e676d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38a3d1ad-f3df-4f95-a4b6-07e61e91cfc6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+exist-core/src/test/java/org/exist/storage/ReindexTest.java
+  s_ab1ccad1ee1b46::t_46e817f1cf4476 51
+  s_ab1ccad1ee1b46::t_31f9674ef6081d 107-114
+exist-core/src/test/java/org/exist/storage/BFileOverflowTest.java
+  s_ab1ccad1ee1b46::t_33055419f84c33 103
+  s_ab1ccad1ee1b46::t_164134a5346b8e 100,104-105
+  s_ab1ccad1ee1b46::t_9ff820fe92976a 39
+exist-core/src/test/java/org/exist/xquery/DocumentUpdateTest.java
+  s_ab1ccad1ee1b46::t_742904df27dfbf 153-154
+  s_ab1ccad1ee1b46::t_9b1460fd1c6043 35
+exist-core/src/test/java/org/exist/storage/BFileRecoverTest.java
+  s_ab1ccad1ee1b46::t_acda58985989e5 42
+  s_ab1ccad1ee1b46::t_03a6207856bd55 83
+  s_ab1ccad1ee1b46::t_b5f7a2c21f9699 93,100-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "6d29cc8ffe3100d8af09bc2944bf8922032e34b1",
+  "prompts": {},
+  "sessions": {
+    "s_ab1ccad1ee1b46": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ee70bc50ffe4wUTK59eHapURQ",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

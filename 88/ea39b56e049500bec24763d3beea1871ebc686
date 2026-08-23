@@ -1,0 +1,75 @@
+extensions/vector/src/main/java/org/exist/vector/VectorMetrics.java
+  s_2e7ecd3e725105::t_dcfa5e0b0fa0f6 84-95
+exist-core/src/main/java/org/exist/storage/vector/VectorOperationMetrics.java
+  s_2e7ecd3e725105::t_cf74aedd33cdd4 31-32,52,61-85
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/Models.java
+  s_2e7ecd3e725105::t_81fdd87ffe7f7d 24-25,43,60-61
+extensions/vector/src/main/java/org/exist/vector/VectorExtensionLifecycle.java
+  s_2e7ecd3e725105::t_a845f743840481 45
+  s_2e7ecd3e725105::t_29427c38a7aec8 1-44,46-50
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/Diagnostics.java
+  s_2e7ecd3e725105::t_f8372ba9b0eddd 83
+  s_2e7ecd3e725105::t_3881ded28a208a 52
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbeddingMXBean.java
+  s_2e7ecd3e725105::t_9f7b27fe4b48a6 34,36,40-46
+  s_2e7ecd3e725105::t_fa1ed20aafda45 82-90
+exist-core/src/test/java/org/exist/management/JmxRemoteTest.java
+  s_2e7ecd3e725105::t_10ab1010055a9f 116-121,124-132
+  s_2e7ecd3e725105::t_87581868aad9ad 49
+  s_2e7ecd3e725105::t_5408029ea44ca2 163-171
+  s_2e7ecd3e725105::t_c2da2f984d6b72 122-123
+extensions/vector/src/test/java/org/exist/vector/VectorModelDiagnosticsTest.java
+  s_2e7ecd3e725105::t_8050d3944ce7c4 1-73
+exist-core/src/main/java/org/exist/storage/vector/VectorStoreServiceImpl.java
+  s_2e7ecd3e725105::t_d95a9c0d2b7296 78-89
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbedding.java
+  s_2e7ecd3e725105::t_9ac2c2191dcfea 39-40,43,47
+  s_2e7ecd3e725105::t_4897fe7efed3b1 70-75,80,85
+  s_2e7ecd3e725105::t_96caa8ac6fba35 124-132
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_2e7ecd3e725105::t_3349d953ddea14 121,123-124
+  s_2e7ecd3e725105::t_7b18736b379645 95-96,98-100,104,106-107
+extensions/vector/pom.xml
+  s_2e7ecd3e725105::t_c210a80c5ab8b1 104
+  s_2e7ecd3e725105::t_5317f33de63c50 100-103,105-108
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_2e7ecd3e725105::t_b953eecc5aa56c 1053-1059
+exist-core/src/main/java/org/exist/management/impl/VectorStoreMXBean.java
+  s_2e7ecd3e725105::t_4517f53d3ffbb9 47-59
+  s_2e7ecd3e725105::t_b6bdfd8360d0de 80
+  s_2e7ecd3e725105::t_296c992c4ebd75 35-38
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_2e7ecd3e725105::t_de821e1a05385b 111,113-114,116-117
+extensions/vector/src/test/java/org/exist/vector/VectorEmbeddingJmxTest.java
+  s_2e7ecd3e725105::t_fd679a8d40631c 1-60
+extensions/vector/src/test/java/org/exist/vector/VectorMetricsTest.java
+  s_2e7ecd3e725105::t_609bbca6da94bc 34,47-54
+exist-core/src/main/java/org/exist/management/impl/VectorStore.java
+  s_2e7ecd3e725105::t_19507422547cfe 82
+  s_2e7ecd3e725105::t_6fc171e88bd06e 39-40
+  s_2e7ecd3e725105::t_89d208c7041164 105,110
+  s_2e7ecd3e725105::t_797f276ff5dad8 76-81,83-84
+extensions/vector/src/main/java/org/exist/vector/VectorModelDiagnostics.java
+  s_2e7ecd3e725105::t_a4f6cbc6bae390 60-62
+  s_2e7ecd3e725105::t_0e96e54222f2cb 36-40,44-46,49,54-57,59,63-91,104-114
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/VectorSearchSupport.java
+  s_2e7ecd3e725105::t_fdb5dbb8d72d38 1-99
+extensions/vector/src/test/java/org/exist/vector/VectorOperationMetricsTest.java
+  s_2e7ecd3e725105::t_d3f312e1784aca 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "88ea39b56e049500bec24763d3beea1871ebc686",
+  "prompts": {},
+  "sessions": {
+    "s_2e7ecd3e725105": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcf87a91-d2e1-49a6-b417-18e3b2098413",
+        "model": "composer-2.5"
+      },
+      "human_author": null
+    }
+  }
+}

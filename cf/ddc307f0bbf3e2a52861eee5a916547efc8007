@@ -1,0 +1,21 @@
+exist-distribution/pom.xml
+  s_08d6af7ddefee1::t_982d7048ebbcec 965-1010
+exist-installer/pom.xml
+  s_08d6af7ddefee1::t_ff9b628c7fcb8c 126-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cfddc307f0bbf3e2a52861eee5a916547efc8007",
+  "prompts": {},
+  "sessions": {
+    "s_08d6af7ddefee1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5583ab8d-f7dc-4ed7-98e3-279ca01baa91",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

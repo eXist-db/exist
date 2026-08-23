@@ -1,0 +1,74 @@
+extensions/vector/src/main/java/org/exist/vector/ModelPathResolver.java
+  s_dbecc7913830f3::t_5ba74d9a5aced8 59-60
+exist-core/src/main/java/org/exist/management/impl/VectorStore.java
+  s_2e7ecd3e725105::t_3ecec79aad28b4 76-77
+  s_2e7ecd3e725105::t_0dce4ab73c9b6b 39
+extensions/vector/src/main/java/org/exist/vector/VectorModelInfo.java
+  s_dbecc7913830f3::t_4fb6f614f2df00 40-50
+  s_dbecc7913830f3::t_1d5d0b7386aa5a 62-66,71-75,80-84,89-93,98-102,107-111,117-121
+extensions/vector/src/main/java/org/exist/vector/VectorMetrics.java
+  s_dbecc7913830f3::t_f57579c1d1947d 65-69,76-80,87-91,96-100,105-109,114-118,123-127,132-136
+exist-core/src/main/java/org/exist/management/impl/VectorStoreMXBean.java
+  s_2e7ecd3e725105::t_8d7359f5751d88 47,51
+extensions/vector/src/main/java/org/exist/vector/VectorModelDiagnostics.java
+  s_dbecc7913830f3::t_dd8d60901cae60 67-68
+  s_dbecc7913830f3::t_8df200da1a8562 92-93
+  s_dbecc7913830f3::t_6d1b79d89bb2f6 100-105
+  s_dbecc7913830f3::t_6e27370c743272 76-77
+extensions/vector/src/main/java/org/exist/vector/HttpVectorProvider.java
+  s_dbecc7913830f3::t_99d4cd2cd6601f 57-59
+  s_dbecc7913830f3::t_207402f1d955d7 248-251
+  s_dbecc7913830f3::t_e8f7e97b265465 238-240
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingJmx.java
+  s_dbecc7913830f3::t_c2a695572c6f48 68
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbedding.java
+  s_2e7ecd3e725105::t_de87fc829c5c0d 39
+  s_dbecc7913830f3::t_09903c94fbea2f 45-49,56-60
+  s_2e7ecd3e725105::t_4d685021933476 85-86
+extensions/vector/src/main/java/org/exist/vector/VectorModelConstants.java
+  s_dbecc7913830f3::t_eb1b95f1bd1532 101-103
+  s_dbecc7913830f3::t_d600cc99df3b12 81-83
+  s_dbecc7913830f3::t_87d5ef86c93ded 91-93
+  s_dbecc7913830f3::t_ef72668f2965c7 111-112
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbeddingMXBean.java
+  s_2e7ecd3e725105::t_8843619410e7db 43-53
+  s_dbecc7913830f3::t_f36add971648fc 80-84,87-91,94-98,101-105,108-112,115-119
+  s_2e7ecd3e725105::t_298943b5103227 41-42,57
+extensions/vector/src/main/java/org/exist/vector/ModelRegistry.java
+  s_dbecc7913830f3::t_223f31be55604e 160-161
+  s_dbecc7913830f3::t_830144e1da605a 172-176
+  s_dbecc7913830f3::t_3cb0bd91787277 51-53,55,57,60-65
+  s_dbecc7913830f3::t_2793f9abd4b009 188-190,192,194,197-202
+exist-core/src/test/java/org/exist/management/JmxRemoteTest.java
+  s_2e7ecd3e725105::t_e34c7e5e6d19dc 117
+  s_2e7ecd3e725105::t_135ff0c6d8d34d 132
+extensions/vector/src/test/java/org/exist/vector/VectorEmbeddingJmxTest.java
+  s_2e7ecd3e725105::t_c5bbe573e1c0a1 59
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_dbecc7913830f3::t_db33630c130fba 70-74
+  s_dbecc7913830f3::t_566b6d2aad3f37 50-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "bb57c04f5deb393cc6700b4f9fadaf27cfadcf7b",
+  "prompts": {},
+  "sessions": {
+    "s_2e7ecd3e725105": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcf87a91-d2e1-49a6-b417-18e3b2098413",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_dbecc7913830f3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1917518c5ffefv0EXyc1FPrKFj",
+        "model": "big-pickle"
+      },
+      "human_author": null
+    }
+  }
+}

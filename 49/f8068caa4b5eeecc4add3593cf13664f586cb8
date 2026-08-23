@@ -1,0 +1,36 @@
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbedding.java
+  s_2e7ecd3e725105::t_2fa5200198551c 42,47
+extensions/vector/src/test/java/org/exist/vector/VectorMetricsTest.java
+  s_2e7ecd3e725105::t_61acb642f77217 24,28,33-39,42,58,66-80
+extensions/vector/src/test/java/org/exist/vector/VectorOperationMetricsTest.java
+  s_2e7ecd3e725105::t_34e0c5b828de52 24,26,28,35-37,40-41,46-49,54-86,91-97
+extensions/vector/src/main/java/org/exist/vector/VectorMetrics.java
+  s_2e7ecd3e725105::t_c5ed494c0548e0 24,29,33,46-62
+extensions/vector/src/main/java/org/exist/vector/VectorExtensionLifecycle.java
+  s_2e7ecd3e725105::t_09d9fd0e9d62b8 61-66
+  s_2e7ecd3e725105::t_aaa3865c2e5897 41-45,47-48
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/Embed.java
+  s_2e7ecd3e725105::t_6c82b139aa1567 108
+exist-core/src/main/java/org/exist/storage/vector/VectorOperationMetrics.java
+  s_2e7ecd3e725105::t_3cb2e09ee5c901 24-25,27,30,34,40-73,75-76,78-79,83,85,88-89,93,95,98-103,106-107
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/EmbedBatch.java
+  s_2e7ecd3e725105::t_37838dad0e2f6e 121
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/VectorSearchSupport.java
+  s_2e7ecd3e725105::t_569a892f82be33 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "49f8068caa4b5eeecc4add3593cf13664f586cb8",
+  "prompts": {},
+  "sessions": {
+    "s_2e7ecd3e725105": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcf87a91-d2e1-49a6-b417-18e3b2098413",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_cc91f600c392c3::t_5549785ca9c9dc 54-57,208,214,216,218-220,224-233
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_535762bbbd28b4 142-145,1799,2092-2095,2145,2165,2176,2184,2187-2191
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java
+  s_cc91f600c392c3::t_8f7a74ba8dcaa2 183-184,187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "9aab8ae61ecedd2f006b3b6d5e45461a985609fe",
+  "prompts": {},
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_b371cd7261149b::t_dcf6d239ec986e 88-103
+  s_b371cd7261149b::t_3ba2c20e14c444 47
+  s_b371cd7261149b::t_5ae870f3db6bdb 61-70
+  s_b371cd7261149b::t_25200d93e35aa0 43
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_cb885bd58fd3c9 71-79
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_b371cd7261149b::t_65db0b420245cb 154-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "7a28c8fb1ac19fdc6cead19eb1c8e597436c668e",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

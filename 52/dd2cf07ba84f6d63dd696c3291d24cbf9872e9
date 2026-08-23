@@ -1,0 +1,36 @@
+extensions/indexes/lucene/src/test/xquery/lucene/util-expand-highlight.xqm
+  dd267fc11decf911 30,109-128,182-187,211-212,299-350,99
+  s_cc91f600c392c3::t_8e0da1df33f16f 129,31,130,132,134-135,137-138,140-142,145-147,149-150,152-154,157-159,161-162,188,190-194,196-200,213-217,353,355-356,358-359,367,377
+  s_cc91f600c392c3::t_1d2dec204ad27b 84,87,92,101-102,266,275,282
+  s_cc91f600c392c3::t_97a6ad6ea12782 131,136,148,160,163,189,195,354,360-366,368-376,378-381
+  s_cc91f600c392c3::t_d772b2703328ee 133,139,143-144,151,155-156,357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "52dd2cf07ba84f6d63dd696c3291d24cbf9872e9",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "total_additions": 82,
+      "total_deletions": 19,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

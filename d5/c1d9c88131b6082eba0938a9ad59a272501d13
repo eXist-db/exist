@@ -1,0 +1,25 @@
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/RestBinariesTest.java
+  ai_agent 174
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  ai_agent 71,78,80,83-88,93-94
+exist-core/pom.xml
+  ai_agent 1206,1233
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  ai_agent 43,47,61-70,87-101
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  ai_agent 27,101-102,138-154,267,272-273,368-371,376,381-386,536-658,848-863
+extensions/modules/persistentlogin/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  ai_agent 77-88
+exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF/web.xml
+  ai_agent 182-201
+extensions/debuggee/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  ai_agent 77-88
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  ai_agent 126,129,140-152,162,164-165,167-169,182-228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "d5c1d9c88131b6082eba0938a9ad59a272501d13",
+  "prompts": {}
+}

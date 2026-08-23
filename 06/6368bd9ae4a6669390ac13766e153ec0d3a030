@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/http/ws/QueryExecutor.java
+  s_df30998873e606::t_bea769930575fa 48,60-62,117-124,139-140,145,163-164,169-170,178,185-189,193-194,197-199,231-240,256-264,267,269-283,287-299,356-359,368,371-372,391-398,410-411
+exist-core/src/main/java/org/exist/http/ws/WallClockQueryTimeout.java
+  s_df30998873e606::t_fc3022325b7677 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "066368bd9ae4a6669390ac13766e153ec0d3a030",
+  "prompts": {},
+  "sessions": {
+    "s_df30998873e606": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb4fd53-4648-49f1-b81c-2ca981a2afd4",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

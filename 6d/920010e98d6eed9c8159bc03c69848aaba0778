@@ -1,0 +1,43 @@
+exist-core/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 1176-1185
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 51,78-82,209-217
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractClassIntegrationTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 31,47
+extensions/modules/file/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 112-118
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractInstanceIntegrationTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 31,48
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/RestBinariesTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 31,68,134-137
+extensions/expath/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 60-65
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 87-91,109,134,169
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractIntegrationTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 36,72-75,89,92-94,98,101-103,107,109-111,119,121-137
+exist-core/src/test/java/org/exist/http/AuthenticatedHttpClientTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 1-61
+extensions/expath/src/main/java/org/expath/httpclient/model/exist/EXistTreeBuilder.java
+  s_402b1f194ddd18::t_ad41527c000f5c 24
+extensions/exquery/restxq/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 161-167
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_402b1f194ddd18::t_ad41527c000f5c 110-112,146-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "6d920010e98d6eed9c8159bc03c69848aaba0778",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

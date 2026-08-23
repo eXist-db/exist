@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/xquery/XQueryUpdateTest.java
+  s_7cdf0e373ff9b9::t_fb436a13d7ad33 518-520
+exist-core/pom.xml
+  s_7cdf0e373ff9b9::t_1c0915eb3e385c 1219-1220
+AGENTS.md
+  s_7cdf0e373ff9b9::t_f2ace9c2cf8bf4 101,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "fb374f066c0baa6b6bd8968e1fc1138af783c144",
+  "prompts": {},
+  "sessions": {
+    "s_7cdf0e373ff9b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e38addfb-e7b0-4bfe-a508-beb1a081714c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}

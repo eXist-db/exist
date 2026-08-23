@@ -1,0 +1,26 @@
+exist-core/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 1177-1178
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_402b1f194ddd18::t_e1daa1b89c8c46 76
+  s_402b1f194ddd18::t_6dc1c9305c1eef 103
+  s_402b1f194ddd18::t_45238a44197c88 176-177
+  s_402b1f194ddd18::t_2567bf7c023a4b 364,367,371,374
+  s_402b1f194ddd18::t_099586062f9fda 549,553-554,561-564,568
+  s_402b1f194ddd18::t_af3c922d833f33 550,560,569
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "80b85a00d05b7388f07849c386ef6c955c5f6569",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_b371cd7261149b::t_ad0272dbe48481 73,76
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_69b88ccee4e0de 235-236
+  s_b371cd7261149b::t_ea9ff5491e93b6 34-35,38-39
+  s_b371cd7261149b::t_7d664d2b3441b4 197-234,237-251
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_b371cd7261149b::t_c834dfb2ffd943 132,137
+  s_b371cd7261149b::t_e50328ac3263cd 149-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "aebbfa9d4b7cf3e363a3a4e6837b37ed57081a50",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
