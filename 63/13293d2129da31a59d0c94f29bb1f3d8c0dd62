@@ -1,0 +1,35 @@
+dev/bench/indexes/index.html
+  s_ccc5bc2f901c36::t_1902bb01a84100 1-62
+dev/bench/dashboard.js
+  s_ccc5bc2f901c36::t_135ebdb635b909 151-156
+  s_ccc5bc2f901c36::t_7006ef4a5c2898 188-190,194,196-197,204
+  s_ccc5bc2f901c36::t_18b26721b8c528 104-106,113,121-122,130-141
+  s_ccc5bc2f901c36::t_c0593da2011f17 353-354
+  s_ccc5bc2f901c36::t_a2cdcc5e055f78 1-56,58,76-103,107-112,114-120,123-129,142-150,157-178,180-187,191-193,195,198-203,205-236,255-352,355-373,375-379
+  s_ccc5bc2f901c36::t_de5a979f9aad1b 237-254
+  s_ccc5bc2f901c36::t_130bc717c3e7f8 179
+  s_ccc5bc2f901c36::t_9f560e88c3c203 374
+  s_ccc5bc2f901c36::t_8672c028941b64 57,59-75
+index.html
+  s_ccc5bc2f901c36::t_8ea9f7a0522733 6-7,10-48
+dev/bench/style.css
+  s_ccc5bc2f901c36::t_8360e4fe63ff6e 1-310
+dev/bench/core/index.html
+  s_ccc5bc2f901c36::t_3e57d0c638877a 1-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "6313293d2129da31a59d0c94f29bb1f3d8c0dd62",
+  "prompts": {},
+  "sessions": {
+    "s_ccc5bc2f901c36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ab28590e-da6c-48f4-a217-a163f9fe3598",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
