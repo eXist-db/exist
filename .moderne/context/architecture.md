@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-  subgraph exist-parent["eXist-db Parent"]
+  subgraph exist["eXist-db"]
     eval-web-socket-endpoint["Eval Web Socket Endpoint"]
     web-socket-endpoint["Web Socket Endpoint"]
   end
@@ -19,6 +19,7 @@ flowchart LR
   get-data-test-service["Get Data Test Service"]
   get-header-test-service["Get Header Test Service"]
   get-parameter-test-service["Get Parameter Test Service"]
+  http-session-service["Http Session Service"]
   http-vector-provider-service["Http Vector Provider Service"]
   jmx-remote-test-service["Jmx Remote Test Service"]
   login-module-i-t-service["Login Module I T Service"]
@@ -54,6 +55,7 @@ flowchart LR
 - **Get Data Test Service**: HTTPS service
 - **Get Header Test Service**: HTTPS service
 - **Get Parameter Test Service**: HTTPS service
+- **Http Session Service**: HTTPS service
 - **Http Vector Provider Service**: HTTPS service
 - **Jmx Remote Test Service**: HTTPS service
 - **Login Module I T Service**: HTTPS service
