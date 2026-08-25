@@ -29,7 +29,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Download XQTS Comparison
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: xqts-comparison
           run-id: ${{ github.event.workflow_run.id }}
@@ -39,7 +39,7 @@ jobs:
         id: pr
         run: echo "number=$(cat xqts-comparison/pr-number.txt)" >> "$GITHUB_OUTPUT"
       - name: Post or Update Comparison Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: xqts-comparison
           number: ${{ steps.pr.outputs.number }}
