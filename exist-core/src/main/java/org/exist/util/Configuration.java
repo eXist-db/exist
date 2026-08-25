@@ -591,6 +591,12 @@ public class Configuration implements ErrorHandler {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
+                // enabled="no" disables the module without removing it from conf.xml
+                if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
+                    LOG.debug("Module '{}' is disabled via enabled=\"no\", skipping", uri);
+                    continue;
+                }
+
                 final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
                 final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
                 // either class or source attribute must be present
@@ -836,6 +842,12 @@ public class Configuration implements ErrorHandler {
     }
 
     private void addJobToList(final List<JobConfig> jobList, final Element job) {
+        // enabled="no" disables the job without removing it from conf.xml
+        if ("no".equalsIgnoreCase(getConfigAttributeValue(job, "enabled"))) {
+            LOG.debug("Job '{}' is disabled via enabled=\"no\", skipping", getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE));
+            return;
+        }
+
         //get the job type
         final String strJobType = getConfigAttributeValue(job, JOB_TYPE_ATTRIBUTE);
 
@@ -1107,6 +1119,12 @@ public class Configuration implements ErrorHandler {
                 // Get <trigger> element
                 final Element trigger = (Element) nlTrigger.item(i);
 
+                // enabled="no" disables the trigger without removing it from conf.xml
+                if ("no".equalsIgnoreCase(trigger.getAttribute("enabled"))) {
+                    LOG.debug("Startup trigger '{}' is disabled via enabled=\"no\", skipping", trigger.getAttribute("class"));
+                    continue;
+                }
+
                 // Get @class
                 final String startupTriggerClass = trigger.getAttribute("class");
 
@@ -1191,10 +1209,17 @@ public class Configuration implements ErrorHandler {
             return;
         }
         final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
-        final IndexModuleConfig[] modConfig = new IndexModuleConfig[module.getLength()];
+        final List<IndexModuleConfig> modConfigList = new ArrayList<>();
 
         for (int i = 0; i < module.getLength(); i++) {
             final Element elem = (Element) module.item(i);
+
+            // enabled="no" disables the index module without removing it from conf.xml
+            if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
+                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE));
+                continue;
+            }
+
             final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
             final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
@@ -1206,9 +1231,9 @@ public class Configuration implements ErrorHandler {
                 throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
             }
 
-            modConfig[i] = new IndexModuleConfig(id, className, elem);
+            modConfigList.add(new IndexModuleConfig(id, className, elem));
         }
-        setProperty(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
+        setProperty(IndexManager.PROPERTY_INDEXER_MODULES, modConfigList.toArray(new IndexModuleConfig[0]));
     }
 
     private void configureValidation(final Optional<Path> dbHome, final Element validation) {
