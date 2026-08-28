@@ -70,6 +70,7 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>${tika.version}</version>
+            <type>pom</type>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion> <!-- conflicts with eXist-db's Xerces 2.12.0 with schema 1.1-->
