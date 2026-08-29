@@ -2,20 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>eXist-db JMH Benchmarks</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eXist-db JMH Benchmarks</title>
+  <link rel="stylesheet" href="dev/bench/style.css">
 </head>
 <body>
-  <h1>eXist-db JMH Benchmarks</h1>
-  <p>
-    This branch hosts data for the JMH benchmark dashboards published by
-    <a href="https://github.com/eXist-db/exist/blob/develop/.github/workflows/ci-benchmarks.yml">.github/workflows/ci-benchmarks.yml</a>,
-    via <a href="https://github.com/benchmark-action/github-action-benchmark">benchmark-action/github-action-benchmark</a>.
-  </p>
-  <p>No benchmark data has been published yet. Once the workflow has run at least once, dashboards will appear at:</p>
-  <ul>
-    <li><a href="dev/bench/core/">dev/bench/core/</a> &mdash; exist-core-jmh</li>
-    <li><a href="dev/bench/indexes/">dev/bench/indexes/</a> &mdash; exist-indexes-jmh</li>
-  </ul>
+  <div class="layout" style="flex-direction: column; width: 100%;">
+    <nav class="crumbs">
+      <span>eXist-db Benchmarks</span>
+      <span class="sep">·</span>
+      <a href="https://github.com/eXist-db/exist" rel="noopener">GitHub</a>
+    </nav>
+    <div class="landing">
+      <h1>eXist-db JMH Benchmarks</h1>
+      <p class="lede">
+        Performance trend dashboards generated weekly (and on manual dispatch) by
+        <a href="https://github.com/eXist-db/exist/blob/develop/.github/workflows/ci-benchmarks.yml">ci-benchmarks.yml</a>,
+        via <a href="https://github.com/benchmark-action/github-action-benchmark">benchmark-action/github-action-benchmark</a>.
+      </p>
+
+      <div class="dash-cards">
+        <div class="dash-card">
+          <h3>exist-core-jmh</h3>
+          <p>Core XQuery engine, DOM, storage and lock benchmarks.</p>
+          <a href="dev/bench/core/">Open dashboard →</a>
+        </div>
+        <div class="dash-card">
+          <h3>exist-indexes-jmh</h3>
+          <p>Lucene, Range, Ngram and general-comparison indexing benchmarks.</p>
+          <a href="dev/bench/indexes/">Open dashboard →</a>
+        </div>
+      </div>
+
+      <p class="lede">
+        Each dashboard groups benchmarks by class, supports search/filtering, and shows the
+        percent change against the previous run. Raw historical data backing each chart is
+        available as JSON from the download button on each dashboard.
+      </p>
+
+      <footer class="page-footer">
+        <span>Source: <a href="https://github.com/eXist-db/exist">eXist-db/exist</a></span>
+        <span>gh-pages branch</span>
+      </footer>
+    </div>
+  </div>
 </body>
 </html>
