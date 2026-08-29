@@ -38,7 +38,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -46,6 +49,7 @@ import static org.junit.Assert.*;
 public class AnalyzerConfigTest {
 
     private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
+
     static {
         DOCUMENT_BUILDER_FACTORY.setNamespaceAware(true);
     }
@@ -65,7 +69,7 @@ public class AnalyzerConfigTest {
 
         assertEquals("punctuationDictionary", constructorParameter.key());
         assertEquals(char[].class, constructorParameter.valueClass());
-        assertArrayEquals(new char[] {'\'', '-', '’'}, (char[])constructorParameter.value());
+        assertArrayEquals(new char[]{'\'', '-', '’'}, (char[]) constructorParameter.value());
     }
 
     @Test(expected = AnalyzerConfig.ParameterException.class)
@@ -98,7 +102,7 @@ public class AnalyzerConfigTest {
 
         assertEquals("dictionary", constructorParameter.key());
         assertEquals(String[].class, constructorParameter.valueClass());
-        assertArrayEquals(new String[] {"hello", "hi", "", "goodbye"}, (String[])constructorParameter.value());
+        assertArrayEquals(new String[]{"hello", "hi", "", "goodbye"}, (String[]) constructorParameter.value());
     }
 
     @Test
@@ -127,7 +131,7 @@ public class AnalyzerConfigTest {
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
         assertTrue(extractedConstructorArg2.value() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
+        assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -156,7 +160,7 @@ public class AnalyzerConfigTest {
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
         assertTrue(extractedConstructorArg2.value() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
+        assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -185,7 +189,7 @@ public class AnalyzerConfigTest {
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
         assertTrue(extractedConstructorArg2.value() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
+        assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -214,7 +218,7 @@ public class AnalyzerConfigTest {
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
         assertTrue(extractedConstructorArg2.value() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
+        assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -236,7 +240,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("punctuationDictionary", extractedConstructorArg1.key());
         assertEquals(char[].class, extractedConstructorArg1.valueClass());
-        assertArrayEquals(new char[] {'\'', '-'}, (char[])extractedConstructorArg1.value());
+        assertArrayEquals(new char[]{'\'', '-'}, (char[]) extractedConstructorArg1.value());
     }
 
     @Test
@@ -258,19 +262,19 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("punctuationDictionary", extractedConstructorArg1.key());
         assertEquals(String[].class, extractedConstructorArg1.valueClass());
-        assertArrayEquals(new String[] {"abc", "def"}, (String[])extractedConstructorArg1.value());
+        assertArrayEquals(new String[]{"abc", "def"}, (String[]) extractedConstructorArg1.value());
     }
 
     @Test
     public void constructIntegerAndSetMockAnalyzerWithoutVersion() {
         final Class<IntegerAndSetConstructorMockAnalyzer> analyerClass = IntegerAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 Integer.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -282,13 +286,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructIntegerAndSetMockAnalyzerWithVersion() {
         final Class<IntegerAndSetConstructorMockAnalyzer> analyerClass = IntegerAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 Integer.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -300,13 +304,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructIntAndSetMockAnalyzerWithoutVersion() {
         final Class<IntAndSetConstructorMockAnalyzer> analyerClass = IntAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 int.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -318,13 +322,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructIntAndSetMockAnalyzerWithVersion() {
         final Class<IntAndSetConstructorMockAnalyzer> analyerClass = IntAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 int.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -336,13 +340,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructBooleanAndSetMockAnalyzerWithoutVersion() {
         final Class<BooleanAndSetConstructorMockAnalyzer> analyerClass = BooleanAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 Boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 Boolean.TRUE,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -354,13 +358,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructBooleanAndSetMockAnalyzerWithVersion() {
         final Class<BooleanAndSetConstructorMockAnalyzer> analyerClass = BooleanAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 Boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 Boolean.TRUE,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -372,13 +376,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructPrimitiveAndSetMockAnalyzerWithoutVersion() {
         final Class<PrimitiveBooleanAndSetConstructorMockAnalyzer> analyerClass = PrimitiveBooleanAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 true,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -390,13 +394,13 @@ public class AnalyzerConfigTest {
     @Test
     public void constructPrimitiveBooleanAndSetMockAnalyzerWithVersion() {
         final Class<PrimitiveBooleanAndSetConstructorMockAnalyzer> analyerClass = PrimitiveBooleanAndSetConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
                 true,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -408,61 +412,61 @@ public class AnalyzerConfigTest {
     @Test
     public void constructCharArrayMockAnalyzerWithoutVersion() {
         final Class<CharArrayConstructorMockAnalyzer> analyerClass = CharArrayConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 char[].class,
         };
         final Object[] vcParamValues = {
-                new char[] {'\'', '-'}
+                new char[]{'\'', '-'}
         };
 
         final CharArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertArrayEquals((char[])vcParamValues[0], mockAnalyzer.arg1);
+        assertArrayEquals((char[]) vcParamValues[0], mockAnalyzer.arg1);
     }
 
     @Test
     public void constructCharArrayMockAnalyzerWithVersion() {
         final Class<CharArrayConstructorMockAnalyzer> analyerClass = CharArrayConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 char[].class,
         };
         final Object[] vcParamValues = {
-                new char[] {'\'', '-'}
+                new char[]{'\'', '-'}
         };
 
         final CharArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertArrayEquals((char[])vcParamValues[0], mockAnalyzer.arg1);
+        assertArrayEquals((char[]) vcParamValues[0], mockAnalyzer.arg1);
     }
 
     @Test
     public void constructStringArrayMockAnalyzerWithoutVersion() {
         final Class<StringArrayConstructorMockAnalyzer> analyerClass = StringArrayConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 String[].class,
         };
         final Object[] vcParamValues = {
-                new String[] {"abc", "def"}
+                new String[]{"abc", "def"}
         };
 
         final StringArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertArrayEquals((String[])vcParamValues[0], mockAnalyzer.arg1);
+        assertArrayEquals((String[]) vcParamValues[0], mockAnalyzer.arg1);
     }
 
     @Test
     public void constructStringArrayMockAnalyzerWithVersion() {
         final Class<StringArrayConstructorMockAnalyzer> analyerClass = StringArrayConstructorMockAnalyzer.class;
-        final Class<?>[] vcParamClasses = new Class[] {
+        final Class<?>[] vcParamClasses = new Class[]{
                 String[].class,
         };
         final Object[] vcParamValues = {
-                new String[] {"abc", "def"}
+                new String[]{"abc", "def"}
         };
 
         final StringArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertArrayEquals((String[])vcParamValues[0], mockAnalyzer.arg1);
+        assertArrayEquals((String[]) vcParamValues[0], mockAnalyzer.arg1);
     }
 
     private Document parse(final String strXml) throws ParserConfigurationException, IOException, SAXException {
@@ -473,6 +477,7 @@ public class AnalyzerConfigTest {
     static class IntegerAndSetConstructorMockAnalyzer extends Analyzer {
         final Integer arg1;
         final Set<String> arg2;
+
         public IntegerAndSetConstructorMockAnalyzer(final Integer arg1, final Set<String> arg2) {
             this.arg1 = arg1;
             this.arg2 = arg2;
@@ -483,7 +488,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
@@ -502,7 +507,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
@@ -518,7 +523,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
@@ -537,7 +542,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
@@ -551,7 +556,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
@@ -565,7 +570,7 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
+        protected TokenStreamComponents createComponents(final String fieldName) {
             return null;
         }
     }
