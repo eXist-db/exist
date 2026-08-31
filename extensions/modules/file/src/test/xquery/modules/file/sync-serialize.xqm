@@ -271,22 +271,22 @@ declare %private function syse:store-xinclude-fixture() as empty-sequence() {
 
 (: expand-xincludes=true expands the include (this is the case the #3704 bug broke) :)
 declare
-    %test:assertTrue
+    %test:assertXPath("contains($result, 'INCLUDED')")
+    %test:assertXPath("not(contains($result, 'xi:include'))")
 function syse:expand-xincludes-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $_ := syse:store-xinclude-fixture()
     let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): true() })
-    let $content := file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
-    return contains($content, "INCLUDED") and not(contains($content, "xi:include"))
+    return file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
 };
 
 (: expand-xincludes=false preserves the include (control: also the file:sync default) :)
 declare
-    %test:assertTrue
+    %test:assertXPath("contains($result, 'xi:include')")
+    %test:assertXPath("not(contains($result, 'INCLUDED'))")
 function syse:expand-xincludes-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $_ := syse:store-xinclude-fixture()
     let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): false() })
-    let $content := file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
-    return contains($content, "xi:include")
+    return file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
 };

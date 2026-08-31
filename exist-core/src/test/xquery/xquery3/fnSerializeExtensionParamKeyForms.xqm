@@ -73,9 +73,10 @@ declare %private function skf:host() as node() {
 
 (: PRIMARY, spec-conformant form: the exist-namespace QName key is honored (false() preserves the include). :)
 declare
-    %test:assertTrue
+    %test:assertXPath("contains($result, 'xi:include')")
+    %test:assertXPath("not(contains($result, 'INCLUDED'))")
 function skf:qname-key-honored() {
-    contains(serialize(skf:host(), map { QName($skf:exist-ns, "expand-xincludes"): false() }), "xi:include")
+    serialize(skf:host(), map { QName($skf:exist-ns, "expand-xincludes"): false() })
 };
 
 (:
@@ -85,17 +86,17 @@ function skf:qname-key-honored() {
  : sanctions only the xs:QName form (above) for implementation-defined parameters.
  :)
 declare
-    %test:assertTrue
+    %test:assertXPath("contains($result, 'INCLUDED')")
+    %test:assertXPath("not(contains($result, 'xi:include'))")
 function skf:prefixed-string-key-rejected() {
-    let $s := serialize(skf:host(), map { "exist:expand-xincludes": false() })
-    return contains($s, "INCLUDED") and not(contains($s, "xi:include"))
+    serialize(skf:host(), map { "exist:expand-xincludes": false() })
 };
 
 (: The bare local name (no "exist:" prefix) is NOT accepted; the parameter falls back to its default
  : (true), so the include is expanded. :)
 declare
-    %test:assertTrue
+    %test:assertXPath("contains($result, 'INCLUDED')")
+    %test:assertXPath("not(contains($result, 'xi:include'))")
 function skf:bare-local-key-ignored() {
-    let $s := serialize(skf:host(), map { "expand-xincludes": false() })
-    return contains($s, "INCLUDED") and not(contains($s, "xi:include"))
+    serialize(skf:host(), map { "expand-xincludes": false() })
 };
