@@ -223,6 +223,61 @@ public abstract class AbstractMapType extends FunctionReference
         return false;
     }
 
+    /**
+     * Returns {@code true} if this map can be atomized under the current XQuery version.
+     * In XQuery 4.0, maps are no longer function items and can be atomized
+     * (returning the atomized values of their entries).
+     *
+     * @return true if the map is atomizable (XQuery 4.0+)
+     */
+    public boolean isXq4Atomizable() {
+        return context != null && context.getXQueryVersion() >= 40;
+    }
+
+    /**
+     * Atomize all values in this map, returning them as a flat sequence of atomic values.
+     * This implements the XQuery 4.0 semantics where atomizing a map returns the
+     * concatenation of the atomized values of its entries.
+     *
+     * @return a sequence of atomic values from all map entry values
+     * @throws XPathException if any value cannot be atomized
+     */
+    public Sequence atomizeValues() throws XPathException {
+        if (size() == 0) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final ValueSequence result = new ValueSequence();
+        for (final IEntry<AtomicValue, Sequence> entry : this) {
+            final Sequence value = entry.value();
+            for (final SequenceIterator vi = value.iterate(); vi.hasNext(); ) {
+                result.add(vi.nextItem().atomize());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public AtomicValue atomize() throws XPathException {
+        if (isXq4Atomizable()) {
+            if (size() == 0) {
+                // follows the ArrayType pattern for empty containers
+                return null;
+            }
+            final Sequence atomized = atomizeValues();
+            if (atomized.isEmpty()) {
+                return null;
+            }
+            if (atomized.getItemCount() > 1) {
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "Atomization of a map with multiple values requires a sequence context");
+            }
+            return (AtomicValue) atomized.itemAt(0);
+        }
+        // XQuery 3.1 and earlier: maps are function items and cannot be atomized
+        throw new XPathException(getExpression(), ErrorCodes.FOTY0013,
+                "A function item other than an array cannot be atomized");
+    }
+
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder("map {");
