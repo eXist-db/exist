@@ -34,6 +34,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.junit.*;
 
 import static com.evolvedbinary.j8fu.Either.Left;
@@ -66,6 +67,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  *
@@ -276,5 +278,86 @@ public class DocTest {
         } catch (final ParserConfigurationException | SAXException | IOException e) {
             throw new XPathException((Expression) null, "Unable to parse document", e);
         }
+    }
+
+    /**
+     * Resource-naming contract (eXist-db/exist#6463, decision 3, read side): a db resource whose
+     * decoded name contains a raw space is accepted at the write boundary; reading it back by the
+     * decoded absolute db-path must resolve too. Before the fix the read path raised FODC0005 in the
+     * dynamically-available-documents URI check (and IllegalArgumentException in base-uri resolution)
+     * before reaching the decision-5 normalization that escapes the space.
+     */
+    @Test
+    public void doc_resolvesRawSpaceDbPathOnRead() throws XMLDBException {
+        existEmbeddedServer.executeQuery(
+                "declare variable $c external; declare variable $n external; "
+                        + "xmldb:store($c, $n, document { <hit/> })",
+                Map.of("c", new StringValue("/db/test"), "n", new StringValue("with space.xml")));
+
+        final ResourceSet hit = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/with space.xml")));
+        assertEquals("hit", hit.getResource(0).getContent());
+
+        final ResourceSet avail = existEmbeddedServer.executeQuery(
+                "declare variable $p external; doc-available($p)",
+                Map.of("p", new StringValue("/db/test/with space.xml")));
+        assertEquals("true", avail.getResource(0).getContent());
+    }
+
+    /**
+     * The decision-3 read-side rescue must be scoped to db-paths: a genuinely malformed, non-db URI
+     * must still raise FODC0005 (qt3tests fn-doc-17 {@code "%gg"}, K2-SeqDocFunc-7/8/9 Windows
+     * backslash paths, K2-SeqDocFunc-14 {@code ":/"}), not silently fall through to an empty result.
+     */
+    @Test
+    public void doc_malformedNonDbUriStillRaisesFODC0005() {
+        for (final String bad : new String[] {"%gg", "%GG", ":/", "C:\\a\\b.xml", "\\a\\b.xml", "example.com\\x.xml"}) {
+            assertFODC0005(bad);
+        }
+    }
+
+    private static void assertFODC0005(final String path) {
+        try {
+            existEmbeddedServer.executeQuery(
+                    "declare variable $p external; doc($p)", Map.of("p", new StringValue(path)));
+            fail("expected FODC0005 for malformed non-db URI: " + path);
+        } catch (final XMLDBException e) {
+            final String chain = e.getMessage() + " | " + e.getCause();
+            assertTrue("expected FODC0005 for " + path + " but got: " + chain, chain.contains("FODC0005"));
+        }
+    }
+
+    /**
+     * Resource-naming contract (eXist-db/exist#6463, decision 2, read side): a resource whose name
+     * literally contains '%' is stored bijectively (the '%' is escaped to %25, so it never collides
+     * with a real percent-escape), and doc() resolves it by its decoded display name. doc() now
+     * canonicalizes a db-path by decode-then-encode, so doc("/db/test/50%.xml") reaches the 50%25.xml
+     * key; the encoded stored form resolves too (decode-then-encode is idempotent on it). The literal
+     * '%' is no longer deferred -- the write side never loses data, and the read side resolves the name.
+     */
+    @Test
+    public void doc_resolvesLiteralPercentNameByDecodedForm() throws XMLDBException {
+        existEmbeddedServer.executeQuery(
+                "declare variable $c external; declare variable $n external; "
+                        + "xmldb:store($c, $n, document { <pct/> })",
+                Map.of("c", new StringValue("/db/test"), "n", new StringValue("50%.xml")));
+
+        // the bijective lenient store escapes the literal '%' to %25 (no collision, no data loss)
+        final ResourceSet stored = existEmbeddedServer.executeQuery(
+                "xmldb:get-child-resources('/db/test')[contains(., '50%25')]");
+        assertEquals("50%25.xml", stored.getResource(0).getContent());
+
+        // resolve by the DECODED literal name (decision 2, read side, now closed)
+        final ResourceSet byDecoded = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/50%.xml")));
+        assertEquals("pct", byDecoded.getResource(0).getContent());
+
+        // and by the encoded stored form (idempotent)
+        final ResourceSet byEncoded = existEmbeddedServer.executeQuery(
+                "declare variable $p external; local-name(doc($p)/*)",
+                Map.of("p", new StringValue("/db/test/50%25.xml")));
+        assertEquals("pct", byEncoded.getResource(0).getContent());
     }
 }
