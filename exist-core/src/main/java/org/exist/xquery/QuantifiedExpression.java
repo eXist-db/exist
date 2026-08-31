@@ -69,8 +69,12 @@ public class QuantifiedExpression extends BindingExpression {
 			context.declareVariableBinding(new LocalVariable(varName));
 
 			contextInfo.setParent(this);
-			inputSequence.analyze(contextInfo);
-			returnExpr.analyze(contextInfo);
+			final AnalyzeContextInfo inputInfo = new AnalyzeContextInfo(contextInfo);
+			inputInfo.addFlag(NON_UPDATING_CONTEXT);
+			inputSequence.analyze(inputInfo);
+			final AnalyzeContextInfo satisfiesInfo = new AnalyzeContextInfo(contextInfo);
+			satisfiesInfo.addFlag(NON_UPDATING_CONTEXT);
+			returnExpr.analyze(satisfiesInfo);
 		} finally {
 			context.popLocalVariables(mark);
 		}

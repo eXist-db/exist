@@ -50,8 +50,13 @@ public class RangeExpression extends PathExpr {
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
-        start.analyze(contextInfo);
-        end.analyze(contextInfo);
+        // Operands of range expression are non-updating contexts
+        final AnalyzeContextInfo startInfo = new AnalyzeContextInfo(contextInfo);
+        startInfo.addFlag(NON_UPDATING_CONTEXT);
+        start.analyze(startInfo);
+        final AnalyzeContextInfo endInfo = new AnalyzeContextInfo(contextInfo);
+        endInfo.addFlag(NON_UPDATING_CONTEXT);
+        end.analyze(endInfo);
     }
 
     /**

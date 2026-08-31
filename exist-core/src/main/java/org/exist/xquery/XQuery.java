@@ -50,6 +50,7 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
+import org.exist.xquery.xquf.PendingUpdateList;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
@@ -460,6 +461,13 @@ public class XQuery {
 
                 } else {
                     result = expression.eval(contextSequence, null);
+                }
+
+                // W3C XQuery Update Facility 3.0: apply Pending Update List at snapshot boundary
+                final PendingUpdateList pul = context.getPendingUpdateList();
+                if (!pul.isEmpty()) {
+                    pul.apply(context);
+                    pul.clear();
                 }
 
                 if(LOG.isDebugEnabled()) {

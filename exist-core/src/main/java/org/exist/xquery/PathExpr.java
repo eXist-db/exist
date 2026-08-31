@@ -187,7 +187,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 }
             }
 
-            if (i > 1) {
+            if (i >= 1) {
                 contextInfo.setContextStep(steps.get(i - 1));
             }
             contextInfo.setParent(this);
@@ -438,6 +438,36 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public int getSubExpressionCount() {
         return steps.size();
+    }
+
+    @Override
+    public boolean isVacuous() {
+        if (steps.isEmpty()) {
+            return true;
+        }
+        if (steps.size() == 1) {
+            return steps.getFirst().isVacuous();
+        }
+        // For multi-step paths, use default logic
+        return !isUpdating() && getCardinality() == Cardinality.EMPTY_SEQUENCE;
+    }
+
+    @Override
+    public boolean isUpdating() {
+        if (steps.isEmpty()) {
+            return false;
+        }
+        // A PathExpr with one step delegates to that step
+        if (steps.size() == 1) {
+            return steps.getFirst().isUpdating();
+        }
+        // For multi-step paths, check if any step is updating
+        for (final Expression step : steps) {
+            if (step.isUpdating()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

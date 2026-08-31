@@ -131,13 +131,67 @@ public class SwitchExpression extends AbstractExpression {
         return Cardinality.ZERO_OR_MORE;
     }
     
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.setParent(this);
-        operand.analyze(contextInfo);
-        for (final Case next : cases) {
-            next.returnClause.analyze(contextInfo);
+    @Override
+    public boolean isUpdating() {
+        for (final Case c : cases) {
+            if (c.returnClause.isUpdating()) {
+                return true;
+            }
         }
-        defaultClause.returnClause.analyze(contextInfo);
+        return defaultClause != null && defaultClause.returnClause.isUpdating();
+    }
+
+    @Override
+    public boolean isVacuous() {
+        for (final Case c : cases) {
+            if (!c.returnClause.isVacuous()) {
+                return false;
+            }
+        }
+        return defaultClause == null || defaultClause.returnClause.isVacuous();
+    }
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        final AnalyzeContextInfo myContextInfo = new AnalyzeContextInfo(contextInfo);
+        myContextInfo.setParent(this);
+
+        // Operand and case operands are non-updating contexts
+        final AnalyzeContextInfo operandInfo = new AnalyzeContextInfo(myContextInfo);
+        operandInfo.addFlag(NON_UPDATING_CONTEXT);
+        operand.analyze(operandInfo);
+        for (final Case next : cases) {
+            for (final Expression caseOperand : next.operands) {
+                final AnalyzeContextInfo caseOpInfo = new AnalyzeContextInfo(myContextInfo);
+                caseOpInfo.addFlag(NON_UPDATING_CONTEXT);
+                caseOperand.analyze(caseOpInfo);
+            }
+            myContextInfo.setParent(this);
+            next.returnClause.analyze(myContextInfo);
+        }
+        myContextInfo.setParent(this);
+        defaultClause.returnClause.analyze(myContextInfo);
+
+        // XUST0001: check branch compatibility
+        boolean hasUpdating = false;
+        boolean hasNonUpdating = false;
+        for (final Case c : cases) {
+            if (c.returnClause.isUpdating()) {
+                hasUpdating = true;
+            } else if (!c.returnClause.isVacuous()) {
+                hasNonUpdating = true;
+            }
+        }
+        if (defaultClause != null) {
+            if (defaultClause.returnClause.isUpdating()) {
+                hasUpdating = true;
+            } else if (!defaultClause.returnClause.isVacuous()) {
+                hasNonUpdating = true;
+            }
+        }
+        if (hasUpdating && hasNonUpdating) {
+            throw new XPathException(this, ErrorCodes.XUST0001,
+                    "switch branches mix updating and non-updating expressions");
+        }
     }
 
     public void setContextDocSet(DocumentSet contextSet) {

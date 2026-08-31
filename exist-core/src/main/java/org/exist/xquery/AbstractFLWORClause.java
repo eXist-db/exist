@@ -104,6 +104,11 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     }
 
     @Override
+    public boolean isUpdating() {
+        return returnExpr != null && returnExpr.isUpdating();
+    }
+
+    @Override
     public int getDependencies() {
         return returnExpr.getDependencies();
     }
