@@ -6,7 +6,7 @@
   ++ The order of elements within this configuration file is significant.
 -->
 <configuration xmlns="http://exist.sourceforge.net/NS/exist" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://exist.sourceforge.net/NS/exist file:../../../schema/controller-config.xsd" schemaVersion="1.1.1">
+  xsi:schemaLocation="http://exist.sourceforge.net/NS/exist file:../../../schema/controller-config.xsd" schemaVersion="1.1.2">
   
   <!-- Webstart servlet -->
   <forward pattern="/webstart" servlet="jnlp"/>
@@ -28,6 +28,9 @@
   <forward pattern="/images" servlet="ScaleImageJAI"/>
   -->
   
+  <!-- Package Management API (built-in, no XAR dependency) -->
+  <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
+
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
   

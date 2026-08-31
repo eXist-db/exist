@@ -21,6 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 
@@ -31,6 +33,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public abstract class Forward extends URLRewrite {
+
+    private static final Logger LOG = LogManager.getLogger(Forward.class);
 
     protected Forward(final Element config, final String uri) {
         super(config, uri);
@@ -44,7 +48,9 @@ public abstract class Forward extends URLRewrite {
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null) {
-            throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
+            LOG.warn("No servlet registered for forward target '{}' — is the required module on the classpath?", uri);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Servlet not available: " + uri);
+            return;
         }
         setHeaders(new HttpResponseWrapper(response));
         dispatcher.forward(request, response);

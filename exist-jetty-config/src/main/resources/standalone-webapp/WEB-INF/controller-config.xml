@@ -8,7 +8,7 @@
   ++ handling. Use this configuration if you need a minimum setup with web content
   ++ stored in the db.
 -->
-<configuration xmlns="http://exist.sourceforge.net/NS/exist" schemaVersion="1.1.1">
+<configuration xmlns="http://exist.sourceforge.net/NS/exist" schemaVersion="1.1.2">
     <!-- REST interface -->
     <forward pattern="/rest" servlet="EXistServlet"/>
     <!-- XMLRPC servlet -->
@@ -18,6 +18,9 @@
 
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
+
+    <!-- Package Management API (built-in, no XAR dependency) -->
+    <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
 
     <!--
         ++ Main web application is served from the
