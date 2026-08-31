@@ -98,7 +98,8 @@ public class XMLDBURIFunctions extends BasicFunction {
 			} else if(isCalledAs("encode-uri")) {
 				return new AnyURIValue(this, URIUtils.encodeXmldbUriFor(args[0].getStringValue()));
 			} else {
-				return new StringValue(this, URIUtils.urlDecodeUtf8(args[0].getStringValue()));
+				// RFC 3986 percent-decoding: '+' is a literal plus, not a space (#1824, #44)
+				return new StringValue(this, URIUtils.decodeForURI(args[0].getStringValue()));
 			}
 		} catch(final URISyntaxException e) {
             logger.error(e.getMessage(), e);
