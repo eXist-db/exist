@@ -89,6 +89,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- XML-RPC client for the cross-surface resource-naming harness -->
+        <dependency>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-client</artifactId>
+            <version>${apache.xmlrpc.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- needed for starting up a jetty server -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
