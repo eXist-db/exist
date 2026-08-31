@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.exist.util.serializer.Receiver;
@@ -41,9 +42,9 @@ public class ContentExtraction {
     final AutoDetectParser parser = new AutoDetectParser();
 
     public Metadata extractContentAndMetadata(final BinaryValue binaryValue, final ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
-        try (final InputStream is = binaryValue.getInputStream()) {
+        try (final InputStream is = binaryValue.getInputStream(); final TikaInputStream tis = TikaInputStream.get(is)) {
             final Metadata metadata = new Metadata();
-            parser.parse(is, contentHandler, metadata);
+            parser.parse(tis, contentHandler, metadata);
             return metadata;
         } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
@@ -56,9 +57,9 @@ public class ContentExtraction {
     }
 
     public Metadata extractMetadata(final BinaryValue binaryValue) throws IOException, SAXException, ContentExtractionException {
-        try (final InputStream is = binaryValue.getInputStream()) {
+        try (final InputStream is = binaryValue.getInputStream(); final TikaInputStream tis = TikaInputStream.get(is)) {
             final Metadata metadata = new Metadata();
-            parser.parse(is, null, metadata);
+            parser.parse(tis, null, metadata);
             return metadata;
         } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
