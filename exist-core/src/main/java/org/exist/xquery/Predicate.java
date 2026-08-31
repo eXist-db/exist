@@ -514,12 +514,20 @@ public class Predicate extends PathExpr {
                                 temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
                                 break;
                             case Constants.FOLLOWING_SIBLING_AXIS:
+                            case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS:
                                 temp = contextSet.selectFollowingSiblings(p, Expression.IGNORE_CONTEXT);
                                 reverseAxis = false;
                                 break;
                             case Constants.FOLLOWING_AXIS:
+                            case Constants.FOLLOWING_OR_SELF_AXIS:
                                 temp = contextSet.selectFollowing(p, Expression.IGNORE_CONTEXT);
                                 reverseAxis = false;
+                                break;
+                            case Constants.PRECEDING_OR_SELF_AXIS:
+                                temp = contextSet.selectPreceding(p, Expression.IGNORE_CONTEXT);
+                                break;
+                            case Constants.PRECEDING_SIBLING_OR_SELF_AXIS:
+                                temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
                                 break;
                             case Constants.SELF_AXIS:
                                 temp = p;
