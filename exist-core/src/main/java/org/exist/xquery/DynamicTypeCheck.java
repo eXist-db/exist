@@ -89,6 +89,10 @@ public class DynamicTypeCheck extends AbstractExpression {
                 //Retrieve the actual node
                 {type= ((NodeProxy) item).getNode().getNodeType();}
         }
+        // XQuery 4.0: record type checking — a map can match a record type
+        if (requiredType == Type.RECORD && Type.subTypeOf(type, Type.MAP_ITEM)) {
+            return; // record type checking handled by SequenceType.checkType
+        }
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
             if (type == Type.UNTYPED_ATOMIC) {
