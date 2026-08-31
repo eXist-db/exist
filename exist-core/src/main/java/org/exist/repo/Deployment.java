@@ -375,124 +375,185 @@ public class Deployment {
         }
         try {
             // if there's a <setup> element, run the query it points to
-            final Optional<ElementImpl> setup = findElement(repoXML, SETUP_ELEMENT);
-            final Optional<String> setupPath = setup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
-
+            final Optional<String> setupPath = findElementValue(repoXML, SETUP_ELEMENT);
             if (setupPath.isPresent()) {
                 runQuery(broker, null, packageDir, setupPath.get(), pkgName, QueryPurpose.SETUP);
                 return Optional.empty();
-            } else {
-                // otherwise create the target collection
-                XmldbURI targetCollection = null;
-                if (userTarget != null) {
-                    try {
-                        targetCollection = XmldbURI.create(userTarget);
-                    } catch (final IllegalArgumentException e) {
-                        throw new PackageException("Bad collection URI: " + userTarget, e);
-                    }
-                } else {
-                    final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
-                    final Optional<String> targetPath = target.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
-
-                    if (targetPath.isPresent()) {
-                        // determine target collection
-                        try {
-                            targetCollection = XmldbURI.create(getTargetCollection(broker, targetPath.get()));
-                        } catch (final IllegalArgumentException e) {
-                            throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
-                        }
-                    } else {
-                        LOG.warn("EXPath Package '{}' does not contain a <target> in its repo.xml, no files will be deployed to /apps", pkgName);
-                    }
-                }
-                if (targetCollection == null) {
-                    // no target means: package does not need to be deployed into database
-                    // however, we need to preserve a copy for backup purposes.
-                    // Use targetPkg's abbrev+version directly rather than re-resolving
-                    // packages.latest() — when install-and-deploy was called with an
-                    // explicit older version, the registry's latest may be a different
-                    // (higher) version, and re-resolving would point this status target
-                    // at the wrong version's collection.
-                    final String pkgColl = targetPkg.getAbbrev() + "-" + targetPkg.getVersion();
-                    targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
-                }
-
-                // extract the permissions (if any)
-                final Optional<ElementImpl> permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
-                final Optional<RequestedPerms> requestedPerms = permissions.flatMap(elem -> {
-                    final Optional<Either<Integer, String>> perms = Optional.of(elem.getAttribute("mode")).flatMap(mode -> {
-                        try {
-                            return Optional.of(Either.Left(Integer.parseInt(mode, 8)));
-                        } catch (final NumberFormatException e) {
-                            if (mode.matches("^[rwx-]{9}")) {
-                                return Optional.of(Either.Right(mode));
-                            } else {
-                                return Optional.empty();
-                            }
-                        }
-                    });
-
-                    return perms.map(p -> new RequestedPerms(
-                            elem.getAttribute("user"),
-                            elem.getAttribute("password"),
-                            Optional.of(elem.getAttribute("group")),
-                            p
-                    ));
-                });
-
-                //check that if there were permissions then we were able to parse them, a failure would be related to the mode string
-                if (permissions.isPresent() && requestedPerms.isEmpty()) {
-                    final String mode = permissions.map(elem -> elem.getAttribute("mode")).orElse(null);
-                    throw new PackageException("Bad format for mode attribute in <permissions>: " + mode);
-                }
-
-                // run the pre-setup query if present
-                final Optional<ElementImpl> preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
-                final Optional<String> preSetupPath = preSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
-
-                if (preSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, preSetupPath.get(), pkgName, QueryPurpose.PREINSTALL);
-                }
-
-                // create the group specified in the permissions element if needed
-                // create the user specified in the permissions element if needed; assign it to the specified group
-                // TODO: if the user already exists, check and ensure the user is assigned to the specified group
-                if (requestedPerms.isPresent()) {
-                    checkUserSettings(broker, requestedPerms.get());
-                }
-
-                final InMemoryNodeSet resources = findElements(repoXML, RESOURCES_ELEMENT);
-
-                // store all package contents into database, using the user/group/mode in the permissions element. however:
-                // 1. repo.xml is excluded for now, since it may contain the default user's password in the clear
-                // 2. contents of directories identified in the path attribute of any <resource path=""/> element are stored as binary
-                final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
-                        requestedPerms);
-
-                // store repo.xml, filtering out the default user's password
-                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
-
-                // run the post-setup query if present
-                final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
-                final Optional<String> postSetupPath = postSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
-
-                if (postSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
-                }
-
-                // TODO: it should be safe to clean up the file system after a package
-                // has been deployed. Might be enabled after 2.0
-                //cleanup(pkgName, repo);
-
-                if (!errors.isEmpty()) {
-                    throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
-                            String.join("; ", errors));
-                }
-                return Optional.ofNullable(targetCollection.getCollectionPath());
             }
+
+            // otherwise create the target collection
+            final XmldbURI targetCollection = resolveTargetCollection(broker, repoXML, targetPkg, userTarget);
+
+            // extract the permissions (if any)
+            final Optional<RequestedPerms> requestedPerms = findRequestedPerms(repoXML);
+
+            // run the pre-setup query if present
+            runOptionalQuery(broker, targetCollection, packageDir, repoXML, PRE_SETUP_ELEMENT, pkgName, QueryPurpose.PREINSTALL);
+
+            // create the group specified in the permissions element if needed
+            // create the user specified in the permissions element if needed; assign it to the specified group
+            // TODO: if the user already exists, check and ensure the user is assigned to the specified group
+            if (requestedPerms.isPresent()) {
+                checkUserSettings(broker, requestedPerms.get());
+            }
+
+            final InMemoryNodeSet resources = findElements(repoXML, RESOURCES_ELEMENT);
+
+            // store all package contents into database, using the user/group/mode in the permissions element. however:
+            // 1. repo.xml is excluded for now, since it may contain the default user's password in the clear
+            // 2. contents of directories identified in the path attribute of any <resource path=""/> element are stored as binary
+            final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
+                    requestedPerms);
+
+            // store repo.xml, filtering out the default user's password
+            storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
+
+            // run the post-setup query if present
+            runOptionalQuery(broker, targetCollection, packageDir, repoXML, POST_SETUP_ELEMENT, pkgName, QueryPurpose.POSTINSTALL);
+
+            // TODO: it should be safe to clean up the file system after a package
+            // has been deployed. Might be enabled after 2.0
+            //cleanup(pkgName, repo);
+
+            if (!errors.isEmpty()) {
+                throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
+                        String.join("; ", errors));
+            }
+            return Optional.ofNullable(targetCollection.getCollectionPath());
         } catch (final XPathException e) {
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Returns the non-empty string value of the first descendant element with the given name.
+     *
+     * @param repoXML the parsed repo.xml descriptor
+     * @param elementName the name of the element to look for
+     *
+     * @return the element's string value, or {@link Optional#empty()} if the element is absent or empty
+     *
+     * @throws XPathException if the descriptor cannot be traversed
+     */
+    private Optional<String> findElementValue(final DocumentImpl repoXML, final QName elementName) throws XPathException {
+        return findElement(repoXML, elementName).map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+    }
+
+    /**
+     * Runs the setup query pointed to by the given repo.xml element, if that element is present
+     * and names a non-empty path.
+     *
+     * @param broker the database broker
+     * @param targetCollection the collection the package is deployed into
+     * @param packageDir the unpacked package directory
+     * @param repoXML the parsed repo.xml descriptor
+     * @param elementName the repo.xml element holding the query path
+     * @param pkgName the package name, for error reporting
+     * @param purpose the purpose of the query, for error reporting
+     *
+     * @throws PackageException if the query fails
+     * @throws IOException if the query resource cannot be read
+     * @throws XPathException if the descriptor cannot be traversed
+     */
+    private void runOptionalQuery(final DBBroker broker, final XmldbURI targetCollection, final Path packageDir,
+                                  final DocumentImpl repoXML, final QName elementName, final String pkgName,
+                                  final QueryPurpose purpose) throws PackageException, IOException, XPathException {
+        final Optional<String> queryPath = findElementValue(repoXML, elementName);
+        if (queryPath.isPresent()) {
+            runQuery(broker, targetCollection, packageDir, queryPath.get(), pkgName, purpose);
+        }
+    }
+
+    /**
+     * Determines the collection a package should be deployed into: an explicitly requested
+     * target takes precedence, then the {@code <target>} element of repo.xml. If neither is
+     * given the package does not need to be deployed into the database, and a copy is
+     * preserved under {@code /db/system/repo} for backup purposes instead.
+     *
+     * @param broker the database broker
+     * @param repoXML the parsed repo.xml descriptor
+     * @param targetPkg the package being deployed
+     * @param userTarget an explicitly requested target collection, or null
+     *
+     * @return the target collection URI, never null
+     *
+     * @throws PackageException if a target collection URI is malformed
+     * @throws XPathException if the descriptor cannot be traversed
+     */
+    private XmldbURI resolveTargetCollection(final DBBroker broker, final DocumentImpl repoXML, final Package targetPkg,
+                                             final String userTarget) throws PackageException, XPathException {
+        if (userTarget != null) {
+            try {
+                return XmldbURI.create(userTarget);
+            } catch (final IllegalArgumentException e) {
+                throw new PackageException("Bad collection URI: " + userTarget, e);
+            }
+        }
+
+        final Optional<String> targetPath = findElementValue(repoXML, TARGET_COLL_ELEMENT);
+        if (targetPath.isPresent()) {
+            // determine target collection
+            try {
+                return XmldbURI.create(getTargetCollection(broker, targetPath.get()));
+            } catch (final IllegalArgumentException e) {
+                throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
+            }
+        }
+
+        LOG.warn("EXPath Package '{}' does not contain a <target> in its repo.xml, no files will be deployed to /apps", targetPkg.getName());
+
+        // no target means: package does not need to be deployed into database
+        // however, we need to preserve a copy for backup purposes.
+        // Use targetPkg's abbrev+version directly rather than re-resolving
+        // packages.latest() — when install-and-deploy was called with an
+        // explicit older version, the registry's latest may be a different
+        // (higher) version, and re-resolving would point this status target
+        // at the wrong version's collection.
+        final String pkgColl = targetPkg.getAbbrev() + "-" + targetPkg.getVersion();
+        return XmldbURI.SYSTEM.append("repo/" + pkgColl);
+    }
+
+    /**
+     * Extracts the user, group and mode requested by the {@code <permissions>} element of repo.xml.
+     *
+     * @param repoXML the parsed repo.xml descriptor
+     *
+     * @return the requested permissions, or {@link Optional#empty()} if there is no
+     *     {@code <permissions>} element
+     *
+     * @throws PackageException if a {@code <permissions>} element is present but its mode
+     *     attribute cannot be parsed
+     * @throws XPathException if the descriptor cannot be traversed
+     */
+    private Optional<RequestedPerms> findRequestedPerms(final DocumentImpl repoXML) throws PackageException, XPathException {
+        final Optional<ElementImpl> permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
+        final Optional<RequestedPerms> requestedPerms = permissions.flatMap(elem -> {
+            final Optional<Either<Integer, String>> perms = Optional.of(elem.getAttribute("mode")).flatMap(mode -> {
+                try {
+                    return Optional.of(Either.Left(Integer.parseInt(mode, 8)));
+                } catch (final NumberFormatException e) {
+                    if (mode.matches("^[rwx-]{9}")) {
+                        return Optional.of(Either.Right(mode));
+                    } else {
+                        return Optional.empty();
+                    }
+                }
+            });
+
+            return perms.map(p -> new RequestedPerms(
+                    elem.getAttribute("user"),
+                    elem.getAttribute("password"),
+                    Optional.of(elem.getAttribute("group")),
+                    p
+            ));
+        });
+
+        //check that if there were permissions then we were able to parse them, a failure would be related to the mode string
+        if (permissions.isPresent() && requestedPerms.isEmpty()) {
+            final String mode = permissions.map(elem -> elem.getAttribute("mode")).orElse(null);
+            throw new PackageException("Bad format for mode attribute in <permissions>: " + mode);
+        }
+        return requestedPerms;
     }
 
     /**
