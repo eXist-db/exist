@@ -259,6 +259,19 @@ public class ErrorCodes {
 
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 
+    // W3C XQuery and XPath Full Text 3.0 error codes
+    public static final ErrorCode FTST0001 = new W3CErrorCode("FTST0001", "It is a static error if an operand of mild not (not in) contains ftnot or occurs.");
+    public static final ErrorCode FTST0003 = new W3CErrorCode("FTST0003", "It is a static error if a tokenizer for the language specified by the language option is not available.");
+    public static final ErrorCode FTST0004 = new W3CErrorCode("FTST0004", "It is a static error if sentence/paragraph boundaries are required but not supported by the tokenizer.");
+    public static final ErrorCode FTST0006 = new W3CErrorCode("FTST0006", "It is a static error if a stop word list cannot be found.");
+    public static final ErrorCode FTST0008 = new W3CErrorCode("FTST0008", "It is a static error if a stop word list is not in the correct format.");
+    public static final ErrorCode FTST0009 = new W3CErrorCode("FTST0009", "It is a static error if the specified language is not supported.");
+    public static final ErrorCode FTDY0016 = new W3CErrorCode("FTDY0016", "It is a dynamic error if a weight value is not within the required range.");
+    public static final ErrorCode FTDY0017 = new W3CErrorCode("FTDY0017", "It is a dynamic error if the right-hand match of mild not has any include-matches matching tokens not matched by include-matches of the left-hand match.");
+    public static final ErrorCode FTST0013 = new W3CErrorCode("FTST0013", "It is a static error if, in an implementation which does not support the Stop Word Languages feature, a stop word option includes a language specification.");
+    public static final ErrorCode FTST0018 = new W3CErrorCode("FTST0018", "It is a static error if a thesaurus is not available.");
+    public static final ErrorCode FTST0019 = new W3CErrorCode("FTST0019", "It is a static error if match options in a single contains text expression conflict with each other.");
+
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]
