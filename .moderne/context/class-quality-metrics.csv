@@ -205,7 +205,7 @@ extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/SendEmailFun
 extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/MailSessionFunctions.java,org.exist.xquery.modules.mail.MailSessionFunctions,82,3,2,8,3,0.0,14,52.331916174858584
 extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/MailStoreFunctions.java,org.exist.xquery.modules.mail.MailStoreFunctions,118,4,2,13,2,0.0,9,51.38876412401891
 extensions/security/activedirectory/src/test/java/org/exist/security/realm/activedirectory/ActiveDirectoryRealmTest.java,org.exist.security.realm.activedirectory.ActiveDirectoryRealmTest,56,3,2,4,2,0.3333333333333333,7,59.5838105868644
-extensions/contentextraction/src/main/java/org/exist/contentextraction/ContentExtraction.java,org.exist.contentextraction.ContentExtraction,33,3,1,5,1,0.3333333333333333,6,63.57262580494655
+extensions/contentextraction/src/main/java/org/exist/contentextraction/ContentExtraction.java,org.exist.contentextraction.ContentExtraction,33,3,1,5,1,0.3333333333333333,7,62.837250310403626
 extensions/contentextraction/src/main/java/org/exist/contentextraction/xquery/ContentExtractionModule.java,org.exist.contentextraction.xquery.ContentExtractionModule,49,5,5,5,5,0.0,1,74.70586031640394
 extensions/contentextraction/src/main/java/org/exist/contentextraction/xquery/ContentFunctions.java,org.exist.contentextraction.xquery.ContentFunctions,171,4,3,17,2,0.0,25,44.83016413233418
 extensions/contentextraction/src/main/java/org/exist/contentextraction/ContentExtractionException.java,org.exist.contentextraction.ContentExtractionException,12,1,0,1,1,1.0,1,70.00082822029196
@@ -1509,7 +1509,7 @@ exist-core/src/main/java/org/exist/util/serializer/SerializerWriter.java,org.exi
 exist-core/src/main/java/org/exist/util/serializer/Receiver.java,org.exist.util.serializer.Receiver,48,16,1,16,16,0.0,0,89.45759118337814
 exist-core/src/main/java/org/exist/util/ValueOccurrences.java,org.exist.util.ValueOccurrences,80,9,3,12,1,0.4722222222222222,8,67.61693034893258
 exist-core/src/main/java/org/exist/util/NamedThreadGroupFactory.java,org.exist.util.NamedThreadGroupFactory,38,2,2,3,1,1.0,2,60.45560422685785
-exist-core/src/main/java/org/exist/util/ParametersExtractor.java,org.exist.util.ParametersExtractor,240,8,4,28,2,0.0,11,50.605189293951476
+exist-core/src/main/java/org/exist/util/ParametersExtractor.java,org.exist.util.ParametersExtractor,244,8,4,29,2,0.0,11,50.35737970699944
 exist-core/src/main/java/org/exist/util/Stacktrace.java,org.exist.util.Stacktrace,71,4,1,7,2,0.0,2,59.79606925856544
 exist-core/src/main/java/org/exist/util/PatternFactory.java,org.exist.util.PatternFactory,32,4,2,4,2,0.5,3,70.23810692063884
 exist-core/src/main/java/org/exist/util/MimeType.java,org.exist.util.MimeType,73,8,19,9,1,0.32142857142857145,2,72.37806486773154
@@ -1591,7 +1591,7 @@ exist-core/src/main/java/org/exist/util/SchemaVersion.java,org.exist.util.Schema
 exist-core/src/main/java/org/exist/util/TimestampedReference.java,org.exist.util.TimestampedReference,91,6,2,10,1,0.4,2,63.35241562532792
 exist-core/src/main/java/org/exist/util/ArgumentUtil.java,org.exist.util.ArgumentUtil,75,5,0,6,5,0.0,5,62.40073536002629
 exist-core/src/main/java/org/exist/util/URIResolverHierarchy.java,org.exist.util.URIResolverHierarchy,55,3,1,9,1,1.0,2,59.58896146021575
-exist-core/src/main/java/org/exist/util/Configuration.java,org.exist.util.Configuration,1254,57,12,193,6,0.12907268170426064,84,52.64654351375111
+exist-core/src/main/java/org/exist/util/Configuration.java,org.exist.util.Configuration,1279,57,12,197,6,0.12907268170426064,84,52.37297957732805
 exist-core/src/main/java/org/exist/util/sanity/SanityCheck.java,org.exist.util.sanity.SanityCheck,79,6,2,15,1,0.4,7,61.69738779333865
 exist-core/src/main/java/org/exist/util/sanity/AssertFailure.java,org.exist.util.sanity.AssertFailure,33,3,1,3,3,0.0,1,72.30449923102506
 exist-core/src/main/java/org/exist/util/SingleInstanceConfiguration.java,org.exist.util.SingleInstanceConfiguration,61,5,3,7,1,0.2,4,65.10629675052532
