@@ -48,7 +48,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -105,7 +105,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -194,7 +194,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -206,7 +206,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Azure login (OIDC)
-        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca  # v3
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c  # v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -368,7 +368,7 @@ jobs:
       - name: List release assets
         run: ls -lh /tmp/release-assets/
 
-      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228  # v3.0.2
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           files: /tmp/release-assets/*
