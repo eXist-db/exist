@@ -111,4 +111,9 @@ public class WebSocketModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return "7.0.0";
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return WebSocketModule.class; }
+    }
 }

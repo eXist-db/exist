@@ -91,27 +91,34 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (LOG.isDebugEnabled())
             LOG.debug("Configuring Lucene index");
 
-        String bufferSizeParam = config.getAttribute("buffer");
-        if (!bufferSizeParam.isEmpty())
-            try {
-                bufferSize = Double.parseDouble(bufferSizeParam);
-            } catch (NumberFormatException e) {
-                LOG.warn("Invalid buffer size setting for Lucene index: {}", bufferSizeParam, e);
-            }
+        if (config != null) {
+            String bufferSizeParam = config.getAttribute("buffer");
+            if (!bufferSizeParam.isEmpty())
+                try {
+                    bufferSize = Double.parseDouble(bufferSizeParam);
+                } catch (NumberFormatException e) {
+                    LOG.warn("Invalid buffer size setting for Lucene index: {}", bufferSizeParam, e);
+                }
 
-        if (LOG.isDebugEnabled())
-            LOG.debug("Using buffer size: {}", bufferSize);
-        
-        NodeList nl = config.getElementsByTagName("analyzer");
-        if (nl.getLength() > 0) {
-            Element node = (Element) nl.item(0);
-            defaultAnalyzer = AnalyzerConfig.configureAnalyzer(node);
+            if (LOG.isDebugEnabled())
+                LOG.debug("Using buffer size: {}", bufferSize);
+
+            NodeList nl = config.getElementsByTagName("analyzer");
+            if (nl.getLength() > 0) {
+                Element node = (Element) nl.item(0);
+                defaultAnalyzer = AnalyzerConfig.configureAnalyzer(node);
+            }
         }
 
         if (defaultAnalyzer == null)
             defaultAnalyzer = new StandardAnalyzer();
         if (LOG.isDebugEnabled())
             LOG.debug("Using default analyzer: {}", defaultAnalyzer.getClass().getName());
+    }
+
+    public static final class Factory implements org.exist.indexing.IndexFactory {
+        @Override public String getDefaultId() { return "lucene-index"; }
+        @Override public Class<? extends AbstractIndex> getIndexClass() { return LuceneIndex.class; }
     }
 
     @Override
