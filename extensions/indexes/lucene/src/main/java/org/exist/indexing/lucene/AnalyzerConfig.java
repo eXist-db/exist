@@ -21,30 +21,35 @@
  */
 package org.exist.indexing.lucene;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Serial;
-import java.lang.invoke.*;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.CharArraySet;
-
-import org.exist.collections.CollectionConfiguration;
-import org.exist.util.DatabaseConfigurationException;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import static java.lang.invoke.MethodType.methodType;
 
@@ -103,7 +108,7 @@ public class AnalyzerConfig {
      * @param config The analyzer element
      * @return Initialized Analyzer object
      */
-    protected static Analyzer configureAnalyzer(Element config) {
+    protected static Analyzer configureAnalyzer(final Element config) {
 
         // Get class name from attribute
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
@@ -119,7 +124,7 @@ public class AnalyzerConfig {
         final Class<?> untypedClazz;
         try {
             untypedClazz = Class.forName(className);
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             LOG.error("Lucene index: analyzer class {} not found. ({})", className, e.getMessage());
             return null;
         }
@@ -136,7 +141,7 @@ public class AnalyzerConfig {
         List<KeyTypedValue<?>> cParams;
         try {
             cParams = getAllConstructorParameters(config);
-        } catch (ParameterException pe) {
+        } catch (final ParameterException pe) {
             // Unable to parse parameters.
             LOG.error("Unable to get parameters for {}: {}", className, pe.getMessage(), pe);
             cParams = new ArrayList<>();
@@ -147,7 +152,7 @@ public class AnalyzerConfig {
         final Class<?>[] cParamClasses = new Class<?>[cParams.size()];
         final Object[] cParamValues = new Object[cParams.size()];
         for (int i = 0; i < cParams.size(); i++) {
-            KeyTypedValue<?> ktv = cParams.get(i);
+            final KeyTypedValue<?> ktv = cParams.get(i);
             cParamClasses[i] = ktv.valueClass();
             cParamValues[i] = ktv.value();
         }
@@ -166,10 +171,10 @@ public class AnalyzerConfig {
     /**
      * Create instance of the lucene analyzer with provided arguments
      *
-     * @param clazz The analyzer class
+     * @param clazz          The analyzer class
      * @param vcParamClasses The parameter classes
-     * @param vcParamValues The parameter values
-     * @param warnOnError true if an error should be treated as a warning
+     * @param vcParamValues  The parameter values
+     * @param warnOnError    true if an error should be treated as a warning
      * @return The lucene analyzer
      */
     static <T extends Analyzer> T createInstance(final Class<T> clazz, final Class<?>[] vcParamClasses,
@@ -285,7 +290,8 @@ public class AnalyzerConfig {
                     }
                     throw new ParameterException(e.getMessage(), e);
                 } catch (final ClassNotFoundException | InstantiationException |
-                               IllegalAccessException | NoSuchMethodException | InvocationTargetException reflectiveOperationException) {
+                               IllegalAccessException | NoSuchMethodException |
+                               InvocationTargetException reflectiveOperationException) {
                     throw new ParameterException(reflectiveOperationException.getMessage(), reflectiveOperationException);
                 }
             }
@@ -297,7 +303,7 @@ public class AnalyzerConfig {
                 LOG.info("Type '{}' has been deprecated in recent Lucene versions, "
                         + "please use 'java.io.FileReader' (short 'file') instead.", type);
 
-                yield new KeyTypedValue<>(name, new java.io.File(value), java.io.File.class);
+                yield new KeyTypedValue<>(name, new File(value), File.class);
             }
             case "java.io.FileReader", "file" -> {
                 if (value.isEmpty()) {
@@ -305,12 +311,11 @@ public class AnalyzerConfig {
                 }
 
                 try {
-                    // ToDo: check where to close reade to prevent resource leakage
-                    Reader fileReader = new java.io.FileReader(value);
-                    yield new KeyTypedValue<>(name, fileReader, Reader.class);
+                    final String fileContent = Files.readString(Path.of(value), StandardCharsets.UTF_8);
+                    yield new KeyTypedValue<>(name, new StringReader(fileContent), Reader.class);
 
-                } catch (java.io.FileNotFoundException ex) {
-                    LOG.error("File '{}' could not be found.", value, ex);
+                } catch (final IOException ex) {
+                    LOG.error("Error reading file '{}'. {}", value, ex.getMessage());
                     yield null;
                 }
             }
@@ -386,7 +391,7 @@ public class AnalyzerConfig {
                     }
                     //default, assume java.lang.String
                     yield new KeyTypedValue<>(name, value, String.class);
-                } catch (ClassNotFoundException cnfe) {
+                } catch (final ClassNotFoundException cnfe) {
                     throw new ParameterException("Class for type: %s not found. %s".formatted(type, cnfe.getMessage()), cnfe);
                 }
             }
@@ -515,11 +520,11 @@ public class AnalyzerConfig {
         @Serial
         private static final long serialVersionUID = -4823392401966008877L;
 
-        public ParameterException(String message) {
+        public ParameterException(final String message) {
             super(message);
         }
 
-        public ParameterException(String message, Throwable cause) {
+        public ParameterException(final String message, final Throwable cause) {
             super(message, cause);
         }
     }
