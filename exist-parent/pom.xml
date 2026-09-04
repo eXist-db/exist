@@ -193,6 +193,13 @@
                 <version>${jaxb.api.version}</version>
             </dependency>
 
+            <!-- Pin jakarta.activation-api:2.1.4: jaxb-api/angus-activation need 2.1.4; jaxb-runtime/jaxb-core pulls 2.1.1. -->
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>2.1.4</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
@@ -317,6 +324,13 @@
                 <version>1.22.1</version>
             </dependency>
 
+            <!-- Pin commons-logging:1.4.0: log4j-jcl pulls 1.3.5, xmlrpc-server pulls 1.1. -->
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.4.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -433,6 +447,13 @@
                 <version>${jetty.version}</version>
                 <scope>runtime</scope>
             </dependency>
+            <!-- Pin jakarta.annotation-api:2.1.1: jetty-ee10-annotations needs 2.1.1; jetty-ee10-plus/jakarta.interceptor-api pulls 2.1.0. -->
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>2.1.1</version>
+            </dependency>
+
             <!-- Jetty 12 ee10 modules (Jakarta EE 10 / Servlet 6.0) -->
             <dependency>
                 <groupId>org.eclipse.jetty.ee10</groupId>
@@ -569,6 +590,13 @@
                 <version>${exquery.distribution.version}</version>
             </dependency>
 
+            <!-- Pin javax.measure:unit-api:2.2: gt-api needs 2.2; systems-common/si-quantity/si-units pull 2.1.2. -->
+            <dependency>
+                <groupId>javax.measure</groupId>
+                <artifactId>unit-api</artifactId>
+                <version>2.2</version>
+            </dependency>
+
             <!-- Jackrabbit WebDAV (Jakarta EE 10 transformed) -->
             <dependency>
                 <groupId>org.exist-db.thirdparty.org.apache.jackrabbit</groupId>
@@ -684,6 +712,48 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>2.22.2</version>
             </dependency>
+            <!-- Pin jackson-core:2.22.2: exist-core needs 2.22.2; tika-parser-cad-module pulls 2.22.1. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.22.2</version>
+            </dependency>
+            <!-- Pin jspecify:1.0.1: exist-http-client needs 1.0.1; caffeine pulls 1.0.0. -->
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>1.0.1</version>
+            </dependency>
+            <!-- Pin error_prone_annotations:2.49.0: caffeine needs 2.49.0; ai.djl/tokenizers/gson pulls 2.38.0. -->
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.49.0</version>
+            </dependency>
+            <!-- Pin scala-library:2.13.17: scopt/cats-effect/cats-core/cats-mtl/parboiled pull versions 2.13.8–2.13.17. -->
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>2.13.17</version>
+            </dependency>
+            <!-- Pin cats-core_2.13:2.11.0: cats-effect-kernel needs 2.11.0; cats-mtl pulls 2.8.0. -->
+            <dependency>
+                <groupId>org.typelevel</groupId>
+                <artifactId>cats-core_2.13</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+            <!-- Pin fontbox:3.0.8: tika-parser-pdf-module/tika-parser-font-module pull 3.0.8; fop-core pulls 3.0.3. -->
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>fontbox</artifactId>
+                <version>3.0.8</version>
+            </dependency>
+            <!-- Pin jcl-over-slf4j:2.0.18: tika-parsers-standard-package pulls 2.0.18; jackrabbit-webdav pulls 2.0.17. -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>2.0.18</version>
+            </dependency>
             <!-- Align Bouncy Castle with exist-core; overrides Tika 3.3.1's bouncycastle.version=1.84
                  (bcutil/bcpkix/bcjmail). Mixed 1.84+1.85 on CLASSPATH=/exist/lib/* causes
                  NoSuchFieldError on IANAObjectIdentifiers (see #6589). -->
@@ -706,6 +776,12 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcjmail-jdk18on</artifactId>
                 <version>${bouncycastle.version}</version>
+            </dependency>
+            <!-- Pin commons-compress:1.28.0: tika/poi/compression paths need 1.28.0; ai.djl:api pulls 1.27.1. -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.28.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -1360,6 +1436,7 @@
                                     <version>${maven.minimum.version}</version>
                                     <message>Building eXist requires (at least) Apache Maven ${maven.minimum.version}. Detected Apache Maven ${maven.version}. Please upgrade.</message>
                                 </requireMavenVersion>
+                                <dependencyConvergence/>
                             </rules>
                         </configuration>
                     </execution>
