@@ -1,0 +1,20 @@
+exist-core/src/test/java/org/exist/xquery/functions/validate/NativeSchemaJaxpCatalogGapTest.java
+  s_074ff1b1e8cce1::t_4580a16c512757 1-78,80-95,100-105,107-132,139-143,150-161,168-190
+  s_074ff1b1e8cce1::t_8ca30376c580ce 79,96-99,106,133-138,144-149,162-167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "c19ea6431454287e8d53c38029c431758852ec33",
+  "prompts": {},
+  "sessions": {
+    "s_074ff1b1e8cce1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ab7c9115-ebb2-496c-ba52-2a75ea0986b6",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
