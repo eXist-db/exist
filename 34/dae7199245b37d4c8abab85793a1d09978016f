@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/xquery/functions/validate/NativeSchemaJaxpCatalogGapTest.java
+  s_074ff1b1e8cce1::t_167c7ab215ec76 63
+  s_074ff1b1e8cce1::t_4580a16c512757 1-50,57-62,64-80,82-97,102-107,109-133,141-144,152-162,170-192
+  s_074ff1b1e8cce1::t_2b5ee66bb5db94 51-56
+  s_074ff1b1e8cce1::t_8ca30376c580ce 81,98-101,108,135-140,146-151,164-169
+  s_074ff1b1e8cce1::t_0d5602c907a6ae 163
+  s_074ff1b1e8cce1::t_d91e39519c80af 134
+  s_074ff1b1e8cce1::t_f6400eee2db4c9 145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "34dae7199245b37d4c8abab85793a1d09978016f",
+  "prompts": {},
+  "sessions": {
+    "s_074ff1b1e8cce1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ab7c9115-ebb2-496c-ba52-2a75ea0986b6",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}
