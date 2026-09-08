@@ -1,0 +1,19 @@
+.gitignore
+  s_8a37000cec448b::t_d2de578404eb70 32-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "ffc60e149b38a9f1f730d107bca4c7f787e1116d",
+  "prompts": {},
+  "sessions": {
+    "s_8a37000cec448b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b5acea2-34c6-4485-9904-62b448f7b036",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
