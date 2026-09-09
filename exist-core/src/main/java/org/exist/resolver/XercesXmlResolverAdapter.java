@@ -43,6 +43,7 @@ import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.util.XMLReaderObjectFactory;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.*;
 import org.xmlresolver.Resolver;
 
@@ -164,5 +165,29 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
      */
     public Resolver getResolver() {
         return resolver;
+    }
+
+    /**
+     * Wraps {@code resolver} as an {@link LSResourceResolver}, falling back to {@code namespaceURI}
+     * as the system id whenever the caller doesn't supply one -- the same fallback {@link
+     * #resolveEntity} already performs for the XNI/SAX pipeline (see its {@code systemId} lookup).
+     *
+     * <p>This fallback matters because {@link Resolver#resolveResource} requires a non-null system
+     * id before it will consult its catalog at all; without it, an OASIS catalog's {@code <uri>}
+     * entry keyed purely by namespace (no {@code schemaLocation} hint on the instance) is invisible
+     * to the XSD 1.1 dynamic-discovery {@link javax.xml.validation.Validator}, which calls {@link
+     * LSResourceResolver#resolveResource} with the root element's namespace but no system id --
+     * even though the same catalog entry already works for the default SAX pipeline via {@link
+     * #resolveEntity}.</p>
+     *
+     * @param resolver the resolver to wrap.
+     *
+     * @return an {@link LSResourceResolver} view of {@code resolver} with the namespace fallback applied.
+     */
+    public static LSResourceResolver asLSResourceResolver(final Resolver resolver) {
+        return (type, namespaceURI, publicId, systemId, baseURI) -> {
+            final String effectiveSystemId = systemId != null ? systemId : namespaceURI;
+            return resolver.resolveResource(type, namespaceURI, publicId, effectiveSystemId, baseURI);
+        };
     }
 }

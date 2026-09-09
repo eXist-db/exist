@@ -51,9 +51,13 @@ import static org.junit.Assert.assertTrue;
  * <p>{@link #jaxvXsd11AgainstNativeCollectionSchemaValid} /
  * {@link #jaxvXsd11AgainstNativeCollectionSchemaEmptyFailsAssert} are the control: the schema
  * file itself is fine when handed to {@code validation:jaxv-report} with the XSD 1.1 language URI.
- * {@link #jaxpViaOasisCatalogAgainstNativeCollectionSchemaValid} is the missing path — currently
- * fails with {@code cvc-elt.1.a} (declaration not found) even when the catalog {@code <uri>} entry
- * points at an absolute {@code file:} URI of the same XSD.</p>
+ * {@link #jaxpViaOasisCatalogAgainstNativeCollectionSchemaValid} was the missing path — it used to
+ * fail with {@code cvc-elt.1.a} (declaration not found) even when the catalog {@code <uri>} entry
+ * pointed at an absolute {@code file:} URI of the same XSD, because {@code
+ * org.xmlresolver.Resolver#resolveResource} requires a non-null system id before consulting its
+ * catalog, and the XSD 1.1 dynamic-discovery validator calls it with the root namespace but no
+ * system id when the instance carries no {@code schemaLocation} hint. Fixed by {@link
+ * org.exist.resolver.XercesXmlResolverAdapter#asLSResourceResolver}.</p>
  *
  * <p>Existing XSD 1.1 coverage in {@link JaxpXsdCatalogTest} only exercises
  * <em>directory-search</em> catalogs over {@code /db/.../}; {@link
@@ -156,8 +160,8 @@ public class NativeSchemaJaxpCatalogGapTest {
     }
 
     /**
-     * Expected RED on current develop: OASIS catalog → native {@code collection.xconf.xsd}
-     * does not supply the grammar to {@code validation:jaxp-report} (cvc-elt.1.a).
+     * OASIS catalog → native {@code collection.xconf.xsd}, resolved purely by namespace (no
+     * {@code schemaLocation} hint on the instance).
      */
     @Test
     public void jaxpViaOasisCatalogAgainstNativeCollectionSchemaValid() throws Exception {
