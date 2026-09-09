@@ -121,7 +121,7 @@ public class NativeSchemaJaxpCatalogGapTest {
                     <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
                         <uri name="%s" uri="%s"/>
                     </catalog>
-                    """.formatted(COLLECTION_CONFIG_NS, nativeSchemaFileUri);
+                    """.formatted(COLLECTION_CONFIG_NS, escapeXmlAttribute(nativeSchemaFileUri));
             ExistXmldbEmbeddedServer.storeResource(col, "catalog.xml", catalog.getBytes());
             ExistXmldbEmbeddedServer.storeResource(col, "valid.xml", VALID_COLLECTION_XCONF.getBytes());
             ExistXmldbEmbeddedServer.storeResource(col, "empty.xml", EMPTY_COLLECTION_XCONF.getBytes());
@@ -192,5 +192,16 @@ public class NativeSchemaJaxpCatalogGapTest {
             p = base.getParent().resolve("schema").resolve("collection.xconf.xsd");
         }
         return p;
+    }
+
+    /**
+     * Escapes {@code value} for use inside a double-quoted XML attribute. Needed because {@link
+     * #nativeSchemaFileUri} is derived from the checkout's own filesystem path via {@link
+     * Path#toUri()}, which does not escape XML-attribute-special characters (e.g. {@code &}) that
+     * a directory name could legally contain -- without this, such a path would produce a
+     * malformed {@code catalog.xml}.
+     */
+    private static String escapeXmlAttribute(final String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace("\"", "&quot;");
     }
 }

@@ -50,7 +50,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.resolver.XercesXmlResolverAdapter;
-import org.xmlresolver.Resolver;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.ExistSAXParserFactory;
@@ -588,10 +587,8 @@ public class Jaxp extends BasicFunction {
             // consult its catalog at all (unlike SearchResourceResolver, which resolves purely by
             // namespace), so an OASIS catalog's <uri> entry keyed by namespace alone is otherwise
             // invisible to this dynamic-discovery validator when the instance carries no
-            // schemaLocation hint. See XercesXmlResolverAdapter#asLSResourceResolver.
-            validator.setResourceResolver(resolver instanceof Resolver xmlResolver
-                    ? XercesXmlResolverAdapter.asLSResourceResolver(xmlResolver)
-                    : resolver);
+            // schemaLocation hint.
+            validator.setResourceResolver(XercesXmlResolverAdapter.asLSResourceResolver(resolver));
         }
         return validator;
     }

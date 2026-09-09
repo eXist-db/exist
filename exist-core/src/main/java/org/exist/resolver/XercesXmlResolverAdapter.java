@@ -190,4 +190,21 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
             return resolver.resolveResource(type, namespaceURI, publicId, effectiveSystemId, baseURI);
         };
     }
+
+    /**
+     * As {@link #asLSResourceResolver(Resolver)}, but accepting whichever concrete resolver type
+     * {@code Shared#resolveCatalogArgument} returns -- the namespace fallback is only applied when
+     * {@code resolver} is an {@link Resolver} (the implementation that needs it); any other {@link
+     * LSResourceResolver} (e.g. {@link org.exist.validation.resolver.SearchResourceResolver}, which
+     * already resolves purely by namespace on its own) is returned unchanged, as is {@code null}.
+     *
+     * @param resolver the resolver to adapt, or null.
+     *
+     * @return an {@link LSResourceResolver} with the namespace fallback applied where needed, or
+     * {@code null} if {@code resolver} was {@code null}.
+     */
+    @Nullable
+    public static LSResourceResolver asLSResourceResolver(@Nullable final LSResourceResolver resolver) {
+        return resolver instanceof Resolver xmlResolver ? asLSResourceResolver(xmlResolver) : resolver;
+    }
 }
