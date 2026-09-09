@@ -29,9 +29,9 @@ work/
 # Claude planning files
 plans/
 .codacy/
-.moderne/*
-!.moderne/context/
-!.moderne/moderne.yml
+**/.moderne/*
+!/.moderne/context/
+!/.moderne/moderne.yml
 .github/instructions/
 
 # Debug logs (e.g. from reindex investigation)
