@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/http/urlrewrite/URLRewriteContentLengthViewPipelineTest.java
+  s_f93ed6eda7a79b::t_65b1b0bcd235eb 1-142
+exist-core/src/test/java/org/exist/http/urlrewrite/URLRewriteXSLTViewPipelineTest.java
+  s_f93ed6eda7a79b::t_cdefbbd2352005 1-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "08987d41610bc38d21c82f9e8c5666d4fbf6f043",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
