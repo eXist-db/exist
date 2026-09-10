@@ -27,7 +27,7 @@ package org.exist.http.servlets;
  * bypass that buffering and reach the real response right away, regardless of whether this
  * particular wrapper instance ever gets flushed.
  * <p>
- * {@code org.exist.http.urlrewrite.XQueryURLRewrite$CachingResponseWrapper} is the sole
+ * {@code org.exist.http.urlrewrite.CachingResponseWrapper} is the sole
  * implementer: it buffers everything a dispatched pipeline step writes -- including headers a
  * step sets itself, whether via the underlying servlet's own resource handling or the XQuery
  * {@code response:set-header()} function -- because that step's output may be discarded in favor

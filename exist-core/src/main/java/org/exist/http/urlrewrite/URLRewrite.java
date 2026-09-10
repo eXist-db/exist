@@ -95,17 +95,17 @@ public abstract class URLRewrite {
         this.method = other.method;
     }
 
-    protected void updateRequest(final XQueryURLRewrite.RequestWrapper request) {
+    protected void updateRequest(final ControllerRequestWrapper request) {
         if (prefix != null) {
             request.removePathPrefix(prefix);
         }
     }
 
-    protected void rewriteRequest(final XQueryURLRewrite.RequestWrapper request) {
+    protected void rewriteRequest(final ControllerRequestWrapper request) {
         // do nothing by default
     }
 
-    protected void setAbsolutePath(final XQueryURLRewrite.RequestWrapper request) {
+    protected void setAbsolutePath(final ControllerRequestWrapper request) {
         request.setPaths(target, null);
     }
 
@@ -126,7 +126,7 @@ public abstract class URLRewrite {
      *
      * @throws ServletException if an error occurs
      */
-    protected String resolve(final XQueryURLRewrite.RequestWrapper request) throws ServletException {
+    protected String resolve(final ControllerRequestWrapper request) throws ServletException {
         final String path = request.getInContextPath();
         if (target == null) {
             return path;
@@ -228,7 +228,7 @@ public abstract class URLRewrite {
 
     public abstract void doRewrite(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException;
 
-    public void prepareRequest(final XQueryURLRewrite.RequestWrapper request) {
+    public void prepareRequest(final ControllerRequestWrapper request) {
         if (parameters != null) {
             for (final Map.Entry<String, List<String>> param : parameters.entrySet()) {
                 for (final String paramValue : param.getValue()) {
