@@ -1444,10 +1444,17 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public void addHeader(final String name, final String value) {
-            if (isBufferedContentLength(name)) {
+            if ("Content-Type".equals(name)) {
+                // Route through setContentType() like setHeader() does -- otherwise a step that sets
+                // Content-Type via addHeader() (e.g. Jetty's default/ResourceServlet serving a static
+                // file) bypasses the contentType tracking entirely and leaks straight onto the real
+                // response, so a later <exist:view> step's actual declared Content-Type never sticks.
+                setContentType(value);
+            } else if (isBufferedContentLength(name)) {
                 return;
+            } else {
+                super.addHeader(name, value);
             }
-            super.addHeader(name, value);
         }
 
         @Override
@@ -1522,8 +1529,17 @@ public class XQueryURLRewrite extends HttpServlet {
                 super.setContentType(contentType);
             }
             if (sos != null) {
+                final byte[] data = sos.getData();
+                // Set the real Content-Length explicitly rather than leaving it to the container to
+                // infer (e.g. via chunked transfer encoding). The buffered step's own Content-Length
+                // headers are deliberately suppressed above (see isBufferedContentLength()) precisely
+                // because they'd be wrong for this, the final, output -- this is where the correct
+                // value actually gets set, from the bytes that are really about to be written.
+                if (cache) {
+                    super.setContentLengthLong(data.length);
+                }
                 final ServletOutputStream out = super.getOutputStream();
-                out.write(sos.getData());
+                out.write(data);
                 out.flush();
             }
         }
