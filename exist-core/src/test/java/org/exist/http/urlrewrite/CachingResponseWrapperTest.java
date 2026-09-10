@@ -45,8 +45,9 @@ import static org.junit.Assert.fail;
 /**
  * Direct unit tests for {@link CachingResponseWrapper} -- fast, in-process coverage of the
  * getWriter()/getOutputStream() state machine, header buffer+replay, and passthrough tunnelling
- * that every prior test of this class (URLRewriteXSLTViewPipelineTest,
- * URLRewriteContentLengthViewPipelineTest, URLRewriteResponseSetHeaderViewPipelineTest, etc.) had
+ * that every prior test of this class (UrlRewritePipelineHttpTest's forwardThenXsltViewPipeline
+ * and intermediateStepHeaderDoesNotSurviveToFinalViewResponse tests,
+ * URLRewriteContentLengthViewPipelineTest, etc.) had
  * to exercise indirectly through a full HTTP round trip against a live ExistWebServer, because
  * the class was a private nested type with no way to construct or call it directly. Now that it
  * is a top-level (if package-private) class, this is possible.
