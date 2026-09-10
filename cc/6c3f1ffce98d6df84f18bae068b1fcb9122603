@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/http/urlrewrite/URLRewriteSetHeaderSurvivesViewPipelineTest.java
+  s_f93ed6eda7a79b::t_027004efaea6cb 1-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc6c3f1ffce98d6df84f18bae068b1fcb9122603",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
