@@ -1368,9 +1368,15 @@ public class XQueryURLRewrite extends HttpServlet {
                 throw new IllegalStateException("getWriter cannot be called after getOutputStream");
             }
             if (outputMode == OutputMode.NONE) {
+                // Only commit outputMode/sos/writer once construction has fully succeeded -- if
+                // getCharacterEncoding() names a charset the JVM doesn't support, OutputStreamWriter
+                // throws, and a half-committed state here (mode flipped but writer still null) would
+                // make every subsequent getWriter() call silently return null instead of retrying.
+                final CachingServletOutputStream newSos = new CachingServletOutputStream();
+                final PrintWriter newWriter = new PrintWriter(new OutputStreamWriter(newSos, getCharacterEncoding()));
+                sos = newSos;
+                writer = newWriter;
                 outputMode = OutputMode.WRITER;
-                sos = new CachingServletOutputStream();
-                writer = new PrintWriter(new OutputStreamWriter(sos, getCharacterEncoding()));
             }
             return writer;
         }
@@ -1385,8 +1391,8 @@ public class XQueryURLRewrite extends HttpServlet {
                 throw new IllegalStateException("getOutputStream cannot be called after getWriter");
             }
             if (outputMode == OutputMode.NONE) {
-                outputMode = OutputMode.STREAM;
                 sos = new CachingServletOutputStream();
+                outputMode = OutputMode.STREAM;
             }
             return sos;
         }
@@ -1411,12 +1417,25 @@ public class XQueryURLRewrite extends HttpServlet {
             return contentType != null ? contentType : super.getContentType();
         }
 
+        /**
+         * True when {@code name} is a Content-Length header being set while this response is
+         * buffering ({@code cache=true}). A static resource forward step (e.g. Jetty's
+         * default/ResourceServlet serving a plain file) may set Content-Length through any of
+         * setHeader/addHeader/setIntHeader/addIntHeader -- HttpServletResponseWrapper's defaults for
+         * all four delegate straight to the real underlying response with no cache awareness, so
+         * each call site needs this same guard. Without it, Content-Length leaks onto the real
+         * response before a later <exist:view> step's -- possibly longer -- output is flushed to it.
+         * See https://github.com/eXist-db/exist/issues/6669
+         */
+        private boolean isBufferedContentLength(final String name) {
+            return cache && "Content-Length".equalsIgnoreCase(name);
+        }
+
         @Override
         public void setHeader(final String name, final String value) {
             if ("Content-Type".equals(name)) {
                 setContentType(value);
-            } else if (cache && "Content-Length".equalsIgnoreCase(name)) {
-                // See addHeader(): must not leak onto the real response while buffering.
+            } else if (isBufferedContentLength(name)) {
                 return;
             } else {
                 super.setHeader(name, value);
@@ -1425,16 +1444,26 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public void addHeader(final String name, final String value) {
-            if (cache && "Content-Length".equalsIgnoreCase(name)) {
-                // A static resource forward step (e.g. Jetty's default/ResourceServlet serving a
-                // plain file) sets Content-Length via addHeader() rather than setContentLength(int)/
-                // setContentLengthLong(long). Without this guard it leaks straight through to the
-                // real response (HttpServletResponseWrapper#addHeader() has no cache awareness),
-                // fixing Content-Length before a later <exist:view> step's -- possibly longer --
-                // output is flushed to it. See https://github.com/eXist-db/exist/issues/6669
+            if (isBufferedContentLength(name)) {
                 return;
             }
             super.addHeader(name, value);
+        }
+
+        @Override
+        public void setIntHeader(final String name, final int value) {
+            if (isBufferedContentLength(name)) {
+                return;
+            }
+            super.setIntHeader(name, value);
+        }
+
+        @Override
+        public void addIntHeader(final String name, final int value) {
+            if (isBufferedContentLength(name)) {
+                return;
+            }
+            super.addIntHeader(name, value);
         }
 
         @Override
