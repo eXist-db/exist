@@ -65,7 +65,7 @@ public class ControllerForward extends URLRewrite {
     }
 
     @Override
-    protected void updateRequest(final XQueryURLRewrite.RequestWrapper request) {
+    protected void updateRequest(final ControllerRequestWrapper request) {
         super.updateRequest(request);
         if (!(target.isEmpty() || "/".equals(target) || target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
             final String oldURI = request.getInContextPath();
@@ -75,7 +75,7 @@ public class ControllerForward extends URLRewrite {
     }
 
     @Override
-    protected void rewriteRequest(final XQueryURLRewrite.RequestWrapper request) {
+    protected void rewriteRequest(final ControllerRequestWrapper request) {
         if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             final XmldbURI dbURI = XmldbURI.create(target);
             this.uri = "/rest";

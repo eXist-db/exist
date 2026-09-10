@@ -27,7 +27,6 @@ import java.util.Map;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import jakarta.servlet.http.HttpServletRequest;
-import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -100,7 +99,7 @@ public class XQueryURLRewriteTest
 
 
         replay(mockHttpServletRequest);
-        RequestWrapper wrapper = new RequestWrapper(mockHttpServletRequest);
+        ControllerRequestWrapper wrapper = new ControllerRequestWrapper(mockHttpServletRequest);
         verify(mockHttpServletRequest);
 
         assertEquals(testParameterMap.size(), wrapper.getParameterMap().size());
@@ -130,7 +129,7 @@ public class XQueryURLRewriteTest
 
 
         replay(mockHttpServletRequest);
-        RequestWrapper wrapper = new RequestWrapper(mockHttpServletRequest);
+        ControllerRequestWrapper wrapper = new ControllerRequestWrapper(mockHttpServletRequest);
         wrapper.addParameter(newRequestParamName, newRequestParamValue);
         verify(mockHttpServletRequest);
 
