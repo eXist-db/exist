@@ -1330,6 +1330,21 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingResponseWrapper extends HttpServletResponseWrapper {
+
+        /**
+         * Tracks which of {@link #getWriter()} / {@link #getOutputStream()} this response has
+         * committed to, per the servlet spec mutual-exclusion rule. Unlike using {@code sos != null}
+         * as the sentinel (the previous approach), this distinguishes "a stream backing the writer
+         * already exists" from "getOutputStream() was called directly" -- so a repeat call to
+         * whichever method was called first is idempotent, matching real servlet container
+         * responses. This idempotency is required by Jetty 12's {@code Dispatcher.forward()}, which
+         * -- after the forwarded servlet returns -- itself calls {@code getOutputStream()} and falls
+         * back to {@code getWriter()} on {@link IllegalStateException} in order to close whichever
+         * stream is live, regardless of which one the forwarded servlet used.
+         */
+        private enum OutputMode { NONE, WRITER, STREAM }
+
+        private OutputMode outputMode = OutputMode.NONE;
         private CachingServletOutputStream sos = null;
         private PrintWriter writer = null;
         private int status = HttpServletResponse.SC_OK;
@@ -1346,11 +1361,15 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!cache) {
                 return super.getWriter();
             }
-            if (sos != null) {
-                throw new IOException("getWriter cannnot be called after getOutputStream");
+            if (outputMode == OutputMode.STREAM) {
+                // Per the ServletResponse#getWriter() contract, this must be an IllegalStateException,
+                // not an IOException -- Jetty 12's Dispatcher.forward() relies on catching exactly
+                // this type to fall back from getOutputStream() to getWriter().
+                throw new IllegalStateException("getWriter cannot be called after getOutputStream");
             }
-            sos = new CachingServletOutputStream();
-            if (writer == null) {
+            if (outputMode == OutputMode.NONE) {
+                outputMode = OutputMode.WRITER;
+                sos = new CachingServletOutputStream();
                 writer = new PrintWriter(new OutputStreamWriter(sos, getCharacterEncoding()));
             }
             return writer;
@@ -1361,10 +1380,12 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!cache) {
                 return super.getOutputStream();
             }
-            if (writer != null) {
-                throw new IOException("getOutputStream cannnot be called after getWriter");
+            if (outputMode == OutputMode.WRITER) {
+                // See getWriter(): must be IllegalStateException, not IOException.
+                throw new IllegalStateException("getOutputStream cannot be called after getWriter");
             }
-            if (sos == null) {
+            if (outputMode == OutputMode.NONE) {
+                outputMode = OutputMode.STREAM;
                 sos = new CachingServletOutputStream();
             }
             return sos;
@@ -1394,9 +1415,26 @@ public class XQueryURLRewrite extends HttpServlet {
         public void setHeader(final String name, final String value) {
             if ("Content-Type".equals(name)) {
                 setContentType(value);
+            } else if (cache && "Content-Length".equalsIgnoreCase(name)) {
+                // See addHeader(): must not leak onto the real response while buffering.
+                return;
             } else {
                 super.setHeader(name, value);
             }
+        }
+
+        @Override
+        public void addHeader(final String name, final String value) {
+            if (cache && "Content-Length".equalsIgnoreCase(name)) {
+                // A static resource forward step (e.g. Jetty's default/ResourceServlet serving a
+                // plain file) sets Content-Length via addHeader() rather than setContentLength(int)/
+                // setContentLengthLong(long). Without this guard it leaks straight through to the
+                // real response (HttpServletResponseWrapper#addHeader() has no cache awareness),
+                // fixing Content-Length before a later <exist:view> step's -- possibly longer --
+                // output is flushed to it. See https://github.com/eXist-db/exist/issues/6669
+                return;
+            }
+            super.addHeader(name, value);
         }
 
         @Override
@@ -1427,6 +1465,19 @@ public class XQueryURLRewrite extends HttpServlet {
         public void setContentLength(final int i) {
             if (!cache) {
                 super.setContentLength(i);
+            }
+        }
+
+        @Override
+        public void setContentLengthLong(final long len) {
+            // Without this override, HttpServletResponseWrapper's default delegates straight to the
+            // real underlying response, leaking a step's Content-Length onto it even while cache=true.
+            // A static resource served via Jetty's default/ResourceServlet (e.g. a plain file forward
+            // step in a controller.xql pipeline) sets this rather than setContentLength(int), fixing
+            // the real response's Content-Length before a later <exist:view> step's -- possibly
+            // longer -- output is flushed to it. See https://github.com/eXist-db/exist/issues/6669
+            if (!cache) {
+                super.setContentLengthLong(len);
             }
         }
 
