@@ -1418,24 +1418,37 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         /**
-         * True when {@code name} is a Content-Length header being set while this response is
-         * buffering ({@code cache=true}). A static resource forward step (e.g. Jetty's
-         * default/ResourceServlet serving a plain file) may set Content-Length through any of
-         * setHeader/addHeader/setIntHeader/addIntHeader -- HttpServletResponseWrapper's defaults for
-         * all four delegate straight to the real underlying response with no cache awareness, so
-         * each call site needs this same guard. Without it, Content-Length leaks onto the real
-         * response before a later <exist:view> step's -- possibly longer -- output is flushed to it.
-         * See https://github.com/eXist-db/exist/issues/6669
+         * Headers that describe an intermediate resource -- not the final output -- and so must not
+         * leak onto the real response while buffering. A static resource forward step (e.g. Jetty's
+         * default/ResourceServlet serving a plain file) sets these from the FILE's own properties
+         * (its length, its modification time, its identity, whether it supports byte ranges), through
+         * any of setHeader/addHeader/setIntHeader/addIntHeader/setDateHeader/addDateHeader --
+         * HttpServletResponseWrapper's defaults for all of these delegate straight to the real
+         * underlying response with no cache awareness. Without this guard they leak onto the real
+         * response before a later <exist:view> step's own, different output is flushed to it --
+         * Content-Length doing exactly this is what broke https://github.com/eXist-db/exist/issues/6669;
+         * Last-Modified/ETag/Accept-Ranges are the same shape of bug, just without (yet) a hard
+         * failure mode of their own to force the issue.
+         * <p>
+         * Deliberately narrower than "buffer every header while caching": headers set explicitly via
+         * controller.xql's {@code <exist:set-header>} ({@link URLRewrite#setHeaders}, called before
+         * {@code doRewrite()}'s {@code dispatcher.forward()}) must keep going straight through
+         * immediately, since {@code applyViews()} discards each step's wrapper for a fresh one around
+         * the real response on the next view step and only ever flushes the last one -- buffering
+         * those too would silently drop them.
          */
-        private boolean isBufferedContentLength(final String name) {
-            return cache && "Content-Length".equalsIgnoreCase(name);
+        private static final Set<String> BUFFERED_RESOURCE_METADATA_HEADERS =
+                Set.of("content-length", "last-modified", "etag", "accept-ranges");
+
+        private boolean isBufferedResourceMetadataHeader(final String name) {
+            return cache && BUFFERED_RESOURCE_METADATA_HEADERS.contains(name.toLowerCase(Locale.ROOT));
         }
 
         @Override
         public void setHeader(final String name, final String value) {
             if ("Content-Type".equals(name)) {
                 setContentType(value);
-            } else if (isBufferedContentLength(name)) {
+            } else if (isBufferedResourceMetadataHeader(name)) {
                 return;
             } else {
                 super.setHeader(name, value);
@@ -1450,7 +1463,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 // file) bypasses the contentType tracking entirely and leaks straight onto the real
                 // response, so a later <exist:view> step's actual declared Content-Type never sticks.
                 setContentType(value);
-            } else if (isBufferedContentLength(name)) {
+            } else if (isBufferedResourceMetadataHeader(name)) {
                 return;
             } else {
                 super.addHeader(name, value);
@@ -1459,7 +1472,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public void setIntHeader(final String name, final int value) {
-            if (isBufferedContentLength(name)) {
+            if (isBufferedResourceMetadataHeader(name)) {
                 return;
             }
             super.setIntHeader(name, value);
@@ -1467,10 +1480,26 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public void addIntHeader(final String name, final int value) {
-            if (isBufferedContentLength(name)) {
+            if (isBufferedResourceMetadataHeader(name)) {
                 return;
             }
             super.addIntHeader(name, value);
+        }
+
+        @Override
+        public void setDateHeader(final String name, final long date) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.setDateHeader(name, date);
+        }
+
+        @Override
+        public void addDateHeader(final String name, final long date) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.addDateHeader(name, date);
         }
 
         @Override
