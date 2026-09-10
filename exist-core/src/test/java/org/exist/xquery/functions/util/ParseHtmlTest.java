@@ -54,7 +54,7 @@ public class ParseHtmlTest {
             assertEquals(1, result.getItemCount());
             assertTrue(result.itemAt(0) instanceof DocumentImpl);
 
-            final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><HTML><head xmlns=\"http://www.w3.org/1999/xhtml\"/><BODY><p>hello <img src=\"1.jpg\"/></p></BODY></HTML>").build();
+            final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><HTML><BODY><p>hello <img src=\"1.jpg\"/></p></BODY></HTML>").build();
             final Source actual = Input.fromDocument((DocumentImpl) result.itemAt(0)).build();
 
             final Diff diff = DiffBuilder
