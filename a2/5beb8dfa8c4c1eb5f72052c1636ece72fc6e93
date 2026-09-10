@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/http/urlrewrite/CachingResponseWrapperTest.java
+  s_f93ed6eda7a79b::t_66d764667ffb36 1-276
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a25beb8dfa8c4c1eb5f72052c1636ece72fc6e93",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
