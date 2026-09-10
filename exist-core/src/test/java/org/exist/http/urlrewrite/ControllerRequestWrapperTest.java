@@ -277,7 +277,7 @@ public class ControllerRequestWrapperTest {
         // See #6603: allowCaching(false) must blank the *conditional-GET check's* view of
         // If-Modified-Since (read via getDateHeader()) without touching getHeader(), so a view
         // that changed the output isn't wrongly suppressed by a 304 based on the resource's own,
-        // unrelated timestamp. IfModifiedSinceHandoverControllerTest covers the full pipeline
+        // unrelated timestamp. UrlRewritePipelineHttpTest's ifModifiedSince* tests cover the full pipeline
         // wiring for this (that allowCaching(false) actually gets engaged when a view applies,
         // and that request:get-header() still sees the raw value); this covers the wrapper's own
         // suppression logic directly.
