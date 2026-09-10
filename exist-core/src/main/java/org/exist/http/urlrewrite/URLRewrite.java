@@ -251,7 +251,12 @@ public abstract class URLRewrite {
     protected void setHeaders(final HttpResponseWrapper response) {
         if (headers != null) {
             for (final Map.Entry<String, String> entry : headers.entrySet()) {
-                response.setHeader(entry.getKey(), entry.getValue());
+                // setPassthroughHeader(), not setHeader(): an <exist:set-header> directive is
+                // pipeline configuration, not a step's own output, and must survive regardless of
+                // which step's buffered output eventually gets flushed. See
+                // HeaderPassthroughResponse for why this can't just be setHeader()'s default
+                // behavior.
+                response.setPassthroughHeader(entry.getKey(), entry.getValue());
             }
         }
     }

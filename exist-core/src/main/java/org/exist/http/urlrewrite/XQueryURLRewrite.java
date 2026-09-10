@@ -35,6 +35,7 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
+import org.exist.http.servlets.HeaderPassthroughResponse;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.security.AuthenticationException;
@@ -1329,7 +1330,8 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private static class CachingResponseWrapper extends HttpServletResponseWrapper {
+    private static class CachingResponseWrapper extends HttpServletResponseWrapper
+            implements HeaderPassthroughResponse {
 
         /**
          * Tracks which of {@link #getWriter()} / {@link #getOutputStream()} this response has
@@ -1418,38 +1420,64 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         /**
-         * Headers that describe an intermediate resource -- not the final output -- and so must not
-         * leak onto the real response while buffering. A static resource forward step (e.g. Jetty's
-         * default/ResourceServlet serving a plain file) sets these from the FILE's own properties
-         * (its length, its modification time, its identity, whether it supports byte ranges), through
-         * any of setHeader/addHeader/setIntHeader/addIntHeader/setDateHeader/addDateHeader --
-         * HttpServletResponseWrapper's defaults for all of these delegate straight to the real
-         * underlying response with no cache awareness. Without this guard they leak onto the real
-         * response before a later <exist:view> step's own, different output is flushed to it --
-         * Content-Length doing exactly this is what broke https://github.com/eXist-db/exist/issues/6669;
-         * Last-Modified/ETag/Accept-Ranges are the same shape of bug, just without (yet) a hard
-         * failure mode of their own to force the issue.
+         * A header write this step made while buffering, recorded so it can be replayed -- in the
+         * exact original order, through the exact original typed method -- onto the real response
+         * from {@link #flush()}, but only if this wrapper is the one that actually gets flushed.
+         * If a later {@code <exist:view>} step replaces this step's output, this wrapper (and
+         * everything buffered in it) is simply discarded without ever being replayed: correct,
+         * because the header described a step whose output turned out not to be the final one.
          * <p>
-         * Deliberately narrower than "buffer every header while caching": headers set explicitly via
-         * controller.xql's {@code <exist:set-header>} ({@link URLRewrite#setHeaders}, called before
-         * {@code doRewrite()}'s {@code dispatcher.forward()}) must keep going straight through
-         * immediately, since {@code applyViews()} discards each step's wrapper for a fresh one around
-         * the real response on the next view step and only ever flushes the last one -- buffering
-         * those too would silently drop them.
+         * Replaying the original call verbatim (rather than pre-computing a final name-to-value
+         * map here) means the real response's own semantics decide what "wins" when the same
+         * header is set multiple times (setHeader replaces, addHeader appends) -- exactly as they
+         * would have if these calls had never been buffered at all.
          */
-        private static final Set<String> BUFFERED_RESOURCE_METADATA_HEADERS =
-                Set.of("content-length", "last-modified", "etag", "accept-ranges");
+        private sealed interface BufferedHeader {
+            record Set(String name, String value) implements BufferedHeader {
+            }
 
-        private boolean isBufferedResourceMetadataHeader(final String name) {
-            return cache && BUFFERED_RESOURCE_METADATA_HEADERS.contains(name.toLowerCase(Locale.ROOT));
+            record Add(String name, String value) implements BufferedHeader {
+            }
+
+            record SetInt(String name, int value) implements BufferedHeader {
+            }
+
+            record AddInt(String name, int value) implements BufferedHeader {
+            }
+
+            record SetDate(String name, long value) implements BufferedHeader {
+            }
+
+            record AddDate(String name, long value) implements BufferedHeader {
+            }
+        }
+
+        private final List<BufferedHeader> bufferedHeaders = new ArrayList<>();
+
+        /**
+         * Set a header on the real response immediately, bypassing buffering, tunnelling through
+         * however many {@code CachingResponseWrapper} layers are stacked (a forward step may
+         * itself trigger a nested dispatch) until reaching a response that isn't one of these
+         * wrappers. See {@link HeaderPassthroughResponse}: this exists solely for
+         * {@link URLRewrite#setHeaders}'s controller.xql {@code <exist:set-header>} directives,
+         * which are pipeline configuration, not step output, and so must survive regardless of
+         * which step's buffered output eventually wins.
+         */
+        @Override
+        public void setPassthroughHeader(final String name, final String value) {
+            if (getResponse() instanceof HeaderPassthroughResponse passthroughResponse) {
+                passthroughResponse.setPassthroughHeader(name, value);
+            } else {
+                super.setHeader(name, value);
+            }
         }
 
         @Override
         public void setHeader(final String name, final String value) {
             if ("Content-Type".equals(name)) {
                 setContentType(value);
-            } else if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            } else if (cache) {
+                bufferedHeaders.add(new BufferedHeader.Set(name, value));
             } else {
                 super.setHeader(name, value);
             }
@@ -1460,11 +1488,12 @@ public class XQueryURLRewrite extends HttpServlet {
             if ("Content-Type".equals(name)) {
                 // Route through setContentType() like setHeader() does -- otherwise a step that sets
                 // Content-Type via addHeader() (e.g. Jetty's default/ResourceServlet serving a static
-                // file) bypasses the contentType tracking entirely and leaks straight onto the real
-                // response, so a later <exist:view> step's actual declared Content-Type never sticks.
+                // file) bypasses the contentType tracking entirely, which would leak it straight onto
+                // the real response even though a later <exist:view> step's own Content-Type should
+                // win instead.
                 setContentType(value);
-            } else if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            } else if (cache) {
+                bufferedHeaders.add(new BufferedHeader.Add(name, value));
             } else {
                 super.addHeader(name, value);
             }
@@ -1472,34 +1501,38 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public void setIntHeader(final String name, final int value) {
-            if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            if (cache) {
+                bufferedHeaders.add(new BufferedHeader.SetInt(name, value));
+            } else {
+                super.setIntHeader(name, value);
             }
-            super.setIntHeader(name, value);
         }
 
         @Override
         public void addIntHeader(final String name, final int value) {
-            if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            if (cache) {
+                bufferedHeaders.add(new BufferedHeader.AddInt(name, value));
+            } else {
+                super.addIntHeader(name, value);
             }
-            super.addIntHeader(name, value);
         }
 
         @Override
         public void setDateHeader(final String name, final long date) {
-            if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            if (cache) {
+                bufferedHeaders.add(new BufferedHeader.SetDate(name, date));
+            } else {
+                super.setDateHeader(name, date);
             }
-            super.setDateHeader(name, date);
         }
 
         @Override
         public void addDateHeader(final String name, final long date) {
-            if (isBufferedResourceMetadataHeader(name)) {
-                return;
+            if (cache) {
+                bufferedHeaders.add(new BufferedHeader.AddDate(name, date));
+            } else {
+                super.addDateHeader(name, date);
             }
-            super.addDateHeader(name, date);
         }
 
         @Override
@@ -1557,19 +1590,50 @@ public class XQueryURLRewrite extends HttpServlet {
             if (cache && contentType != null) {
                 super.setContentType(contentType);
             }
+            if (cache) {
+                replayBufferedHeaders();
+            }
             if (sos != null) {
                 final byte[] data = sos.getData();
                 // Set the real Content-Length explicitly rather than leaving it to the container to
-                // infer (e.g. via chunked transfer encoding). The buffered step's own Content-Length
-                // headers are deliberately suppressed above (see isBufferedContentLength()) precisely
-                // because they'd be wrong for this, the final, output -- this is where the correct
-                // value actually gets set, from the bytes that are really about to be written.
+                // infer (e.g. via chunked transfer encoding). Deliberately not part of the generic
+                // replay above -- any buffered Content-Length (from this step's own setHeader/
+                // setIntHeader/etc. call) is skipped there and superseded by this, because it's the
+                // one header whose correctness is independently checkable against the bytes actually
+                // being written, and trusting a self-reported value over that is exactly how #6669
+                // happened.
                 if (cache) {
                     super.setContentLengthLong(data.length);
                 }
                 final ServletOutputStream out = super.getOutputStream();
                 out.write(data);
                 out.flush();
+            }
+        }
+
+        private void replayBufferedHeaders() {
+            for (final BufferedHeader header : bufferedHeaders) {
+                final String name = switch (header) {
+                    case BufferedHeader.Set(final String n, final String ignored) -> n;
+                    case BufferedHeader.Add(final String n, final String ignored) -> n;
+                    case BufferedHeader.SetInt(final String n, final int ignored) -> n;
+                    case BufferedHeader.AddInt(final String n, final int ignored) -> n;
+                    case BufferedHeader.SetDate(final String n, final long ignored) -> n;
+                    case BufferedHeader.AddDate(final String n, final long ignored) -> n;
+                };
+                if ("Content-Length".equalsIgnoreCase(name)) {
+                    // See flush(): the real Content-Length is derived from the actual buffered byte
+                    // count, never trusted from a step's own self-reported value.
+                    continue;
+                }
+                switch (header) {
+                    case BufferedHeader.Set(final String n, final String value) -> super.setHeader(n, value);
+                    case BufferedHeader.Add(final String n, final String value) -> super.addHeader(n, value);
+                    case BufferedHeader.SetInt(final String n, final int value) -> super.setIntHeader(n, value);
+                    case BufferedHeader.AddInt(final String n, final int value) -> super.addIntHeader(n, value);
+                    case BufferedHeader.SetDate(final String n, final long value) -> super.setDateHeader(n, value);
+                    case BufferedHeader.AddDate(final String n, final long value) -> super.addDateHeader(n, value);
+                }
             }
         }
     }
