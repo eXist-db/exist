@@ -1,0 +1,26 @@
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingWireTest.java
+  s_f93ed6eda7a79b::t_654dab942250e9 67
+  s_f93ed6eda7a79b::t_56f4ec711b4b12 102,108,128,139
+  s_f93ed6eda7a79b::t_f4292402e87a3d 1-66,68-100,109,111-127,145-152,154-178,180-197,199-238
+  s_f93ed6eda7a79b::t_a1bd8486141081 153
+  s_f93ed6eda7a79b::t_b4def92f3a336b 101,103-107,110,129-138,140-144
+  s_f93ed6eda7a79b::t_eba5b63921f624 179,198
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_f93ed6eda7a79b::t_cb05f756d83591 1-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "65738761cff1c8f93f62dbf41c29f536c4797cef",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
