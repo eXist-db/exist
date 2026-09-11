@@ -144,6 +144,8 @@ class CachingResponseWrapper extends HttpServletResponseWrapper implements Heade
      * would have if these calls had never been buffered at all.
      */
     private sealed interface BufferedHeader {
+        String name();
+
         record Set(String name, String value) implements BufferedHeader {
         }
 
@@ -324,15 +326,7 @@ class CachingResponseWrapper extends HttpServletResponseWrapper implements Heade
 
     private void replayBufferedHeaders() {
         for (final BufferedHeader header : bufferedHeaders) {
-            final String name = switch (header) {
-                case BufferedHeader.Set(final String n, final String ignored) -> n;
-                case BufferedHeader.Add(final String n, final String ignored) -> n;
-                case BufferedHeader.SetInt(final String n, final int ignored) -> n;
-                case BufferedHeader.AddInt(final String n, final int ignored) -> n;
-                case BufferedHeader.SetDate(final String n, final long ignored) -> n;
-                case BufferedHeader.AddDate(final String n, final long ignored) -> n;
-            };
-            if ("Content-Length".equalsIgnoreCase(name)) {
+            if ("Content-Length".equalsIgnoreCase(header.name())) {
                 // See flush(): the real Content-Length is derived from the actual buffered byte
                 // count, never trusted from a step's own self-reported value.
                 continue;

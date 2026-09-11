@@ -35,9 +35,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -381,23 +379,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         storeViaRest(restUrl + "/with-head.html", VP_HTML_WITH_HEAD, "text/html");
         storeViaRest(restUrl + "/no-head.html", VP_HTML_WITHOUT_HEAD, "text/html");
 
-        final String chmod = "sm:chmod(xs:anyURI('" + VP_TEST_COLLECTION + "/controller.xq'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + VP_TEST_COLLECTION + "/view.xq'), 'rwxr-xr-x')";
-        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
-        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
-                .GET()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+        chmodRwxrxrx(VP_TEST_COLLECTION, "controller.xq", "view.xq");
     }
 
     @AfterClass
     public static void teardownViewPipelineTest() throws Exception {
-        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION;
-        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
-                .DELETE()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION);
     }
 
     /**
@@ -413,12 +400,8 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
         final AbstractHttpTest.HttpResponseResult result =
                 AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
-        final int status = result.statusCode();
+        assertOk(result);
         final String body = result.body();
-
-        // Should return 200, not 400 (namespace error) or 500 (XPTY0019)
-        assertEquals("Expected 200 OK but got " + status + ": " + body.substring(0, Math.min(200, body.length())),
-                HTTP_OK, status);
 
         // The response should contain the original title from the source HTML
         assertTrue("Response should contain the source page's title",
@@ -510,23 +493,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         storeViaRest(restUrl + "/A.xql", XSLT_A_XQL, "application/xquery");
         storeViaRest(restUrl + "/B.xsl", XSLT_B_XSL, "application/xslt+xml");
 
-        final String chmod = "sm:chmod(xs:anyURI('" + XSLT_TEST_COLLECTION + "/controller.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + XSLT_TEST_COLLECTION + "/A.xql'), 'rwxr-xr-x')";
-        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
-        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
-                .GET()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+        chmodRwxrxrx(XSLT_TEST_COLLECTION, "controller.xql", "A.xql");
     }
 
     @AfterClass
     public static void teardownXsltViewPipelineTest() throws Exception {
-        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION;
-        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
-                .DELETE()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION);
     }
 
     @Test
@@ -538,9 +510,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         final AbstractHttpTest.HttpResponseResult result =
                 AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
 
-        assertEquals("Expected 200 OK but got " + result.statusCode() + ": "
-                        + result.body().substring(0, Math.min(300, result.body().length())),
-                HTTP_OK, result.statusCode());
+        assertOk(result);
         assertTrue("Response should contain the XSLT-transformed output",
                 result.body().contains("Hello Bob"));
     }
@@ -594,50 +564,35 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         storeViaRest(restUrl + "/step1.xql", SH_STEP1_XQL, "application/xquery");
         storeViaRest(restUrl + "/view.xql", SH_VIEW_XQL, "application/xquery");
 
-        final String chmod = "sm:chmod(xs:anyURI('" + SH_TEST_COLLECTION + "/controller.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + SH_TEST_COLLECTION + "/step1.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + SH_TEST_COLLECTION + "/view.xql'), 'rwxr-xr-x')";
-        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
-        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
-                .GET()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+        chmodRwxrxrx(SH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
     @AfterClass
     public static void teardownSetHeaderSurvivesTest() throws Exception {
-        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION;
-        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
-                .DELETE()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION);
     }
 
     @Test
-    public void setHeaderOnForwardStepSurvivesToFinalViewResponse() throws IOException, InterruptedException {
+    public void setHeaderOnForwardStepSurvivesToFinalViewResponse() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-set-header-view-pipeline/test";
 
-        final HttpClient client = AbstractHttpTest.newHttpClient();
         final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
-        final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-        assertEquals("Expected 200 OK but got " + response.statusCode() + ": "
-                        + response.body().substring(0, Math.min(300, response.body().length())),
-                HTTP_OK, response.statusCode());
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+        assertOk(result);
 
         // Proves the request actually went through the full forward-then-view pipeline, not just
         // step1's raw output.
         assertTrue("Response should contain the view's output, not step1's raw output",
-                response.body().contains("View saw: Hello"));
+                result.body().contains("View saw: Hello"));
 
         // The actual behavior under test: the forward step's <exist:set-header> directives must
         // have survived past the view step that replaced its response wrapper.
         assertEquals("Cache-Control set on the forward step must survive to the final response",
-                "no-cache", response.headers().firstValue("Cache-Control").orElse(null));
+                "no-cache", result.headers().firstValue("Cache-Control").orElse(null));
         assertEquals("Pragma set on the forward step must survive to the final response",
-                "no-cache", response.headers().firstValue("Pragma").orElse(null));
+                "no-cache", result.headers().firstValue("Pragma").orElse(null));
     }
 
     // -- URLRewriteResponseSetHeaderViewPipelineTest: a header an intermediate step sets
@@ -682,47 +637,32 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         storeViaRest(restUrl + "/step1.xql", IH_STEP1_XQL, "application/xquery");
         storeViaRest(restUrl + "/view.xql", IH_VIEW_XQL, "application/xquery");
 
-        final String chmod = "sm:chmod(xs:anyURI('" + IH_TEST_COLLECTION + "/controller.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + IH_TEST_COLLECTION + "/step1.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + IH_TEST_COLLECTION + "/view.xql'), 'rwxr-xr-x')";
-        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
-        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
-                .GET()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+        chmodRwxrxrx(IH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
     @AfterClass
     public static void teardownIntermediateSetHeaderTest() throws Exception {
-        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION;
-        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
-                .DELETE()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION);
     }
 
     @Test
-    public void intermediateStepHeaderDoesNotSurviveToFinalViewResponse() throws IOException, InterruptedException {
+    public void intermediateStepHeaderDoesNotSurviveToFinalViewResponse() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-intermediate-set-header/test";
 
-        final HttpClient client = AbstractHttpTest.newHttpClient();
         final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
-        final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-        assertEquals("Expected 200 OK but got " + response.statusCode() + ": "
-                        + response.body().substring(0, Math.min(300, response.body().length())),
-                HTTP_OK, response.statusCode());
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+        assertOk(result);
 
         // Proves the request actually went through the full forward-then-view pipeline.
         assertTrue("Response should contain the view's output",
-                response.body().contains("View saw: Hello"));
+                result.body().contains("View saw: Hello"));
 
         // The actual behavior under test: step1's own header must not leak past the view that
         // replaced its output -- step1's response was never the one actually sent to the client.
         assertTrue("X-Step1-Debug from the discarded intermediate step must not reach the client",
-                response.headers().firstValue("X-Step1-Debug").isEmpty());
+                result.headers().firstValue("X-Step1-Debug").isEmpty());
     }
 
     // -- URLRewriteFinalStepResponseSetHeaderSurvivesTest: the opposite, equally
@@ -768,40 +708,25 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         storeViaRest(restUrl + "/step1.xql", FH_STEP1_XQL, "application/xquery");
         storeViaRest(restUrl + "/view.xql", FH_VIEW_XQL, "application/xquery");
 
-        final String chmod = "sm:chmod(xs:anyURI('" + FH_TEST_COLLECTION + "/controller.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + FH_TEST_COLLECTION + "/step1.xql'), 'rwxr-xr-x')," +
-                "sm:chmod(xs:anyURI('" + FH_TEST_COLLECTION + "/view.xql'), 'rwxr-xr-x')";
-        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod, StandardCharsets.UTF_8) + "&_wrap=no";
-        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
-                .GET()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+        chmodRwxrxrx(FH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
     @AfterClass
     public static void teardownFinalStepSetHeaderTest() throws Exception {
-        final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION;
-        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
-                .DELETE()
-                .build();
-        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION);
     }
 
     @Test
-    public void finalStepResponseSetHeaderSurvivesToClient() throws IOException, InterruptedException {
+    public void finalStepResponseSetHeaderSurvivesToClient() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-final-step-set-header/test";
 
-        final HttpClient client = AbstractHttpTest.newHttpClient();
         final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
-        final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-        assertEquals("Expected 200 OK but got " + response.statusCode() + ": "
-                        + response.body().substring(0, Math.min(300, response.body().length())),
-                HTTP_OK, response.statusCode());
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+        assertOk(result);
         assertEquals("The final step's own response:set-header() call must reach the client",
-                "custom-value", response.headers().firstValue("X-Custom-Header").orElse(null));
+                "custom-value", result.headers().firstValue("X-Custom-Header").orElse(null));
     }
 
     // ================================================================================
@@ -866,5 +791,41 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                 .PUT(HttpRequest.BodyPublishers.ofString(content, StandardCharsets.UTF_8))
                 .build();
         AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), request);
+    }
+
+    /** {@code sm:chmod} the given resources under {@code collection} to {@code rwxr-xr-x}, asserting
+     * success. Shared by the view/XSLT/set-header pipeline scenarios above, whose controller/step
+     * scripts must be executable. */
+    private static void chmodRwxrxrx(final String collection, final String... resourceNames) throws IOException {
+        final StringBuilder chmod = new StringBuilder();
+        for (final String resourceName : resourceNames) {
+            if (chmod.length() > 0) {
+                chmod.append(',');
+            }
+            chmod.append("sm:chmod(xs:anyURI('").append(collection).append('/').append(resourceName)
+                    .append("'), 'rwxr-xr-x')");
+        }
+        final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
+                URLEncoder.encode(chmod.toString(), StandardCharsets.UTF_8) + "&_wrap=no";
+        final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
+                .GET()
+                .build();
+        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
+    }
+
+    /** Delete the collection at a full REST URL, asserting success. Shared teardown counterpart to
+     * {@link #storeViaRest}. */
+    private static void deleteViaRest(final String url) throws IOException {
+        final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(url), "admin", "")
+                .DELETE()
+                .build();
+        AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), deleteRequest);
+    }
+
+    /** Assert a 200 OK status, including a truncated response body in the failure message. */
+    private static void assertOk(final AbstractHttpTest.HttpResponseResult result) {
+        assertEquals("Expected 200 OK but got " + result.statusCode() + ": "
+                        + result.body().substring(0, Math.min(300, result.body().length())),
+                HTTP_OK, result.statusCode());
     }
 }
