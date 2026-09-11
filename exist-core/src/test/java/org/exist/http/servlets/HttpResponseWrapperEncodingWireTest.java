@@ -23,10 +23,10 @@ package org.exist.http.servlets;
 
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Measures, against a real Jetty 12 instance rather than by inspecting source, what
@@ -54,7 +54,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class HttpResponseWrapperEncodingWireTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     private static final String TEST_COLLECTION = "/db/apps/test-header-encoding-wire";
@@ -68,7 +68,7 @@ public class HttpResponseWrapperEncodingWireTest {
             response:set-cookie("test-cookie", "%s"),
             <result>ok</result>""".formatted(CYRILLIC, CYRILLIC);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest storeRequest = AbstractHttpTest.authenticatedRequest(
@@ -87,7 +87,7 @@ public class HttpResponseWrapperEncodingWireTest {
         AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() throws Exception {
         final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
@@ -108,7 +108,7 @@ public class HttpResponseWrapperEncodingWireTest {
         }
 
         final byte[] xTestRaw = firstValue(rawHeaders, "x-test");
-        assertNotNull("X-Test header must be present. Headers seen: " + rawHeaders.keySet(), xTestRaw);
+        assertNotNull(xTestRaw, "X-Test header must be present. Headers seen: " + rawHeaders.keySet());
 
         // MEASUREMENT 1: are the raw wire bytes of X-Test's value exactly Cyrillic's UTF-8
         // encoding? If so, the 2010 hack is achieving its stated goal on Jetty 12 today: the
@@ -116,8 +116,8 @@ public class HttpResponseWrapperEncodingWireTest {
         final byte[] expectedUtf8Bytes = CYRILLIC.getBytes(UTF_8);
         System.err.println("MEASURED X-Test raw bytes:   " + bytesToHex(xTestRaw));
         System.err.println("EXPECTED Cyrillic UTF-8 bytes: " + bytesToHex(expectedUtf8Bytes));
-        assertEquals("X-Test's raw wire bytes should be exactly Cyrillic's UTF-8 encoding",
-                bytesToHex(expectedUtf8Bytes), bytesToHex(xTestRaw));
+        assertEquals(bytesToHex(expectedUtf8Bytes), bytesToHex(xTestRaw),
+                "X-Test's raw wire bytes should be exactly Cyrillic's UTF-8 encoding");
 
         // MEASUREMENT 2: decoding those raw bytes as UTF-8 should reconstruct the original text --
         // the definitive check that a UTF-8-aware client reading this response would see the
@@ -207,16 +207,21 @@ public class HttpResponseWrapperEncodingWireTest {
     }
 
     private static int indexOf(final byte[] haystack, final byte[] needle, final int from, final int to) {
-        outer:
         for (int i = from; i <= to - needle.length; i++) {
-            for (int j = 0; j < needle.length; j++) {
-                if (haystack[i + j] != needle[j]) {
-                    continue outer;
-                }
+            if (matchesAt(haystack, needle, i)) {
+                return i;
             }
-            return i;
         }
         return -1;
+    }
+
+    private static boolean matchesAt(final byte[] haystack, final byte[] needle, final int offset) {
+        for (int j = 0; j < needle.length; j++) {
+            if (haystack[offset + j] != needle[j]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int indexOfByte(final byte[] haystack, final byte needle, final int from, final int to) {

@@ -23,10 +23,10 @@ package org.exist.http.servlets;
 
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -36,11 +36,10 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end round trip for a non-ASCII cookie value set via {@code response:set-cookie()} and
@@ -60,7 +59,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class NonAsciiCookieRoundTripTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     private static final String TEST_COLLECTION = "/db/apps/test-cookie-round-trip";
@@ -77,7 +76,7 @@ public class NonAsciiCookieRoundTripTest {
             else
                 <result step="get" value="{request:get-cookie-value('test-cookie')}"/>""".formatted(CYRILLIC);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest storeRequest = AbstractHttpTest.authenticatedRequest(
@@ -96,7 +95,7 @@ public class NonAsciiCookieRoundTripTest {
         AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), chmodRequest);
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() throws Exception {
         final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
@@ -115,22 +114,22 @@ public class NonAsciiCookieRoundTripTest {
                 + "/exist/apps/test-cookie-round-trip/test.xql");
 
         final HttpResponse<String> first = client.send(HttpRequest.newBuilder(url).GET().build(),
-                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        assertEquals("First request should not fail -- see class javadoc for why it currently does "
-                        + "(a 500, not just a dropped cookie, depending on request shape): " + first.body(),
-                200, first.statusCode());
-        assertTrue("First request should hit the 'set' branch (no cookie sent yet): " + first.body(),
-                first.body().contains("step=\"set\""));
-        assertTrue("Set-Cookie must actually be present on the first response -- currently dropped "
-                        + "entirely for non-ASCII values (see HttpResponseWrapperEncodingWireTest)",
-                first.headers().firstValue("Set-Cookie").isPresent());
+                HttpResponse.BodyHandlers.ofString(UTF_8));
+        assertEquals(200, first.statusCode(),
+                "First request should not fail -- see class javadoc for why it currently does "
+                        + "(a 500, not just a dropped cookie, depending on request shape): " + first.body());
+        assertTrue(first.body().contains("step=\"set\""),
+                "First request should hit the 'set' branch (no cookie sent yet): " + first.body());
+        assertTrue(first.headers().firstValue("Set-Cookie").isPresent(),
+                "Set-Cookie must actually be present on the first response -- currently dropped "
+                        + "entirely for non-ASCII values (see HttpResponseWrapperEncodingWireTest)");
 
         final HttpResponse<String> second = client.send(HttpRequest.newBuilder(url).GET().build(),
-                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                HttpResponse.BodyHandlers.ofString(UTF_8));
         assertEquals(200, second.statusCode());
-        assertTrue("Second request (cookie jar now has test-cookie) should hit the 'get' branch: " + second.body(),
-                second.body().contains("step=\"get\""));
-        assertTrue("request:get-cookie-value() should return the original Cyrillic text: " + second.body(),
-                second.body().contains("value=\"" + CYRILLIC + "\""));
+        assertTrue(second.body().contains("step=\"get\""),
+                "Second request (cookie jar now has test-cookie) should hit the 'get' branch: " + second.body());
+        assertTrue(second.body().contains("value=\"" + CYRILLIC + "\""),
+                "request:get-cookie-value() should return the original Cyrillic text: " + second.body());
     }
 }
