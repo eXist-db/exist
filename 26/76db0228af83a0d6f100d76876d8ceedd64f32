@@ -1,0 +1,39 @@
+exist-core/src/test/java/org/exist/http/servlets/NonAsciiCookieRoundTripTest.java
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 117,128
+exist-core/src/main/java/org/exist/http/servlets/HttpResponseWrapper.java
+  s_f93ed6eda7a79b::t_2f97c06e590938 60
+  s_f93ed6eda7a79b::t_62edcb38c27bd2 243
+  s_f93ed6eda7a79b::t_c6389262f1ee2b 215-229,233-241
+  s_f93ed6eda7a79b::t_46b3a98aca84b2 242
+  s_f93ed6eda7a79b::t_c5241ba839a192 31,35
+  s_f93ed6eda7a79b::t_6351467abc7e68 65,72,80
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingWireTest.java
+  s_f93ed6eda7a79b::t_8d4533594ebe52 225-226
+  s_f93ed6eda7a79b::t_00b5a37ce48272 211-212,218-224
+exist-core/src/main/java/org/exist/xquery/functions/request/GetCookieValue.java
+  s_f93ed6eda7a79b::t_0e2d299e4e0e07 95-99
+  s_f93ed6eda7a79b::t_a0326f0409be0f 90-94,100-106
+  s_f93ed6eda7a79b::t_b2dc44f02e3667 38,41
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_f93ed6eda7a79b::t_a91c9f11507ae7 91,101-108
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 135
+  s_f93ed6eda7a79b::t_db7bf74abfcbfb 109
+  s_f93ed6eda7a79b::t_6ec1631425f0a5 43-56
+  s_f93ed6eda7a79b::t_2720a48f01998a 29,31,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2676db0228af83a0d6f100d76876d8ceedd64f32",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
