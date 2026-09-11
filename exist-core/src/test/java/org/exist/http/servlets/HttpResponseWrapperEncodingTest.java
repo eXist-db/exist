@@ -26,8 +26,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.easymock.Capture;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
+import java.net.URLDecoder;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
@@ -36,15 +37,23 @@ import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Pins the exact byte-repacking transformation {@code HttpResponseWrapper#encode} applies to
- * every header and cookie value (added 2010-10-14, commit 67612ad4be, marked
- * {@code // TODO: remove this hack after fixing HTTP 1.1}), so that behavior is verified rather
- * than only understood from reading the source. Deliberately does not assert on Jetty's actual
- * wire behavior -- that requires a real HTTP round trip and is covered separately (see
- * {@code HttpResponseWrapperEncodingWireTest}); this only confirms what the Java-level
- * transformation itself produces.
+ * Pins the exact transformation {@code HttpResponseWrapper} applies to header and cookie values,
+ * so that behavior is verified rather than only understood from reading the source. Deliberately
+ * does not assert on Jetty's actual wire behavior -- that requires a real HTTP round trip and is
+ * covered separately (see {@code HttpResponseWrapperEncodingWireTest},
+ * {@code NonAsciiCookieRoundTripTest}); this only confirms what the Java-level transformation
+ * itself produces.
+ * <p>
+ * Headers and cookies use different schemes, and deliberately so: {@code encode()} (added
+ * 2010-10-14, commit 67612ad4be, originally marked
+ * {@code // TODO: remove this hack after fixing HTTP 1.1}) byte-repacks a header value's UTF-8
+ * bytes into ISO-8859-1 chars, confirmed still necessary and correct for headers on Jetty 12. The
+ * same scheme applied to a cookie value produces bytes RFC 6265's stricter cookie-octet grammar
+ * forbids, which Jetty 12 enforces by dropping the cookie or failing the whole request -- so
+ * {@code encodeCookieValue()} percent-encodes instead.
  */
 public class HttpResponseWrapperEncodingTest {
 
@@ -79,7 +88,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void addCookiePacksEachUtf8ByteIntoOneChar() {
+    public void addCookiePercentEncodesNonAsciiValue() {
         final Capture<Cookie> capturedCookie = newCapture();
         final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
         mockResponse.addCookie(capture(capturedCookie));
@@ -89,7 +98,15 @@ public class HttpResponseWrapperEncodingTest {
         new HttpResponseWrapper(mockResponse).addCookie("test-cookie", CYRILLIC);
 
         verify(mockResponse);
-        assertPackedUtf8Bytes(CYRILLIC, capturedCookie.getValue().getValue());
+        final String encoded = capturedCookie.getValue().getValue();
+        // Every char of a percent-encoded value is plain US-ASCII (letters, digits, '%', '+') --
+        // exactly what RFC 6265's cookie-octet grammar requires and the packed-byte header scheme
+        // cannot guarantee.
+        for (int i = 0; i < encoded.length(); i++) {
+            assertTrue("Char at index " + i + " (" + encoded.charAt(i) + ") should be plain US-ASCII",
+                    encoded.charAt(i) < 128);
+        }
+        assertEquals(CYRILLIC, URLDecoder.decode(encoded, UTF_8));
     }
 
     @Test
@@ -115,7 +132,7 @@ public class HttpResponseWrapperEncodingTest {
      * and that its length equals the UTF-8 byte count rather than the original character count.
      */
     private static void assertPackedUtf8Bytes(final String original, final String actual) {
-        final byte[] utf8Bytes = original.getBytes(StandardCharsets.UTF_8);
+        final byte[] utf8Bytes = original.getBytes(UTF_8);
         assertEquals("Encoded length should equal the UTF-8 byte count, not the original character count",
                 utf8Bytes.length, actual.length());
         for (int i = 0; i < utf8Bytes.length; i++) {
