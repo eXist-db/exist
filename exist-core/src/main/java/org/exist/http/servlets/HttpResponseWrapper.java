@@ -28,9 +28,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -55,19 +57,19 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	
 	@Override
 	public void addCookie(final String name, final String value) {
-		response.addCookie(new Cookie(name, encode(value)));
+		response.addCookie(new Cookie(name, encodeCookieValue(value)));
 	}
 
 	@Override
 	public void addCookie(final String name, final String value, final int maxAge) {
-		final Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encodeCookieValue(value));
 		cookie.setMaxAge(maxAge);
 		response.addCookie(cookie);
 	}
 	
 	@Override
 	public void addCookie(final String name, final String value, final int maxAge, final boolean secure) {
-		final Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encodeCookieValue(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure(secure);
 		response.addCookie(cookie);
@@ -75,7 +77,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	
 	@Override
 	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path) {
-		final Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encodeCookieValue(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
 		if (domain != null && !domain.isEmpty()) {
@@ -210,8 +212,33 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		return response.getOutputStream();
 	}
 	
-	// TODO: remove this hack after fixing HTTP 1.1 :)
+	/**
+	 * The Servlet API writes header values to the wire one byte per {@code char} (effectively
+	 * ISO-8859-1), independent of whatever charset the response body is configured with -- not an
+	 * HTTP/1.1 defect some future spec revision could fix (as the original 2010 TODO here assumed),
+	 * but a still-current characteristic of the Java Servlet header API itself. This packs a
+	 * value's UTF-8 bytes into that byte-per-char shape so the container's own write recovers them
+	 * unchanged on the wire. Confirmed still live and necessary on Jetty 12 by direct measurement,
+	 * not just re-inferred from the spec: see HttpResponseWrapperEncodingWireTest, which round-trips
+	 * a non-ASCII header value through a real server and checks the raw wire bytes.
+	 * <p>
+	 * Cookie values need a different fix -- see {@link #encodeCookieValue}: this same packing
+	 * scheme applied to a cookie value produces bytes RFC 6265's stricter cookie-octet grammar
+	 * forbids, which Jetty 12 rejects outright (silently dropping the cookie, or a 500, depending
+	 * on request shape -- see NonAsciiCookieRoundTripTest).
+	 */
 	private String encode(final String value){
         return new String(value.getBytes(), ISO_8859_1);
+	}
+
+	/**
+	 * RFC 6265's cookie-octet grammar excludes any byte >= 0x80 -- unlike header values (see
+	 * {@link #encode}), Jetty 12 enforces this strictly, rejecting a cookie whose value contains
+	 * one rather than passing it through. Percent-encoding keeps the wire value within that
+	 * ASCII-safe range regardless of what text it holds; paired with matching decoding in
+	 * {@code request:get-cookie-value()} (org.exist.xquery.functions.request.GetCookieValue).
+	 */
+	private String encodeCookieValue(final String value) {
+		return URLEncoder.encode(value, UTF_8);
 	}
 }
