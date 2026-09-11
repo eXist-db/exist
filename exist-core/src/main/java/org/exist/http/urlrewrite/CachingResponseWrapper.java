@@ -58,10 +58,10 @@ class CachingResponseWrapper extends HttpServletResponseWrapper implements Heade
     private enum OutputMode { NONE, WRITER, STREAM }
 
     private OutputMode outputMode = OutputMode.NONE;
-    private CachingServletOutputStream sos = null;
-    private PrintWriter writer = null;
+    private CachingServletOutputStream sos;
+    private PrintWriter writer;
     private int status = HttpServletResponse.SC_OK;
-    private String contentType = null;
+    private String contentType;
     private final boolean cache;
 
     CachingResponseWrapper(final HttpServletResponse servletResponse, final boolean cache) {
