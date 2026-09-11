@@ -36,7 +36,6 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -115,7 +114,7 @@ public class NonAsciiCookieRoundTripTest {
                 + "/exist/apps/test-cookie-round-trip/test.xql");
 
         final HttpResponse<String> first = client.send(HttpRequest.newBuilder(url).GET().build(),
-                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                HttpResponse.BodyHandlers.ofString(UTF_8));
         assertEquals("First request should not fail -- see class javadoc for why it currently does "
                         + "(a 500, not just a dropped cookie, depending on request shape): " + first.body(),
                 200, first.statusCode());
@@ -126,7 +125,7 @@ public class NonAsciiCookieRoundTripTest {
                 first.headers().firstValue("Set-Cookie").isPresent());
 
         final HttpResponse<String> second = client.send(HttpRequest.newBuilder(url).GET().build(),
-                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                HttpResponse.BodyHandlers.ofString(UTF_8));
         assertEquals(200, second.statusCode());
         assertTrue("Second request (cookie jar now has test-cookie) should hit the 'get' branch: " + second.body(),
                 second.body().contains("step=\"get\""));

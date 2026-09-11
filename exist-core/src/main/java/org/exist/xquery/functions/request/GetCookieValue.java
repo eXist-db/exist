@@ -35,9 +35,10 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import java.net.URLDecoder;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
@@ -86,8 +87,22 @@ public class GetCookieValue extends RequestFunction {
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
-	// TODO: remove this hack after fixing HTTP 1.1	
-	private String decode (final String value) {
-        return new String(value.getBytes(ISO_8859_1));
+	/**
+	 * Symmetric with {@code HttpResponseWrapper#encodeCookieValue}, which percent-encodes a
+	 * cookie's value on write (RFC 6265's cookie-octet grammar excludes bytes >= 0x80, and Jetty
+	 * 12 enforces that strictly enough to drop or fail the whole request otherwise -- see
+	 * NonAsciiCookieRoundTripTest). A cookie this eXist instance didn't set itself -- from a
+	 * browser, or another app sharing the domain -- may not be percent-encoded at all: fall back
+	 * to the raw value rather than throwing on a lone {@code '%'} that isn't a valid escape, and
+	 * accept that a raw, unescaped {@code '+'} in such a cookie is indistinguishable from an
+	 * encoded space and will decode as one (a cookie this instance set itself is unaffected: a
+	 * literal {@code '+'} in the original value is escaped to {@code %2B} on write).
+	 */
+	private String decode(final String value) {
+		try {
+			return URLDecoder.decode(value, UTF_8);
+		} catch (final IllegalArgumentException e) {
+			return value;
+		}
 	}
 }

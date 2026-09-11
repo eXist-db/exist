@@ -207,16 +207,21 @@ public class HttpResponseWrapperEncodingWireTest {
     }
 
     private static int indexOf(final byte[] haystack, final byte[] needle, final int from, final int to) {
-        outer:
         for (int i = from; i <= to - needle.length; i++) {
-            for (int j = 0; j < needle.length; j++) {
-                if (haystack[i + j] != needle[j]) {
-                    continue outer;
-                }
+            if (matchesAt(haystack, needle, i)) {
+                return i;
             }
-            return i;
         }
         return -1;
+    }
+
+    private static boolean matchesAt(final byte[] haystack, final byte[] needle, final int offset) {
+        for (int j = 0; j < needle.length; j++) {
+            if (haystack[offset + j] != needle[j]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int indexOfByte(final byte[] haystack, final byte needle, final int from, final int to) {
