@@ -1,0 +1,37 @@
+exist-core/src/main/java/org/exist/http/urlrewrite/CachingResponseWrapper.java
+  s_f93ed6eda7a79b::t_59f3aa4cebe2a0 329
+  s_f93ed6eda7a79b::t_68717e3e443715 147-148
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_f93ed6eda7a79b::t_24b62573103c51 50,52
+  s_f93ed6eda7a79b::t_67cb9d50159991 156
+  s_f93ed6eda7a79b::t_512027ffd869c9 30
+exist-core/src/test/java/org/exist/http/urlrewrite/UrlRewritePipelineHttpTest.java
+  s_f93ed6eda7a79b::t_3c5c235ca0787e 711,716
+  s_f93ed6eda7a79b::t_ae829292f1f72d 496,501
+  s_f93ed6eda7a79b::t_9e1d3d0b3c77c2 382,387
+  s_f93ed6eda7a79b::t_3309cca53014e7 576,649,720
+  s_f93ed6eda7a79b::t_21e3355ef93816 640,645
+  s_f93ed6eda7a79b::t_f4f8452256a232 513
+  s_f93ed6eda7a79b::t_e2ffc7c3754bf7 567,572
+  s_f93ed6eda7a79b::t_4f0bf51a50e67a 654-656,660,665
+  s_f93ed6eda7a79b::t_ff010baa5bb734 403
+  s_f93ed6eda7a79b::t_21ef65947c5179 581-583,588,593,595
+  s_f93ed6eda7a79b::t_bfa129197d0065 725-727,729
+  s_f93ed6eda7a79b::t_ab1089d44b8b95 795-830
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b60b01be7bba01fde04edf1aa9992ac44b80ae5e",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
