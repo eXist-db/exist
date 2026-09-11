@@ -1,0 +1,24 @@
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 135
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingWireTest.java
+  s_f93ed6eda7a79b::t_00b5a37ce48272 211-212,218-224
+  s_f93ed6eda7a79b::t_8d4533594ebe52 225-226
+exist-core/src/test/java/org/exist/http/servlets/NonAsciiCookieRoundTripTest.java
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 117,128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "391fde93bef9b052ee7457531279971bd9932b95",
+  "prompts": {},
+  "sessions": {
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
