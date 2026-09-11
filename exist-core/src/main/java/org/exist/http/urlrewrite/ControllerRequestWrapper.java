@@ -54,16 +54,16 @@ public class ControllerRequestWrapper extends HttpServletRequestWrapper {
 
     private final Map<String, List<String>> addedParams = new HashMap<>();
 
-    private ServletInputStream sis = null;
-    private BufferedReader reader = null;
+    private ServletInputStream sis;
+    private BufferedReader reader;
 
     private String contentType;
-    private int contentLength = 0;
-    private String characterEncoding = null;
-    private String method = null;
-    private String inContextPath = null;
+    private int contentLength;
+    private String characterEncoding;
+    private String method;
+    private String inContextPath;
     private String servletPath;
-    private String basePath = null;
+    private String basePath;
     private boolean allowCaching = true;
 
     private void addNameValue(final String name, final String value, final Map<String, List<String>> map) {
