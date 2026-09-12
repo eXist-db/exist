@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
@@ -28,12 +29,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -70,7 +73,23 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     public static LocalCollection getLocalCollection(final Expression callingExpression, final XQueryContext context, final String name) throws XMLDBException {
         try {
-            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> new AnyURIValue(name).toXmldbURI()));
+            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> {
+                try {
+                    // Resource-naming contract (eXist-db/exist#6463, decisions 1 + 2 + 5): canonicalize
+                    // the collection path to its stored key by decode-then-encode -- the same mapping
+                    // fn:doc / fn:collection apply -- so a caller's decoded or descriptor-derived literal
+                    // path (e.g. "/db/system/repo/badver-${app.version}") resolves the percent-encoded key
+                    // that was actually stored ("badver-$%7Bapp.version%7D"), and a literal '%' resolves by
+                    // its decoded form. AnyURIValue.toXmldbURI() resolved with escape=false, so an awkward
+                    // name either missed or threw on a raw illegal char. decodeForURI is the exact inverse
+                    // of encodeForURILenient, so this is idempotent on an already-encoded path (such as the
+                    // internal collection URI passed by the node branch of eval()).
+                    return XmldbURI.xmldbUriFor(URIUtils.encodePathForURILenient(URIUtils.decodePathForURI(name)), false);
+                } catch (final URISyntaxException e) {
+                    throw new XPathException(callingExpression, org.exist.xquery.ErrorCodes.FORG0001,
+                            "failed to convert '" + name + "' into an XmldbURI: " + e.getMessage(), e);
+                }
+            }));
         } catch (final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
@@ -192,7 +211,10 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     protected final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI().toString()), "/");
+        // Resource-naming contract (eXist-db/exist#6463): relPath is a decoded display path.
+        // Encode each segment once into its canonical stored form (escaping %, space, non-ASCII;
+        // sub-delimiters left literal) so a literal '%' round-trips and raw spaces are accepted.
+        final StringTokenizer tok = new StringTokenizer(URIUtils.encodePathForURILenient(relPath), "/");
         while (tok.hasMoreTokens()) {
             final String token = tok.nextToken();
             current = createCollection(current, token);
