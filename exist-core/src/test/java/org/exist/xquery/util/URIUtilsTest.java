@@ -192,4 +192,99 @@ class URIUtilsTest {
         encoded = URIUtils.encodeForURI("\uD802\uDD07");
         assertEquals("%F0%90%A4%87", encoded);
     }
+
+    /**
+     * decodeForURI must treat '+' as a literal plus sign, not a space \u2014 the regression in
+     * eXist-db/exist#1824 and #44, where URLDecoder's form-encoding rules turned '+' into ' '.
+     */
+    @Test
+    void decodeForURIPlusIsLiteral() {
+        // a percent-encoded plus decodes back to a plus
+        assertEquals("1+2", URIUtils.decodeForURI("1%2B2"));
+
+        // a bare '+' (nothing percent-encoded) is returned literally
+        assertEquals("a+b", URIUtils.decodeForURI("a+b"));
+    }
+
+    @Test
+    void decodeForURISpaceAndPercent() {
+        // space
+        assertEquals("hello world", URIUtils.decodeForURI("hello%20world"));
+
+        // percent sign
+        assertEquals("99%", URIUtils.decodeForURI("99%25"));
+
+        // a literal "%2F" in a name encodes to "%252F" and must decode back to "%2F"
+        assertEquals("%2F", URIUtils.decodeForURI("%252F"));
+
+        // double percent sign
+        assertEquals("99%%100", URIUtils.decodeForURI("99%25%25100"));
+    }
+
+    @Test
+    void decodeForURIUnreservedUnchanged() {
+        assertEquals("ABCabc019-._~", URIUtils.decodeForURI("ABCabc019-._~"));
+    }
+
+    @Test
+    void decodeForURIUtf8() {
+        // 2 byte character - yen sign
+        assertEquals("\u00A5", URIUtils.decodeForURI("%C2%A5"));
+
+        // 3 byte character - samaritan letter tsasdiy
+        assertEquals("\u0811", URIUtils.decodeForURI("%E0%A0%91"));
+
+        // 4 byte character - phoenician letter het
+        assertEquals("\uD802\uDD07", URIUtils.decodeForURI("%F0%90%A4%87"));
+    }
+
+    /**
+     * decodeForURI is the exact inverse of encodeForURI for any input \u2014 the bijective property
+     * the xmldb URI functions rely on.
+     */
+    @Test
+    void decodeForURIRoundTripsEncodeForURI() {
+        final String[] names = {
+                "plain", "dash-case", "file.ext", "snake_case", "~home",
+                "hello world", "1+2", "99%", "%2F", "99%%100",
+                "a:b", "x/y", "Goodbye?", "#comment", "[predicate", "predicate]", "adam@work",
+                "Hello!", "$100", "Jack&Jill", "it's", "(comment", "comment)", "1*2", "x,y", "a;b", "n=1",
+                "caf\u00E9", "\u041F\u0440\u0438\u0432\u0435\u0442", "\u6587\u66F8", "\u00A5", "\u0811", "\uD802\uDD07"
+        };
+        for (final String name : names) {
+            assertEquals(name, URIUtils.decodeForURI(URIUtils.encodeForURI(name)),
+                    "encode/decode round-trip failed for: " + name);
+        }
+    }
+
+    /**
+     * decodeForURI must never throw and never truncate, even on input that is not the output of
+     * encodeForURI — xmldb:decode/xmldb:decode-uri accept arbitrary user strings. Each case here
+     * is one that {@code new java.net.URI(s).getPath()} mishandles (throws URISyntaxException, or
+     * silently drops everything from a '?' or '#' onward), which is why this is a standalone decoder.
+     */
+    @Test
+    void decodeForURIRobustOnMalformedAndReservedInput() {
+        // a lone '%' not followed by two hex digits is preserved verbatim (URI: throws)
+        assertEquals("100%", URIUtils.decodeForURI("100%"));
+
+        // a truncated escape is preserved verbatim (URI: throws)
+        assertEquals("a%2", URIUtils.decodeForURI("a%2"));
+
+        // a '%' followed by non-hex is preserved verbatim (URI: throws)
+        assertEquals("a%ZZb", URIUtils.decodeForURI("a%ZZb"));
+
+        // a literal space is left as-is (URI: throws on an unencoded space)
+        assertEquals("a b", URIUtils.decodeForURI("a b"));
+
+        // '?' and '#' are ordinary characters here, not query/fragment delimiters (URI: truncates to "a")
+        assertEquals("a?b", URIUtils.decodeForURI("a?b"));
+        assertEquals("a#b", URIUtils.decodeForURI("a#b"));
+
+        // braces are ordinary characters (URI: throws)
+        assertEquals("a{b}c", URIUtils.decodeForURI("a{b}c"));
+
+        // valid escapes still decode even when mixed with characters URI would reject
+        assertEquals("a b?c", URIUtils.decodeForURI("a%20b?c"));
+    }
 }
