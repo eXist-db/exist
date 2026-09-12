@@ -48,13 +48,15 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-            "Create a new collection with name $new-collection as a child of " +
-            "$target-collection-uri. " + XMLDBModule.COLLECTION_URI +
+            "Create a new collection $new-collection as a child of " +
+            "$target-collection-uri. $new-collection may be a path of several " +
+            "segments (for example 'a/b/c/d'); missing intermediate collections " +
+            "are created. " + XMLDBModule.COLLECTION_URI +
             "Returns the path to the new collection if successfully created, " +
             "otherwise the empty sequence.",
 			new SequenceType[]{
 			    new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI"),
-			    new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the new collection to create")},
+			    new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "The name or relative path of the new collection to create. Intermediate collections in a path are created as needed")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if successfully created, otherwise the empty sequence"));
 
     public XMLDBCreateCollection(XQueryContext context) {
