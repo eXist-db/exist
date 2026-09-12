@@ -73,6 +73,14 @@ public interface Constants {
     //combines /descendant-or-self::node()/attribute:*
 	int DESCENDANT_ATTRIBUTE_AXIS = 13;
 
+    // --- XQuery 4.0 axes ---
+    int FOLLOWING_OR_SELF_AXIS = 14;
+    int FOLLOWING_SIBLING_OR_SELF_AXIS = 15;
+    /** Reverse axis */
+    int PRECEDING_OR_SELF_AXIS = 16;
+    /** Reverse axis */
+    int PRECEDING_SIBLING_OR_SELF_AXIS = 17;
+
     /**
      * Node types
      */
