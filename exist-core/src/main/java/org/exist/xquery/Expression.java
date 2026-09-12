@@ -77,6 +77,14 @@ public interface Expression extends Materializable {
     public final static int UNORDERED = 1024;
 
     /**
+     * Indicates that the expression is in a context where updating expressions
+     * (insert, delete, replace, rename) are not allowed.
+     * Per W3C XQuery Update Facility 3.0, XUST0001 should be raised if an
+     * updating expression appears in such a context.
+     */
+    public final static int NON_UPDATING_CONTEXT = 2048;
+
+    /**
      * Indicates that no context id is supplied to an expression.
      */
     public final static int NO_CONTEXT_ID = -1;
@@ -202,6 +210,30 @@ public interface Expression extends Materializable {
     public Expression getSubExpression(int index);
 
     public boolean allowMixedNodesInReturn();
+
+    /**
+     * Returns true if this expression is an updating expression per the
+     * W3C XQuery Update Facility 3.0 specification.
+     * Updating expressions include: insert, delete, replace, rename expressions,
+     * calls to updating functions, and composite expressions where all branches
+     * are updating.
+     *
+     * @return true if this is an updating expression
+     */
+    default boolean isUpdating() {
+        return false;
+    }
+
+    /**
+     * Returns true if this expression is vacuous — neither updating nor producing
+     * a non-empty result. A vacuous expression is compatible with both updating
+     * and non-updating contexts per W3C XQuery Update Facility 3.0.
+     *
+     * @return true if this expression is vacuous
+     */
+    default boolean isVacuous() {
+        return !isUpdating() && getCardinality() == Cardinality.EMPTY_SEQUENCE;
+    }
 
     public Expression getParent();
 

@@ -153,7 +153,33 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 
+    /* W3C XQuery Update Facility 3.0 error codes */
+    public static final ErrorCode XUDY0009 = new W3CErrorCode("XUDY0009", "It is a dynamic error if the target node of a replace expression is a node without a parent.");
+    public static final ErrorCode XUDY0014 = new W3CErrorCode("XUDY0014", "It is a dynamic error if the result of applying all update primitives on a single document node would result in that document having more than one element or text child.");
+    public static final ErrorCode XUDY0015 = new W3CErrorCode("XUDY0015", "It is a dynamic error if more than one rename primitive is applied to the same target node.");
+    public static final ErrorCode XUDY0016 = new W3CErrorCode("XUDY0016", "It is a dynamic error if more than one replace primitive is applied to the same target node.");
+    public static final ErrorCode XUDY0017 = new W3CErrorCode("XUDY0017", "It is a dynamic error if two or more upd:replaceValue primitives in a PUL have the same target node.");
+    public static final ErrorCode XUDY0021 = new W3CErrorCode("XUDY0021", "It is a dynamic error if an insert, replace, or rename expression affects an element node by introducing an attribute node with a namespace binding that conflicts with a namespace binding of the element node.");
     public static final ErrorCode XUDY0023 = new W3CErrorCode("XUDY0023", "It is a dynamic error if an insert, replace, or rename expression affects an element node by introducing a new namespace binding that conflicts with one of its existing namespace bindings.");
+    public static final ErrorCode XUDY0024 = new W3CErrorCode("XUDY0024", "It is a dynamic error if the new namespace bindings added to an element by an update conflict with its existing namespace bindings.");
+    public static final ErrorCode XUDY0027 = new W3CErrorCode("XUDY0027", "It is a dynamic error if the target of an insert before or insert after expression is a root element or root text node of a document.");
+    public static final ErrorCode XUDY0029 = new W3CErrorCode("XUDY0029", "It is a dynamic error if the target of an insert into, insert as first into, insert as last into, or replace expression is not an element or document node.");
+    public static final ErrorCode XUDY0030 = new W3CErrorCode("XUDY0030", "It is a dynamic error if the target of an insert attributes expression is not an element node.");
+    public static final ErrorCode XUDY0031 = new W3CErrorCode("XUDY0031", "It is a dynamic error if two or more fn:put primitives have the same URI.");
+    public static final ErrorCode XUST0001 = new W3CErrorCode("XUST0001", "It is a static error if an updating expression is used in a context where it is not allowed.");
+    public static final ErrorCode XUST0002 = new W3CErrorCode("XUST0002", "It is a static error if a non-updating expression other than an empty sequence is used where an updating expression is expected.");
+    public static final ErrorCode XUST0003 = new W3CErrorCode("XUST0003", "It is a static error if a revalidation declaration specifies a revalidation mode that is not supported by the implementation.");
+    public static final ErrorCode XUST0028 = new W3CErrorCode("XUST0028", "It is a static error if a function declaration is declared as updating and also declares a return type.");
+    public static final ErrorCode XUTY0004 = new W3CErrorCode("XUTY0004", "It is a type error if the content sequence of an insert expression with into, as first into, or as last into contains an attribute node following a node that is not an attribute node.");
+    public static final ErrorCode XUTY0005 = new W3CErrorCode("XUTY0005", "It is a type error if the target expression of an insert expression with into, as first into, or as last into does not return a single element or document node.");
+    public static final ErrorCode XUTY0006 = new W3CErrorCode("XUTY0006", "It is a type error if the target expression of an insert expression with before or after does not return a single element, text, comment, or processing instruction node with a parent.");
+    public static final ErrorCode XUTY0007 = new W3CErrorCode("XUTY0007", "It is a type error if the target expression of a replace value of expression does not return a single element, attribute, text, comment, or processing instruction node.");
+    public static final ErrorCode XUTY0008 = new W3CErrorCode("XUTY0008", "It is a type error if the target expression of a replace expression returns a document node.");
+    public static final ErrorCode XUTY0010 = new W3CErrorCode("XUTY0010", "It is a type error if in a replace expression where the target is an element, text, comment, or processing instruction node, the content expression does not return a sequence of zero or more element, text, comment, or processing instruction nodes.");
+    public static final ErrorCode XUTY0011 = new W3CErrorCode("XUTY0011", "It is a type error if in a replace expression where the target is an attribute node, the content expression does not return a sequence of zero or more attribute nodes.");
+    public static final ErrorCode XUTY0012 = new W3CErrorCode("XUTY0012", "It is a type error if the target expression of a rename expression does not return a single element, attribute, or processing instruction node.");
+    public static final ErrorCode XUTY0013 = new W3CErrorCode("XUTY0013", "It is a type error if the source expression of a copy expression does not return a single node.");
+    public static final ErrorCode XUTY0022 = new W3CErrorCode("XUTY0022", "It is a type error if an insert expression specifies the insertion of an attribute node into a document node.");
 
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
     public static final ErrorCode FOER0000 = new W3CErrorCode("FOER0000", "Unidentified error.");
