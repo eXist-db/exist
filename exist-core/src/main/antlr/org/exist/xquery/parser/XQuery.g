@@ -221,6 +221,8 @@ imaginaryTokenDefinitions
 	WINDOW_VARS
 	DECIMAL_FORMAT_DECL
 	DEF_DECIMAL_FORMAT_DECL
+	RECORD_TEST
+	RECORD_FIELD
 	;
 
 // === XPointer ===
@@ -645,6 +647,8 @@ itemType throws XPathException
 	|
 	( "array" LPAREN ) => arrayType
 	|
+	( { LA(1) == NCNAME && LT(1).getText().equals("record") && LA(2) == LPAREN }? NCNAME LPAREN ) => recordType
+	|
 	( LPAREN ) => parenthesizedItemType
 	|
 	( . LPAREN ) => kindTest
@@ -736,6 +740,65 @@ arrayTypeTest throws XPathException
 	m:"array"! LPAREN! sequenceType RPAREN!
 	{
 		#arrayTypeTest = #(#[ARRAY_TEST, "array"], #arrayTypeTest);
+	}
+	;
+
+// === XQuery 4.0 Record Type ===
+
+recordType throws XPathException
+:
+	{ LA(1) == NCNAME && LT(1).getText().equals("record") && LA(2) == LPAREN && LA(3) == RPAREN }?
+	emptyRecordTest
+	|
+	{ LA(1) == NCNAME && LT(1).getText().equals("record") && LA(2) == LPAREN && LA(3) == STAR }?
+	extensibleRecordReject
+	|
+	typedRecordTest
+	;
+
+emptyRecordTest throws XPathException
+:
+	r:NCNAME! LPAREN! RPAREN!
+	{
+		#emptyRecordTest = #(#[RECORD_TEST, "record"], #emptyRecordTest);
+	}
+	;
+
+extensibleRecordReject throws XPathException
+:
+	r:NCNAME! LPAREN! STAR RPAREN!
+	{
+		throw new XPathException(r.getLine(), r.getColumn(), ErrorCodes.XPST0003,
+			"Extensible record types record(*) are not supported in XQuery 4.0");
+	}
+	;
+
+typedRecordTest throws XPathException
+{ boolean extensible = false; }
+:
+	r:NCNAME! LPAREN! recordFieldDecl (COMMA!
+		( ( STAR ) => STAR { extensible = true; }
+		| recordFieldDecl
+		)
+	)* RPAREN!
+	{
+		if (extensible) {
+			throw new XPathException(r.getLine(), r.getColumn(), ErrorCodes.XPST0003,
+				"Extensible record types record(..., *) are not supported in XQuery 4.0");
+		}
+		#typedRecordTest = #(#[RECORD_TEST, "record"], #typedRecordTest);
+	}
+	;
+
+recordFieldDecl throws XPathException
+{ String fieldName = null; String fieldLabel = null; boolean isOptional = false; }
+:
+	fieldName=fn:ncnameOrKeyword
+	( QUESTION { isOptional = true; } )?
+	( "as" sequenceType )?
+	{
+		fieldLabel = isOptional ? fieldName.concat("?") : fieldName;
+		#recordFieldDecl = #(#[RECORD_FIELD, fieldLabel], #recordFieldDecl);
 	}
 	;
 

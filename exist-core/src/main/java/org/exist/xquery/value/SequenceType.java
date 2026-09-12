@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import javax.annotation.Nullable;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -44,6 +45,9 @@ public class SequenceType {
     private QName nodeName = null;
     private SequenceType[] functionParamTypes;
     private SequenceType functionReturnType;
+
+    // XQuery 4.0 record type support
+    private RecordType recordType = null;
 
     public SequenceType() {
     }
@@ -111,6 +115,46 @@ public class SequenceType {
         this.nodeName = qname;
     }
 
+    // --- XQuery 4.0 Record Type Support ---
+
+    /**
+     * Check if this SequenceType is a record type.
+     */
+    public boolean isRecordType() {
+        return primaryType == Type.RECORD;
+    }
+
+    /**
+     * Get the record type's field declarations.
+     */
+    @Nullable
+    public java.util.List<RecordType.FieldDeclaration> getFieldDeclarations() {
+        return recordType != null ? recordType.getFieldDeclarations() : null;
+    }
+
+    /**
+     * Check if the record type is extensible (allows extra keys).
+     */
+    public boolean isRecordExtensible() {
+        return recordType != null && recordType.isExtensible();
+    }
+
+    /**
+     * Set the record type definition.
+     */
+    public void setRecordType(final RecordType recordType) {
+        this.primaryType = Type.RECORD;
+        this.recordType = recordType;
+    }
+
+    /**
+     * Get the record type, or null if this isn't a record type.
+     */
+    @Nullable
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
     /**
      * Get the function parameter types for typed function tests.
      * Only set when primaryType is FUNCTION, MAP_ITEM, or ARRAY_ITEM
@@ -168,6 +212,22 @@ public class SequenceType {
      * @return true, if item is a subtype of primaryType
      */
     public boolean checkType(final Item item) {
+        // XQuery 4.0 record type checking
+        if (isRecordType()) {
+            if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                return false;
+            }
+            if (!(item instanceof org.exist.xquery.functions.map.AbstractMapType)) {
+                return false;
+            }
+            final org.exist.xquery.functions.map.AbstractMapType map =
+                    (org.exist.xquery.functions.map.AbstractMapType) item;
+            if (recordType != null) {
+                return recordType.matches(map);
+            }
+            // bare record() with no field declarations: only empty maps match
+            return map.size() == 0;
+        }
         int type = item.getType();
         if (type == Type.NODE) {
             final Node realNode = ((NodeValue) item).getNode();
@@ -279,6 +339,11 @@ public class SequenceType {
 
         // Although xs:anyURI is not a subtype of xs:string, both types are compatible
         if (type == Type.ANY_URI && primaryType == Type.STRING) {
+            return;
+        }
+
+        // XQ4: maps are the runtime representation of records — accept map where record expected
+        if (primaryType == Type.RECORD && Type.subTypeOf(type, Type.MAP_ITEM)) {
             return;
         }
 
