@@ -44,7 +44,11 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * JUnit {@link org.junit.rules.ExternalResource} that starts an embedded eXist Jetty server for tests.
  * <p>
  * Prefer {@link org.junit.ClassRule} over {@link org.junit.Rule} when every test method in the class
- * can share one server instance (for example {@code org.exist.http.urlrewrite.ControllerTest}).
+ * can share one server instance -- or, better still where the scenarios are otherwise unrelated,
+ * across several {@code @Test} methods grouped into one class specifically to amortize this
+ * startup cost across all of them (for example
+ * {@code org.exist.http.urlrewrite.UrlRewritePipelineHttpTest}, which folds nine previously
+ * separate classes' worth of scenarios into one shared server).
  * <p>
  * <strong>Jetty layout ({@code jettyStandaloneMode})</strong>
  * <ul>

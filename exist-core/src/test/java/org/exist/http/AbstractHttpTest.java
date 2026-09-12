@@ -27,6 +27,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -46,9 +47,9 @@ import static org.junit.Assert.assertEquals;
 public abstract class AbstractHttpTest {
 
     /**
-     * HTTP status and body from a single request execution.
+     * HTTP status, body, and headers from a single request execution.
      */
-    public record HttpResponseResult(int statusCode, String body) {
+    public record HttpResponseResult(int statusCode, String body, HttpHeaders headers) {
     }
 
     /**
@@ -152,7 +153,7 @@ public abstract class AbstractHttpTest {
     public static HttpResponseResult executeForStatusAndBody(final HttpClient client, final HttpRequest request)
             throws IOException {
         final HttpResponse<String> response = send(client, request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        return new HttpResponseResult(response.statusCode(), response.body());
+        return new HttpResponseResult(response.statusCode(), response.body(), response.headers());
     }
 
     /**

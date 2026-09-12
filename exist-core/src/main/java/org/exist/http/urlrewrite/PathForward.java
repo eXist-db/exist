@@ -21,7 +21,6 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.w3c.dom.Element;
 
 import jakarta.servlet.RequestDispatcher;
@@ -56,7 +55,7 @@ public class PathForward extends Forward {
     }
 
     @Override
-    protected void setAbsolutePath(final RequestWrapper request) {
+    protected void setAbsolutePath(final ControllerRequestWrapper request) {
         request.setPaths(target, servletName);
     }
 
