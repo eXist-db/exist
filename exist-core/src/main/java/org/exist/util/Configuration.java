@@ -36,6 +36,7 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
 import org.exist.util.io.ContentFilePool;
 import org.exist.xquery.Expression;
+import org.exist.xquery.ModuleFactory;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
@@ -50,6 +51,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import org.exist.Indexer;
+import org.exist.indexing.IndexFactory;
 import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
@@ -76,9 +78,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -232,6 +237,7 @@ import static org.exist.xslt.TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRI
 
 public class Configuration implements ErrorHandler {
     public static final String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    public static final String PROPERTY_VECTOR_MODELS = "vector.models";
     private static final String PRP_DETAILS = "{}: {}";
     private static final Logger LOG = LogManager.getLogger(Configuration.class); //Logger
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
@@ -376,6 +382,8 @@ public class Configuration implements ErrorHandler {
             configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHomePath, element));
             // RPC server
             configureElement(doc, "rpc-server", this::configureRpcServer);
+            // Vector model registry
+            configureElement(doc, "vector-models", this::configureVectorModels);
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
@@ -573,6 +581,18 @@ public class Configuration implements ErrorHandler {
         // add the standard function module
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
+        // SPI-discovered modules: any JAR on the classpath that provides a ModuleFactory
+        // implementation in META-INF/services/org.exist.xquery.ModuleFactory is auto-registered.
+        // conf.xml entries processed below can override or suppress these entries.
+        ServiceLoader.load(ModuleFactory.class, Configuration.class.getClassLoader())
+                .forEach(factory -> {
+                    final String uri = factory.getNamespaceURI();
+                    if (!modulesClassMap.containsKey(uri)) {
+                        modulesClassMap.put(uri, factory.getModuleClass());
+                        LOG.debug("Auto-registered module '{}' via ModuleFactory SPI", uri);
+                    }
+                });
+
         // add other modules specified in configuration
         configureElement(xquery, XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME, builtIn -> {
 
@@ -591,9 +611,10 @@ public class Configuration implements ErrorHandler {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
-                // enabled="no" disables the module without removing it from conf.xml
+                // enabled="no" disables the module; also suppresses any SPI-discovered entry
                 if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
                     LOG.debug("Module '{}' is disabled via enabled=\"no\", skipping", uri);
+                    modulesClassMap.remove(uri);
                     continue;
                 }
 
@@ -1210,18 +1231,21 @@ public class Configuration implements ErrorHandler {
         }
         final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
         final List<IndexModuleConfig> modConfigList = new ArrayList<>();
+        final Set<String> configuredIds = new HashSet<>();
+        final Set<String> disabledIds = new HashSet<>();
 
         for (int i = 0; i < module.getLength(); i++) {
             final Element elem = (Element) module.item(i);
+            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
             // enabled="no" disables the index module without removing it from conf.xml
             if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
-                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE));
+                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", id);
+                disabledIds.add(id);
                 continue;
             }
 
             final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
-            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
             if (className.isEmpty()) {
                 throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
@@ -1231,8 +1255,24 @@ public class Configuration implements ErrorHandler {
                 throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
             }
 
+            configuredIds.add(id);
             modConfigList.add(new IndexModuleConfig(id, className, elem));
         }
+
+        // SPI: auto-discover index modules whose id is not explicitly listed in conf.xml
+        for (final IndexFactory factory : ServiceLoader.load(IndexFactory.class, Configuration.class.getClassLoader())) {
+            final String id = factory.getDefaultId();
+            if (id == null || id.isBlank()) {
+                LOG.warn("IndexFactory {} returned a null or blank default id; skipping SPI registration", factory.getClass().getName());
+                continue;
+            }
+            if (configuredIds.contains(id) || disabledIds.contains(id)) {
+                continue;
+            }
+            LOG.debug("SPI-registered index module: {} ({})", id, factory.getIndexClass().getName());
+            modConfigList.add(new IndexModuleConfig(id, factory.getIndexClass().getName(), null));
+        }
+
         setProperty(IndexManager.PROPERTY_INDEXER_MODULES, modConfigList.toArray(new IndexModuleConfig[0]));
     }
 
@@ -1346,6 +1386,25 @@ public class Configuration implements ErrorHandler {
             configureProperty(element, "size", ContentFilePool.PROPERTY_POOL_SIZE, Configuration::asInteger, -1);
             configureProperty(element, "max-idle", ContentFilePool.PROPERTY_POOL_MAX_IDLE, Configuration::asInteger, 5);
         });
+    }
+
+    private void configureVectorModels(final Element vectorModels) {
+        if ("no".equalsIgnoreCase(vectorModels.getAttribute("enabled"))) {
+            return;
+        }
+        final NodeList models = vectorModels.getElementsByTagName("model");
+        final Map<String, String[]> entries = new HashMap<>();
+        for (int i = 0; i < models.getLength(); i++) {
+            final Element model = (Element) models.item(i);
+            final String id = model.getAttribute("id");
+            final String path = model.getAttribute("path");
+            final String dimension = model.getAttribute("dimension");
+            if (id.isEmpty() || path.isEmpty()) {
+                continue;
+            }
+            entries.put(id.trim(), new String[]{path.trim(), dimension.trim()});
+        }
+        setProperty(PROPERTY_VECTOR_MODELS, entries);
     }
 
     /**

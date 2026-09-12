@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.6.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.7.0">
 
     <!-- 
         Configures the database backend.
@@ -545,29 +545,22 @@
         suppress-whitespace="none">
 
         <modules>
-            <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
-                    
+            <!--
+                Modules without conf.xml entries (sort-index, range-index) are auto-registered
+                via IndexFactory SPI. Add an entry here with enabled="no" to suppress one,
+                or with custom attributes to override defaults.
+            -->
+            <module id="ngram-index" enabled="yes" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
+
+            <module id="lucene-index" enabled="yes" buffer="32" class="org.exist.indexing.lucene.LuceneIndex"/>
+
             <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex" enabled="no"/>
-            
-            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
             <!--
-                The following index can be used to speed up 'order by' expressions
-                by pre-ordering a node set.
-            -->
-            <module id="sort-index" class="org.exist.indexing.sort.SortIndex"/>
-
-            <!-- 
-                New range index based on Apache Lucene. Replaces the old range index which is
-                hard-wired into eXist core.
-            -->
-            <module id="range-index" class="org.exist.indexing.range.RangeIndex"/>
-
-            <!--
-                 The following module is not really an index (though it sits 
+                 The following module is not really an index (though it sits
                  in the index pipeline). It gathers relevant statistics on the
-                 distribution of elements in the database, which can be used 
-                 by the query optimizer for additional optimizations. 
+                 distribution of elements in the database, which can be used
+                 by the query optimizer for additional optimizations.
             -->
             <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" enabled="no"/>
         </modules>
@@ -953,59 +946,34 @@
         <builtin-modules>
 
             <!--
-                Core Modules
+                Core Modules (SPI-registered; only entries with non-default parameters remain)
             -->
-            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule"/>
-            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule"/>
-            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule"/>
-            <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule"/>
-            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
-            <module uri="http://exist-db.org/xquery/request" class="org.exist.xquery.functions.request.RequestModule"/>
-            <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule"/>
-            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
-            <module uri="http://exist-db.org/xquery/session" class="org.exist.xquery.functions.session.SessionModule"/>
-            <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule"/>
             <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq"/>
-            <module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule"/>
             <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
                 <parameter name="evalDisabled" value="false"/>
             </module>
-            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule"/>
-            <module uri="http://exist-db.org/xquery/websocket" class="org.exist.xquery.functions.websocket.WebSocketModule"/>
-            <module uri="http://exist-db.org/xquery/console" class="org.exist.xquery.functions.websocket.ConsoleCompatModule"/>
             <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule">
                 <!-- set to false to disable the use of xs:anyURI as a $contents value for xmldb:store and xmldb:store-as-binary function -->
                 <parameter name="allowAnyUri" value="false"/>
             </module>
 
 
-            <!-- 
-                Extension Indexes
+            <!--
+                Extension Indexes (SPI-registered; only disabled entries remain)
             -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule"/>
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule"/>
-            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule"/>
-            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule"/>
             <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule" enabled="no"/>
             <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" enabled="no"/>
 
 
             <!--
-                Extensions
+                Extensions (SPI-registered; only disabled entries remain)
             -->
-            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule"/>
             <module uri="http://exist-db.org/xquery/exiftool" class="org.exist.exiftool.xquery.ExiftoolModule" enabled="no">
                 <parameter name="perl-path" value="/usr/bin/perl" description="file system path to the perl executable"/>
                 <parameter name="exiftool-path" value="/usr/bin/exiftool" description="file system path to the exiftool perl script"/>
             </module>
-            <module uri="http://expath.org/ns/http-client" class="org.exist.xquery.modules.httpclient.HttpClientModule"/>
-            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule"/>
-            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
-            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
-            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule"/>
 
 
             <!--
@@ -1036,20 +1004,8 @@
                 <parameter name="enableLazyCreation" value="true"/>
                 <parameter name="lazy.maximumSize" value="128"/>
             </module>
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
-            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
-            <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
             <module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule" enabled="no"/>
-            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"/>
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
-            <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule"/>
-            <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule"/>
-            <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
             <module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule" enabled="no"/>
-            <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule"/>
-            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
-            <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule"/>
-            <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule"/>
             <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule">
 
                 <!--
@@ -1082,7 +1038,6 @@
                 <parameter name="pool.2.properties.registerMbeans" value="false"/>
                 -->
             </module>
-            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>
             <!--
                 XSL:FO Transformation Module
                     Valid processor adapters are:
@@ -1150,12 +1105,14 @@
 
     <!--
     Global vector embedding model registry. When vector-field or vector:embed
-    omits model-path, the registry supplies path and dimension. Add models here
-    to use custom or additional embedding models; they appear in vector:models().
+    omits model-path, the registry supplies path and dimension. Add <model>
+    children and set enabled="yes" to register custom or additional models;
+    they appear in vector:models().
+
+    Example:
+        <vector-models enabled="yes">
+            <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
+        </vector-models>
     -->
-    <!--
-    <vector-models>
-        <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
-    </vector-models>
-    -->
+    <vector-models enabled="no"/>
 </exist>

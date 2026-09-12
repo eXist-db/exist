@@ -43,6 +43,11 @@ public class RangeIndex extends LuceneIndex {
 
     public final static String ID = RangeIndex.class.getName();
 
+    public static final class Factory implements org.exist.indexing.IndexFactory {
+        @Override public String getDefaultId() { return "range-index"; }
+        @Override public Class<? extends org.exist.indexing.AbstractIndex> getIndexClass() { return RangeIndex.class; }
+    }
+
     /**
      * Enumeration of supported operators and optimized functions.
      */
