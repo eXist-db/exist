@@ -200,3 +200,55 @@ function hofs:array-for-each-from-array () {
     )?*
 };
 
+(: https://github.com/eXist-db/exist/issues/3754 — HOF parameter types must be checked :)
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:for-each-wrong-param-type() {
+    for-each(1, function ($p as xs:string) { $p })
+};
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:filter-wrong-param-type() {
+    filter(1, function ($p as xs:string) as xs:boolean { string-length($p) > 0 })
+};
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:fold-left-wrong-param-type() {
+    fold-left(1, "", function ($acc as xs:string, $item as xs:string) { concat($acc, $item) })
+};
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:fold-right-wrong-param-type() {
+    fold-right(1, "", function ($item as xs:string, $acc as xs:string) { concat($item, $acc) })
+};
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:for-each-pair-wrong-param-type() {
+    for-each-pair(1, 2, function ($a as xs:string, $b as xs:string) { concat($a, $b) })
+};
+
+declare
+    %test:assertError("XPTY0004")
+function hofs:apply-wrong-param-type() {
+    apply(function ($p as xs:string) { $p }, [1])
+};
+
+(: Verify that untyped parameters still work :)
+declare
+    %test:assertEquals(1)
+function hofs:for-each-untyped-param() {
+    for-each(1, function ($p) { $p })
+};
+
+(: Verify that compatible subtypes work :)
+declare
+    %test:assertEquals(1)
+function hofs:for-each-compatible-subtype() {
+    for-each(1, function ($p as xs:decimal) { $p })
+};
+
