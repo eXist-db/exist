@@ -81,6 +81,17 @@ public class Profiler {
 
     private PerformanceStats stats;
 
+    /**
+     * Returns the performance statistics collected by this profiler instance.
+     * Each XQueryContext has its own Profiler with its own stats, enabling
+     * per-query profiling isolation.
+     *
+     * @return the performance stats for this profiler
+     */
+    public PerformanceStats getPerformanceStats() {
+        return stats;
+    }
+
     private long queryStart = 0;
 
     private Database db;

@@ -64,22 +64,20 @@ public class MapExpr extends AbstractExpression {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final Sequence effectiveContext = contextItem != null ? contextItem.toSequence() : contextSequence;
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
 
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
         for (final Mapping mapping : this.mappings) {
-            final Sequence key = mapping.key.eval(contextSequence, null);
+            final Sequence key = mapping.key.eval(effectiveContext, null);
             if (key.getItemCount() != 1) {
                 throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
             }
             final AtomicValue atomic = key.itemAt(0).atomize();
-            final Sequence value = mapping.value.eval(contextSequence, null);
+            final Sequence value = mapping.value.eval(effectiveContext, null);
             if (map.contains(atomic)) {
                 throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
             }
@@ -106,11 +104,31 @@ public class MapExpr extends AbstractExpression {
 
     @Override
     public void accept(final ExpressionVisitor visitor) {
-        super.accept(visitor);
-        for (final Mapping mapping : this.mappings) {
-            mapping.key.accept(visitor);
-            mapping.value.accept(visitor);
-        }
+        // Delegate to the visitor's MapExpr hook so emitters that care about
+        // structure (e.g. util:explain's QueryPlanSerializer) can wrap key
+        // and value expressions inside a parent <map> element. The default
+        // implementation in ExpressionVisitor falls back to the generic
+        // visit() and recurses through the mappings, preserving the prior
+        // traversal contract for visitors that don't override visitMapExpr.
+        visitor.visitMapExpr(this);
+    }
+
+    /**
+     * Number of key/value mappings in this map constructor. Exposed so that
+     * structural visitors can iterate the mappings without reflection.
+     */
+    public int getMappingCount() {
+        return mappings.size();
+    }
+
+    /** Key expression of the mapping at {@code index}. */
+    public Expression getMappingKey(final int index) {
+        return mappings.get(index).key;
+    }
+
+    /** Value expression of the mapping at {@code index}. */
+    public Expression getMappingValue(final int index) {
+        return mappings.get(index).value;
     }
 
     @Override
