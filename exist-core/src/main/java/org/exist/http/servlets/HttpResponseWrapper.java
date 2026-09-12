@@ -180,6 +180,29 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		response.setHeader(name, encode(value));
 	}
 
+	/**
+	 * Set a header the same way {@link #setHeader(String, String)} does, except that if the
+	 * wrapped response buffers its output (see {@link HeaderPassthroughResponse}), the header
+	 * bypasses that buffering and applies to the real response immediately. Used exclusively by
+	 * {@code URLRewrite#setHeaders} to apply a controller.xql {@code <exist:set-header>}
+	 * directive -- pipeline configuration, not step output -- so it survives regardless of which
+	 * pipeline step's buffered output eventually gets flushed. Deliberately not used by
+	 * {@link #setHeader(String, String)} itself, which backs the XQuery
+	 * {@code response:set-header()} function: a step's own programmatic header call is step
+	 * output and must stay subject to the same buffering as everything else that step writes.
+	 *
+	 * @param name the name of the header.
+	 * @param value the header value.
+	 */
+	public void setPassthroughHeader(final String name, final String value) {
+		final String encoded = encode(value);
+		if (response instanceof HeaderPassthroughResponse passthroughResponse) {
+			passthroughResponse.setPassthroughHeader(name, encoded);
+		} else {
+			response.setHeader(name, encoded);
+		}
+	}
+
 	@Override
 	public void setIntHeader(final String name, final int value) {
 		response.setIntHeader(name, value);
