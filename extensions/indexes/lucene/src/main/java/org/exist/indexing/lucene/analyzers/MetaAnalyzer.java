@@ -58,6 +58,18 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
         return perFieldAnalyzers.getOrDefault(fieldName, defaultAnalyzer);
     }
 
+    /**
+     * The concrete analyzer this wrapper delegates to for the given field (or the default analyzer
+     * when the field has no specific one, or {@code fieldName} is null). Public so configuration
+     * introspection (e.g. ft:fields) can report the resolved analyzer class behind the wrapper.
+     *
+     * @param fieldName the field name, or null for the default analyzer
+     * @return the concrete analyzer used for that field
+     */
+    public Analyzer getConfiguredAnalyzer(@Nullable final String fieldName) {
+        return getWrappedAnalyzer(fieldName);
+    }
+
     public String toString() {
         return "MetaAnalyzer(" + this.perFieldAnalyzers + ", default=" + this.defaultAnalyzer + ")";
     }
