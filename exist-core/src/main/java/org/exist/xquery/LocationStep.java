@@ -584,6 +584,23 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * Clears predicate contexts left on the cached structural-index result by a previous
+     * evaluation of this step.
+     *
+     * <p>{@link #currentSet} is held for the whole query execution, and the sibling and
+     * preceding/following select methods stamp its {@code NodeProxy} objects in place. Their
+     * duplicate-suppression guard reads those stamps, so without this reset it sees state left
+     * over from the previous evaluation and skips every node. Only reuse of a cached set needs
+     * this; a freshly built one carries no contexts.</p>
+     */
+    private void clearCachedSetPredicateContexts() {
+        for (final NodeProxy p : currentSet) {
+            p.clearContext(Expression.IGNORE_CONTEXT);
+        }
+    }
+
+
     protected Sequence getAttributes(final XQueryContext context, final Sequence contextSequence)
             throws XPathException {
         if (!contextSequence.isPersistentSet()) {
@@ -884,6 +901,8 @@ public class LocationStep extends Step {
                     currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null, this);
                     currentDocs = docs;
                     registerUpdateListener();
+                } else {
+                    clearCachedSetPredicateContexts();
                 }
                 return switch (axis) {
                     case Constants.PRECEDING_SIBLING_AXIS -> currentSet.selectPrecedingSiblings(contextSet, contextId);
@@ -971,6 +990,8 @@ public class LocationStep extends Step {
                     currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null, this);
                     currentDocs = docs;
                     registerUpdateListener();
+                } else {
+                    clearCachedSetPredicateContexts();
                 }
 
                 if (position > -1) {
