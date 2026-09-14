@@ -65,6 +65,16 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunData.signatures[0], FunData.class),
         new FunctionDef(FunData.signatures[1], FunData.class),
         new FunctionDef(FunDateTime.signature, FunDateTime.class),
+        // --- XQuery 4.0: fn:dateTime-record ---
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[0], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[1], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[2], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[3], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[4], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[5], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[6], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.FS_DATETIME_RECORD[7], FnDateTimeRecord.class),
+        // --- End XQuery 4.0: fn:dateTime-record ---
         new FunctionDef(FunDeepEqual.signatures[0], FunDeepEqual.class),
         new FunctionDef(FunDeepEqual.signatures[1], FunDeepEqual.class),
         new FunctionDef(FunDefaultCollation.signature, FunDefaultCollation.class),
