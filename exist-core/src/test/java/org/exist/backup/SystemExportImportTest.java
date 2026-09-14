@@ -76,16 +76,6 @@ import org.xmldb.api.base.XMLDBException;
 @RunWith(Parameterized.class)
 public class SystemExportImportTest {
 
-    @Parameters(name = "{0} zip:{2}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"direct", true, false},
-                {"non-direct", false, false},
-                {"direct", true, true},
-                {"non-direct", false, true}
-        });
-    }
-
     @Parameter
     public String apiName;
 
@@ -133,6 +123,16 @@ public class SystemExportImportTest {
     private static String XML4 = XML4_DECL + "\n<test/>";
 
     private static String BINARY = "test";
+
+    @Parameters(name = "{0} zip:{2}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"direct", true, false},
+                {"non-direct", false, false},
+                {"direct", true, true},
+                {"non-direct", false, true}
+        });
+    }
 
     @Test
     public void exportImport() throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
