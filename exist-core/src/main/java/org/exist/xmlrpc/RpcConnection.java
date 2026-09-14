@@ -86,6 +86,7 @@ import org.exist.xmlrpc.function.XmlRpcDocumentFunction;
 import org.exist.xmlrpc.function.XmlRpcFunction;
 import org.exist.xquery.*;
 import org.exist.xquery.util.HTTPUtils;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -468,7 +469,10 @@ public class RpcConnection implements RpcAPI {
                         final Permission perms = doc.getPermissions();
 
                         final Map<String, Object> hash = new HashMap<>(5);
-                        hash.put("name", doc.getFileURI().toString());
+                        // Resource-naming contract (eXist-db/exist#6463, decision 1): XML-RPC is a
+                        // decoded-string protocol, so names are returned in decoded display form,
+                        // not the percent-encoded stored form. See URIUtils.decodeForURI.
+                        hash.put("name", URIUtils.decodeForURI(doc.getFileURI().toString()));
                         hash.put("owner", perms.getOwner().getName());
                         hash.put("group", perms.getGroup().getName());
                         hash.put("permissions", perms.getMode());
@@ -477,14 +481,14 @@ public class RpcConnection implements RpcAPI {
                     }
                 }
                 for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
-                    collections.add(i.next().toString());
+                    collections.add(URIUtils.decodeForURI(i.next().toString()));
                 }
             }
 
             final Permission perms = collection.getPermissionsNoLock();
             desc.put("collections", collections);
             desc.put("documents", docs);
-            desc.put("name", collection.getURI().toString());
+            desc.put("name", URIUtils.decodeForURI(collection.getURI().toString()));
             desc.put("created", Long.toString(collection.getCreated()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
@@ -510,7 +514,7 @@ public class RpcConnection implements RpcAPI {
             return this.<Map<String, Object>>readDocument(resourceUri).apply((document, broker, transaction) -> {
                 final Map<String, Object> hash = new HashMap<>(11);
                 final Permission perms = document.getPermissions();
-                hash.put("name", resourceUri.toString());
+                hash.put("name", URIUtils.decodeForURI(resourceUri.toString()));
                 hash.put("owner", perms.getOwner().getName());
                 hash.put("group", perms.getGroup().getName());
                 hash.put("permissions", perms.getMode());
@@ -576,12 +580,12 @@ public class RpcConnection implements RpcAPI {
             final List<String> collections = new ArrayList<>();
             if (collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                 for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
-                    collections.add(i.next().toString());
+                    collections.add(URIUtils.decodeForURI(i.next().toString()));
                 }
             }
             final Permission perms = collection.getPermissionsNoLock();
             desc.put("collections", collections);
-            desc.put("name", collection.getURI().toString());
+            desc.put("name", URIUtils.decodeForURI(collection.getURI().toString()));
             desc.put("created", Long.toString(collection.getCreated()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
@@ -967,7 +971,7 @@ public class RpcConnection implements RpcAPI {
             return this.<List<String>>readCollection(collUri).apply((collection, broker, transaction) -> {
                 final List<String> list = new ArrayList<>();
                 for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
-                    list.add(i.next().toString());
+                    list.add(URIUtils.decodeForURI(i.next().toString()));
                 }
                 return list;
             });
@@ -988,7 +992,7 @@ public class RpcConnection implements RpcAPI {
             return this.<List<String>>readCollection(collUri).apply((collection, broker, transaction) -> {
                 final List<String> list = new ArrayList<>();
                 for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-                    list.add(i.next().getFileURI().toString());
+                    list.add(URIUtils.decodeForURI(i.next().getFileURI().toString()));
                 }
                 return list;
             });
