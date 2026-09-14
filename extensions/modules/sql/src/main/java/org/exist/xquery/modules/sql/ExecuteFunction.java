@@ -156,9 +156,9 @@ public class ExecuteFunction extends BasicFunction {
             )
     );
 
-    private final static String PARAMETERS_ELEMENT_NAME = "parameters";
-    private final static String PARAM_ELEMENT_NAME = "param";
-    private final static String TYPE_ATTRIBUTE_NAME = "type";
+    private static final String PARAMETERS_ELEMENT_NAME = "parameters";
+    private static final String PARAM_ELEMENT_NAME = "param";
+    private static final String TYPE_ATTRIBUTE_NAME = "type";
 
     /**
      * ExecuteFunction Constructor.
@@ -366,98 +366,102 @@ public class ExecuteFunction extends BasicFunction {
                     /* SQL Query returned results */
 
                     // iterate through the result set building an XML document
-                    final ResultSetMetaData rsmd = rs.getMetaData();
-                    final int iColumns = rsmd.getColumnCount();
+                    try {
+                        final ResultSetMetaData rsmd = rs.getMetaData();
+                        final int iColumns = rsmd.getColumnCount();
 
-                    while (rs.next()) {
-                        builder.startElement(new QName("row", namespaceUri, namespacePrefix), null);
-                        builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
+                        while (rs.next()) {
+                            builder.startElement(new QName("row", namespaceUri, namespacePrefix), null);
+                            builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
 
-                        // get each tuple in the row
-                        for (int i = 0; i < iColumns; i++) {
-                            final String columnName = rsmd.getColumnLabel(i + 1);
+                            // get each tuple in the row
+                            for (int i = 0; i < iColumns; i++) {
+                                final String columnName = rsmd.getColumnLabel(i + 1);
 
-                            if (columnName != null) {
+                                if (columnName != null) {
 
-                                String colElement = "field";
+                                    String colElement = "field";
 
-                                if (makeNodeFromColumnName && !columnName.isEmpty()) {
-                                    // use column names as the XML node
+                                    if (makeNodeFromColumnName && !columnName.isEmpty()) {
+                                        // use column names as the XML node
 
-                                    /*
-                                     * Spaces in column names are replaced with
-                                     * underscore's
-                                     */
-                                    colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
-                                }
-
-                                builder.startElement(new QName(colElement, namespaceUri, namespacePrefix), null);
-
-                                if (!makeNodeFromColumnName || columnName.length() <= 0) {
-                                    final String name;
-                                    if (!columnName.isEmpty()) {
-                                        name = SQLUtils.escapeXmlAttr(columnName);
-                                    } else {
-                                        name = "Column: " + (i + 1);
+                                        /*
+                                         * Spaces in column names are replaced with
+                                         * underscore's
+                                         */
+                                        colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
                                     }
 
-                                    builder.addAttribute(new QName("name", null, null), name);
-                                }
+                                    builder.startElement(new QName(colElement, namespaceUri, namespacePrefix), null);
 
-                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, namespaceUri, namespacePrefix), rsmd.getColumnTypeName(i + 1));
-                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
+                                    if (!makeNodeFromColumnName || columnName.length() <= 0) {
+                                        final String name;
+                                        if (!columnName.isEmpty()) {
+                                            name = SQLUtils.escapeXmlAttr(columnName);
+                                        } else {
+                                            name = "Column: " + (i + 1);
+                                        }
 
-                                //get the content
-                                if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
-                                    //parse sqlxml value
-                                    try {
-                                        final SQLXML sqlXml = rs.getSQLXML(i + 1);
+                                        builder.addAttribute(new QName("name", null, null), name);
+                                    }
+
+                                    builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, namespaceUri, namespacePrefix), rsmd.getColumnTypeName(i + 1));
+                                    builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
+
+                                    //get the content
+                                    if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
+                                        //parse sqlxml value
+                                        try {
+                                            final SQLXML sqlXml = rs.getSQLXML(i + 1);
+
+                                            if (rs.wasNull()) {
+                                                // Add a null indicator attribute if the value was SQL Null
+                                                builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
+                                            } else {
+                                                try (final Reader charStream = sqlXml.getCharacterStream()) {
+                                                    final InputSource src = new InputSource(charStream);
+                                                    final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+                                                    XMLReader reader = null;
+                                                    try {
+                                                        reader = parserPool.borrowXMLReader();
+
+                                                        final SAXAdapter adapter = new AppendingSAXAdapter(expression, builder);
+                                                        reader.setContentHandler(adapter);
+                                                        reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                                                        reader.parse(src);
+                                                    } finally {
+                                                        if (reader != null) {
+                                                            parserPool.returnXMLReader(reader);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } catch (final Exception e) {
+                                            throw new XPathException(this, "Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                        }
+                                    } else {
+                                        //otherwise assume string value
+                                        final String colValue = rs.getString(i + 1);
 
                                         if (rs.wasNull()) {
                                             // Add a null indicator attribute if the value was SQL Null
                                             builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
                                         } else {
-                                            try (final Reader charStream = sqlXml.getCharacterStream()) {
-                                                final InputSource src = new InputSource(charStream);
-                                                final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
-                                                XMLReader reader = null;
-                                                try {
-                                                    reader = parserPool.borrowXMLReader();
-
-                                                    final SAXAdapter adapter = new AppendingSAXAdapter(expression, builder);
-                                                    reader.setContentHandler(adapter);
-                                                    reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-                                                    reader.parse(src);
-                                                } finally {
-                                                    if (reader != null) {
-                                                        parserPool.returnXMLReader(reader);
-                                                    }
-                                                }
+                                            if (colValue != null) {
+                                                builder.characters(colValue);
                                             }
                                         }
-                                    } catch (final Exception e) {
-                                        throw new XPathException(this, "Could not parse column of type SQLXML: " + e.getMessage(), e);
                                     }
-                                } else {
-                                    //otherwise assume string value
-                                    final String colValue = rs.getString(i + 1);
 
-                                    if (rs.wasNull()) {
-                                        // Add a null indicator attribute if the value was SQL Null
-                                        builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
-                                    } else {
-                                        if (colValue != null) {
-                                            builder.characters(colValue);
-                                        }
-                                    }
+                                    builder.endElement();
                                 }
-
-                                builder.endElement();
                             }
-                        }
 
-                        builder.endElement();
-                        rowCount++;
+                            builder.endElement();
+                            rowCount++;
+                        }
+                    } catch(final SQLException sqe) {
+                        // no-op - getMetaData is not always supported
                     }
                 }
 
