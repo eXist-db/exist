@@ -1330,6 +1330,21 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingResponseWrapper extends HttpServletResponseWrapper {
+
+        /**
+         * Tracks which of {@link #getWriter()} / {@link #getOutputStream()} this response has
+         * committed to, per the servlet spec mutual-exclusion rule. Unlike using {@code sos != null}
+         * as the sentinel (the previous approach), this distinguishes "a stream backing the writer
+         * already exists" from "getOutputStream() was called directly" -- so a repeat call to
+         * whichever method was called first is idempotent, matching real servlet container
+         * responses. This idempotency is required by Jetty 12's {@code Dispatcher.forward()}, which
+         * -- after the forwarded servlet returns -- itself calls {@code getOutputStream()} and falls
+         * back to {@code getWriter()} on {@link IllegalStateException} in order to close whichever
+         * stream is live, regardless of which one the forwarded servlet used.
+         */
+        private enum OutputMode { NONE, WRITER, STREAM }
+
+        private OutputMode outputMode = OutputMode.NONE;
         private CachingServletOutputStream sos = null;
         private PrintWriter writer = null;
         private int status = HttpServletResponse.SC_OK;
@@ -1346,12 +1361,22 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!cache) {
                 return super.getWriter();
             }
-            if (sos != null) {
-                throw new IOException("getWriter cannnot be called after getOutputStream");
+            if (outputMode == OutputMode.STREAM) {
+                // Per the ServletResponse#getWriter() contract, this must be an IllegalStateException,
+                // not an IOException -- Jetty 12's Dispatcher.forward() relies on catching exactly
+                // this type to fall back from getOutputStream() to getWriter().
+                throw new IllegalStateException("getWriter cannot be called after getOutputStream");
             }
-            sos = new CachingServletOutputStream();
-            if (writer == null) {
-                writer = new PrintWriter(new OutputStreamWriter(sos, getCharacterEncoding()));
+            if (outputMode == OutputMode.NONE) {
+                // Only commit outputMode/sos/writer once construction has fully succeeded -- if
+                // getCharacterEncoding() names a charset the JVM doesn't support, OutputStreamWriter
+                // throws, and a half-committed state here (mode flipped but writer still null) would
+                // make every subsequent getWriter() call silently return null instead of retrying.
+                final CachingServletOutputStream newSos = new CachingServletOutputStream();
+                final PrintWriter newWriter = new PrintWriter(new OutputStreamWriter(newSos, getCharacterEncoding()));
+                sos = newSos;
+                writer = newWriter;
+                outputMode = OutputMode.WRITER;
             }
             return writer;
         }
@@ -1361,11 +1386,13 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!cache) {
                 return super.getOutputStream();
             }
-            if (writer != null) {
-                throw new IOException("getOutputStream cannnot be called after getWriter");
+            if (outputMode == OutputMode.WRITER) {
+                // See getWriter(): must be IllegalStateException, not IOException.
+                throw new IllegalStateException("getOutputStream cannot be called after getWriter");
             }
-            if (sos == null) {
+            if (outputMode == OutputMode.NONE) {
                 sos = new CachingServletOutputStream();
+                outputMode = OutputMode.STREAM;
             }
             return sos;
         }
@@ -1390,13 +1417,89 @@ public class XQueryURLRewrite extends HttpServlet {
             return contentType != null ? contentType : super.getContentType();
         }
 
+        /**
+         * Headers that describe an intermediate resource -- not the final output -- and so must not
+         * leak onto the real response while buffering. A static resource forward step (e.g. Jetty's
+         * default/ResourceServlet serving a plain file) sets these from the FILE's own properties
+         * (its length, its modification time, its identity, whether it supports byte ranges), through
+         * any of setHeader/addHeader/setIntHeader/addIntHeader/setDateHeader/addDateHeader --
+         * HttpServletResponseWrapper's defaults for all of these delegate straight to the real
+         * underlying response with no cache awareness. Without this guard they leak onto the real
+         * response before a later <exist:view> step's own, different output is flushed to it --
+         * Content-Length doing exactly this is what broke https://github.com/eXist-db/exist/issues/6669;
+         * Last-Modified/ETag/Accept-Ranges are the same shape of bug, just without (yet) a hard
+         * failure mode of their own to force the issue.
+         * <p>
+         * Deliberately narrower than "buffer every header while caching": headers set explicitly via
+         * controller.xql's {@code <exist:set-header>} ({@link URLRewrite#setHeaders}, called before
+         * {@code doRewrite()}'s {@code dispatcher.forward()}) must keep going straight through
+         * immediately, since {@code applyViews()} discards each step's wrapper for a fresh one around
+         * the real response on the next view step and only ever flushes the last one -- buffering
+         * those too would silently drop them.
+         */
+        private static final Set<String> BUFFERED_RESOURCE_METADATA_HEADERS =
+                Set.of("content-length", "last-modified", "etag", "accept-ranges");
+
+        private boolean isBufferedResourceMetadataHeader(final String name) {
+            return cache && BUFFERED_RESOURCE_METADATA_HEADERS.contains(name.toLowerCase(Locale.ROOT));
+        }
+
         @Override
         public void setHeader(final String name, final String value) {
             if ("Content-Type".equals(name)) {
                 setContentType(value);
+            } else if (isBufferedResourceMetadataHeader(name)) {
+                return;
             } else {
                 super.setHeader(name, value);
             }
+        }
+
+        @Override
+        public void addHeader(final String name, final String value) {
+            if ("Content-Type".equals(name)) {
+                // Route through setContentType() like setHeader() does -- otherwise a step that sets
+                // Content-Type via addHeader() (e.g. Jetty's default/ResourceServlet serving a static
+                // file) bypasses the contentType tracking entirely and leaks straight onto the real
+                // response, so a later <exist:view> step's actual declared Content-Type never sticks.
+                setContentType(value);
+            } else if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            } else {
+                super.addHeader(name, value);
+            }
+        }
+
+        @Override
+        public void setIntHeader(final String name, final int value) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.setIntHeader(name, value);
+        }
+
+        @Override
+        public void addIntHeader(final String name, final int value) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.addIntHeader(name, value);
+        }
+
+        @Override
+        public void setDateHeader(final String name, final long date) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.setDateHeader(name, date);
+        }
+
+        @Override
+        public void addDateHeader(final String name, final long date) {
+            if (isBufferedResourceMetadataHeader(name)) {
+                return;
+            }
+            super.addDateHeader(name, date);
         }
 
         @Override
@@ -1431,6 +1534,19 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         @Override
+        public void setContentLengthLong(final long len) {
+            // Without this override, HttpServletResponseWrapper's default delegates straight to the
+            // real underlying response, leaking a step's Content-Length onto it even while cache=true.
+            // A static resource served via Jetty's default/ResourceServlet (e.g. a plain file forward
+            // step in a controller.xql pipeline) sets this rather than setContentLength(int), fixing
+            // the real response's Content-Length before a later <exist:view> step's -- possibly
+            // longer -- output is flushed to it. See https://github.com/eXist-db/exist/issues/6669
+            if (!cache) {
+                super.setContentLengthLong(len);
+            }
+        }
+
+        @Override
         public void flushBuffer() throws IOException {
             if (!cache) {
                 super.flushBuffer();
@@ -1442,8 +1558,17 @@ public class XQueryURLRewrite extends HttpServlet {
                 super.setContentType(contentType);
             }
             if (sos != null) {
+                final byte[] data = sos.getData();
+                // Set the real Content-Length explicitly rather than leaving it to the container to
+                // infer (e.g. via chunked transfer encoding). The buffered step's own Content-Length
+                // headers are deliberately suppressed above (see isBufferedContentLength()) precisely
+                // because they'd be wrong for this, the final, output -- this is where the correct
+                // value actually gets set, from the bytes that are really about to be written.
+                if (cache) {
+                    super.setContentLengthLong(data.length);
+                }
                 final ServletOutputStream out = super.getOutputStream();
-                out.write(sos.getData());
+                out.write(data);
                 out.flush();
             }
         }
