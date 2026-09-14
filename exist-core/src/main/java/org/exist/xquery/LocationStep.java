@@ -532,11 +532,16 @@ public class LocationStep extends Step {
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
-//        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-//            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-//            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-//            return vset;
-//        }
+
+        // A processing instruction is addressable by name, but the structural index has only an
+        // element half and an attribute half -- there is nowhere to look one up. Without this
+        // branch a named test fell through to the index and searched for an *element* of that
+        // name, so self::processing-instruction(NAME) never matched. Matching directly against
+        // the context set needs no index; the VirtualNodeSet the other axes use is not usable on
+        // the self axis, which is why the branch that had been commented out here stayed unused.
+        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+            return selfProcessingInstructions(contextSet);
+        }
 
         if (test.isWildcardTest()) {
             if (nodeTestType == null) {
@@ -580,8 +585,50 @@ public class LocationStep extends Step {
                         "Using structural index '" + index.toString() + "'");
             }
             final NodeSelector selector = new SelfSelector(contextSet, contextId);
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector, this);
+            return index.findElementsByTagName(indexTypeFor(test), docs, test.getName(), selector, this);
         }
+    }
+
+    /**
+     * Selects the half of the structural index that a node test should be looked up in.
+     *
+     * <p>The index is split into an element half and an attribute half. A named attribute kind
+     * test such as {@code self::attribute(id)} must be looked up in the latter; searching the
+     * element half for an element of that name always comes back empty.</p>
+     *
+     * <p>Processing instructions are handled before this point, so only element and attribute
+     * tests reach here.</p>
+     *
+     * @param test the node test being applied
+     * @return {@link ElementValue#ATTRIBUTE} for an attribute test, {@link ElementValue#ELEMENT} otherwise
+     */
+    private static byte indexTypeFor(final NodeTest test) {
+        return test.getType() == Type.ATTRIBUTE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
+    }
+
+    /**
+     * Selects the processing instructions in {@code contextSet} that satisfy this step's test.
+     *
+     * <p>A processing instruction is addressable by name, but the structural index has only an
+     * element half and an attribute half, so there is nowhere to look one up. Matching directly
+     * against the context set needs no index. (The {@code VirtualNodeSet} the other axes use for
+     * processing instructions is not usable on the self axis — it leaves the result without the
+     * context it needs — which is why the branch that once stood here was commented out.)</p>
+     *
+     * @param contextSet the nodes on the self axis
+     * @return those matching this step's test, carrying the current context where one applies
+     */
+    private Sequence selfProcessingInstructions(final NodeSet contextSet) {
+        final NewArrayNodeSet results = new NewArrayNodeSet();
+        for (final NodeProxy p : contextSet) {
+            if (test.matches(p)) {
+                if (Expression.NO_CONTEXT_ID != contextId) {
+                    p.addContextNode(contextId, p);
+                }
+                results.add(p);
+            }
+        }
+        return results;
     }
 
     protected Sequence getAttributes(final XQueryContext context, final Sequence contextSequence)
