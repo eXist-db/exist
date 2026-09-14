@@ -11985,6 +11985,15 @@ exist-core/src/test/java/org/exist/xquery/SpecialNamesTest.java,org.exist.xquery
 exist-core/src/test/java/org/exist/xquery/SpecialNamesTest.java,org.exist.xquery.SpecialNamesTest,getQueryService,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/SpecialNamesTest.java,org.exist.xquery.SpecialNamesTest,storeXMLStringAndGetQueryService,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/SpecialNamesTest.java,org.exist.xquery.SpecialNamesTest,attributes,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,storeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,removeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,query,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,count,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,namedProcessingInstructionTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,nonMatchingProcessingInstructionTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,unnamedProcessingInstructionTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,namedProcessingInstructionTestAsStep,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,namedElementAndAttributeTestsAreUnaffected,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/integer/IntegerPictureTest.java,org.exist.xquery.functions.integer.IntegerPictureTest,pictureEmpty,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/integer/IntegerPictureTest.java,org.exist.xquery.functions.integer.IntegerPictureTest,picture,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/integer/IntegerPictureTest.java,org.exist.xquery.functions.integer.IntegerPictureTest,fmt,throws-declaration,XPathException,propagate,,
@@ -13420,6 +13429,18 @@ exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquer
 exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,pathEndingWithIntegerLiteral,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,pathEndingWithNumberFunction,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,axisStepThenFunctionCallDedup,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,storeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,removeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,query,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,count,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namedAttributeKindTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namespacedAttributeKindTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,nonMatchingAttributeKindTestOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namedAttributeKindTestUnderNamedContextStep,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namedAttributeKindTestOnBoundVariable,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,unnamedAndWildcardAttributeKindTestsOnSelfAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namedAttributeKindTestOnAttributeAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,namedElementTestsOnSelfAxisAreUnaffected,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,eqnameNamespaceWithWhitespace,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,prefixedQNameWithSurroundingWhitespace,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,assertErrorCode,try-catch,XPathException,custom,,
@@ -15120,8 +15141,9 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,throws-declaration,AnalyzerConfig.ParameterException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,NoSuchFieldException | NoSuchFieldError,wrap,Log4j,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,"ClassNotFoundException | InstantiationException |
-                              IllegalAccessException | NoSuchMethodException | InvocationTargetException",wrap,Log4j,
-extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,FileNotFoundException,log,Log4j,ERROR
+                              IllegalAccessException | NoSuchMethodException |
+                              InvocationTargetException",wrap,Log4j,
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,IOException,log,Log4j,ERROR
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,NumberFormatException,log,Log4j,ERROR
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,NumberFormatException,log,Log4j,ERROR
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,getConstructorParameter,try-catch,ClassNotFoundException,wrap,Log4j,

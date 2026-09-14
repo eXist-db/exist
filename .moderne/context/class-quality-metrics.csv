@@ -879,7 +879,7 @@ exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBDefragment.java,o
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBRemove.java,org.exist.xquery.functions.xmldb.XMLDBRemove,63,2,2,6,2,0.0,13,49.41568619531762
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBMatchCollection.java,org.exist.xquery.functions.xmldb.XMLDBMatchCollection,47,3,2,5,2,0.0,7,60.731657053727346
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBMove.java,org.exist.xquery.functions.xmldb.XMLDBMove,75,2,5,7,2,0.0,14,46.52649005543568
-exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBCreateCollection.java,org.exist.xquery.functions.xmldb.XMLDBCreateCollection,49,2,2,4,2,0.0,7,54.86878696356282
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBCreateCollection.java,org.exist.xquery.functions.xmldb.XMLDBCreateCollection,51,2,2,4,2,0.0,7,54.4897890566962
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBGetChildResources.java,org.exist.xquery.functions.xmldb.XMLDBGetChildResources,35,2,2,4,2,0.0,5,60.42421106162309
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBSetMimeType.java,org.exist.xquery.functions.xmldb.XMLDBSetMimeType,152,3,2,18,2,0.3333333333333333,19,42.242572731754684
 exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBReindex.java,org.exist.xquery.functions.xmldb.XMLDBReindex,103,3,4,13,2,0.0,11,49.47450689662412
@@ -1310,7 +1310,7 @@ exist-core/src/main/java/org/exist/xquery/Annotations.java,org.exist.xquery.Anno
 exist-core/src/main/java/org/exist/xquery/AnnotationTriggerOnResult.java,org.exist.xquery.AnnotationTriggerOnResult,10,1,0,1,1,1.0,0,78.05153303713244
 exist-core/src/main/java/org/exist/xquery/ErrorDisclosure.java,org.exist.xquery.ErrorDisclosure,125,8,1,18,2,0.0,10,61.16597898449568
 exist-core/src/main/java/org/exist/xquery/InstanceOfExpression.java,org.exist.xquery.InstanceOfExpression,106,10,2,22,3,0.4666666666666667,15,63.17018710521447
-exist-core/src/main/java/org/exist/xquery/LocationStep.java,org.exist.xquery.LocationStep,1496,30,11,271,6,0.15632183908045977,54,42.082430212733996
+exist-core/src/main/java/org/exist/xquery/LocationStep.java,org.exist.xquery.LocationStep,1543,32,11,278,6,0.13709677419354838,54,42.60792063916874
 exist-core/src/main/java/org/exist/xquery/NamedFunctionReference.java,org.exist.xquery.NamedFunctionReference,120,8,4,24,2,0.32142857142857145,23,57.832653447747575
 exist-core/src/main/java/org/exist/xquery/pragmas/ForceIndexUse.java,org.exist.xquery.pragmas.ForceIndexUse,57,4,3,13,2,0.5,8,59.52348020277964
 exist-core/src/main/java/org/exist/xquery/pragmas/NoIndexPragma.java,org.exist.xquery.pragmas.NoIndexPragma,19,2,3,3,2,0.0,4,68.4975929460225
@@ -1983,7 +1983,7 @@ extensions/modules/process/src/main/java/org/exist/xquery/modules/process/Execut
 extensions/modules/process/src/main/java/org/exist/xquery/modules/process/ProcessModule.java,org.exist.xquery.modules.process.ProcessModule,35,5,4,5,5,0.0,1,77.89349203176279
 extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchEmbeddingTest.java,xquery.lucene.VectorSearchEmbeddingTest,63,3,5,4,1,0.0,15,54.80373969137243
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FacetPollutionJavaReproducerTest.java,org.exist.indexing.lucene.FacetPollutionJavaReproducerTest,412,11,5,44,1,0.05454545454545454,37,44.792568571288655
-extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerConfigTest.java,org.exist.indexing.lucene.AnalyzerConfigTest,531,22,1,22,13,0.0,20,53.123516707163354
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerConfigTest.java,org.exist.indexing.lucene.AnalyzerConfigTest,533,22,1,22,13,0.0,19,53.08790131104215
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/OptimizerTest.java,org.exist.indexing.lucene.OptimizerTest,153,6,9,9,1,0.4,12,52.22207776837347
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java,org.exist.indexing.lucene.LuceneIndexWorkerBatchSizeTest,42,5,0,5,5,0.0,11,65.33237262191903
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerModeTest.java,org.exist.indexing.lucene.LuceneIndexWorkerModeTest,79,6,0,6,2,0.0,11,59.5566681798372
@@ -2241,6 +2241,7 @@ exist-core/src/test/java/org/exist/xquery/FollowingAxisPositionRegressionTest.ja
 exist-core/src/test/java/org/exist/xquery/FunctionTypeInElementContentTest.java,org.exist.xquery.FunctionTypeInElementContentTest,113,13,0,13,13,0.0,4,67.36676244536807
 exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,94,11,0,12,1,0.0,18,65.80594840275066
 exist-core/src/test/java/org/exist/xquery/SpecialNamesTest.java,org.exist.xquery.SpecialNamesTest,106,8,3,10,2,0.21428571428571427,9,62.548785958837385
+exist-core/src/test/java/org/exist/xquery/SelfAxisProcessingInstructionRegressionTest.java,org.exist.xquery.SelfAxisProcessingInstructionRegressionTest,82,9,5,10,1,0.2777777777777778,7,67.328275563329
 exist-core/src/test/java/org/exist/xquery/functions/integer/IntegerPictureTest.java,org.exist.xquery.functions.integer.IntegerPictureTest,485,40,0,56,5,0.0,14,59.61834720868388
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChownTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChownTest,1718,162,16,169,1,0.8916494133885439,35,62.67152833693202
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/IdFunctionTest.java,org.exist.xquery.functions.securitymanager.IdFunctionTest,177,3,0,3,3,0.0,18,39.10163323848724
@@ -2377,6 +2378,7 @@ exist-core/src/test/java/org/exist/xquery/ConstructedNodesRecoveryTest.java,org.
 exist-core/src/test/java/org/exist/xquery/DeferredFunctionCallTest.java,org.exist.xquery.DeferredFunctionCallTest,112,1,0,1,1,1.0,16,32.138935890345095
 exist-core/src/test/java/org/exist/xquery/DeepEqualTest.java,org.exist.xquery.DeepEqualTest,552,67,3,70,1,0.003618272274988693,12,68.21061753611522
 exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,116,8,1,10,1,0.10714285714285714,7,61.27216414893714
+exist-core/src/test/java/org/exist/xquery/SelfAxisAttributeKindRegressionTest.java,org.exist.xquery.SelfAxisAttributeKindRegressionTest,106,12,5,13,1,0.4393939393939394,7,67.90048925221811
 exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,87,7,1,14,1,0.0,15,60.94527770562309
 exist-core/src/test/java/org/exist/xquery/XmlnsUriEscapeTest.java,org.exist.xquery.XmlnsUriEscapeTest,87,10,0,11,1,0.0,7,67.82877879803695
 exist-core/src/test/java/org/exist/xquery/EntitiesTest.java,org.exist.xquery.EntitiesTest,140,10,3,12,2,0.13333333333333333,9,60.99481050376036
@@ -2619,7 +2621,7 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/QueryParserWra
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFacetConfig.java,org.exist.indexing.lucene.LuceneFacetConfig,87,6,4,19,1,1.0,19,59.10539974552207
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatch.java,org.exist.indexing.lucene.LuceneMatch,79,11,4,15,4,0.2545454545454545,6,71.40802244870342
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatchListener.java,org.exist.indexing.lucene.LuceneMatchListener,503,12,10,85,2,0.21212121212121213,52,44.750607616666265
-extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,477,12,10,65,1,0.16666666666666666,30,45.906736760120566
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java,org.exist.indexing.lucene.AnalyzerConfig,477,12,10,65,1,0.16666666666666666,33,45.885003861883135
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/ByteTermAttributeImpl.java,org.exist.indexing.lucene.ByteTermAttributeImpl,15,1,0,1,1,1.0,0,74.21028464452877
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexConfig.java,org.exist.indexing.lucene.LuceneIndexConfig,394,27,26,83,1,0.150997150997151,26,59.25861815759879
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractTextExtractor.java,org.exist.indexing.lucene.AbstractTextExtractor,21,3,3,3,2,0.3333333333333333,0,75.6615389847353
