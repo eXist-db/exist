@@ -114,7 +114,10 @@ public class UntypedValueCheck extends AbstractExpression {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;
                 }
-                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER) {
+                // In XQuery 3.1, reject integer→positiveInteger conversion.
+                // In XQuery 4.0, relabeling allows this if the value is positive (§3.4.1 item 6).
+                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER
+                        && context.getXQueryVersion() < 40) {
                     throw new XPathException(this, ErrorCodes.FORG0001,
                             "cannot convert '"
                                     + Type.getTypeName(item.getType())
