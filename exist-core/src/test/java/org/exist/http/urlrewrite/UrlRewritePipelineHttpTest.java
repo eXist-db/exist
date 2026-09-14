@@ -36,7 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpRequest.BodyPublishers;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -68,49 +68,13 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
-    // ================================================================================
-    // ControllerTest: controller.xq / controller.xql discovery and precedence
-    // ================================================================================
+    // Scenario fixtures
 
     private static final String CONTROLLER_XQUERY = "<controller>xq</controller>";
+
     private static final String LEGACY_CONTROLLER_XQUERY = "<controller>xql</controller>";
+
     private static final String TEST_DOCUMENT_NAME = "test.xml";
-
-    @Test
-    public void findsLegacyController() throws IOException {
-        final String testCollectionName = "test-finds-legacy-controller";
-        storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
-
-        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpURLConnection.HTTP_OK, (int) responseCodeAndBody._1);
-        assertEquals(LEGACY_CONTROLLER_XQUERY, responseCodeAndBody._2);
-    }
-
-    @Test
-    public void findsController() throws IOException {
-        final String testCollectionName = "test-finds-controller";
-        storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
-
-        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpURLConnection.HTTP_OK, (int) responseCodeAndBody._1);
-        assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
-    }
-
-    @Test
-    public void prefersNonLegacyController() throws IOException {
-        final String testCollectionName = "test-prefers-non-legacy-controller";
-        storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
-        storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
-
-        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
-        assertEquals(HttpURLConnection.HTTP_OK, (int) responseCodeAndBody._1);
-        assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
-    }
-
-    // ================================================================================
-    // IfModifiedSinceHandoverControllerTest: #6603 -- the client's If-Modified-Since
-    // header must survive a controller.xql -> view.xql handover.
-    // ================================================================================
 
     private static final String IF_MODIFIED_SINCE = "Wed, 21 Oct 2015 07:28:00 GMT";
 
@@ -153,43 +117,6 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
             </dispatch>
             """;
 
-    @Test
-    public void ifModifiedSinceValueSurvivesViewHandover() throws IOException {
-        final String coll = "ims-with-view";
-        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_WITH_VIEW);
-        storeAppsDoc(coll, "model.xql", "application/xquery", IMS_MODEL);
-        storeAppsDoc(coll, "echo.xql", "application/xquery", IMS_ECHO);
-
-        final String body = sendWithIfModifiedSince(coll);
-
-        // The header name is visible to the handler...
-        assertTrue("If-Modified-Since should be listed by get-header-names(): " + body,
-                body.contains("name-present=\"true\""));
-        // ...and, after the #6603 fix, so is its value: the view handover no longer blanks
-        // getHeader(), so request:get-header() returns what the client sent.
-        assertTrue("If-Modified-Since value must survive the view handover (#6603): " + body,
-                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
-    }
-
-    @Test
-    public void ifModifiedSinceValueIsVisibleWithoutView() throws IOException {
-        final String coll = "ims-no-view";
-        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_NO_VIEW);
-        storeAppsDoc(coll, "echo.xql", "application/xquery", IMS_ECHO);
-
-        final String body = sendWithIfModifiedSince(coll);
-
-        // Control: the identical request through a view-less dispatch exposes the real value,
-        // confirming the header is genuinely sent and that the loss is specific to the view path.
-        assertTrue("If-Modified-Since value should be visible without a view: " + body,
-                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
-    }
-
-    // ================================================================================
-    // MultipartMethodControllerTest: #6580, #6578 -- multipart/form-data parsing on
-    // methods other than POST.
-    // ================================================================================
-
     private static final String MULTIPART_BOUNDARY = "wdbBoundary";
 
     private static final String MULTIPART_BODY =
@@ -215,106 +142,11 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                     uploaded-files="{string-join(request:get-uploaded-file-name('file'), ',')}"/>
             """;
 
-    @Test
-    public void multipartFormDataIsParsedForBodyMethods() throws IOException {
-        final String coll = "multipart-method-controller";
-        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
-
-        // A multipart/form-data body must be parsed identically for every body-carrying method:
-        // both the form field ("path") and the uploaded file ("file") must be visible, and
-        // request:is-multipart-content() must report true. Prior to the fix, PUT/PATCH reported
-        // is-multipart-content()=false and exposed neither the file nor its part (#6580),
-        // and the controller/RESTXQ path never exposed the uploaded file at all (#6578).
-        for (final String method : new String[]{"POST", "PUT", "PATCH"}) {
-            final String body = sendMultipart(coll, method);
-            assertTrue(method + ": is-multipart-content() should be true: " + body,
-                    body.contains("is-multipart=\"true\""));
-            assertTrue(method + ": form field 'path' should be visible: " + body,
-                    body.contains("path=\"edition/01/17410105.xml\""));
-            assertTrue(method + ": uploaded file 'file' should be visible: " + body,
-                    body.contains("uploaded-files=\"17410105.xml\""));
-        }
-    }
-
-    @Test
-    public void multipartFormDataIsNotParsedForGet() throws IOException {
-        final String coll = "multipart-method-controller-get";
-        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
-
-        // GET is a safe method with no defined semantics for a request body (RFC 9110 §9.3.1),
-        // so a multipart/form-data body on GET must not be parsed: is-multipart-content() is false
-        // and no uploaded file is exposed to the handler. (Non-file form fields may still leak via
-        // the servlet container's parameter map -- a pre-existing quirk this fix does not change.)
-        final String body = sendMultipart(coll, "GET");
-        assertTrue("GET: is-multipart-content() must be false: " + body,
-                body.contains("is-multipart=\"false\""));
-        assertTrue("GET: uploaded file must not be exposed: " + body,
-                body.contains("uploaded-files=\"\""));
-    }
-
-    // ================================================================================
-    // URLRewritingTest: finds the nearest parent collection's controller.xq
-    // ================================================================================
-
     private static final XmldbURI URT_TEST_COLLECTION_NAME = XmldbURI.create("controller-test");
+
     private static final XmldbURI URT_TEST_COLLECTION = XmldbURI.create("/db/apps").append(URT_TEST_COLLECTION_NAME);
+
     private static final String URT_TEST_CONTROLLER = "xquery version \"3.1\";\n<controller>{fn:current-dateTime()}</controller>";
-
-    @BeforeClass
-    public static void setupUrlRewritingTest() throws IOException {
-        final HttpRequest request = authenticatedRequest(
-                URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME),
-                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .header("Content-Type", "application/xquery")
-                .PUT(HttpRequest.BodyPublishers.ofString(URT_TEST_CONTROLLER, StandardCharsets.UTF_8))
-                .build();
-        final int statusCode = withHttpClient(client -> executeForStatus(client, request));
-        assertEquals(HttpURLConnection.HTTP_CREATED, statusCode);
-    }
-
-    @AfterClass
-    public static void teardownUrlRewritingTest() throws IOException {
-        final HttpRequest request = authenticatedRequest(URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION),
-                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .DELETE()
-                .build();
-        final int statusCode = withHttpClient(client -> executeForStatus(client, request));
-        assertEquals(HttpURLConnection.HTTP_OK, statusCode);
-    }
-
-    @Test
-    public void findsParentController() throws IOException {
-        final XmldbURI nestedCollectionName = XmldbURI.create("nested");
-        final XmldbURI docName = XmldbURI.create("test.xml");
-        final String testDocument = "<hello>world</hello>";
-
-        final String storeDocUri = getRestUri(existWebServer) + URT_TEST_COLLECTION.append(nestedCollectionName).append(docName);
-        final HttpRequest storeRequest = authenticatedRequest(URI.create(storeDocUri),
-                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .header("Content-Type", "application/xml")
-                .PUT(HttpRequest.BodyPublishers.ofString(testDocument, StandardCharsets.UTF_8))
-                .build();
-        final int storeResponseStatusCode = withHttpClient(client -> executeForStatus(client, storeRequest));
-        assertEquals(HttpURLConnection.HTTP_CREATED, storeResponseStatusCode);
-
-        final String retrieveDocUri = getAppsUri(existWebServer) + "/" + URT_TEST_COLLECTION_NAME.append(nestedCollectionName).append(docName);
-        final HttpRequest retrieveRequest = authenticatedRequest(URI.create(retrieveDocUri),
-                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .GET()
-                .build();
-        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpClient(client -> {
-            final HttpResponseResult r = executeForStatusAndBody(client, retrieveRequest);
-            return Tuple(r.statusCode(), r.body());
-        });
-        assertEquals(HttpURLConnection.HTTP_OK, retrieveResponseStatusCodeAndBody._1.intValue());
-        assertTrue(retrieveResponseStatusCodeAndBody._2.matches("<controller>.+</controller>"));
-    }
-
-    // ================================================================================
-    // URLRewriteViewPipelineTest: a stored HTML document is forwarded through a view.xq
-    // that processes it via request:get-data() -- catches XHTML serialization/parsing
-    // regressions in that round trip.
-    // ================================================================================
 
     private static final String VP_TEST_COLLECTION = "/db/apps/test-url-rewrite";
 
@@ -369,6 +201,310 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                     <h1>Hello World</h1>
                 </body>
             </html>""";
+
+    private static final String XSLT_TEST_COLLECTION = "/db/apps/test-xslt-view-pipeline";
+
+    private static final String XSLT_CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
+            <exist:dispatch>
+              <exist:forward url="A.xql">
+                <exist:set-header name="Cache-Control" value="no-cache"/>
+                <exist:set-header name="Pragma" value="no-cache"/>
+              </exist:forward>
+              <exist:view>
+                <exist:forward servlet="XSLTServlet">
+                  <exist:set-attribute name="xslt.stylesheet" value="xmldb:exist://%s/B.xsl"/>
+                </exist:forward>
+              </exist:view>
+              <exist:cache-control cache="false"/>
+            </exist:dispatch>""".formatted(XSLT_TEST_COLLECTION);
+
+    private static final String XSLT_A_XQL = """
+            xquery version "3.1";
+            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
+
+            <record>
+              <name>Bob</name>
+            </record>""";
+
+    private static final String XSLT_B_XSL = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
+
+              <xsl:output method="xml" media-type="text/html" omit-xml-declaration="yes" indent="no"/>
+
+              <xsl:template match="/record">
+                <p>Hello <xsl:value-of select="name"/></p>
+              </xsl:template>
+
+            </xsl:stylesheet>""";
+
+    private static final String SH_TEST_COLLECTION = "/db/apps/test-set-header-view-pipeline";
+
+    private static final String SH_CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
+            <exist:dispatch>
+              <exist:forward url="step1.xql">
+                <exist:set-header name="Cache-Control" value="no-cache"/>
+                <exist:set-header name="Pragma" value="no-cache"/>
+              </exist:forward>
+              <exist:view>
+                <exist:forward url="view.xql"/>
+              </exist:view>
+              <exist:cache-control cache="false"/>
+            </exist:dispatch>""";
+
+    private static final String SH_STEP1_XQL = """
+            xquery version "3.1";
+
+            <step1>Hello</step1>""";
+
+    private static final String SH_VIEW_XQL = """
+            xquery version "3.1";
+            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
+
+            let $data := request:get-data()
+            return
+                <p>View saw: { $data//step1/text() }</p>""";
+
+    private static final String IH_TEST_COLLECTION = "/db/apps/test-intermediate-set-header";
+
+    private static final String IH_CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
+            <exist:dispatch>
+              <exist:forward url="step1.xql"/>
+              <exist:view>
+                <exist:forward url="view.xql"/>
+              </exist:view>
+              <exist:cache-control cache="false"/>
+            </exist:dispatch>""";
+
+    private static final String IH_STEP1_XQL = """
+            xquery version "3.1";
+
+            (: Set programmatically, not via <exist:set-header> config -- this step's own header,
+               which must not survive once the view step below replaces its output. :)
+            response:set-header("X-Step1-Debug", "step1-was-here"),
+            <step1>Hello</step1>""";
+
+    private static final String IH_VIEW_XQL = """
+            xquery version "3.1";
+            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
+
+            let $data := request:get-data()
+            return
+                <p>View saw: { $data//step1/text() }</p>""";
+
+    private static final String FH_TEST_COLLECTION = "/db/apps/test-final-step-set-header";
+
+    private static final String FH_CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
+            <exist:dispatch>
+              <exist:forward url="step1.xql"/>
+              <exist:view>
+                <exist:forward url="view.xql"/>
+              </exist:view>
+              <exist:cache-control cache="false"/>
+            </exist:dispatch>""";
+
+    private static final String FH_STEP1_XQL = """
+            xquery version "3.1";
+
+            <step1>Hello</step1>""";
+
+    private static final String FH_VIEW_XQL = """
+            xquery version "3.1";
+            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
+
+            let $data := request:get-data()
+            return (
+                (: The final step -- the one whose output actually reaches the client -- sets a
+                   header programmatically, not via <exist:set-header> config. :)
+                response:set-header("X-Custom-Header", "custom-value"),
+                <p>View saw: { $data//step1/text() }</p>
+            )""";
+
+    // ================================================================================
+    // ControllerTest: controller.xq / controller.xql discovery and precedence
+    // ================================================================================
+
+    @Test
+    public void findsLegacyController() throws IOException {
+        final String testCollectionName = "test-finds-legacy-controller";
+        storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
+
+        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
+        assertEquals(HTTP_OK, (int) responseCodeAndBody._1);
+        assertEquals(LEGACY_CONTROLLER_XQUERY, responseCodeAndBody._2);
+    }
+
+    @Test
+    public void findsController() throws IOException {
+        final String testCollectionName = "test-finds-controller";
+        storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
+
+        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
+        assertEquals(HTTP_OK, (int) responseCodeAndBody._1);
+        assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
+    }
+
+    @Test
+    public void prefersNonLegacyController() throws IOException {
+        final String testCollectionName = "test-prefers-non-legacy-controller";
+        storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
+        storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
+
+        final Tuple2<Integer, String> responseCodeAndBody = getAppsDoc(testCollectionName, TEST_DOCUMENT_NAME);
+        assertEquals(HTTP_OK, (int) responseCodeAndBody._1);
+        assertEquals(CONTROLLER_XQUERY, responseCodeAndBody._2);
+    }
+
+    // ================================================================================
+    // IfModifiedSinceHandoverControllerTest: #6603 -- the client's If-Modified-Since
+    // header must survive a controller.xql -> view.xql handover.
+    // ================================================================================
+
+    @Test
+    public void ifModifiedSinceValueSurvivesViewHandover() throws IOException {
+        final String coll = "ims-with-view";
+        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_WITH_VIEW);
+        storeAppsDoc(coll, "model.xql", "application/xquery", IMS_MODEL);
+        storeAppsDoc(coll, "echo.xql", "application/xquery", IMS_ECHO);
+
+        final String body = sendWithIfModifiedSince(coll);
+
+        // The header name is visible to the handler...
+        assertTrue("If-Modified-Since should be listed by get-header-names(): " + body,
+                body.contains("name-present=\"true\""));
+        // ...and, after the #6603 fix, so is its value: the view handover no longer blanks
+        // getHeader(), so request:get-header() returns what the client sent.
+        assertTrue("If-Modified-Since value must survive the view handover (#6603): " + body,
+                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
+    }
+
+    @Test
+    public void ifModifiedSinceValueIsVisibleWithoutView() throws IOException {
+        final String coll = "ims-no-view";
+        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_NO_VIEW);
+        storeAppsDoc(coll, "echo.xql", "application/xquery", IMS_ECHO);
+
+        final String body = sendWithIfModifiedSince(coll);
+
+        // Control: the identical request through a view-less dispatch exposes the real value,
+        // confirming the header is genuinely sent and that the loss is specific to the view path.
+        assertTrue("If-Modified-Since value should be visible without a view: " + body,
+                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
+    }
+
+    // ================================================================================
+    // MultipartMethodControllerTest: #6580, #6578 -- multipart/form-data parsing on
+    // methods other than POST.
+    // ================================================================================
+
+    @Test
+    public void multipartFormDataIsParsedForBodyMethods() throws IOException {
+        final String coll = "multipart-method-controller";
+        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
+
+        // A multipart/form-data body must be parsed identically for every body-carrying method:
+        // both the form field ("path") and the uploaded file ("file") must be visible, and
+        // request:is-multipart-content() must report true. Prior to the fix, PUT/PATCH reported
+        // is-multipart-content()=false and exposed neither the file nor its part (#6580),
+        // and the controller/RESTXQ path never exposed the uploaded file at all (#6578).
+        for (final String method : new String[]{"POST", "PUT", "PATCH"}) {
+            final String body = sendMultipart(coll, method);
+            assertTrue(method + ": is-multipart-content() should be true: " + body,
+                    body.contains("is-multipart=\"true\""));
+            assertTrue(method + ": form field 'path' should be visible: " + body,
+                    body.contains("path=\"edition/01/17410105.xml\""));
+            assertTrue(method + ": uploaded file 'file' should be visible: " + body,
+                    body.contains("uploaded-files=\"17410105.xml\""));
+        }
+    }
+
+    @Test
+    public void multipartFormDataIsNotParsedForGet() throws IOException {
+        final String coll = "multipart-method-controller-get";
+        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
+
+        // GET is a safe method with no defined semantics for a request body (RFC 9110 §9.3.1),
+        // so a multipart/form-data body on GET must not be parsed: is-multipart-content() is false
+        // and no uploaded file is exposed to the handler. (Non-file form fields may still leak via
+        // the servlet container's parameter map -- a pre-existing quirk this fix does not change.)
+        final String body = sendMultipart(coll, "GET");
+        assertTrue("GET: is-multipart-content() must be false: " + body,
+                body.contains("is-multipart=\"false\""));
+        assertTrue("GET: uploaded file must not be exposed: " + body,
+                body.contains("uploaded-files=\"\""));
+    }
+
+    // ================================================================================
+    // URLRewritingTest: finds the nearest parent collection's controller.xq
+    // ================================================================================
+
+    @BeforeClass
+    public static void setupUrlRewritingTest() throws IOException {
+        final HttpRequest request = authenticatedRequest(
+                URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .header("Content-Type", "application/xquery")
+                .PUT(BodyPublishers.ofString(URT_TEST_CONTROLLER, UTF_8))
+                .build();
+        final int statusCode = withHttpClient(client -> executeForStatus(client, request));
+        assertEquals(HttpURLConnection.HTTP_CREATED, statusCode);
+    }
+
+    @AfterClass
+    public static void teardownUrlRewritingTest() throws IOException {
+        final HttpRequest request = authenticatedRequest(URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .DELETE()
+                .build();
+        final int statusCode = withHttpClient(client -> executeForStatus(client, request));
+        assertEquals(HTTP_OK, statusCode);
+    }
+
+    @Test
+    public void findsParentController() throws IOException {
+        final XmldbURI nestedCollectionName = XmldbURI.create("nested");
+        final XmldbURI docName = XmldbURI.create("test.xml");
+        final String testDocument = "<hello>world</hello>";
+
+        final String storeDocUri = getRestUri(existWebServer) + URT_TEST_COLLECTION.append(nestedCollectionName).append(docName);
+        final HttpRequest storeRequest = authenticatedRequest(URI.create(storeDocUri),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .header("Content-Type", "application/xml")
+                .PUT(BodyPublishers.ofString(testDocument, UTF_8))
+                .build();
+        final int storeResponseStatusCode = withHttpClient(client -> executeForStatus(client, storeRequest));
+        assertEquals(HttpURLConnection.HTTP_CREATED, storeResponseStatusCode);
+
+        final String retrieveDocUri = getAppsUri(existWebServer) + "/" + URT_TEST_COLLECTION_NAME.append(nestedCollectionName).append(docName);
+        final HttpRequest retrieveRequest = authenticatedRequest(URI.create(retrieveDocUri),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .GET()
+                .build();
+        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpClient(client -> {
+            final HttpResponseResult r = executeForStatusAndBody(client, retrieveRequest);
+            return Tuple(r.statusCode(), r.body());
+        });
+        assertEquals(HTTP_OK, retrieveResponseStatusCodeAndBody._1.intValue());
+        assertTrue(retrieveResponseStatusCodeAndBody._2.matches("<controller>.+</controller>"));
+    }
+
+    // ================================================================================
+    // URLRewriteViewPipelineTest: a stored HTML document is forwarded through a view.xq
+    // that processes it via request:get-data() -- catches XHTML serialization/parsing
+    // regressions in that round trip.
+    // ================================================================================
 
     @BeforeClass
     public static void setupViewPipelineTest() throws Exception {
@@ -446,45 +582,6 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // getWriter".
     // ================================================================================
 
-    private static final String XSLT_TEST_COLLECTION = "/db/apps/test-xslt-view-pipeline";
-
-    private static final String XSLT_CONTROLLER_XQ = """
-            xquery version "3.1";
-            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-
-            <exist:dispatch>
-              <exist:forward url="A.xql">
-                <exist:set-header name="Cache-Control" value="no-cache"/>
-                <exist:set-header name="Pragma" value="no-cache"/>
-              </exist:forward>
-              <exist:view>
-                <exist:forward servlet="XSLTServlet">
-                  <exist:set-attribute name="xslt.stylesheet" value="xmldb:exist://%s/B.xsl"/>
-                </exist:forward>
-              </exist:view>
-              <exist:cache-control cache="false"/>
-            </exist:dispatch>""".formatted(XSLT_TEST_COLLECTION);
-
-    private static final String XSLT_A_XQL = """
-            xquery version "3.1";
-            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
-
-            <record>
-              <name>Bob</name>
-            </record>""";
-
-    private static final String XSLT_B_XSL = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
-
-              <xsl:output method="xml" media-type="text/html" omit-xml-declaration="yes" indent="no"/>
-
-              <xsl:template match="/record">
-                <p>Hello <xsl:value-of select="name"/></p>
-              </xsl:template>
-
-            </xsl:stylesheet>""";
-
     @BeforeClass
     public static void setupXsltViewPipelineTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION;
@@ -525,36 +622,6 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // -- URLRewriteSetHeaderSurvivesViewPipelineTest: an <exist:set-header> directive on
     // a forward step must survive to the final response even though applyViews() discards
     // that step's response wrapper once the view runs. --
-
-    private static final String SH_TEST_COLLECTION = "/db/apps/test-set-header-view-pipeline";
-
-    private static final String SH_CONTROLLER_XQ = """
-            xquery version "3.1";
-            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-
-            <exist:dispatch>
-              <exist:forward url="step1.xql">
-                <exist:set-header name="Cache-Control" value="no-cache"/>
-                <exist:set-header name="Pragma" value="no-cache"/>
-              </exist:forward>
-              <exist:view>
-                <exist:forward url="view.xql"/>
-              </exist:view>
-              <exist:cache-control cache="false"/>
-            </exist:dispatch>""";
-
-    private static final String SH_STEP1_XQL = """
-            xquery version "3.1";
-
-            <step1>Hello</step1>""";
-
-    private static final String SH_VIEW_XQL = """
-            xquery version "3.1";
-            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
-
-            let $data := request:get-data()
-            return
-                <p>View saw: { $data//step1/text() }</p>""";
 
     @BeforeClass
     public static void setupSetHeaderSurvivesTest() throws Exception {
@@ -599,36 +666,6 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // programmatically via response:set-header() -- no static config representation at
     // all -- must NOT leak past a view step that discards that step's output. --
 
-    private static final String IH_TEST_COLLECTION = "/db/apps/test-intermediate-set-header";
-
-    private static final String IH_CONTROLLER_XQ = """
-            xquery version "3.1";
-            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-
-            <exist:dispatch>
-              <exist:forward url="step1.xql"/>
-              <exist:view>
-                <exist:forward url="view.xql"/>
-              </exist:view>
-              <exist:cache-control cache="false"/>
-            </exist:dispatch>""";
-
-    private static final String IH_STEP1_XQL = """
-            xquery version "3.1";
-
-            (: Set programmatically, not via <exist:set-header> config -- this step's own header,
-               which must not survive once the view step below replaces its output. :)
-            response:set-header("X-Step1-Debug", "step1-was-here"),
-            <step1>Hello</step1>""";
-
-    private static final String IH_VIEW_XQL = """
-            xquery version "3.1";
-            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
-
-            let $data := request:get-data()
-            return
-                <p>View saw: { $data//step1/text() }</p>""";
-
     @BeforeClass
     public static void setupIntermediateSetHeaderTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION;
@@ -668,37 +705,6 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // -- URLRewriteFinalStepResponseSetHeaderSurvivesTest: the opposite, equally
     // necessary case -- a header the FINAL, actually-flushed step sets the same way
     // must still reach the client. --
-
-    private static final String FH_TEST_COLLECTION = "/db/apps/test-final-step-set-header";
-
-    private static final String FH_CONTROLLER_XQ = """
-            xquery version "3.1";
-            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-
-            <exist:dispatch>
-              <exist:forward url="step1.xql"/>
-              <exist:view>
-                <exist:forward url="view.xql"/>
-              </exist:view>
-              <exist:cache-control cache="false"/>
-            </exist:dispatch>""";
-
-    private static final String FH_STEP1_XQL = """
-            xquery version "3.1";
-
-            <step1>Hello</step1>""";
-
-    private static final String FH_VIEW_XQL = """
-            xquery version "3.1";
-            declare option exist:serialize "method=xhtml media-type=text/html indent=yes";
-
-            let $data := request:get-data()
-            return (
-                (: The final step -- the one whose output actually reaches the client -- sets a
-                   header programmatically, not via <exist:set-header> config. :)
-                response:set-header("X-Custom-Header", "custom-value"),
-                <p>View saw: { $data//step1/text() }</p>
-            )""";
 
     @BeforeClass
     public static void setupFinalStepSetHeaderTest() throws Exception {
@@ -740,7 +746,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                 URI.create(getRestUri(existWebServer) + "/db/apps/" + collection + "/" + name),
                 TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
                 .header("Content-Type", mediaType)
-                .PUT(HttpRequest.BodyPublishers.ofString(content))
+                .PUT(BodyPublishers.ofString(content))
                 .build();
         final int status = withHttpClient(client -> executeForStatus(client, request));
         assertEquals(HttpURLConnection.HTTP_CREATED, status);
@@ -776,7 +782,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                 URI.create(getServerUri(existWebServer) + "/apps/" + coll + "/echo"),
                 TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
                 .header("Content-Type", "multipart/form-data; boundary=" + MULTIPART_BOUNDARY)
-                .method(method, HttpRequest.BodyPublishers.ofString(MULTIPART_BODY, UTF_8))
+                .method(method, BodyPublishers.ofString(MULTIPART_BODY, UTF_8))
                 .build();
         return withHttpClient(client -> executeForStatusAndBody(client, request).body());
     }
@@ -788,7 +794,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
             throws IOException {
         final HttpRequest request = AbstractHttpTest.authenticatedRequest(URI.create(url), "admin", "")
                 .header("Content-Type", contentType + "; charset=UTF-8")
-                .PUT(HttpRequest.BodyPublishers.ofString(content, StandardCharsets.UTF_8))
+                .PUT(BodyPublishers.ofString(content, UTF_8))
                 .build();
         AbstractHttpTest.executeForStatus(AbstractHttpTest.newHttpClient(), request);
     }
@@ -806,7 +812,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                     .append("'), 'rwxr-xr-x')");
         }
         final String chmodUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
-                URLEncoder.encode(chmod.toString(), StandardCharsets.UTF_8) + "&_wrap=no";
+                URLEncoder.encode(chmod.toString(), UTF_8) + "&_wrap=no";
         final HttpRequest chmodRequest = AbstractHttpTest.authenticatedRequest(URI.create(chmodUrl), "admin", "")
                 .GET()
                 .build();
@@ -828,4 +834,5 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                         + result.body().substring(0, Math.min(300, result.body().length())),
                 HTTP_OK, result.statusCode());
     }
+
 }
