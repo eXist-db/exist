@@ -124,7 +124,7 @@
         <methanol.version>1.9.0</methanol.version>
         <appassembler.version>2.1.0</appassembler.version>
         <aspectj.version>1.9.25.1</aspectj.version>
-        <bouncycastle.version>1.85</bouncycastle.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
         <icu.version>76.1</icu.version>
         <izpack.version>5.2.6</izpack.version>
