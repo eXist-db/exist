@@ -565,8 +565,10 @@ public class Jaxp extends BasicFunction {
      * @return a {@link Validator} for the only XSD 1.1-capable pipeline this
      * Xerces fork supports: {@link SchemaFactory}/{@link Schema} with no
      * pre-supplied schema documents, so it dynamically discovers the schema
-     * from the instance's own schemaLocation hint, mirroring how the default
-     * SAXParser pipeline behaves for XSD 1.0.
+     * from the instance's own schemaLocation hint or, when {@code resolver} is
+     * an OASIS/system catalog, purely from the root element's namespace via
+     * {@link XercesXmlResolverAdapter#asLSResourceResolver}, mirroring how the
+     * default SAXParser pipeline behaves for XSD 1.0.
      */
     private Validator newXsd11Validator(@Nullable final LSResourceResolver resolver, final boolean useCache) throws SAXException {
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XSD_1_1_NS);
@@ -581,7 +583,12 @@ public class Jaxp extends BasicFunction {
         final Schema schema = schemaFactory.newSchema();
         final Validator validator = schema.newValidator();
         if (resolver != null) {
-            validator.setResourceResolver(resolver);
+            // org.xmlresolver.Resolver#resolveResource requires a non-null systemId before it will
+            // consult its catalog at all (unlike SearchResourceResolver, which resolves purely by
+            // namespace), so an OASIS catalog's <uri> entry keyed by namespace alone is otherwise
+            // invisible to this dynamic-discovery validator when the instance carries no
+            // schemaLocation hint.
+            validator.setResourceResolver(XercesXmlResolverAdapter.asLSResourceResolver(resolver));
         }
         return validator;
     }

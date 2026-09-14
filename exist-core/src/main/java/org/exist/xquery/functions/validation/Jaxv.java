@@ -32,6 +32,7 @@ import javax.xml.validation.Validator;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.BasicFunction;
@@ -237,10 +238,13 @@ public class Jaxv extends BasicFunction  {
             // directly, and SearchResourceResolver also implements it (in addition to the
             // Xerces-specific XMLEntityResolver/XNI interface it uses for validation:jaxp()'s
             // SAX pipeline), so the directory-search/collection case (a catalog URL ending
-            // in '/') works here too.
+            // in '/') works here too. Wrapped via XercesXmlResolverAdapter#asLSResourceResolver
+            // so an xs:import with no schemaLocation (resolved purely by namespace) also works
+            // through an org.xmlresolver.Resolver-backed (OASIS/system) catalog -- see that
+            // method's Javadoc for why the raw Resolver alone can't do this.
             if (args.length == 4) {
                 final LSResourceResolver resolver = Shared.resolveCatalogArgument(this, brokerPool, context.getBroker(), context.getSubject(), args[3]);
-                factory.setResourceResolver(resolver);
+                factory.setResourceResolver(XercesXmlResolverAdapter.asLSResourceResolver(resolver));
             }
 
             // Create grammar -- xs:import/xs:include resolution (via the resolver se
