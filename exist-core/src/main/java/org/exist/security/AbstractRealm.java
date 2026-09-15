@@ -373,9 +373,10 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public boolean updateAccount(final Account account) throws PermissionDeniedException, EXistException {
-        
+
         //make sure we have permission to modify this account
-        final Account user = getDatabase().getActiveBroker().getCurrentSubject();
+        final DBBroker broker = getDatabase().getActiveBroker();
+        final Account user = broker.getCurrentSubject();
         account.assertCanModifyAccount(user);
         
         //modify the account
@@ -423,7 +424,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
         
 
-        updatingAccount.save();
+        updatingAccount.save(broker);
 
         return true;
     }
@@ -432,7 +433,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public boolean updateGroup(final Group group) throws PermissionDeniedException, EXistException {
 
         //make sure we have permission to modify this account
-        final Account user = getDatabase().getActiveBroker().getCurrentSubject();
+        final DBBroker broker = getDatabase().getActiveBroker();
+        final Account user = broker.getCurrentSubject();
         group.assertCanModifyGroup(user);
 
         //modify the group
@@ -463,7 +465,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             }
         }    
 
-        updatingGroup.save();
+        updatingGroup.save(broker);
 
         return true;
     }
