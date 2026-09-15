@@ -1059,7 +1059,9 @@
                                 <xs:documentation>
                                     Should the XML Declaration be omitted when serializing a document?
                                     If not omitted, the persisted XML Declaration of the document is
-                                    used if present, otherwise a default XML Declaration is generated.
+                                    used if present, otherwise a default XML Declaration with version
+                                    "1.0" and encoding "UTF-8" is generated. The version, encoding and
+                                    standalone serialization parameters take precedence over both.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
