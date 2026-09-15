@@ -47,6 +47,7 @@ import javax.xml.transform.Source;
 
 import java.util.Arrays;
 
+import static javax.xml.transform.OutputKeys.INDENT;
 import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -211,6 +212,24 @@ public class SerializationTest {
 		}
 	}
 
+	/**
+	 * With indent=no there must not be a newline after the doctype.
+	 * See https://github.com/eXist-db/exist/issues/4736
+	 */
+	@Test
+	public void getDocTypeIndentNo() throws XMLDBException {
+		final String prevIndent = testCollection.getProperty(INDENT);
+		try {
+			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+			testCollection.setProperty(INDENT, "no");
+			assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\"><bookmap id=\"bookmap-1\"/>", res.getContent());
+		} finally {
+			if (prevIndent != null) {
+				testCollection.setProperty(INDENT, prevIndent);
+			}
+		}
+	}
+
 	@Test
 	public void getXmlDeclDefault() throws XMLDBException {
 		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
@@ -274,6 +293,9 @@ public class SerializationTest {
 		final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
 		res2.setContent(XML_WITH_XMLDECL);
 		testCollection.storeResource(res2);
+
+		// local collections default to indent=yes, remote (XML-RPC) collections to indent=no
+		testCollection.setProperty(INDENT, "yes");
     }
 
     @After
