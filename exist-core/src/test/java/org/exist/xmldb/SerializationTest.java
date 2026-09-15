@@ -47,6 +47,7 @@ import javax.xml.transform.Source;
 
 import java.util.Arrays;
 
+import static javax.xml.transform.OutputKeys.INDENT;
 import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -55,210 +56,228 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Parameterized.class)
 public class SerializationTest {
 
-	@ClassRule
-	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
-	private static final String PORT_PLACEHOLDER = "${PORT}";
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+    private static final String PORT_PLACEHOLDER = "${PORT}";
 
-	private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.getProperty("line.separator");
 
-	private static final String TEST_COLLECTION_NAME = "xmlrpc-serialization-test";
+    private static final String TEST_COLLECTION_NAME = "xmlrpc-serialization-test";
 
-	private static final String XML_DOC_NAME = "defaultns.xml";
-	private static final String XML =
-		"<root xmlns=\"http://foo.com\">" +
-		"	<entry>1</entry>" +
-		"	<entry>2</entry>" +
-		"</root>";
+    private static final String XML_DOC_NAME = "defaultns.xml";
+    private static final String XML =
+            "<root xmlns=\"http://foo.com\">" +
+                    "	<entry>1</entry>" +
+                    "	<entry>2</entry>" +
+                    "</root>";
 
-	private static final String XML_EXPECTED1 =
-		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"2\">" + EOL +
-		"    <entry xmlns=\"http://foo.com\">1</entry>" + EOL +
-		"    <entry xmlns=\"http://foo.com\">2</entry>" + EOL +
-		"</exist:result>";
+    private static final String XML_EXPECTED1 =
+            "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"2\">" + EOL +
+                    "    <entry xmlns=\"http://foo.com\">1</entry>" + EOL +
+                    "    <entry xmlns=\"http://foo.com\">2</entry>" + EOL +
+                    "</exist:result>";
 
-	private static final String XML_EXPECTED2 =
-		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"1\">" + EOL +
-		"    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">" + EOL +
-        "        <config xmlns=\"urn:config\">123</config>" + EOL +
-        "        <serverconfig xmlns=\"urn:config\">123</serverconfig>" + EOL +
-		"    </c:Site>" + EOL +
-		"</exist:result>";
+    private static final String XML_EXPECTED2 =
+            "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"1\">" + EOL +
+                    "    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">" + EOL +
+                    "        <config xmlns=\"urn:config\">123</config>" + EOL +
+                    "        <serverconfig xmlns=\"urn:config\">123</serverconfig>" + EOL +
+                    "    </c:Site>" + EOL +
+                    "</exist:result>";
 
-	private static final String XML_UPDATED_EXPECTED =
-		"<root xmlns=\"http://foo.com\">" + EOL +
-		"	<entry>1</entry>" + EOL +
-		"	<entry>2</entry>" + EOL +
-		"	<entry xmlns=\"\" xml:id=\"aargh\"/>" + EOL +
-		"</root>";
+    private static final String XML_UPDATED_EXPECTED =
+            "<root xmlns=\"http://foo.com\">" + EOL +
+                    "	<entry>1</entry>" + EOL +
+                    "	<entry>2</entry>" + EOL +
+                    "	<entry xmlns=\"\" xml:id=\"aargh\"/>" + EOL +
+                    "</root>";
 
-	private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
+    private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
 
-	private static final String XML_WITH_DOCTYPE =
-			"""
-            <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
-            <bookmap id="bookmap-1"/>""";
+    private static final String XML_WITH_DOCTYPE =
+            """
+                    <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+                    <bookmap id="bookmap-1"/>""";
 
-	private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
+    private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
-	private static final String XML_WITH_XMLDECL =
-			"""
-            <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
-            <bookmap id="bookmap-2"/>""";
+    private static final String XML_WITH_XMLDECL =
+            """
+                    <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+                    <bookmap id="bookmap-2"/>""";
 
-	@Parameterized.Parameters(name = "{0}")
-	public static java.util.Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ "local", "xmldb:exist://" },
-				{ "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-		});
-	}
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"local", "xmldb:exist://"},
+                {"remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc"}
+        });
+    }
 
-	@Parameterized.Parameter
-	public String apiName;
+    @Parameterized.Parameter
+    public String apiName;
 
-	@Parameterized.Parameter(value = 1)
-	public String baseUri;
+    @Parameterized.Parameter(value = 1)
+    public String baseUri;
 
-	private Collection testCollection;
+    private Collection testCollection;
 
-	private final String getBaseUri() {
-		return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
-	}
+    private final String getBaseUri() {
+        return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+    }
 
-	@Test
-	public void wrappedNsTest1() throws XMLDBException {
-		final XQueryService service = testCollection.getService(XQueryService.class);
-		final ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
-		assertEquals(2, result.getSize());
+    @Test
+    public void wrappedNsTest1() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        final ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
+        assertEquals(2, result.getSize());
 
-		final Resource resource = result.getMembersAsResource();
-		assertXMLEquals(XML_EXPECTED1, resource);
-	}
+        final Resource resource = result.getMembersAsResource();
+        assertXMLEquals(XML_EXPECTED1, resource);
+    }
 
-	@Test
-	public void wrappedNsTest2() throws XMLDBException {
-		final XQueryService service = testCollection.getService(XQueryService.class);
-		final ResourceSet result = service.query("declare namespace config='urn:config'; " +
-				"declare namespace c='urn:content'; "  +
-				"declare variable $config := <config xmlns='urn:config'>123</config>; " +
-				"declare variable $serverConfig := <serverconfig xmlns='urn:config'>123</serverconfig>; " +
-				"<c:Site xmlns='urn:content' xmlns:c='urn:content'> " +
-				"{($config,$serverConfig)} " +
-				"</c:Site>");
-		assertEquals(1, result.getSize());
+    @Test
+    public void wrappedNsTest2() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        final ResourceSet result = service.query("declare namespace config='urn:config'; " +
+                "declare namespace c='urn:content'; " +
+                "declare variable $config := <config xmlns='urn:config'>123</config>; " +
+                "declare variable $serverConfig := <serverconfig xmlns='urn:config'>123</serverconfig>; " +
+                "<c:Site xmlns='urn:content' xmlns:c='urn:content'> " +
+                "{($config,$serverConfig)} " +
+                "</c:Site>");
+        assertEquals(1, result.getSize());
 
-		final Resource resource = result.getMembersAsResource();
-		assertXMLEquals(XML_EXPECTED2, resource);
-	}
+        final Resource resource = result.getMembersAsResource();
+        assertXMLEquals(XML_EXPECTED2, resource);
+    }
 
-	@Test
-	public void xqueryUpdateNsTest() throws XMLDBException {
-		final XQueryService service = testCollection.getService(XQueryService.class);
-		final ResourceSet result = service.query(
-				"xquery version \"1.0\";" + EOL +
-				"declare namespace foo=\"http://foo.com\";" + EOL +
-				"let $in-memory :=" + EOL + XML + EOL +
-				"let $on-disk := doc('/db/" + TEST_COLLECTION_NAME + '/' + XML_DOC_NAME + "')" + EOL +
-				"let $new-node := <entry xml:id='aargh'/>" + EOL +
-				"let $update := update insert $new-node into $on-disk/foo:root" + EOL +
-				"return" + EOL +
-				"    (" + EOL +
-				"        $in-memory," + EOL +
-				"        $on-disk" + EOL +
-				"    )" + EOL
-		);
+    @Test
+    public void xqueryUpdateNsTest() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        final ResourceSet result = service.query(
+                "xquery version \"1.0\";" + EOL +
+                        "declare namespace foo=\"http://foo.com\";" + EOL +
+                        "let $in-memory :=" + EOL + XML + EOL +
+                        "let $on-disk := doc('/db/" + TEST_COLLECTION_NAME + '/' + XML_DOC_NAME + "')" + EOL +
+                        "let $new-node := <entry xml:id='aargh'/>" + EOL +
+                        "let $update := update insert $new-node into $on-disk/foo:root" + EOL +
+                        "return" + EOL +
+                        "    (" + EOL +
+                        "        $in-memory," + EOL +
+                        "        $on-disk" + EOL +
+                        "    )" + EOL
+        );
 
-		assertEquals(2, result.getSize());
+        assertEquals(2, result.getSize());
 
-		final Resource inMemoryResource = result.getResource(0);
-		assertXMLEquals(XML, inMemoryResource);
+        final Resource inMemoryResource = result.getResource(0);
+        assertXMLEquals(XML, inMemoryResource);
 
-		final Resource onDiskResource = result.getResource(1);
-		assertXMLEquals(XML_UPDATED_EXPECTED, onDiskResource);
-	}
+        final Resource onDiskResource = result.getResource(1);
+        assertXMLEquals(XML_UPDATED_EXPECTED, onDiskResource);
+    }
 
-	@Test
-	public void getDocTypeDefault() throws XMLDBException {
-		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-		assertEquals(XML_WITH_DOCTYPE, res.getContent());
-	}
+    @Test
+    public void getDocTypeDefault() throws XMLDBException {
+        final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+        assertEquals(XML_WITH_DOCTYPE, res.getContent());
+    }
 
-	@Test
-	public void getDocTypeNo() throws XMLDBException {
-		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
-			assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
-		} finally {
-			if (prevOutputDocType != null) {
-				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
-			}
-		}
-	}
+    @Test
+    public void getDocTypeNo() throws XMLDBException {
+        final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
+        try {
+            final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+            testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
+            assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+        } finally {
+            if (prevOutputDocType != null) {
+                testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
+            }
+        }
+    }
 
-	@Test
-	public void getDocTypeYes() throws XMLDBException {
-		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-			assertEquals(XML_WITH_DOCTYPE, res.getContent());
-		} finally {
-			if (prevOutputDocType != null) {
-				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
-			}
-		}
-	}
+    @Test
+    public void getDocTypeYes() throws XMLDBException {
+        final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
+        try {
+            final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+            testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+            assertEquals(XML_WITH_DOCTYPE, res.getContent());
+        } finally {
+            if (prevOutputDocType != null) {
+                testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
+            }
+        }
+    }
 
-	@Test
-	public void getXmlDeclDefault() throws XMLDBException {
-		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-		assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
-	}
+    /**
+     * With indent=no there must not be a newline after the doctype.
+     * See https://github.com/eXist-db/exist/issues/4736
+     */
+    @Test
+    public void getDocTypeIndentNo() throws XMLDBException {
+        final String prevIndent = testCollection.getProperty(INDENT);
+        try {
+            final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+            testCollection.setProperty(INDENT, "no");
+            assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\"><bookmap id=\"bookmap-1\"/>", res.getContent());
+        } finally {
+            if (prevIndent != null) {
+                testCollection.setProperty(INDENT, prevIndent);
+            }
+        }
+    }
 
-	@Test
-	public void getXmlDeclNo() throws XMLDBException {
-		final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(OMIT_XML_DECLARATION, "no");
-			assertEquals(XML_WITH_XMLDECL, res.getContent());
-		} finally {
-			if (prevOmitXmlDecl != null) {
-				testCollection.setProperty(OMIT_XML_DECLARATION, prevOmitXmlDecl);
-			}
-		}
-	}
+    @Test
+    public void getXmlDeclDefault() throws XMLDBException {
+        final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+        assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
+    }
 
-	@Test
-	public void getXmlDeclYes() throws XMLDBException {
-		final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(OMIT_XML_DECLARATION, "yes");
-			assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
-		} finally {
-			if (prevOmitXmlDecl != null) {
-				testCollection.setProperty(OMIT_XML_DECLARATION, prevOmitXmlDecl);
-			}
-		}
-	}
+    @Test
+    public void getXmlDeclNo() throws XMLDBException {
+        final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
+        try {
+            final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+            testCollection.setProperty(OMIT_XML_DECLARATION, "no");
+            assertEquals(XML_WITH_XMLDECL, res.getContent());
+        } finally {
+            if (prevOmitXmlDecl != null) {
+                testCollection.setProperty(OMIT_XML_DECLARATION, prevOmitXmlDecl);
+            }
+        }
+    }
 
-	private static void assertXMLEquals(final String expected, final Resource actual) throws XMLDBException {
-		final Source srcExpected = Input.fromString(expected).build();
-		final Source srcActual = Input.fromString(actual.getContent().toString()).build();
-		final Diff diff = DiffBuilder.compare(srcExpected)
-				.withTest(srcActual)
-				.checkForIdentical()
-				.ignoreWhitespace()
-				.build();
-		assertFalse(diff.toString(), diff.hasDifferences());
-	}
+    @Test
+    public void getXmlDeclYes() throws XMLDBException {
+        final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
+        try {
+            final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+            testCollection.setProperty(OMIT_XML_DECLARATION, "yes");
+            assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
+        } finally {
+            if (prevOmitXmlDecl != null) {
+                testCollection.setProperty(OMIT_XML_DECLARATION, prevOmitXmlDecl);
+            }
+        }
+    }
+
+    private static void assertXMLEquals(final String expected, final Resource actual) throws XMLDBException {
+        final Source srcExpected = Input.fromString(expected).build();
+        final Source srcActual = Input.fromString(actual.getContent().toString()).build();
+        final Diff diff = DiffBuilder.compare(srcExpected)
+                .withTest(srcActual)
+                .checkForIdentical()
+                .ignoreWhitespace()
+                .build();
+        assertFalse(diff.toString(), diff.hasDifferences());
+    }
 
     @Before
-	public void setUp() throws XMLDBException {
-		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+    public void setUp() throws XMLDBException {
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
@@ -267,19 +286,22 @@ public class SerializationTest {
         res.setContent(XML);
         testCollection.storeResource(res);
 
-		final XMLResource res1 = testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), XMLResource.class);
-		res1.setContent(XML_WITH_DOCTYPE);
-		testCollection.storeResource(res1);
+        final XMLResource res1 = testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), XMLResource.class);
+        res1.setContent(XML_WITH_DOCTYPE);
+        testCollection.storeResource(res1);
 
-		final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
-		res2.setContent(XML_WITH_XMLDECL);
-		testCollection.storeResource(res2);
+        final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
+        res2.setContent(XML_WITH_XMLDECL);
+        testCollection.storeResource(res2);
+
+        // local collections default to indent=yes, remote (XML-RPC) collections to indent=no
+        testCollection.setProperty(INDENT, "yes");
     }
 
     @After
     public void tearDown() throws XMLDBException {
-		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-		final CollectionManagementService service = root.getService(CollectionManagementService.class);
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }
