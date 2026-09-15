@@ -44,13 +44,13 @@ public class WebDavRoundTripTest {
 
     private static final String XML_WITH_DOCTYPE =
             """
-            <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
-            <bookmap id="bookmap-1"/>""";
+                    <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+                    <bookmap id="bookmap-1"/>""";
 
     private static final String XML_WITH_XMLDECL =
             """
-            <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
-            <bookmap id="bookmap-2"/>""";
+                    <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+                    <bookmap id="bookmap-2"/>""";
 
     private static final String CDATA_XML = "<elem1><![CDATA[Hello there, \"Bob?\"]]></elem1>";
 
