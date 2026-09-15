@@ -1,0 +1,2 @@
+org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule$Factory
+org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule$Factory

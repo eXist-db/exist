@@ -81,4 +81,9 @@ public class MapModule extends AbstractInternalModule {
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
         return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return MapModule.class; }
+    }
 }
