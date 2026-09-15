@@ -10,7 +10,7 @@ authors:
 identifiers:
   - type: url
     value: >-
-      https://github.com/eXist-db/exist/releases/tag/eXist-7.0.0-beta4
+      https://github.com/eXist-db/exist/releases/tag/eXist-7.0.0-beta5
     description: The URL of the latest GitHub release
 repository-code: 'https://github.com/eXist-db/exist'
 url: 'https://exist-db.org/'
@@ -24,6 +24,6 @@ keywords:
   - xml
   - database
 license: LGPL-2.1
-commit: 2a1def8be12bf6d284be257c867b0e3e70d84343
-version: 7.0.0-beta4
+commit: 02d016e70d8295c9466f0d3727d9c071d912b36c
+version: 7.0.0-beta5
 date-released: '2026-09-15'
