@@ -29,6 +29,7 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.junit.ComparisonFailure;
@@ -158,7 +159,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         return 0;
     }
 
-    private String expectedToString(final MapType expected) throws XPathException, SAXException, IOException {
+    private String expectedToString(final MapType expected) throws XPathException {
         final Sequence seqExpectedValue = expected.get(new StringValue(this, "value"));
         if(!seqExpectedValue.isEmpty()) {
             return seqToString(seqExpectedValue);
@@ -191,12 +192,25 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
     }
 
-    private String seqToString(final Sequence seq) throws IOException, XPathException, SAXException {
-        try(final StringWriter writer = new StringWriter()) {
-            final XQuerySerializer xquerySerializer = new XQuerySerializer(context.getBroker(), new Properties(), writer);
-            xquerySerializer.serialize(seq);
-            return writer.toString();
+    /**
+     * The values reaching here have already been serialized to strings by the XQSuite layer
+     * (xqsuite.xql's test:expected-strings / test:actual-strings, and the adaptive serialize()
+     * calls beside them), so they are taken verbatim. Running them through a serializer a second
+     * time would escape the markup they contain, and a result of {@code <doc/>} would reach the
+     * failure message as {@code &lt;doc/&gt;}.
+     *
+     * @param seq the already-serialized value(s) to render into the failure message
+     *
+     * @return the concatenated string values
+     *
+     * @throws XPathException if a string value cannot be obtained
+     */
+    private String seqToString(final Sequence seq) throws XPathException {
+        final StringBuilder builder = new StringBuilder();
+        for (final SequenceIterator it = seq.iterate(); it.hasNext(); ) {
+            builder.append(it.nextItem().getStringValue());
         }
+        return builder.toString();
     }
 
     private String errorMapToString(final Sequence seqErrorMap) throws IOException, XPathException, SAXException {
