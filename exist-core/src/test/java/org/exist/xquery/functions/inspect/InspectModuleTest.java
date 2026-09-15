@@ -103,6 +103,31 @@ public class InspectModuleTest {
             declare %public %x:path("/x/y/z") function x:fun4() {
               "hello from fun4"
             };
+
+            (:~
+             : Selects taxonomy[@type = "reign"] from the source.
+             : THIS SENTENCE MUST SURVIVE.
+             :)
+            declare function x:fun5() {
+              "hello from fun5"
+            };
+
+            (:~
+             : Costs 5 @ 3 dollars each. Write to info@exist-db.org for a quote@
+             :)
+            declare function x:fun6() {
+              "hello from fun6"
+            };
+
+            (:~
+             : A description before the tags.
+             :
+             : @param $one takes x/@attr as its value
+             : @return a result mentioning info@exist-db.org
+             :)
+            declare function x:fun7($one as xs:int) {
+              "hello from fun7"
+            };
             """;
     private static final String MAIN_MODULE = """
             import module namespace inspect = "http://exist-db.org/xquery/inspection";
@@ -110,7 +135,6 @@ public class InspectModuleTest {
             inspect:inspect-module(xs:anyURI("xmldb:exist://%s"))/function[@name eq "%s"]
             """;
 
-    @Ignore("https://github.com/eXist-db/exist/issues/1386")
     @Test
     public void withAtSignInline() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun1";
@@ -121,6 +145,28 @@ public class InspectModuleTest {
         final String expectedReturn = "taxonomy[@type = \"reign\"]";
 
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
+    }
+
+    /** eXist-db/exist#1386: an '@' mid-prose must not truncate the description. */
+    @Test
+    public void atSignInDescriptionDoesNotTruncate() throws PermissionDeniedException, XPathException, EXistException {
+        assertDescription("x:fun5",
+                "Selects taxonomy[@type = \"reign\"] from the source.\n THIS SENTENCE MUST SURVIVE.");
+    }
+
+    /** eXist-db/exist#1386: a bare '@', an email address, and a trailing '@' are all prose. */
+    @Test
+    public void bareAtSignAndEmailInDescriptionSurvive() throws PermissionDeniedException, XPathException, EXistException {
+        assertDescription("x:fun6",
+                "Costs 5 @ 3 dollars each. Write to info@exist-db.org for a quote@");
+    }
+
+    /** eXist-db/exist#1386: tags still parse, and an '@' inside a tag's value survives too. */
+    @Test
+    public void tagsStillParseWithAtSignsInTheirValues() throws PermissionDeniedException, XPathException, EXistException {
+        assertInspection("x:fun7", "A description before the tags.",
+                new String[]{ "takes x/@attr as its value" }, new String[]{}, new String[]{},
+                "a result mentioning info@exist-db.org");
     }
 
     @Test
@@ -157,6 +203,32 @@ public class InspectModuleTest {
         final String expectedReturn = "another result";
 
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
+    }
+
+    /**
+     * Asserts only the description of a function, for cases that declare no tags.
+     *
+     * @param functionName the function to inspect
+     * @param expectedDescription the description text expected to survive parsing
+     */
+    private static void assertDescription(final String functionName, final String expectedDescription)
+            throws XPathException, PermissionDeniedException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            final Sequence result = xqueryService.execute(broker,
+                    MAIN_MODULE.formatted(MODULE_LOAD_PATH, functionName), null);
+
+            assertEquals(1, result.getItemCount());
+            final Element function = (Element) result.itemAt(0);
+            final NodeList descriptions = function.getElementsByTagName("description");
+            assertEquals(1, descriptions.getLength());
+            assertEquals(expectedDescription, descriptions.item(0).getFirstChild().getNodeValue());
+
+            transaction.commit();
+        }
     }
 
     private static void assertInspection(
