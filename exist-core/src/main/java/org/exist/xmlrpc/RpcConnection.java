@@ -660,11 +660,6 @@ public class RpcConnection implements RpcAPI {
             properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDeclaration);
         }
 
-        if (!properties.containsKey(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION)) {
-            final String omitOriginalXmlDeclaration = broker.getConfiguration().getProperty(Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE, "no");
-            properties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-        }
-
         if (!properties.containsKey(EXistOutputKeys.OUTPUT_DOCTYPE)) {
             final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
             properties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, outputDocType);

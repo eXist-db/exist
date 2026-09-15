@@ -621,10 +621,7 @@ public class SystemExport {
             final NamespaceSupport nsSupport = new NamespaceSupport();
             final NodeList children = doc.getChildNodes();
 
-            final DocumentType docType = doc.getDoctype();
-            if (docType != null) {
-                receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
-            }
+            writeProlog(doc, receiver);
 
             for (int i = 0; i < children.getLength(); i++) {
                 final StoredNode child = (StoredNode) children.item(i);
@@ -700,6 +697,26 @@ public class SystemExport {
             }
         } catch (final IOException | SAXException | XMLStreamException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Serialize the XML Declaration and the Document Type Declaration of a document, if present.
+     *
+     * @param doc      the document to serialize
+     * @param receiver the output handler
+     *
+     * @throws SAXException if the receiver raises an error
+     */
+    private void writeProlog(final DocumentImpl doc, final Receiver receiver) throws SAXException {
+        final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
+        if (xmlDecl != null) {
+            receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
+        }
+
+        final DocumentType docType = doc.getDoctype();
+        if (docType != null) {
+            receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
         }
     }
 

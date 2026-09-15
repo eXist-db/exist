@@ -130,7 +130,6 @@ public class RESTServer {
     public final static Properties defaultOutputKeysProperties = new Properties();
 
     static {
-        defaultOutputKeysProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultOutputKeysProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
@@ -431,8 +430,6 @@ public class RESTServer {
                 EXistOutputKeys.OUTPUT_DOCTYPE, Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
         setOutputProperty(broker, request, outputProperties, Omit_Xml_Declaration,
                 OutputKeys.OMIT_XML_DECLARATION, Serializer.PROPERTY_OMIT_XML_DECLARATION, "yes");
-        setOutputProperty(broker, request, outputProperties, Omit_Original_Xml_Declaration,
-                EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, "no");
         if ((option = getParameter(request, Source)) != null && !safeMode) {
             options.source = "yes".equals(option);
         }
@@ -641,10 +638,9 @@ public class RESTServer {
                 throw new NotFoundException("Document " + path + " not found");
             }
 
-            // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
+            // reset any output-doctype or omit-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
             outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
 
             // Should we display the source of the XQuery or XProc or execute it
             final Descriptor descriptor = Descriptor.getDescriptorSingleton();

@@ -76,16 +76,6 @@ import org.xmldb.api.base.XMLDBException;
 @RunWith(Parameterized.class)
 public class SystemExportImportTest {
 
-    @Parameters(name = "{0} zip:{2}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"direct", true, false},
-                {"non-direct", false, false},
-                {"direct", true, true},
-                {"non-direct", false, true}
-        });
-    }
-
     @Parameter
     public String apiName;
 
@@ -110,6 +100,7 @@ public class SystemExportImportTest {
     private static XmldbURI doc01uri = TEST_COLLECTION_URI.append("test1.xml");
     private static XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
     private static XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
+    private static XmldbURI doc04uri = TEST_COLLECTION_URI.append("test4.xml");
     private static XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
     
     private static String XML1 = "<test attr=\"test\"/>";
@@ -128,7 +119,20 @@ public class SystemExportImportTest {
     private static String XML3 = "<!DOCTYPE html><html></html>";
     private static String XML3_PROPER = "<!DOCTYPE html>\n<html/>";
 
+    private static String XML4_DECL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+    private static String XML4 = XML4_DECL + "\n<test/>";
+
     private static String BINARY = "test";
+
+    @Parameters(name = "{0} zip:{2}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"direct", true, false},
+                {"non-direct", false, false},
+                {"direct", true, true},
+                {"non-direct", false, true}
+        });
+    }
 
     @Test
     public void exportImport() throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
@@ -168,6 +172,14 @@ public class SystemExportImportTest {
             doc = getDoc(broker, test, doc03uri.lastSegment());
             assertEquals(XML3_PROPER, serializer(broker, doc));
 
+            // the persisted XML Declaration survives export and import, but is only serialized if not omitted
+            doc = getDoc(broker, test, doc04uri.lastSegment());
+            assertEquals("<test/>", serializer(broker, doc));
+            final Properties withXmlDeclOutputProps = new Properties();
+            withXmlDeclOutputProps.putAll(contentsOutputProps);
+            withXmlDeclOutputProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            assertEquals(XML4, serializer(broker, doc, withXmlDeclOutputProps));
+
             doc = getDoc(broker, test, doc11uri.lastSegment());
             assertTrue(doc instanceof BinaryDocument);
             try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
@@ -192,10 +204,14 @@ public class SystemExportImportTest {
     }
 	
 	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException {
+		return serializer(broker, document, contentsOutputProps);
+	}
+
+	private String serializer(final DBBroker broker, final DocumentImpl document, final Properties outputProperties) throws SAXException {
 		final Serializer serializer = broker.borrowSerializer();
 		try {
             serializer.setUser(broker.getCurrentSubject());
-            serializer.setProperties(contentsOutputProps);
+            serializer.setProperties(outputProperties);
             return serializer.serialize(document);
         } finally {
             broker.returnSerializer(serializer);
@@ -233,6 +249,7 @@ public class SystemExportImportTest {
             broker.storeDocument(transaction, doc01uri.lastSegment(), new StringInputSource(XML1), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc02uri.lastSegment(), new StringInputSource(XML2), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc03uri.lastSegment(), new StringInputSource(XML3), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc04uri.lastSegment(), new StringInputSource(XML4), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE, test);
 
             transaction.commit();

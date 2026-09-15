@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.6.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.7.0">
 
     <!-- 
         Configures the database backend.
@@ -779,12 +779,11 @@
            to uncompress the retrieved result in the client too.
 
         - omit-xml-declaration:
-            should the XML Declaration for a document be serialized
-            if it is present?
-
-        - omit-original-xml-declaration:
-            should the original persisted XML Declaration for a document be serialized
-            if it is present?
+            should the XML Declaration be omitted when serializing a document?
+            If not omitted, the persisted XML Declaration of the document is
+            used if present, otherwise a default XML Declaration with version
+            "1.0" and encoding "UTF-8" is generated. The version, encoding and
+            standalone serialization parameters take precedence over both.
 
         - output-doctype:
             should the Doctype Declaration for a document be serialized
@@ -815,7 +814,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no"
-                omit-xml-declaration="yes" omit-original-xml-declaration="no"
+                omit-xml-declaration="yes"
                 output-doctype="yes" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no"
                 match-tagging-elements="no">

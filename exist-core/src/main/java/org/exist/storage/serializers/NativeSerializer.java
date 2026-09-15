@@ -117,11 +117,10 @@ public class NativeSerializer extends Serializer {
             documentStarted = true;
         }
 
-        if (doc.getXmlDeclaration() != null){
-            if ("no".equals(getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no"))) {
-                final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
-                receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
-            }
+        final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
+        if (xmlDecl != null) {
+            // whether the declaration is output is decided by the receiver according to omit-xml-declaration
+            receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
         }
 
         if (doc.getDoctype() != null) {

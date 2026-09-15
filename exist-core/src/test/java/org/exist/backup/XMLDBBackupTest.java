@@ -45,13 +45,17 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
@@ -120,10 +124,11 @@ public class XMLDBBackupTest {
         final Resource doc1 = testCollection.getResource(DOC1_NAME);
         assertNotNull(doc1);
 
-        // NOTE(AR) that org.exist.backup.Backup calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        // NOTE(AR) that org.exist.backup.SystemExport also calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        // TODO(AR) consider whether the backup/export should be injecting a XML Declaration that was not previously present, or should default to EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION
-        final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + doc1Content).build();
+        // org.exist.backup.Backup writes an XML Declaration for every XML document, even if the document had none persisted
+        assertTrue(readBackupEntry(backupFile, DOC1_NAME).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+
+        // the default omit-xml-declaration=yes means that the XML Declaration is not serialized
+        final Source expected = Input.fromString(doc1Content).build();
 
         final Source actual = Input.fromString(doc1.getContent().toString()).build();
         final Diff diff = DiffBuilder.compare(expected)
@@ -137,6 +142,55 @@ public class XMLDBBackupTest {
 
         final Resource binDoc2 = testCollection.getResource(BIN_DOC2_NAME);
         assertEquals(binDoc2Content, new String((byte[])binDoc2.getContent(), UTF_8));
+    }
+
+    @Test
+    public void backupRestoreWithXmlDecl() throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+        final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);
+        final String docWithDeclName = "docWithDecl.xml";
+        final String xmlDecl = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+        final String docWithDeclContent = xmlDecl + "\n<root/>";
+
+        final Collection testCollectionInitial = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final Resource docWithDecl = testCollectionInitial.createResource(docWithDeclName, XMLResource.class);
+        docWithDecl.setContent(docWithDeclContent);
+        testCollectionInitial.storeResource(docWithDecl);
+
+        final String backupFilename = "test-xmldb-backup-decl-" + System.currentTimeMillis() + ".zip";
+
+        // backup the collection
+        final Path backupFile = backup(backupFilename, collectionUri);
+
+        // the persisted XML Declaration is written to the backup
+        assertTrue(readBackupEntry(backupFile, docWithDeclName).startsWith(xmlDecl));
+
+        // delete the collection
+        deleteCollection(collectionUri);
+
+        // restore the collection
+        restore(backupFile, XmldbURI.create(getBaseUri()).append("/db"));
+
+        // check restore has restored the collection
+        final Collection testCollection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        assertNotNull(testCollection);
+
+        // the XML Declaration is persisted again by the restore
+        testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        final Resource restoredDoc = testCollection.getResource(docWithDeclName);
+        assertNotNull(restoredDoc);
+        assertEquals(docWithDeclContent, restoredDoc.getContent().toString());
+    }
+
+    private static String readBackupEntry(final Path backupFile, final String docName) throws IOException {
+        try (final ZipFile zip = new ZipFile(backupFile.toFile())) {
+            final ZipEntry entry = zip.stream()
+                    .filter(e -> e.getName().endsWith("/" + COLLECTION_NAME + "/" + docName))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("No entry for " + docName + " in backup " + backupFile));
+            try (final InputStream is = zip.getInputStream(entry)) {
+                return new String(is.readAllBytes(), UTF_8);
+            }
+        }
     }
 
     private Path backup(final String filename, final XmldbURI collectionUri) throws IOException, XMLDBException, SAXException {

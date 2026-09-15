@@ -48,7 +48,6 @@ public class XMLWriter implements SerializerWriter {
     
     protected final static Properties defaultProperties = new Properties();
     static {
-        defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
@@ -709,32 +708,29 @@ public class XMLWriter implements SerializerWriter {
         }
         declarationWritten = true;
 
-        final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
-        if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
-            // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
-            final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
-            @Nullable final String standaloneOrig = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
-            // "omit" means standalone should be absent from the declaration
-            @Nullable final String standalone = (standaloneOrig != null && "omit".equalsIgnoreCase(standaloneOrig.trim())) ? null : standaloneOrig;
-
-            writeDeclaration(version, encoding, standalone);
-
-            return;
-        }
-
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         @Nullable final String standaloneRaw = outputProperties.getProperty(OutputKeys.STANDALONE);
         // "omit" means standalone should be absent from the declaration
-        @Nullable final String standalone = (standaloneRaw != null && "omit".equalsIgnoreCase(standaloneRaw.trim())) ? null : standaloneRaw;
+        @Nullable final String standaloneParam = (standaloneRaw != null && "omit".equalsIgnoreCase(standaloneRaw.trim())) ? null : standaloneRaw;
         // Per W3C Serialization 3.1: output declaration if omit-xml-declaration is false/no/0,
         // or if standalone is explicitly set (the declaration is required to carry standalone)
-        if (isBooleanFalse(omitXmlDecl) || standalone != null) {
+        if (!isBooleanFalse(omitXmlDecl) && standaloneParam == null) {
+            return;
+        }
+
+        if (originalXmlDecl != null) {
+            // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
+            final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
+            @Nullable final String standalone = standaloneRaw != null ? standaloneParam : originalXmlDecl.standalone;
+
+            writeDeclaration(version, encoding, standalone);
+        } else {
             // get the fields of the declaration from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
 
-            writeDeclaration(version, encoding, standalone);
+            writeDeclaration(version, encoding, standaloneParam);
         }
     }
 

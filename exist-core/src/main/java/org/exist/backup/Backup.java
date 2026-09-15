@@ -270,6 +270,7 @@ public class Backup {
 
         current.setProperty(OutputKeys.ENCODING, defaultOutputProperties.getProperty(OutputKeys.ENCODING));
         current.setProperty(OutputKeys.INDENT, defaultOutputProperties.getProperty(OutputKeys.INDENT));
+        current.setProperty(OutputKeys.OMIT_XML_DECLARATION, defaultOutputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION));
         current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, defaultOutputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES));
         current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
 
