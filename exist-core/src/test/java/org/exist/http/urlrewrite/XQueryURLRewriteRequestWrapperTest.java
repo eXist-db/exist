@@ -24,7 +24,6 @@ package org.exist.http.urlrewrite;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -35,7 +34,7 @@ import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 
 /**
- * {@link RequestWrapper#getPathTranslated()} had dead code: when its own {@code getPathInfo()}
+ * {@link ControllerRequestWrapper#getPathTranslated()} had dead code: when its own {@code getPathInfo()}
  * override returned {@code null} (the whole in-context path is consumed by the servlet path, i.e.
  * a full-match forward), it called {@code super.getPathTranslated()} but discarded the result, then
  * unconditionally returned {@code null} regardless of what the underlying request would have
@@ -53,7 +52,7 @@ public class XQueryURLRewriteRequestWrapperTest {
         expect(underlying.getPathTranslated()).andReturn("/underlying/real/path").anyTimes();
         replay(underlying);
 
-        final RequestWrapper wrapper = new RequestWrapper(underlying);
+        final ControllerRequestWrapper wrapper = new ControllerRequestWrapper(underlying);
         // Same length in-context path and servlet path -- getPathInfo() computes to null.
         wrapper.setPaths("/apps/foo", "/apps/foo");
 
@@ -75,7 +74,7 @@ public class XQueryURLRewriteRequestWrapperTest {
         expect(underlying.getSession()).andReturn(session).anyTimes();
         replay(underlying);
 
-        final RequestWrapper wrapper = new RequestWrapper(underlying);
+        final ControllerRequestWrapper wrapper = new ControllerRequestWrapper(underlying);
         // Longer in-context path than servlet path -- getPathInfo() computes to "/bar.xql".
         wrapper.setPaths("/apps/foo/bar.xql", "/apps/foo");
 
