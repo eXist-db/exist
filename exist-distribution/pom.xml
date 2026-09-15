@@ -1000,7 +1000,7 @@
                                     <executable>${project.basedir}/src/main/scripts/codesign-lz4-mac.sh</executable>
                                     <arguments>
                                         <argument>${mac.bundle.java.dir}</argument>
-                                        <argument>1.11.0</argument>
+                                        <argument>${lz4-java.version}</argument>
                                         <argument>${project.build.directory}/lz4-native</argument>
                                         <argument>${mac.codesign.identity}</argument>
                                     </arguments>
