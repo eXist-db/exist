@@ -228,7 +228,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * on request shape -- see NonAsciiCookieRoundTripTest).
 	 */
 	private String encode(final String value){
-        return new String(value.getBytes(), ISO_8859_1);
+        return new String(value.getBytes(UTF_8), ISO_8859_1);
 	}
 
 	/**
@@ -237,8 +237,20 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * one rather than passing it through. Percent-encoding keeps the wire value within that
 	 * ASCII-safe range regardless of what text it holds; paired with matching decoding in
 	 * {@code request:get-cookie-value()} (org.exist.xquery.functions.request.GetCookieValue).
+	 * <p>
+	 * {@link URLEncoder} implements {@code application/x-www-form-urlencoded}, not RFC 3986
+	 * percent-encoding: it encodes a space as {@code +} rather than {@code %20}. That collides
+	 * with a literal {@code +} already present in the value -- common in base64 payloads such as
+	 * session tokens -- which {@link java.net.URLDecoder} on the read side would otherwise
+	 * indistinguishably decode back to a space. Rewriting the encoded space to {@code %20} keeps a literal {@code +}
+	 * passing through unencoded (it is a valid {@code cookie-octet} byte, so RFC 6265 never
+	 * required escaping it), which removes that collision entirely. See
+	 * {@link org.exist.xquery.functions.request.GetCookieValue#decode} for the matching read side,
+	 * and <a href="https://github.com/eXist-db/exist/pull/6451">#6451</a>, which proposes the same
+	 * RFC 3986-vs-form-urlencoded fix for the {@code xmldb:} URI functions' percent-decoding --
+	 * worth sharing one implementation with, if both land.
 	 */
 	private String encodeCookieValue(final String value) {
-		return URLEncoder.encode(value, UTF_8);
+		return URLEncoder.encode(value, UTF_8).replace("+", "%20");
 	}
 }

@@ -88,19 +88,29 @@ public class GetCookieValue extends RequestFunction {
 	}
 	
 	/**
-	 * Symmetric with {@code HttpResponseWrapper#encodeCookieValue}, which percent-encodes a
-	 * cookie's value on write (RFC 6265's cookie-octet grammar excludes bytes >= 0x80, and Jetty
-	 * 12 enforces that strictly enough to drop or fail the whole request otherwise -- see
-	 * NonAsciiCookieRoundTripTest). A cookie this eXist instance didn't set itself -- from a
-	 * browser, or another app sharing the domain -- may not be percent-encoded at all: fall back
-	 * to the raw value rather than throwing on a lone {@code '%'} that isn't a valid escape, and
-	 * accept that a raw, unescaped {@code '+'} in such a cookie is indistinguishable from an
-	 * encoded space and will decode as one (a cookie this instance set itself is unaffected: a
-	 * literal {@code '+'} in the original value is escaped to {@code %2B} on write).
+	 * Symmetric with {@link org.exist.http.servlets.HttpResponseWrapper}'s
+	 * {@code encodeCookieValue}, which percent-encodes a cookie's value on write (RFC 6265's
+	 * cookie-octet grammar excludes bytes >= 0x80, and Jetty 12 enforces that strictly enough to
+	 * drop or fail the whole request otherwise -- see NonAsciiCookieRoundTripTest). A cookie this
+	 * eXist instance didn't set itself -- from a browser, or another app sharing the domain -- may
+	 * not be percent-encoded at all: fall back to the raw value rather than throwing on a lone
+	 * {@code '%'} that isn't a valid escape.
+	 * <p>
+	 * {@link URLDecoder} implements {@code application/x-www-form-urlencoded}, which decodes a
+	 * literal {@code '+'} as a space -- that would corrupt an unrelated, unencoded cookie
+	 * containing one (base64 payloads such as session tokens routinely do), including a cookie
+	 * this instance itself set before this fix. Escaping {@code '+'} to {@code %2B} first makes it
+	 * pass through as a literal character instead, matching the write side's use of {@code %20}
+	 * rather than {@code +} for an encoded space (see {@code encodeCookieValue}) and leaving only
+	 * the rarer, inherent ambiguity of a foreign {@code %XX} sequence that happens to be
+	 * well-formed but was never actually percent-encoded. See
+	 * <a href="https://github.com/eXist-db/exist/pull/6451">#6451</a>, which proposes the same
+	 * RFC 3986-vs-form-urlencoded fix for the {@code xmldb:} URI functions' percent-decoding --
+	 * worth sharing one implementation with, if both land.
 	 */
 	private String decode(final String value) {
 		try {
-			return URLDecoder.decode(value, UTF_8);
+			return URLDecoder.decode(value.replace("+", "%2B"), UTF_8);
 		} catch (final IllegalArgumentException e) {
 			return value;
 		}

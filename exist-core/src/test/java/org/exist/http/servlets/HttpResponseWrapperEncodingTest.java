@@ -110,6 +110,43 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
+    public void addCookieEncodesSpaceAsPercentTwentyNotPlus() {
+        // URLEncoder alone (application/x-www-form-urlencoded) would emit '+' for a space, which
+        // is indistinguishable on the read side from a literal '+' already in the value -- common
+        // in base64 payloads such as session tokens. Rewriting to '%20' removes that collision;
+        // see the javadoc on HttpResponseWrapper#encodeCookieValue.
+        final Capture<Cookie> capturedCookie = newCapture();
+        final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
+        mockResponse.addCookie(capture(capturedCookie));
+        expectLastCall();
+        replay(mockResponse);
+
+        new HttpResponseWrapper(mockResponse).addCookie("test-cookie", "hello world");
+
+        verify(mockResponse);
+        assertEquals("hello%20world", capturedCookie.getValue().getValue());
+    }
+
+    @Test
+    public void addCookieLeavesLiteralPlusPercentEncoded() {
+        // A literal '+' already in the value (e.g. a base64 payload) is percent-encoded to '%2B',
+        // not left raw -- so it can never be confused with an encoded space on the read side.
+        final Capture<Cookie> capturedCookie = newCapture();
+        final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
+        mockResponse.addCookie(capture(capturedCookie));
+        expectLastCall();
+        replay(mockResponse);
+
+        final String value = "aGVsbG8+d29ybGQ=";
+        new HttpResponseWrapper(mockResponse).addCookie("test-cookie", value);
+
+        verify(mockResponse);
+        final String encoded = capturedCookie.getValue().getValue();
+        assertTrue("Literal '+' must be percent-encoded, not left raw: " + encoded, !encoded.contains("+"));
+        assertEquals(value, URLDecoder.decode(encoded, UTF_8));
+    }
+
+    @Test
     public void pureAsciiValuesAreUnaffected() {
         // ASCII bytes (0-127) are identical in UTF-8 and ISO-8859-1, so the transformation is a
         // no-op for the common case -- this is why the hack has been invisible for values like
