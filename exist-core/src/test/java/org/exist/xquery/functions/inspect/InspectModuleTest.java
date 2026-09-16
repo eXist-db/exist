@@ -128,6 +128,25 @@ public class InspectModuleTest {
             declare function x:fun7($one as xs:int) {
               "hello from fun7"
             };
+
+            (:~
+             : A description whose later lines open with an '@'.
+             : @home is where the heart is.
+             : @2024 was a good year.
+             : @exist-db.org is the domain.
+             :)
+            declare function x:fun8() {
+              "hello from fun8"
+            };
+
+            (:~
+             : Tags xqDoc defines still open a tag.
+             : @since 1.0
+             : @author Some One
+             :)
+            declare function x:fun9() {
+              "hello from fun9"
+            };
             """;
     private static final String MAIN_MODULE = """
             import module namespace inspect = "http://exist-db.org/xquery/inspection";
@@ -159,6 +178,24 @@ public class InspectModuleTest {
     public void bareAtSignAndEmailInDescriptionSurvive() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun6",
                 "Costs 5 @ 3 dollars each. Write to info@exist-db.org for a quote@");
+    }
+
+    /**
+     * eXist-db/exist#1386, raised in review: a line opening with an unrecognized '@word' is prose,
+     * not a tag. Previously such a line vanished from the description and reappeared as an element
+     * named after the word — including names XML does not permit, such as "2024".
+     */
+    @Test
+    public void lineStartAtSignThatIsNotAnXQDocTagIsProse() throws PermissionDeniedException, XPathException, EXistException {
+        assertDescription("x:fun8",
+                "A description whose later lines open with an '@'.\n @home is where the heart is."
+                        + "\n @2024 was a good year.\n @exist-db.org is the domain.");
+    }
+
+    /** ...while the tags xqDoc does define still open a tag at line start. */
+    @Test
+    public void lineStartXQDocTagsStillParseAsTags() throws PermissionDeniedException, XPathException, EXistException {
+        assertDescription("x:fun9", "Tags xqDoc defines still open a tag.");
     }
 
     /** eXist-db/exist#1386: tags still parse, and an '@' inside a tag's value survives too. */

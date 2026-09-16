@@ -79,8 +79,11 @@ contents returns [String content]
 			}
 		}
 		|
-		// '@name' mid-prose: not a tag, so keep it as text
-		{ !lineStart }? t:TAG { buf.append(t.getText()); lineStart = false; }
+		// A tag only opens at the start of a line AND only for a tag xqDoc defines.
+		// Anything else -- '@name' mid-prose, or a line opening with prose like
+		// "@home is where the heart is." -- is ordinary text.
+		{ !lineStart || !XQDocHelper.isKnownTag(LT(1).getText()) }?
+		t:TAG { buf.append(t.getText()); lineStart = false; }
 		|
 		// a bare '@' is never a tag; no other rule accepts this token
 		AT { buf.append('@'); lineStart = false; }
