@@ -1,0 +1,28 @@
+exist-core/src/main/java/org/exist/http/servlets/HttpResponseWrapper.java
+  s_c1937cd8749564::t_7100bfc2db6828 231,240-243,246-251,254
+  s_c1937cd8749564::t_7ca4898bb7d236 244-245
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_c1937cd8749564::t_7022348c170e3a 112-139,142-145,147-148
+  s_c1937cd8749564::t_0d36492ec1a6a5 140-141,146
+exist-core/src/main/java/org/exist/xquery/functions/request/GetCookieValue.java
+  s_c1937cd8749564::t_c8f29c88145240 91-109,113
+exist-core/src/test/java/org/exist/xquery/functions/request/GetCookieValueDecodeTest.java
+  s_c1937cd8749564::t_ff622a91458c46 1-50,53,56-57,59-96
+  s_c1937cd8749564::t_339e90d73bb15e 51-52,54-55,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "48cd9c0654c74ab985daaa84418c8a5f05358650",
+  "prompts": {},
+  "sessions": {
+    "s_c1937cd8749564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6a1969f5-b156-4017-b6a0-3565eea84d79",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
