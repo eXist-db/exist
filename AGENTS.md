@@ -262,6 +262,38 @@ eXist-db uses the [exist-xqts-runner](https://github.com/eXist-db/exist-xqts-run
 - **BaseX**: reference implementation for XQuery 4.0 features including XQUF and ixml
 - **Saxon**: reference implementation for XQuery 4.0, XPath 4.0, and XSLT 4.0
 
+## Known Prethink Test-Gap Blind Spot
+
+`test-gaps.csv` (see the Moderne Prethink Context section below) systematically misreports
+`BasicFunction#eval()` overrides — i.e. essentially every builtin XQuery function implementation
+in `org.exist.xquery.functions.*` — as having "no test coverage." This is a static-analysis
+blind spot, not a real gap: these functions are dispatched by QName through the query engine at
+runtime (a test invokes them via an XQuery string like `"fn:environment-variable('PATH')"`), so
+there is no direct Java call edge for a call-graph analyzer to see between the test and `eval()`.
+
+A corrective recipe exists to check the real coverage before trusting a `test-gaps.csv` row for
+a `BasicFunction` subclass: `org.exist.moderne.XQueryDynamicInvocationCoverage`, in the sibling
+project `../exist-moderne-recipes` (not part of this repo). It cross-references each function's
+QName local name (from `new QName(...)` calls, or the `FunctionDSL.functionSignature(name, ...)`
+helper pattern, including via a same-class `static final String` constant) against string
+literals in Java test sources and raw text in test resources (XQSuite `.xql`/`.xqm` modules,
+XML fixtures), and emits a `XQueryDynamicInvocationCoverageTable` data table reporting whether
+each function is actually exercised.
+
+To run it: `cd ../exist-moderne-recipes && ./gradlew publishToMavenLocal`, then
+`mod config recipes jar install org.exist.moderne:exist-moderne-recipes:<version>` — **bump the
+version in `build.gradle.kts` on every change**, since `mod run` appears to cache results by
+recipe GAV rather than jar content, and will silently return stale results otherwise — then
+`mod build /path/to/exist && mod run /path/to/exist --recipe org.exist.moderne.XQueryDynamicInvocationCoverage --no-patch`.
+Read the result via `mod study working-set --data-table XQueryDynamicInvocationCoverageTable --last-recipe-run --csv`
+or by decompressing `.moderne/run/<runId>/datatables/org.exist.moderne.XQueryDynamicInvocationCoverageTable.csv.gz` directly.
+
+This is a best-effort heuristic (matches on QName local name only, not the full namespace-qualified
+name), so it can be fooled by two different modules sharing a local name, or by a rarely-used
+local name that happens to appear in unrelated text. Treat a `false` result as a real candidate
+gap, but treat a `true` result as reasonably trustworthy given the specificity of most eXist
+function names.
+
 ---
 
 <!-- prethink-context -->
