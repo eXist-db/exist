@@ -78,7 +78,6 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.exist.ExistSystemProperties;
-import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.Permission;
