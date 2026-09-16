@@ -62,14 +62,6 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class SystemPropertyTest {
 
-    @Parameterized.Parameters(name = "{0}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "non-secure", null, false },
-                { "secure", "conf-sys-props-admins-only.xml", true }
-        });
-    }
-
     @Parameterized.Parameter(value = 0)
     public String testTypeName;
 
@@ -80,6 +72,14 @@ public class SystemPropertyTest {
     public boolean shouldReturnEmptySequence;
 
     private ExistEmbeddedServer existEmbeddedServer = null;
+
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "non-secure", null, false },
+                { "secure", "conf.xml", true }
+        });
+    }
 
     @Before
     public void setup() throws URISyntaxException, DatabaseConfigurationException, EXistException, IOException {
