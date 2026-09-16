@@ -41,11 +41,12 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -54,32 +55,32 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class FunEnvironmentTest {
 
-    @Parameterized.Parameters(name = "{0}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "non-secure", null, false },
-                { "secure", "conf-env-vars-admins-only.xml", true }
-        });
-    }
-
-    @Parameterized.Parameter(value = 0)
+    @Parameter(0)
     public String testTypeName;
 
-    @Parameterized.Parameter(value = 1)
+    @Parameter(1)
     public String confFileName;
 
-    @Parameterized.Parameter(value = 2)
+    @Parameter(2)
     public boolean shouldReturnEmptySequence;
 
     private ExistEmbeddedServer existEmbeddedServer = null;
 
-    @Before
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "non-secure", null, false },
+                { "secure", "conf.xml", true }
+        });
+    }
+
+    @BeforeEach
     public void setup() throws URISyntaxException, DatabaseConfigurationException, EXistException, IOException {
         if (confFileName == null) {
             existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -90,7 +91,7 @@ public class FunEnvironmentTest {
         existEmbeddedServer.startDb();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (existEmbeddedServer != null) {
             existEmbeddedServer.stopDb();
