@@ -44,13 +44,19 @@ import java.util.Set;
 public class XQDocHelper {
 
     /**
-     * The tags defined by the xqDoc specification. Only these open a tag when they appear at the
-     * start of an xqdoc comment line; an unrecognized {@code @word} there is ordinary prose, which
-     * is what an author writing "@home is where the heart is." intends.
+     * The tags xqDoc defines, and the only ones that open a tag rather than being prose. This is
+     * the complete set: it matches both the shipped {@code xqdoc-1.0.xsd}, whose {@code comment}
+     * type is a closed sequence of exactly these elements plus {@code description}, and the
+     * specification at <a href="https://xqdoc.org/xqdoc_comments_doc.html">xqdoc.org</a>.
+     *
+     * <p>An unrecognized {@code @word} at the start of a line is ordinary prose, which is what an
+     * author writing "@home is where the heart is." intends. That matters because, per the
+     * specification, "the beginning text (up to the first tag) is assumed to be description text"
+     * -- so treating a word as a tag ends the description early.</p>
      */
     private static final Set<String> KNOWN_TAGS = Set.of(
-            "@author", "@deprecated", "@error", "@example", "@library",
-            "@param", "@return", "@see", "@since", "@version");
+            "@author", "@deprecated", "@error", "@param",
+            "@return", "@see", "@since", "@version");
 
     public static void parse(final FunctionSignature signature) {
         final String desc = signature.getDescription();
