@@ -24,7 +24,7 @@ package org.exist.http.servlets;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.easymock.Capture;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URLDecoder;
 
@@ -36,8 +36,9 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pins the exact transformation {@code HttpResponseWrapper} applies to header and cookie values,
@@ -103,10 +104,47 @@ public class HttpResponseWrapperEncodingTest {
         // exactly what RFC 6265's cookie-octet grammar requires and the packed-byte header scheme
         // cannot guarantee.
         for (int i = 0; i < encoded.length(); i++) {
-            assertTrue("Char at index " + i + " (" + encoded.charAt(i) + ") should be plain US-ASCII",
-                    encoded.charAt(i) < 128);
+            assertTrue(encoded.charAt(i) < 128,
+                    "Char at index " + i + " (" + encoded.charAt(i) + ") should be plain US-ASCII");
         }
         assertEquals(CYRILLIC, URLDecoder.decode(encoded, UTF_8));
+    }
+
+    @Test
+    public void addCookieEncodesSpaceAsPercentTwentyNotPlus() {
+        // URLEncoder alone (application/x-www-form-urlencoded) would emit '+' for a space, which
+        // is indistinguishable on the read side from a literal '+' already in the value -- common
+        // in base64 payloads such as session tokens. Rewriting to '%20' removes that collision;
+        // see the javadoc on HttpResponseWrapper#encodeCookieValue.
+        final Capture<Cookie> capturedCookie = newCapture();
+        final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
+        mockResponse.addCookie(capture(capturedCookie));
+        expectLastCall();
+        replay(mockResponse);
+
+        new HttpResponseWrapper(mockResponse).addCookie("test-cookie", "hello world");
+
+        verify(mockResponse);
+        assertEquals("hello%20world", capturedCookie.getValue().getValue());
+    }
+
+    @Test
+    public void addCookieLeavesLiteralPlusPercentEncoded() {
+        // A literal '+' already in the value (e.g. a base64 payload) is percent-encoded to '%2B',
+        // not left raw -- so it can never be confused with an encoded space on the read side.
+        final Capture<Cookie> capturedCookie = newCapture();
+        final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
+        mockResponse.addCookie(capture(capturedCookie));
+        expectLastCall();
+        replay(mockResponse);
+
+        final String value = "aGVsbG8+d29ybGQ=";
+        new HttpResponseWrapper(mockResponse).addCookie("test-cookie", value);
+
+        verify(mockResponse);
+        final String encoded = capturedCookie.getValue().getValue();
+        assertFalse(encoded.contains("+"), "Literal '+' must be percent-encoded, not left raw: " + encoded);
+        assertEquals(value, URLDecoder.decode(encoded, UTF_8));
     }
 
     @Test
@@ -133,12 +171,12 @@ public class HttpResponseWrapperEncodingTest {
      */
     private static void assertPackedUtf8Bytes(final String original, final String actual) {
         final byte[] utf8Bytes = original.getBytes(UTF_8);
-        assertEquals("Encoded length should equal the UTF-8 byte count, not the original character count",
-                utf8Bytes.length, actual.length());
+        assertEquals(utf8Bytes.length, actual.length(),
+                "Encoded length should equal the UTF-8 byte count, not the original character count");
         for (int i = 0; i < utf8Bytes.length; i++) {
             final int expectedByteAsChar = utf8Bytes[i] & 0xFF;
-            assertEquals("Char at index " + i + " should be UTF-8 byte " + i + " reinterpreted as ISO-8859-1",
-                    expectedByteAsChar, actual.charAt(i));
+            assertEquals(expectedByteAsChar, actual.charAt(i),
+                    "Char at index " + i + " should be UTF-8 byte " + i + " reinterpreted as ISO-8859-1");
         }
     }
 }
