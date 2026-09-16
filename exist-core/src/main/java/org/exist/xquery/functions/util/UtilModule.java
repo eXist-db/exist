@@ -167,7 +167,7 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    private static final Pattern PTN_SYSTEM_PROPERTY_ACCESS = PatternFactory.getInstance().getPattern("systemPropertyAccess\\.([^=\\00])+\\.requires((?:Group)|(?:User))");
+    private static final Pattern PTN_SYSTEM_PROPERTY_ACCESS = PatternFactory.getInstance().getPattern("systemPropertyAccess\\.([^=\\00]+)\\.requires((?:Group)|(?:User))");
 
     private IMap<String, ISet<String>> systemPropertyAccessGroups = null;
     private IMap<String, ISet<String>> systemPropertyAccessUsers = null;

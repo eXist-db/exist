@@ -287,7 +287,7 @@ public class FnModule extends AbstractInternalModule {
     public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
             "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
-    private static final Pattern PTN_ENVIRONMENT_VARIABLE_ACCESS = PatternFactory.getInstance().getPattern("environmentVariableAccess\\.([^=\\00])+\\.requires((?:Group)|(?:User))");
+    private static final Pattern PTN_ENVIRONMENT_VARIABLE_ACCESS = PatternFactory.getInstance().getPattern("environmentVariableAccess\\.([^=\\00]+)\\.requires((?:Group)|(?:User))");
 
     private IMap<String, ISet<String>> environmentVariableAccessGroups = null;
     private IMap<String, ISet<String>> environmentVariableAccessUsers = null;
