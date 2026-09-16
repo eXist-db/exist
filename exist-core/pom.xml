@@ -1213,6 +1213,22 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <transformationSet>
                                     <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
                                     <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/fn/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/fn</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/util/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/util</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
                                         <include>collection.xconf.init</include>
                                     </includes>
                                     <stylesheet>${project.basedir}/../schema/generate-conf-fixture.xsl</stylesheet>

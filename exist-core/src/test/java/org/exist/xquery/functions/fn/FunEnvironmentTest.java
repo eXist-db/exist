@@ -60,14 +60,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class FunEnvironmentTest {
 
-    @Parameterized.Parameters(name = "{0}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "non-secure", null, false },
-                { "secure", "conf-env-vars-admins-only.xml", true }
-        });
-    }
-
     @Parameterized.Parameter(value = 0)
     public String testTypeName;
 
@@ -78,6 +70,14 @@ public class FunEnvironmentTest {
     public boolean shouldReturnEmptySequence;
 
     private ExistEmbeddedServer existEmbeddedServer = null;
+
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "non-secure", null, false },
+                { "secure", "conf.xml", true }
+        });
+    }
 
     @Before
     public void setup() throws URISyntaxException, DatabaseConfigurationException, EXistException, IOException {
