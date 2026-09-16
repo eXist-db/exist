@@ -66,62 +66,92 @@ public class AccessUtil {
      */
     public static Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> parseAccessParameters(
             final Pattern accessRulePattern, final java.util.Map<String, List<?>> parameters) {
+        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> rawRules =
+                collectAccessRules(accessRulePattern, parameters);
+        final IMap<String, ISet<String>> accessUserRules = rawRules._2;
+        final IMap<String, ISet<String>> accessGroupRules = applyOtherwiseDefault(rawRules._1, accessUserRules);
+
+        return Tuple(
+                accessGroupRules == null ? Map.empty() : accessGroupRules.forked(),
+                accessUserRules == null ? Map.empty() : accessUserRules.forked());
+    }
+
+    /**
+     * Scans the module parameters for entries matching {@code accessRulePattern}, splitting
+     * them into raw (unforked, possibly {@code null}) Group and User access rule maps.
+     *
+     * @param accessRulePattern A pattern whose first group matches a "name",
+     *                          and whose second pattern matches the String "Group" or "User".
+     * @param parameters the module parameters.
+     *
+     * @return a Tuple where the first entry is the raw Group Access Rules, and the second entry is the raw User Access Rules.
+     */
+    private static Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> collectAccessRules(
+            final Pattern accessRulePattern, final java.util.Map<String, List<?>> parameters) {
         IMap<String, ISet<String>> accessGroupRules = null;
         IMap<String, ISet<String>> accessUserRules = null;
 
-        if (parameters != null) {
-            Matcher matcher = null;
-            for (final java.util.Map.Entry<String, List<?>> parameter : parameters.entrySet()) {
-                final String parameterName = parameter.getKey();
-                if (matcher == null) {
-                    matcher = accessRulePattern.matcher(parameterName);
-                } else {
-                    matcher.reset(parameterName);
-                }
+        if (parameters == null) {
+            return Tuple(null, null);
+        }
 
-                if (matcher.matches()) {
-                    final String principalType = matcher.group(2);
-                    if ("Group".equals(principalType)) {
-                        if (accessGroupRules == null) {
-                            accessGroupRules = new LinearMap<>();
-                        }
-                        final String name = matcher.group(1);
-                        accessGroupRules.put(name, toSet(parameter.getValue()));
-                    } else if ("User".equals(principalType)) {
-                        if (accessUserRules == null) {
-                            accessUserRules = new LinearMap<>();
-                        }
-                        final String name = matcher.group(1);
-                        accessUserRules.put(name, toSet(parameter.getValue()));
-                    }
-                }
+        Matcher matcher = null;
+        for (final java.util.Map.Entry<String, List<?>> parameter : parameters.entrySet()) {
+            final String parameterName = parameter.getKey();
+            if (matcher == null) {
+                matcher = accessRulePattern.matcher(parameterName);
+            } else {
+                matcher.reset(parameterName);
             }
-        }
 
-        if ((accessGroupRules == null || !accessGroupRules.contains(OTHERWISE))
-                && ((accessUserRules == null) || !accessUserRules.contains(OTHERWISE))) {
-            if (accessGroupRules == null) {
-                accessGroupRules = new LinearMap<>(1);
+            if (!matcher.matches()) {
+                continue;
             }
-            ISet<String> otherwiseDba = new LinearSet<>(1);
-            otherwiseDba.add(SecurityManagerImpl.DBA_GROUP);
-            otherwiseDba = otherwiseDba.forked();
-            accessGroupRules.put(OTHERWISE, otherwiseDba);
-        }
 
-        if (accessGroupRules == null) {
-            accessGroupRules = Map.empty();
-        } else {
-            accessGroupRules = accessGroupRules.forked();
-        }
-
-        if (accessUserRules == null) {
-            accessUserRules = Map.empty();
-        } else {
-            accessUserRules = accessUserRules.forked();
+            final String principalType = matcher.group(2);
+            final String name = matcher.group(1);
+            if ("Group".equals(principalType)) {
+                if (accessGroupRules == null) {
+                    accessGroupRules = new LinearMap<>();
+                }
+                accessGroupRules.put(name, toSet(parameter.getValue()));
+            } else if ("User".equals(principalType)) {
+                if (accessUserRules == null) {
+                    accessUserRules = new LinearMap<>();
+                }
+                accessUserRules.put(name, toSet(parameter.getValue()));
+            }
         }
 
         return Tuple(accessGroupRules, accessUserRules);
+    }
+
+    /**
+     * If neither the group nor the user rules define an explicit "otherwise" ({@code "*"})
+     * rule, injects a default "otherwise" -&gt; DBA-group rule, so that any name not otherwise
+     * configured remains accessible to DBAs, per the documented behaviour in conf.xml.
+     *
+     * @param accessGroupRules the raw (unforked, possibly {@code null}) Group Access Rules.
+     * @param accessUserRules the raw (unforked, possibly {@code null}) User Access Rules.
+     *
+     * @return the Group Access Rules, with the default "otherwise" rule added if needed.
+     */
+    private static IMap<String, ISet<String>> applyOtherwiseDefault(
+            final IMap<String, ISet<String>> accessGroupRules, final IMap<String, ISet<String>> accessUserRules) {
+        final boolean groupOtherwiseSet = accessGroupRules != null && accessGroupRules.contains(OTHERWISE);
+        final boolean userOtherwiseSet = accessUserRules != null && accessUserRules.contains(OTHERWISE);
+
+        if (groupOtherwiseSet || userOtherwiseSet) {
+            return accessGroupRules;
+        }
+
+        final IMap<String, ISet<String>> groupRulesWithDefault = accessGroupRules == null ? new LinearMap<>(1) : accessGroupRules;
+        ISet<String> otherwiseDba = new LinearSet<>(1);
+        otherwiseDba.add(SecurityManagerImpl.DBA_GROUP);
+        otherwiseDba = otherwiseDba.forked();
+        groupRulesWithDefault.put(OTHERWISE, otherwiseDba);
+
+        return groupRulesWithDefault;
     }
 
     private static ISet<String> toSet(final List<?> values) {
