@@ -102,11 +102,11 @@ public class AccessUtil {
                 && ((accessUserRules == null) || !accessUserRules.contains(OTHERWISE))) {
             if (accessGroupRules == null) {
                 accessGroupRules = new LinearMap<>(1);
-                ISet<String> otherwiseDba = new LinearSet<>(1);
-                otherwiseDba.add(SecurityManagerImpl.DBA_GROUP);
-                otherwiseDba = otherwiseDba.forked();
-                accessGroupRules.put(OTHERWISE, otherwiseDba);
             }
+            ISet<String> otherwiseDba = new LinearSet<>(1);
+            otherwiseDba.add(SecurityManagerImpl.DBA_GROUP);
+            otherwiseDba = otherwiseDba.forked();
+            accessGroupRules.put(OTHERWISE, otherwiseDba);
         }
 
         if (accessGroupRules == null) {
