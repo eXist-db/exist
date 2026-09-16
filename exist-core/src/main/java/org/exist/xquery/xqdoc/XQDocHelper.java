@@ -34,6 +34,7 @@ import org.exist.xquery.xqdoc.parser.XQDocParser;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Helper for parsing XQDoc comments on function declarations. XQDoc comments
@@ -41,6 +42,21 @@ import java.util.Map;
  * inspection functions accesses them.
  */
 public class XQDocHelper {
+
+    /**
+     * The tags xqDoc defines, and the only ones that open a tag rather than being prose. This is
+     * the complete set: it matches both the shipped {@code xqdoc-1.0.xsd}, whose {@code comment}
+     * type is a closed sequence of exactly these elements plus {@code description}, and the
+     * specification at <a href="https://xqdoc.org/xqdoc_comments_doc.html">xqdoc.org</a>.
+     *
+     * <p>An unrecognized {@code @word} at the start of a line is ordinary prose, which is what an
+     * author writing "@home is where the heart is." intends. That matters because, per the
+     * specification, "the beginning text (up to the first tag) is assumed to be description text"
+     * -- so treating a word as a tag ends the description early.</p>
+     */
+    private static final Set<String> KNOWN_TAGS = Set.of(
+            "@author", "@deprecated", "@error", "@param",
+            "@return", "@see", "@since", "@version");
 
     public static void parse(final FunctionSignature signature) {
         final String desc = signature.getDescription();
@@ -97,6 +113,17 @@ public class XQDocHelper {
             }
             parameters.put(var, components[1].trim());
         }
+    }
+
+
+    /**
+     * Whether a token is a tag defined by the xqDoc specification.
+     *
+     * @param tag the token text, including its leading {@code '@'}
+     * @return true if this opens an xqdoc tag rather than being prose
+     */
+    public static boolean isKnownTag(final String tag) {
+        return KNOWN_TAGS.contains(tag);
     }
 
     public void setTag(final String tag, final String content) {

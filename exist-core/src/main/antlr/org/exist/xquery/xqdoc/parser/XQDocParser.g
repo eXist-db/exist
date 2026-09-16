@@ -60,16 +60,33 @@ contents returns [String content]
 {
 	content = null;
 	StringBuilder buf = new StringBuilder();
+	// True while nothing but the line prefix (" : ") has been seen on the current line.
+	// An xqdoc tag is only a tag at that position; an '@' anywhere else is ordinary prose.
+	boolean lineStart = true;
 }:
 	(
-		TRIM { buf.append('\n'); }
+		TRIM { buf.append('\n'); lineStart = true; }
 		|
 		SIMPLE_COLON { 
 			if (buf.length()>0 && buf.charAt(buf.length() - 1) != '\n')
 				buf.append(':');
 		}
 		|
-		c:CHARS { buf.append(c.getText()); }
+		c:CHARS {
+			buf.append(c.getText());
+			if (!c.getText().isBlank()) {
+				lineStart = false;
+			}
+		}
+		|
+		// A tag only opens at the start of a line AND only for a tag xqDoc defines.
+		// Anything else -- '@name' mid-prose, or a line opening with prose like
+		// "@home is where the heart is." -- is ordinary text.
+		{ !lineStart || !XQDocHelper.isKnownTag(LT(1).getText()) }?
+		t:TAG { buf.append(t.getText()); lineStart = false; }
+		|
+		// a bare '@' is never a tag; no other rule accepts this token
+		AT { buf.append('@'); lineStart = false; }
 	)+
 	{ content = buf.toString(); }
 	;
