@@ -77,6 +77,32 @@ public class AccessUtilTest {
                 AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "MY_SECRET_VAR"));
     }
 
+    /**
+     * Regression test for a default-fallback bug: the "otherwise" (DBA-group) default was only
+     * ever applied when literally no group rule at all had been configured. As soon as an admin
+     * configured even one specific named group rule without also adding an explicit "*" rule,
+     * every other, unlisted name became inaccessible to everyone, including DBAs - contradicting
+     * the documented behaviour ("if '*' is not set, it defaults to the 'DBA' group").
+     */
+    @Test
+    public void parseAccessParametersDefaultsUnlistedNamesToDbaGroupWhenWildcardAbsent() {
+        final Map<String, List<?>> parameters = Map.of(
+                "testAccess.MY_SECRET_VAR.requiresGroup", List.of("admins")
+        );
+
+        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules =
+                AccessUtil.parseAccessParameters(PTN_TEST_ACCESS, parameters);
+        final IMap<String, ISet<String>> accessGroupRules = accessRules._1;
+        final IMap<String, ISet<String>> accessUserRules = accessRules._2;
+
+        assertTrue("an unlisted name should still fall back to the '*' (otherwise) rule",
+                accessGroupRules.contains(AccessUtil.OTHERWISE));
+        assertTrue("a DBA should be allowed access to an unlisted name by default",
+                AccessUtil.isAllowedAccess(mockUser("dba-user", org.exist.security.SecurityManager.DBA_GROUP), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"));
+        assertFalse("a non-DBA should be denied access to an unlisted name by default",
+                AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"));
+    }
+
     private static org.exist.security.Subject mockUser(final String username, final String... groups) {
         final org.exist.security.Subject user = org.easymock.EasyMock.createMock(org.exist.security.Subject.class);
         org.easymock.EasyMock.expect(user.getUsername()).andStubReturn(username);
