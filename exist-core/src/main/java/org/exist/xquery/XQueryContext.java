@@ -3012,7 +3012,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @return Map of environment variables
      */
-    public io.lacuna.bifurcan.IMap<String, String> getEnvironmentVariables() {
+    public IMap<String, String> getEnvironmentVariables() {
         if (envs == null) {
             envs = io.lacuna.bifurcan.Map.from(System.getenv());
         }
@@ -3025,10 +3025,15 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @return Map of Java System Properties
      */
-    public io.lacuna.bifurcan.IMap<String, String> getJavaSystemProperties() {
+    public IMap<String, String> getJavaSystemProperties() {
         if (props == null) {
             final IMap<String, String> strProps = new LinearMap<>();
-            for (final Map.Entry<Object, Object> prop : System.getProperties().entrySet()) {
+            // Properties#clone() is synchronized on the live, JVM-wide System.getProperties()
+            // instance, so this takes a safe, consistent snapshot even if another thread calls
+            // System.setProperty()/clearProperty() concurrently, rather than iterating the live
+            // Hashtable directly and risking a ConcurrentModificationException.
+            final Properties systemProperties = (Properties) System.getProperties().clone();
+            for (final Map.Entry<Object, Object> prop : systemProperties.entrySet()) {
                 final Object value = prop.getValue();
                 if (value instanceof String) {
                     strProps.put(prop.getKey().toString(), (String) value);
