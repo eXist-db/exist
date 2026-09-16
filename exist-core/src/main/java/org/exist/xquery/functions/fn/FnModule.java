@@ -317,16 +317,25 @@ public class FnModule extends AbstractInternalModule {
     }
 
     /**
-     * Get the environment variable names and groups that are allowed to access them.
-     *
-     * @return a map where the key is the environment variable name, and the value is a set of group names.
+     * Lazily parses the environment variable access rules from the module parameters, on
+     * first use, caching both the group and user rules together so the two getters below
+     * cannot drift out of sync with one another.
      */
-    IMap<String, ISet<String>> getEnvironmentVariableAccessGroups() {
+    private void ensureEnvironmentVariableAccessRulesParsed() {
         if (environmentVariableAccessGroups == null) {
             final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
             this.environmentVariableAccessGroups = accessRules._1;
             this.environmentVariableAccessUsers = accessRules._2;
         }
+    }
+
+    /**
+     * Get the environment variable names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the environment variable name, and the value is a set of group names.
+     */
+    IMap<String, ISet<String>> getEnvironmentVariableAccessGroups() {
+        ensureEnvironmentVariableAccessRulesParsed();
         return environmentVariableAccessGroups;
     }
 
@@ -336,11 +345,7 @@ public class FnModule extends AbstractInternalModule {
      * @return a map where the key is the environment variable name, and the value is a set of usernames.
      */
     IMap<String, ISet<String>> getEnvironmentVariableAccessUsers() {
-        if (environmentVariableAccessUsers == null) {
-            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
-            this.environmentVariableAccessGroups = accessRules._1;
-            this.environmentVariableAccessUsers = accessRules._2;
-        }
+        ensureEnvironmentVariableAccessRulesParsed();
         return environmentVariableAccessUsers;
     }
 

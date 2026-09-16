@@ -42,7 +42,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class UtilModule extends AbstractInternalModule {
 
@@ -225,16 +225,25 @@ public class UtilModule extends AbstractInternalModule {
     }
 
     /**
-     * Get the system property names and groups that are allowed to access them.
-     *
-     * @return a map where the key is the system property name, and the value is a set of group names.
+     * Lazily parses the system property access rules from the module parameters, on first
+     * use, caching both the group and user rules together so the two getters below cannot
+     * drift out of sync with one another.
      */
-    IMap<String, ISet<String>> getSystemPropertyAccessGroups() {
+    private void ensureSystemPropertyAccessRulesParsed() {
         if (systemPropertyAccessGroups == null) {
             final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
             this.systemPropertyAccessGroups = accessRules._1;
             this.systemPropertyAccessUsers = accessRules._2;
         }
+    }
+
+    /**
+     * Get the system property names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the system property name, and the value is a set of group names.
+     */
+    IMap<String, ISet<String>> getSystemPropertyAccessGroups() {
+        ensureSystemPropertyAccessRulesParsed();
         return systemPropertyAccessGroups;
     }
 
@@ -244,11 +253,7 @@ public class UtilModule extends AbstractInternalModule {
      * @return a map where the key is the system property name, and the value is a set of usernames.
      */
     IMap<String, ISet<String>> getSystemPropertyAccessUsers() {
-        if (systemPropertyAccessUsers == null) {
-            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
-            this.systemPropertyAccessGroups = accessRules._1;
-            this.systemPropertyAccessUsers = accessRules._2;
-        }
+        ensureSystemPropertyAccessRulesParsed();
         return systemPropertyAccessUsers;
     }
 
