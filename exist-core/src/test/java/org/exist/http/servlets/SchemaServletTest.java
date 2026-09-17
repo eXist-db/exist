@@ -37,9 +37,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 
 /**
  * Mocked-request unit test: {@link SchemaServlet} does plain filesystem I/O with no
@@ -118,7 +120,7 @@ class SchemaServletTest {
 
         new SchemaServlet().doGet(request, response);
 
-        org.easymock.EasyMock.verify(response);
+        assertThatCode(() -> verify(response)).doesNotThrowAnyException();
     }
 
     @Test
@@ -138,7 +140,7 @@ class SchemaServletTest {
 
         new SchemaServlet().doGet(request, response);
 
-        org.easymock.EasyMock.verify(response);
+        assertThatCode(() -> verify(response)).doesNotThrowAnyException();
     }
 
     @Test
@@ -156,6 +158,6 @@ class SchemaServletTest {
 
         new SchemaServlet().doGet(request, response);
 
-        org.easymock.EasyMock.verify(response);
+        assertThatCode(() -> verify(response)).doesNotThrowAnyException();
     }
 }

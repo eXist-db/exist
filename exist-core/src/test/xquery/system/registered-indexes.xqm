@@ -40,7 +40,7 @@ function test-registered-indexes:missing-keys() {
 declare
     %test:assertEmpty
 function test-registered-indexes:invalid-registration-source() {
-    system:get-registered-indexes()[not(map:get(., "registration-source") = ("spi", "conf.xml"))]
+    system:get-registered-indexes()[not(map:get(., "registration-source") = ("built-in", "spi", "conf.xml"))]
 };
 
 declare
@@ -49,11 +49,22 @@ function test-registered-indexes:invalid-enabled() {
     system:get-registered-indexes()[not(map:get(., "enabled") = ("yes", "no"))]
 };
 
+(: The structural index is always registered directly by IndexManager, not via conf.xml or
+ : SPI, so it's the one entry every instance reports regardless of which index extension
+ : jars are on the classpath - with source "built-in", matching ModuleRegistration's
+ : "built-in" for fn: (see IndexManager#registerStructuralIndexProvenance). :)
+declare
+    %test:assertEquals("built-in", "yes")
+function test-registered-indexes:structural-index-is-built-in() {
+    let $entry := system:get-registered-indexes()[map:get(., "id") = "structural-index"]
+    return (map:get($entry, "registration-source"), map:get($entry, "enabled"))
+};
+
 (: exist-core's own test run has none of the bundled index extension jars (lucene, range,
  : ngram, sort, spatial - separate Maven modules) on its classpath, so no SPI IndexFactory
- : is discoverable here and the registry is expected to be empty; the shape assertions
- : above still hold vacuously. Extension-specific "does my SPI-registered index show up"
- : coverage belongs in each extension's own test suite, against system:get-registered-indexes(). :)
+ : or conf.xml-configured index is discoverable here beyond the always-present structural
+ : index. Extension-specific "does my SPI-registered index show up" coverage belongs in
+ : each extension's own test suite, against system:get-registered-indexes(). :)
 
 (: Only error state: a caller without the DBA role is refused outright. :)
 declare

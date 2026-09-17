@@ -95,23 +95,22 @@ public class GetRegisteredModules extends BasicFunction {
 
         final ValueSequence resultSeq = new ValueSequence();
         final Set<String> seen = new HashSet<>();
-        final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-        try {
-            addBuiltInModules(tempContext, registrationByUri, seen, resultSeq);
-            addPackageModules(tempContext, seen, resultSeq);
-            addMappedModules(tempContext, seen, resultSeq);
-            addSuppressedModules(registrationByUri, seen, resultSeq);
-        } finally {
-            tempContext.reset();
-            tempContext.runCleanupTasks();
-        }
+        // The calling context already has every built-in module loaded (done eagerly for any
+        // XQueryContext at construction, see loadDefaults()/addBuiltInModuleOrDeclareNamespace()),
+        // and getRepository()/getMappedModuleURIs() read from configuration rather than per-context
+        // state — so reuse it instead of constructing a throwaway XQueryContext, which would
+        // reflectively re-instantiate every built-in module class and re-run its prepare() hook.
+        addBuiltInModules(context, registrationByUri, seen, resultSeq);
+        addPackageModules(context, seen, resultSeq);
+        addMappedModules(context, seen, resultSeq);
+        addSuppressedModules(registrationByUri, seen, resultSeq);
         return resultSeq;
     }
 
     /** Java built-in modules actually loaded (active classMap entries). */
-    private void addBuiltInModules(final XQueryContext tempContext, final Map<String, ModuleRegistration> registrationByUri,
+    private void addBuiltInModules(final XQueryContext queryContext, final Map<String, ModuleRegistration> registrationByUri,
             final Set<String> seen, final ValueSequence resultSeq) throws XPathException {
-        for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
+        for (final Iterator<Module> i = queryContext.getRootModules(); i.hasNext(); ) {
             final Module module = i.next();
             final String nsUri = module.getNamespaceURI();
             if (seen.add(nsUri)) {
@@ -123,35 +122,35 @@ public class GetRegisteredModules extends BasicFunction {
     }
 
     /** Java and XQuery EXPath package modules. */
-    private void addPackageModules(final XQueryContext tempContext, final Set<String> seen, final ValueSequence resultSeq)
+    private void addPackageModules(final XQueryContext queryContext, final Set<String> seen, final ValueSequence resultSeq)
             throws XPathException {
-        if (tempContext.getRepository().isEmpty()) {
+        if (queryContext.getRepository().isEmpty()) {
             return;
         }
-        final ExistRepository repo = tempContext.getRepository().get();
+        final ExistRepository repo = queryContext.getRepository().get();
         for (final URI uri : repo.getJavaModules()) {
-            addPackageModule(tempContext, uri, seen, resultSeq);
+            addPackageModule(queryContext, uri, seen, resultSeq);
         }
         for (final URI uri : repo.getXQueryModules()) {
-            addPackageModule(tempContext, uri, seen, resultSeq);
+            addPackageModule(queryContext, uri, seen, resultSeq);
         }
     }
 
-    private void addPackageModule(final XQueryContext tempContext, final URI uri, final Set<String> seen,
+    private void addPackageModule(final XQueryContext queryContext, final URI uri, final Set<String> seen,
             final ValueSequence resultSeq) throws XPathException {
         final String nsUri = uri.toString();
         if (seen.add(nsUri)) {
-            resultSeq.add(createEntry(nsUri, getModulePrefix(tempContext, nsUri), "package", "package", true));
+            resultSeq.add(createEntry(nsUri, getModulePrefix(queryContext, nsUri), "package", "package", true));
         }
     }
 
     /** Conf.xml-mapped XQuery modules. */
-    private void addMappedModules(final XQueryContext tempContext, final Set<String> seen, final ValueSequence resultSeq)
+    private void addMappedModules(final XQueryContext queryContext, final Set<String> seen, final ValueSequence resultSeq)
             throws XPathException {
-        for (final Iterator<String> i = tempContext.getMappedModuleURIs(); i.hasNext(); ) {
+        for (final Iterator<String> i = queryContext.getMappedModuleURIs(); i.hasNext(); ) {
             final String nsUri = i.next();
             if (seen.add(nsUri)) {
-                resultSeq.add(createEntry(nsUri, getModulePrefix(tempContext, nsUri), "mapped", "mapped", true));
+                resultSeq.add(createEntry(nsUri, getModulePrefix(queryContext, nsUri), "mapped", "mapped", true));
             }
         }
     }
@@ -166,8 +165,8 @@ public class GetRegisteredModules extends BasicFunction {
         }
     }
 
-    private String getModulePrefix(final XQueryContext tempContext, final String namespaceURI) {
-        final Module[] modules = tempContext.getRootModules(namespaceURI);
+    private String getModulePrefix(final XQueryContext queryContext, final String namespaceURI) {
+        final Module[] modules = queryContext.getRootModules(namespaceURI);
         if (modules != null && modules.length > 0) {
             return modules[0].getDefaultPrefix();
         }

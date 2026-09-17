@@ -40,22 +40,30 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 /**
- * An XPath-style accessor into the effective (redacted) configuration, for
- * targeted lookups without returning the whole {@code system:get-configuration()}
+ * A targeted lookup into the effective (redacted) configuration, for retrieving a
+ * single property without returning the whole {@code system:get-configuration()}
  * document — e.g. {@code system:get-configuration-property("db-connection/@cacheSize")}.
  *
  * <p>Redaction happens once, up front, via {@link ConfigurationRedactor#buildRedactedRoot}
  * — $path is then evaluated by eXist's own XQuery engine against the already-redacted
  * root, so a matched credential-shaped node's value is "[redacted]" before this function
  * ever sees it (no separate post-hoc redaction check needed here).
+ *
+ * <p><strong>$path is compiled and run as a full, independent XQuery main module</strong> —
+ * not a restricted XPath subset — on the calling DBA's broker/subject. It is not merely
+ * a path lookup: it can call any extension function, including side-effecting ones. This
+ * is acceptable because the function already requires the DBA role, but the capability
+ * must not be assumed "safe" if this pattern is ever reused for a less-trusted role.
  */
 public class GetConfigurationProperty extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("get-configuration-property", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-            "Evaluates $path as an XPath/XQuery expression against the effective configuration " +
-            "(the same, already-redacted document system:get-configuration() returns) and returns " +
-            "the string value of each matched item. This function is only available to the DBA role.",
+            "Evaluates $path as a full XQuery expression (not a restricted XPath subset) against " +
+            "the effective configuration (the same, already-redacted document " +
+            "system:get-configuration() returns) and returns the string value of each matched item. " +
+            "This function is only available to the DBA role; $path executes with the caller's full " +
+            "privileges, including any extension function calls it contains.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE,
                             "an XPath/XQuery expression, e.g. 'db-connection/@cacheSize'")

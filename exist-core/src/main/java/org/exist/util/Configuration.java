@@ -1246,37 +1246,37 @@ public class Configuration implements ErrorHandler {
         // index modules
         final NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
 
-        if (modules.getLength() == 0) {
-            return;
-        }
-        final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
         // full registry: active AND enabled="no"-suppressed entries, for system:get-registered-indexes()
         final List<IndexModuleConfig> registry = new ArrayList<>();
         final Set<String> confXmlIds = new HashSet<>();
 
-        for (int i = 0; i < module.getLength(); i++) {
-            final Element elem = (Element) module.item(i);
-            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
-            confXmlIds.add(id);
+        if (modules.getLength() > 0) {
+            final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
 
-            // enabled="no" disables the index module without removing it from conf.xml
-            if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
-                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", id);
-                registry.add(new IndexModuleConfig(id, elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE), elem, false));
-                continue;
+            for (int i = 0; i < module.getLength(); i++) {
+                final Element elem = (Element) module.item(i);
+                final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
+                confXmlIds.add(id);
+
+                // enabled="no" disables the index module without removing it from conf.xml
+                if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
+                    LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", id);
+                    registry.add(new IndexModuleConfig(id, elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE), elem, false, IndexModuleConfig.SOURCE_CONF_XML));
+                    continue;
+                }
+
+                final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
+
+                if (className.isEmpty()) {
+                    throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
+                }
+
+                if (id.isEmpty()) {
+                    throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
+                }
+
+                registry.add(new IndexModuleConfig(id, className, elem, true, IndexModuleConfig.SOURCE_CONF_XML));
             }
-
-            final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
-
-            if (className.isEmpty()) {
-                throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
-            }
-
-            if (id.isEmpty()) {
-                throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
-            }
-
-            registry.add(new IndexModuleConfig(id, className, elem, true));
         }
 
         // SPI: auto-discover index modules whose id is not explicitly listed in conf.xml
@@ -1290,7 +1290,7 @@ public class Configuration implements ErrorHandler {
                 continue;
             }
             LOG.debug("SPI-registered index module: {} ({})", id, factory.getIndexClass().getName());
-            registry.add(new IndexModuleConfig(id, factory.getIndexClass().getName(), null, true));
+            registry.add(new IndexModuleConfig(id, factory.getIndexClass().getName(), null, true, IndexModuleConfig.SOURCE_SPI));
         }
 
         final List<IndexModuleConfig> active = registry.stream().filter(IndexModuleConfig::enabled).toList();
@@ -1597,11 +1597,18 @@ public class Configuration implements ErrorHandler {
 
     /**
      * @param config {@code conf.xml} {@code <module>} element, or {@code null} for an
-     *               SPI-discovered entry with no matching {@code conf.xml} element
+     *               SPI-discovered or built-in entry with no matching {@code conf.xml} element
      * @param enabled whether the index module is currently active ({@code false} if
      *                suppressed via {@code enabled="no"})
+     * @param source how the index module was registered: {@link #SOURCE_BUILT_IN} (always
+     *               present, e.g. the structural index), {@link #SOURCE_SPI} (auto-discovered
+     *               via {@link org.exist.indexing.IndexFactory}), or {@link #SOURCE_CONF_XML}
+     *               (explicit {@code <module>} entry)
      */
-    public record IndexModuleConfig(String id, String className, Element config, boolean enabled) {
+    public record IndexModuleConfig(String id, String className, Element config, boolean enabled, String source) {
+        public static final String SOURCE_BUILT_IN = "built-in";
+        public static final String SOURCE_SPI = "spi";
+        public static final String SOURCE_CONF_XML = "conf.xml";
     }
 
 }
