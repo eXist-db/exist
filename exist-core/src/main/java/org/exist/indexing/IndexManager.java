@@ -55,6 +55,8 @@ public class IndexManager implements BrokerPoolService {
     public static final String INDEXER_MODULES_ID_ATTRIBUTE = "id";
 
     public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
+    /** Full registry (active and {@code enabled="no"}-suppressed) for {@code system:get-registered-indexes()}. */
+    public final static String PROPERTY_INDEXER_MODULES_REGISTRY = "indexer.modules.registry";
 
     private final BrokerPool pool;
 
