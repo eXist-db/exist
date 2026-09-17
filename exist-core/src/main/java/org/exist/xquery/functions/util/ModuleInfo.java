@@ -86,14 +86,16 @@ public class ModuleInfo extends BasicFunction {
 			"which are statically mapped to a source location in the configuration file. " +
             "This does not include any built in modules.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"),
+			"Use system:get-registered-modules#0 instead!");
 
 	public final static FunctionSignature mappedModuleSig =
 		new FunctionSignature(
 			new QName("is-module-mapped", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a Boolean value if the module statically mapped to a source location in the configuration file.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is mapped as an active function module"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is mapped as an active function module"),
+			"Use system:get-registered-modules#0 instead!");
 
 	public final static FunctionSignature mapModuleSig =
 		new FunctionSignature(
@@ -117,7 +119,8 @@ public class ModuleInfo extends BasicFunction {
 			"(one of 'built-in', 'package', or 'mapped').",
 			null,
 			new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
-				"sequence of maps with keys 'uri', 'prefix', and 'source'"));
+				"sequence of maps with keys 'uri', 'prefix', and 'source'"),
+			"Use system:get-registered-modules#0 instead!");
 
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
