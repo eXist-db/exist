@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -218,6 +219,11 @@ public class UtilModule extends AbstractInternalModule {
 
     static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
+    }
+
+    public static final class Factory implements ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends Module> getModuleClass() { return UtilModule.class; }
     }
 }
 

@@ -21,6 +21,9 @@
  */
 package org.exist.util;
 
+import org.exist.indexing.IndexManager;
+import org.exist.xquery.ModuleRegistration;
+import org.exist.xquery.XQueryContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
@@ -28,8 +31,10 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -109,5 +114,57 @@ class ConfigurationTest {
         assertThat(Configuration.parseBooleanAttribute(elem("case", "y"), "case", true)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "1"), "case", false)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "0"), "case", true)).isFalse();
+    }
+
+    // #6563: enabled="no"-suppressed built-in modules/indexes are retained (not discarded) in a
+    // reporting-only registry, so system:get-registered-modules()/get-registered-indexes() can
+    // still see them, while the active classMap/PROPERTY_INDEXER_MODULES stay exactly as before.
+    private static Configuration withDisabledModuleAndIndexStub(final Path existHomeDir) throws Exception {
+        final String canonical;
+        try (InputStream in = ConfigurationTest.class.getResourceAsStream("/conf.xml")) {
+            canonical = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        final String withDisabledModule = canonical.replace("</builtin-modules>",
+                "<module uri=\"http://exist-db.org/xquery/test/disabled-module\" "
+                        + "class=\"org.exist.xquery.functions.util.UtilModule\" enabled=\"no\"/>\n</builtin-modules>");
+        final String withDisabledIndex = withDisabledModule.replace("</modules>",
+                "<module id=\"test-disabled-index\" class=\"org.exist.indexing.range.RangeIndex\" enabled=\"no\"/>\n</modules>");
+
+        final Path conf = existHomeDir.resolve("test-conf.xml");
+        Files.writeString(conf, withDisabledIndex, StandardCharsets.UTF_8);
+        return new Configuration(conf.toString(), Optional.of(existHomeDir));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void disabledModuleIsRetainedInRegistryButNotInActiveClassMap(@TempDir final Path existHomeDir) throws Exception {
+        final Configuration configuration = withDisabledModuleAndIndexStub(existHomeDir);
+
+        final List<ModuleRegistration> registrations =
+                (List<ModuleRegistration>) configuration.getProperty(XQueryContext.PROPERTY_MODULE_REGISTRATIONS);
+        assertThat(registrations)
+                .filteredOn(r -> r.uri().equals("http://exist-db.org/xquery/test/disabled-module"))
+                .singleElement()
+                .satisfies(r -> assertThat(r.enabled()).isFalse());
+
+        final var activeClassMap = (java.util.Map<String, Class<?>>) configuration.getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
+        assertThat(activeClassMap).doesNotContainKey("http://exist-db.org/xquery/test/disabled-module");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void disabledIndexIsRetainedInRegistryButNotInActiveList(@TempDir final Path existHomeDir) throws Exception {
+        final Configuration configuration = withDisabledModuleAndIndexStub(existHomeDir);
+
+        final List<Configuration.IndexModuleConfig> registry =
+                (List<Configuration.IndexModuleConfig>) configuration.getProperty(IndexManager.PROPERTY_INDEXER_MODULES_REGISTRY);
+        assertThat(registry)
+                .filteredOn(m -> m.id().equals("test-disabled-index"))
+                .singleElement()
+                .satisfies(m -> assertThat(m.enabled()).isFalse());
+
+        final Configuration.IndexModuleConfig[] active =
+                (Configuration.IndexModuleConfig[]) configuration.getProperty(IndexManager.PROPERTY_INDEXER_MODULES);
+        assertThat(active).extracting(Configuration.IndexModuleConfig::id).doesNotContain("test-disabled-index");
     }
 }
