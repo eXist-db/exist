@@ -22,6 +22,7 @@
 package org.exist.storage.vector;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.util.Configuration;
 
 /**
@@ -35,6 +36,18 @@ import org.exist.util.Configuration;
  * if the vector extension is not on the classpath, no implementation is found and the
  * hooks are simply skipped — mirroring how {@link org.exist.xquery.ModuleFactory} and
  * {@link org.exist.indexing.IndexFactory} let optional modules/indexes self-register.
+ *
+ * <p><strong>Design note:</strong> this interface's three methods deliberately mirror three
+ * of {@link BrokerPoolService}'s own lifecycle hooks. {@code BrokerPoolService} already solves
+ * "run code at these points in startup/shutdown" for every built-in service; the reason this
+ * SPI exists as a separate, narrower interface rather than exist-core discovering
+ * {@code BrokerPoolService} implementations via {@code ServiceLoader} directly is that the
+ * latter would be a broader change to core startup sequencing (ordering/failure semantics for
+ * every service, not just an optional one), which was out of scope when this was introduced
+ * purely to replace ad hoc reflection in {@link VectorStoreServiceImpl}. If a second optional
+ * extension ever needs the same "hook into core lifecycle without a core-to-extension compile
+ * dependency" trick, that repetition is the signal to stop adding one-off SPIs like this one
+ * and instead make {@code BrokerPoolService} registration itself {@code ServiceLoader}-based.
  */
 public interface VectorExtensionHook {
 

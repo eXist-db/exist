@@ -21,22 +21,19 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.net.URI;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.repo.ExistRepository;
 import org.exist.source.Source;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LiveModules;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -257,44 +254,8 @@ public class ModuleInfo extends BasicFunction {
 	 */
 	private Sequence evalRegisteredModules() {
 		final ValueSequence resultSeq = new ValueSequence();
-		final Set<String> seen = new HashSet<>();
-		final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-		try {
-			// 1. Java built-in modules
-			for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-				final Module module = i.next();
-				final String nsUri = module.getNamespaceURI();
-				if (seen.add(nsUri)) {
-					resultSeq.add(new StringValue(this, nsUri));
-				}
-			}
-			if (tempContext.getRepository().isPresent()) {
-				final ExistRepository repo = tempContext.getRepository().get();
-				// 2. Java EXPath package modules
-				for (final URI uri : repo.getJavaModules()) {
-					final String nsUri = uri.toString();
-					if (seen.add(nsUri)) {
-						resultSeq.add(new StringValue(this, nsUri));
-					}
-				}
-				// 3. XQuery EXPath package modules
-				for (final URI uri : repo.getXQueryModules()) {
-					final String nsUri = uri.toString();
-					if (seen.add(nsUri)) {
-						resultSeq.add(new StringValue(this, nsUri));
-					}
-				}
-			}
-			// 4. Conf.xml-mapped XQuery modules
-			for (final Iterator<String> i = tempContext.getMappedModuleURIs(); i.hasNext(); ) {
-				final String nsUri = i.next();
-				if (seen.add(nsUri)) {
-					resultSeq.add(new StringValue(this, nsUri));
-				}
-			}
-		} finally {
-			tempContext.reset();
-			tempContext.runCleanupTasks();
+		for (final LiveModules.Entry entry : LiveModules.collect(context)) {
+			resultSeq.add(new StringValue(this, entry.uri()));
 		}
 		return resultSeq;
 	}
@@ -303,64 +264,12 @@ public class ModuleInfo extends BasicFunction {
 	 * Evaluate util:registered-modules-info().
 	 * Returns a sequence of maps, each with keys "uri", "prefix", and "source".
 	 */
-	@SuppressWarnings("unchecked")
 	private Sequence evalRegisteredModulesInfo() throws XPathException {
 		final ValueSequence resultSeq = new ValueSequence();
-		final Set<String> seen = new HashSet<>();
-		final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-		try {
-			// 1. Java built-in modules
-			for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-				final Module module = i.next();
-				final String nsUri = module.getNamespaceURI();
-				if (seen.add(nsUri)) {
-					resultSeq.add(createModuleInfoMap(nsUri, module.getDefaultPrefix(), "built-in"));
-				}
-			}
-			if (tempContext.getRepository().isPresent()) {
-				final ExistRepository repo = tempContext.getRepository().get();
-				// 2. Java EXPath package modules
-				for (final URI uri : repo.getJavaModules()) {
-					final String nsUri = uri.toString();
-					if (seen.add(nsUri)) {
-						// Try to get prefix from loaded module
-						final String prefix = getModulePrefix(tempContext, nsUri);
-						resultSeq.add(createModuleInfoMap(nsUri, prefix, "package"));
-					}
-				}
-				// 3. XQuery EXPath package modules
-				for (final URI uri : repo.getXQueryModules()) {
-					final String nsUri = uri.toString();
-					if (seen.add(nsUri)) {
-						final String prefix = getModulePrefix(tempContext, nsUri);
-						resultSeq.add(createModuleInfoMap(nsUri, prefix, "package"));
-					}
-				}
-			}
-			// 4. Conf.xml-mapped XQuery modules
-			for (final Iterator<String> i = tempContext.getMappedModuleURIs(); i.hasNext(); ) {
-				final String nsUri = i.next();
-				if (seen.add(nsUri)) {
-					final String prefix = getModulePrefix(tempContext, nsUri);
-					resultSeq.add(createModuleInfoMap(nsUri, prefix, "mapped"));
-				}
-			}
-		} finally {
-			tempContext.reset();
-			tempContext.runCleanupTasks();
+		for (final LiveModules.Entry entry : LiveModules.collect(context)) {
+			resultSeq.add(createModuleInfoMap(entry.uri(), entry.prefix(), entry.source()));
 		}
 		return resultSeq;
-	}
-
-	/**
-	 * Try to determine the default prefix for a module given its namespace URI.
-	 */
-	private String getModulePrefix(final XQueryContext tempContext, final String namespaceURI) {
-		final Module[] modules = tempContext.getRootModules(namespaceURI);
-		if (modules != null && modules.length > 0) {
-			return modules[0].getDefaultPrefix();
-		}
-		return "";
 	}
 
 	/**
