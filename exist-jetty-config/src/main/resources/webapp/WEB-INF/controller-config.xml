@@ -30,7 +30,10 @@
   
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
-  
+
+  <!-- Unauthenticated static schema files ($EXIST_HOME/schema/*.xsd), for external tooling -->
+  <forward pattern="/schema/" servlet="SchemaServlet"/>
+
   <!-- HTTP requests to /apps are mapped onto the database path /db/apps -->
   <root pattern="/apps" path="xmldb:exist:///db/apps"/>
   
