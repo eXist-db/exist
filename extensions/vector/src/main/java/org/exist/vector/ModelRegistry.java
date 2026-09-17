@@ -97,7 +97,12 @@ public final class ModelRegistry {
         LOG.info("Loaded {} model(s) from <vector-models> configuration", r.entries.size());
       }
     }
-    instance = r;
+    // Synchronize on the same monitor getInstance()'s double-checked locking reads under,
+    // so a racing getInstance() can't observe a stale null and build a conf.xml-parsing
+    // fallback registry that this write would otherwise silently clobber.
+    synchronized (ModelRegistry.class) {
+      instance = r;
+    }
   }
 
   @Nonnull

@@ -127,12 +127,31 @@ public class IndexManager implements BrokerPoolService {
             AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
             if (structural == null) {
                 initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
+                registerStructuralIndexProvenance(brokerPool);
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
         } finally {
             configurationChanged();
         }
+    }
+
+    /**
+     * Records the always-on structural index in {@link #PROPERTY_INDEXER_MODULES_REGISTRY}
+     * so it appears in {@code system:get-registered-indexes()} even though, unlike
+     * conf.xml/SPI modules, it is registered directly here rather than while
+     * {@code Configuration} parses {@code conf.xml}.
+     */
+    @SuppressWarnings("unchecked")
+    private void registerStructuralIndexProvenance(final BrokerPool brokerPool) {
+        final Configuration configuration = brokerPool.getConfiguration();
+        final List<Configuration.IndexModuleConfig> existing =
+                (List<Configuration.IndexModuleConfig>) configuration.getProperty(PROPERTY_INDEXER_MODULES_REGISTRY);
+        final List<Configuration.IndexModuleConfig> registry =
+                existing == null ? new ArrayList<>() : new ArrayList<>(existing);
+        registry.add(new Configuration.IndexModuleConfig(StructuralIndex.STRUCTURAL_INDEX_ID,
+                StructuralIndex.DEFAULT_CLASS, null, true, Configuration.IndexModuleConfig.SOURCE_BUILT_IN));
+        configuration.setProperty(PROPERTY_INDEXER_MODULES_REGISTRY, List.copyOf(registry));
     }
 
     private AbstractIndex initIndex(final BrokerPool pool, final String id, final Element config, final Path dataDir, final String className) throws DatabaseConfigurationException {

@@ -22,14 +22,30 @@
 package org.exist.vector;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.vector.VectorExtensionHook;
 import org.exist.storage.vector.VectorOperationMetrics;
+import org.exist.util.Configuration;
 
 /**
- * Startup hooks for the vector extension invoked reflectively from exist-core.
+ * Startup hooks for the vector extension, discovered from exist-core via the
+ * {@link VectorExtensionHook} SPI (see {@code META-INF/services/org.exist.storage.vector.VectorExtensionHook}).
+ * The implicit public no-arg constructor is what {@link java.util.ServiceLoader} instantiates.
  */
-public final class VectorExtensionLifecycle {
+public final class VectorExtensionLifecycle implements VectorExtensionHook {
 
-    private VectorExtensionLifecycle() {
+    @Override
+    public void configure(final Configuration configuration) {
+        ModelRegistry.configure(configuration);
+    }
+
+    @Override
+    public void startSystem(final BrokerPool pool) {
+        onBrokerPoolStartSystem(pool);
+    }
+
+    @Override
+    public void shutdown(final BrokerPool pool) {
+        onBrokerPoolShutdown(pool);
     }
 
     /**

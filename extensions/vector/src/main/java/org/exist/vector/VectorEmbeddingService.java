@@ -152,21 +152,25 @@ public final class VectorEmbeddingService {
     final VectorEmbeddingProvider cached = cache.get(cacheKey);
     if (cached != null) return cached;
     if (failed.contains(cacheKey)) return null;
-    try {
-      final VectorEmbeddingProvider p = OnnxVectorProvider.create(modelPath, dimension);
-      if (p != null) {
-        LOG.info("Loaded ONNX embedding model: {} from {}", modelId, modelPath);
-        cache.put(cacheKey, p);
-        return p;
+    // computeIfAbsent guarantees at most one concurrent construction per cacheKey, so two
+    // threads racing to load the same not-yet-cached model can't both create a provider
+    // (which would duplicate the expensive ONNX load and leak the discarded instance).
+    return cache.computeIfAbsent(cacheKey, key -> {
+      try {
+        final VectorEmbeddingProvider p = OnnxVectorProvider.create(modelPath, dimension);
+        if (p != null) {
+          LOG.info("Loaded ONNX embedding model: {} from {}", modelId, modelPath);
+          return p;
+        }
+      } catch (final Exception e) {
+        if (failed.add(key)) {
+          LOG.warn("Failed to load ONNX model {} from {}: {}", modelId, modelPath, e.getMessage());
+        }
+        return null;
       }
-    } catch (final Exception e) {
-      if (failed.add(cacheKey)) {
-        LOG.warn("Failed to load ONNX model {} from {}: {}", modelId, modelPath, e.getMessage());
-      }
+      failed.add(key);
       return null;
-    }
-    failed.add(cacheKey);
-    return null;
+    });
   }
 
   @Nonnull

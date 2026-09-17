@@ -49,8 +49,8 @@ public class GetRegisteredIndexes extends BasicFunction {
             new QName("get-registered-indexes", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Returns a sequence of maps, one per index module known at startup (active and " +
             "enabled=\"no\"-suppressed). Each map has keys: 'id' (index id), 'class' " +
-            "(implementation class name), 'registration-source' ('spi' or 'conf.xml'), and " +
-            "'enabled' ('yes' or 'no'). This function is only available to the DBA role.",
+            "(implementation class name), 'registration-source' ('built-in', 'spi', or 'conf.xml'), " +
+            "and 'enabled' ('yes' or 'no'). This function is only available to the DBA role.",
             FunctionSignature.NO_ARGS,
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
                     "sequence of maps with keys 'id', 'class', 'registration-source', and 'enabled'"));
@@ -73,11 +73,10 @@ public class GetRegisteredIndexes extends BasicFunction {
         final ValueSequence resultSeq = new ValueSequence();
         if (registry != null) {
             for (final Configuration.IndexModuleConfig entry : registry) {
-                final String registrationSource = entry.config() == null ? "spi" : "conf.xml";
                 final MapType map = new MapType(this, context);
                 map.add(new StringValue(this, "id"), new StringValue(this, entry.id()));
                 map.add(new StringValue(this, "class"), new StringValue(this, entry.className()));
-                map.add(new StringValue(this, "registration-source"), new StringValue(this, registrationSource));
+                map.add(new StringValue(this, "registration-source"), new StringValue(this, entry.source()));
                 map.add(new StringValue(this, "enabled"), new StringValue(this, entry.enabled() ? "yes" : "no"));
                 resultSeq.add(map);
             }
