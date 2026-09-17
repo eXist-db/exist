@@ -87,7 +87,15 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class),
             
             new FunctionDef(ClearXQueryCache.signature, ClearXQueryCache.class),
-            new FunctionDef(GetJmxToken.signature, GetJmxToken.class)
+            new FunctionDef(GetJmxToken.signature, GetJmxToken.class),
+
+            // --- Configuration observability (#6563) ---
+            new FunctionDef(GetRegisteredModules.signature, GetRegisteredModules.class),
+            new FunctionDef(GetRegisteredIndexes.signature, GetRegisteredIndexes.class),
+            new FunctionDef(GetConfiguration.signature, GetConfiguration.class),
+            new FunctionDef(GetConfigurationSchemaVersion.signature, GetConfigurationSchemaVersion.class),
+            new FunctionDef(GetConfigurationProperty.signature, GetConfigurationProperty.class)
+            // --- End Configuration observability ---
     };
 	
 	public SystemModule(Map<String, List<?>> parameters) {
