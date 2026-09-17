@@ -34,6 +34,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.exist.http.ExQueryRequestAdapterFactory;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
@@ -271,5 +272,20 @@ public class HttpServletRequestAdapter implements HttpRequest {
         }
 
         return fields;
+    }
+
+    /**
+     * Registers this adapter with exist-core's {@code RESTServer} via the
+     * {@link ExQueryRequestAdapterFactory} SPI (see
+     * {@code META-INF/services/org.exist.http.ExQueryRequestAdapterFactory}), replacing the
+     * {@code MethodHandles}/{@code LambdaMetafactory}-based reflection {@code RESTServer}
+     * previously used to construct this adapter without a compile-time dependency on this
+     * extension module.
+     */
+    public static final class Factory implements ExQueryRequestAdapterFactory {
+        @Override
+        public HttpRequest adapt(final HttpServletRequest request, final FilterInputStreamCacheConfiguration cacheConfiguration) {
+            return new HttpServletRequestAdapter(request, cacheConfiguration);
+        }
     }
 }
