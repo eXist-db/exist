@@ -860,7 +860,7 @@ function ser:serialize-html-5-empty-tags() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><body><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><body><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></body></html>')
 function ser:serialize-html-5-raw-text-elements-body() {
     <html>
         <body>
@@ -869,11 +869,10 @@ function ser:serialize-html-5-raw-text-elements-body() {
         </body>
     </html>
     => serialize($ser:opt-map-html5)
-    => normalize-space()
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><meta charset="UTF-8"><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
 function ser:serialize-html-5-raw-text-elements-head() {
     <html>
         <head>
@@ -883,11 +882,10 @@ function ser:serialize-html-5-raw-text-elements-head() {
         <body></body>
     </html>
     => serialize($ser:opt-map-html5)
-    => normalize-space()
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><meta charset="UTF-8"><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
     <html>
         <head>
@@ -898,7 +896,30 @@ function ser:serialize-html-5-needs-escape-elements() {
         </body>
     </html>
     => serialize($ser:opt-map-html5)
-    => normalize-space()
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4736 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><body><p>hi</p></body></html>')
+function ser:serialize-html-5-doctype-indent-no() {
+    serialize(<html><body><p>hi</p></body></html>,
+        map:merge(($ser:opt-map-html5, map { "indent": false() })))
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4736 :)
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <body>&#10;        <p>hi</p>&#10;    </body>&#10;</html>')
+function ser:serialize-html-5-doctype-indent-yes() {
+    serialize(<html><body><p>hi</p></body></html>,
+        map:merge(($ser:opt-map-html5, map { "indent": true() })))
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4736 :)
+declare
+    %test:assertEquals('<!DOCTYPE a SYSTEM "a.dtd"><a><b/></a>')
+function ser:serialize-xml-doctype-indent-no() {
+    serialize(<a><b/></a>,
+        map { "method": "xml", "doctype-system": "a.dtd", "indent": false() })
 };
 
 (: test for https://github.com/eXist-db/exist/issues/4702 :)
