@@ -59,7 +59,8 @@ public class Scan extends BasicFunction {
                     "The URI from which to load the function module")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "the function docs.")
+                "the function docs."),
+            "Deprecated for removal. This function is built on the external org.xqdoc:xqdoc-conversion library, whose only release is 1.6 (2012) -- it predates XQuery 3.0 and cannot parse a module using map(*), %private, an inline map, an array constructor or the simple map operator, nor eXist's own bundled libraries. Use inspect:inspect-module instead, which is eXist's own implementation and is unaffected. See https://github.com/eXist-db/exist/issues/6717."
         ),
         new FunctionSignature(
             new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
@@ -73,7 +74,8 @@ public class Scan extends BasicFunction {
                     "The name of the module")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "the function docs.")
+                "the function docs."),
+            "Deprecated for removal. This function is built on the external org.xqdoc:xqdoc-conversion library, whose only release is 1.6 (2012) -- it predates XQuery 3.0 and cannot parse a module using map(*), %private, an inline map, an array constructor or the simple map operator, nor eXist's own bundled libraries. Use inspect:inspect-module instead, which is eXist's own implementation and is unaffected. See https://github.com/eXist-db/exist/issues/6717."
         )
     };
 
