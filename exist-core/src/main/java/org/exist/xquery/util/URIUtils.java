@@ -324,7 +324,7 @@ public class URIUtils {
 		// deliberately leaving %25 (literal percent) and %2F (literal slash) escaped.
 		String result = urlEncodeUtf8(nameSegment);
 		// Restore to literal the RFC 3986 "pchar" set that may appear unescaped in a path segment,
-		// MINUS ':' (see below): unreserved (- . _ ~), sub-delimiters (! $ & ' ( ) * + , ; =), '@'.
+		// MINUS ':' and '*' (see below): unreserved (- . _ ~), sub-delimiters (! $ & ' ( ) + , ; =), '@'.
 		// Everything else stays percent-encoded -- in particular %25 (literal percent), %2F (slash),
 		// %23 (#), %3F (?), %3A (:), %5B/%5D ([ ]) and space/non-ASCII. Keeping '#' and '?' encoded is what
 		// makes this match the form a standards-compliant HTTP client (and therefore the REST and
@@ -340,12 +340,22 @@ public class URIUtils {
 		result = result.replace("%27", "'");
 		result = result.replace("%28", "(");
 		result = result.replace("%29", ")");
-		result = result.replace("%2A", "*");
 		result = result.replace("%2B", "+");
 		result = result.replace("%2C", ",");
 		result = result.replace("%3B", ";");
 		result = result.replace("%3D", "=");
 		result = result.replace("%40", "@");
+		// '*' must be escaped explicitly rather than simply left un-restored: java.net.URLEncoder
+		// does not escape '*' in the first place, so it arrives here already literal. RFC 3986
+		// permits '*' in a path segment as a sub-delimiter and it stores fine on Linux and macOS,
+		// but Windows forbids '*' in a filename, so a WebDAV PUT of ".../a*b.xml" returns HTTP 500
+		// there while succeeding elsewhere -- found by the windows-latest leg of
+		// ResourceNamingConformanceTest, which is why that test runs cross-OS. Encoding it makes
+		// such a name storable and addressable identically on all three platforms. The other
+		// filename-hostile characters ('<' '>' '|' '"') are not pchar and were already encoded,
+		// which is why only '*' was affected.
+		result = result.replace("*", "%2A");
+
 		// NOTE: ':' (%3A) is deliberately NOT restored. Although RFC 3986 permits ':' in a path
 		// segment, eXist's XmldbURI wraps java.net.URI, and a leading-segment ':' makes new URI
 		// parse the text before it as a scheme ("a:b" -> scheme "a") -- so a literal ':' is not
