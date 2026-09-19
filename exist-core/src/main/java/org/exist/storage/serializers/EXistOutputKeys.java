@@ -107,6 +107,19 @@ public class EXistOutputKeys {
     public static final String XDM_SERIALIZATION = "xdm-serialization";
 
     /**
+     * Opt-in: emit a CDATA section that is already present in the source as a CDATA section,
+     * rather than escaping its content.
+     *
+     * <p>XDM has no CDATA node kind, so {@code fn:serialize} escapes such content unless the
+     * containing element is named in {@code cdata-section-elements} -- which requires knowing the
+     * element names in advance and imposes CDATA on elements that never had it. eXist's stored DOM
+     * does keep CDATA nodes, and its own REST serializer emits them; this key makes that reachable
+     * from {@code fn:serialize} for callers that want the stored form back verbatim, such as an
+     * editor round-tripping a document. Off by default, so specified behaviour is unchanged.</p>
+     */
+    public static final String PRESERVE_CDATA = "preserve-cdata";
+
+    /**
      * Enforce newline at the end of JSON and XML documents.
      *
      * It is common for editor software to enforce a newline at the end of non-
