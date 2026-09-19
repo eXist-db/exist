@@ -48,6 +48,21 @@ import java.util.Map;
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
+    /**
+     * True while the parser is inside a CDATA section, i.e. between
+     * {@link #startCDATA()} and {@link #endCDATA()}.
+     *
+     * <p>A SAX parser reports the content of a CDATA section through
+     * {@link #characters(char[], int, int)} like any other text, and marks the boundaries only
+     * through the {@link LexicalHandler} callbacks. Buffering between those two callbacks is what
+     * lets the section be rebuilt as a CDATA node rather than as plain text — the same approach
+     * {@link SAXAdapter} takes.</p>
+     */
+    private boolean cdataFlag = false;
+
+    /** Content accumulated between {@link #startCDATA()} and {@link #endCDATA()}. */
+    private final StringBuilder cdataBuf = new StringBuilder();
+
     private MemTreeBuilder builder = null;
     private final boolean explicitNSDecl;
 
@@ -196,12 +211,20 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void characters(final CharSequence seq) throws SAXException {
-        builder.characters(seq);
+        if (cdataFlag) {
+            cdataBuf.append(seq);
+        } else {
+            builder.characters(seq);
+        }
     }
 
     @Override
     public void characters(final char[] ch, final int start, final int len) throws SAXException {
-        builder.characters(ch, start, len);
+        if (cdataFlag) {
+            cdataBuf.append(ch, start, len);
+        } else {
+            builder.characters(ch, start, len);
+        }
     }
 
     @Override
@@ -352,7 +375,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endCDATA() throws SAXException {
-        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
+        builder.cdataSection(cdataBuf);
+        cdataBuf.setLength(0);
+        this.cdataFlag = false;
     }
 
     @Override
@@ -362,7 +387,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startCDATA() throws SAXException {
-        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
+        this.cdataFlag = true;
     }
 
     @Override
