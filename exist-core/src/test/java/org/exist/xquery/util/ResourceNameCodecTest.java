@@ -110,7 +110,7 @@ class ResourceNameCodecTest {
         c.put("a\\b.xml", "a%5Cb.xml");
         c.put("a|b.xml", "a%7Cb.xml");
         c.put("a:b.xml", "a%3Ab.xml");   // pchar, but eXist's XmldbURI can't store a literal ':' -> encode
-        c.put("a*b.xml", "a*b.xml");     // pchar -> kept literal (FS-hostile on Windows, but storable)
+        c.put("a*b.xml", "a%2Ab.xml");   // pchar, but Windows forbids '*' in a filename -> encoded
 
         // --- literal percent: the hard case decision 2 is about (ALWAYS escaped to %25) ---
         c.put("50%.xml", "50%25.xml");
