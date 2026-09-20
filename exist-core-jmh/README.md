@@ -9,6 +9,7 @@ JMH micro-benchmarks for `exist-core` (and the Lucene index extension, which sev
 | `AxisBenchmark` | `org.exist.dom.persistent` | Sibling/non-sibling axis evaluation over three corpus shapes ([#2697](https://github.com/eXist-db/exist/issues/2697)) |
 | `PrecedingAxisBenchmark` | `org.exist.xquery` | `preceding::*` position-dependence on a flat 50,000-element document ([#2129](https://github.com/eXist-db/exist/issues/2129)) |
 | `ArrowOperatorBenchmark` | `org.exist.xquery` | Overhead of `=>` vs. the equivalent direct call |
+| `BinaryValueLifetimeBenchmark` | `org.exist.xquery` | What scope-owned binary value lifetimes cost query evaluation: the no-binary hot path must not regress ([#5030](https://github.com/eXist-db/exist/issues/5030), [#6725](https://github.com/eXist-db/exist/issues/6725)) |
 | `TypeSubTypeOfBenchmark` | `org.exist.xquery.value` | `Type#subTypeOf(int, int)`, the hot path behind every atomic comparison ([#6322](https://github.com/eXist-db/exist/issues/6322)) |
 | `StringJoinBenchmark` | `org.exist.xquery.utils` | Java `String` join strategies |
 | `URIUtilsBenchmark` | `org.exist.xquery.utils` | URI utility helpers |
