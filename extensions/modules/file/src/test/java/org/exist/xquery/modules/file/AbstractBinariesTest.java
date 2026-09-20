@@ -40,9 +40,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for accessing binaries using XQuery via various APIs.
  *
- * @see <a href="https://github.com/eXist-db/exist/issues/790">Binary streaming is broken</a>
- *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ * @see <a href="https://github.com/eXist-db/exist/issues/790">Binary streaming is broken</a>
  */
 public abstract class AbstractBinariesTest<T, U, E extends Exception> {
 
@@ -407,16 +406,25 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
         return f;
     }
 
-    @FunctionalInterface interface QueryResultAccessor<T, E extends Exception> extends Consumer2E<Consumer2E<T, AssertionError, E>, AssertionError, E> {
+    @FunctionalInterface
+    interface QueryResultAccessor<T, E extends Exception> extends Consumer2E<Consumer2E<T, AssertionError, E>, AssertionError, E> {
     }
 
     protected abstract void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception;
+
     protected abstract void removeCollection(final XmldbURI collectionUri) throws Exception;
+
     protected abstract QueryResultAccessor<T, E> executeXQuery(final String query) throws Exception;
+
     protected abstract long size(T results) throws E;
+
     protected abstract U item(T results, int index) throws E;
+
     protected abstract boolean isBinaryType(U item) throws E;
+
     protected abstract boolean isBooleanType(U item) throws E;
+
     protected abstract byte[] getBytes(U item) throws E;
+
     protected abstract boolean getBoolean(U item) throws E;
 }

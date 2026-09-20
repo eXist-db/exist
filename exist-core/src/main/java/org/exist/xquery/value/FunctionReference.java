@@ -36,7 +36,9 @@ import java.util.List;
  */
 public class FunctionReference extends AtomicValue implements AutoCloseable {
 
-    /** the expression from which this type derives */
+    /**
+     * the expression from which this type derives
+     */
     private Expression expression;
 
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
@@ -54,6 +56,11 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     public FunctionReference(final FunctionCall functionCall) {
         this(null, functionCall);
+    }
+
+    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
+        super(expression);
+        this.functionCall = functionCall;
     }
 
     /**
@@ -87,11 +94,6 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         return false;
     }
 
-    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
-        super(expression);
-        this.functionCall = functionCall;
-    }
-
     public void setCapturedContext(final Sequence contextSequence, final Item contextItem) {
         this.capturedContextSequence = contextSequence;
         this.capturedContextItem = contextItem;
@@ -117,7 +119,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /**
      * Gets the expression from which this type derives.
      *
-     * @return  the expression from which this type derives
+     * @return the expression from which this type derives
      */
     @Override
     public Expression getExpression() {
@@ -127,7 +129,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /**
      * Sets the expression from which this type derives.
      *
-     * @param   expression  the expression to use
+     * @param expression the expression to use
      */
     public void setExpression(final Expression expression) {
         this.expression = expression;
@@ -166,7 +168,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
-     * @param contextItem optional: the current context item
+     * @param contextItem     optional: the current context item
      * @return evaluation result of the function call
      * @throws XPathException in case of dynamic error
      */
@@ -190,8 +192,8 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
-     * @param contextItem optional: the current context item
-     * @param seq array of parameters to be passed to the function
+     * @param contextItem     optional: the current context item
+     * @param seq             array of parameters to be passed to the function
      * @return evaluation result of the function call
      * @throws XPathException in case of dynamic error
      */

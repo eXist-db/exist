@@ -206,7 +206,9 @@ public class XQueryContext implements BinaryValueManager, Context {
     // The current size of the variable stack
     private int variableStackSize = 0;
 
-    /** Initial capacity of {@link #binaryValueFrameStarts}, grown on demand. */
+    /**
+     * Initial capacity of {@link #binaryValueFrameStarts}, grown on demand.
+     */
     private static final int INITIAL_BINARY_VALUE_FRAMES = 8;
 
     /**
@@ -229,7 +231,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     private @Nullable int[] binaryValueFrameStarts;
 
-    /** The number of open frames, counted whether or not any binary value has been registered. */
+    /**
+     * The number of open frames, counted whether or not any binary value has been registered.
+     */
     private int binaryValueFrameDepth;
 
     // Unresolved references to user defined functions
@@ -612,12 +616,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Resolve a Module from the EXPath Repository.
      *
      * @param namespace namespace URI
-     * @param prefix namespace prefix
-     *
+     * @param prefix    namespace prefix
      * @return the module or null
-     *
      * @throws XPathException if the namespace URI is invalid (XQST0046),
-     *     if the module could not be loaded (XQST0059) or compiled (XPST0003)
+     *                        if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
     private @Nullable Module resolveInEXPathRepository(final String namespace, final String prefix)
             throws XPathException {
@@ -649,7 +651,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 // fallback to load the source from the filesystem
                 src = new FileSource(resolved, false);
             } else {
-                final String sourceCollection = ((DBSource)src).getDocumentPath().getCollectionPath();
+                final String sourceCollection = ((DBSource) src).getDocumentPath().getCollectionPath();
                 if (".".equals(moduleLoadPath)) {
                     // module is a string passed to the xquery context, has therefore no location of its own
                     location = sourceCollection;
@@ -672,7 +674,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Compute the location of an imported module relative to the importing module's load path,
      * falling back to the absolute source collection when the load path is not a relativizable
      * collection URI.
-     *
+     * <p>
      * Clients may send a synthetic value as the module load path for unsaved in-memory queries
      * (e.g. eXide sends {@code "xmldb:exist://__new__1"} for new untitled buffers). Such values
      * are not real collection URIs and cause {@link Path#relativize(Path)} to throw
@@ -680,7 +682,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * collection so the import still resolves, matching the behaviour of the {@code "."}
      * load-path case.
      *
-     * @param moduleLoadPath the load path of the importing module
+     * @param moduleLoadPath   the load path of the importing module
      * @param sourceCollection the collection path of the module being imported
      * @return the relative location, or the absolute source collection if relativization fails
      */
@@ -909,7 +911,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                     "Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
         }
 
-        final String nonNullPrefix = prefix == null ?  "" : prefix;
+        final String nonNullPrefix = prefix == null ? "" : prefix;
         final String nonNullUri = uri == null ? "" : uri;
 
         //This prefix was not bound
@@ -1395,7 +1397,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Gets a text resource from the "Available text resources" of the
      * dynamic context.
      *
-     * @param uri the URI by which the document was registered
+     * @param uri     the URI by which the document was registered
      * @param charset the charset to use for retrieving the resource
      * @return a reader to read the resource content from
      * @throws XPathException in case of a dynamic error
@@ -1737,7 +1739,6 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Check if a vertex exists in the Modules Dependency Graph.
      *
      * @param moduleVertex the module vertex to look for
-     *
      * @return true if the module vertex exists, false otherwise
      */
     protected boolean hasModuleVertex(final ModuleVertex moduleVertex) {
@@ -1748,7 +1749,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Add an edge between two Modules in the Dependency Graph.
      *
      * @param source the importing module
-     * @param sink the imported module
+     * @param sink   the imported module
      */
     protected void addModuleEdge(final ModuleVertex source, final ModuleVertex sink) {
         getModulesDependencyGraph().addEdge(source, sink);
@@ -1758,8 +1759,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Look for a path between two Modules in the Dependency Graph.
      *
      * @param source the module to start searching from
-     * @param sink the destination module to attempt to reach
-     *
+     * @param sink   the destination module to attempt to reach
      * @return true, if there is a path between the mdoules, false otherwise
      */
     protected boolean hasModulePath(final ModuleVertex source, final ModuleVertex sink) {
@@ -1875,7 +1875,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     Module initBuiltInModule(final String namespaceURI, final String moduleClassName) {
         try {
             // lookup the class
-			final ClassLoader existClassLoader;
+            final ClassLoader existClassLoader;
             if (getBroker() != null) {
                 existClassLoader = getBroker().getBrokerPool().getClassLoader();
             } else {
@@ -1959,7 +1959,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static BiFunction<String, Module[], Module[]> addToMapValueArray(final Module module) {
         return (namespaceURI, modules) -> {
             if (modules == null) {
-                return new Module[]{ module };
+                return new Module[]{module};
             }
 
             // check if the module is already present
@@ -1999,7 +1999,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         final FunctionId functionKey = signature.getFunctionId();
         if (declaredFunctions.containsKey(functionKey)) {
             throw new XPathException(function, ErrorCodes.XQST0034,
-                    "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount()
+                    "Function " + signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount()
                             + " is already defined.");
         }
 
@@ -2683,7 +2683,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Leave the binary value frame belonging to a local variable scope.
      *
      * @param resultSeq the sequence the scope returns, or null when it is not known - in which case
-     *     the frame promotes rather than releases
+     *                  the frame promotes rather than releases
      */
     private void leaveBinaryValueScope(@Nullable final Sequence resultSeq) {
         if (resultSeq != null) {
@@ -2759,7 +2759,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (isEmpty(locationHints) && namespaceURI != null) {
                 final Module module = resolveInEXPathRepository(namespaceURI, prefix);
                 if (module != null) {
-                    modules = new Module[]{ module };
+                    modules = new Module[]{module};
                 }
             }
 
@@ -2769,11 +2769,11 @@ public class XQueryContext implements BinaryValueManager, Context {
                     // check if there's a static mapping in the configuration
                     final String moduleLocation = getModuleLocation(namespaceURI);
                     if (moduleLocation != null) {
-                        locationHints = new AnyURIValue[]{ new AnyURIValue(moduleLocation) };
+                        locationHints = new AnyURIValue[]{new AnyURIValue(moduleLocation)};
                     }
 
                     if (isEmpty(locationHints)) {
-                        locationHints = new AnyURIValue[] { new AnyURIValue(namespaceURI) };
+                        locationHints = new AnyURIValue[]{new AnyURIValue(namespaceURI)};
                     }
                 }
 
@@ -2911,12 +2911,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Compile of borrow an already compile module from the cache.
      *
      * @param namespaceURI the module namespace URI
-     * @param prefix the module namespace prefix
-     * @param location the location hint
-     * @param source the source for the module
-     *
+     * @param prefix       the module namespace prefix
+     * @param location     the location hint
+     * @param source       the source for the module
      * @return the module or null
-     *
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
     private ExternalModule compileOrBorrowModule(final String namespaceURI, final String prefix, final String location,
@@ -3108,7 +3106,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Set a static decimal format.
      *
      * @param qnDecimalFormat the name of the decimal format
-     * @param decimalFormat the decimal format
+     * @param decimalFormat   the decimal format
      */
     public void setStaticDecimalFormat(final QName qnDecimalFormat, final DecimalFormat decimalFormat) {
         staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
@@ -3126,7 +3124,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Add a reference to an additional XQuery Context that
      * was created by the XQuery (owning this XQuery Context)
      * dynamically importing, compiling, and/or evaluating modules.
-     *
+     * <p>
      * NOTE(AR) - This is needed to ensure that these "imported contexts" are
      * also correctly reset and cleaned up when this XQuery is finished.
      *
@@ -3307,12 +3305,17 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         final String sanitizedContents = StringValue.trimWhitespace(contents);
 
-        return switch(qname.getLocalPart()) {
-            case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
-            case TimePragma.TIME_PRAGMA_LOCAL_NAME, TimePragma.DEPRECATED_TIMER_PRAGMA_LOCAL_NAME -> new TimePragma(rootExpression, qname, sanitizedContents);
-            case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
-            case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
-            case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);
+        return switch (qname.getLocalPart()) {
+            case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME ->
+                    new Optimize(rootExpression, this, qname, sanitizedContents, true);
+            case TimePragma.TIME_PRAGMA_LOCAL_NAME, TimePragma.DEPRECATED_TIMER_PRAGMA_LOCAL_NAME ->
+                    new TimePragma(rootExpression, qname, sanitizedContents);
+            case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME ->
+                    new ProfilePragma(rootExpression, qname, sanitizedContents);
+            case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME ->
+                    new ForceIndexUse(rootExpression, qname, sanitizedContents);
+            case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME ->
+                    new NoIndexPragma(rootExpression, qname, sanitizedContents);
             default -> null;
         };
     }
@@ -3650,7 +3653,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Leave the innermost frame.
      *
      * @return the index into {@link #binaryValueInstances} at which the frame started,
-     *     or -1 if it holds nothing to release
+     * or -1 if it holds nothing to release
      */
     private int leaveBinaryValueFrame() {
         if (binaryValueFrameDepth == 0) {
@@ -3776,7 +3779,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     /**
      * Set how much of a failed execution may be disclosed to the caller.
-     *
+     * <p>
      * This must be recomputed from the current subject on every execution — a compiled query is
      * pooled and shared between users, so the level of a previous execution must never be reused.
      *
@@ -3940,7 +3943,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("dynamicTextResources: {");
         if (dynamicTextResources != null) {
-            for (final Map.Entry<Tuple2<String, Charset>,  QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
+            for (final Map.Entry<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
                 sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }

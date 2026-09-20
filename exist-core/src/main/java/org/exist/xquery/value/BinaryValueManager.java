@@ -57,7 +57,7 @@ public interface BinaryValueManager {
      * Close the innermost frame and release the values it owns.
      *
      * @param escaping values reachable from this sequence leave the frame rather than being
-     *     released, and are owned by the enclosing frame from now on; null releases them all
+     *                 released, and are owned by the enclosing frame from now on; null releases them all
      */
     default void popBinaryValueFrame(@Nullable final Sequence escaping) {
     }
@@ -72,6 +72,7 @@ public interface BinaryValueManager {
     }
 
     void runCleanupTasks(final Predicate<Object> predicate);
+
     default void runCleanupTasks() {
         runCleanupTasks(o -> true);
     }

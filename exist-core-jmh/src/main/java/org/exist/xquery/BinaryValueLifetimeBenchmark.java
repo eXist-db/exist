@@ -78,11 +78,15 @@ public class BinaryValueLifetimeBenchmark {
     private static final String BIN_FILENAME = "data.bin";
     private static final byte[] BIN_CONTENT = "0123456789abcdef".repeat(64).getBytes(StandardCharsets.UTF_8);
 
-    /** Iterations of the scope-heavy loops; high enough that per-scope bookkeeping dominates. */
+    /**
+     * Iterations of the scope-heavy loops; high enough that per-scope bookkeeping dominates.
+     */
     @Param({"100000"})
     public int iterations;
 
-    /** Binary values live at once in the element-constructor benchmark. */
+    /**
+     * Binary values live at once in the element-constructor benchmark.
+     */
     @Param({"8"})
     public int liveBinaries;
 

@@ -53,11 +53,11 @@ public class EnclosedExpr extends PathExpr {
         super(context);
     }
 
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-		newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
-		super.analyze(newContextInfo);
-	}
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
+        super.analyze(newContextInfo);
+    }
 
 
     /* (non-Javadoc)
@@ -68,13 +68,15 @@ public class EnclosedExpr extends PathExpr {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());}
+                    "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
@@ -115,8 +117,12 @@ public class EnclosedExpr extends PathExpr {
                 final Map<String, String> inScope = context.getInScopeNamespaces();
                 if ((inherited != null && !inherited.isEmpty()) || (inScope != null && !inScope.isEmpty())) {
                     ancestorNS = new HashMap<>();
-                    if (inherited != null) { ancestorNS.putAll(inherited); }
-                    if (inScope != null) { ancestorNS.putAll(inScope); }
+                    if (inherited != null) {
+                        ancestorNS.putAll(inherited);
+                    }
+                    if (inScope != null) {
+                        ancestorNS.putAll(inScope);
+                    }
                 }
             }
 
@@ -283,15 +289,21 @@ public class EnclosedExpr extends PathExpr {
     private static final class NoInheritCopyReceiver extends DocumentBuilderReceiver {
 
         private final Map<String, String> ancestorNS;
-        /** True once the root element's startElement event has been seen. */
+        /**
+         * True once the root element's startElement event has been seen.
+         */
         private boolean rootSeen = false;
-        /** True once undeclarations have been flushed (happens before first non-namespace event). */
+        /**
+         * True once undeclarations have been flushed (happens before first non-namespace event).
+         */
         private boolean undeclsFlushed = false;
-        /** Prefixes that the root element itself declares (element prefix + xmlns:* nodes). */
+        /**
+         * Prefixes that the root element itself declares (element prefix + xmlns:* nodes).
+         */
         private final Set<String> rootOwnPrefixes = new HashSet<>();
 
         NoInheritCopyReceiver(final Expression expr, final MemTreeBuilder builder,
-                final Map<String, String> ancestorNS) {
+                              final Map<String, String> ancestorNS) {
             super(expr, builder);
             this.ancestorNS = ancestorNS;
         }

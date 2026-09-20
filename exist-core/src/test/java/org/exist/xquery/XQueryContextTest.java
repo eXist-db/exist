@@ -369,7 +369,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testDeclareNamespace () throws XPathException {
+    public void testDeclareNamespace() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("first", "ns/a");
         context.declareNamespace("second", "ns/b");
@@ -377,10 +377,11 @@ public class XQueryContextTest {
         context.declareNamespace("third", "ns/a");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.addAll(Arrays.asList("first", "second", "third"));
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
     }
+
     @Test
-    public void testReDeclareNamespaceAllowed () throws XPathException {
+    public void testReDeclareNamespaceAllowed() throws XPathException {
         final XQueryContext context = new XQueryContext();
         final String nsAllowedToBeRebound = "xs";
         assertEquals("http://www.w3.org/2001/XMLSchema",
@@ -389,39 +390,40 @@ public class XQueryContextTest {
         context.declareNamespace(nsAllowedToBeRebound, "schemaless");
 
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("schemaless",  context.staticNamespaces.get(nsAllowedToBeRebound));
-    }
-    @Test
-    public void testReDeclareNamespaceNullNull () throws XPathException {
-        final XQueryContext context = new XQueryContext();
-        context.declareNamespace(null, null);
-        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("schemaless", context.staticNamespaces.get(nsAllowedToBeRebound));
     }
 
     @Test
-    public void testDeclareNamespaceEmptyPrefix () throws XPathException {
+    public void testReDeclareNamespaceNullNull() throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(null, null);
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        assertEquals(expected, context.staticNamespaces.keySet());
+    }
+
+    @Test
+    public void testDeclareNamespaceEmptyPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    public void testDeclareNamespaceNullPrefix () throws XPathException {
+    public void testDeclareNamespaceNullPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace(null, "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    public void testReDeclareNamespaceEmptyPrefixFail () throws XPathException {
+    public void testReDeclareNamespaceEmptyPrefixFail() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         // context.declareNamespace("", "");
@@ -432,22 +434,22 @@ public class XQueryContextTest {
         } catch (XPathException e) {
             assertEquals("err:XQST0066 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
                     e.getMessage());
-            assertEquals("default",  context.staticNamespaces.get(""));
+            assertEquals("default", context.staticNamespaces.get(""));
         }
     }
 
     @Test
-    public void testReDeclareNamespaceEmptyPrefixSuccess () throws XPathException {
+    public void testReDeclareNamespaceEmptyPrefixSuccess() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("mutable", "ns/initial");
         context.declareNamespace("mutable", "");
         context.declareNamespace("mutable", null);
         context.declareNamespace("mutable", "ns/new");
-        assertEquals("ns/new",  context.staticNamespaces.get("mutable"));
+        assertEquals("ns/new", context.staticNamespaces.get("mutable"));
     }
 
     @Test
-    public void testReDeclareNamespaceForbidden () {
+    public void testReDeclareNamespaceForbidden() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "html");
@@ -458,7 +460,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testReDeclareNamespaceForbiddenEmpty () {
+    public void testReDeclareNamespaceForbiddenEmpty() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "");
@@ -469,7 +471,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testReDeclareNamespaceForbiddenNull () {
+    public void testReDeclareNamespaceForbiddenNull() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", null);
@@ -480,7 +482,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testXmlNsProtected () {
+    public void testXmlNsProtected() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("test", XMLConstants.XML_NS_URI);
