@@ -2646,11 +2646,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param resultSeq the result sequence
      */
     public void popLocalVariables(@Nullable final LocalVariable var, @Nullable final Sequence resultSeq) {
-        if (resultSeq != null) {
-            popBinaryValueFrame(resultSeq);
-        } else {
-            promoteBinaryValueFrame();
-        }
+        leaveBinaryValueScope(resultSeq);
 
         for (LocalVariable cursor = lastVar; cursor != null && cursor != var; cursor = cursor.before) {
             if (localVariableLookup.get(cursor.getQName()) == cursor) {
@@ -2681,6 +2677,20 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
         lastVar = var;
         variableStackSize--;
+    }
+
+    /**
+     * Leave the binary value frame belonging to a local variable scope.
+     *
+     * @param resultSeq the sequence the scope returns, or null when it is not known - in which case
+     *     the frame promotes rather than releases
+     */
+    private void leaveBinaryValueScope(@Nullable final Sequence resultSeq) {
+        if (resultSeq != null) {
+            popBinaryValueFrame(resultSeq);
+        } else {
+            promoteBinaryValueFrame();
+        }
     }
 
     /**
@@ -3593,12 +3603,16 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void pushBinaryValueFrame() {
         if (binaryValueFrameStarts != null) {
-            if (binaryValueFrameDepth == binaryValueFrameStarts.length) {
-                binaryValueFrameStarts = Arrays.copyOf(binaryValueFrameStarts, binaryValueFrameDepth * 2);
-            }
-            binaryValueFrameStarts[binaryValueFrameDepth] = binaryValueInstances.size();
+            recordBinaryValueFrameStart();
         }
         binaryValueFrameDepth++;
+    }
+
+    private void recordBinaryValueFrameStart() {
+        if (binaryValueFrameDepth == binaryValueFrameStarts.length) {
+            binaryValueFrameStarts = Arrays.copyOf(binaryValueFrameStarts, binaryValueFrameDepth * 2);
+        }
+        binaryValueFrameStarts[binaryValueFrameDepth] = binaryValueInstances.size();
     }
 
     @Override
