@@ -206,6 +206,32 @@ public class XQueryContext implements BinaryValueManager, Context {
     // The current size of the variable stack
     private int variableStackSize = 0;
 
+    /** Initial capacity of {@link #binaryValueFrameStarts}, grown on demand. */
+    private static final int INITIAL_BINARY_VALUE_FRAMES = 8;
+
+    /**
+     * The {@link BinaryValue}s registered during query execution, in registration order.
+     *
+     * <p>The list is divided into frames by {@link #binaryValueFrameStarts}. A value belongs to
+     * the innermost frame open when it was registered, and is released when that frame is left -
+     * never by a frame which merely received it. This is what stops a called function from
+     * closing its caller's value.</p>
+     */
+    private @Nullable List<BinaryValue> binaryValueInstances;
+
+    /**
+     * The index into {@link #binaryValueInstances} at which each open frame starts, innermost last.
+     *
+     * <p>Allocated lazily with {@link #binaryValueInstances}: until a query registers a binary
+     * value there is nothing to own, so {@link #pushBinaryValueFrame()} only counts. Frames
+     * already open at that point start at index 0, which is where registration begins - hence
+     * the zero-filled array.</p>
+     */
+    private @Nullable int[] binaryValueFrameStarts;
+
+    /** The number of open frames, counted whether or not any binary value has been registered. */
+    private int binaryValueFrameDepth;
+
     // Unresolved references to user defined functions
     private final Deque<FunctionCall> forwardReferences = new ArrayDeque<>();
 
@@ -1543,6 +1569,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             localVariableLookup.clear();
         }
 
+        // a reused context starts a fresh execution, with no scope open
+        binaryValueFrameDepth = 0;
+
         // clear inline functions using closures
         closures.forEach(func -> func.setClosureVariables(null));
         closures.clear();
@@ -2589,6 +2618,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             contextStack.push(lastVar);
         }
         variableStackSize++;
+        pushBinaryValueFrame();
         return lastVar;
     }
 
@@ -2606,10 +2636,22 @@ public class XQueryContext implements BinaryValueManager, Context {
      * REVERSE-of-declaration order so that names with multiple bindings in the
      * popped scope settle on the still-visible binding, not on a popped one.
      *
+     * <p>Any {@link BinaryValue} created within the scope being left is released here, unless it
+     * is reachable from {@code resultSeq} and so escapes to the enclosing scope. When
+     * {@code resultSeq} is null the escape set is unknown, so nothing is released and the values
+     * are handed to the enclosing scope instead - deferring release to the end of the query is
+     * recoverable, closing a value the query still needs is not.</p>
+     *
      * @param var       only clear variables after this variable, or null
      * @param resultSeq the result sequence
      */
     public void popLocalVariables(@Nullable final LocalVariable var, @Nullable final Sequence resultSeq) {
+        if (resultSeq != null) {
+            popBinaryValueFrame(resultSeq);
+        } else {
+            promoteBinaryValueFrame();
+        }
+
         for (LocalVariable cursor = lastVar; cursor != null && cursor != var; cursor = cursor.before) {
             if (localVariableLookup.get(cursor.getQName()) == cursor) {
                 if (cursor.prevSameName != null) {
@@ -3548,53 +3590,83 @@ public class XQueryContext implements BinaryValueManager, Context {
         return isVarDeclared(Debuggee.SESSION);
     }
 
-    private Deque<BinaryValue> binaryValueInstances;
+    @Override
+    public void pushBinaryValueFrame() {
+        if (binaryValueFrameStarts != null) {
+            if (binaryValueFrameDepth == binaryValueFrameStarts.length) {
+                binaryValueFrameStarts = Arrays.copyOf(binaryValueFrameStarts, binaryValueFrameDepth * 2);
+            }
+            binaryValueFrameStarts[binaryValueFrameDepth] = binaryValueInstances.size();
+        }
+        binaryValueFrameDepth++;
+    }
 
-    void enterEnclosedExpr() {
-        if (binaryValueInstances == null) {
+    @Override
+    public void popBinaryValueFrame(@Nullable final Sequence escaping) {
+        final int start = leaveBinaryValueFrame();
+        if (start < 0) {
             return;
         }
-        final Iterator<BinaryValue> it = binaryValueInstances.descendingIterator();
-        while (it.hasNext()) {
-            it.next().incrementSharedReferences();
+
+        // release in the reverse of the order the values were registered in
+        for (int i = binaryValueInstances.size() - 1; i >= start; i--) {
+            final BinaryValue binaryValue = binaryValueInstances.get(i);
+
+            if (escaping != null && (escaping == binaryValue || escaping.containsReference(binaryValue))) {
+                // the value escapes this frame, so it now belongs to the enclosing one
+                continue;
+            }
+
+            try {
+                binaryValue.close();
+            } catch (final IOException e) {
+                LOG.warn("Unable to close binary value on leaving scope: {}", e.getMessage(), e);
+            }
+            binaryValueInstances.remove(i);
         }
     }
 
-    void exitEnclosedExpr() {
-        if (binaryValueInstances == null) {
-            return;
-        }
-        final Iterator<BinaryValue> it = binaryValueInstances.iterator();
-        final List<BinaryValue> destroyable = new ArrayList<>();
-        while (it.hasNext()) {
-            try {
-                final BinaryValue bv = it.next();
-                bv.close(); // really just decrements a reference
-                if (bv.isClosed()) {
-                    destroyable.add(bv);
-                }
-            } catch (final IOException e) {
-                LOG.warn("Unable to close binary reference on exiting enclosed expression: {}", e.getMessage(), e);
-            }
+    @Override
+    public void promoteBinaryValueFrame() {
+        // everything the frame owns is handed to the enclosing frame; nothing is closed
+        leaveBinaryValueFrame();
+    }
+
+    /**
+     * Leave the innermost frame.
+     *
+     * @return the index into {@link #binaryValueInstances} at which the frame started,
+     *     or -1 if it holds nothing to release
+     */
+    private int leaveBinaryValueFrame() {
+        if (binaryValueFrameDepth == 0) {
+            // an unbalanced pop: the values stay in the pre-frame region and are released
+            // by the BinaryValueCleanupTask at the end of the query
+            return -1;
         }
 
-        // eagerly cleanup those BinaryValues that are not used outside the EnclosedExpr (to release memory)
-        for (final BinaryValue bvd : destroyable) {
-            binaryValueInstances.remove(bvd);
+        binaryValueFrameDepth--;
+
+        if (binaryValueFrameStarts == null) {
+            // no binary value has ever been registered with this context
+            return -1;
         }
+
+        return Math.min(binaryValueFrameStarts[binaryValueFrameDepth], binaryValueInstances.size());
     }
 
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if (binaryValueInstances == null) {
-            binaryValueInstances = new ArrayDeque<>();
+            binaryValueInstances = new ArrayList<>();
+            binaryValueFrameStarts = new int[Math.max(binaryValueFrameDepth, INITIAL_BINARY_VALUE_FRAMES)];
         }
 
         if (cleanupTasks.isEmpty() || cleanupTasks.stream().noneMatch(ct -> ct instanceof BinaryValueCleanupTask)) {
             cleanupTasks.add(new BinaryValueCleanupTask());
         }
 
-        binaryValueInstances.push(binaryValue);
+        binaryValueInstances.add(binaryValue);
     }
 
     /**
@@ -3608,21 +3680,23 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (context.binaryValueInstances == null) {
                 return;
             }
-            final List<BinaryValue> removable = new ArrayList<>();
-            for (final BinaryValue bv : context.binaryValueInstances) {
+
+            // release in the reverse of the order the values were registered in
+            for (int i = context.binaryValueInstances.size() - 1; i >= 0; i--) {
+                final BinaryValue bv = context.binaryValueInstances.get(i);
                 try {
                     if (predicate.test(bv)) {
                         bv.close();
-                        removable.add(bv);
+                        context.binaryValueInstances.remove(i);
                     }
                 } catch (final IOException e) {
                     LOG.error("Unable to close binary value: {}", e.getMessage(), e);
                 }
             }
 
-            for (final BinaryValue bv : removable) {
-                context.binaryValueInstances.remove(bv);
-            }
+            // any frame still open when the query ends is void; whatever it held has either
+            // been released above or was spared by the predicate, and belongs to no frame now
+            context.binaryValueFrameDepth = 0;
         }
     }
 
@@ -3631,9 +3705,31 @@ public class XQueryContext implements BinaryValueManager, Context {
         return (String) getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
     }
 
+    @Override
     public void destroyBinaryValue(final BinaryValue value) {
-        if (binaryValueInstances != null) {
-            binaryValueInstances.remove(value);
+        if (binaryValueInstances == null) {
+            return;
+        }
+
+        // by identity: two distinct binary values can compare equal
+        int idx = -1;
+        for (int i = binaryValueInstances.size() - 1; i >= 0; i--) {
+            if (binaryValueInstances.get(i) == value) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx == -1) {
+            return;
+        }
+
+        binaryValueInstances.remove(idx);
+
+        // frames starting after the removed value shift down with it
+        for (int frame = 0; frame < binaryValueFrameDepth; frame++) {
+            if (binaryValueFrameStarts[frame] > idx) {
+                binaryValueFrameStarts[frame]--;
+            }
         }
     }
 
