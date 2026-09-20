@@ -43,8 +43,8 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     private MemTreeBuilder builder;
     private Map<String, String> namespaces = null;
     private boolean replaceAttributeFlag = false;
-    private boolean cdataFlag = false;
-    private final StringBuilder cdataBuf = new StringBuilder();
+    /** Reassembles a CDATA section from its SAX events; shared with {@link DocumentBuilderReceiver}. */
+    private final CDataSectionBuffer cdata = new CDataSectionBuffer();
 
     public SAXAdapter() {
         this((Expression) null);
@@ -85,8 +85,8 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 
     @Override
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        if (cdataFlag) {
-            cdataBuf.append(ch, start, length);
+        if (cdata.isActive()) {
+            cdata.append(ch, start, length);
         } else {
             builder.characters(ch, start, length);
         }
@@ -157,15 +157,13 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 
     @Override
     public void startCDATA() throws SAXException {
-        this.cdataFlag = true;
+        cdata.start();
     }
 
 
     @Override
     public void endCDATA() throws SAXException {
-        builder.cdataSection(cdataBuf);
-        cdataBuf.delete(0, cdataBuf.length());
-        this.cdataFlag = false;
+        cdata.flushTo(builder);
     }
 
     @Override

@@ -48,20 +48,8 @@ import java.util.Map;
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
-    /**
-     * True while the parser is inside a CDATA section, i.e. between
-     * {@link #startCDATA()} and {@link #endCDATA()}.
-     *
-     * <p>A SAX parser reports the content of a CDATA section through
-     * {@link #characters(char[], int, int)} like any other text, and marks the boundaries only
-     * through the {@link LexicalHandler} callbacks. Buffering between those two callbacks is what
-     * lets the section be rebuilt as a CDATA node rather than as plain text — the same approach
-     * {@link SAXAdapter} takes.</p>
-     */
-    private boolean cdataFlag = false;
-
-    /** Content accumulated between {@link #startCDATA()} and {@link #endCDATA()}. */
-    private final StringBuilder cdataBuf = new StringBuilder();
+    /** Reassembles a CDATA section from its SAX events; shared with {@link SAXAdapter}. */
+    private final CDataSectionBuffer cdata = new CDataSectionBuffer();
 
     private MemTreeBuilder builder = null;
     private final boolean explicitNSDecl;
@@ -211,8 +199,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void characters(final CharSequence seq) throws SAXException {
-        if (cdataFlag) {
-            cdataBuf.append(seq);
+        if (cdata.isActive()) {
+            cdata.append(seq);
         } else {
             builder.characters(seq);
         }
@@ -220,8 +208,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void characters(final char[] ch, final int start, final int len) throws SAXException {
-        if (cdataFlag) {
-            cdataBuf.append(ch, start, len);
+        if (cdata.isActive()) {
+            cdata.append(ch, start, len);
         } else {
             builder.characters(ch, start, len);
         }
@@ -375,9 +363,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endCDATA() throws SAXException {
-        builder.cdataSection(cdataBuf);
-        cdataBuf.setLength(0);
-        this.cdataFlag = false;
+        cdata.flushTo(builder);
     }
 
     @Override
@@ -387,7 +373,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startCDATA() throws SAXException {
-        this.cdataFlag = true;
+        cdata.start();
     }
 
     @Override
