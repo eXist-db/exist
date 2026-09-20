@@ -649,7 +649,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 // fallback to load the source from the filesystem
                 src = new FileSource(resolved, false);
             } else {
-                final String sourceCollection = ((DBSource)src).getDocumentPath().getCollectionPath();
+                final String sourceCollection = ((DBSource) src).getDocumentPath().getCollectionPath();
                 if (".".equals(moduleLoadPath)) {
                     // module is a string passed to the xquery context, has therefore no location of its own
                     location = sourceCollection;
@@ -909,7 +909,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                     "Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
         }
 
-        final String nonNullPrefix = prefix == null ?  "" : prefix;
+        final String nonNullPrefix = prefix == null ? "" : prefix;
         final String nonNullUri = uri == null ? "" : uri;
 
         //This prefix was not bound
@@ -1894,7 +1894,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     Module initBuiltInModule(final String namespaceURI, final String moduleClassName) {
         try {
             // lookup the class
-			final ClassLoader existClassLoader;
+            final ClassLoader existClassLoader;
             if (getBroker() != null) {
                 existClassLoader = getBroker().getBrokerPool().getClassLoader();
             } else {
@@ -1978,7 +1978,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static BiFunction<String, Module[], Module[]> addToMapValueArray(final Module module) {
         return (namespaceURI, modules) -> {
             if (modules == null) {
-                return new Module[]{ module };
+                return new Module[]{module};
             }
 
             // check if the module is already present
@@ -2018,7 +2018,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         final FunctionId functionKey = signature.getFunctionId();
         if (declaredFunctions.containsKey(functionKey)) {
             throw new XPathException(function, ErrorCodes.XQST0034,
-                    "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount()
+                    "Function " + signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount()
                             + " is already defined.");
         }
 
@@ -2778,7 +2778,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (isEmpty(locationHints) && namespaceURI != null) {
                 final Module module = resolveInEXPathRepository(namespaceURI, prefix);
                 if (module != null) {
-                    modules = new Module[]{ module };
+                    modules = new Module[]{module};
                 }
             }
 
@@ -2788,11 +2788,11 @@ public class XQueryContext implements BinaryValueManager, Context {
                     // check if there's a static mapping in the configuration
                     final String moduleLocation = getModuleLocation(namespaceURI);
                     if (moduleLocation != null) {
-                        locationHints = new AnyURIValue[]{ new AnyURIValue(moduleLocation) };
+                        locationHints = new AnyURIValue[]{new AnyURIValue(moduleLocation)};
                     }
 
                     if (isEmpty(locationHints)) {
-                        locationHints = new AnyURIValue[] { new AnyURIValue(namespaceURI) };
+                        locationHints = new AnyURIValue[]{new AnyURIValue(namespaceURI)};
                     }
                 }
 
@@ -3326,12 +3326,17 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         final String sanitizedContents = StringValue.trimWhitespace(contents);
 
-        return switch(qname.getLocalPart()) {
-            case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
-            case TimePragma.TIME_PRAGMA_LOCAL_NAME, TimePragma.DEPRECATED_TIMER_PRAGMA_LOCAL_NAME -> new TimePragma(rootExpression, qname, sanitizedContents);
-            case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
-            case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
-            case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);
+        return switch (qname.getLocalPart()) {
+            case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME ->
+                    new Optimize(rootExpression, this, qname, sanitizedContents, true);
+            case TimePragma.TIME_PRAGMA_LOCAL_NAME, TimePragma.DEPRECATED_TIMER_PRAGMA_LOCAL_NAME ->
+                    new TimePragma(rootExpression, qname, sanitizedContents);
+            case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME ->
+                    new ProfilePragma(rootExpression, qname, sanitizedContents);
+            case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME ->
+                    new ForceIndexUse(rootExpression, qname, sanitizedContents);
+            case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME ->
+                    new NoIndexPragma(rootExpression, qname, sanitizedContents);
             default -> null;
         };
     }
@@ -3959,7 +3964,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("dynamicTextResources: {");
         if (dynamicTextResources != null) {
-            for (final Map.Entry<Tuple2<String, Charset>,  QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
+            for (final Map.Entry<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
                 sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }

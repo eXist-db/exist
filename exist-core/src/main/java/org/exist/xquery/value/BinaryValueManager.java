@@ -76,6 +76,7 @@ public interface BinaryValueManager {
     }
 
     void runCleanupTasks(final Predicate<Object> predicate);
+
     default void runCleanupTasks() {
         runCleanupTasks(o -> true);
     }

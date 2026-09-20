@@ -394,8 +394,8 @@ public class WindowExpr extends BindingExpression {
             @Nullable final WindowContextVariables windowReturnStartVariables = declareWindowReturnVariableBindings(window.startVariables);
             @Nullable final WindowContextVariables windowReturnEndVariables = declareWindowReturnVariableBindings(window.endVariables);
 
-        // eval the return expression on the window binding
-        resultSequence.addAll(returnExpr.eval(null, null));
+            // eval the return expression on the window binding
+            resultSequence.addAll(returnExpr.eval(null, null));
 
             // free resources
             if (windowReturnEndVariables != null) {
@@ -640,12 +640,14 @@ public class WindowExpr extends BindingExpression {
     }
 
     private static class Window {
-        @Nullable Sequence items;
+        @Nullable
+        Sequence items;
         @Nullable
         WindowContextVariables startVariables;
         @Nullable
         WindowContextVariables endVariables;
-        @Nullable private State state;
+        @Nullable
+        private State state;
 
         private enum State {
             STARTED,
