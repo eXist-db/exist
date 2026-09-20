@@ -25,9 +25,7 @@ import org.exist.util.io.ByteBufferAccessor;
 import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,11 +53,10 @@ public class BinaryValueFromFile extends BinaryValue {
     private final Optional<BiConsumer<Boolean, Path>> closeListener;
 
     // Number of outstanding references. Starts at 1 (the value itself); incremented when the value is
-    // shared out of an enclosed expression and decremented by each close(). The underlying channel is
-    // released only once it reaches zero, mirroring the reference counting in
-    // AbstractFilterInputStreamCache (used by BinaryValueFromInputStream). Without this, exitEnclosedExpr
-    // would close a still-referenced value -- e.g. an uploaded file's value (request:get-uploaded-file-data)
-    // closed before a deferred xmldb:store could read it.
+    // lent to something that closes what it is given, and decremented by each close(). The underlying
+    // channel is released only once it reaches zero, mirroring the reference counting in
+    // AbstractFilterInputStreamCache (used by BinaryValueFromInputStream). Without this, xmldb:store
+    // closing the resource it was lent would close the caller's value -- see XMLDBStore.
     private int sharedReferences = 1;
 
     protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Optional<BiConsumer<Boolean, Path>> closeListener) throws XPathException {
@@ -171,20 +168,6 @@ public class BinaryValueFromFile extends BinaryValue {
     @Override
     public Object toJavaObject() throws XPathException {
         return file;
-    }
-
-    @Override
-    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
-        // do not close if this object is part of the contextSequence
-        if (contextSequence != null && (contextSequence == this || contextSequence.containsReference(this))) {
-            return;
-        }
-        try {
-            this.close();
-        } catch (final IOException e) {
-            // ignore at this point
-        }
-        context.destroyBinaryValue(this);
     }
 
     @Override
