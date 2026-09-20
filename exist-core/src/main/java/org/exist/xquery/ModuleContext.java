@@ -609,6 +609,26 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
+    public void destroyBinaryValue(final BinaryValue binaryValue) {
+        parentContext.destroyBinaryValue(binaryValue);
+    }
+
+    @Override
+    public void pushBinaryValueFrame() {
+        parentContext.pushBinaryValueFrame();
+    }
+
+    @Override
+    public void popBinaryValueFrame(@Nullable final Sequence escaping) {
+        parentContext.popBinaryValueFrame(escaping);
+    }
+
+    @Override
+    public void promoteBinaryValueFrame() {
+        parentContext.promoteBinaryValueFrame();
+    }
+
+    @Override
     public void saveState() {
         super.saveState();
         parentContext.saveState();

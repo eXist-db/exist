@@ -82,7 +82,8 @@ public class EnclosedExpr extends PathExpr {
 
         // evaluate the expression
         Sequence result;
-        context.enterEnclosedExpr();
+        // values created inside the constructor belong to it; see BinaryValueManager
+        context.pushBinaryValueFrame();
         try {
             // Check copy-namespaces mode before evaluation so we can lazily capture
             // innerBuilder only when no-inherit is active. In the default (inherit) case
@@ -225,7 +226,9 @@ public class EnclosedExpr extends PathExpr {
                 throw new XPathException(this, e);
             }
         } finally {
-            context.exitEnclosedExpr();
+            // the constructor has already copied any binary value it used into the
+            // MemTreeBuilder, so nothing created inside it escapes
+            context.popBinaryValueFrame(null);
         }
 
         if (context.getProfiler().isEnabled()) {

@@ -56,6 +56,37 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         this(null, functionCall);
     }
 
+    /**
+     * A value captured by this function's closure is still reachable through it, even though it is
+     * not part of the sequence the defining scope returned.
+     *
+     * <p>Without this, a binary value captured by an inline function would be released when the scope
+     * that created it is left, and calling the function later would find it closed.</p>
+     *
+     * @param item the item to look for
+     * @return true if this reference is the item, or holds it in its closure
+     */
+    @Override
+    public boolean containsReference(final Item item) {
+        if (this == item) {
+            return true;
+        }
+
+        final List<ClosureVariable> closureVariables = functionCall.getFunction().getClosureVariables();
+        if (closureVariables == null) {
+            return false;
+        }
+
+        for (final ClosureVariable closureVariable : closureVariables) {
+            final Sequence value = closureVariable.getValue();
+            if (value != null && (value == item || value.containsReference(item))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public FunctionReference(final Expression expression, final FunctionCall functionCall) {
         super(expression);
         this.functionCall = functionCall;
