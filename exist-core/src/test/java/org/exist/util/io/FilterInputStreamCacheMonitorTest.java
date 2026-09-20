@@ -115,6 +115,74 @@ public class FilterInputStreamCacheMonitorTest {
         }
     }
 
+    /**
+     * The leak-direction guard for scope ownership: a binary value created in a scope and merely
+     * passed through a user-defined function is released when that scope is left, exactly once.
+     *
+     * <p>A value is now released by the scope that created it, rather than by whichever scope happened
+     * to hold the last reference. This test fails if that deferral leaks instead.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void userDefinedFunctionCleanup() throws XMLDBException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        assertNoActiveBinaries(monitor, "before the query");
+
+        ResourceSet resourceSet = null;
+        try {
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    declare function local:size($b) { string-length(util:binary-to-string($b)) };
+                    let $b := util:binary-doc('/db/%s/icon.png')
+                    return local:size($b)""".formatted(TEST_COLLECTION_NAME));
+
+            assertEquals(1, resourceSet.getSize());
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
+                assertFalse(resource instanceof LocalBinaryResource);
+                assertNoActiveBinaries(monitor, "after the query");
+            }
+        } finally {
+            resourceSet.clear();
+        }
+    }
+
+    /**
+     * Binary values created inside a loop and not returned by it must not accumulate for the whole
+     * query.
+     *
+     * <p>Note what this does <em>not</em> claim: ForExpr opens one scope around the whole loop, so the
+     * values are released when the loop ends rather than per iteration - the count during the loop is
+     * not asserted here. Per-iteration release is a separate change.</p>
+     */
+    @Test
+    public void loopDoesNotAccumulateCaches() throws XMLDBException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        assertNoActiveBinaries(monitor, "before the query");
+
+        ResourceSet resourceSet = null;
+        try {
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    sum(for $i in 1 to 20 return
+                      string-length(util:binary-to-string(util:binary-doc('/db/%s/icon.png'))))""".formatted(TEST_COLLECTION_NAME));
+
+            assertEquals(1, resourceSet.getSize());
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
+                assertFalse(resource instanceof LocalBinaryResource);
+                assertNoActiveBinaries(monitor, "after the query");
+            }
+        } finally {
+            resourceSet.clear();
+        }
+    }
+
+    private static void assertNoActiveBinaries(final FilterInputStreamCacheMonitor monitor, final String when) {
+        final int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            fail("FilterInputStreamCacheMonitor should have no active binaries " + when + ", but found: "
+                    + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
+        }
+    }
+
     @Test
     public void enclosedExpressionCleanup() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();

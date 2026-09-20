@@ -33,26 +33,29 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * A file-backed binary value must honor the shared-reference contract that
- * {@link org.exist.xquery.XQueryContext}'s {@code enterEnclosedExpr()} / {@code exitEnclosedExpr()}
- * rely on: {@code incrementSharedReferences()} protects the value while it is shared out of an enclosed
- * expression, and {@code close()} must only release the underlying channel once the shared references
- * are exhausted (mirroring {@link org.exist.xquery.value.BinaryValueFromInputStream}).
+ * A file-backed binary value must honor the shared-reference contract that lending relies on:
+ * {@code incrementSharedReferences()} protects the value while something else holds it, and
+ * {@code close()} must only release the underlying channel once the shared references are exhausted
+ * (mirroring {@link org.exist.xquery.value.BinaryValueFromInputStream}).
+ *
+ * <p>Scope lifetime no longer uses this: a value is released by the frame that created it (see
+ * {@link org.exist.xquery.value.BinaryValueManager}). Reference counting is now for genuine lending -
+ * {@code xmldb:store} hands its value to a {@code Resource} whose {@code close()} closes what it was
+ * given, while the query that produced the value may still need to read it afterwards.</p>
  *
  * <p>Regression for the multipart-upload failure: an uploaded file's {@link BinaryValueFromFile} (from
- * {@code request:get-uploaded-file-data}) had its channel closed by {@code exitEnclosedExpr()} before a
- * deferred {@code xmldb:store} could read it, surfacing as
- * "error while obtaining length of binary value ..." caused by "Underlying channel has been closed".</p>
+ * {@code request:get-uploaded-file-data}) had its channel closed before a deferred {@code xmldb:store}
+ * could read it, surfacing as "error while obtaining length of binary value ..." caused by
+ * "Underlying channel has been closed".</p>
  */
 public class BinaryValueFromFileSharedReferenceTest {
 
     /**
-     * Models {@code enterEnclosedExpr()} (incrementSharedReferences) followed by {@code exitEnclosedExpr()}
-     * (close) on a value that escapes the enclosed expression: it must remain open and readable, and only
-     * be released by the final cleanup {@code close()}.
+     * Models lending the value out (incrementSharedReferences) and the borrower closing it: the value
+     * must remain open and readable, and only be released by the owner's final {@code close()}.
      */
     @Test
-    public void survivesEnclosedExpressionWhenShared() throws Exception {
+    public void survivesBorrowerCloseWhenShared() throws Exception {
         final byte[] content = "multipart upload payload".getBytes(UTF_8);
         final Path file = Files.createTempFile("bvff-shared", ".bin");
         try {
@@ -60,13 +63,13 @@ public class BinaryValueFromFileSharedReferenceTest {
             final MockBinaryValueManager manager = new MockBinaryValueManager();
             final BinaryValue bin = BinaryValueFromFile.getInstance(manager, new Base64BinaryValueType(), file);
 
-            // enterEnclosedExpr(): the value is referenced from outside the enclosed expression
+            // lent to something that closes what it is given, e.g. xmldb:store's Resource
             bin.incrementSharedReferences();
-            // exitEnclosedExpr(): closes (decrements a reference on) each registered binary value
+            // the borrower is done with it: this releases only the borrower's reference
             bin.close();
 
-            // having escaped the enclosed expression, the value must still be readable
-            assertFalse("a binary value shared out of an enclosed expression must not be closed", bin.isClosed());
+            // the owner still holds it, so it must still be readable
+            assertFalse("a binary value that is still lent out must not be closed", bin.isClosed());
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 bin.streamBinaryTo(baos);
                 assertArrayEquals(content, baos.toByteArray());
@@ -81,8 +84,8 @@ public class BinaryValueFromFileSharedReferenceTest {
     }
 
     /**
-     * A value that is never shared out of an enclosed expression is released by a single {@code close()},
-     * preserving the eager-cleanup behavior of {@code exitEnclosedExpr()}.
+     * A value that was never lent out is released by a single {@code close()}, which is what lets a
+     * frame release the values it owns as soon as it is left.
      */
     @Test
     public void closesWhenNotShared() throws Exception {
