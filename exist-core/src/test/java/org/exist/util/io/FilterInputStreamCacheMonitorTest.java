@@ -67,7 +67,7 @@ public class FilterInputStreamCacheMonitorTest {
         final Path icon = Path.of(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
 
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
-        try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.class)) {
+        try (final EXistResource resource = (EXistResource) testCollection.createResource("icon.png", BinaryResource.class)) {
             resource.setContent(icon);
             testCollection.storeResource(resource);
         }
@@ -87,7 +87,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." +  System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -97,7 +97,7 @@ public class FilterInputStreamCacheMonitorTest {
 
             assertEquals(1, resourceSet.getSize());
 
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertInstanceOf(LocalBinaryResource.class, resource);
                 assertInstanceOf(BinaryValue.class, ((ExtendedResource) resource).getExtendedContent());
 
@@ -108,7 +108,7 @@ public class FilterInputStreamCacheMonitorTest {
             // assert no active binaries as we just closed the resource in the try-with-resources
             activeCount = monitor.getActive().size();
             if (activeCount != 0) {
-                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
             }
 
         } finally {
@@ -191,23 +191,23 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
         try {
-            resourceSet = existXmldbEmbeddedServer.executeQuery(
-                    "let $embedded := <logo><image>{util:binary-doc('/db/" + TEST_COLLECTION_NAME + "/icon.png')}</image></logo>\n" +
-                            "return xmldb:store('/db/" + TEST_COLLECTION_NAME + "', 'icon.xml', $embedded)");
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    let $embedded := <logo><image>{util:binary-doc('/db/%1$s/icon.png')}</image></logo>
+                    return xmldb:store('/db/%1$s', 'icon.xml', $embedded)""".formatted(TEST_COLLECTION_NAME));
 
             assertEquals(1, resourceSet.getSize());
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
                 }
             }
 
@@ -228,20 +228,20 @@ public class FilterInputStreamCacheMonitorTest {
 
         ResourceSet resourceSet = null;
         try {
-            resourceSet = existXmldbEmbeddedServer.executeQuery(
-                    "let $bin := util:binary-doc('/db/" + TEST_COLLECTION_NAME + "/icon.png')\n" +
-                    "let $embedded := <logo><image>{$bin}</image></logo>\n" +
-                    "let $embedded-2 := <other>{$bin}</other>\n" +
-                    "return xmldb:store('/db/" + TEST_COLLECTION_NAME + "', 'icon.xml', $embedded)");
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    let $bin := util:binary-doc('/db/%1$s/icon.png')
+                    let $embedded := <logo><image>{$bin}</image></logo>
+                    let $embedded-2 := <other>{$bin}</other>
+                    return xmldb:store('/db/%1$s', 'icon.xml', $embedded)""".formatted(TEST_COLLECTION_NAME));
 
             assertEquals(1, resourceSet.getSize());
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator" ) + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
                 }
             }
 

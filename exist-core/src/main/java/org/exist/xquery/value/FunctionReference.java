@@ -56,6 +56,11 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         this(null, functionCall);
     }
 
+    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
+        super(expression);
+        this.functionCall = functionCall;
+    }
+
     /**
      * A value captured by this function's closure is still reachable through it, even though it is
      * not part of the sequence the defining scope returned.
@@ -85,11 +90,6 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         }
 
         return false;
-    }
-
-    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
-        super(expression);
-        this.functionCall = functionCall;
     }
 
     public void setCapturedContext(final Sequence contextSequence, final Item contextItem) {

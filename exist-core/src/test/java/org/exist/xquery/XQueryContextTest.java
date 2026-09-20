@@ -369,7 +369,7 @@ class XQueryContextTest {
     }
 
     @Test
-    void testDeclareNamespace () throws XPathException {
+    void testDeclareNamespace() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("first", "ns/a");
         context.declareNamespace("second", "ns/b");
@@ -377,10 +377,11 @@ class XQueryContextTest {
         context.declareNamespace("third", "ns/a");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.addAll(Arrays.asList("first", "second", "third"));
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
     }
+
     @Test
-    void testReDeclareNamespaceAllowed () throws XPathException {
+    void testReDeclareNamespaceAllowed() throws XPathException {
         final XQueryContext context = new XQueryContext();
         final String nsAllowedToBeRebound = "xs";
         assertEquals("http://www.w3.org/2001/XMLSchema",
@@ -389,39 +390,40 @@ class XQueryContextTest {
         context.declareNamespace(nsAllowedToBeRebound, "schemaless");
 
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("schemaless",  context.staticNamespaces.get(nsAllowedToBeRebound));
-    }
-    @Test
-    void testReDeclareNamespaceNullNull () throws XPathException {
-        final XQueryContext context = new XQueryContext();
-        context.declareNamespace(null, null);
-        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("schemaless", context.staticNamespaces.get(nsAllowedToBeRebound));
     }
 
     @Test
-    void testDeclareNamespaceEmptyPrefix () throws XPathException {
+    void testReDeclareNamespaceNullNull() throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(null, null);
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        assertEquals(expected, context.staticNamespaces.keySet());
+    }
+
+    @Test
+    void testDeclareNamespaceEmptyPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    void testDeclareNamespaceNullPrefix () throws XPathException {
+    void testDeclareNamespaceNullPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace(null, "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    void testReDeclareNamespaceEmptyPrefixFail () throws XPathException {
+    void testReDeclareNamespaceEmptyPrefixFail() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         // context.declareNamespace("", "");
@@ -432,22 +434,22 @@ class XQueryContextTest {
         } catch (XPathException e) {
             assertEquals("err:XQST0066 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
                     e.getMessage());
-            assertEquals("default",  context.staticNamespaces.get(""));
+            assertEquals("default", context.staticNamespaces.get(""));
         }
     }
 
     @Test
-    void testReDeclareNamespaceEmptyPrefixSuccess () throws XPathException {
+    void testReDeclareNamespaceEmptyPrefixSuccess() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("mutable", "ns/initial");
         context.declareNamespace("mutable", "");
         context.declareNamespace("mutable", null);
         context.declareNamespace("mutable", "ns/new");
-        assertEquals("ns/new",  context.staticNamespaces.get("mutable"));
+        assertEquals("ns/new", context.staticNamespaces.get("mutable"));
     }
 
     @Test
-    void testReDeclareNamespaceForbidden () {
+    void testReDeclareNamespaceForbidden() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "html");
@@ -458,7 +460,7 @@ class XQueryContextTest {
     }
 
     @Test
-    void testReDeclareNamespaceForbiddenEmpty () {
+    void testReDeclareNamespaceForbiddenEmpty() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "");
@@ -469,7 +471,7 @@ class XQueryContextTest {
     }
 
     @Test
-    void testReDeclareNamespaceForbiddenNull () {
+    void testReDeclareNamespaceForbiddenNull() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", null);
@@ -480,7 +482,7 @@ class XQueryContextTest {
     }
 
     @Test
-    void testXmlNsProtected () {
+    void testXmlNsProtected() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("test", XMLConstants.XML_NS_URI);
