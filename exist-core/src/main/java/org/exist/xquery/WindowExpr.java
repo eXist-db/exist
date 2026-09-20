@@ -175,6 +175,15 @@ public class WindowExpr extends BindingExpression {
             // if we have NOT started, check if the start-when condition is true
             if (window == null) {
 
+                // A previous iteration probed the start-when condition and did not start a window, so
+                // its condition variables are still in scope and nothing holds them. Leave that scope
+                // before opening another, or each item of the binding sequence leaks one.
+                if (windowStartMark != null) {
+                    context.popLocalVariables(windowStartMark, resultSequence);
+                    windowStartConditionVariables = null;
+                    windowStartMark = null;
+                }
+
                 // Save the local variable stack
                 windowStartMark = context.markLocalVariables(false);
 
@@ -241,6 +250,16 @@ public class WindowExpr extends BindingExpression {
 
                 // Declare Window End Condition variables
                 if (windowEndCondition != null) {
+
+                    // The previous iteration's end-condition variables were not consumed - the window
+                    // did not end there, or they would have been released with their scope below - so
+                    // leave that scope before opening another.
+                    if (windowEndMark != null) {
+                        context.popLocalVariables(windowEndMark, resultSequence);
+                        windowEndConditionVariables = null;
+                        windowEndMark = null;
+                    }
+
                     // Save the local variable stack
                     windowEndMark = context.markLocalVariables(false);
 
