@@ -2378,8 +2378,8 @@ public class XPathQueryTest {
 
         String query = "/elem1";
         ResourceSet result = queryResource(service, docName, query, 1);
-        final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
-        assertEquals(expected, result.getResource(0).getContent().toString());
+        // exist:preserve-cdata is on by default, so a section stored in the document survives
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
 
         query =
                 """
@@ -2421,8 +2421,8 @@ public class XPathQueryTest {
 
         String query = "doc(\"" + tempFile.toUri() + "\")";
         ResourceSet result = queryAndAssert(service, query, 1, null);
-        final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
-        assertEquals(expected, result.getResource(0).getContent().toString());
+        // exist:preserve-cdata is on by default, so a section stored in the document survives
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
 
         query =
                 "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
@@ -2461,6 +2461,8 @@ public class XPathQueryTest {
                     cdata_xml + "\n" +
                 "}";
         ResourceSet result = queryAndAssert(service, query, 1, null);
+        // Unlike the stored and parsed cases above, this section is written in query source, so it
+        // contributes a text node and exist:preserve-cdata does not apply -- content is escaped.
         final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
         assertEquals(expected, result.getResource(0).getContent().toString());
 
