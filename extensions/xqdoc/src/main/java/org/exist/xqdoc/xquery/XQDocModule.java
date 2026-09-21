@@ -55,7 +55,10 @@ public class XQDocModule extends AbstractInternalModule {
 
     @Override
     public String getDescription() {
-        return "XQDoc integration module.";
+        return "XQDoc integration module. DEPRECATED FOR REMOVAL: built on the external "
+                + "org.xqdoc:xqdoc-conversion library, last released in 2012, which cannot parse "
+                + "XQuery 3.0 or later. Use inspect:inspect-module instead. "
+                + "See https://github.com/eXist-db/exist/issues/6717.";
     }
 
     @Override
