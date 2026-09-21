@@ -90,7 +90,7 @@ public class XMLWriter implements SerializerWriter {
      * compared to retrieving resources from the database.
      */
     private boolean xdmSerialization = false;
-    private boolean preserveCdata = false;
+    private boolean preserveCdata = true;
     private boolean xml11 = false;
     @Nullable private java.text.Normalizer.Form normalizationForm = null;
 
@@ -166,7 +166,7 @@ public class XMLWriter implements SerializerWriter {
         }
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
-        this.preserveCdata = "yes".equals(outputProperties.getProperty(EXistOutputKeys.PRESERVE_CDATA, "no"));
+        this.preserveCdata = !"no".equals(outputProperties.getProperty(EXistOutputKeys.PRESERVE_CDATA, "yes"));
         this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
         this.normalizationForm = parseNormalizationForm(outputProperties.getProperty("normalization-form", "none"));
     }

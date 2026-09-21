@@ -115,7 +115,20 @@ public class EXistOutputKeys {
      * element names in advance and imposes CDATA on elements that never had it. eXist's stored DOM
      * does keep CDATA nodes, and its own REST serializer emits them; this key makes that reachable
      * from {@code fn:serialize} for callers that want the stored form back verbatim, such as an
-     * editor round-tripping a document. Off by default, so specified behavior is unchanged.</p>
+     * editor round-tripping a document.</p>
+     *
+     * <p><strong>On by default.</strong> That is a deliberate divergence from the serialization
+     * specification, which emits CDATA sections only for elements named in
+     * {@code cdata-section-elements}. It is on because the alternative is more surprising in
+     * practice: retrieving a stored document already preserved its CDATA sections while returning
+     * the same document from a query did not, and a document round-tripped through an editor lost
+     * them. Set it to {@code no} for strictly specified output.</p>
+     *
+     * <p>It applies only to a CDATA section that was present in a parsed or stored document. A
+     * CDATA section written in query source is an escaping convenience and contributes an ordinary
+     * text node -- see {@link org.exist.xquery.CDATAConstructor} -- so this key never introduces a
+     * CDATA section into constructed content, where it would be wrong in HTML5 raw-text elements
+     * such as {@code script} and {@code style}.</p>
      */
     public static final String PRESERVE_CDATA = "preserve-cdata";
 

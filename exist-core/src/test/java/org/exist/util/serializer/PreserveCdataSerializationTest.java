@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  * that, and naming elements in {@code cdata-section-elements} is not a substitute — it imposes
  * CDATA on elements that never had it.</p>
  *
- * <p>The parameter is opt-in and defaults to false, so unqualified {@code fn:serialize} behavior
+ * <p>The parameter is on by default; passing it false restores the specified escaping, so that behavior
  * is unchanged.</p>
  */
 public class PreserveCdataSerializationTest {
@@ -81,10 +81,10 @@ public class PreserveCdataSerializationTest {
         query("xmldb:remove('/db', 'preserve-cdata-test.xml')");
     }
 
-    /** Without the parameter, the spec's escaping applies — this must not change. */
+    /** The parameter is on by default, so a stored section survives an unqualified serialize. */
     @Test
-    public void withoutTheParameterContentIsEscaped() throws XMLDBException {
-        assertEquals("<doc><p> a &gt; b </p></doc>",
+    public void withoutTheParameterAStoredSectionIsPreserved() throws XMLDBException {
+        assertEquals("<doc><p><![CDATA[ a > b ]]></p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml' })"));
     }
 
@@ -102,9 +102,9 @@ public class PreserveCdataSerializationTest {
                 query("serialize(parse-xml(" + SOURCE + "), map { 'method': 'xml', " + PRESERVE + " })"));
     }
 
-    /** Explicitly false is the same as omitting it. */
+    /** Explicitly false opts back in to the specified escaping. */
     @Test
-    public void explicitFalseMatchesTheDefault() throws XMLDBException {
+    public void explicitFalseRestoresSpecifiedEscaping() throws XMLDBException {
         assertEquals("<doc><p> a &gt; b </p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml', "
                         + "QName('http://exist.sourceforge.net/NS/exist','preserve-cdata'): false() })"));
