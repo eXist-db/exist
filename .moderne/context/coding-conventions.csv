@@ -78,7 +78,7 @@ imports,Static imports from org.apache.commons.lang3,org.apache.commons.lang3.Ar
 imports,Static imports from org.xmldb.api.base,org.xmldb.api.base.ResourceType.XML_RESOURCE,,project-wide
 imports,Static imports from java.time,java.time.ZoneOffset.UTC,,project-wide
 imports,Static imports from javax.xml.transform,javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION,,project-wide
-imports,Static imports from org.exist.storage.serializers,org.exist.storage.serializers.EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION,,project-wide
+imports,Static imports from org.exist.storage.serializers,org.exist.storage.serializers.EXistOutputKeys.OUTPUT_DOCTYPE,,project-wide
 imports,Static imports from org.exist.client,org.exist.client.InteractiveClient.DATE_TIME_FORMATTER,,project-wide
 naming,can* method naming pattern,canModifyGroupMembers,,project-wide
 naming,Controller suffix for classes,IndexController,,project-wide
