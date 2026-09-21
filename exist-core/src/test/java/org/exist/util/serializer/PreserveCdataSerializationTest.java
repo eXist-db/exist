@@ -58,6 +58,9 @@ public class PreserveCdataSerializationTest {
     private static final String SOURCE =
             "'<doc><p>' || '<' || '![CDATA[ a > b ]]' || '>' || '</p></doc>'";
 
+    /** A direct element constructor whose content is written as a CDATA section in query source. */
+    private static final String DIRECT = "<elem><![CDATA[ a > b ]]></elem>";
+
     private static final String PRESERVE =
             "QName('http://exist.sourceforge.net/NS/exist','preserve-cdata'): true()";
 
@@ -105,6 +108,25 @@ public class PreserveCdataSerializationTest {
         assertEquals("<doc><p> a &gt; b </p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml', "
                         + "QName('http://exist.sourceforge.net/NS/exist','preserve-cdata'): false() })"));
+    }
+
+    /**
+     * A CDATA section typed into query source is escaping convenience, not a request for CDATA in
+     * the output, so preserve-cdata does not apply to it. This is what keeps the parameter out of
+     * HTML5 raw-text elements, where a CDATA section would be literal text to a browser.
+     */
+    @Test
+    public void aConstructedSectionIsNotPreserved() throws XMLDBException {
+        assertEquals("<elem> a &gt; b </elem>",
+                query("serialize(" + DIRECT + ", map { 'method': 'xml', " + PRESERVE + " })"));
+    }
+
+    /** cdata-section-elements still applies to constructed content: it selects by element name. */
+    @Test
+    public void cdataSectionElementsStillAppliesToConstructedContent() throws XMLDBException {
+        assertEquals("<elem><![CDATA[ a > b ]]></elem>",
+                query("serialize(" + DIRECT
+                        + ", map { 'method': 'xml', 'cdata-section-elements': xs:QName('elem') })"));
     }
 
     /** A document with no CDATA section is unaffected either way. */
