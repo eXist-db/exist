@@ -31,11 +31,14 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.FileUtils;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 /**
  * Temporary File Manager.
@@ -64,7 +67,7 @@ import org.exist.util.FileUtils;
  * and the Operating System to manage it's temporary file space.
  *
  * Relevant articles on the above described problems are:
- *     1.https://bugs.java.com/view_bug.do?bug_id=4715154
+ *     1. https://bugs.java.com/view_bug.do?bug_id=4715154
  *     2. https://bugs.openjdk.java.net/browse/JDK-8028683
  *     3. https://bugs.java.com/view_bug.do?bug_id=4724038
  *
@@ -90,30 +93,33 @@ public class TemporaryFileManager {
 
     private TemporaryFileManager() {
         cleanupOldTempFolders();
-
         try {
             this.tmpFolder = Files.createTempDirectory(FOLDER_PREFIX + '-');
-            this.lockChannel = FileChannel.open(tmpFolder.resolve(LOCK_FILENAME), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE, StandardOpenOption.DELETE_ON_CLOSE);
+            this.lockChannel = FileChannel.open(tmpFolder.resolve(LOCK_FILENAME), CREATE_NEW, WRITE, DELETE_ON_CLOSE);
             lockChannel.lock();
+            Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUpTempFolders));
         } catch(final IOException ioe) {
             throw new RuntimeException("Unable to create temporary folder", ioe);
         }
+        LOG.info("Temporary folder is: {}", tmpFolder);
+    }
 
-        /*
-        Add hook to JVM to delete the file on exit
-        unfortunately this does not always work on all (e.g. Windows) platforms
-        will be recovered on restart by cleanupOldTempFolders
-         */
-        tmpFolder.toFile().deleteOnExit();
-
-        LOG.info("Temporary folder is: {}", tmpFolder.toAbsolutePath().toString());
+    private void cleanUpTempFolders() {
+        LOG.info("Removing temporary folder is: {}", tmpFolder);
+        try {
+            lockChannel.close();  // will release the lock on the lock file, and the lock file should be deleted
+            //try and remove our temporary folder
+            FileUtils.deleteQuietly(tmpFolder);
+        } catch(final IOException ioe) {
+            LOG.error("Feiled to cleanup {}", tmpFolder, ioe);
+        }
     }
 
     public final Path getTemporaryFile() throws IOException {
 
         // Be sure that the temp directory exists, create otherwise. #3826
         if (!Files.exists(tmpFolder)) {
-            LOG.debug("Recreating {}", tmpFolder.toAbsolutePath());
+            LOG.debug("Recreating {}", tmpFolder);
             Files.createDirectories(tmpFolder);
         }
 
@@ -131,13 +137,11 @@ public class TemporaryFileManager {
     public void returnTemporaryFile(final Path tempFile) {
         try {
             if (Files.deleteIfExists(tempFile)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Deleted temporary file: {}", tempFile.toAbsolutePath().toString());
-                }
+                LOG.debug("Deleted temporary file: {}", tempFile);
             }
         } catch (final IOException e) {
             // this can often occur on Microsoft Windows (especially if the file was memory mapped!) :-/
-            LOG.warn("Unable to delete temporary file: {} due to: {}", tempFile.toAbsolutePath().toString(), e.getMessage());
+            LOG.warn("Unable to delete temporary file: {} due to: {}", tempFile, e.getMessage());
         }
     }
 
@@ -148,39 +152,25 @@ public class TemporaryFileManager {
      */
     private void cleanupOldTempFolders() {
         final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-
         try {
-            for(final Path dir : FileUtils.list(tmpDir, path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))) {
+            for (final Path dir : FileUtils.list(tmpDir, path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))) {
                 final Path lockPath = dir.resolve(LOCK_FILENAME);
-                if(!Files.exists(lockPath)) {
+                if (!Files.exists(lockPath)) {
                     // no lock file present, so not in use
                     FileUtils.deleteQuietly(dir);
                 } else {
                     // there is a lock file present, we must determine if it is locked (by another eXist-db instance)
-                    try (final FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE)) {
+                    try (final FileChannel otherLockChannel = FileChannel.open(lockPath, WRITE)) {
                         if (otherLockChannel.tryLock() != null) {
                             // not locked... so we now have the lock
-
                             FileUtils.deleteQuietly(dir);
                         }
                     }
                     // will release the lock
                 }
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             LOG.warn("Unable to delete old temporary folders", ioe);
-        }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            lockChannel.close();  // will release the lock on the lock file, and the lock file should be deleted
-
-            //try and remove our temporary folder
-            FileUtils.deleteQuietly(tmpFolder);
-        } finally {
-            super.finalize();
         }
     }
 }
