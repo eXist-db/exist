@@ -115,7 +115,7 @@ public class EXistOutputKeys {
      * element names in advance and imposes CDATA on elements that never had it. eXist's stored DOM
      * does keep CDATA nodes, and its own REST serializer emits them; this key makes that reachable
      * from {@code fn:serialize} for callers that want the stored form back verbatim, such as an
-     * editor round-tripping a document. Off by default, so specified behaviour is unchanged.</p>
+     * editor round-tripping a document. Off by default, so specified behavior is unchanged.</p>
      */
     public static final String PRESERVE_CDATA = "preserve-cdata";
 

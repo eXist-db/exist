@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  * that, and naming elements in {@code cdata-section-elements} is not a substitute — it imposes
  * CDATA on elements that never had it.</p>
  *
- * <p>The parameter is opt-in and defaults to false, so unqualified {@code fn:serialize} behaviour
+ * <p>The parameter is opt-in and defaults to false, so unqualified {@code fn:serialize} behavior
  * is unchanged.</p>
  */
 public class PreserveCdataSerializationTest {
