@@ -85,18 +85,16 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, @Nullable final Item contextItem) throws XPathException {
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+    public Sequence eval(final Sequence contextSequence, @Nullable final Item contextItem) throws XPathException {
+        final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
         if (preselectResult != null) {
-            if (contextSequence == null) {
+            if (effectiveContextSequence == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
-            return preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
+            return preselectResult.selectAncestorDescendant(effectiveContextSequence.toNodeSet(), NodeSet.DESCENDANT,
                     true, getContextId(), true);
         }
-        return super.eval(contextSequence, contextItem);
+        return super.eval(effectiveContextSequence, contextItem);
     }
 
     @Override
@@ -133,9 +131,17 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
         return 10;
     }
 
-    /** Parses the {@code options} argument (index 3, optional) from an args array shaped {@code (nodes|field, vector, k?, options?)}. */
+    /**
+     * Parses the {@code options} argument (index 3, optional) from an args array shaped
+     * {@code (nodes|field, vector, k?, options?)}. Unlike {@link Query#parseOptions}, an argument
+     * that was provided but evaluated to {@code ()} is treated the same as one that wasn't
+     * provided at all (defaults) rather than an error — pass {@code null} to
+     * {@link QueryOptions#fromSequence}, not the empty sequence itself, which
+     * {@code fromSequence} would instead reject as a wrongly-shaped options value.
+     */
     protected QueryOptions parseOptionsArg(final Sequence[] args) throws XPathException {
-        return QueryOptions.fromSequence(context, this, args.length >= 4 ? args[3] : null);
+        final Sequence optSeq = args.length >= 4 ? args[3] : null;
+        return QueryOptions.fromSequence(context, this, optSeq == null || optSeq.isEmpty() ? null : optSeq);
     }
 
     protected static float[] arrayToFloats(final Sequence seq) throws XPathException {
@@ -161,15 +167,20 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     }
 
     /**
-     * True if any argument from {@code fromIndex} onward depends on a local iteration variable
-     * (e.g. a {@code for}-bound variable), in which case the expression cannot be bulk-evaluated
-     * via {@link #preSelect(Sequence, boolean)} — the variable's value changes per iteration.
-     * Only LOCAL_VARS (same for/let scope) prevent bulk evaluation; CONTEXT_VARS (outer scope)
-     * are static and safe. (GH-2204)
+     * True if any argument from {@code fromIndex} onward varies per candidate node — either
+     * because it depends on a local iteration variable (e.g. a {@code for}-bound variable —
+     * GH-2204; CONTEXT_VARS from an outer scope are static relative to the current iteration and
+     * don't count), or because it depends on the context item itself (e.g. {@code .}, or anything
+     * derived from it, such as {@code ft:embed(.)} as a per-candidate "vector" argument). Either
+     * way the expression cannot be bulk-evaluated via {@link #preSelect(Sequence, boolean)}: its
+     * value would then vary per candidate, but {@link #evalArgs} evaluates every tail argument
+     * exactly once, with {@code contextItem=null} — the same class of bug fixed for arg0 in
+     * {@link QueryVector#canOptimizeSequence(Sequence)}, here for the remaining arguments.
      */
-    protected boolean anyArgDependsOnLocalVar(final int fromIndex) {
+    protected boolean anyArgVariesPerCandidate(final int fromIndex) {
         for (int i = fromIndex; i < getArgumentCount(); i++) {
-            if (Dependency.dependsOnLocalVar(getArgument(i))) {
+            final Expression arg = getArgument(i);
+            if (Dependency.dependsOnLocalVar(arg) || Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
                 return true;
             }
         }

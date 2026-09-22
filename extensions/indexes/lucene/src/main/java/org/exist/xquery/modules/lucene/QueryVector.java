@@ -155,15 +155,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final QueryOptions options = parseOptionsArg(args);
 
         final NodeSet nodes = nodesSeq.toNodeSet();
-        final DocumentSet docs = nodes.getDocumentSet();
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
-
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
-
-        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options));
+        return runSearch(nodes, nodes.getDocumentSet(), nodes, vector, k, options);
     }
 
     @Override
@@ -194,18 +186,21 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final int k = parseK(tailArgs);
         final QueryOptions options = parseOptionsArg(tailArgs);
 
-        final DocumentSet docs = contextSequence.getDocumentSet();
         final NodeSet contextSet = useContext ? nodes : null;
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
-
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
-
-        final Sequence result = VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, contextSet, qnames, vector, k, options));
+        final Sequence result = runSearch(nodes, contextSequence.getDocumentSet(), contextSet, vector, k, options);
         preselectResult = result.toNodeSet();
         return preselectResult;
+    }
+
+    /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index/qnames and run the KNN search. */
+    private Sequence runSearch(final NodeSet nodes, final DocumentSet docs, @Nullable final NodeSet contextSet,
+            final float[] vector, final int k, final QueryOptions options) throws XPathException {
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
+                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, contextSet, qnames, vector, k, options));
     }
 
     /**
@@ -224,7 +219,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final Expression nodesArg = getArgument(0);
         if (Type.subTypeOf(nodesArg.returnsType(), Type.NODE)
                 && !Dependency.dependsOn(nodesArg, Dependency.CONTEXT_ITEM)) {
-            if (anyArgDependsOnLocalVar(1)) {
+            if (anyArgVariesPerCandidate(1)) {
                 return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
             }
             return Dependency.CONTEXT_SET;

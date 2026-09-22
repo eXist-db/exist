@@ -245,3 +245,53 @@ function t:bare-variable-predicate-needs-boolean-wrapping() {
     let $probe := collection($t:NONSELF_COLL)//article[title = "A"]
     return count(collection($t:NONSELF_COLL)//article[boolean($probe)])
 };
+
+(: ================================================================
+   Regression: a "vector" argument that varies per candidate node (via a
+   dependency on `.`, not a for/let-bound local variable) must not be
+   bulk-evaluated once for the whole predicate. anyArgVariesPerCandidate()
+   must catch Dependency.CONTEXT_ITEM, not just LOCAL_VARS (GH-2204's
+   narrower check). NONSELF_COLL's three articles each have a distinct
+   embedding matching their own title (A=[1,0,0,0], B=[0,1,0,0],
+   C=[0,0,1,0]).
+   ================================================================ :)
+
+(:~
+ : Correct (per-candidate) evaluation: each candidate's query vector is
+ : chosen to be that SAME candidate's own embedding, so a k=1 search always
+ : trivially finds the candidate itself -- true for all 3.
+ :
+ : A buggy bulk (once-only, contextItem=null) evaluation of the `if`
+ : expression would instead see `title = "A"` as EBV-true (since some
+ : candidate has title "A", regardless of which one is currently being
+ : tested) and use [1,0,0,0] -- A's embedding -- for every candidate; a k=1
+ : search over {A,B,C} for that one vector then finds only A (the actual
+ : global nearest neighbour), so the predicate would incorrectly pass only
+ : for A, giving a count of 1.
+ :)
+declare
+    %test:assertEquals(3)
+function t:vector-arg-depending-on-context-item-is-not-bulk-evaluated() {
+    count(collection($t:NONSELF_COLL)//article[ft:query-vector(.,
+        if (title = "A") then [1.0, 0.0, 0.0, 0.0]
+        else if (title = "B") then [0.0, 1.0, 0.0, 0.0]
+        else [0.0, 0.0, 1.0, 0.0],
+        1)])
+};
+
+(:~
+ : Regression for the QueryOptions.fromSequence consolidation (shared between
+ : ft:query/ft:query-field and the vector functions): an options argument
+ : that was provided but evaluated to () must still default cleanly for
+ : ft:query-vector/ft:query-field-vector, exactly as it did before that
+ : consolidation. (ft:query/ft:query-field have no equivalent test here: the
+ : options argument to their 3-arg form is wrapped in a mandatory
+ : Cardinality.EXACTLY_ONE check in Query#setArguments, so () never reaches
+ : QueryOptions.fromSequence for them at all -- it's rejected earlier, with
+ : XPTY0004, regardless of this or any other change to parseOptions.)
+ :)
+declare
+    %test:assertEquals(3)
+function t:query-vector-defaults-on-explicit-empty-options() {
+    count(collection($t:NONSELF_COLL)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3, ())])
+};

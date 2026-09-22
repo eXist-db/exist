@@ -107,12 +107,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
             contextSet = null;
         }
 
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                VectorSearchSupport.optimizationLevelForField(index, docs, field);
-
-        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
+        return runSearch(docs, contextSet, field, vector, k, options);
     }
 
     @Override
@@ -134,17 +129,20 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         final int k = parseK(args);
         final QueryOptions options = parseOptionsArg(args);
 
-        final DocumentSet docs = contextSequence.getDocumentSet();
         final NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
+        final Sequence result = runSearch(contextSequence.getDocumentSet(), contextSet, field, vector, k, options);
+        preselectResult = result.toNodeSet();
+        return preselectResult;
+    }
 
+    /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index and run the KNN search. */
+    private Sequence runSearch(final DocumentSet docs, @Nullable final NodeSet contextSet, final String field,
+            final float[] vector, final int k, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForField(index, docs, field);
-
-        final Sequence result = VectorSearchSupport.execute(this, context, index, optimizationLevel,
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
                 () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
-        preselectResult = result.toNodeSet();
-        return preselectResult;
     }
 
     /**
@@ -155,7 +153,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
      */
     @Override
     public int getDependencies() {
-        if (anyArgDependsOnLocalVar(0)) {
+        if (anyArgVariesPerCandidate(0)) {
             return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
         }
         return Dependency.CONTEXT_SET;

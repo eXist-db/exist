@@ -79,6 +79,7 @@ import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.*;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 
 /**
@@ -961,12 +962,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (docs == null || docs.getDocumentCount() == 0) {
             return null;
         }
-        final int[] docIds = new int[docs.getDocumentCount()];
-        int i = 0;
+        // Grown from the iterator itself, not sized from getDocumentCount(): the two aren't
+        // guaranteed consistent for every DocumentSet implementation, and a short iterator
+        // against a pre-sized array would silently leave trailing 0 (a real docId) in docIds.
+        final IntStream.Builder docIds = IntStream.builder();
         for (final Iterator<DocumentImpl> it = docs.getDocumentIterator(); it.hasNext(); ) {
-            docIds[i++] = it.next().getDocId();
+            docIds.add(it.next().getDocId());
         }
-        return IntField.newSetQuery(FIELD_DOC_ID, docIds);
+        return IntField.newSetQuery(FIELD_DOC_ID, docIds.build().toArray());
     }
 
     @Nullable
