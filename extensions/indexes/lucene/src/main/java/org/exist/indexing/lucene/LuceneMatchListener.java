@@ -34,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.PhraseQuery;
@@ -63,6 +65,9 @@ import org.apache.lucene.util.AttributeSource.State;
 public class LuceneMatchListener extends AbstractMatchListener {
 
     private static final Logger LOG = LogManager.getLogger(LuceneMatchListener.class);
+    private static final int QUERY_TERM_CACHE_MAX = 32;
+    /** Sentinel for "no reader version seen yet", or a reader that is not a DirectoryReader. */
+    private static final long NO_READER_VERSION = -1L;
 
     private Match match;
     private Map<Object, Query> termMap;
@@ -77,11 +82,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * re-rewrite the same wildcard/prefix queries on every input node. The cache is keyed
      * by Query identity (Lucene Query.equals is content-based, so semantically equal
      * queries share an entry) and is bounded to avoid unbounded growth across long-lived
-     * brokers. */
-    private static final int QUERY_TERM_CACHE_MAX = 32;
+     * brokers. The listener is reused across queries by its LuceneIndexWorker, and a
+     * rewrite is only valid for the index snapshot it was made against, so the cache is
+     * invalidated whenever the reader version changes. */
     private final Cache<Query, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
             .maximumSize(QUERY_TERM_CACHE_MAX)
             .build();
+    private long queryTermCacheReaderVersion = NO_READER_VERSION;
 
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
@@ -375,15 +382,18 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * util:expand does not produce superfluous highlights for field-only matches.
      *
      * <p>For #5738: the per-Query cache lets batch util:expand($hits) reuse rewritten
-     * terms across hits. Without this cache every reset() reopened the IndexReader and
-     * re-enumerated terms (slow for wildcard/prefix queries on large corpora).
+     * terms across hits. Without this cache every reset() re-enumerated terms (slow for
+     * wildcard/prefix queries on large corpora). The reader is still acquired on every
+     * reset() - that is cheap when the index is unchanged - so that the cache can be
+     * invalidated when the index moves on to a new snapshot.
      *
      * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
      * @see <a href="https://github.com/eXist-db/exist/issues/5738">Issue #5738</a>
      */
     private void getTerms() {
-        // Collect unique queries from the proxy's match list. The cache shortcut applies
-        // when every query is already cached - the common case in batch util:expand calls.
+        // Collect unique queries from the proxy's match list. When every query is already
+        // cached for the current reader - the common case in batch util:expand calls - no
+        // terms are rewritten.
         final Set<Query> uniqueQueries = collectUniqueLuceneQueries();
         if (uniqueQueries.isEmpty()) {
             termMap = Collections.emptyMap();
@@ -392,29 +402,38 @@ public class LuceneMatchListener extends AbstractMatchListener {
         final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
                 ? Collections.emptySet()
                 : config.getConfiguredFieldNames();
-        final List<Query> uncachedQueries = new ArrayList<>();
-        for (final Query q : uniqueQueries) {
-            if (queryTermCache.getIfPresent(q) == null) {
-                uncachedQueries.add(q);
-            }
-        }
-        if (!uncachedQueries.isEmpty()) {
-            try {
-                index.withReader(reader -> {
-                    for (final Query q : uncachedQueries) {
+        try {
+            index.withReader(reader -> {
+                invalidateQueryTermCacheIfStale(reader);
+                for (final Query q : uniqueQueries) {
+                    if (queryTermCache.getIfPresent(q) == null) {
                         final Map<Object, Query> rawTerms = new HashMap<>();
                         LuceneUtil.extractTerms(q, rawTerms, reader, true);
                         queryTermCache.put(q, rawTerms);
                     }
-                    return null;
-                });
-            } catch (final IOException e) {
-                LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
-                termMap = Collections.emptyMap();
-                return;
-            }
+                }
+                return null;
+            });
+        } catch (final IOException e) {
+            LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
+            termMap = Collections.emptyMap();
+            return;
         }
         termMap = buildTermMap(uniqueQueries, excludedFields);
+    }
+
+    /**
+     * Drop all cached rewrites when the reader no longer shows the snapshot they were made
+     * against, e.g. after a store added a term that a cached wildcard rewrite does not list.
+     */
+    private void invalidateQueryTermCacheIfStale(final IndexReader reader) {
+        final long readerVersion = reader instanceof DirectoryReader directoryReader
+                ? directoryReader.getVersion()
+                : NO_READER_VERSION;
+        if (readerVersion == NO_READER_VERSION || readerVersion != queryTermCacheReaderVersion) {
+            queryTermCache.invalidateAll();
+            queryTermCacheReaderVersion = readerVersion;
+        }
     }
 
     /**
