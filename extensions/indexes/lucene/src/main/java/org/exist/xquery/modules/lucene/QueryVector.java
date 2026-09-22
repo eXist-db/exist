@@ -87,6 +87,13 @@ public class QueryVector extends AbstractVectorQueryFunction {
     };
 
     /**
+     * True when arg0 ("nodes") is provably a bare self-reference ({@code .}), matching the
+     * predicate's own candidate. Set by {@link #analyze(AnalyzeContextInfo)}, consumed by
+     * {@link #canOptimizeSequence(Sequence)}.
+     */
+    private boolean nodesArgIsSelf = false;
+
+    /**
      * Creates a new QueryVector function instance.
      *
      * @param context the XQuery context
@@ -94,6 +101,42 @@ public class QueryVector extends AbstractVectorQueryFunction {
      */
     public QueryVector(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
+    }
+
+    /**
+     * Detects whether arg0 ("nodes") is a bare self-axis step, mirroring the same check
+     * {@link Query#analyze(AnalyzeContextInfo)} performs for exactly the same reason: only in
+     * that case is it safe for {@link #preSelect(Sequence, boolean)} to substitute the
+     * predicate's own candidate sequence for arg0's value. See
+     * {@link #canOptimizeSequence(Sequence)}.
+     */
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        // Pass a clone to super, not contextInfo itself: Function.analyze() mutates it
+        // (contextInfo.setParent(this)), and corrupting the caller's shared contextInfo breaks
+        // context-id tracking for whatever reads it afterward. Mirrors Query#analyze.
+        super.analyze(new AnalyzeContextInfo(contextInfo));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (steps.isEmpty() && getArgument(0) instanceof LocationStep step) {
+            steps = List.of(step);
+        }
+        nodesArgIsSelf = steps.size() == 1 && steps.getFirst() != null
+                && steps.getFirst().getAxis() == Constants.SELF_AXIS;
+    }
+
+    /**
+     * Only claims optimizability when arg0 ("nodes") is provably {@code .} ({@link #nodesArgIsSelf}).
+     * {@link #preSelect(Sequence, boolean)} substitutes {@code contextSequence} for arg0's value
+     * rather than re-evaluating it — correct precisely because {@code .} evaluated over a bulk
+     * {@code contextSequence} returns that same sequence. For any other "nodes" expression (e.g.
+     * a variable bound to an unrelated node set), that substitution would search the wrong
+     * domain, so optimization must be refused here: {@link org.exist.xquery.pragmas.Optimize#eval}
+     * then falls back to {@link AbstractVectorQueryFunction#eval(Sequence, Item)}'s plain path,
+     * which correctly re-evaluates arg0 itself via the inherited {@link #eval(Sequence[], Sequence)}.
+     */
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        return nodesArgIsSelf ? super.canOptimizeSequence(contextSequence) : Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
@@ -139,9 +182,10 @@ public class QueryVector extends AbstractVectorQueryFunction {
             return preselectResult;
         }
 
-        // arg0 ("nodes") is deliberately not re-evaluated: it's typically just `.`, and the
-        // candidate set is contextSequence itself (the step's full candidate set, before the
-        // predicate applies) — see AbstractVectorQueryFunction#evalArgs.
+        // arg0 ("nodes") is deliberately not re-evaluated: canOptimizeSequence() only reaches
+        // this point when arg0 is provably `.`, so the candidate set is contextSequence itself
+        // (the step's full candidate set, before the predicate applies) — see
+        // AbstractVectorQueryFunction#evalArgs and canOptimizeSequence() above.
         final Sequence[] tailArgs = evalArgs(contextSequence, 1);
         final float[] vector = arrayToFloats(tailArgs[1]);
         if (vector == null) {

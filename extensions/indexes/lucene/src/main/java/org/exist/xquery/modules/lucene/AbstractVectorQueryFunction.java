@@ -56,12 +56,16 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
 
     // === Optimizable: single KNN search over the whole candidate step, see class javadoc ===
 
+    /**
+     * Default: always optimizable — correct for {@link QueryFieldVector}, whose "field" argument
+     * is a plain string with nothing that could diverge from {@code contextSequence}, and whose
+     * search domain (any node in the candidate sequence is eligible) is resolved dynamically
+     * inside {@code preSelect()} rather than restricted by an AST-visible qname, unlike ft:query.
+     * {@link QueryVector} overrides this: its "nodes" argument, if it isn't provably {@code .},
+     * must not have {@code contextSequence} silently substituted for its real value.
+     */
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        // Unlike ft:query, k-NN isn't restricted to nodes matching a particular qname derived
-        // from an AST-visible argument; any node in the candidate sequence is eligible, and the
-        // actual vector field(s) to search are resolved from the candidates themselves (or from
-        // the field-name argument) inside preSelect().
         return contextSequence;
     }
 
