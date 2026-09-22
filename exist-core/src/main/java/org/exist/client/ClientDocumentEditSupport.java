@@ -27,7 +27,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * Loads document content for the Java Admin Client editor off the EDT.
- * UI construction stays in {@link InteractiveClient#scheduleEditResource(org.exist.xmldb.XmldbURI)} (#4355).
+ * UI construction stays in {@code InteractiveClient#editResource(XmldbURI)} (#4355).
  */
 public final class ClientDocumentEditSupport {
 
