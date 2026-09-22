@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.ExistSystemProperties;
@@ -37,6 +35,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -79,8 +78,8 @@ public class SystemProperty extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final UtilModule utilModule = (UtilModule) getParentModule();
-        final IMap<String, ISet<String>> systemPropertyAccessGroups = utilModule.getSystemPropertyAccessGroups();
-        final IMap<String, ISet<String>> systemPropertyAccessUsers = utilModule.getSystemPropertyAccessUsers();
+        final Map<String, Set<String>> systemPropertyAccessGroups = utilModule.getSystemPropertyAccessGroups();
+        final Map<String, Set<String>> systemPropertyAccessUsers = utilModule.getSystemPropertyAccessUsers();
 
         if (isCalledAs(FS_AVAILABLE_SYSTEM_PROPERTIES_NAME)) {
 

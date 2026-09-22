@@ -33,16 +33,15 @@
 package org.exist.xquery.functions;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
-import io.lacuna.bifurcan.LinearSet;
-import io.lacuna.bifurcan.LinearMap;
-import io.lacuna.bifurcan.Map;
-import io.lacuna.bifurcan.Set;
 import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,16 +63,16 @@ public class AccessUtil {
      *
      * @return a Tuple where the first entry is the Group Access Rules, and the second entry is the User Access Rules.
      */
-    public static Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> parseAccessParameters(
-            final Pattern accessRulePattern, final java.util.Map<String, List<?>> parameters) {
-        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> rawRules =
+    public static Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> parseAccessParameters(
+            final Pattern accessRulePattern, final Map<String, List<?>> parameters) {
+        final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> rawRules =
                 collectAccessRules(accessRulePattern, parameters);
-        final IMap<String, ISet<String>> accessUserRules = rawRules._2;
-        final IMap<String, ISet<String>> accessGroupRules = applyOtherwiseDefault(rawRules._1, accessUserRules);
+        final Map<String, Set<String>> accessUserRules = rawRules._2;
+        final Map<String, Set<String>> accessGroupRules = applyOtherwiseDefault(rawRules._1, accessUserRules);
 
         return Tuple(
-                accessGroupRules == null ? Map.empty() : accessGroupRules.forked(),
-                accessUserRules == null ? Map.empty() : accessUserRules.forked());
+                accessGroupRules == null ? Collections.emptyMap() : Collections.unmodifiableMap(accessGroupRules),
+                accessUserRules == null ? Collections.emptyMap() : Collections.unmodifiableMap(accessUserRules));
     }
 
     /**
@@ -86,17 +85,17 @@ public class AccessUtil {
      *
      * @return a Tuple where the first entry is the raw Group Access Rules, and the second entry is the raw User Access Rules.
      */
-    private static Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> collectAccessRules(
-            final Pattern accessRulePattern, final java.util.Map<String, List<?>> parameters) {
-        IMap<String, ISet<String>> accessGroupRules = null;
-        IMap<String, ISet<String>> accessUserRules = null;
+    private static Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> collectAccessRules(
+            final Pattern accessRulePattern, final Map<String, List<?>> parameters) {
+        Map<String, Set<String>> accessGroupRules = null;
+        Map<String, Set<String>> accessUserRules = null;
 
         if (parameters == null) {
             return Tuple(null, null);
         }
 
         Matcher matcher = null;
-        for (final java.util.Map.Entry<String, List<?>> parameter : parameters.entrySet()) {
+        for (final Map.Entry<String, List<?>> parameter : parameters.entrySet()) {
             final String parameterName = parameter.getKey();
             if (matcher == null) {
                 matcher = accessRulePattern.matcher(parameterName);
@@ -112,12 +111,12 @@ public class AccessUtil {
             final String name = matcher.group(1);
             if ("Group".equals(principalType)) {
                 if (accessGroupRules == null) {
-                    accessGroupRules = new LinearMap<>();
+                    accessGroupRules = new HashMap<>();
                 }
                 accessGroupRules.put(name, toSet(parameter.getValue()));
             } else if ("User".equals(principalType)) {
                 if (accessUserRules == null) {
-                    accessUserRules = new LinearMap<>();
+                    accessUserRules = new HashMap<>();
                 }
                 accessUserRules.put(name, toSet(parameter.getValue()));
             }
@@ -136,36 +135,30 @@ public class AccessUtil {
      *
      * @return the Group Access Rules, with the default "otherwise" rule added if needed.
      */
-    private static IMap<String, ISet<String>> applyOtherwiseDefault(
-            final IMap<String, ISet<String>> accessGroupRules, final IMap<String, ISet<String>> accessUserRules) {
-        final boolean groupOtherwiseSet = accessGroupRules != null && accessGroupRules.contains(OTHERWISE);
-        final boolean userOtherwiseSet = accessUserRules != null && accessUserRules.contains(OTHERWISE);
+    private static Map<String, Set<String>> applyOtherwiseDefault(
+            final Map<String, Set<String>> accessGroupRules, final Map<String, Set<String>> accessUserRules) {
+        final boolean groupOtherwiseSet = accessGroupRules != null && accessGroupRules.containsKey(OTHERWISE);
+        final boolean userOtherwiseSet = accessUserRules != null && accessUserRules.containsKey(OTHERWISE);
 
         if (groupOtherwiseSet || userOtherwiseSet) {
             return accessGroupRules;
         }
 
-        final IMap<String, ISet<String>> groupRulesWithDefault = accessGroupRules == null ? new LinearMap<>(1) : accessGroupRules;
-        ISet<String> otherwiseDba = new LinearSet<>(1);
-        otherwiseDba.add(SecurityManagerImpl.DBA_GROUP);
-        otherwiseDba = otherwiseDba.forked();
-        groupRulesWithDefault.put(OTHERWISE, otherwiseDba);
+        final Map<String, Set<String>> groupRulesWithDefault = accessGroupRules == null ? new HashMap<>(1) : accessGroupRules;
+        groupRulesWithDefault.put(OTHERWISE, Collections.singleton(SecurityManagerImpl.DBA_GROUP));
 
         return groupRulesWithDefault;
     }
 
-    private static ISet<String> toSet(final List<?> values) {
-        ISet<String> set;
-        if (values.size() > 0) {
-            set = new LinearSet<>();
-            for (final Object value : values) {
-                set.add(value.toString());
-            }
-            set = set.forked();
-        } else {
-            set = Set.empty();
+    private static Set<String> toSet(final List<?> values) {
+        if (values.isEmpty()) {
+            return Collections.emptySet();
         }
-        return set;
+        final Set<String> set = new HashSet<>();
+        for (final Object value : values) {
+            set.add(value.toString());
+        }
+        return Collections.unmodifiableSet(set);
     }
 
     /**
@@ -176,19 +169,19 @@ public class AccessUtil {
      * @param accessUserRules the user access rules.
      * @param name the name of the resource that the user wishes to access.
      */
-    public static boolean isAllowedAccess(final Subject user, final IMap<String, ISet<String>> accessGroupRules,
-                                          final IMap<String, ISet<String>> accessUserRules, final String name) {
+    public static boolean isAllowedAccess(final Subject user, final Map<String, Set<String>> accessGroupRules,
+                                          final Map<String, Set<String>> accessUserRules, final String name) {
         return hasGroupAccess(user, accessGroupRules, name)
                 || hasUserAccess(user, accessUserRules, name);
     }
 
-    private static boolean hasGroupAccess(final Subject user, final IMap<String, ISet<String>> accessGroupRules,
+    private static boolean hasGroupAccess(final Subject user, final Map<String, Set<String>> accessGroupRules,
             final String name) {
-        ISet<String> accessGroups = accessGroupRules.get(name, null);
+        Set<String> accessGroups = accessGroupRules.get(name);
 
         // fallback to "otherwise"
         if (accessGroups == null) {
-            accessGroups = accessGroupRules.get(OTHERWISE, null);
+            accessGroups = accessGroupRules.get(OTHERWISE);
         }
 
         if (accessGroups != null) {
@@ -203,13 +196,13 @@ public class AccessUtil {
         return false;
     }
 
-    private static boolean hasUserAccess(final Subject user, final IMap<String, ISet<String>> accessUserRules,
+    private static boolean hasUserAccess(final Subject user, final Map<String, Set<String>> accessUserRules,
             final String name) {
-        ISet<String> accessUsers = accessUserRules.get(name, null);
+        Set<String> accessUsers = accessUserRules.get(name);
 
         // fallback to "otherwise"
         if (accessUsers == null) {
-            accessUsers = accessUserRules.get(OTHERWISE, null);
+            accessUsers = accessUserRules.get(OTHERWISE);
         }
 
         if (accessUsers != null) {

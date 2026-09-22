@@ -22,16 +22,15 @@
 package org.exist.xquery.functions;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccessUtilTest {
 
@@ -50,14 +49,14 @@ public class AccessUtilTest {
                 "testAccess.MY_SECRET_VAR.requiresGroup", List.of("admins")
         );
 
-        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules =
+        final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules =
                 AccessUtil.parseAccessParameters(PTN_TEST_ACCESS, parameters);
-        final IMap<String, ISet<String>> accessGroupRules = accessRules._1;
+        final Map<String, Set<String>> accessGroupRules = accessRules._1;
 
-        assertTrue("access rule should be keyed by the full parameter name",
-                accessGroupRules.contains("MY_SECRET_VAR"));
-        assertFalse("access rule must not be keyed by just the last character of the parameter name",
-                accessGroupRules.contains("R"));
+        assertTrue(accessGroupRules.containsKey("MY_SECRET_VAR"),
+                "access rule should be keyed by the full parameter name");
+        assertFalse(accessGroupRules.containsKey("R"),
+                "access rule must not be keyed by just the last character of the parameter name");
     }
 
     @Test
@@ -66,15 +65,15 @@ public class AccessUtilTest {
                 "testAccess.MY_SECRET_VAR.requiresGroup", List.of("admins")
         );
 
-        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules =
+        final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules =
                 AccessUtil.parseAccessParameters(PTN_TEST_ACCESS, parameters);
-        final IMap<String, ISet<String>> accessGroupRules = accessRules._1;
-        final IMap<String, ISet<String>> accessUserRules = accessRules._2;
+        final Map<String, Set<String>> accessGroupRules = accessRules._1;
+        final Map<String, Set<String>> accessUserRules = accessRules._2;
 
-        assertTrue("a member of the 'admins' group should be allowed access to 'MY_SECRET_VAR'",
-                AccessUtil.isAllowedAccess(mockUser("bob", "admins"), accessGroupRules, accessUserRules, "MY_SECRET_VAR"));
-        assertFalse("a user without membership of any granted group should be denied access to 'MY_SECRET_VAR'",
-                AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "MY_SECRET_VAR"));
+        assertTrue(AccessUtil.isAllowedAccess(mockUser("bob", "admins"), accessGroupRules, accessUserRules, "MY_SECRET_VAR"),
+                "a member of the 'admins' group should be allowed access to 'MY_SECRET_VAR'");
+        assertFalse(AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "MY_SECRET_VAR"),
+                "a user without membership of any granted group should be denied access to 'MY_SECRET_VAR'");
     }
 
     /**
@@ -90,17 +89,17 @@ public class AccessUtilTest {
                 "testAccess.MY_SECRET_VAR.requiresGroup", List.of("admins")
         );
 
-        final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules =
+        final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules =
                 AccessUtil.parseAccessParameters(PTN_TEST_ACCESS, parameters);
-        final IMap<String, ISet<String>> accessGroupRules = accessRules._1;
-        final IMap<String, ISet<String>> accessUserRules = accessRules._2;
+        final Map<String, Set<String>> accessGroupRules = accessRules._1;
+        final Map<String, Set<String>> accessUserRules = accessRules._2;
 
-        assertTrue("an unlisted name should still fall back to the '*' (otherwise) rule",
-                accessGroupRules.contains(AccessUtil.OTHERWISE));
-        assertTrue("a DBA should be allowed access to an unlisted name by default",
-                AccessUtil.isAllowedAccess(mockUser("dba-user", org.exist.security.SecurityManager.DBA_GROUP), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"));
-        assertFalse("a non-DBA should be denied access to an unlisted name by default",
-                AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"));
+        assertTrue(accessGroupRules.containsKey(AccessUtil.OTHERWISE),
+                "an unlisted name should still fall back to the '*' (otherwise) rule");
+        assertTrue(AccessUtil.isAllowedAccess(mockUser("dba-user", org.exist.security.SecurityManager.DBA_GROUP), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"),
+                "a DBA should be allowed access to an unlisted name by default");
+        assertFalse(AccessUtil.isAllowedAccess(mockUser("alice", "users"), accessGroupRules, accessUserRules, "SOME_OTHER_VAR"),
+                "a non-DBA should be denied access to an unlisted name by default");
     }
 
     private static org.exist.security.Subject mockUser(final String username, final String... groups) {
