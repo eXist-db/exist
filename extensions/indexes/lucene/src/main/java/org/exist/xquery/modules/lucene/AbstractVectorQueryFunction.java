@@ -1,0 +1,189 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xquery.modules.lucene;
+
+import org.exist.dom.persistent.NodeSet;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
+import org.exist.xquery.value.*;
+
+import javax.annotation.Nullable;
+
+/**
+ * Shared machinery for {@link QueryVector} (ft:query-vector) and {@link QueryFieldVector}
+ * (ft:query-field-vector): KNN vector-search functions that take {@code (..., vector, k?,
+ * options?)}, with {@code vector} and {@code k} always the last-but-one/two arguments and
+ * {@code options} always last.
+ *
+ * <p>Implements {@link Optimizable} so that, when used as a path predicate (e.g.
+ * {@code collection(...)//article[ft:query-vector(., $vec, $k)]} or
+ * {@code article[ft:query-field-vector("embedding", $vec, $k)]}), the query engine wraps the
+ * enclosing step in {@code (#exist:optimize#)} and calls {@code preSelect(Sequence, boolean)}
+ * <em>once</em> for the whole candidate node set, rather than evaluating the predicate — and
+ * re-running the KNN search — separately for every candidate node. Without this, {@code k} is
+ * only honored by the direct-call form: a per-node evaluation restricts each search to that
+ * single node's own document, and when every candidate is its own document, "the k nearest
+ * neighbours of a 1-node set" is trivially that node itself, so the predicate is always true.
+ * See https://github.com/eXist-db/exist/issues/6738</p>
+ */
+abstract class AbstractVectorQueryFunction extends BasicFunction implements Optimizable {
+
+    /** Cached result of {@code preSelect(Sequence, boolean)}, consumed by {@link #eval(Sequence, Item)}. */
+    @Nullable protected NodeSet preselectResult = null;
+
+    AbstractVectorQueryFunction(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    // === Optimizable: single KNN search over the whole candidate step, see class javadoc ===
+
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        // Unlike ft:query, k-NN isn't restricted to nodes matching a particular qname derived
+        // from an AST-visible argument; any node in the candidate sequence is eligible, and the
+        // actual vector field(s) to search are resolved from the candidates themselves (or from
+        // the field-name argument) inside preSelect().
+        return contextSequence;
+    }
+
+    @Override
+    public boolean optimizeOnSelf() {
+        return true;
+    }
+
+    @Override
+    public boolean optimizeOnChild() {
+        return false;
+    }
+
+    @Override
+    public int getOptimizeAxis() {
+        return Constants.DESCENDANT_SELF_AXIS;
+    }
+
+    @Override
+    public Sequence eval(Sequence contextSequence, @Nullable final Item contextItem) throws XPathException {
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+        if (preselectResult != null) {
+            if (contextSequence == null) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            return preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
+                    true, getContextId(), true);
+        }
+        return super.eval(contextSequence, contextItem);
+    }
+
+    @Override
+    public void resetState(final boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
+    }
+
+    /**
+     * Evaluates arguments {@code [fromIndex, argCount)} against a bulk {@code contextSequence},
+     * for use by {@code preSelect()}. Arguments below {@code fromIndex} are left {@code null} in
+     * the result: preSelect derives the candidate set (and, for {@link QueryVector}, the "nodes"
+     * argument's value) from {@code contextSequence} itself — the step's full candidate set,
+     * before the predicate applies — not by re-evaluating an argument that is typically just
+     * {@code .}.
+     */
+    protected Sequence[] evalArgs(final Sequence contextSequence, final int fromIndex) throws XPathException {
+        final int argCount = getArgumentCount();
+        final Sequence[] out = new Sequence[argCount];
+        for (int i = fromIndex; i < argCount; i++) {
+            out[i] = getArgument(i).eval(contextSequence, null);
+        }
+        return out;
+    }
+
+    /** Parses the {@code k} argument (index 2, optional) from an args array shaped {@code (nodes|field, vector, k?, options?)}. */
+    protected static int parseK(final Sequence[] args) throws XPathException {
+        if (args.length >= 3 && !args[2].isEmpty()) {
+            final int k = args[2].itemAt(0).toJavaObject(Integer.class);
+            return k > 0 ? k : 10;
+        }
+        return 10;
+    }
+
+    /** Parses the {@code options} argument (index 3, optional) from an args array shaped {@code (nodes|field, vector, k?, options?)}. */
+    protected QueryOptions parseOptionsArg(final Sequence[] args) throws XPathException {
+        return args.length >= 4 && !args[3].isEmpty() ? parseOptions(args[3]) : new QueryOptions();
+    }
+
+    protected static float[] arrayToFloats(final Sequence seq) throws XPathException {
+        if (seq == null || seq.isEmpty() || seq.getItemType() != Type.ARRAY_ITEM) {
+            return null;
+        }
+        final ArrayType arr = (ArrayType) seq.itemAt(0);
+        final int n = arr.getSize();
+        final float[] out = new float[n];
+        for (int i = 0; i < n; i++) {
+            final Sequence item = arr.get(i);
+            if (item.isEmpty()) {
+                return null;
+            }
+            final Item it = item.itemAt(0);
+            if (it instanceof NumericValue nv) {
+                out[i] = (float) nv.getDouble();
+            } else {
+                out[i] = (float) Double.parseDouble(it.getStringValue());
+            }
+        }
+        return out;
+    }
+
+    protected QueryOptions parseOptions(final Sequence optSeq) throws XPathException {
+        if (optSeq.isEmpty()) {
+            return new QueryOptions();
+        }
+        final Item item = optSeq.itemAt(0);
+        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+            return new QueryOptions((AbstractMapType) item);
+        }
+        if (Type.subTypeOf(item.getType(), Type.NODE)) {
+            return new QueryOptions(context, (NodeValue) item);
+        }
+        throw new XPathException(this, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
+    }
+
+    /**
+     * True if any argument from {@code fromIndex} onward depends on a local iteration variable
+     * (e.g. a {@code for}-bound variable), in which case the expression cannot be bulk-evaluated
+     * via {@link #preSelect(Sequence, boolean)} — the variable's value changes per iteration.
+     * Only LOCAL_VARS (same for/let scope) prevent bulk evaluation; CONTEXT_VARS (outer scope)
+     * are static and safe. (GH-2204)
+     */
+    protected boolean anyArgDependsOnLocalVar(final int fromIndex) {
+        for (int i = fromIndex; i < getArgumentCount(); i++) {
+            if (Dependency.dependsOnLocalVar(getArgument(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
