@@ -23,11 +23,10 @@ package org.exist.xquery.functions.fn;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
@@ -289,8 +288,8 @@ public class FnModule extends AbstractInternalModule {
 
     private static final Pattern PTN_ENVIRONMENT_VARIABLE_ACCESS = PatternFactory.getInstance().getPattern("environmentVariableAccess\\.([^=\\00]+)\\.requires((?:Group)|(?:User))");
 
-    private IMap<String, ISet<String>> environmentVariableAccessGroups = null;
-    private IMap<String, ISet<String>> environmentVariableAccessUsers = null;
+    private Map<String, Set<String>> environmentVariableAccessGroups = null;
+    private Map<String, Set<String>> environmentVariableAccessUsers = null;
 
     public FnModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
@@ -323,7 +322,7 @@ public class FnModule extends AbstractInternalModule {
      */
     private void ensureEnvironmentVariableAccessRulesParsed() {
         if (environmentVariableAccessGroups == null) {
-            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
             this.environmentVariableAccessGroups = accessRules._1;
             this.environmentVariableAccessUsers = accessRules._2;
         }
@@ -334,7 +333,7 @@ public class FnModule extends AbstractInternalModule {
      *
      * @return a map where the key is the environment variable name, and the value is a set of group names.
      */
-    IMap<String, ISet<String>> getEnvironmentVariableAccessGroups() {
+    Map<String, Set<String>> getEnvironmentVariableAccessGroups() {
         ensureEnvironmentVariableAccessRulesParsed();
         return environmentVariableAccessGroups;
     }
@@ -344,7 +343,7 @@ public class FnModule extends AbstractInternalModule {
      *
      * @return a map where the key is the environment variable name, and the value is a set of usernames.
      */
-    IMap<String, ISet<String>> getEnvironmentVariableAccessUsers() {
+    Map<String, Set<String>> getEnvironmentVariableAccessUsers() {
         ensureEnvironmentVariableAccessRulesParsed();
         return environmentVariableAccessUsers;
     }

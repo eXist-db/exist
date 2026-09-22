@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.fn;
 
 import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -40,6 +39,9 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.Map;
+import java.util.Set;
 
 public class FunEnvironment extends BasicFunction {
 
@@ -74,8 +76,8 @@ public class FunEnvironment extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final FnModule fnModule = (FnModule) getParentModule();
-        final IMap<String, ISet<String>> environmentVariableAccessGroups = fnModule.getEnvironmentVariableAccessGroups();
-        final IMap<String, ISet<String>> environmentVariableAccessUsers = fnModule.getEnvironmentVariableAccessUsers();
+        final Map<String, Set<String>> environmentVariableAccessGroups = fnModule.getEnvironmentVariableAccessGroups();
+        final Map<String, Set<String>> environmentVariableAccessUsers = fnModule.getEnvironmentVariableAccessUsers();
 
         if (isCalledAs("available-environment-variables")) {
 
