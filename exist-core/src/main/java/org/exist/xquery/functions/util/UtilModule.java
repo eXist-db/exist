@@ -23,11 +23,10 @@ package org.exist.xquery.functions.util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import io.lacuna.bifurcan.IMap;
-import io.lacuna.bifurcan.ISet;
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
@@ -169,8 +168,8 @@ public class UtilModule extends AbstractInternalModule {
 
     private static final Pattern PTN_SYSTEM_PROPERTY_ACCESS = PatternFactory.getInstance().getPattern("systemPropertyAccess\\.([^=\\00]+)\\.requires((?:Group)|(?:User))");
 
-    private IMap<String, ISet<String>> systemPropertyAccessGroups = null;
-    private IMap<String, ISet<String>> systemPropertyAccessUsers = null;
+    private Map<String, Set<String>> systemPropertyAccessGroups = null;
+    private Map<String, Set<String>> systemPropertyAccessUsers = null;
 
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters);
@@ -231,7 +230,7 @@ public class UtilModule extends AbstractInternalModule {
      */
     private void ensureSystemPropertyAccessRulesParsed() {
         if (systemPropertyAccessGroups == null) {
-            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
             this.systemPropertyAccessGroups = accessRules._1;
             this.systemPropertyAccessUsers = accessRules._2;
         }
@@ -242,7 +241,7 @@ public class UtilModule extends AbstractInternalModule {
      *
      * @return a map where the key is the system property name, and the value is a set of group names.
      */
-    IMap<String, ISet<String>> getSystemPropertyAccessGroups() {
+    Map<String, Set<String>> getSystemPropertyAccessGroups() {
         ensureSystemPropertyAccessRulesParsed();
         return systemPropertyAccessGroups;
     }
@@ -252,7 +251,7 @@ public class UtilModule extends AbstractInternalModule {
      *
      * @return a map where the key is the system property name, and the value is a set of usernames.
      */
-    IMap<String, ISet<String>> getSystemPropertyAccessUsers() {
+    Map<String, Set<String>> getSystemPropertyAccessUsers() {
         ensureSystemPropertyAccessRulesParsed();
         return systemPropertyAccessUsers;
     }
