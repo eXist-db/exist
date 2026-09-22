@@ -36,6 +36,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -82,6 +83,33 @@ public class QueryOptions {
 
     public QueryOptions() {
         // default options
+    }
+
+    /**
+     * Builds options from an already-evaluated argument sequence: a map ({@link #QueryOptions(AbstractMapType)})
+     * or an XML element ({@link #QueryOptions(XQueryContext, NodeValue)}), or the defaults if empty.
+     * Shared dispatch for every {@code ft:query*} function's trailing {@code options} argument —
+     * see {@link Query#parseOptions(org.exist.xquery.Function, Sequence, Item, int)} and
+     * {@link AbstractVectorQueryFunction#parseOptionsArg(Sequence[])}.
+     *
+     * @param context the XQuery context, needed to stream an XML-element root
+     * @param errorExpr the expression to attribute a type error to
+     * @param optSeq the evaluated options argument, possibly {@code null} or empty
+     * @throws XPathException if optSeq holds an item that's neither a map nor a node
+     */
+    public static QueryOptions fromSequence(final XQueryContext context, final Expression errorExpr,
+            @Nullable final Sequence optSeq) throws XPathException {
+        if (optSeq == null || optSeq.isEmpty()) {
+            return new QueryOptions();
+        }
+        final Item item = optSeq.itemAt(0);
+        if (Type.subTypeOf(item.getType(), Type.ELEMENT)) {
+            return new QueryOptions(context, (NodeValue) item);
+        }
+        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+            return new QueryOptions((AbstractMapType) item);
+        }
+        throw new XPathException(errorExpr, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
     }
 
     public QueryOptions(XQueryContext context, NodeValue root) throws XPathException {

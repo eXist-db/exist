@@ -24,7 +24,6 @@ package org.exist.xquery.modules.lucene;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
@@ -132,7 +131,7 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
 
     /** Parses the {@code options} argument (index 3, optional) from an args array shaped {@code (nodes|field, vector, k?, options?)}. */
     protected QueryOptions parseOptionsArg(final Sequence[] args) throws XPathException {
-        return args.length >= 4 && !args[3].isEmpty() ? parseOptions(args[3]) : new QueryOptions();
+        return QueryOptions.fromSequence(context, this, args.length >= 4 ? args[3] : null);
     }
 
     protected static float[] arrayToFloats(final Sequence seq) throws XPathException {
@@ -155,20 +154,6 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
             }
         }
         return out;
-    }
-
-    protected QueryOptions parseOptions(final Sequence optSeq) throws XPathException {
-        if (optSeq.isEmpty()) {
-            return new QueryOptions();
-        }
-        final Item item = optSeq.itemAt(0);
-        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
-            return new QueryOptions((AbstractMapType) item);
-        }
-        if (Type.subTypeOf(item.getType(), Type.NODE)) {
-            return new QueryOptions(context, (NodeValue) item);
-        }
-        throw new XPathException(this, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
     }
 
     /**
