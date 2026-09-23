@@ -170,12 +170,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 }
                 case MATCH -> {
-                    String pattern = content.getStringValue();
-                    pattern = XPathToLuceneRegexTranslator.translate(pattern);
-                    if (matchFlags != 0) {
+                    final String xpathPattern = content.getStringValue();
+                    final String pattern = XPathToLuceneRegexTranslator.translate(xpathPattern);
+                    try {
+                        // Syntax flags are passed explicitly on every path. RegexpQuery(Term) would default
+                        // to RegExp.ALL, under which & ~ # @ and <n-m> are operators; XPath treats them
+                        // as literals, and the case-insensitive path already used NONE -- so the same
+                        // pattern meant different things depending on whether the 'i' flag was set.
                         return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+                    } catch (final IllegalArgumentException e) {
+                        throw new XPathException(ErrorCodes.FORX0002,
+                                "Invalid regular expression '" + xpathPattern + "': " + e.getMessage());
                     }
-                    return new RegexpQuery(new Term(field, pattern));
                 }
                 default -> {
                 }

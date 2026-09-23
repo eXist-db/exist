@@ -23,7 +23,13 @@ package org.exist.indexing.range;
 
 import org.junit.Test;
 
+import org.apache.lucene.util.automaton.CharacterRunAutomaton;
+import org.apache.lucene.util.automaton.Operations;
+import org.apache.lucene.util.automaton.RegExp;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for XPath fn:matches pattern translation to Lucene RegExp format.
@@ -117,8 +123,100 @@ public class XPathToLuceneRegexTranslatorTest {
         assertEquals(false, XPathToLuceneRegexTranslator.isTranslatable("^\\c$"));
     }
 
+    /**
+     * Lucene's {@code \d} matches ASCII digits only, where XPath's matches any Unicode decimal
+     * digit -- so a pattern using it must take the fallback. This test used to assert the
+     * opposite; the probe that showed the divergence is recorded in the translator's Javadoc.
+     */
     @Test
-    public void isTranslatableDigitEscape() {
-        assertEquals(true, XPathToLuceneRegexTranslator.isTranslatable("^\\d+$"));
+    public void digitEscapeIsNotTranslatable() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\d+$"));
+    }
+
+    // ---- translatability: only constructs that mean the same thing in both dialects ----
+
+    @Test
+    public void plainAnchoredPatternsAreTranslatable() {
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^abc$"));
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^[abc]+x?$"));
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^a.b$"));
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^(ab|cd){2,3}$"));
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^a\\.b\\-c$"));
+    }
+
+    @Test
+    public void unanchoredPatternsAreNot() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("abc"));
+    }
+
+    /** Lucene throws IllegalArgumentException on these; the index must not be asked. */
+    @Test
+    public void unicodePropertiesAndBlocksAreNot() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\p{Lu}$"));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\P{L}+$"));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\p{IsBasicLatin}$"));
+    }
+
+    /** Lucene's \d is ASCII-only and its \w includes '_' and excludes non-ASCII letters. */
+    @Test
+    public void perlStyleClassesAreNot() {
+        for (final String escape : new String[] {"d", "D", "w", "W", "s", "S"}) {
+            assertFalse("\\" + escape, XPathToLuceneRegexTranslator.isTranslatable("^\\" + escape + "+$"));
+        }
+    }
+
+    /** Lucene has no class subtraction and reads [a-z-[aeiou]] as something else entirely. */
+    @Test
+    public void characterClassSubtractionIsNot() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^[a-z-[aeiou]]+$"));
+    }
+
+    /** Lucene reads a backslash as escaping the next character, so \n would be the letter n. */
+    @Test
+    public void whitespaceEscapesAreNot() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^a\\nb$"));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^a\\tb$"));
+    }
+
+    @Test
+    public void nonCapturingGroupsAndBackReferencesAreNot() {
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^(?:ab)+$"));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^(a)\\1$"));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\i\\c*$"));
+    }
+
+    /** Lucene folds case for ASCII letters only. */
+    @Test
+    public void caseInsensitiveWithNonAsciiLettersIsNot() {
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^caf\u00e9$", false));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^caf\u00e9$", true));
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^cafe$", true));
+    }
+
+    // ---- '.' is rewritten to XPath's meaning, checked by running Lucene ----
+
+    private static boolean luceneMatches(final String lucenePattern, final String input) {
+        final RegExp re = new RegExp(lucenePattern, RegExp.NONE, 0);
+        return new CharacterRunAutomaton(Operations.determinize(re.toAutomaton(), 10_000)).run(input);
+    }
+
+    @Test
+    public void dotDoesNotMatchLineEndsAfterTranslation() {
+        final String lucene = XPathToLuceneRegexTranslator.translate("^a.b$");
+        assertTrue(luceneMatches(lucene, "axb"));
+        assertFalse("XPath's . excludes LF", luceneMatches(lucene, "a\nb"));
+        assertFalse("XPath's . excludes CR", luceneMatches(lucene, "a\rb"));
+    }
+
+    @Test
+    public void escapedDotAndDotInsideAClassAreLeftAlone() {
+        assertEquals("a\\.b", XPathToLuceneRegexTranslator.translate("^a\\.b$"));
+        assertEquals("a[.]b", XPathToLuceneRegexTranslator.translate("^a[.]b$"));
+    }
+
+    @Test
+    public void anchorRewriteStillUsesDotStarForTheOpenEnd() {
+        assertEquals("foo.*", XPathToLuceneRegexTranslator.translate("^foo"));
+        assertTrue(luceneMatches(XPathToLuceneRegexTranslator.translate("^foo"), "foo\nbar"));
     }
 }
