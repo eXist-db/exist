@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.regex;
 
-import net.sf.saxon.regex.JavaRegularExpression;
-import net.sf.saxon.str.StringView;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -86,64 +84,7 @@ public class RegexUtil {
             // \b inside class is backspace, allowed; \B likewise
             'b', 'B');
 
-    /**
-     * Parses the flags for an XQuery Regular Expression.
-     *
-     * @param context The calling expression
-     * @param strFlags The XQuery Regular Expression flags.
-     *
-     * @return The flags for a Java Regular Expression.
-     * @throws XPathException in case of invalid flag
-     */
-    public static int parseFlags(final Expression context, @Nullable final String strFlags) throws XPathException {
-        // Validates the whole string, including anything after a ';'. Only the XPath flags before
-        // it are converted to Java bits: ';j' selects Java's engine, which is what these bits are for.
-        final String validated = SaxonRegex.validateFlags(context, strFlags);
-        final int semicolon = validated.indexOf(';');
-        final String xpathFlags = semicolon < 0 ? validated : validated.substring(0, semicolon);
-        int flags = 0;
-        if(!xpathFlags.isEmpty()) {
-            for (int i = 0; i < xpathFlags.length(); i++) {
-                final char ch = xpathFlags.charAt(i);
-                switch (ch) {
-                    case 'm':
-                        flags |= Pattern.MULTILINE;
-                        break;
 
-                    case 'i':
-                        flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-                        break;
-
-                    case 'x':
-                        flags |= Pattern.COMMENTS;
-                        break;
-
-                    case 's':
-                        flags |= Pattern.DOTALL;
-                        break;
-
-                    case 'q':
-                        flags |= Pattern.LITERAL;
-                        break;
-
-                    default:
-                        throw new XPathException(context, ErrorCodes.FORX0001, "Invalid regular expression flag: " + ch, new StringValue(String.valueOf(ch)));
-                }
-            }
-        }
-        return flags;
-    }
-
-    /**
-     * Determines if the Java Regular Expression flags have the literal flag set.
-     *
-     * @param flags The Java Regular Expression flags
-     *
-     * @return true if the literal flag is set
-     */
-    public static boolean hasLiteral(final int flags) {
-        return (flags & Pattern.LITERAL) != 0;
-    }
 
     /**
      * Determines if the XQuery Expression flags have the literal flag set.
@@ -156,58 +97,8 @@ public class RegexUtil {
         return flags.contains("q");
     }
 
-    /**
-     * Determines if the Java Regular Expression flags have the case-insensitive flag set.
-     *
-     * @param flags The Java Regular Expression flags
-     *
-     * @return true if the case-insensitive flag is set
-     */
-    public static boolean hasCaseInsensitive(final int flags) {
-        return (flags & Pattern.CASE_INSENSITIVE) != 0 || (flags & Pattern.UNICODE_CASE) != 0;
-    }
 
-    /**
-     * Determines if the Java Regular Expression flags have the ignore-whitespace flag set.
-     *
-     * @param flags The Java Regular Expression flags
-     *
-     * @return true if the ignore-whitespace flag is set
-     */
-    public static boolean hasIgnoreWhitespace(final int flags) {
-        return (flags & Pattern.COMMENTS) != 0;
-    }
 
-    /**
-     * Translates the Regular Expression from XPath3 syntax to Java regex
-     * syntax.
-     *
-     * @param context the context expression - used for error reporting
-     * @param pattern a String containing a regular expression in the syntax of XPath Functions and Operators 3.0.
-     * @param ignoreWhitespace true if whitespace is to be ignored ('x' flag)
-     * @param caseBlind true if case is to be ignored ('i' flag)
-     *
-     * @return The Java Regular Expression
-     *
-     * @throws XPathException if the XQuery Regular Expression is invalid.
-     */
-    public static String translateRegexp(final Expression context, final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
-        // convert pattern to Java regex syntax using Saxon's regex translator
-        try {
-            final StringBuilder flags = new StringBuilder();
-            if (ignoreWhitespace) {
-                flags.append('x');
-            }
-            if (caseBlind) {
-                flags.append('i');
-            }
-
-            final JavaRegularExpression regex = new JavaRegularExpression(StringView.of(pattern), flags.toString());
-            return regex.getJavaRegularExpression();
-        } catch (final net.sf.saxon.trans.XPathException e) {
-            throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(pattern), e);
-        }
-    }
 
     /**
      * Validates that a regex pattern only uses constructs allowed by the XPath

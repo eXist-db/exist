@@ -797,6 +797,61 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @throws EXistException      if a database error occurs.
      */
     public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
+        // Select appropriate matcher/comparator
+        final TermMatcher matcher;
+        if (collator == null) {
+            matcher = switch (type) {
+                case DBBroker.MATCH_EXACT -> new ExactMatcher(expr);
+                case DBBroker.MATCH_CONTAINS -> new ContainsMatcher(expr);
+                case DBBroker.MATCH_STARTSWITH -> new StartsWithMatcher(expr);
+                case DBBroker.MATCH_ENDSWITH -> new EndsWithMatcher(expr);
+                // Regular expressions are matched with a caller-supplied TermMatcher -- see
+                // matchRegex / matchAllRegex -- so that the index scan uses the same engine as
+                // fn:matches on a value, rather than a translation of the pattern into Java syntax.
+                default -> throw new IllegalArgumentException("Type " + type + " requires a TermMatcher; use matchRegex or matchAllRegex");
+            };
+        } else {
+            matcher = new CollatorMatcher(expr, truncation, collator);
+        }
+        final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
+        scan(watchDog, docs, expr, qnames, type, caseSensitiveQuery, collator, cb);
+        return result;
+    }
+
+    /**
+     * Regular expression search over one QName, or over the generic index if {@code qname} is null.
+     *
+     * @param pattern the XPath regular expression as written; used only to narrow the scan when it
+     *   starts with {@code ^}, which means the same in every dialect
+     * @param matcher decides which terms match; built from the same compiled expression fn:matches
+     *   uses on a value
+     * @param caseSensitiveQuery whether the query is case sensitive
+     */
+    public NodeSet matchRegex(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String pattern, @Nullable final QName qname, final TermMatcher matcher, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
+        final NodeSet result = new NewArrayNodeSet();
+        final List<QName> qnames = qname == null ? null : Collections.singletonList(qname);
+        scan(watchDog, docs, pattern, qnames, DBBroker.MATCH_REGEXP, caseSensitiveQuery, null,
+                new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR));
+        return result;
+    }
+
+    /**
+     * Regular expression search over every QName index defined for the documents and over the
+     * generic index; the counterpart of {@link #matchAll(XQueryWatchDog, DocumentSet, NodeSet, int, String, int, int, boolean)}.
+     */
+    public NodeSet matchAllRegex(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String pattern, final TermMatcher matcher, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
+        final NodeSet result = new NewArrayNodeSet();
+        final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
+        scan(watchDog, docs, pattern, getDefinedIndexes(docs), DBBroker.MATCH_REGEXP, caseSensitiveQuery, null, cb);
+        scan(watchDog, docs, pattern, null, DBBroker.MATCH_REGEXP, caseSensitiveQuery, null, cb);
+        return result;
+    }
+
+    /**
+     * The scan itself, with the matcher already chosen and wrapped in its callback. Results
+     * accumulate in the callback's node set.
+     */
+    private void scan(final XQueryWatchDog watchDog, final DocumentSet docs, final String expr, @Nullable final List<QName> qnames, final int type, final boolean caseSensitiveQuery, @Nullable final Collator collator, final MatcherCallback cb) throws TerminatedException, EXistException {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
 
@@ -825,21 +880,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             startTerm = null;
         }
 
-        // Select appropriate matcher/comparator
-        final TermMatcher matcher;
-        if (collator == null) {
-            matcher = switch (type) {
-                case DBBroker.MATCH_EXACT -> new ExactMatcher(expr);
-                case DBBroker.MATCH_CONTAINS -> new ContainsMatcher(expr);
-                case DBBroker.MATCH_STARTSWITH -> new StartsWithMatcher(expr);
-                case DBBroker.MATCH_ENDSWITH -> new EndsWithMatcher(expr);
-                default -> new RegexMatcher(expr, flags);
-            };
-        } else {
-            matcher = new CollatorMatcher(expr, truncation, collator);
-        }
-
-        final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
 
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
@@ -884,7 +924,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
             }
         }
-        return result;
     }
 
     public ValueOccurrences[] scanIndexKeys(final DocumentSet docs, final NodeSet contextSet, final Indexable start) {
