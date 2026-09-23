@@ -97,7 +97,15 @@ public final class SaxonRegex {
             return "";
         }
         final int semicolon = flags.indexOf(';');
-        final String standard = semicolon < 0 ? flags : flags.substring(0, semicolon);
+        validateXPathFlags(context, semicolon < 0 ? flags : flags.substring(0, semicolon));
+        if (semicolon >= 0) {
+            validateExtensionFlags(context, flags.substring(semicolon + 1));
+        }
+        return flags;
+    }
+
+    /** The part before any semicolon: each character must be one of {@code smixq}. */
+    private static void validateXPathFlags(final Expression context, final String standard) throws XPathException {
         for (int i = 0; i < standard.length(); i++) {
             final char ch = standard.charAt(i);
             if (XPATH_FLAGS.indexOf(ch) < 0) {
@@ -105,16 +113,16 @@ public final class SaxonRegex {
                         "Invalid regular expression flag: " + ch, new StringValue(String.valueOf(ch)));
             }
         }
-        if (semicolon >= 0) {
-            final String extension = flags.substring(semicolon + 1);
-            if (!ADMITTED_EXTENSION_FLAGS.equals(extension)) {
-                throw new XPathException(context, ErrorCodes.FORX0001,
-                        "Invalid regular expression flag after ';': '" + extension
-                                + "'. Only ';j' (use the Java regular expression engine) is supported.",
-                        new StringValue(extension));
-            }
+    }
+
+    /** The part after the semicolon: exactly {@code j}, nothing else. */
+    private static void validateExtensionFlags(final Expression context, final String extension) throws XPathException {
+        if (!ADMITTED_EXTENSION_FLAGS.equals(extension)) {
+            throw new XPathException(context, ErrorCodes.FORX0001,
+                    "Invalid regular expression flag after ';': '" + extension
+                            + "'. Only ';j' (use the Java regular expression engine) is supported.",
+                    new StringValue(extension));
         }
-        return flags;
     }
 
     /**
@@ -157,6 +165,29 @@ public final class SaxonRegex {
         } catch (final net.sf.saxon.trans.XPathException e) {
             throw translate(context, e, pattern);
         }
+    }
+
+    /**
+     * Prepares a pattern for compilation: translates XPath 4.0 lookaround syntax when running as
+     * 4.0, and checks that the pattern is valid XPath regular-expression syntax -- unless the
+     * caller asked for Java syntax with {@code ;j}, or for a literal with {@code q}, in which
+     * case there is nothing to check.
+     *
+     * @param context the calling expression, for error reporting
+     * @param pattern the pattern as supplied
+     * @param flags flags that have passed {@link #validateFlags}
+     * @param isXQuery40 whether the query runs as XQuery 4.0 or later
+     * @return the pattern to compile
+     * @throws XPathException FORX0002 if the pattern uses syntax XPath does not define
+     */
+    public static String preparePattern(final Expression context, final String pattern, final String flags,
+            final boolean isXQuery40) throws XPathException {
+        final String prepared = isXQuery40 && RegexUtil.hasXPath4Lookaround(pattern)
+                ? RegexUtil.translateXPath4Lookaround(pattern) : pattern;
+        if (!RegexUtil.hasLiteral(flags) && !usesJavaEngine(flags)) {
+            RegexUtil.validateXPathRegex(context, prepared, isXQuery40);
+        }
+        return prepared;
     }
 
     /**

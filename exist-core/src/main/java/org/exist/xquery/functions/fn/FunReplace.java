@@ -131,7 +131,7 @@ public class FunReplace extends BasicFunction {
 			final String replace = args[2].itemAt(0).getStringValue();
 
 			final boolean isXQuery40 = context.getXQueryVersion() >= 40;
-			pattern = preparePattern(pattern, flags, isXQuery40);
+			pattern = preparePattern(this, pattern, flags, isXQuery40);
 
 			final RegularExpression regularExpression = compileForXQueryVersion(this,
 					context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags, isXQuery40);
@@ -157,16 +157,4 @@ public class FunReplace extends BasicFunction {
         return result;
 	}
 
-	/**
-	 * Translates XPath 4.0 lookaround syntax when running as 4.0, and checks the pattern is valid
-	 * XPath regex syntax -- unless the caller asked for Java syntax with ';j', or for a literal
-	 * with 'q', in which case there is nothing to check.
-	 */
-	private String preparePattern(final String pattern, final String flags, final boolean isXQuery40) throws XPathException {
-		final String prepared = isXQuery40 && hasXPath4Lookaround(pattern) ? translateXPath4Lookaround(pattern) : pattern;
-		if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
-			validateXPathRegex(this, prepared, isXQuery40);
-		}
-		return prepared;
-	}
 }
