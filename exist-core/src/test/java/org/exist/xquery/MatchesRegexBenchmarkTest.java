@@ -46,7 +46,7 @@ import java.util.Random;
  * scan), and a plain call over atomic values (the value path). Disabled unless
  * {@code -Dexist.run.benchmarks=true}, like the other benchmarks here.</p>
  */
-public class MatchesRegexBenchmark {
+public class MatchesRegexBenchmarkTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);

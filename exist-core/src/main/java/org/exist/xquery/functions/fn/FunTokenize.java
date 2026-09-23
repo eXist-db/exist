@@ -98,7 +98,7 @@ public class FunTokenize extends BasicFunction {
             }
             pattern = " ";
         } else {
-            pattern = preparePattern(args[1].itemAt(0).getStringValue(), flags, isXQuery40);
+            pattern = preparePattern(this, args[1].itemAt(0).getStringValue(), flags, isXQuery40);
         }
 
         final RegularExpression regex = compileForXQueryVersion(this,
@@ -107,6 +107,10 @@ public class FunTokenize extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
         }
 
+        return tokensOf(regex, string);
+    }
+
+    private Sequence tokensOf(final RegularExpression regex, final String string) throws XPathException {
         final ValueSequence result = new ValueSequence();
         final AtomicIterator tokens = regex.tokenize(StringView.of(string));
         AtomicValue token;
@@ -117,16 +121,4 @@ public class FunTokenize extends BasicFunction {
     }
 
 
-    /**
-     * Translates XPath 4.0 lookaround syntax when running as 4.0, and checks the pattern is valid
-     * XPath regex syntax -- unless the caller asked for Java syntax with ';j', or for a literal
-     * with 'q', in which case there is nothing to check.
-     */
-    private String preparePattern(final String pattern, final String flags, final boolean isXQuery40) throws XPathException {
-        final String prepared = isXQuery40 && hasXPath4Lookaround(pattern) ? translateXPath4Lookaround(pattern) : pattern;
-        if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
-            validateXPathRegex(this, prepared, isXQuery40);
-        }
-        return prepared;
-    }
 }
