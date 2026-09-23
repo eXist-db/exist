@@ -163,6 +163,19 @@ function arr:get-item-out-of-bounds-negative() {
 };
 
 declare
+    %test:assertTrue
+function arr:lookup-and-get-oob-message() {
+    let $a := [1, 2, 3, 4]
+    let $lookup :=
+        try { $a(-1) } catch err:FOAY0001 { $err:description }
+    let $get :=
+        try { array:get($a, -1) } catch err:FOAY0001 { $err:description }
+    return
+        contains($lookup, "Position -1 does not exist in this array. Length is 4")
+        and $lookup eq $get
+};
+
+declare
     %test:assertError("XPTY0004")
 function arr:get-invalid-type() {
     let $a := [13, 10, 14]
