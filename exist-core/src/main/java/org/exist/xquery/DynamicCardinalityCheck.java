@@ -86,7 +86,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
             error.addArgs(ExpressionDumper.dump(expression),
                 requiredCardinality.getHumanDescription(),
                     seq.getItemCount());
-            throw new XPathException(this, error.toString());
+            throw new XPathException(this, ErrorCodes.XPTY0004, error.toString());
         }
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", seq);}
