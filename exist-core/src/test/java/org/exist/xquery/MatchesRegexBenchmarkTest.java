@@ -35,7 +35,12 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * End-to-end timing for {@code fn:matches} on each of its evaluation paths, so that a change of
@@ -112,26 +117,36 @@ public class MatchesRegexBenchmarkTest {
 
     @Test
     public void indexScan() throws XMLDBException {
+        final Map<String, Long> counts = new LinkedHashMap<>();
         for (final String[] p : PATTERNS) {
-            time("index-scan", p[0], "count(doc('" + DOC + "')//e[matches(indexed, '" + p[1] + "')])");
+            counts.put(p[0], time("index-scan", p[0], "count(doc('" + DOC + "')//e[matches(indexed, '" + p[1] + "')])"));
         }
+        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
+        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
     }
 
     @Test
     public void nodeScan() throws XMLDBException {
+        final Map<String, Long> counts = new LinkedHashMap<>();
         for (final String[] p : PATTERNS) {
-            time("node-scan", p[0], "count(doc('" + DOC + "')//e[matches(plain, '" + p[1] + "')])");
+            counts.put(p[0], time("node-scan", p[0], "count(doc('" + DOC + "')//e[matches(plain, '" + p[1] + "')])"));
         }
+        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
+        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
     }
 
     @Test
     public void valuePath() throws XMLDBException {
+        final Map<String, Long> counts = new LinkedHashMap<>();
         for (final String[] p : PATTERNS) {
-            time("value-path", p[0], "count(for $s in doc('" + DOC + "')//plain/string() return $s[matches(., '" + p[1] + "')])");
+            counts.put(p[0], time("value-path", p[0], "count(for $s in doc('" + DOC + "')//plain/string() return $s[matches(., '" + p[1] + "')])"));
         }
+        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
+        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
     }
 
-    private void time(final String path, final String label, final String query) throws XMLDBException {
+    /** Times the query and returns its count; the measured runs must all return the same count. */
+    private long time(final String path, final String label, final String query) throws XMLDBException {
         final XQueryService xqs = server.getRoot().getService(XQueryService.class);
         long count = -1;
         for (int i = 0; i < WARMUP_ITERATIONS; i++) {
@@ -145,9 +160,14 @@ public class MatchesRegexBenchmarkTest {
             final long elapsed = System.nanoTime() - start;
             total += elapsed;
             best = Math.min(best, elapsed);
-            count = Long.parseLong(rs.getResource(0).getContent().toString());
+            final long thisRun = Long.parseLong(rs.getResource(0).getContent().toString());
+            if (count >= 0 && thisRun != count) {
+                throw new AssertionError(path + " " + label + ": run " + (i + 1) + " returned " + thisRun + " but earlier runs returned " + count);
+            }
+            count = thisRun;
         }
         System.out.printf("BENCH %-11s %-18s avg=%8.1f ms  best=%8.1f ms  matched=%d%n",
                 path, label, total / (double) MEASURE_ITERATIONS / 1e6, best / 1e6, count);
+        return count;
     }
 }
