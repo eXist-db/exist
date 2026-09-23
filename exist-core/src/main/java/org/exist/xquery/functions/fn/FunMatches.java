@@ -28,9 +28,10 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.SaxonRegexTermMatcher;
+import org.exist.storage.TermMatcher;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
-import org.exist.util.PatternFactory;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
@@ -42,9 +43,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.str.StringView;
 
@@ -115,8 +113,6 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             )
     );
 
-    protected Matcher matcher = null;
-    protected Pattern pat = null;
 
     protected boolean hasUsedIndex = false;
 
@@ -282,31 +278,17 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             LOG.trace("Using QName index on type {}", Type.getTypeName(indexType));
         }
 
-        final int flags;
-        if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, null).getStringValue();
-            flags = parseFlags(this, flagsArg);
-        } else {
-            flags = 0;
-        }
-
-        final boolean caseSensitive = !hasCaseInsensitive(flags);
-
-        final String pattern;
-        final boolean literal = hasLiteral(flags);
-        if (literal) {
-            // no need to change anything
-            pattern = getArgument(1).eval(contextSequence, null).getStringValue();
-        } else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = !caseSensitive;
-            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, null).getStringValue(), ignoreWhitespace, caseBlind);
-        }
+        final String flags = validateFlags(this, getSignature().getArgumentCount() == 3
+                ? getArgument(2).eval(contextSequence, null).getStringValue() : "");
+        final boolean caseSensitive = !isCaseInsensitive(flags);
+        final String pattern = getArgument(1).eval(contextSequence, null).getStringValue();
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
 
         try {
-            preselectResult = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(),
+            preselectResult = context.getBroker().getValueIndex().matchRegex(context.getWatchDog(), contextSequence.getDocumentSet(),
                     useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
-                    contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                    contextQName, new SaxonRegexTermMatcher(regex), caseSensitive);
             hasUsedIndex = true;
         } catch (final EXistException e) {
             throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
@@ -456,28 +438,15 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             }
         }
 
-        final int flags;
-        if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
-            flags = parseFlags(this, flagsArg);
-        } else {
-            flags = 0;
-        }
-
-        final boolean caseSensitive = !hasCaseInsensitive(flags);
+        final String flags = validateFlags(this, getSignature().getArgumentCount() == 3
+                ? getArgument(2).eval(contextSequence, contextItem).getStringValue() : "");
+        final boolean caseSensitive = !isCaseInsensitive(flags);
+        final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        final TermMatcher matcher = new SaxonRegexTermMatcher(regex);
 
         Sequence result = null;
-
-        final String pattern;
-        final boolean literal = hasLiteral(flags);
-        if (literal) {
-            // no need to change anything
-            pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        } else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = !caseSensitive;
-            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
-        }
 
         final NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
@@ -505,7 +474,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                     indexScan = true;
                 }
             } else {
-                result = evalFallback(nodes, pattern, flags, indexType);
+                result = evalFallback(nodes, regex, indexType);
             }
 
             if (result == null) {
@@ -521,16 +490,16 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                         LOG.trace("Using range index for fn:matches expression: {}", pattern);
                     }
                     if (indexScan) {
-                        result = index.matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.matchAllRegex(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, matcher, caseSensitive);
                     } else {
-                        result = index.match(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.matchRegex(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, matcher, caseSensitive);
                     }
                 } catch (final EXistException e) {
                     throw new XPathException(this, e);
                 }
             }
         } else {
-            result = evalFallback(nodes, pattern, flags, indexType);
+            result = evalFallback(nodes, regex, indexType);
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -541,13 +510,14 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
     }
 
-    private Sequence evalFallback(final NodeSet nodes, final String pattern, final int flags, final int indexType) throws XPathException {
+    private Sequence evalFallback(final NodeSet nodes, final RegularExpression regex, final int indexType) throws XPathException {
         if (LOG.isTraceEnabled()) {
             LOG.trace("fn:matches: can't use existing range index of type {}. Need a string index.", Type.getTypeName(indexType));
         }
+        final TermMatcher matcher = new SaxonRegexTermMatcher(regex);
         final Sequence result = new ExtArrayNodeSet();
         for (final NodeProxy node : nodes) {
-            if (match(node.getStringValue(), pattern, flags)) {
+            if (matcher.matches(node.getStringValue())) {
                 result.add(node);
             }
         }
@@ -609,29 +579,6 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         return regex.containsMatch(StringView.of(string));
     }
 
-    /**
-     * @param string the value
-     * @param pattern the pattern
-     * @param flags the flags
-     * @return Whether the string matches the given pattern with the given flags
-     * @throws XPathException if an error occurs
-     */
-    private boolean match(final String string, final String pattern, final int flags) throws XPathException {
-        try {
-            if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-                pat = PatternFactory.getInstance().getPattern(pattern, flags);
-                //TODO : make matches('&#x212A;', '[A-Z]', 'i') work !
-                matcher = pat.matcher(string);
-            } else {
-                matcher.reset(string);
-            }
-
-            return matcher.find();
-
-        } catch (final PatternSyntaxException e) {
-            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
-        }
-    }
 
     @Override
     public void reset() {
@@ -645,5 +592,10 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    /** Whether the validated flags include {@code i}. */
+    private static boolean isCaseInsensitive(final String flags) {
+        return flags.indexOf('i') >= 0;
     }
 }
