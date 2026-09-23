@@ -41,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +51,7 @@ import net.sf.saxon.str.StringView;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * Implements the fn:matches() function.
@@ -469,18 +469,14 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         Sequence result = null;
 
         final String pattern;
-        if (isCalledAs("matches-regex")) {
+        final boolean literal = hasLiteral(flags);
+        if (literal) {
+            // no need to change anything
             pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
         } else {
-            final boolean literal = hasLiteral(flags);
-            if (literal) {
-                // no need to change anything
-                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-            } else {
-                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
-            }
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = !caseSensitive;
+            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
         }
 
         final NodeSet nodes = input.toNodeSet();
@@ -585,19 +581,16 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         }
 
         final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        if (isCalledAs("matches-regex")) {
-            final int flags = parseFlags(this, xmlRegexFlags);
-            return BooleanValue.valueOf(match(string, pattern,flags));
-        } else {
-            return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
-        }
+        return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
     }
 
 
-    private boolean matchXmlRegex(String string, final String pattern, final String flags) throws XPathException {
+    private boolean matchXmlRegex(final String string, final String pattern, final String rawFlags) throws XPathException {
+        final String flags = validateFlags(this, rawFlags);
+
         // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
         // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
-        // translateXPath4Lookaround / Java-regex dispatch path.
+        // translateXPath4Lookaround / ;j dispatch path.
         if (hasXPath4Lookaround(pattern)) {
             throw new XPathException(this, ErrorCodes.XPST0017,
                     "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
@@ -606,43 +599,14 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
         // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
         // but that Saxon's XP30 mode accepts (Java/Perl extensions)
-        if (!hasLiteral(flags)) {
+        // Java syntax is the point of ';j', so the XPath-syntax check does not apply to it.
+        if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
             validateXPathRegex(this, pattern, false);
         }
 
-        try {
-            List<String> warnings = new ArrayList<>(1);
-            RegularExpression regex = context.getBroker().getBrokerPool()
-                    .getSaxonConfiguration()
-                    .compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
-
-            for (final String warning : warnings) {
-                LOG.warn(warning);
-            }
-
-            return regex.containsMatch(StringView.of(string));
-
-        } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP31 regex translator rejects some valid patterns:
-            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
-            // Fall back to Java regex before giving up.
-            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
-                try {
-                    final String javaPattern = translateRegexp(
-                            this, pattern, flags.contains("x"), flags.contains("i"));
-                    int javaFlags = parseFlags(this, flags);
-                    return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
-                } catch (final XPathException | PatternSyntaxException ignored) {
-                    // Java regex fallback also failed — throw original Saxon error below
-                }
-            }
-            switch (e.getErrorCodeQName().getLocalPart()) {
-                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
-                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
-                // no FORX0003 here since fn:matches is allowed to match an empty string
-                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-            }
-        }
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        return regex.containsMatch(StringView.of(string));
     }
 
     /**

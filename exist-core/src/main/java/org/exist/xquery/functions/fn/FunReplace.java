@@ -21,13 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.str.StringView;
@@ -41,6 +35,7 @@ import org.exist.xquery.value.Type;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -49,8 +44,6 @@ import static org.exist.xquery.regex.RegexUtil.*;
 public class FunReplace extends BasicFunction {
 
 	/** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
-	private static final UnicodeString EMPTY_STRING_VIEW = StringView.of("");
-
 	private static final QName FS_REPLACE_NAME = new QName("replace", Function.BUILTIN_FUNCTION_NS);
 
 	private static final String FS_REPLACE_DESCRIPTION =
@@ -128,75 +121,52 @@ public class FunReplace extends BasicFunction {
 		} else {
 			final String flags;
 			if (args.length == 4) {
-				flags =	args[3].itemAt(0).getStringValue();
+				flags =	validateFlags(this, args[3].itemAt(0).getStringValue());
 			} else {
 				flags = "";
 			}
-    		final String string = stringArg.getStringValue();
-    		String pattern = args[1].itemAt(0).getStringValue();
+
+			final String string = stringArg.getStringValue();
+			String pattern = args[1].itemAt(0).getStringValue();
 			final String replace = args[2].itemAt(0).getStringValue();
 
 			final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+			pattern = preparePattern(pattern, flags, isXQuery40);
 
-			// XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
-			if (isXQuery40 && hasXPath4Lookaround(pattern)) {
-				pattern = translateXPath4Lookaround(pattern);
+			final RegularExpression regularExpression = compileForXQueryVersion(this,
+					context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags, isXQuery40);
+			if (matchesEmptyString(regularExpression)) {
+				throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
 			}
 
-			// Pre-validate: reject constructs not valid in XPath regex
 			if (!hasLiteral(flags)) {
-				validateXPathRegex(this, pattern, isXQuery40);
+				final String msg = Replace.checkReplacement(StringView.of(replace));
+				if (msg != null) {
+					throw new XPathException(this, ErrorCodes.FORX0004, msg);
+				}
 			}
-
-			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
-
-			final List<String> warnings = new ArrayList<>(1);
 
 			try {
-				final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
-				if (regularExpression.matches(EMPTY_STRING_VIEW)) {
-					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-				}
-
-				//TODO(AR) cache the regular expression... might be possible through Saxon config
-
-				if (!hasLiteral(flags)) {
-					final String msg = Replace.checkReplacement(StringView.of(replace));
-					if (msg != null) {
-						throw new XPathException(this, ErrorCodes.FORX0004, msg);
-					}
-				}
 				final UnicodeString res = regularExpression.replace(StringView.of(string), StringView.of(replace));
 				result = new StringValue(this, res.toString());
-
 			} catch (final net.sf.saxon.trans.XPathException e) {
-				// Saxon's XP31 regex translator rejects some valid patterns.
-				// Fall back to Java regex before giving up.
-				if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
-					try {
-						final String javaPattern = translateRegexp(
-								this, pattern, flags.contains("x"), flags.contains("i"));
-						final int javaFlags = parseFlags(this, flags);
-						final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
-						final Matcher matcher = compiled.matcher(string);
-						if (compiled.matcher("").matches()) {
-							throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-						}
-						return new StringValue(this, matcher.replaceAll(replace));
-					} catch (final PatternSyntaxException ignored) {
-						// Java regex fallback also failed — throw original Saxon error below
-					}
-				}
-				switch (e.getErrorCodeQName().getLocalPart()) {
-					case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
-					case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
-					case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
-					case "FORX0004" -> throw new XPathException(this, ErrorCodes.FORX0004, e.getMessage());
-					default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-				}
+				throw translate(this, e, pattern);
 			}
         }
         
         return result;
+	}
+
+	/**
+	 * Translates XPath 4.0 lookaround syntax when running as 4.0, and checks the pattern is valid
+	 * XPath regex syntax -- unless the caller asked for Java syntax with ';j', or for a literal
+	 * with 'q', in which case there is nothing to check.
+	 */
+	private String preparePattern(final String pattern, final String flags, final boolean isXQuery40) throws XPathException {
+		final String prepared = isXQuery40 && hasXPath4Lookaround(pattern) ? translateXPath4Lookaround(pattern) : pattern;
+		if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
+			validateXPathRegex(this, prepared, isXQuery40);
+		}
+		return prepared;
 	}
 }
