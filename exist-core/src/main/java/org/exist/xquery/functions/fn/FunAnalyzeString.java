@@ -21,13 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import net.sf.saxon.Configuration;
 import net.sf.saxon.regex.RegexIterator;
 import net.sf.saxon.regex.RegexMatchHandler;
 import net.sf.saxon.regex.RegularExpression;
@@ -48,6 +42,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.xml.XMLConstants;
 
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
@@ -57,8 +52,6 @@ import static org.exist.xquery.regex.RegexUtil.*;
 public class FunAnalyzeString extends BasicFunction {
 
     /** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
-    private static final UnicodeString EMPTY_STRING_VIEW = StringView.of("");
-
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
 
     private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
@@ -131,12 +124,12 @@ public class FunAnalyzeString extends BasicFunction {
         }
     }
 
-    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
-        final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
+    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String rawFlags) throws XPathException {
+        final String flags = validateFlags(this, rawFlags);
 
         // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
         // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
-        // translateXPath4Lookaround() dispatch path.
+        // translateXPath4Lookaround / ;j dispatch path.
         if (hasXPath4Lookaround(pattern)) {
             throw new XPathException(this, ErrorCodes.XPST0017,
                     "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
@@ -144,21 +137,19 @@ public class FunAnalyzeString extends BasicFunction {
         }
 
         // Pre-validate: reject constructs not valid in XPath 3.1 regex
-        if (!hasLiteral(flags)) {
+        // Java syntax is the point of ';j', so the XPath-syntax check does not apply to it.
+        if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
             validateXPathRegex(this, pattern, false);
         }
 
-        final List<String> warnings = new ArrayList<>(1);
+        final RegularExpression regularExpression = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        if (matchesEmptyString(regularExpression)) {
+            throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+        }
 
+        final RegexIterator regexIterator = regularExpression.analyze(StringView.of(input));
         try {
-            final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
-            if (regularExpression.matches(EMPTY_STRING_VIEW)) {
-                throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-            }
-
-            //TODO(AR) cache the regular expression... might be possible through Saxon config
-
-            final RegexIterator regexIterator = regularExpression.analyze(StringView.of(input));
             StringValue item;
             while ((item = regexIterator.next()) != null) {
                 if (regexIterator.isMatching()) {
@@ -167,92 +158,11 @@ public class FunAnalyzeString extends BasicFunction {
                     nonMatch(builder, item);
                 }
             }
-
-            for (final String warning : warnings) {
-                LOG.warn(warning);
-            }
         } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP31 regex translator rejects some valid patterns.
-            // Fall back to Java regex before giving up.
-            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
-                try {
-                    analyzeStringJavaRegex(builder, input, pattern, flags);
-                    return;
-                } catch (final PatternSyntaxException ignored) {
-                    // Java regex fallback also failed — throw original Saxon error below
-                }
-            }
-            switch (e.getErrorCodeQName().getLocalPart()) {
-                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
-                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
-                case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
-                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-            }
+            throw translate(this, e, pattern);
         }
     }
 
-    /**
-     * Java regex fallback for fn:analyze-string when Saxon rejects the pattern.
-     */
-    private void analyzeStringJavaRegex(final MemTreeBuilder builder, final String input,
-            final String pattern, final String flags) throws XPathException {
-        final String javaPattern = translateRegexp(this, pattern,
-                flags.contains("x"), flags.contains("i"));
-        final int javaFlags = parseFlags(this, flags);
-        final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
-
-        if (compiled.matcher("").matches()) {
-            throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-        }
-
-        final Matcher matcher = compiled.matcher(input);
-        int lastEnd = 0;
-        while (matcher.find()) {
-            // Non-matching text before this match
-            if (matcher.start() > lastEnd) {
-                builder.startElement(QN_NON_MATCH, null);
-                builder.characters(input.substring(lastEnd, matcher.start()));
-                builder.endElement();
-            }
-
-            // The match itself
-            builder.startElement(QN_MATCH, null);
-            final int groupCount = matcher.groupCount();
-            if (groupCount == 0) {
-                builder.characters(matcher.group());
-            } else {
-                // Emit groups — track position within the match to emit non-group text
-                int matchPos = matcher.start();
-                for (int g = 1; g <= groupCount; g++) {
-                    if (matcher.start(g) >= 0) {
-                        // Text before this group (within the match)
-                        if (matcher.start(g) > matchPos) {
-                            builder.characters(input.substring(matchPos, matcher.start(g)));
-                        }
-                        final AttributesImpl attributes = new AttributesImpl();
-                        attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(g));
-                        builder.startElement(QN_GROUP, attributes);
-                        builder.characters(matcher.group(g));
-                        builder.endElement();
-                        matchPos = matcher.end(g);
-                    }
-                }
-                // Text after last group (within the match)
-                if (matchPos < matcher.end()) {
-                    builder.characters(input.substring(matchPos, matcher.end()));
-                }
-            }
-            builder.endElement();
-            lastEnd = matcher.end();
-        }
-
-        // Trailing non-matching text
-        if (lastEnd < input.length()) {
-            builder.startElement(QN_NON_MATCH, null);
-            builder.characters(input.substring(lastEnd));
-            builder.endElement();
-        }
-    }
 
     private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);

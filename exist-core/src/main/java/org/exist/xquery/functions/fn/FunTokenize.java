@@ -21,11 +21,12 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import net.sf.saxon.regex.RegularExpression;
+import net.sf.saxon.str.StringView;
+import net.sf.saxon.tree.iter.AtomicIterator;
+import net.sf.saxon.value.AtomicValue;
 
 import org.exist.dom.QName;
-import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -35,6 +36,7 @@ import org.exist.xquery.value.ValueSequence;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -73,70 +75,50 @@ public class FunTokenize extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence result;
         final Sequence stringArg = args[0];
         if (stringArg.isEmpty()) {
-            result = Sequence.EMPTY_SEQUENCE;
-        } else {
-            String string = stringArg.getStringValue();
-            if (string.isEmpty()) {
-                result = Sequence.EMPTY_SEQUENCE;
-            } else {
-                final int flags;
-                if (args.length == 3) {
-                    flags = parseFlags(this, args[2].itemAt(0).getStringValue());
-                } else {
-                    flags = 0;
-                }
-
-                final boolean isXQuery40 = context.getXQueryVersion() >= 40;
-                final String pattern;
-                if (args.length == 1) {
-                    pattern = " ";
-                    string = FunNormalizeSpace.normalize(string);
-                } else {
-                    String rawPattern = args[1].itemAt(0).getStringValue();
-
-                    // XQ4: translate (*positive_lookahead:...) etc. to Java regex
-                    if (isXQuery40 && hasXPath4Lookaround(rawPattern)) {
-                        rawPattern = translateXPath4Lookaround(rawPattern);
-                    }
-
-                    // Pre-validate: reject constructs not valid in XPath regex
-                    if (!hasLiteral(flags)) {
-                        validateXPathRegex(this, rawPattern, isXQuery40);
-                    }
-
-                    if (hasLiteral(flags)) {
-                        // no need to change anything
-                        pattern = rawPattern;
-                    } else {
-                        final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                        final boolean caseBlind = hasCaseInsensitive(flags);
-                        pattern = translateRegexp(this, args[1].itemAt(0).getStringValue(), ignoreWhitespace, caseBlind);
-                    }
-                }
-
-                try {
-                    final Pattern pat = PatternFactory.getInstance().getPattern(pattern, flags);
-                    if (pat.matcher("").matches()) {
-                        throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-                    }
-
-                    final String[] tokens = pat.split(string, -1);
-                    result = new ValueSequence();
-
-                    for (final String token : tokens) {
-                        result.add(new StringValue(this, token));
-                    }
-
-                } catch (final PatternSyntaxException e) {
-                    throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
-                }
-            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        String string = stringArg.getStringValue();
+        if (string.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
         }
 
+        final String flags = validateFlags(this, args.length == 3 ? args[2].itemAt(0).getStringValue() : "");
+        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
+        final String pattern;
+        if (args.length == 1) {
+            // tokenize($input) is defined as tokenize(normalize-space($input), ' '). Normalizing
+            // whitespace-only input leaves nothing to tokenize, and the result is the empty
+            // sequence -- not a single empty string.
+            string = FunNormalizeSpace.normalize(string);
+            if (string.isEmpty()) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            pattern = " ";
+        } else {
+            pattern = preparePattern(this, args[1].itemAt(0).getStringValue(), flags, isXQuery40);
+        }
+
+        final RegularExpression regex = compileForXQueryVersion(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags, isXQuery40);
+        if (matchesEmptyString(regex)) {
+            throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+        }
+
+        return tokensOf(regex, string);
+    }
+
+    private Sequence tokensOf(final RegularExpression regex, final String string) throws XPathException {
+        final ValueSequence result = new ValueSequence();
+        final AtomicIterator tokens = regex.tokenize(StringView.of(string));
+        AtomicValue token;
+        while ((token = tokens.next()) != null) {
+            result.add(new StringValue(this, token.getStringValue()));
+        }
         return result;
     }
+
 
 }
