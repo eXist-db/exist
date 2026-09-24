@@ -31,8 +31,10 @@ import java.util.Set;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
+import org.exist.test.KnownFailuresRatchet;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -66,6 +68,9 @@ public class XQueryNamingConformanceTest {
 
     private static final String RES_COLL = "/db/naming-xq-res";
     private static final String COLL_PARENT = "/db/naming-xq-coll";
+
+    /** One broker for the whole test, rather than a checkout per query. */
+    private DBBroker broker;
 
     /** Awkward human-intended names. {@code /} is excluded (path separator); the literal-{@code %} cases are included. */
     private static final List<String> CORPUS = List.of(
@@ -113,6 +118,19 @@ public class XQueryNamingConformanceTest {
             "coll:raw:文書.xml:get-child-collections"
     );
 
+    @Before
+    public void openBroker() throws Exception {
+        final BrokerPool pool = server.getBrokerPool();
+        broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+    }
+
+    @After
+    public void closeBroker() {
+        if (broker != null) {
+            broker.close();
+        }
+    }
+
     @Test
     public void xqueryAccessorNamingConformance() {
         final StringBuilder matrix = new StringBuilder("\n=== XQuery-accessor resource-naming matrix (read back by requested name) ===\n");
@@ -154,24 +172,10 @@ public class XQueryNamingConformanceTest {
         }
         System.out.println(matrix);
 
-        final Set<String> regressions = new LinkedHashSet<>(failing);
-        regressions.removeAll(KNOWN_FAILURES);
-        final Set<String> nowFixed = new LinkedHashSet<>(KNOWN_FAILURES);
-        nowFixed.removeAll(failing);
-
-        final StringBuilder msg = new StringBuilder();
-        if (!regressions.isEmpty()) {
-            msg.append(regressions.size()).append(" accessor cell(s) regressed (kind:mode:name:reader):\n    ")
-                    .append(String.join("\n    ", regressions)).append('\n');
-        }
-        if (!nowFixed.isEmpty()) {
-            msg.append(nowFixed.size()).append(" cell(s) now round-trip but are still listed as known failures.\n")
-                    .append("Remove them from KNOWN_FAILURES so they become regression-guarded:\n    ")
-                    .append(String.join("\n    ", nowFixed)).append('\n');
-        }
-        if (msg.length() > 0) {
-            fail(msg.append("--- current matrix ---").append(matrix).toString());
-        }
+        KnownFailuresRatchet.check(failing, KNOWN_FAILURES,
+                        "accessor cell(s) regressed (kind:mode:name:reader):", "cell(s)",
+                        "KNOWN_FAILURES", KnownFailuresRatchet::lines)
+                .ifPresent(msg -> fail(msg + "--- current matrix ---" + matrix));
     }
 
     private static void record(final Set<String> failing, final String kind, final String mode, final String name, final String reader, final boolean ok) {
@@ -180,18 +184,18 @@ public class XQueryNamingConformanceTest {
         }
     }
 
-    /** An XQuery string literal (double-quoted) for an arbitrary name; only {@code &} and {@code <} need escaping. */
+    /** An XQuery string literal (double-quoted) for an arbitrary name: escapes {@code &}, {@code <} and {@code "}. */
     private static String lit(final String s) {
-        return '"' + s.replace("&", "&amp;").replace("<", "&lt;") + '"';
+        return '"' + s.replace("&", "&amp;").replace("<", "&lt;").replace("\"", "&quot;") + '"';
     }
 
     private void freshResources() {
-        xqStr("if (xmldb:collection-available(" + lit(RES_COLL) + ")) then xmldb:remove(" + lit(RES_COLL) + ") else (), "
+        housekeeping("if (xmldb:collection-available(" + lit(RES_COLL) + ")) then xmldb:remove(" + lit(RES_COLL) + ") else (), "
                 + "xmldb:create-collection('/db', 'naming-xq-res')");
     }
 
     private void freshCollections() {
-        xqStr("if (xmldb:collection-available(" + lit(COLL_PARENT) + ")) then xmldb:remove(" + lit(COLL_PARENT) + ") else (), "
+        housekeeping("if (xmldb:collection-available(" + lit(COLL_PARENT) + ")) then xmldb:remove(" + lit(COLL_PARENT) + ") else (), "
                 + "xmldb:create-collection('/db', 'naming-xq-coll')");
     }
 
@@ -200,21 +204,36 @@ public class XQueryNamingConformanceTest {
     }
 
     private String xqStr(final String query) {
-        final BrokerPool pool = server.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final XQuery xquery = pool.getXQueryService();
-            final Sequence result = xquery.execute(broker, query, null);
-            final StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < result.getItemCount(); i++) {
-                if (i > 0) {
-                    sb.append('|');
-                }
-                sb.append(result.itemAt(i).getStringValue());
-            }
-            return sb.toString();
+        try {
+            return evaluate(query);
         } catch (final Exception e) {
             // a create that the naming layer rejects (e.g. FORG0001) surfaces here; treated as "not created".
             return "ERR:" + e.getClass().getSimpleName();
         }
+    }
+
+    /**
+     * Runs a reset between probes. Unlike a probe, a reset must not fail quietly: the next probe
+     * would run against a collection that was not reset, and its failure would look like a naming
+     * regression.
+     */
+    private void housekeeping(final String query) {
+        try {
+            evaluate(query);
+        } catch (final Exception e) {
+            throw new IllegalStateException("Could not reset the test collection with: " + query, e);
+        }
+    }
+
+    private String evaluate(final String query) throws Exception {
+        final Sequence result = server.getBrokerPool().getXQueryService().execute(broker, query, null);
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < result.getItemCount(); i++) {
+            if (i > 0) {
+                sb.append('|');
+            }
+            sb.append(result.itemAt(i).getStringValue());
+        }
+        return sb.toString();
     }
 }

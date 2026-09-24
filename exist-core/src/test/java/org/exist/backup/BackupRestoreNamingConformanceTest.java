@@ -71,10 +71,11 @@ import org.junit.runners.Parameterized.Parameters;
  * no resource lost, renamed, or collided by the round-trip. That is the guard against "even theoretical
  * data loss" through backup/restore.</p>
  *
- * <p><b>Scope.</b> This guards the <em>restore</em> path. Resources are stored under the same leaf keys a
- * WebDAV/REST store lands them under (verified in the printed mapping: {@code café.xml -> caf%C3%A9.xml},
- * {@code a+b.xml -> a%2Bb.xml}, {@code with space.xml -> with%20space.xml}, …), via eXist's own
- * {@code encodeXmldbUriFor}. Two distinct names collapsing onto one key <em>on the way in</em> — the
+ * <p><b>Scope.</b> This guards the <em>restore</em> path. Resources are stored under the keys eXist's
+ * {@code encodeXmldbUriFor} produces (printed in the mapping: {@code café.xml -> caf%C3%A9.xml},
+ * {@code a+b.xml -> a%2Bb.xml}, {@code with space.xml -> with%20space.xml}, …). That is not a claim
+ * about the keys WebDAV or REST store under: neither calls {@code encodeXmldbUriFor}, and
+ * {@code ResourceNamingConformanceTest} checks those surfaces. Two distinct names collapsing onto one key <em>on the way in</em> — the
  * Decision 2 store-time collision — rides a different store path (the persistent layer's non-escaping
  * encoding) and is out of scope here; this encoder escapes a literal {@code %} to {@code %25}, so the
  * corpus stores injectively and the {@code before}-snapshot size check is a setup-integrity guard, not a
@@ -200,6 +201,8 @@ public class BackupRestoreNamingConformanceTest {
             backup = export.export(temporaryFolder.newFolder().getAbsolutePath(), false, zip, null);
             txn.commit();
         }
+        // SystemExport.export returns null, rather than throwing, when the export itself fails
+        assertNotNull("SystemExport.export returned no backup: the export failed (direct=" + direct + ", zip=" + zip + ")", backup);
 
         // wipe the collection
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
