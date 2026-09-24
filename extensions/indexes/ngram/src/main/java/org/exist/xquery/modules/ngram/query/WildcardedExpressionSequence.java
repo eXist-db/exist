@@ -100,11 +100,17 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             // The pattern was made up of nothing but wildcards and/or anchors (e.g. ".", ".*", "^.+$"):
             // there is no literal text left to seed an ngram index lookup with, so fall back to
             // evaluating the wildcard's length constraint directly against the candidate nodes.
-            final Wildcard soleWildcard = leadingWildcard != null ? leadingWildcard : trailingWildcard;
-            if (soleWildcard == null || nodeSet == null) {
+            // Any wildcard reaching this point was necessarily captured as leadingWildcard: the
+            // extraction above always tries the leading position first, and consecutive Wildcard
+            // tokens are always merged into one by the constructor, so at most one can exist here.
+            if (leadingWildcard == null || nodeSet == null) {
+                // nodeSet is null when this is reached via the Optimizable preSelect path with
+                // useContext=false (see NGramSearch#preSelect) - i.e. there is no candidate set to
+                // scan and no literal text to search the index with either. Not supported: such a
+                // query returns no matches rather than scanning every indexed node in the database.
                 return new EmptyNodeSet();
             }
-            return matchWildcardOnly(soleWildcard, startAnchorPresent, endAnchorPresent, nodeSet, expressionId);
+            return matchWildcardOnly(leadingWildcard, startAnchorPresent, endAnchorPresent, nodeSet, expressionId);
         }
 
         if (expressions.size() != 1 || !(expressions.getFirst() instanceof EvaluatableExpression)) { // Should not happen.
@@ -148,24 +154,33 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
      */
     private static NodeSet matchWildcardOnly(
             final Wildcard wildcard, final boolean startAnchorPresent, final boolean endAnchorPresent,
-            final NodeSet nodeSet, final int expressionId) {
-        final NodeSet result = new ExtArrayNodeSet();
+            final NodeSet nodeSet, final int expressionId) throws XPathException {
+        final NodeSet result = new ExtArrayNodeSet(nodeSet.getItemCount());
         for (final NodeProxy proxy : nodeSet) {
             final String value = proxy.getNodeValue();
             final int codepointLength = value.codePointCount(0, value.length());
             if (codepointLength < wildcard.getMinimumLength()) {
                 continue;
             }
-            if (startAnchorPresent && endAnchorPresent && codepointLength > wildcard.getMaximumLength()) {
-                continue;
-            }
 
-            final int matchCodepoints = (startAnchorPresent && endAnchorPresent)
-                    ? codepointLength
-                    : Math.min(codepointLength, wildcard.getMaximumLength());
-            final int matchStartCodepoint = (endAnchorPresent && !startAnchorPresent)
-                    ? codepointLength - matchCodepoints
-                    : 0;
+            final int matchCodepoints;
+            final int matchStartCodepoint;
+            if (startAnchorPresent && endAnchorPresent) {
+                // anchored at both ends: the whole content must fit within the bounds
+                if (codepointLength > wildcard.getMaximumLength()) {
+                    continue;
+                }
+                matchCodepoints = codepointLength;
+                matchStartCodepoint = 0;
+            } else if (endAnchorPresent) {
+                // anchored at the end only: the longest matching suffix
+                matchCodepoints = Math.min(codepointLength, wildcard.getMaximumLength());
+                matchStartCodepoint = codepointLength - matchCodepoints;
+            } else {
+                // anchored at the start only, or not anchored at all: the longest matching prefix
+                matchCodepoints = Math.min(codepointLength, wildcard.getMaximumLength());
+                matchStartCodepoint = 0;
+            }
 
             final int startOffset = value.offsetByCodePoints(0, matchStartCodepoint);
             final int endOffset = value.offsetByCodePoints(startOffset, matchCodepoints);
@@ -175,6 +190,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             proxy.addMatch(match);
             result.add(proxy);
         }
+        result.iterate(); // ensure result is ready to use
         return result;
     }
 
@@ -182,7 +198,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         return NodeSets.transformNodes(nodes, proxy ->
                 NodeProxies.transformOwnMatches(
                         proxy,
-                        match -> match.expandForward(trailingWildcard.minimumLength, trailingWildcard.maximumLength, proxy.getNodeValue().length()),
+                        match -> match.expandForwardCodepoints(trailingWildcard.minimumLength, trailingWildcard.maximumLength, proxy.getNodeValue()),
                         expressionId
                 )
         );
@@ -192,7 +208,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         return NodeSets.transformNodes(nodes, proxy ->
                 NodeProxies.transformOwnMatches(
                         proxy,
-                        match -> match.expandBackward(leadingWildcard.minimumLength, leadingWildcard.maximumLength),
+                        match -> match.expandBackwardCodepoints(leadingWildcard.minimumLength, leadingWildcard.maximumLength, proxy.getNodeValue()),
                         expressionId
                 )
         );
