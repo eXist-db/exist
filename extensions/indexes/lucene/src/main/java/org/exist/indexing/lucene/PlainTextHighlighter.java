@@ -26,8 +26,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
@@ -77,40 +75,32 @@ public class PlainTextHighlighter {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query termQuery = termMap.get(text);
                 if (termQuery != null) {
-                    // Phrase queries need special handling to avoid marking partial matches.
-                    if (termQuery instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan ahead to verify a complete phrase match.
+                    // Phrase and near/proximity queries need special handling to avoid marking
+                    // partial matches; both forms are matched the same slop-aware way so that
+                    // string ('"a b"~n') and XML (<near slop="n">) queries highlight identically,
+                    // see #833.
+                    final LuceneUtil.ProximityTerms proximity = LuceneUtil.asProximityTerms(termQuery);
+                    if (proximity != null) {
+                        final int firstMatchedIndex = proximity.inOrder()
+                                ? (text.equals(proximity.terms().getFirst()) ? 0 : -1)
+                                : proximity.terms().indexOf(text);
+                        if (firstMatchedIndex >= 0) {
+                            // Cache lookahead tokens so a failed attempt can be replayed to the
+                            // outer scan instead of losing those tokens (matches original phrase
+                            // handling here, unlike LuceneMatchListener's simpler best-effort scan).
                             stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-                            // Consume tokens to confirm the full phrase; rewind to mark on first mismatch.
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    stream.rewindToMark();
-                                    break;
-                                }
-                            }
-                            if (stateList.size() == terms.length) {
+                            final List<State> stateList = LuceneUtil.matchProximityWindow(stream, proximity, firstMatchedIndex);
+                            if (stateList != null) {
                                 if (offsets == null) {
                                     offsets = new ArrayList<>();
                                 }
                                 stream.restoreState(stateList.getFirst());
                                 final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
+                                stream.restoreState(stateList.getLast());
                                 final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
                                 offsets.add(new Offset(start, end));
-
-                                // Restore to the end of the confirmed phrase for continued scanning.
-                                stream.restoreState(stateList.getLast());
+                            } else {
+                                stream.rewindToMark();
                             }
                         }
                     } else {

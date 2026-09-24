@@ -171,7 +171,6 @@ function ftt:highlight($query as xs:string) {
  : @return xs:integer+ (match-count for string query, match-count for XML query)
  :)
 declare
-    %test:pending("Proximity/slop string vs XML match-count equality, see #833")
     %test:assertEquals(1, 1)
 function ftt:slop-string-vs-xml-equality() {
     let $queries := (
@@ -185,6 +184,32 @@ function ftt:slop-string-vs-xml-equality() {
             $match-count := count($expanded//exist:match)
         return $match-count
     return ($results[1], $results[2])
+};
+
+(:~
+ : As slop-string-vs-xml-equality, but with non-adjacent terms ("text" ... "more", 4
+ : intervening tokens): exercises the slop tolerance itself, not just merging of an
+ : incidentally-adjacent match. Also checks hit-count parity (the underlying query still
+ : has to find the node before highlighting can even apply).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ : @return xs:integer+ (hit-count, match-count) for the string query, then the same pair for the XML query
+ :)
+declare
+    %test:assertEquals(1, 1, 1, 1)
+function ftt:slop-string-vs-xml-equality-nonadjacent() {
+    let $queries := (
+        '"text more"~4',
+        <query><near slop="4"><term>text</term><term>more</term></near></query>
+    ),
+    $results :=
+        for $query in $queries
+        let $hits := collection($ftt:COLLECTION)//div[ft:query(., $query)],
+            $hit-count := count($hits),
+            $expanded := util:expand($hits),
+            $match-count := count($expanded//exist:match)
+        return ($hit-count, $match-count)
+    return $results
 };
 
 (:~

@@ -36,7 +36,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.PhraseQuery;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -305,43 +304,27 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query query = termMap.get(text);
                 if (query != null) {
-                    // Phrase queries need to be handled differently to filter
-                    // out wrong matches: only the phrase should be marked, not
-                    // single words which may also occur elsewhere in the document
-                    if (query instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan the following text and collect tokens to see
-                            // if they are part of the phrase.
-                            stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    // Don't reset the token stream since we will
-                                    // miss matches. /ljo
-                                    //stream.reset();
-                                    break;
-                                }
-                            }
-
-                            if (stateList.size() == terms.length) {
-                                // Phrase match: add one span from first to last term (may cross text nodes, #4584).
+                    // Phrase and near/proximity queries need to be handled differently to filter
+                    // out wrong matches: only the whole phrase/proximity match should be marked,
+                    // not single words which may also occur elsewhere in the document. Both forms
+                    // are matched the same slop-aware way so that string ('"a b"~n') and XML
+                    // (<near slop="n">) queries highlight identically, see #833.
+                    final LuceneUtil.ProximityTerms proximity = LuceneUtil.asProximityTerms(query);
+                    if (proximity != null) {
+                        final int firstMatchedIndex = proximity.inOrder()
+                                ? (text.equals(proximity.terms().getFirst()) ? 0 : -1)
+                                : proximity.terms().indexOf(text);
+                        if (firstMatchedIndex >= 0) {
+                            final List<State> stateList = LuceneUtil.matchProximityWindow(stream, proximity, firstMatchedIndex);
+                            if (stateList != null) {
+                                // Proximity match: add one span from first to last matched term (may cross text nodes, #4584).
                                 stream.restoreState(stateList.getFirst());
                                 final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
+                                stream.restoreState(stateList.getLast());
                                 final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
                                 addMatchSpan(start, end, offsets, str.length());
                             }
-                        } // End of phrase handling
+                        }
                     } else {
                         final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
                         addMatchSpan(offsetAttr.startOffset(), offsetAttr.endOffset(), offsets, str.length());
