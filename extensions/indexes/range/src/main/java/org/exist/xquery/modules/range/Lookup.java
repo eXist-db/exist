@@ -311,7 +311,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             return NodeSet.EMPTY_SET;
         }
 
-        if (requiresFallback(operator, keys)) {
+        if (requiresFallback(operator, keys, contextSequence)) {
             return ((Optimizable) fallback).preSelect(contextSequence, useContext);
         }
 
@@ -356,10 +356,11 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
      * Decide if this lookup should delegate to the non-index fallback expression instead of using the range index.
      * Used for {@link RangeIndex.Operator#MATCH} when the fn:matches pattern cannot be translated to a Lucene regexp.
      */
-    private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys) throws XPathException {
+    private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys, final Sequence contextSequence) throws XPathException {
         if (operator == RangeIndex.Operator.MATCH && fallback != null && keys.length > 0) {
             final String pattern = keys[0].getStringValue();
-            if (!XPathToLuceneRegexTranslator.isTranslatable(pattern)) {
+            // The flags decide it too: under the i flag, XPath's and Lucene's case variants differ
+            if (!XPathToLuceneRegexTranslator.isServable(pattern, getMatchFlags(contextSequence))) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("fn:matches pattern '{}' not translatable to Lucene; using fallback", pattern);
                 }
@@ -412,7 +413,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                     return NodeSet.EMPTY_SET;
                 }
                 final RangeIndex.Operator operator = getOperator();
-                if (requiresFallback(operator, keys)) {
+                if (requiresFallback(operator, keys, effectiveContextSequence)) {
                     return ((Optimizable) fallback).preSelect(input.toNodeSet(), true);
                 }
                 List<QName> qnames = null;
@@ -427,7 +428,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                             "used with the '" + operator + "' operation.");
                 }
 
-                final int matchFlags = getMatchFlags(contextSequence);
+                final int matchFlags = getMatchFlags(effectiveContextSequence);
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
