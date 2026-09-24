@@ -82,7 +82,19 @@ public class Query extends Function implements Optimizable {
                                            <leading-wildcard>yes|no</leading-wildcard>
                                            <filter-rewrite>yes|no</filter-rewrite>
                                            <lowercase-expanded-terms>yes|no</lowercase-expanded-terms>
-                                        </options>"""
+                                           <phrase-as-near>yes|no</phrase-as-near>
+                                        </options>
+
+                                        Note on phrase-as-near: a string proximity query like '"a b"~n' and an
+                                        equivalent XML &lt;near slop="n"&gt;&lt;term&gt;a&lt;/term&gt;&lt;term&gt;b&lt;/term&gt;&lt;/near&gt;
+                                        query are NOT guaranteed to match the same documents for the same slop
+                                        value, because Lucene defines "slop" differently for each: the string
+                                        form's phrase slop is an edit distance that tolerates some term
+                                        reordering, while near (by default ordered) uses a plain positional gap
+                                        and never matches out-of-order terms. Setting phrase-as-near to yes makes
+                                        '"a b"~n' match with the same ordered, non-reordering-tolerant semantics
+                                        as the XML near form, at the cost of losing the phrase form's reordering
+                                        tolerance. See https://github.com/eXist-db/exist/issues/833"""
                         )
                     )
             )

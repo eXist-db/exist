@@ -35,6 +35,7 @@ declare variable $ftt:COLLECTION_CONFIG :=
                     <ignore qname="div"/>
                     <ignore qname="hi"/>
                     <field name="pub-year" expression="date" analyzer="keyword"/>
+                    <field name="body" expression="p"/>
                 </text>
             </lucene>
         </index>
@@ -47,6 +48,10 @@ declare variable $ftt:DATA :=
             <div>
                 <p>text in nested div and more <hi>text</hi>.</p>
             </div>
+        </div>
+        <div>
+            <!-- foul@0 ... fair@6: reversed relative to the query "fair foul", for #833 -->
+            <p>foul deed makes it all seem fair today</p>
         </div>
     </body>;
 
@@ -127,6 +132,22 @@ function ftt:field-highlight-field-matches-via-query() {
 };
 
 (:~
+ : ft:highlight-field-matches (Field.java) needs the same slop-aware merge as util:expand: a
+ : sloppy phrase within a field ("deed" ... "fair", 4 intervening tokens) must produce one merged
+ : exist:match, not zero (Field.java had its own separate, unfixed copy of the pre-#833-fix
+ : strict-adjacency-only phrase logic).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:assertEquals(1, 1)
+function ftt:field-highlight-field-matches-phrase-slop() {
+    let $hits := collection($ftt:COLLECTION)//div[ft:query(., 'body:"deed fair"~4')],
+        $result := ft:highlight-field-matches($hits, "body")
+    return (count($hits), count($result//exist:match))
+};
+
+(:~
  : util:expand on field queries: matches for field criteria should not produce superfluous
  : highlights elsewhere. Query 1–2: Nixon (text) correctly highlights. Query 3–4: pub-year
  : (field-only) should yield 0 exist:match (no text to highlight). Currently: (2, 4, 2, 1).
@@ -171,7 +192,6 @@ function ftt:highlight($query as xs:string) {
  : @return xs:integer+ (match-count for string query, match-count for XML query)
  :)
 declare
-    %test:pending("Proximity/slop string vs XML match-count equality, see #833")
     %test:assertEquals(1, 1)
 function ftt:slop-string-vs-xml-equality() {
     let $queries := (
@@ -185,6 +205,69 @@ function ftt:slop-string-vs-xml-equality() {
             $match-count := count($expanded//exist:match)
         return $match-count
     return ($results[1], $results[2])
+};
+
+(:~
+ : As slop-string-vs-xml-equality, but with non-adjacent terms ("text" ... "more", 4
+ : intervening tokens): exercises the slop tolerance itself, not just merging of an
+ : incidentally-adjacent match. Also checks hit-count parity (the underlying query still
+ : has to find the node before highlighting can even apply).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ : @return xs:integer+ (hit-count, match-count) for the string query, then the same pair for the XML query
+ :)
+declare
+    %test:assertEquals(1, 1, 1, 1)
+function ftt:slop-string-vs-xml-equality-nonadjacent() {
+    let $queries := (
+        '"text more"~4',
+        <query><near slop="4"><term>text</term><term>more</term></near></query>
+    ),
+    $results :=
+        for $query in $queries
+        let $hits := collection($ftt:COLLECTION)//div[ft:query(., $query)],
+            $hit-count := count($hits),
+            $expanded := util:expand($hits),
+            $match-count := count($expanded//exist:match)
+        return ($hit-count, $match-count)
+    return $results
+};
+
+(:~
+ : Documents that '"a b"~n' and <near slop="n"> (default ordered) genuinely disagree on which
+ : documents match when word order varies in the indexed text — not a bug, but two different
+ : Lucene slop semantics (PhraseQuery's reordering-tolerant edit distance vs SpanNearQuery's
+ : strict positional gap). Text has foul@0 ... fair@6 (reversed vs. the query "fair foul"): the
+ : phrase form's edit-distance slop tolerates the reversal at slop=7 (5 base + 2 for the swap);
+ : the ordered near form never matches a reversed pair, at any slop.
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ : @return xs:integer+ (hit-count for the string query, hit-count for the XML query) at slop=6 (no
+ :     match either way) then slop=7 (string matches, XML never does)
+ :)
+declare
+    %test:assertEquals(0, 0, 1, 0)
+function ftt:slop-string-vs-xml-reordering-disagreement() {
+    (
+        count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~6')]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., <query><near slop="6"><term>fair</term><term>foul</term></near></query>)]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~7')]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., <query><near slop="7"><term>fair</term><term>foul</term></near></query>)])
+    )
+};
+
+(:~
+ : The phrase-as-near query option makes '"a b"~n' match with <near>'s ordered, non-reordering-
+ : tolerant semantics: the reversed-order text from slop-string-vs-xml-reordering-disagreement no
+ : longer matches the string-syntax query at slop=7 once the option is set, agreeing with the XML
+ : near form (which never matches it, at any slop).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:assertEquals(0)
+function ftt:phrase-as-near-option-fixes-reordering-disagreement() {
+    count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~7', map { "phrase-as-near": "yes" })])
 };
 
 (:~
