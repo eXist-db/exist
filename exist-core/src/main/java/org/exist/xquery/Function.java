@@ -481,6 +481,39 @@ public abstract class Function extends PathExpr {
         return steps.size();
     }
 
+    /**
+     * Overrides {@link PathExpr#replace} to also look one level inside a
+     * runtime type/cardinality check wrapper.
+     *
+     * <p>{@link #checkArgument} statically type-checks each argument during
+     * {@link #analyze}, and for an argument whose static type doesn't fully
+     * guarantee the declared parameter type, wraps the (already-analyzed)
+     * argument in a {@link DynamicCardinalityCheck}, {@link DynamicNameCheck},
+     * {@link DynamicTypeCheck}, {@link UntypedValueCheck}, or
+     * {@link FunctionTypeCheck} -- <em>after</em> {@code analyze()} has
+     * already fixed the argument's {@code parent} pointer. A rewrite that
+     * resolves its target's parent via {@code getParent()} (e.g.
+     * {@code Optimizer#visitFilteredExpr} attaching an
+     * {@code (#exist:optimize#)} pragma to a predicate inside
+     * {@code count($a[pred])}) then finds this Function as the parent, but
+     * {@code oldExpr} is no longer a direct entry in {@link #steps} -- it's
+     * one of these wrappers now -- so the inherited {@code steps.indexOf()}
+     * lookup misses and the rewrite silently no-ops. See GH-873.
+     */
+    @Override
+    public void replace(final Expression oldExpr, final Expression newExpr) {
+        for (final Expression step : steps) {
+            if (step instanceof final RewritableExpression rewritable
+                    && !(step instanceof PathExpr)
+                    && step.getSubExpressionCount() == 1
+                    && step.getSubExpression(0) == oldExpr) {
+                rewritable.replace(oldExpr, newExpr);
+                return;
+            }
+        }
+        super.replace(oldExpr, newExpr);
+    }
+
     @Override
     public void setPrimaryAxis(final int axis) {
     }
