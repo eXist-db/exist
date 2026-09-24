@@ -27,6 +27,7 @@ import org.apache.lucene.queries.spans.SpanQuery;
 import org.apache.lucene.queries.spans.SpanTermQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 
@@ -46,7 +47,9 @@ import org.apache.lucene.search.Query;
  * {@code <near>}, at the cost of losing PhraseQuery's reordering tolerance.
  *
  * <p><b>Scope:</b> only rewrites a top-level {@link PhraseQuery} and {@link PhraseQuery} clauses
- * directly inside a {@link BooleanQuery}. Assumes the phrase's terms are at consecutive positions
+ * directly inside a {@link BooleanQuery} or {@link BoostQuery} (mirroring the shapes
+ * {@link AnalyzingQueryRewriter}, which runs immediately before this in the query pipeline,
+ * already unwraps). Assumes the phrase's terms are at consecutive positions
  * (the common case); a phrase whose query analyzer drops an interior token (e.g. a stopword),
  * leaving a position gap recorded via {@link PhraseQuery#getPositions()}, is rewritten as if that
  * gap were the default 1, which is slightly more lenient than the original phrase query.
@@ -66,6 +69,10 @@ public final class PhraseAsNearRewriter {
     public static Query rewrite(final Query query) {
         if (query instanceof PhraseQuery phraseQuery) {
             return toSpanNear(phraseQuery);
+        }
+        if (query instanceof BoostQuery boostQuery) {
+            final Query rewritten = rewrite(boostQuery.getQuery());
+            return rewritten == boostQuery.getQuery() ? query : new BoostQuery(rewritten, boostQuery.getBoost());
         }
         if (query instanceof BooleanQuery booleanQuery) {
             final BooleanQuery.Builder builder = new BooleanQuery.Builder();
