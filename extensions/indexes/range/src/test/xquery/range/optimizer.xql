@@ -1035,3 +1035,10 @@ declare
 function ot:matches-unicode-property-is-not-sent-to-the-index() {
     collection($ot:COLLECTION)//foo[matches(@bar, "^\p{Lu}")]
 };
+
+declare
+    %test:assertEquals(0)
+function ot:matches-too-complex-for-lucene-falls-back-to-the-right-answer() {
+    (: valid XPath that Lucene cannot determinize within its work limit :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^(a|b)*a(a|b){20}$")])
+};
