@@ -22,20 +22,14 @@
 package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.AbstractFieldConfig;
 import org.exist.indexing.lucene.LuceneConfig;
 import org.exist.indexing.lucene.LuceneFacetConfig;
 import org.exist.indexing.lucene.LuceneFieldConfig;
-import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.indexing.lucene.LuceneVectorFieldConfig;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -56,6 +50,7 @@ import org.exist.xquery.value.ValueSequence;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -128,8 +123,8 @@ public class Fields extends BasicFunction {
         // needs the collection hierarchy, so the cost is bounded by the number of collections rather
         // than documents. The resolution is permission-checked at collection-read granularity, so a
         // caller only discovers configurations for collections it may read.
-        final Set<XmldbURI> collections = LuceneScope.resolveScopeCollections(this, args[0]);
-        if (collections.isEmpty()) {
+        final Map<XmldbURI, LuceneConfig> configs = LuceneScope.resolveScopeConfigs(this, args[0]);
+        if (configs.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -140,24 +135,12 @@ public class Fields extends BasicFunction {
         // LuceneConfig identity dedup means an inherited config is reported once, attributed to the
         // collection it is defined on (parents are visited before children), while a sub-collection that
         // overrides the config carries a distinct LuceneConfig and is reported under its own path.
-        final DBBroker broker = context.getBroker();
         final ValueSequence result = new ValueSequence();
         final Set<LuceneConfig> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (final XmldbURI collectionUri : collections) {
-            try (final Collection collection = broker.openCollection(collectionUri, LockMode.READ_LOCK)) {
-                if (collection == null) {
-                    continue;
-                }
-                final IndexSpec indexSpec = collection.getIndexConfiguration(broker);
-                if (indexSpec == null) {
-                    continue;
-                }
-                final LuceneConfig config = (LuceneConfig) indexSpec.getCustomIndexSpec(LuceneIndex.ID);
-                if (config != null && seen.add(config)) {
-                    appendFields(result, config, collectionUri);
-                }
-            } catch (final PermissionDeniedException e) {
-                // resolveScopeCollections already permission-checked the scope; skip on any late change
+        for (final Map.Entry<XmldbURI, LuceneConfig> entry : configs.entrySet()) {
+            final LuceneConfig config = entry.getValue();
+            if (config != null && seen.add(config)) {
+                appendFields(result, config, entry.getKey());
             }
         }
         return result;
