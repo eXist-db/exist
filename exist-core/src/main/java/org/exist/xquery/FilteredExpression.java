@@ -144,6 +144,33 @@ public class FilteredExpression extends AbstractExpression {
         return result;
     }
 
+    /**
+     * Evaluate this filtered expression's predicates directly against an
+     * already-computed candidate sequence, without re-evaluating
+     * {@link #expression}.
+     *
+     * <p>Used by {@link org.exist.xquery.pragmas.Optimize#eval} when
+     * {@link #expression} is a plain {@link VariableReference}: unlike a
+     * {@link LocationStep}, {@link VariableReference#eval} ignores whatever
+     * contextSequence it is called with and always returns the variable's
+     * full bound value. Calling the normal {@link #eval} in that situation
+     * would silently discard an index pre-selected {@code NodeSet} and force
+     * the predicate to be re-evaluated across the full, unfiltered variable
+     * value (GH-873).
+     *
+     * @param outerContextSequence the outer dynamic context to evaluate the
+     *                              predicates against, e.g. for {@code position()}/{@code last()}
+     * @param preselected           the pre-selected candidate sequence to filter, in
+     *                              place of {@code expression}'s own value
+     */
+    public Sequence evalOnPreselected(final Sequence outerContextSequence, final Sequence preselected) throws XPathException {
+        if (preselected.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        context.setContextSequencePosition(0, preselected);
+        return processPredicate(outerContextSequence, preselected);
+    }
+
     private Sequence processPredicate(@Nullable Sequence contextSequence, Sequence seq) throws XPathException {
         int line = -1;
         int column = -1;
