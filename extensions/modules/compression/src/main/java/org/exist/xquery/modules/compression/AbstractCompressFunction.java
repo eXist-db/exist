@@ -125,7 +125,10 @@ public abstract class AbstractCompressFunction extends BasicFunction {
      */
     private Properties parseSerializationOptions(final Sequence[] args) throws XPathException {
         if (args.length >= 5 && !args[4].isEmpty()) {
-            return FunSerialize.getSerializationProperties(this, args[4].itemAt(0));
+            final Properties properties = FunSerialize.getSerializationProperties(this, args[4].itemAt(0));
+            // the same consistency check (SEPM0009) fn:serialize applies to the same options
+            FunSerialize.validateSerializationParams(this, properties);
+            return properties;
         }
         return new Properties();
     }
@@ -401,9 +404,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
             }
         }
         // an explicit serialization-options map argument takes precedence over the prolog option
-        for (final String key : serializationProperties.stringPropertyNames()) {
-            serializer.setProperty(key, serializationProperties.getProperty(key));
-        }
+        serializer.setProperties(serializationProperties);
     }
 
     /**

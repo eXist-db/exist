@@ -200,3 +200,11 @@ function z:zipStripPrefixWithSerializationOptions() {
     return z:zip-collection-entry-names($zip)
 };
 
+
+(: The serialization options get the same consistency check fn:serialize applies (SEPM0009) :)
+declare
+    %test:assertError("SEPM0009")
+function z:zipInconsistentSerializationOptions() {
+    compression:zip(<entry type="xml" name="m.xml"><m/></entry>, false(), "", "UTF8",
+        map { "omit-xml-declaration": true(), "standalone": true() })
+};
