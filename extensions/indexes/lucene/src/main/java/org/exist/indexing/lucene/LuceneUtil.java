@@ -22,11 +22,14 @@
 package org.exist.indexing.lucene;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
@@ -37,6 +40,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queries.function.FunctionScoreQuery;
+import org.apache.lucene.queries.spans.SpanNearQuery;
+import org.apache.lucene.queries.spans.SpanQuery;
+import org.apache.lucene.queries.spans.SpanTermQuery;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.AttributeSource;
 import org.apache.lucene.util.BytesRef;
@@ -160,6 +166,7 @@ public class LuceneUtil {
             case FuzzyQuery fuzzyQuery -> extractTermsFromFuzzy(fuzzyQuery, terms, reader, includeFields);
             case PrefixQuery prefixQuery -> extractTermsFromPrefix(prefixQuery, terms, reader, includeFields);
             case PhraseQuery phraseQuery -> extractTermsFromPhrase(phraseQuery, terms, includeFields);
+            case SpanNearQuery spanNearQuery -> extractTermsFromSpanNear(spanNearQuery, terms, includeFields);
             case TermRangeQuery termRangeQuery ->
                     extractTermsFromTermRange(termRangeQuery, terms, reader, includeFields);
             case DrillDownQuery drillDownQuery ->
@@ -230,6 +237,157 @@ public class LuceneUtil {
                 terms.put(t1.text(), query);
             }
         }
+    }
+
+    /**
+     * Extract terms from a near/proximity query (e.g. `<near slop="n">`). Where the query's
+     * clauses are simple terms (optionally nested inside further `near` clauses), each term is
+     * mapped to the enclosing {@code query} itself, exactly as {@link #extractTermsFromPhrase}
+     * does for phrase queries, so that {@link LuceneMatchListener} and {@link PlainTextHighlighter}
+     * can recognise the proximity constraint and merge the matched terms into a single highlight
+     * span instead of highlighting each term independently (see #833).
+     *
+     * <p>When the clauses are not simple terms (e.g. wildcard/regex/first clauses), we fall back
+     * to the generic per-term extraction so each matched term is still highlighted on its own.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    private static void extractTermsFromSpanNear(final SpanNearQuery query, final Map<Object, Query> terms, final boolean includeFields) {
+        final List<Term> flatTerms = new ArrayList<>();
+        if (flattenSpanNearTerms(query, flatTerms)) {
+            for (final Term t1 : flatTerms) {
+                if (includeFields) {
+                    terms.put(t1, query);
+                } else {
+                    terms.put(t1.text(), query);
+                }
+            }
+        } else {
+            query.visit(new QueryVisitor() {
+                @Override
+                public void consumeTerms(final Query q, final Term... termsArray) {
+                    for (final Term t : termsArray) {
+                        if (includeFields) {
+                            terms.put(t, q);
+                        } else {
+                            terms.put(t.text(), q);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Recursively collect the terms of a near query's clauses, as long as every clause is
+     * either a plain term or a nested near query built from plain terms.
+     *
+     * @return true if all clauses could be flattened into {@code out}
+     */
+    private static boolean flattenSpanNearTerms(final SpanQuery query, final List<Term> out) {
+        if (query instanceof SpanTermQuery termQuery) {
+            out.add(termQuery.getTerm());
+            return true;
+        }
+        if (query instanceof SpanNearQuery nearQuery) {
+            for (final SpanQuery clause : nearQuery.getClauses()) {
+                if (!flattenSpanNearTerms(clause, out)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Ordered term texts of a phrase/near query, together with its slop budget and whether the
+     * terms must occur in order, extracted uniformly from {@link PhraseQuery} and
+     * {@link SpanNearQuery} so that highlighting code can merge matched terms into a single span
+     * regardless of which query form (string syntax or XML `&lt;near&gt;`) produced the match.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    public record ProximityTerms(List<String> terms, int slop, boolean inOrder) {}
+
+    /**
+     * @param query the query mapped to a matched term by {@link #extractTerms}
+     * @return the query's proximity term/slop/order data, or {@code null} if {@code query} is not
+     *     a phrase or (flattenable) near query
+     */
+    public static ProximityTerms asProximityTerms(final Query query) {
+        if (query instanceof PhraseQuery phraseQuery) {
+            final Term[] t = phraseQuery.getTerms();
+            final List<String> texts = new ArrayList<>(t.length);
+            for (final Term term : t) {
+                texts.add(term.text());
+            }
+            return new ProximityTerms(texts, phraseQuery.getSlop(), true);
+        }
+        if (query instanceof SpanNearQuery spanNearQuery) {
+            final List<Term> flatTerms = new ArrayList<>();
+            if (flattenSpanNearTerms(spanNearQuery, flatTerms)) {
+                final List<String> texts = new ArrayList<>(flatTerms.size());
+                for (final Term term : flatTerms) {
+                    texts.add(term.text());
+                }
+                return new ProximityTerms(texts, spanNearQuery.getSlop(), spanNearQuery.isInOrder());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Attempt to complete a proximity match starting at the token stream's current position,
+     * which the caller has already matched against one of {@code proximity.terms()} (at index
+     * {@code firstMatchedIndex}). Consumes further tokens from {@code stream}, tolerating up to
+     * {@code proximity.slop()} tokens that match none of the remaining terms, honouring term
+     * order when {@code proximity.inOrder()} is true.
+     *
+     * <p>On success, returns the captured token states for every matched term, in stream
+     * (i.e. offset) order, so callers can merge them into a single highlight span running from
+     * the first to the last matched term. Returns {@code null} if the remaining terms could not
+     * all be found within the slop budget; some tokens beyond the entry token will still have
+     * been consumed from {@code stream} in that case.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    public static List<AttributeSource.State> matchProximityWindow(final MarkableTokenFilter stream,
+            final ProximityTerms proximity, final int firstMatchedIndex) throws IOException {
+        final List<String> terms = proximity.terms();
+        final List<AttributeSource.State> matched = new ArrayList<>(terms.size());
+        matched.add(stream.captureState());
+        int budget = proximity.slop();
+        if (proximity.inOrder()) {
+            int next = firstMatchedIndex + 1;
+            while (matched.size() < terms.size() && stream.incrementToken()) {
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
+                if (next < terms.size() && text.equals(terms.get(next))) {
+                    matched.add(stream.captureState());
+                    next++;
+                } else if (budget > 0) {
+                    budget--;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            final List<String> remaining = new ArrayList<>(terms);
+            remaining.remove(firstMatchedIndex);
+            while (!remaining.isEmpty() && stream.incrementToken()) {
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
+                final int idx = remaining.indexOf(text);
+                if (idx >= 0) {
+                    remaining.remove(idx);
+                    matched.add(stream.captureState());
+                } else if (budget > 0) {
+                    budget--;
+                } else {
+                    break;
+                }
+            }
+        }
+        return matched.size() == terms.size() ? matched : null;
     }
 
     private static void extractTermsFromTermRange(final TermRangeQuery query, final Map<Object, Query> terms, final IndexReader reader, boolean includeFields) throws IOException {
