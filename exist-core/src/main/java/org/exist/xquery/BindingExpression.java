@@ -178,6 +178,20 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 			inputSequence = newExpr;
 		} else if (returnExpr == oldExpr) {
 			returnExpr = newExpr;
+		} else if (returnExpr instanceof final DebuggableExpression debuggable && debuggable.getFirst() == oldExpr) {
+			// The parser wraps a FLWOR clause's terminal return expression in a
+			// DebuggableExpression (see the "return" action in XQueryTree.g).
+			// DebuggableExpression#analyze does not set itself as the parent
+			// when the caller already provided one (so that structural
+			// getParent() lookups see through it to the real ancestor), which
+			// means oldExpr.getParent() resolves to this BindingExpression
+			// rather than the wrapper. A rewrite that then calls
+			// this.replace(oldExpr, newExpr) -- e.g.
+			// Optimizer#visitFilteredExpr wrapping an Optimizable predicate in
+			// the (#exist:optimize#) pragma -- would otherwise silently no-op
+			// here, leaving the original, unwrapped expression in place at
+			// runtime. See GH-873.
+			debuggable.replace(oldExpr, newExpr);
 		}
 	}
 	
