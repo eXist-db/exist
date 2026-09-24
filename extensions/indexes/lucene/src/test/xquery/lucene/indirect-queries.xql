@@ -145,6 +145,38 @@ function indq:lucene-qname-false-nested-att() {
 };
 
 (:~
+ : GH-873: an indirect query with more than one predicate must still apply
+ : every predicate, not just the Optimizable one used for the index
+ : pre-select.
+ :)
+declare
+    %test:assertTrue
+function indq:lucene-qname-match-additional-predicate() {
+    let $query := 'qname',
+        $hits := collection($indq:COLLECTION)//p1,
+        $hits_direct := collection($indq:COLLECTION)//p1[ft:query(., $query)][@att1 = 'value1'],
+        $hits_indirect := $hits[ft:query(., $query)][@att1 = 'value1'],
+        $result := <results><direct>{ $hits_direct }</direct><indirect>{ $hits_indirect }</indirect></results>
+    return deep-equal($result, $indq:EXPECTED_P1_MATCH)
+};
+
+(:~
+ : GH-873: `outer//$v[pred]` parses `$v[pred]` as an *abbreviated*
+ : FilteredExpression (see the DSLASH rule in XQueryTree.g), a different code
+ : path from the plain `$v[pred]` above. Check that the optimizer produces
+ : the same matches as with the optimizer disabled for this shape too.
+ :)
+declare
+    %test:assertTrue
+function indq:lucene-qname-match-abbreviated-variable() {
+    let $query := 'qname',
+        $v := collection($indq:COLLECTION)//p1,
+        $optimized := collection($indq:COLLECTION)//$v[ft:query(., $query)],
+        $unoptimized := (# exist:optimize enable=no #) { collection($indq:COLLECTION)//$v[ft:query(., $query)] }
+    return deep-equal($optimized, $unoptimized)
+};
+
+(:~
  : [Lucene FT index, qname] in/direct hits on element nodes, false match condition on value of non-nested attribute
  :)
 declare

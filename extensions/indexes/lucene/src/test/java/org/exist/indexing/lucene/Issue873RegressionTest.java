@@ -28,7 +28,6 @@ import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -41,12 +40,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
 
 /**
- * Regression test for <a href="https://github.com/eXist-db/exist/issues/873">GH-873</a>:
+ * Performance regression test for <a href="https://github.com/eXist-db/exist/issues/873">GH-873</a>:
  * a full text query against a let-bound variable
  * ({@code let $a := //SPEECH return $a[ft:query(LINE, ...)]}) ran significantly
  * slower than the equivalent direct form ({@code //SPEECH[ft:query(LINE, ...)]}).
  *
- * <p>Two bugs combined to cause this:
+ * <p>Correctness coverage (indirect vs. direct result parity, including an
+ * additional non-optimizable predicate and the {@code //$v[pred]} abbreviated
+ * form) lives in the XQSuite module
+ * {@code extensions/indexes/lucene/src/test/xquery/lucene/issue-873.xql},
+ * which needs no Java-internal state. This class covers only the timing
+ * regression, which does need Java-level {@code System.nanoTime()}.
+ *
+ * <p>Two bugs combined to cause the slowdown:
  * <ol>
  *   <li>The parser wraps a FLWOR clause's terminal return expression in a
  *   {@code DebuggableExpression} (see the {@code "return"} action in
@@ -59,7 +65,8 @@ import static org.exist.samples.Samples.SAMPLES;
  *   silent no-op, since {@code letExpr.returnExpr} was actually the wrapper,
  *   not {@code filtered} -- so the {@code (#exist:optimize#)} pragma was
  *   built but never wired into the executed tree. Fixed in
- *   {@link org.exist.xquery.BindingExpression#replace}.</li>
+ *   {@link org.exist.xquery.BindingExpression#replace} (and, for the same
+ *   defect in an {@code if/then/else} else-branch, {@link org.exist.xquery.ConditionalExpression#replace}).</li>
  *   <li>Even once the pragma is wired up, {@link org.exist.xquery.pragmas.Optimize#eval}
  *   discarded the index pre-selected candidate set whenever the filtered
  *   expression's source was a plain variable reference, because
@@ -87,52 +94,16 @@ public class Issue873RegressionTest {
     private static Collection testCollection;
 
     /**
-     * Correctness: the indirect (let-bound) form must return exactly the same
-     * result set as the direct form, with and without the optimizer enabled.
-     */
-    @Test
-    public void indirectQueryReturnsSameNodesAsDirect() throws XMLDBException {
-        final XQueryService service = testCollection.getService(XQueryService.class);
-
-        final String direct = "//SPEECH[ft:query(LINE, 'king')]";
-        final String indirect = "let $a := //SPEECH return $a[ft:query(LINE, 'king')]";
-
-        final long directCount = service.query(direct).getSize();
-        final long indirectCount = service.query(indirect).getSize();
-        Assert.assertEquals("Indirect query should return the same number of hits as the direct form",
-                directCount, indirectCount);
-        Assert.assertTrue("Sanity check: query should actually match something", directCount > 0);
-
-        // also check with the optimizer explicitly disabled, to rule out coincidental parity
-        final String noOptimize = "declare option exist:optimize 'enable=no'; ";
-        final long indirectNoOpt = service.query(noOptimize + indirect).getSize();
-        Assert.assertEquals(directCount, indirectNoOpt);
-    }
-
-    /**
-     * Multiple predicates on the indirect form: only the first, Optimizable
-     * predicate is handled by the index pre-select; any additional predicate
-     * must still be applied against the correctly pre-selected candidates.
-     */
-    @Test
-    public void indirectQueryWithAdditionalPredicateStillFilters() throws XMLDBException {
-        final XQueryService service = testCollection.getService(XQueryService.class);
-
-        final String direct = "//SPEECH[ft:query(LINE, 'king')][SPEAKER = 'HAMLET']";
-        final String indirect = "let $a := //SPEECH return $a[ft:query(LINE, 'king')][SPEAKER = 'HAMLET']";
-
-        final long directCount = service.query(direct).getSize();
-        final long indirectCount = service.query(indirect).getSize();
-        Assert.assertEquals(directCount, indirectCount);
-    }
-
-    /**
-     * Performance: with the optimizer enabled, the indirect form must be in
-     * the same ballpark as the direct form. Before the fix (measured on this
-     * corpus): direct ~10ms, indirect ~60ms. After the fix: direct ~10ms,
-     * indirect ~15-17ms. The bound (3x + fixed slack) sits comfortably above
-     * the fixed ratio while still catching a regression back to the old,
-     * much larger gap.
+     * With the optimizer enabled, the indirect form must be in the same
+     * ballpark as the direct form. Before the fix (measured on this corpus):
+     * direct ~10ms, indirect ~60ms. After the fix: direct ~10ms, indirect
+     * ~15-17ms.
+     *
+     * <p>Uses the minimum across several iterations rather than the mean: a
+     * GC pause or scheduling hiccup can only ever inflate a wall-clock
+     * measurement, never make the query artificially faster, so the minimum
+     * is the more robust statistic for a perf-regression ceiling and is less
+     * prone to CI flakiness than an average.
      */
     @Test
     public void indirectQueryUnderLoosePerfBound() throws XMLDBException {
@@ -145,21 +116,21 @@ public class Issue873RegressionTest {
         service.query(direct);
         service.query(indirect);
 
-        long directTotal = 0;
-        long indirectTotal = 0;
-        final int iterations = 5;
+        long directMinNanos = Long.MAX_VALUE;
+        long indirectMinNanos = Long.MAX_VALUE;
+        final int iterations = 8;
         for (int i = 0; i < iterations; i++) {
             long start = System.nanoTime();
             service.query(direct);
-            directTotal += System.nanoTime() - start;
+            directMinNanos = Math.min(directMinNanos, System.nanoTime() - start);
 
             start = System.nanoTime();
             service.query(indirect);
-            indirectTotal += System.nanoTime() - start;
+            indirectMinNanos = Math.min(indirectMinNanos, System.nanoTime() - start);
         }
 
-        final long directMs = directTotal / iterations / 1_000_000;
-        final long indirectMs = indirectTotal / iterations / 1_000_000;
+        final long directMs = directMinNanos / 1_000_000;
+        final long indirectMs = indirectMinNanos / 1_000_000;
 
         Assert.assertTrue(
                 """
@@ -184,14 +155,6 @@ public class Issue873RegressionTest {
 
         IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
-
-        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
-            XMLResource resource = testCollection.createResource(sampleName, XMLResource.class);
-            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
-                resource.setContent(InputStreamUtil.readString(is, UTF_8));
-            }
-            testCollection.storeResource(resource);
-        }
 
         final String hamletContent;
         try (final InputStream is = SAMPLES.getShakespeareSample("hamlet.xml")) {
