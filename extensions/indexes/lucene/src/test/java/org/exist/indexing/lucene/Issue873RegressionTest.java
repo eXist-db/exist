@@ -21,12 +21,14 @@
  */
 package org.exist.indexing.lucene;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -38,6 +40,8 @@ import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Performance regression test for <a href="https://github.com/eXist-db/exist/issues/873">GH-873</a>:
@@ -76,10 +80,10 @@ import static org.exist.samples.Samples.SAMPLES;
  *   in {@code Optimize#eval}.</li>
  * </ol>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class Issue873RegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public final static ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String COLLECTION_CONFIG = """
@@ -92,6 +96,14 @@ public class Issue873RegressionTest {
                 </index>
             </collection>""";
     private static Collection testCollection;
+
+    // The bug scales with corpus size: the buggy code path re-evaluates the
+    // predicate once per node across the FULL, unfiltered variable value
+    // instead of the small index pre-selected candidate set. The bundled
+    // Shakespeare samples (3 plays) aren't large enough on their own to make
+    // that gap reliably visible in wall-clock time, so hamlet.xml is stored
+    // repeatedly under distinct names to inflate the corpus.
+    private static final int HAMLET_COPIES = 40;
 
     /**
      * With the optimizer enabled, the indirect form must be in the same
@@ -132,26 +144,17 @@ public class Issue873RegressionTest {
         final long directMs = directMinNanos / 1_000_000;
         final long indirectMs = indirectMinNanos / 1_000_000;
 
-        Assert.assertTrue(
+        assertTrue(indirectMs <= directMs * 3 + 15,
                 """
                 Indirect form (%dms) should not be drastically slower than the direct form (%dms) \
-                -- the (#exist:optimize#) pragma may not be reaching the index pre-select again (GH-873)""".formatted(indirectMs, directMs),
-                indirectMs <= directMs * 3 + 15);
+                -- the (#exist:optimize#) pragma may not be reaching the index pre-select again (GH-873)""".formatted(indirectMs, directMs));
     }
 
-    // The bug scales with corpus size: the buggy code path re-evaluates the
-    // predicate once per node across the FULL, unfiltered variable value
-    // instead of the small index pre-selected candidate set. The bundled
-    // Shakespeare samples (3 plays) aren't large enough on their own to make
-    // that gap reliably visible in wall-clock time, so hamlet.xml is stored
-    // repeatedly under distinct names to inflate the corpus.
-    private static final int HAMLET_COPIES = 40;
-
-    @BeforeClass
+    @BeforeAll
     public static void initDatabase() throws XMLDBException, IOException {
         CollectionManagementService service = server.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("test873");
-        Assert.assertNotNull(testCollection);
+        assertNotNull(testCollection);
 
         IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
