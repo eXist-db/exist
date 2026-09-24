@@ -172,12 +172,13 @@ function unic-smp-l:lucene-finds-supplementary-sip-indexed() {
 
 (:~
  : Asserts that Lucene indexes and finds all supplementary characters in group sip-dropped (4 codepoints).
- : Pending until Lucene fix for issue #787.
+ : No longer reproduces: Lucene's StandardTokenizer now recognizes these SIP characters
+ : under UAX#29 word segmentation (verified 2026-09-24 against Lucene 10.5.1).
  :
  : @return xs:string "sip-dropped: 4"
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Lucene drops these SIP characters, see #787")
     %test:assertEquals("sip-dropped: 4")
 function unic-smp-l:lucene-finds-supplementary-sip-dropped() {
     unic-smp-l:lucene-finds-count("sip-dropped")
