@@ -24,10 +24,8 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.MemTreeBuilder;
 
@@ -67,53 +65,24 @@ public class PlainTextHighlighter {
     }
 
     public List<Offset> getOffsets(String content, Analyzer analyzer) throws IOException {
-        List<Offset> offsets = null;
+        final List<Offset> offsets = new ArrayList<>();
         try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(content));
              MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
             stream.reset();
             while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query termQuery = termMap.get(text);
                 if (termQuery != null) {
                     // Phrase and near/proximity queries need special handling to avoid marking
                     // partial matches; both forms are matched the same slop-aware way so that
                     // string ('"a b"~n') and XML (<near slop="n">) queries highlight identically,
                     // see #833.
-                    final LuceneUtil.ProximityTerms proximity = LuceneUtil.asProximityTerms(termQuery);
-                    if (proximity != null) {
-                        final int firstMatchedIndex = proximity.inOrder()
-                                ? (text.equals(proximity.terms().getFirst()) ? 0 : -1)
-                                : proximity.terms().indexOf(text);
-                        if (firstMatchedIndex >= 0) {
-                            // Cache lookahead tokens so a failed attempt can be replayed to the
-                            // outer scan instead of losing those tokens (matches original phrase
-                            // handling here, unlike LuceneMatchListener's simpler best-effort scan).
-                            stream.mark();
-                            final List<State> stateList = LuceneUtil.matchProximityWindow(stream, proximity, firstMatchedIndex);
-                            if (stateList != null) {
-                                if (offsets == null) {
-                                    offsets = new ArrayList<>();
-                                }
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.getLast());
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                offsets.add(new Offset(start, end));
-                            } else {
-                                stream.rewindToMark();
-                            }
-                        }
-                    } else {
-                        if (offsets == null) {
-                            offsets = new ArrayList<>();
-                        }
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
-                    }
+                    LuceneUtil.highlightToken(stream, text, termQuery,
+                            (start, end) -> offsets.add(new Offset(start, end)));
                 }
             }
         }
-        return offsets;
+        return offsets.isEmpty() ? null : offsets;
     }
 
     public static class Offset {

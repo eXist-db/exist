@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
@@ -279,25 +280,23 @@ public class LuceneUtil {
     }
 
     /**
-     * Recursively collect the terms of a near query's clauses, as long as every clause is
-     * either a plain term or a nested near query built from plain terms.
+     * Collect the terms of a near query's direct clauses, as long as every clause is a plain
+     * term. Deliberately does not recurse into a nested {@code <near>} clause: that clause has
+     * its own slop/order constraint which {@link #asProximityTerms} has no way to represent
+     * alongside the outer one, so a query with a nested near clause is left unflattened here and
+     * falls back to per-term highlighting instead of an inaccurate single merged span.
      *
-     * @return true if all clauses could be flattened into {@code out}
+     * @return true if every direct clause is a plain term, and all were added to {@code out}
      */
-    private static boolean flattenSpanNearTerms(final SpanQuery query, final List<Term> out) {
-        if (query instanceof SpanTermQuery termQuery) {
-            out.add(termQuery.getTerm());
-            return true;
-        }
-        if (query instanceof SpanNearQuery nearQuery) {
-            for (final SpanQuery clause : nearQuery.getClauses()) {
-                if (!flattenSpanNearTerms(clause, out)) {
-                    return false;
-                }
+    private static boolean flattenSpanNearTerms(final SpanNearQuery query, final List<Term> out) {
+        for (final SpanQuery clause : query.getClauses()) {
+            if (clause instanceof SpanTermQuery termQuery) {
+                out.add(termQuery.getTerm());
+            } else {
+                return false;
             }
-            return true;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -311,6 +310,15 @@ public class LuceneUtil {
     public record ProximityTerms(List<String> terms, int slop, boolean inOrder) {}
 
     /**
+     * <p><b>Known limitation:</b> {@link #matchProximityWindow} always scans forward from the
+     * first-encountered term, so a genuine {@link PhraseQuery} hit that only exists because of
+     * that query's reordering-tolerant slop (see its javadoc) — i.e. the query's own first term
+     * occurs <em>after</em> its other terms in the text — is never found, and the hit gets no
+     * highlight span at all rather than an inaccurate one. Fixing this would need buffering
+     * (matching backwards isn't possible on a forward-only token stream), which is out of scope
+     * here; see the {@code slop-string-vs-xml-reordering-disagreement} test and #833 for the
+     * underlying semantic gap this stems from.</p>
+     *
      * @param query the query mapped to a matched term by {@link #extractTerms}
      * @return the query's proximity term/slop/order data, or {@code null} if {@code query} is not
      *     a phrase or (flattenable) near query
@@ -388,6 +396,66 @@ public class LuceneUtil {
             }
         }
         return matched.size() == terms.size() ? matched : null;
+    }
+
+    /**
+     * Receives the [start, end) character offset of one highlight span, in whatever way the
+     * caller wants it recorded (into an offset list, straight into a document builder, etc.).
+     *
+     * @see #highlightToken
+     */
+    @FunctionalInterface
+    public interface SpanConsumer {
+        void accept(int start, int end);
+    }
+
+    /**
+     * Shared token-stream-driven highlighting step used by {@code LuceneMatchListener},
+     * {@code PlainTextHighlighter} and {@code Field} (ft:field()): given a token that matched one
+     * of {@code query}'s terms, decide the [start, end) span to highlight and hand it to
+     * {@code onMatch}.
+     *
+     * <p>For a phrase/near query ({@link #asProximityTerms} returns non-null), this merges the
+     * whole matched proximity window (see {@link #matchProximityWindow}) into a single span
+     * instead of highlighting {@code text}'s occurrence alone — this is the #833 fix, shared so
+     * all three highlighting call sites stay in sync. Lookahead tokens consumed by a failed
+     * attempt are replayed to the caller's next {@code incrementToken()} call (via
+     * {@link MarkableTokenFilter#mark()}/{@link MarkableTokenFilter#rewindToMark()}) so they
+     * remain available as ordinary term matches. For any other query type, the current token's
+     * own offsets are used directly.
+     *
+     * @param stream the token stream, positioned on a token equal to {@code text}
+     * @param text the current token's text (already looked up in the caller's term map)
+     * @param query the query that {@code text} was mapped to
+     * @param onMatch invoked with the highlight span, if any
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    public static void highlightToken(final MarkableTokenFilter stream, final String text, final Query query,
+            final SpanConsumer onMatch) throws IOException {
+        final ProximityTerms proximity = asProximityTerms(query);
+        if (proximity == null) {
+            final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+            onMatch.accept(offsetAttr.startOffset(), offsetAttr.endOffset());
+            return;
+        }
+        final int firstMatchedIndex = proximity.inOrder()
+                ? (text.equals(proximity.terms().getFirst()) ? 0 : -1)
+                : proximity.terms().indexOf(text);
+        if (firstMatchedIndex < 0) {
+            return;
+        }
+        stream.mark();
+        final List<AttributeSource.State> stateList = matchProximityWindow(stream, proximity, firstMatchedIndex);
+        if (stateList == null) {
+            stream.rewindToMark();
+            return;
+        }
+        stream.restoreState(stateList.getFirst());
+        final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
+        stream.restoreState(stateList.getLast());
+        final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
+        onMatch.accept(start, end);
     }
 
     private static void extractTermsFromTermRange(final TermRangeQuery query, final Map<Object, Query> terms, final IndexReader reader, boolean includeFields) throws IOException {
