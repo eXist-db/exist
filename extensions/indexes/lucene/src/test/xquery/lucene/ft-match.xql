@@ -48,6 +48,10 @@ declare variable $ftt:DATA :=
                 <p>text in nested div and more <hi>text</hi>.</p>
             </div>
         </div>
+        <div>
+            <!-- foul@0 ... fair@6: reversed relative to the query "fair foul", for #833 -->
+            <p>foul deed makes it all seem fair today</p>
+        </div>
     </body>;
 
 (:~ Data for util:expand + field-query tests (PR #3467). Dates 1970–1976 in date and p; Nixon in p. :)
@@ -210,6 +214,43 @@ function ftt:slop-string-vs-xml-equality-nonadjacent() {
             $match-count := count($expanded//exist:match)
         return ($hit-count, $match-count)
     return $results
+};
+
+(:~
+ : Documents that '"a b"~n' and <near slop="n"> (default ordered) genuinely disagree on which
+ : documents match when word order varies in the indexed text — not a bug, but two different
+ : Lucene slop semantics (PhraseQuery's reordering-tolerant edit distance vs SpanNearQuery's
+ : strict positional gap). Text has foul@0 ... fair@6 (reversed vs. the query "fair foul"): the
+ : phrase form's edit-distance slop tolerates the reversal at slop=7 (5 base + 2 for the swap);
+ : the ordered near form never matches a reversed pair, at any slop.
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ : @return xs:integer+ (hit-count for the string query, hit-count for the XML query) at slop=6 (no
+ :     match either way) then slop=7 (string matches, XML never does)
+ :)
+declare
+    %test:assertEquals(0, 0, 1, 0)
+function ftt:slop-string-vs-xml-reordering-disagreement() {
+    (
+        count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~6')]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., <query><near slop="6"><term>fair</term><term>foul</term></near></query>)]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~7')]),
+        count(collection($ftt:COLLECTION)//div[ft:query(., <query><near slop="7"><term>fair</term><term>foul</term></near></query>)])
+    )
+};
+
+(:~
+ : The phrase-as-near query option makes '"a b"~n' match with <near>'s ordered, non-reordering-
+ : tolerant semantics: the reversed-order text from slop-string-vs-xml-reordering-disagreement no
+ : longer matches the string-syntax query at slop=7 once the option is set, agreeing with the XML
+ : near form (which never matches it, at any slop).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:assertEquals(0)
+function ftt:phrase-as-near-option-fixes-reordering-disagreement() {
+    count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~7', map { "phrase-as-near": "yes" })])
 };
 
 (:~
