@@ -21,6 +21,13 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.RegexpQuery;
+import org.apache.lucene.util.automaton.Operations;
+import org.apache.lucene.util.automaton.RegExp;
+import org.apache.lucene.util.automaton.TooComplexToDeterminizeException;
+import org.exist.xquery.regex.RegexUtil;
+
 import javax.annotation.Nullable;
 
 /**
@@ -31,15 +38,22 @@ import javax.annotation.Nullable;
  * constructs users actually write, they disagree on: {@code \d} (Lucene is ASCII-only), {@code \w}
  * (Lucene includes {@code _} and excludes non-ASCII letters), {@code .} (Lucene matches a newline;
  * XPath does not), character-class subtraction (Lucene has no such syntax and misreads it), and
- * {@code \p{..}} (Lucene throws {@code IllegalArgumentException}). Case-insensitive matching in
- * Lucene folds ASCII only. Lucene also treats a backslash before any character as escaping that
- * character, so XPath's {@code \n}, {@code \r} and {@code \t} would become the letters.</p>
+ * {@code \p{..}} (Lucene throws {@code IllegalArgumentException}). Lucene also treats a backslash
+ * before any character as escaping that character, so XPath's {@code \n}, {@code \r} and
+ * {@code \t} would become the letters. The XQuery 4.0 additions -- {@code \b}, {@code \B} and the
+ * named lookarounds such as {@code (*positive_lookahead:...)} -- have no Lucene equivalent.</p>
+ *
+ * <p>Case-insensitive matching differs too. XPath's case variants come from Unicode case mappings;
+ * Lucene's folding agrees with them for every ASCII letter except {@code i} and {@code I}, whose
+ * variants in XPath also include U+0130 and U+0131 (the Turkish dotted capital and dotless small
+ * i). For non-ASCII letters the two are not guaranteed to agree at all.</p>
  *
  * <p>The rule is therefore conservative: a pattern is translatable only if every construct in it
  * means the same thing in both dialects. Anything else goes to the fallback expression, which is
  * {@code fn:matches} itself -- slower, and right. The one construct that is rewritten rather than
  * rejected is {@code .}, which becomes {@code [^\n\r]} so that the common {@code ^a.b$} stays on
- * the index.</p>
+ * the index. Under the {@code i} flag, {@code i} and {@code I} are rewritten as well, to include
+ * U+0130 and U+0131.</p>
  *
  * <p>Anchors are handled as before: Lucene's {@code RegexpQuery} matches whole terms, so
  * {@code ^X} becomes {@code X.*}, {@code X$} becomes {@code .*X}, and {@code ^X$} becomes
@@ -59,6 +73,12 @@ public final class XPathToLuceneRegexTranslator {
     /** What XPath's {@code .} matches, spelled for Lucene: any character except LF and CR. */
     private static final String XPATH_ANY_CHARACTER = "[^\n\r]";
 
+    /**
+     * The case variants of {@code i} and {@code I} that Lucene's folding misses: U+0130 (capital I
+     * with dot above) and U+0131 (small dotless i).
+     */
+    private static final String TURKISH_I_VARIANTS = "\u0130\u0131";
+
     private XPathToLuceneRegexTranslator() {
     }
 
@@ -76,8 +96,9 @@ public final class XPathToLuceneRegexTranslator {
      * Whether a pattern can be served by Lucene with XPath semantics.
      *
      * @param xpathPattern the pattern
-     * @param caseInsensitive whether the {@code i} flag is in effect; Lucene folds case for ASCII
-     *   letters only, so a case-insensitive pattern containing any other letter is not translatable
+     * @param caseInsensitive whether the {@code i} flag is in effect; a case-insensitive pattern
+     *   containing a non-ASCII letter is not translatable, since XPath's and Lucene's case variants
+     *   are not guaranteed to agree for those
      * @return true if {@link #translate} yields an equivalent Lucene pattern
      */
     public static boolean isTranslatable(@Nullable final String xpathPattern, final boolean caseInsensitive) {
@@ -87,27 +108,77 @@ public final class XPathToLuceneRegexTranslator {
         if (!xpathPattern.startsWith("^") && !xpathPattern.endsWith("$")) {
             return false;
         }
-        return !containsUntranslatableConstruct(xpathPattern, caseInsensitive);
+        return !RegexUtil.needsXQuery40JavaRegex(xpathPattern)
+                && !containsUntranslatableConstruct(xpathPattern, caseInsensitive);
     }
 
-    /** Walks the pattern once, tracking whether the position is inside a character class. */
+    /**
+     * Whether the range index can serve a pattern: it is {@link #isTranslatable translatable}, and
+     * Lucene can build a query for the translation. A pattern can be translatable and still too
+     * expensive for Lucene to determinize, e.g. {@code ^(a|b)*a(a|b){20}$}; it is valid XPath, so
+     * the answer is to evaluate it with {@code fn:matches}, not to raise an error.
+     *
+     * @param xpathPattern the pattern
+     * @param matchFlags the Lucene match flags, as passed to {@link #toQuery}
+     * @return true if {@link #toQuery} will succeed and give the XPath answer
+     */
+    public static boolean isServable(@Nullable final String xpathPattern, final int matchFlags) {
+        if (!isTranslatable(xpathPattern, isCaseInsensitive(matchFlags))) {
+            return false;
+        }
+        try {
+            toQuery("", xpathPattern, matchFlags);
+            return true;
+        } catch (final IllegalArgumentException | TooComplexToDeterminizeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Builds the Lucene query for a translatable pattern.
+     *
+     * <p>Syntax flags are passed explicitly. {@code RegexpQuery(Term)} would default to
+     * {@code RegExp.ALL}, under which {@code & ~ # @} and {@code <n-m>} are operators; XPath treats
+     * them as literals.</p>
+     *
+     * @param field the index field
+     * @param xpathPattern the XPath pattern, already checked with {@link #isTranslatable}
+     * @param matchFlags the Lucene match flags, e.g. {@code RegExp.ASCII_CASE_INSENSITIVE}
+     * @return the query
+     * @throws IllegalArgumentException if Lucene cannot parse the translation
+     * @throws TooComplexToDeterminizeException if Lucene cannot determinize it within its work limit
+     */
+    public static RegexpQuery toQuery(final String field, final String xpathPattern, final int matchFlags) {
+        final String pattern = translate(xpathPattern, isCaseInsensitive(matchFlags));
+        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+    }
+
+    private static boolean isCaseInsensitive(final int matchFlags) {
+        return (matchFlags & RegExp.ASCII_CASE_INSENSITIVE) != 0;
+    }
+
+    /**
+     * Walks the pattern once by code point, so that a letter outside the Basic Multilingual Plane
+     * is seen whole rather than as two surrogates, tracking whether the position is inside a
+     * character class.
+     */
     private static boolean containsUntranslatableConstruct(final String pattern, final boolean caseInsensitive) {
         boolean inClass = false;
         int i = 0;
         while (i < pattern.length()) {
-            final char c = pattern.charAt(i);
+            final int c = pattern.codePointAt(i);
             if (c == '\\') {
                 if (isUntranslatableEscape(pattern, i)) {
                     return true;
                 }
-                i += 2;
+                i += 1 + Character.charCount(pattern.codePointAt(i + 1));
                 continue;
             }
             if (isUntranslatableAt(pattern, i, inClass) || (caseInsensitive && isNonAsciiLetter(c))) {
                 return true;
             }
             inClass = nextClassState(inClass, c);
-            i++;
+            i += Character.charCount(c);
         }
         return false;
     }
@@ -130,15 +201,15 @@ public final class XPathToLuceneRegexTranslator {
         return c == '(' && i + 1 < pattern.length() && pattern.charAt(i + 1) == '?';
     }
 
-    private static boolean nextClassState(final boolean inClass, final char c) {
+    private static boolean nextClassState(final boolean inClass, final int c) {
         if (inClass) {
             return c != ']';
         }
         return c == '[';
     }
 
-    /** Lucene's case folding is ASCII-only, so any other letter defeats the {@code i} flag. */
-    private static boolean isNonAsciiLetter(final char c) {
+    /** A letter whose case variants XPath and Lucene are not guaranteed to agree on. */
+    private static boolean isNonAsciiLetter(final int c) {
         return c > 0x7F && Character.isLetter(c);
     }
 
@@ -151,6 +222,19 @@ public final class XPathToLuceneRegexTranslator {
      * @return the Lucene-equivalent pattern
      */
     public static String translate(final String xpathPattern) {
+        return translate(xpathPattern, false);
+    }
+
+    /**
+     * Translate an XPath fn:matches pattern to Lucene RegExp format.
+     *
+     * <p>Callers are expected to have checked {@link #isTranslatable} first.</p>
+     *
+     * @param xpathPattern the XPath regex pattern (e.g. "^b", "b$", "^b$")
+     * @param caseInsensitive whether the {@code i} flag is in effect
+     * @return the Lucene-equivalent pattern
+     */
+    public static String translate(final String xpathPattern, final boolean caseInsensitive) {
         if (xpathPattern == null || xpathPattern.isEmpty()) {
             return xpathPattern;
         }
@@ -161,56 +245,99 @@ public final class XPathToLuceneRegexTranslator {
             if (xpathPattern.length() == 2) {
                 return "";
             }
-            return rewriteDots(xpathPattern.substring(1, xpathPattern.length() - 1));
+            return rewriteBody(xpathPattern.substring(1, xpathPattern.length() - 1), caseInsensitive);
         }
         if (startsWithCaret && !xpathPattern.contains("$")) {
             // ^X -> X.* (prefix)
             if (xpathPattern.length() == 1) {
                 return "^";
             }
-            return rewriteDots(xpathPattern.substring(1)) + ".*";
+            return rewriteBody(xpathPattern.substring(1), caseInsensitive) + ".*";
         }
         if (endsWithDollar && !xpathPattern.contains("^")) {
             // X$ -> .*X (suffix)
             if (xpathPattern.length() == 1) {
                 return "$";
             }
-            return ".*" + rewriteDots(xpathPattern.substring(0, xpathPattern.length() - 1));
+            return ".*" + rewriteBody(xpathPattern.substring(0, xpathPattern.length() - 1), caseInsensitive);
         }
-        return rewriteDots(xpathPattern);
+        return rewriteBody(xpathPattern, caseInsensitive);
     }
 
     /**
-     * Replaces each unescaped {@code .} outside a character class with {@link #XPATH_ANY_CHARACTER}.
-     * The {@code .*} the anchor rewrite appends is deliberately left alone: there it stands for
-     * "anything at all", which is what an unanchored end means in XPath too.
+     * Rewrites the constructs Lucene reads differently but can express: each unescaped {@code .}
+     * outside a character class becomes {@link #XPATH_ANY_CHARACTER}, and under the {@code i} flag
+     * the {@code i} and {@code I} case variants Lucene misses are added. The {@code .*} the anchor
+     * rewrite appends is deliberately left alone: there it stands for "anything at all", which is
+     * what an unanchored end means in XPath too.
      */
-    private static String rewriteDots(final String body) {
+    private static String rewriteBody(final String body, final boolean caseInsensitive) {
         final StringBuilder out = new StringBuilder(body.length() + 8);
-        boolean inClass = false;
         int i = 0;
         while (i < body.length()) {
             final char c = body.charAt(i);
             if (c == '\\' && i + 1 < body.length()) {
                 out.append(c).append(body.charAt(i + 1));
                 i += 2;
-                continue;
-            }
-            if (inClass) {
-                if (c == ']') {
-                    inClass = false;
-                }
-                out.append(c);
             } else if (c == '[') {
-                inClass = true;
-                out.append(c);
+                i = appendClass(body, i, caseInsensitive, out);
             } else if (c == '.') {
                 out.append(XPATH_ANY_CHARACTER);
+                i++;
+            } else if (caseInsensitive && (c == 'i' || c == 'I')) {
+                out.append("[iI").append(TURKISH_I_VARIANTS).append(']');
+                i++;
             } else {
                 out.append(c);
+                i++;
             }
-            i++;
         }
         return out.toString();
+    }
+
+    /**
+     * Copies the character class starting at {@code start}, adding U+0130 and U+0131 under the
+     * {@code i} flag when the class contains {@code i} or {@code I}, as a character or within a
+     * range. Adding them is right for a negated class too: its complement then excludes them, as
+     * XPath's does.
+     *
+     * @return the index just past the class
+     */
+    private static int appendClass(final String body, final int start, final boolean caseInsensitive, final StringBuilder out) {
+        int i = start + 1;
+        boolean coversI = false;
+        int previous = -1;
+        while (i < body.length() && body.charAt(i) != ']') {
+            final char c = body.charAt(i);
+            final int atom;
+            if (c == '\\' && i + 1 < body.length()) {
+                atom = body.charAt(i + 1);
+                i += 2;
+            } else if (c == '-' && previous >= 0 && i + 1 < body.length() && body.charAt(i + 1) != ']') {
+                final int end = body.charAt(i + 1) == '\\' && i + 2 < body.length() ? body.charAt(i + 2) : body.charAt(i + 1);
+                coversI |= inRange('i', previous, end) || inRange('I', previous, end);
+                i += body.charAt(i + 1) == '\\' ? 3 : 2;
+                previous = -1;
+                continue;
+            } else {
+                atom = c;
+                i++;
+            }
+            coversI |= atom == 'i' || atom == 'I';
+            previous = atom;
+        }
+        out.append(body, start, i);
+        if (caseInsensitive && coversI) {
+            out.append(TURKISH_I_VARIANTS);
+        }
+        if (i < body.length()) {
+            out.append(']');
+            i++;
+        }
+        return i;
+    }
+
+    private static boolean inRange(final char c, final int from, final int to) {
+        return from <= c && c <= to;
     }
 }

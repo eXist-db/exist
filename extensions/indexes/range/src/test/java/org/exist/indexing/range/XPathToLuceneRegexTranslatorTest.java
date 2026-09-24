@@ -185,7 +185,7 @@ public class XPathToLuceneRegexTranslatorTest {
         assertFalse(XPathToLuceneRegexTranslator.isTranslatable("^\\i\\c*$"));
     }
 
-    /** Lucene folds case for ASCII letters only. */
+    /** XPath's and Lucene's case variants are not guaranteed to agree for non-ASCII letters. */
     @Test
     public void caseInsensitiveWithNonAsciiLettersIsNot() {
         assertTrue(XPathToLuceneRegexTranslator.isTranslatable("^caf\u00e9$", false));
@@ -218,5 +218,64 @@ public class XPathToLuceneRegexTranslatorTest {
     public void anchorRewriteStillUsesDotStarForTheOpenEnd() {
         assertEquals("foo.*", XPathToLuceneRegexTranslator.translate("^foo"));
         assertTrue(luceneMatches(XPathToLuceneRegexTranslator.translate("^foo"), "foo\nbar"));
+    }
+
+    // ---- constructs added for review of #6748 ----
+
+    @Test
+    public void xquery40RegexExtensionsAreNot() {
+        assertFalse("word boundary", XPathToLuceneRegexTranslator.isTranslatable("^\\bcat\\b$"));
+        assertFalse("non-word boundary", XPathToLuceneRegexTranslator.isTranslatable("^\\Bcat$"));
+        assertFalse("named lookahead", XPathToLuceneRegexTranslator.isTranslatable("^(*positive_lookahead:a)a$"));
+        assertFalse("named lookbehind", XPathToLuceneRegexTranslator.isTranslatable("a(*negative_lookbehind:b)$"));
+    }
+
+    /** A letter outside the BMP is two chars; it must still be seen as a non-ASCII letter. */
+    @Test
+    public void supplementaryLettersAreSeenWholeUnderCaseInsensitive() {
+        final String deseretCapitalLongI = "^\uD801\uDC00$";
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable(deseretCapitalLongI, false));
+        assertFalse(XPathToLuceneRegexTranslator.isTranslatable(deseretCapitalLongI, true));
+    }
+
+    private static boolean luceneMatchesCaseInsensitive(final String lucenePattern, final String input) {
+        final RegExp re = new RegExp(lucenePattern, RegExp.NONE, RegExp.ASCII_CASE_INSENSITIVE);
+        return new CharacterRunAutomaton(Operations.determinize(re.toAutomaton(), 10_000)).run(input);
+    }
+
+    /**
+     * XPath's case variants of i and I include U+0130 and U+0131, which Lucene's folding does not.
+     * Under the i flag the translation adds them.
+     */
+    @Test
+    public void caseInsensitiveIIncludesTheTurkishVariants() {
+        final String lucene = XPathToLuceneRegexTranslator.translate("^Smith$", true);
+        assertEquals("Sm[iI\u0130\u0131]th", lucene);
+        assertTrue(luceneMatchesCaseInsensitive(lucene, "SMITH"));
+        assertTrue(luceneMatchesCaseInsensitive(lucene, "sm\u0131th"));
+        assertTrue(luceneMatchesCaseInsensitive(lucene, "SM\u0130TH"));
+        assertEquals("without the flag nothing changes", "Smith", XPathToLuceneRegexTranslator.translate("^Smith$", false));
+    }
+
+    @Test
+    public void caseInsensitiveClassesCoveringIIncludeTheTurkishVariants() {
+        assertEquals("[a-z\u0130\u0131]+", XPathToLuceneRegexTranslator.translate("^[a-z]+$", true));
+        assertEquals("[xi\u0130\u0131]", XPathToLuceneRegexTranslator.translate("^[xi]$", true));
+        assertEquals("a class not covering i is left alone", "[a-h]", XPathToLuceneRegexTranslator.translate("^[a-h]$", true));
+
+        final String negated = XPathToLuceneRegexTranslator.translate("^[^i]$", true);
+        assertEquals("[^i\u0130\u0131]", negated);
+        assertFalse("a negated class excludes the variants too", luceneMatchesCaseInsensitive(negated, "\u0131"));
+        assertTrue(luceneMatchesCaseInsensitive(negated, "x"));
+    }
+
+    /** Translatable, but beyond Lucene's determinization limit: the index must decline it. */
+    @Test
+    public void patternsLuceneCannotDeterminizeAreNotServable() {
+        final String exponential = "^(a|b)*a(a|b){20}$";
+        assertTrue(XPathToLuceneRegexTranslator.isTranslatable(exponential));
+        assertFalse(XPathToLuceneRegexTranslator.isServable(exponential, 0));
+        assertTrue(XPathToLuceneRegexTranslator.isServable("^HAM", 0));
+        assertFalse(XPathToLuceneRegexTranslator.isServable("^\\p{Lu}", 0));
     }
 }

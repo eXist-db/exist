@@ -43,8 +43,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.automaton.Operations;
-import org.apache.lucene.util.automaton.RegExp;
+import org.apache.lucene.util.automaton.TooComplexToDeterminizeException;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -171,14 +170,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 case MATCH -> {
                     final String xpathPattern = content.getStringValue();
-                    final String pattern = XPathToLuceneRegexTranslator.translate(xpathPattern);
                     try {
-                        // Syntax flags are passed explicitly on every path. RegexpQuery(Term) would default
-                        // to RegExp.ALL, under which & ~ # @ and <n-m> are operators; XPath treats them
-                        // as literals, and the case-insensitive path already used NONE -- so the same
-                        // pattern meant different things depending on whether the 'i' flag was set.
-                        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
-                    } catch (final IllegalArgumentException e) {
+                        // Lookup checks isServable first and falls back to fn:matches, so this is the
+                        // last line of defense rather than the expected path.
+                        return XPathToLuceneRegexTranslator.toQuery(field, xpathPattern, matchFlags);
+                    } catch (final IllegalArgumentException | TooComplexToDeterminizeException e) {
                         throw new XPathException(ErrorCodes.FORX0002,
                                 "Invalid regular expression '" + xpathPattern + "': " + e.getMessage());
                     }

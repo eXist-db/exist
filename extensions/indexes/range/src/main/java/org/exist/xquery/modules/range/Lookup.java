@@ -359,9 +359,8 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys, final Sequence contextSequence) throws XPathException {
         if (operator == RangeIndex.Operator.MATCH && fallback != null && keys.length > 0) {
             final String pattern = keys[0].getStringValue();
-            // Lucene folds case for ASCII only, so the flags decide translatability too
-            final boolean caseInsensitive = getMatchFlags(contextSequence) != 0;
-            if (!XPathToLuceneRegexTranslator.isTranslatable(pattern, caseInsensitive)) {
+            // The flags decide it too: under the i flag, XPath's and Lucene's case variants differ
+            if (!XPathToLuceneRegexTranslator.isServable(pattern, getMatchFlags(contextSequence))) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("fn:matches pattern '{}' not translatable to Lucene; using fallback", pattern);
                 }
@@ -429,7 +428,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                             "used with the '" + operator + "' operation.");
                 }
 
-                final int matchFlags = getMatchFlags(contextSequence);
+                final int matchFlags = getMatchFlags(effectiveContextSequence);
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
