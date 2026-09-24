@@ -60,7 +60,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
+public final class FunMatches extends Function implements BoundSequenceOptimizable, IndexUseReporter {
 
     private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
@@ -124,6 +124,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
+    private boolean optimizedOverBoundSequence = false;
     private final GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
     public FunMatches(final XQueryContext context, final FunctionSignature signature) {
@@ -156,33 +157,101 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             steps.add(arg);
         }
 
-        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
-        if (!steps.isEmpty()) {
-            final LocationStep firstStep = steps.getFirst();
-            LocationStep lastStep = steps.getLast();
-            if (firstStep != null && lastStep != null) {
-                final NodeTest test = lastStep.getTest();
-                if (!test.isWildcardTest() && test.getName() != null) {
+        deriveIndexTargetFrom(path);
+    }
 
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
-                    } else {
-                        contextQName = new QName(test.getName());
-                    }
-                    contextStep = lastStep;
-                    axis = firstStep.getAxis();
-                    if (axis == Constants.SELF_AXIS && steps.size() > 1) {
-                        if (steps.get(1) != null) {
-                            axis = steps.get(1).getAxis();
-                        } else {
-                            contextQName = null;
-                            contextStep = null;
-                            axis = Constants.UNKNOWN_AXIS;
-                        }
-                    }
-                }
-            }
+    /**
+     * Works out which QName the range index should be consulted for, and on which axis, by walking
+     * the location steps of {@code path}.
+     *
+     * <p>Normally {@code path} is the function's own first argument -- {@code matches(val, 'a')}
+     * indexes on {@code val}. It can also be supplied from outside, by
+     * {@link #optimizeOverBoundSequence(Expression)}, when the path is not the argument but the
+     * sequence a quantified expression binds the argument to.</p>
+     *
+     * @param path the expression whose location steps name the indexed node
+     */
+    private void deriveIndexTargetFrom(final Expression path) {
+        contextQName = null;
+        contextStep = null;
+        axis = Constants.UNKNOWN_AXIS;
+
+        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
+        if (steps.isEmpty()) {
+            return;
         }
+
+        final LocationStep firstStep = steps.getFirst();
+        final LocationStep lastStep = steps.getLast();
+        if (firstStep == null || lastStep == null) {
+            return;
+        }
+
+        final NodeTest test = lastStep.getTest();
+        if (test.isWildcardTest() || test.getName() == null) {
+            return;
+        }
+
+        final int resolvedAxis = resolveAxis(firstStep, steps);
+        if (resolvedAxis == Constants.UNKNOWN_AXIS) {
+            return;
+        }
+
+        contextQName = indexedQNameFor(lastStep, test);
+        contextStep = lastStep;
+        axis = resolvedAxis;
+    }
+
+    /**
+     * The index is split into an element half and an attribute half, so an attribute step has to
+     * be looked up under an attribute QName.
+     */
+    private static QName indexedQNameFor(final LocationStep step, final NodeTest test) {
+        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+            return new QName(test.getName(), ElementValue.ATTRIBUTE);
+        }
+        return new QName(test.getName());
+    }
+
+    /**
+     * The axis the optimizer should search along. A leading self step tells us nothing, so the
+     * axis of the step after it is used instead.
+     *
+     * @return the axis, or {@link Constants#UNKNOWN_AXIS} if it cannot be determined
+     */
+    private static int resolveAxis(final LocationStep firstStep, final List<LocationStep> steps) {
+        final int axis = firstStep.getAxis();
+        if (axis != Constants.SELF_AXIS || steps.size() <= 1) {
+            return axis;
+        }
+        final LocationStep second = steps.get(1);
+        return second == null ? Constants.UNKNOWN_AXIS : second.getAxis();
+    }
+
+    /**
+     * Makes this call optimizable when its input arrives through a quantified binding rather than
+     * directly as a path -- {@code some $v in val satisfies matches($v, 'a')} rather than
+     * {@code matches(val, 'a')}.
+     *
+     * <p>The two select the same nodes, but only the first says so in a way the specification
+     * allows: {@code fn:matches} takes {@code xs:string?}, so a multi-valued path is a type error
+     * rather than an existential test. The index can serve the quantified spelling just as well --
+     * it only needs to be told which QName to look up, which is the quantifier's input sequence
+     * instead of this function's first argument.</p>
+     *
+     * <p>Called by the optimizer during static analysis, before {@code canOptimizeSequence}.</p>
+     *
+     * @param boundSequence the sequence the quantified expression binds the variable to
+     */
+    @Override
+    public void optimizeOverBoundSequence(final Expression boundSequence) {
+        deriveIndexTargetFrom(boundSequence);
+        optimizedOverBoundSequence = true;
+    }
+
+    @Override
+    public boolean isOptimizedOverBoundSequence() {
+        return optimizedOverBoundSequence;
     }
 
     @Override
@@ -364,8 +433,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                 }
             }
         } else {
-            contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence, null).toNodeSet();
+            result = evalPreselected(contextSequence, contextItem);
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -382,6 +450,32 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
      * @return The resulting sequence
      * @throws XPathException if an error occurs
      */
+    /** Evaluates against the nodes the optimize pragma pre-selected from the index. */
+    private Sequence evalPreselected(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        if (optimizedOverBoundSequence) {
+            return evalOverBoundSequence(contextSequence, contextItem);
+        }
+        contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
+        return getArgument(0).eval(contextSequence, null).toNodeSet();
+    }
+
+    /**
+     * Evaluates the quantified form, {@code some $v in PATH satisfies matches($v, ...)}. Here the
+     * first argument is the bound variable, one item per iteration, not the path the index was
+     * consulted for. The pre-selection already holds every node on that path the pattern matches,
+     * so the answer for this item is whether it is one of them.
+     */
+    private Sequence evalOverBoundSequence(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final Sequence input = getArgument(0).eval(contextSequence, contextItem);
+        if (input.isEmpty()) {
+            return BooleanValue.FALSE;
+        }
+        if (input.getItemCount() == 1 && input.itemAt(0) instanceof final NodeProxy node) {
+            return BooleanValue.valueOf(preselectResult.contains(node));
+        }
+        return evalGeneric(contextSequence, contextItem, input);
+    }
+
     private Sequence evalWithIndex(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

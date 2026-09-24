@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
@@ -821,7 +822,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         };
     }
 
-    private Expression simplifyPath(final Expression expression) {
+    private static Expression simplifyPath(final Expression expression) {
         if (!(expression instanceof final PathExpr path)) {
             return expression;
         }
@@ -831,6 +832,28 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         return path.getExpression(0);
+    }
+
+    /**
+     * Strips the wrappers the parser puts around an operand: any number of single-step
+     * {@link PathExpr}s (see {@link #simplifyPath}), and the {@link InternalFunctionCall} that every
+     * built-in function call is wrapped in.
+     *
+     * @param expression the operand
+     * @return the expression underneath the wrappers, or null if {@code expression} is null
+     */
+    public static @Nullable Expression unwrapOperand(@Nullable final Expression expression) {
+        if (expression == null) {
+            return null;
+        }
+        final Expression simplified = simplifyPath(expression);
+        if (simplified != expression) {
+            return unwrapOperand(simplified);
+        }
+        if (expression instanceof final InternalFunctionCall call) {
+            return unwrapOperand(call.getFunction());
+        }
+        return expression;
     }
 
     /**
@@ -858,7 +881,109 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         @Override
         public void visitPredicate(final Predicate predicate) {
-            predicate.getExpression(0).accept(this);
+            final Expression inner = predicate.getExpression(0);
+            if (visitQuantifiedMatch(unwrapOperand(inner))) {
+                return;
+            }
+            inner.accept(this);
+        }
+
+        /**
+         * Recognizes {@code some $v in PATH satisfies f($v, ...)} where {@code f} is optimizable,
+         * and points {@code f} at {@code PATH} so the range index can serve it.
+         *
+         * <p>This spelling is the specification-conformant way to ask "does any of these match?"
+         * for a function whose signature takes a single item. Without this, such a predicate falls
+         * back to evaluating the quantifier item by item, which is exactly the work the index
+         * exists to avoid -- so the conformant spelling would be the slow one.</p>
+         *
+         * <p>Quantified expressions are invisible to {@link ExpressionVisitor}, which has no visit
+         * method for them, so this is matched directly rather than through an {@code accept} call.</p>
+         *
+         * @param expression the predicate's expression
+         * @return true if this was an optimizable quantified match, and has been registered
+         */
+        private boolean visitQuantifiedMatch(final Expression expression) {
+            if (!(expression instanceof final QuantifiedExpression quantified)) {
+                return false;
+            }
+
+            // "every" cannot use the index: it needs the non-matching nodes, which a
+            // lookup by definition does not return.
+            if (quantified.getType() != FLWORClause.ClauseType.SOME) {
+                return false;
+            }
+
+            final QName boundVariable = quantified.getVariable();
+            final Expression boundSequence = quantified.getInputSequence();
+            if (boundVariable == null || boundSequence == null) {
+                return false;
+            }
+
+            // The satisfies clause must be the optimizable call itself. Anything larger -- a
+            // disjunction, say -- would make narrowing the candidate set unsound, because a node
+            // could qualify through the other branch.
+            if (!(unwrapOperand(quantified.getReturnExpression()) instanceof final Function function)
+                    || !(function instanceof final BoundSequenceOptimizable optimizable)
+                    || !isReferenceTo(boundVariable, function)) {
+                return false;
+            }
+
+            // preSelect evaluates the remaining arguments once, outside the quantifier, where the
+            // bound variable does not exist. A pattern such as matches($v, $v) is legal XQuery, so
+            // decline rather than evaluate it unbound.
+            if (!remainingArgumentsAreIndependentOf(boundVariable, function)) {
+                return false;
+            }
+
+            optimizable.optimizeOverBoundSequence(boundSequence);
+            addOptimizable(optimizable);
+            return true;
+        }
+
+        /** The bound variable must be the argument the function would otherwise index on. */
+        private boolean isReferenceTo(final QName boundVariable, final Function function) {
+            if (function.getArgumentCount() == 0) {
+                return false;
+            }
+            return unwrapOperand(function.getArgument(0)) instanceof final VariableReference ref
+                    && boundVariable.equals(ref.getName());
+        }
+
+        /**
+         * Strips the checks the compiler wraps around a function argument to enforce its declared
+         * type, along with the wrappers {@link #unwrapOperand} removes.
+         */
+        private static @Nullable Expression unwrapArgumentChecks(final Expression argument) {
+            Expression current = unwrapOperand(argument);
+            while (current instanceof DynamicCardinalityCheck || current instanceof DynamicTypeCheck
+                    || current instanceof Atomize || current instanceof UntypedValueCheck) {
+                current = unwrapOperand(current.getSubExpression(0));
+            }
+            return current;
+        }
+
+        /**
+         * True if every argument after the first is a literal or a reference to a variable other
+         * than {@code boundVariable}, so that evaluating it once, outside the quantifier, gives the
+         * value it has on every iteration.
+         *
+         * <p>This is an allowlist rather than a search for references to the bound variable. The
+         * expression visitors do not see into every kind of expression -- a quantified expression,
+         * for one, has no visit method -- so a search could miss a reference and optimize a query
+         * it must not. Literal and variable patterns cover how the quantified form is written in
+         * practice.</p>
+         */
+        private boolean remainingArgumentsAreIndependentOf(final QName boundVariable, final Function function) {
+            for (int i = 1; i < function.getArgumentCount(); i++) {
+                final Expression argument = unwrapArgumentChecks(function.getArgument(i));
+                final boolean independent = argument instanceof LiteralValue
+                        || (argument instanceof final VariableReference ref && !boundVariable.equals(ref.getName()));
+                if (!independent) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
