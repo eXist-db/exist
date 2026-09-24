@@ -256,3 +256,11 @@ function ss:offset-paging-covers-all() {
     let $p2 := ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 2 })?hits
     return array:size($p1) + array:size($p2)
 };
+
+(: a limit of xs:int's maximum means "no limit"; offset + limit must not overflow :)
+declare
+    %test:assertTrue
+function ss:limit-at-integer-maximum() {
+    let $r := ft:search-scope($ss:COLLECTION, "content:(array)", map { "offset": 1, "limit": 2147483647 })
+    return array:size($r?hits) eq $r?total - 1
+};

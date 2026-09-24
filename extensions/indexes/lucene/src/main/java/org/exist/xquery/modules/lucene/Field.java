@@ -204,7 +204,11 @@ public class Field extends BasicFunction {
         return bytesToAtomic(fieldValue, type);
     }
 
-    private Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+    /**
+     * The values stored for a field on a node, converted to {@code type}. Shared with
+     * ft:search-scope, so the two read field values the same way.
+     */
+    static Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
         final IndexableField[] fields = index.getFieldByExistDocId(existDocId, nodeId, fieldName);
         final Sequence result = new ValueSequence(fields.length);
         for (final IndexableField field : fields) {
@@ -306,7 +310,7 @@ public class Field extends BasicFunction {
                         }
                     }
                 }
-                if (currentPos < content.length() - 1)  {
+                if (currentPos < content.length()) {
                     builder.characters(content.substring(currentPos));
                 }
                 builder.endElement();
