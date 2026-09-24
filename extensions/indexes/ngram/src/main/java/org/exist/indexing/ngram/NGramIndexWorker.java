@@ -409,6 +409,22 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
+     * The nodes indexed under the given qnames, for a query with no ngram to look up, such as a wildcard-only one.
+     *
+     * @param docs the documents to look in
+     * @param qnames the indexed qnames, or null or empty for all those configured for {@code docs}
+     * @return the indexed nodes
+     */
+    public NodeSet indexedNodes(final DocumentSet docs, final List<QName> qnames) {
+        final List<QName> searchQnames = qnames == null || qnames.isEmpty() ? getDefinedIndexes(broker, docs) : qnames;
+        final NodeSet result = new ExtArrayNodeSet();
+        for (final QName qname : searchQnames) {
+            result.addAll(broker.getStructuralIndex().findElementsByTagName(qname.getNameType(), docs, qname, null));
+        }
+        return result;
+    }
+
+    /**
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
      *
