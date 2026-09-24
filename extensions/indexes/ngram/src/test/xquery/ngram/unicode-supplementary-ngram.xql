@@ -67,15 +67,19 @@ declare variable $unic-smp-n:CP_TO_GROUP := map:merge(
 );
 
 (:~
- : Test document: one p per supplementary codepoint (with @group), plus two w elements for wildcard tests (one SMP, one SIP).
- : @return document-node() root with 20 p children and 2 w children; each w has @which and one supplementary character
+ : Test document: one p per supplementary codepoint (with @group), plus w elements for wildcard tests
+ : (a lone SMP character, a lone SIP character, and two with a supplementary character adjacent to
+ : literal ASCII text, one on either side).
+ : @return document-node() root with 20 p children and 4 w children; each w has @which and content
  :)
 declare variable $unic-smp-n:XML as document-node() := document {
     <root>{
         for $cp in $unic-smp-n:ALL_CODEPOINTS
         return <p group="{ $unic-smp-n:CP_TO_GROUP($cp) }">{ codepoints-to-string($cp) }</p>,
         <w which="smp">{ codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) }</w>,
-        <w which="sip">{ codepoints-to-string($unic-smp-n:CODEPOINTS("sip-dropped")[1]) }</w>
+        <w which="sip">{ codepoints-to-string($unic-smp-n:CODEPOINTS("sip-dropped")[1]) }</w>,
+        <w which="mixed">{ "ab" || codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) }</w>,
+        <w which="mixed-prefix">{ codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) || "ab" }</w>
     }</root>
 };
 
@@ -205,4 +209,34 @@ declare
     %test:assertEquals(1)
 function unic-smp-n:ngram-wildcard-one-dot-sip() {
     count(collection($unic-smp-n:COLLECTION)//w[@which eq "sip"][ngram:wildcard-contains(., '.')])
+};
+
+(:~
+ : Asserts that ngram:wildcard-contains(., '^ab.$') matches "ab" followed by one supplementary
+ : character. Regression test for a mixed literal+wildcard match being chopped mid-surrogate-pair:
+ : the trailing wildcard's length constraint was expanded in UTF-16 code units rather than Unicode
+ : codepoints, so a single supplementary character (2 UTF-16 units) never satisfied a single-character
+ : ('.') wildcard, and the end-anchor check then rejected the match entirely.
+ :
+ : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-literal-end-anchor() {
+    count(collection($unic-smp-n:COLLECTION)//w[@which eq "mixed"][ngram:wildcard-contains(., '^ab.$')])
+};
+
+(:~
+ : Asserts that ngram:wildcard-contains(., '^.ab$') matches one supplementary character followed by
+ : "ab". Regression test for the backward-expansion counterpart of the bug above: a leading wildcard's
+ : length constraint was expanded in UTF-16 code units rather than Unicode codepoints.
+ :
+ : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-literal-start-anchor() {
+    count(collection($unic-smp-n:COLLECTION)//w[@which eq "mixed-prefix"][ngram:wildcard-contains(., '^.ab$')])
 };
