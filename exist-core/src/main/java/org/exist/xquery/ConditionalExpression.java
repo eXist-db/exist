@@ -167,6 +167,19 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
             {thenExpr = newExpr;}
         else if (elseExpr == oldExpr)
             {elseExpr = newExpr;}
+        else if (elseExpr instanceof final DebuggableExpression debuggable && debuggable.getFirst() == oldExpr) {
+            // The parser wraps the else-branch in a DebuggableExpression (see
+            // XQueryTree.g). DebuggableExpression#analyze does not set itself
+            // as the parent when the caller already provided one (so that
+            // structural getParent() lookups see through it to the real
+            // ancestor), which means oldExpr.getParent() resolves to this
+            // ConditionalExpression rather than the wrapper. A rewrite that
+            // then calls this.replace(oldExpr, newExpr) would otherwise
+            // silently no-op here, leaving the original, unwrapped expression
+            // in place at runtime -- see GH-873 (same defect fixed for "for"/
+            // "let" in BindingExpression#replace).
+            debuggable.replace(oldExpr, newExpr);
+        }
     }
 
     @Override
