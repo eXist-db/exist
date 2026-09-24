@@ -25,6 +25,7 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
+import org.exist.test.KnownFailuresRatchet;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -90,6 +91,9 @@ import static org.junit.Assert.fail;
 public class ResourceNamingConformanceTest {
 
     @ClassRule
+    /** The five predefined XML entities, for {@link #unescapeXml}. */
+    private static final Pattern XML_ENTITY = Pattern.compile("&(amp|lt|gt|quot|apos);");
+
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String TEST_COLLECTION = "/db/naming-conformance-test";
@@ -203,7 +207,13 @@ public class ResourceNamingConformanceTest {
      */
     private static void freshCollection() {
         restDelete(TEST_COLLECTION);
-        restPut(TEST_COLLECTION + "/__seed.xml", CONTENT);
+        // If the seed PUT fails, every following probe runs against a missing collection, and its
+        // failure would look like a naming regression. So a failed reset is reported as such.
+        final int status = restPut(TEST_COLLECTION + "/__seed.xml", CONTENT);
+        if (status < 200 || status >= 300) {
+            throw new IllegalStateException("Could not reset " + TEST_COLLECTION + ": seed PUT answered "
+                    + (status < 0 ? "with a request error (see stderr)" : status));
+        }
         restDelete(TEST_COLLECTION + "/__seed.xml");
     }
 
@@ -260,26 +270,10 @@ public class ResourceNamingConformanceTest {
         }
 
         // Ratchet: the set of failing names must match KNOWN_FAILURES exactly.
-        final Set<String> regressions = new LinkedHashSet<>(failing);
-        regressions.removeAll(KNOWN_FAILURES);              // failing but expected to pass -> regression
-        final Set<String> nowFixed = new LinkedHashSet<>(KNOWN_FAILURES);
-        nowFixed.removeAll(failing);                        // listed as broken but now passing -> tighten the list
-
-        final StringBuilder msg = new StringBuilder();
-        if (!regressions.isEmpty()) {
-            msg.append(regressions.size())
-                    .append(" name(s) regressed — expected to round-trip cross-surface but failed:")
-                    .append(describe(regressions, rows)).append('\n');
-        }
-        if (!nowFixed.isEmpty()) {
-            msg.append(nowFixed.size())
-                    .append(" name(s) now round-trip cross-surface but are still listed as known failures.\n")
-                    .append("Remove them from KNOWN_FAILURES so they become regression-guarded:")
-                    .append(describe(nowFixed, rows)).append('\n');
-        }
-        if (msg.length() > 0) {
-            fail(msg.append("--- current matrix ---\n").append(matrix).toString());
-        }
+        KnownFailuresRatchet.check(failing, KNOWN_FAILURES,
+                        "name(s) regressed — expected to round-trip cross-surface but failed:", "name(s)",
+                        "KNOWN_FAILURES", labels -> describe(labels, rows))
+                .ifPresent(msg -> fail(msg + "--- current matrix ---\n" + matrix));
     }
 
     /** Render a set of corpus labels as "    - label (requested-name)" lines for failure messages. */
@@ -338,6 +332,7 @@ public class ResourceNamingConformanceTest {
             return http.send(req, HttpResponse.BodyHandlers.discarding()).statusCode();
         } catch (final Exception e) {
             restoreInterrupt(e);
+            System.err.println("REST PUT " + dbPath + " failed: " + e);
             return -1;
         }
     }
@@ -422,14 +417,19 @@ public class ResourceNamingConformanceTest {
         }
     }
 
+    /** Decodes the five predefined entities in one pass, so {@code &amp;lt;} stays {@code &lt;}. */
     private static String unescapeXml(final String s) {
-        return s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
-                .replace("&quot;", "\"").replace("&apos;", "'");
+        return XML_ENTITY.matcher(s).replaceAll(m -> Matcher.quoteReplacement(switch (m.group(1)) {
+            case "amp" -> "&";
+            case "lt" -> "<";
+            case "gt" -> ">";
+            case "quot" -> "\"";
+            default -> "'";
+        }));
     }
 
     private static String basicAuth() {
-        return "Basic " + java.util.Base64.getEncoder().encodeToString(
-                (TestUtils.ADMIN_DB_USER + ":" + TestUtils.ADMIN_DB_PWD).getBytes(UTF_8));
+        return WebDavHttpClient.basicAuthorization(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
     }
 
     // ==== full N×N cross-surface matrix (create-via-X, read-via-every-Y) ====
@@ -477,24 +477,10 @@ public class ResourceNamingConformanceTest {
         }
         System.out.println(out);
 
-        final Set<String> regressions = new LinkedHashSet<>(failing);
-        regressions.removeAll(KNOWN_MATRIX_FAILURES);           // failing but expected to pass -> regression
-        final Set<String> nowFixed = new LinkedHashSet<>(KNOWN_MATRIX_FAILURES);
-        nowFixed.removeAll(failing);                            // listed as broken but now passing -> tighten
-
-        final StringBuilder msg = new StringBuilder();
-        if (!regressions.isEmpty()) {
-            msg.append(regressions.size()).append(" cross-surface cell(s) regressed (create>read:probe):\n    ")
-                    .append(String.join("\n    ", regressions)).append('\n');
-        }
-        if (!nowFixed.isEmpty()) {
-            msg.append(nowFixed.size()).append(" cell(s) now round-trip but are still listed as known failures.\n")
-                    .append("Remove them from KNOWN_MATRIX_FAILURES so they become regression-guarded:\n    ")
-                    .append(String.join("\n    ", nowFixed)).append('\n');
-        }
-        if (msg.length() > 0) {
-            fail(msg.append("--- current matrix ---").append(out).toString());
-        }
+        KnownFailuresRatchet.check(failing, KNOWN_MATRIX_FAILURES,
+                        "cross-surface cell(s) regressed (create>read:probe):", "cell(s)",
+                        "KNOWN_MATRIX_FAILURES", KnownFailuresRatchet::lines)
+                .ifPresent(msg -> fail(msg + "--- current matrix ---" + out));
     }
 
     private static String cell(final Surface create, final Surface read, final String label) {
