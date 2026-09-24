@@ -183,12 +183,12 @@ function unic-smp-n:ngram-contains-supplementary-sip-dropped() {
 
 (:~
  : Asserts that ngram:wildcard-contains(., '.') matches the single w with SMP character (U+1F600).
- : Uses the main test document (w elements); pending until ngram wildcard fix for #787.
+ : Uses the main test document (w elements).
  :
  : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram wildcard chops supplementary characters, see #787")
     %test:assertEquals(1)
 function unic-smp-n:ngram-wildcard-one-dot-smp() {
     count(collection($unic-smp-n:COLLECTION)//w[@which eq "smp"][ngram:wildcard-contains(., '.')])
@@ -196,12 +196,12 @@ function unic-smp-n:ngram-wildcard-one-dot-smp() {
 
 (:~
  : Asserts that ngram:wildcard-contains(., '.') matches the single w with SIP character (U+2CD02).
- : Uses the main test document (w elements); pending until ngram wildcard fix for #787.
+ : Uses the main test document (w elements).
  :
  : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram wildcard chops supplementary characters, see #787")
     %test:assertEquals(1)
 function unic-smp-n:ngram-wildcard-one-dot-sip() {
     count(collection($unic-smp-n:COLLECTION)//w[@which eq "sip"][ngram:wildcard-contains(., '.')])
