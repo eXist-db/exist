@@ -58,6 +58,13 @@ public class XQUFFnPut extends BasicFunction {
         final NodeValue node = (NodeValue) args[0].itemAt(0);
         final String uri = args[1].getStringValue();
 
+        // XQUF 3.0 fn:put: storing any node kind other than document or element is implementation-defined, and eXist supports none
+        final short nodeType = node.getNode().getNodeType();
+        if (nodeType != org.w3c.dom.Node.DOCUMENT_NODE && nodeType != org.w3c.dom.Node.ELEMENT_NODE) {
+            throw new XPathException(this, ErrorCodes.FOUP0001,
+                    "fn:put requires a document or element node as its first argument.");
+        }
+
         final PendingUpdateList pul = context.getPendingUpdateList();
         pul.addPrimitive(UpdatePrimitive.put(node.getNode(), uri, this));
 

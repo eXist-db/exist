@@ -23,12 +23,14 @@ package org.exist.xquery.xquf;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
@@ -45,6 +47,15 @@ public class XQUFBasicTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
+    /** A library module declaring an updating function, for the tests that import it. */
+    private static final String LIBRARY_MODULE = """
+            xquery version "3.0";
+            module namespace m = "http://example.com/xquf-lib";
+            declare updating function m:add-child($parent as element()) {
+                insert node <added/> into $parent
+            };
+            """;
 
     private Collection testCollection;
 
@@ -2297,4 +2308,159 @@ public class XQUFBasicTest {
         assertTrue("Should have text-c in preceding", xml.contains("text-c"));
     }
 
+
+    // ---- Updating functions declared in a library module ----
+
+    private void storeLibraryModule() throws XMLDBException {
+        final BinaryResource module = testCollection.createResource("lib.xqm", BinaryResource.class);
+        module.setContent(LIBRARY_MODULE.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        ((EXistResource) module).setMimeType("application/xquery");
+        testCollection.storeResource(module);
+    }
+
+    /** An updating function imported from a library module must update the document it is given. */
+    @Test
+    public void libraryModuleUpdatingFunctionAppliesToAStoredDocument() throws XMLDBException {
+        storeLibraryModule();
+        final XQueryService service = storeXMLStringAndGetQueryService("lib-target.xml", "<root/>");
+        service.query("""
+                import module namespace m = "http://example.com/xquf-lib" at "xmldb:exist:///db/test/lib.xqm";
+                m:add-child(doc("/db/test/lib-target.xml")/root)
+                """);
+        final ResourceSet result = service.query("count(doc('/db/test/lib-target.xml')/root/added)");
+        assertEquals("1", result.getResource(0).getContent().toString());
+    }
+
+    /** The same function used in a copy-modify expression must modify the copy. */
+    @Test
+    public void libraryModuleUpdatingFunctionAppliesInsideCopyModify() throws XMLDBException {
+        storeLibraryModule();
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        final ResourceSet result = service.query("""
+                import module namespace m = "http://example.com/xquf-lib" at "xmldb:exist:///db/test/lib.xqm";
+                count(copy $c := <root/> modify m:add-child($c) return $c/added)
+                """);
+        assertEquals("1", result.getResource(0).getContent().toString());
+    }
+
+    // ---- Vacuous branches of a conditional (XUST0001) ----
+
+    private void assertStaticError(final String query, final String code) throws XMLDBException {
+        try {
+            testCollection.getService(XQueryService.class).query(query);
+            fail("expected " + code + " from: " + query);
+        } catch (final XMLDBException e) {
+            assertTrue("expected " + code + " but got: " + e.getMessage(), e.getMessage().contains(code));
+        }
+    }
+
+    /** A range is not vacuous, so it cannot share a conditional with an updating branch. */
+    @Test
+    public void aRangeIsNotAVacuousBranch() throws XMLDBException {
+        assertStaticError("let $x := <a/> return if (current-date() > xs:date('2000-01-01')) "
+                + "then insert node <b/> into $x else (1 to 10)", "XUST0001");
+    }
+
+    /** Nor is a call to a function that takes no arguments. */
+    @Test
+    public void aZeroArgumentCallIsNotAVacuousBranch() throws XMLDBException {
+        assertStaticError("let $x := <a/> return if (current-date() > xs:date('2000-01-01')) "
+                + "then insert node <b/> into $x else current-date()", "XUST0001");
+    }
+
+    /** The empty sequence is vacuous, and may. */
+    @Test
+    public void theEmptySequenceIsAVacuousBranch() throws XMLDBException {
+        final ResourceSet result = testCollection.getService(XQueryService.class).query(
+                "count(copy $c := <a/> modify (if (current-date() > xs:date('2000-01-01')) "
+                        + "then insert node <b/> into $c else ()) return $c/b)");
+        assertEquals("1", result.getResource(0).getContent().toString());
+    }
+
+    // ---- Review of #6214: superseded deletes, repeated stored inserts, atomic content, fn:put ----
+
+    private String serialized(final String query) throws XMLDBException {
+        final ResourceSet result = testCollection.getService(XQueryService.class).query(query);
+        return result.getResource(0).getContent().toString().replaceAll(">\\s+<", "><");
+    }
+
+    /** replace value of an element detaches its children, so deleting one of them does nothing. */
+    @Test
+    public void aDeleteSupersededByReplaceValueOfTheParentIsANoOp() throws XMLDBException {
+        assertEquals("<a>new</a>", serialized(
+                "copy $c := <a><b/><c/></a> modify (replace value of node $c with 'new', delete node $c/b) return $c"));
+    }
+
+    /** replace value of an element leaves its attributes, so replacing one still applies. */
+    @Test
+    public void anAttributeReplaceIsNotSupersededByReplaceValueOfItsElement() throws XMLDBException {
+        assertEquals("<a y=\"2\">new</a>", serialized(
+                "copy $c := <a x='1'><b/></a> modify (replace value of node $c with 'new', "
+                        + "replace node $c/@x with attribute y {'2'}) return $c"));
+    }
+
+    @Test
+    public void aDeleteSupersededByReplaceValueOfTheParentIsANoOpOnAStoredDocument() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("superseded.xml", "<a><b/><c/></a>");
+        service.query("let $a := doc('/db/test/superseded.xml')/a "
+                + "return (replace value of node $a with 'new', delete node $a/b)");
+        assertEquals("<a>new</a>", serialized("doc('/db/test/superseded.xml')/a"));
+    }
+
+    /** Each insert must see the element as the previous one left it. */
+    @Test
+    public void twoInsertsIntoOneStoredElementBothApply() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("two-inserts.xml", "<root><e/><f><x/></f></root>");
+        service.query("let $r := doc('/db/test/two-inserts.xml')/root "
+                + "return (insert node <p1/> into $r/e, insert node <p2/> into $r/e, "
+                + "insert node <p1/> into $r/f, insert node <p2/> into $r/f)");
+        assertEquals("<e><p1/><p2/></e>", serialized("doc('/db/test/two-inserts.xml')/root/e"));
+        assertEquals("<f><x/><p1/><p2/></f>", serialized("doc('/db/test/two-inserts.xml')/root/f"));
+    }
+
+    /** XQUF 3.0 application order: as last is applied last, on stored documents as in memory. */
+    @Test
+    public void asLastStaysLastOnAStoredDocument() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("as-last.xml", "<root><e/></root>");
+        service.query("let $e := doc('/db/test/as-last.xml')/root/e "
+                + "return (insert node <last/> as last into $e, insert node <plain/> into $e, "
+                + "insert node <first/> as first into $e)");
+        assertEquals("<e><first/><plain/><last/></e>", serialized("doc('/db/test/as-last.xml')/root/e"));
+    }
+
+    /** Insert content follows element-constructor content: adjacent atomic values become one text node. */
+    @Test
+    public void insertedAtomicValuesAreJoinedWithSpaces() throws XMLDBException {
+        assertEquals("<r>1 2<x/>3</r>", serialized("copy $c := <r/> modify insert node (1, 2, <x/>, 3) into $c return $c"));
+        final XQueryService service = storeXMLStringAndGetQueryService("atomics.xml", "<root><g/></root>");
+        service.query("insert node (1, 2, 3) into doc('/db/test/atomics.xml')/root/g");
+        assertEquals("<g>1 2 3</g>", serialized("doc('/db/test/atomics.xml')/root/g"));
+    }
+
+    @Test
+    public void replacementAtomicValuesAreJoinedWithSpaces() throws XMLDBException {
+        assertEquals("<r>1 2 3</r>", serialized("copy $c := <r><a/></r> modify replace node $c/a with (1, 2, 3) return $c"));
+    }
+
+    /** An atomic replacement for an attribute becomes a text node, which cannot replace an attribute. */
+    @Test
+    public void anAtomicValueCannotReplaceAnAttribute() throws XMLDBException {
+        try {
+            testCollection.getService(XQueryService.class).query(
+                    "copy $c := <r x='1'/> modify replace node $c/@x with 5 return $c");
+            fail("expected XUTY0011");
+        } catch (final XMLDBException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("XUTY0011"));
+        }
+    }
+
+    @Test
+    public void fnPutRejectsATextNode() throws XMLDBException {
+        try {
+            testCollection.getService(XQueryService.class).query("fn:put(<a>hello</a>/text(), '/db/test/put.xml')");
+            fail("expected FOUP0001");
+        } catch (final XMLDBException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("FOUP0001"));
+        }
+    }
 }

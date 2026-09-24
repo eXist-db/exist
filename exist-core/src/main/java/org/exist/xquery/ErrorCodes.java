@@ -166,6 +166,7 @@ public class ErrorCodes {
     public static final ErrorCode XUDY0029 = new W3CErrorCode("XUDY0029", "It is a dynamic error if the target of an insert into, insert as first into, insert as last into, or replace expression is not an element or document node.");
     public static final ErrorCode XUDY0030 = new W3CErrorCode("XUDY0030", "It is a dynamic error if the target of an insert attributes expression is not an element node.");
     public static final ErrorCode XUDY0031 = new W3CErrorCode("XUDY0031", "It is a dynamic error if two or more fn:put primitives have the same URI.");
+    public static final ErrorCode FOUP0001 = new W3CErrorCode("FOUP0001", "It is a dynamic error if the first operand of fn:put is not a node of a supported kind.");
     public static final ErrorCode XUST0001 = new W3CErrorCode("XUST0001", "It is a static error if an updating expression is used in a context where it is not allowed.");
     public static final ErrorCode XUST0002 = new W3CErrorCode("XUST0002", "It is a static error if a non-updating expression other than an empty sequence is used where an updating expression is expected.");
     public static final ErrorCode XUST0003 = new W3CErrorCode("XUST0003", "It is a static error if a revalidation declaration specifies a revalidation mode that is not supported by the implementation.");

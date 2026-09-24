@@ -77,7 +77,7 @@ public class XQUFInsertExpr extends AbstractExpression {
 
         final Sequence ctxSeq = contextItem != null ? contextItem.toSequence() : contextSequence;
 
-        final Sequence sourceSeq = source.eval(ctxSeq, null);
+        final Sequence sourceSeq = InsertionContent.of(this, source.eval(ctxSeq, null));
         if (sourceSeq.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }

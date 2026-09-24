@@ -4422,7 +4422,7 @@ throws XPathException, PermissionDeniedException, EXistException
                 {
                     final org.exist.dom.QName copyVarQName;
                     try {
-                        copyVarQName = org.exist.dom.QName.parse(context, varName, null);
+                        copyVarQName = org.exist.dom.QName.parse(staticContext, varName, null);
                     } catch (final org.exist.dom.QName.IllegalQNameException e) {
                         throw new XPathException(xqufTransformExpr_AST_in, ErrorCodes.XPST0081,
                             "Invalid variable name in copy binding: " + varName);

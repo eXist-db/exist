@@ -72,7 +72,7 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
         final NodeValue targetNode = resolveTargetNode(ctxSeq);
         final int nodeType = targetNode.getNode().getNodeType();
 
-        final Sequence replacementSeq = replacement.eval(ctxSeq, null);
+        final Sequence replacementSeq = InsertionContent.of(this, replacement.eval(ctxSeq, null));
         checkReplacementTypes(replacementSeq, nodeType);
 
         final PendingUpdateList pul = context.getPendingUpdateList();
@@ -146,10 +146,8 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
     private void checkReplacementTypes(final Sequence replacementSeq, final int nodeType) throws XPathException {
         final boolean targetIsAttribute = nodeType == Node.ATTRIBUTE_NODE;
         for (final SequenceIterator i = replacementSeq.iterate(); i.hasNext(); ) {
+            // InsertionContent has turned every atomic value into a text node
             final Item item = i.nextItem();
-            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                continue;
-            }
             final boolean itemIsAttribute = ((NodeValue) item).getNode().getNodeType() == Node.ATTRIBUTE_NODE;
             if (targetIsAttribute && !itemIsAttribute) {
                 throw new XPathException(this, ErrorCodes.XUTY0011,

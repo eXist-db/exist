@@ -763,9 +763,12 @@ public class PendingUpdateList {
         // Without reverse order, an appended text node for an earlier element may fall
         // in the positional subtree range of a later sibling element.
         applyInMemoryReplaceElementContents(partition.replaceElementContents);
-        // Phase 5: deletes in reverse document order
+        // Phase 5: deletes in reverse document order, skipping those Phase 4 superseded
         for (int i = partition.deletes.size() - 1; i >= 0; i--) {
-            applyInMemoryDelete(partition.deletes.get(i));
+            final UpdatePrimitive p = partition.deletes.get(i);
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                applyInMemoryDelete(p);
+            }
         }
 
         // Per W3C XQuery Update Facility spec: after applying all updates,
@@ -839,7 +842,7 @@ public class PendingUpdateList {
         final List<UpdatePrimitive> attrReplaceNodes = new ArrayList<>();
         final List<UpdatePrimitive> nonAttrReplaceNodes = new ArrayList<>();
         for (final UpdatePrimitive p : replaceNodes) {
-            if (isReplaceNodeSuperseded(p, replaceElementContentTargets)) {
+            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
                 continue;
             }
             if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -861,17 +864,21 @@ public class PendingUpdateList {
     }
 
     /**
-     * A replaceNode is superseded when its target's parent element is subject
-     * to replaceElementContent, which replaces ALL children anyway.
+     * Whether a primitive's target is a child of an element whose content a replaceElementContent
+     * primitive replaces. Phase 4 has then already detached the target, so replacing or deleting
+     * it has no effect (upd:delete of a parentless node is a no-op) and must not be applied to
+     * whatever now occupies its place. Attributes are not children and are never superseded:
+     * replace value of an element leaves its attributes alone.
      */
-    private boolean isReplaceNodeSuperseded(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
+    private boolean isSupersededByReplaceElementContent(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
         if (replaceElementContentTargets.isEmpty()) {
             return false;
         }
-        final Node replTarget = p.getTargetNode();
-        final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
-                ? ((Attr) replTarget).getOwnerElement()
-                : replTarget.getParentNode();
+        final Node target = p.getTargetNode();
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return false;
+        }
+        final Node parent = target.getParentNode();
         return parent != null && parent.getNodeType() == Node.ELEMENT_NODE
                 && replaceElementContentTargets.contains(nodeKey(parent));
     }
@@ -1170,9 +1177,12 @@ public class PendingUpdateList {
         for (final UpdatePrimitive p : partition.replaceElementContents) {
             applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
         }
-        // Delete in reverse document order
+        // Delete in reverse document order, skipping those Phase 4 superseded
         for (int i = partition.deletes.size() - 1; i >= 0; i--) {
-            applyPersistentDelete(context, transaction, partition.deletes.get(i), modifiedDocuments);
+            final UpdatePrimitive p = partition.deletes.get(i);
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                applyPersistentDelete(context, transaction, p, modifiedDocuments);
+            }
         }
         for (final UpdatePrimitive p : partition.puts) {
             applyPersistentPut(context, transaction, p);
@@ -1188,6 +1198,8 @@ public class PendingUpdateList {
     private void applyPersistentInserts(final XQueryContext context, final Txn transaction,
             final List<UpdatePrimitive> inserts, final Set<String> replaceElementContentTargets,
             final MutableDocumentSet modifiedDocuments) throws XPathException {
+        // Same W3C order as the in-memory path: as first, then before/after/attributes/into, then as last
+        inserts.sort((a, b) -> Integer.compare(insertPriority(a.getType()), insertPriority(b.getType())));
         for (final UpdatePrimitive p : inserts) {
             if (!isRedundantInsert(p, replaceElementContentTargets)) {
                 applyPersistentInsert(context, transaction, p, modifiedDocuments);
@@ -1203,7 +1215,7 @@ public class PendingUpdateList {
             final List<UpdatePrimitive> replaceNodes, final Set<String> replaceElementContentTargets,
             final MutableDocumentSet modifiedDocuments) throws XPathException {
         for (final UpdatePrimitive p : replaceNodes) {
-            if (!isReplaceNodeSuperseded(p, replaceElementContentTargets)) {
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
                 applyPersistentReplaceNode(context, transaction, p, modifiedDocuments);
             }
         }
@@ -1291,9 +1303,22 @@ public class PendingUpdateList {
         triggers.clear();
     }
 
+    /**
+     * The stored node a primitive targets, loaded afresh from its node id. The node the
+     * primitive holds was loaded when its target expression was evaluated, and carries state such
+     * as its child count from that moment; after an earlier primitive in the same list has
+     * changed that node, the held copy is stale. Two inserts into one element would otherwise
+     * both write their first new child under the same node id, and only the last would survive.
+     */
+    private static StoredNode<?> currentStoredTarget(final UpdatePrimitive p) {
+        final StoredNode<?> held = (StoredNode<?>) p.getTargetNode();
+        final Node current = new NodeProxy(p.getSourceExpression(), held.getOwnerDocument(), held.getNodeId()).getNode();
+        return current instanceof final StoredNode<?> stored ? stored : held;
+    }
+
     private void applyPersistentInsert(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
-        final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
+        final StoredNode<?> node = currentStoredTarget(p);
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1348,7 +1373,7 @@ public class PendingUpdateList {
 
     private void applyPersistentRename(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
-        final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
+        final StoredNode<?> node = currentStoredTarget(p);
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1377,7 +1402,7 @@ public class PendingUpdateList {
 
     private void applyPersistentReplaceValue(final XQueryContext context, final Txn transaction,
                                               final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
-        final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
+        final StoredNode<?> node = currentStoredTarget(p);
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1452,7 +1477,7 @@ public class PendingUpdateList {
 
     private void applyPersistentReplaceNode(final XQueryContext context, final Txn transaction,
                                              final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
-        final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
+        final StoredNode<?> node = currentStoredTarget(p);
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1494,7 +1519,7 @@ public class PendingUpdateList {
 
     private void applyPersistentDelete(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
-        final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
+        final StoredNode<?> node = currentStoredTarget(p);
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 

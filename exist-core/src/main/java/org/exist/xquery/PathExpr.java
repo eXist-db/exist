@@ -442,13 +442,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public boolean isVacuous() {
-        if (steps.isEmpty()) {
-            return true;
-        }
         if (steps.size() == 1) {
             return steps.getFirst().isVacuous();
         }
-        // For multi-step paths, use default logic
+        // No steps is not proof of an empty expression: subclasses such as RangeExpression and a
+        // zero-argument function call keep their operands elsewhere, or have none, and are not
+        // vacuous. So the empty case uses the default rule too, which asks the expression itself.
         return !isUpdating() && getCardinality() == Cardinality.EMPTY_SEQUENCE;
     }
 

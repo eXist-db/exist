@@ -60,6 +60,16 @@ public class RangeExpression extends PathExpr {
     }
 
     /**
+     * A range holds from zero integers ({@code 2 to 1}) upward. The inherited PathExpr answer is
+     * {@code EMPTY_SEQUENCE}, because the operands are held in {@link #start} and {@link #end}
+     * rather than as steps, and that would make {@code 1 to 10} statically vacuous.
+     */
+    @Override
+    public Cardinality getCardinality() {
+        return Cardinality.ZERO_OR_MORE;
+    }
+
+    /**
      * Evaluate range boundary expressions and return the resulting RangeSequence
      * @param contextSequence the current context sequence, or null if there is no context sequence.
      * @param contextItem a single item, taken from context, or null if there is no context item.

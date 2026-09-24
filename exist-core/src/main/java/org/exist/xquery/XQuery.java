@@ -479,6 +479,12 @@ public class XQuery {
                     call.reset();
                 }
 
+                // Discard pending updates a failed evaluation left behind; the success path has
+                // already applied and cleared them. Without this, a context that is not reset --
+                // util:eval's cached path passes resetContext=false -- would carry them into its
+                // next execution from the pool and apply them there.
+                context.getPendingUpdateList().clear();
+
                 if(resetContext) {
                     context.reset();
                 }
