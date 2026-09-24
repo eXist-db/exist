@@ -93,6 +93,14 @@ public class Issue873RegressionTest {
             </collection>""";
     private static Collection testCollection;
 
+    // The bug scales with corpus size: the buggy code path re-evaluates the
+    // predicate once per node across the FULL, unfiltered variable value
+    // instead of the small index pre-selected candidate set. The bundled
+    // Shakespeare samples (3 plays) aren't large enough on their own to make
+    // that gap reliably visible in wall-clock time, so hamlet.xml is stored
+    // repeatedly under distinct names to inflate the corpus.
+    private static final int HAMLET_COPIES = 40;
+
     /**
      * With the optimizer enabled, the indirect form must be in the same
      * ballpark as the direct form. Before the fix (measured on this corpus):
@@ -138,14 +146,6 @@ public class Issue873RegressionTest {
                 -- the (#exist:optimize#) pragma may not be reaching the index pre-select again (GH-873)""".formatted(indirectMs, directMs),
                 indirectMs <= directMs * 3 + 15);
     }
-
-    // The bug scales with corpus size: the buggy code path re-evaluates the
-    // predicate once per node across the FULL, unfiltered variable value
-    // instead of the small index pre-selected candidate set. The bundled
-    // Shakespeare samples (3 plays) aren't large enough on their own to make
-    // that gap reliably visible in wall-clock time, so hamlet.xml is stored
-    // repeatedly under distinct names to inflate the corpus.
-    private static final int HAMLET_COPIES = 40;
 
     @BeforeClass
     public static void initDatabase() throws XMLDBException, IOException {
