@@ -23,7 +23,6 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.facet.LabelAndValue;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
@@ -53,7 +52,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -164,7 +162,7 @@ public class SearchScope extends BasicFunction {
             return emptyResult(spec);
         }
 
-        final NodeSet hits = LuceneScope.query(this, contextSequence, docs, args[1], buildQueryOptions(args));
+        final NodeSet hits = LuceneScope.query(this, docs, args[1], buildQueryOptions(args));
         return buildResult(hits, spec);
     }
 
@@ -224,7 +222,8 @@ public class SearchScope extends BasicFunction {
 
         // page the ranked list: skip $offset, then take at most $limit
         final int from = Math.min(spec.offset(), ranked.size());
-        final int to = (spec.limit() >= 0) ? Math.min(ranked.size(), from + spec.limit()) : ranked.size();
+        // long arithmetic: a limit of Integer.MAX_VALUE ("no limit") must not wrap from + limit negative
+        final int to = (spec.limit() >= 0) ? (int) Math.min(ranked.size(), from + (long) spec.limit()) : ranked.size();
         final List<Hit> page = ranked.subList(from, to);
 
         final List<Sequence> hitMaps = new ArrayList<>(page.size());
@@ -293,14 +292,7 @@ public class SearchScope extends BasicFunction {
     private Sequence fieldValues(final LuceneIndexWorker index, final int docId, final NodeId nodeId,
                                  final String field) throws XPathException {
         try {
-            final IndexableField[] indexed = index.getFieldByExistDocId(docId, nodeId, field);
-            final ValueSequence values = new ValueSequence(indexed.length);
-            for (final IndexableField f : indexed) {
-                final String s = f.stringValue();
-                values.add(new StringValue(this, s != null ? s
-                        : (f.numericValue() != null ? f.numericValue().toString() : "")));
-            }
-            return values;
+            return Field.getFieldValues(field, Type.STRING, docId, nodeId, index);
         } catch (final IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field '" + field + "': " + e.getMessage());
         }
@@ -361,16 +353,9 @@ public class SearchScope extends BasicFunction {
         return result;
     }
 
+    /** The same score ft:score reports for the node. */
     private static double scoreOf(final NodeProxy proxy) {
-        double score = 0.0;
-        Match match = proxy.getMatches();
-        while (match != null) {
-            if (match.getIndexId().equals(LuceneIndex.ID)) {
-                score += ((LuceneMatch) match).getScore();
-            }
-            match = match.getNextMatch();
-        }
-        return score;
+        return Score.scoreOf(proxy);
     }
 
     // ---- options ----

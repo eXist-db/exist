@@ -104,11 +104,9 @@ public class QueryScope extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        // options is the 3rd argument (1-based position 3: scope, query, options), as in ft:query.
-        // parseOptions short-circuits to default QueryOptions when getArgumentCount() < 3, so the
-        // 2-argument form never dereferences a missing argument.
-        final QueryOptions options = Query.parseOptions(this, contextSequence, null, 3);
+        // the options argument, already evaluated -- Query.parseOptions would evaluate it a second time
+        final QueryOptions options = args.length < 3 ? new QueryOptions() : Query.toQueryOptions(this, args[2]);
 
-        return LuceneScope.query(this, contextSequence, docs, args[1], options);
+        return LuceneScope.query(this, docs, args[1], options);
     }
 }
