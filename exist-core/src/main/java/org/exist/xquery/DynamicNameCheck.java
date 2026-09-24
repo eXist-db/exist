@@ -36,10 +36,10 @@ import org.w3c.dom.Node;
  * 
  * @author wolf
  */
-public class DynamicNameCheck extends AbstractExpression {
+public class DynamicNameCheck extends AbstractExpression implements RewritableExpression {
 
     final private NameTest test;
-    final private Expression expression;
+    private Expression expression;
 
     public DynamicNameCheck(XQueryContext context, NameTest test) {
         this(context, test, null);
@@ -182,5 +182,35 @@ public class DynamicNameCheck extends AbstractExpression {
 
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /* RewritableExpression API: lets the optimizer rewrite the wrapped
+     * expression in place -- e.g. to attach an (#exist:optimize#) pragma to
+     * a function argument -- without dropping this name check. See GH-873. */
+
+    @Override
+    public void replace(final Expression oldExpr, final Expression newExpr) {
+        if (expression == oldExpr) {
+            expression = newExpr;
+        }
+    }
+
+    @Override
+    public void remove(final Expression oldExpr) throws XPathException {
+        // no-op
+    }
+
+    @Override
+    public Expression getPrevious(final Expression current) {
+        return null;
+    }
+
+    @Override
+    public Expression getFirst() {
+        return expression;
     }
 }
