@@ -109,10 +109,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         }
         final int pos = ((IntegerValue) key).getInt();
         if (pos <= 0 || pos > getSize()) {
-            final String startIdx = vector.length() == 0 ? "0" : "1";
-            final String endIdx = String.valueOf(vector.length());
-            throw new XPathException(getExpression(), ErrorCodes.FOAY0001,
-                    "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
+            throw new XPathException(getExpression(), ErrorCodes.FOAY0001, indexOutOfBoundsMessage(pos));
         }
         return get(pos - 1);
     }
@@ -451,6 +448,10 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return builder.toString();
     }
 
+    private String indexOutOfBoundsMessage(final int pos) {
+        return "Position " + pos + " does not exist in this array. Length is " + getSize();
+    }
+
     /**
      * The accessor function which will be evaluated if the map is called
      * as a function item.
@@ -463,12 +464,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
         @Override
         public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-            final IntegerValue v = (IntegerValue) args[0].itemAt(0);
-            final int n = v.getInt();
-            if (n <= 0 || n > ArrayType.this.getSize()) {
-                throw new XPathException(this, ErrorCodes.FOAY0001, "Position " + n + " does not exist in this array. Length is " + ArrayType.this.getSize());
-            }
-            return ArrayType.this.get(n - 1);
+            return ArrayType.this.get((AtomicValue) args[0].itemAt(0));
         }
     }
 }
