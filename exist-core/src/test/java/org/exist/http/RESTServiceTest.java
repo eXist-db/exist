@@ -1378,6 +1378,74 @@ try {
     }
 
     /**
+     * A stored query that declares output:method itself must be served as JSON, not XML.
+     *
+     * XQuery.execute() merges the query's own serialization options into the output
+     * properties under the W3C `method` key, where the REST layer's own key is
+     * `output-as`. Dispatching on `output-as` alone sent the result to the XML writer,
+     * so a JSON body went out as application/xml.
+     */
+    @Test
+    public void storedQueryInQueryJsonMethod() throws IOException {
+        final String xquery = """
+                xquery version "3.1";
+                declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "json";
+                <root><a>1</a></root>""";
+        doPut(xquery, "inquery-json.xq", HttpStatus.CREATED_201);
+
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json.xq");
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/json", contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * An in-query output:media-type must be honored alongside an in-query output:method.
+     */
+    @Test
+    public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
+        final String xquery = """
+                xquery version "3.1";
+                declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "json";
+                declare option output:media-type "application/vnd.api+json";
+                <root><a>1</a></root>""";
+        doPut(xquery, "inquery-json-mediatype.xq", HttpStatus.CREATED_201);
+
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json-mediatype.xq");
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/vnd.api+json", contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
      * request:negotiate-content-type picks the best server media type for the request's Accept header.
      */
     @Test
