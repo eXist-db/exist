@@ -27,9 +27,11 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.indexing.lucene.LuceneConfig;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
@@ -44,12 +46,13 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Shared scope-resolution and index-first query execution for the collection-scoped Lucene functions
@@ -107,30 +110,32 @@ final class LuceneScope {
     }
 
     /**
-     * Resolve a sequence of collection or document URIs to the set of collections in scope, recursively
-     * (sub-collections included) and permission-checked at collection-read granularity. Unlike
-     * {@link #resolveScope}, this does not enumerate documents: configuration introspection
-     * ({@link Fields}) needs only the collection hierarchy, so the cost is bounded by the number of
-     * collections in scope, not the number of documents.
+     * Resolve a sequence of collection or document URIs to the collections they cover, each with its
+     * Lucene configuration. A collection URI covers the collection and every sub-collection the caller
+     * may read; a document URI covers the collection that owns the document. Configurations are read
+     * during the traversal, under the same read lock, so callers do not reopen the collections.
      *
-     * <p>A URI that resolves to a collection contributes that collection and, recursively, every
-     * sub-collection the caller can read (unreadable sub-collections are skipped, as in
-     * {@link org.exist.collections.Collection#allDocs}). A URI that is not a collection is treated as a
-     * document and contributes its owning collection. Insertion order is preserved (parents before
-     * children) so a configuration inherited from a parent is attributed to that parent.</p>
+     * @return each collection in scope, in traversal order (parents before children), mapped to its
+     *     Lucene configuration, or to null if it has none
      */
-    static Set<XmldbURI> resolveScopeCollections(final BasicFunction fn, final Sequence scope) throws XPathException {
+    static Map<XmldbURI, LuceneConfig> resolveScopeConfigs(final BasicFunction fn, final Sequence scope) throws XPathException {
         final DBBroker broker = fn.getContext().getBroker();
-        final Set<XmldbURI> collections = new LinkedHashSet<>();
+        final Map<XmldbURI, LuceneConfig> configs = new LinkedHashMap<>();
         for (final SequenceIterator i = scope.iterate(); i.hasNext(); ) {
             final String path = i.nextItem().getStringValue();
-            final XmldbURI uri = XmldbURI.create(path);
+            final XmldbURI uri = toUri(fn, path);
             try {
-                if (!collectCollections(broker, uri, collections)) {
-                    // not a collection: treat it as a document and add its owning collection
+                if (!collectConfigs(broker, uri, configs)) {
+                    // not a collection: treat it as a document and cover its owning collection
+                    final XmldbURI owner;
                     try (final LockedDocument lockedDoc = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
-                        if (lockedDoc != null) {
-                            collections.add(lockedDoc.getDocument().getCollection().getURI());
+                        owner = lockedDoc == null ? null : lockedDoc.getDocument().getCollection().getURI();
+                    }
+                    if (owner != null && !configs.containsKey(owner)) {
+                        try (final Collection coll = broker.openCollection(owner, LockMode.READ_LOCK)) {
+                            if (coll != null) {
+                                configs.put(owner, luceneConfigOf(broker, coll));
+                            }
                         }
                     }
                 }
@@ -140,23 +145,28 @@ final class LuceneScope {
                 throw new XPathException(fn, LuceneModule.EXXQDYFT0002, "Lock error while accessing '" + path + "': " + e.getMessage());
             }
         }
-        return collections;
+        return configs;
+    }
+
+    private static @Nullable LuceneConfig luceneConfigOf(final DBBroker broker, final Collection collection) {
+        final IndexSpec indexSpec = collection.getIndexConfiguration(broker);
+        return indexSpec == null ? null : (LuceneConfig) indexSpec.getCustomIndexSpec(LuceneIndex.ID);
     }
 
     /**
-     * Add {@code uri} and every readable sub-collection to {@code collections}. Returns {@code false}
+     * Add {@code uri} and every readable sub-collection to {@code configs}. Returns {@code false}
      * if {@code uri} is not a collection (so the caller can fall back to document resolution). Child
      * URIs are snapshotted under the read lock and recursed into after the lock is released, mirroring
      * {@link org.exist.collections.Collection#allDocs} to avoid self-deadlock.
      */
-    private static boolean collectCollections(final DBBroker broker, final XmldbURI uri, final Set<XmldbURI> collections)
+    private static boolean collectConfigs(final DBBroker broker, final XmldbURI uri, final Map<XmldbURI, LuceneConfig> configs)
             throws PermissionDeniedException, LockException {
         final XmldbURI[] childUris;
         try (final Collection coll = broker.openCollection(uri, LockMode.READ_LOCK)) {
             if (coll == null) {
                 return false;
             }
-            collections.add(uri);
+            configs.put(uri, luceneConfigOf(broker, coll));
             final List<XmldbURI> children = new ArrayList<>();
             for (final Iterator<XmldbURI> ci = coll.collectionIterator(broker); ci.hasNext(); ) {
                 children.add(uri.append(ci.next()));
@@ -165,7 +175,7 @@ final class LuceneScope {
         }
         for (final XmldbURI child : childUris) {
             try {
-                collectCollections(broker, child, collections);
+                collectConfigs(broker, child, configs);
             } catch (final PermissionDeniedException pde) {
                 // skip sub-collections the caller cannot read (matches Collection.allDocs)
             }
