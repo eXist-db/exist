@@ -34,7 +34,9 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -61,12 +63,18 @@ final class LuceneScope {
      */
     static MutableDocumentSet resolveScope(final BasicFunction fn, final Sequence scope) throws XPathException {
         final MutableDocumentSet docs = new DefaultDocumentSet();
+        final XQueryContext context = fn.getContext();
         for (final SequenceIterator i = scope.iterate(); i.hasNext(); ) {
             final String path = i.nextItem().getStringValue();
-            final XmldbURI uri = XmldbURI.create(path);
-            try (final Collection coll = fn.getContext().getBroker().openCollection(uri, LockMode.READ_LOCK)) {
+            final XmldbURI uri = toUri(fn, path);
+            try (final Collection coll = context.getBroker().openCollection(uri, LockMode.READ_LOCK)) {
                 if (coll != null) {
-                    coll.allDocs(fn.getContext().getBroker(), docs, true, fn.getContext().getProtectedDocs());
+                    // as fn:collection does: a caller that has locked a document set sees that set
+                    if (context.inProtectedMode()) {
+                        context.getProtectedDocs().getDocsByCollection(coll, docs);
+                    } else {
+                        coll.allDocs(context.getBroker(), docs, true, context.getProtectedDocs());
+                    }
                 } else {
                     // not a collection: try it as a single document
                     try (final LockedDocument lockedDoc = fn.getContext().getBroker().getXMLResource(uri, LockMode.READ_LOCK)) {
@@ -84,13 +92,21 @@ final class LuceneScope {
         return docs;
     }
 
+    private static XmldbURI toUri(final BasicFunction fn, final String path) throws XPathException {
+        try {
+            return XmldbURI.create(path);
+        } catch (final IllegalArgumentException e) {
+            throw new XPathException(fn, ErrorCodes.FODC0004, "Invalid collection or document URI '" + path + "': " + e.getMessage());
+        }
+    }
+
     /**
      * Run the index-first query over {@code docs}. {@code queryArg} is either a Lucene query string or an
      * XML query element (an empty query matches all indexed nodes in scope).
      *
      * @return the matching nodes, each carrying its Lucene score and matches.
      */
-    static NodeSet query(final BasicFunction fn, final Sequence contextSequence, final MutableDocumentSet docs,
+    static NodeSet query(final BasicFunction fn, final MutableDocumentSet docs,
                          final Sequence queryArg, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) fn.getContext().getBroker()
                 .getIndexController().getWorkerByIndexId(LuceneIndex.ID);

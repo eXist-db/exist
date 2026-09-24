@@ -212,3 +212,18 @@ function si:sortable-by-score() {
     return
         every $i in (2 to count($ranked)) satisfies $ranked[$i - 1] ge $ranked[$i]
 };
+
+(: the text after the last match is kept even when it is a single character (here the final ".") :)
+declare
+    %test:assertEquals("Install eXist-db on your server.")
+function si:highlight-keeps-the-last-character() {
+    let $hit := ft:query-scope($si:COLLECTION, "content:(server)")[1]
+    return string(ft:highlight-field-matches($hit, "content"))
+};
+
+(: a malformed scope URI is an XPath error, not a Java exception :)
+declare
+    %test:assertError("FODC0004")
+function si:malformed-scope-uri() {
+    ft:query-scope("/db/%zz", "content:(install)")
+};
