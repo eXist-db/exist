@@ -24,8 +24,10 @@ xquery version "3.1";
  : XQsuite tests for Lucene index handling of Supplementary Multilingual Plane (SMP)
  : and Supplementary Ideographic Plane (SIP) characters.
  :
- : Verifies that the Lucene full-text index indexes and finds all 20 SMP/SIP
- : code points from issue #787; the issue reports that some are dropped.
+ : Verifies that the Lucene full-text index indexes and finds the SMP/SIP code points from
+ : issue #787 that are expected to be indexable, and documents (rather than asserting a bug
+ : against) the small set that UAX#29 word-segmentation never indexes by design - see the
+ : smp-non-word-symbol group below.
  :
  : @see https://github.com/eXist-db/exist/issues/787
  : @see https://www.unicode.org/roadmaps/smp/
@@ -36,30 +38,51 @@ module namespace unic-smp-l="http://exist-db.org/xquery/lucene/test/unic-smp-sup
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 (:~
- : All 20 SMP/SIP code points from issue #787, grouped as in the issue report.
- : @return map with keys smp-indexed, smp-dropped, sip-indexed, sip-dropped; values are sequences of xs:integer codepoints
+ : All 20 SMP/SIP code points from issue #787.
+ :
+ : The original issue report's "smp-dropped" group (6 codepoints) is split into two groups here,
+ : since they turned out to have different, unrelated fates under Lucene's stock `StandardAnalyzer`:
+ :
+ : - smp-emoji (3 codepoints): CLOCK FACE ONE OCLOCK (U+1F550), GRINNING FACE (U+1F600),
+ :   BATTERY (U+1F50B). These now index and are found, because each carries the Unicode
+ :   `Extended_Pictographic` property, and UAX#29 word-segmentation rule WB3c lets a lone
+ :   `Extended_Pictographic` codepoint form its own word-token.
+ : - smp-non-word-symbol (3 codepoints): an unassigned codepoint (U+10105), GREEK ZERO SIGN
+ :   (U+1018A), and TETRAGRAM FOR CENTRE (U+1D306). These are never indexed, by design: all three
+ :   have `Word_Break = Other` and are not `Extended_Pictographic`, so no UAX#29 rule forms a
+ :   word-token from them standing alone. This is not Lucene-specific or fixable by an analyzer
+ :   swap - ICU's `ICUTokenizer` implements the same UAX#29 rules and drops them identically.
+ :   `smp-non-word-symbol` asserts a count of 0, i.e. it documents the expected non-match rather
+ :   than tracking a bug.
+ :
+ : @return map with keys smp-indexed, smp-emoji, smp-non-word-symbol, sip-indexed, sip-dropped;
+ :         values are sequences of xs:integer codepoints
  :)
 declare variable $unic-smp-l:CODEPOINTS := map {
     "smp-indexed": (65536, 66321, 66661, 68200, 68608),
-    "smp-dropped": (65797, 65930, 128336, 128512, 119558, 128267),
+    "smp-emoji": (128336, 128512, 128267),
+    "smp-non-word-symbol": (65797, 65930, 119558),
     "sip-indexed": (131072, 131369, 145429, 170811, 178084),
     "sip-dropped": (183618, 178231, 178671, 183785)
 };
 
 (:~
- : Flattened sequence of all codepoints in issue order (smp-indexed, smp-dropped, sip-indexed, sip-dropped).
+ : Flattened sequence of all codepoints in issue order (smp-indexed, smp-emoji,
+ : smp-non-word-symbol, sip-indexed, sip-dropped).
  : @return xs:integer* all 20 codepoints
  :)
 declare variable $unic-smp-l:ALL_CODEPOINTS := (
     $unic-smp-l:CODEPOINTS("smp-indexed"),
-    $unic-smp-l:CODEPOINTS("smp-dropped"),
+    $unic-smp-l:CODEPOINTS("smp-emoji"),
+    $unic-smp-l:CODEPOINTS("smp-non-word-symbol"),
     $unic-smp-l:CODEPOINTS("sip-indexed"),
     $unic-smp-l:CODEPOINTS("sip-dropped")
 );
 
 (:~
  : Map from codepoint (xs:integer) to group name for informative test output and document attributes.
- : @return map(xs:integer, xs:string) codepoint to "smp-indexed" | "smp-dropped" | "sip-indexed" | "sip-dropped"
+ : @return map(xs:integer, xs:string) codepoint to "smp-indexed" | "smp-emoji" | "smp-non-word-symbol"
+ :         | "sip-indexed" | "sip-dropped"
  :)
 declare variable $unic-smp-l:CP_TO_GROUP := map:merge(
     for $k in map:keys($unic-smp-l:CODEPOINTS)
@@ -124,7 +147,7 @@ function unic-smp-l:tearDown() {
 (:~
  : Counts how many codepoints in the given group Lucene finds (ft:query).
  :
- : @param $group group name: smp-indexed | smp-dropped | sip-indexed | sip-dropped
+ : @param $group group name: smp-indexed | smp-emoji | smp-non-word-symbol | sip-indexed | sip-dropped
  : @return xs:string "group: count" e.g. "smp-indexed: 5"
  :)
 declare function unic-smp-l:lucene-finds-count($group as xs:string) as xs:string {
@@ -148,16 +171,37 @@ function unic-smp-l:lucene-finds-supplementary-smp-indexed() {
 };
 
 (:~
- : Asserts that Lucene indexes and finds all supplementary characters in group smp-dropped (6 codepoints).
- : Pending until Lucene fix for issue #787.
+ : Asserts that Lucene indexes and finds the SMP emoji codepoints (3 codepoints: clock,
+ : grinning face, battery). They index because each carries the Unicode `Extended_Pictographic`
+ : property, and UAX#29 word-segmentation rule WB3c lets a lone `Extended_Pictographic`
+ : codepoint form its own word-token.
  :
- : @return xs:string "smp-dropped: 6"
+ : @return xs:string "smp-emoji: 3"
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Lucene drops these SMP characters, see #787")
-    %test:assertEquals("smp-dropped: 6")
-function unic-smp-l:lucene-finds-supplementary-smp-dropped() {
-    unic-smp-l:lucene-finds-count("smp-dropped")
+    %test:assertEquals("smp-emoji: 3")
+function unic-smp-l:lucene-finds-supplementary-smp-emoji() {
+    unic-smp-l:lucene-finds-count("smp-emoji")
+};
+
+(:~
+ : Asserts that Lucene does NOT index the SMP non-word symbol codepoints (3 codepoints: an
+ : unassigned codepoint, the Greek zero sign, and a Byzantine musical tetragram). This documents
+ : expected behavior, not a bug: all three have Unicode `Word_Break = Other` and are not
+ : `Extended_Pictographic`, so no UAX#29 word-segmentation rule forms a token from them standing
+ : alone. This is not specific to Lucene's `StandardAnalyzer` or fixable by switching analyzers -
+ : ICU's `ICUTokenizer` implements the same UAX#29 rules and drops them identically (verified
+ : 2026-09-24). Only a tokenizer that abandons word-boundary classification entirely (e.g.
+ : `WhitespaceAnalyzer`) would index these, at the cost of proper word tokenization everywhere else.
+ :
+ : @return xs:string "smp-non-word-symbol: 0"
+ : @see https://github.com/eXist-db/exist/issues/787
+ :)
+declare
+    %test:assertEquals("smp-non-word-symbol: 0")
+function unic-smp-l:lucene-finds-supplementary-smp-non-word-symbol() {
+    unic-smp-l:lucene-finds-count("smp-non-word-symbol")
 };
 
 (:~
