@@ -23,6 +23,7 @@ package org.exist.xquery.modules.ngram.utils;
 
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.numbering.NodeId;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -50,6 +51,33 @@ public final class NodeProxies {
             }
             m = m.getNextMatch();
         }
+    }
+
+    /**
+     * The string values of the nodes the matches on {@code node} are on: a match is on the node itself, or, when
+     * the node is the ancestor of an indexed node, on that descendant. The last value is kept, as a node's matches
+     * are usually all on the same node.
+     *
+     * @param node the node carrying the matches
+     * @return a function from a match on {@code node} to the string value of the node it is on
+     */
+    public static Function<Match, String> matchedValues(final NodeProxy node) {
+        return new Function<>() {
+            private NodeId lastId;
+            private String lastValue;
+
+            @Override
+            public String apply(final Match match) {
+                final NodeId id = match.getNodeId();
+                if (!id.equals(lastId)) {
+                    lastValue = id.equals(node.getNodeId())
+                            ? node.getNodeValue()
+                            : new NodeProxy(null, node.getOwnerDocument(), id).getNodeValue();
+                    lastId = id;
+                }
+                return lastValue;
+            }
+        };
     }
 
     /**
