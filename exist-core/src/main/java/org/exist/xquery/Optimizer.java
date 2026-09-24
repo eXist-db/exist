@@ -822,7 +822,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         };
     }
 
-    private Expression simplifyPath(final Expression expression) {
+    private static Expression simplifyPath(final Expression expression) {
         if (!(expression instanceof final PathExpr path)) {
             return expression;
         }
@@ -832,6 +832,28 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         return path.getExpression(0);
+    }
+
+    /**
+     * Strips the wrappers the parser puts around an operand: any number of single-step
+     * {@link PathExpr}s (see {@link #simplifyPath}), and the {@link InternalFunctionCall} that every
+     * built-in function call is wrapped in.
+     *
+     * @param expression the operand
+     * @return the expression underneath the wrappers, or null if {@code expression} is null
+     */
+    public static @Nullable Expression unwrapOperand(@Nullable final Expression expression) {
+        if (expression == null) {
+            return null;
+        }
+        final Expression simplified = simplifyPath(expression);
+        if (simplified != expression) {
+            return unwrapOperand(simplified);
+        }
+        if (expression instanceof final InternalFunctionCall call) {
+            return unwrapOperand(call.getFunction());
+        }
+        return expression;
     }
 
     /**
@@ -860,7 +882,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         @Override
         public void visitPredicate(final Predicate predicate) {
             final Expression inner = predicate.getExpression(0);
-            if (visitQuantifiedMatch(unwrap(inner))) {
+            if (visitQuantifiedMatch(unwrapOperand(inner))) {
                 return;
             }
             inner.accept(this);
@@ -901,7 +923,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             // The satisfies clause must be the optimizable call itself. Anything larger -- a
             // disjunction, say -- would make narrowing the candidate set unsound, because a node
             // could qualify through the other branch.
-            if (!(unwrap(quantified.getReturnExpression()) instanceof final Function function)
+            if (!(unwrapOperand(quantified.getReturnExpression()) instanceof final Function function)
                     || !(function instanceof final BoundSequenceOptimizable optimizable)
                     || !isReferenceTo(boundVariable, function)) {
                 return false;
@@ -910,7 +932,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             // preSelect evaluates the remaining arguments once, outside the quantifier, where the
             // bound variable does not exist. A pattern such as matches($v, $v) is legal XQuery, so
             // decline rather than evaluate it unbound.
-            if (referencesVariable(boundVariable, function)) {
+            if (!remainingArgumentsAreIndependentOf(boundVariable, function)) {
                 return false;
             }
 
@@ -924,34 +946,44 @@ public class Optimizer extends DefaultExpressionVisitor {
             if (function.getArgumentCount() == 0) {
                 return false;
             }
-            return unwrap(function.getArgument(0)) instanceof final VariableReference ref
+            return unwrapOperand(function.getArgument(0)) instanceof final VariableReference ref
                     && boundVariable.equals(ref.getName());
         }
 
-        /** True if any argument after the first mentions {@code variable}. */
-        private boolean referencesVariable(final QName variable, final Function function) {
-            final BoundVariableDetector detector = new BoundVariableDetector(variable);
-            for (int i = 1; i < function.getArgumentCount(); i++) {
-                function.getArgument(i).accept(detector);
-                if (detector.isFound()) {
-                    return true;
-                }
+        /**
+         * Strips the checks the compiler wraps around a function argument to enforce its declared
+         * type, along with the wrappers {@link #unwrapOperand} removes.
+         */
+        private static @Nullable Expression unwrapArgumentChecks(final Expression argument) {
+            Expression current = unwrapOperand(argument);
+            while (current instanceof DynamicCardinalityCheck || current instanceof DynamicTypeCheck
+                    || current instanceof Atomize || current instanceof UntypedValueCheck) {
+                current = unwrapOperand(current.getSubExpression(0));
             }
-            return false;
+            return current;
         }
 
         /**
-         * Strips the wrappers the parser puts around an operand: a single-step {@link PathExpr},
-         * and the {@link InternalFunctionCall} that every built-in function call is wrapped in.
+         * True if every argument after the first is a literal or a reference to a variable other
+         * than {@code boundVariable}, so that evaluating it once, outside the quantifier, gives the
+         * value it has on every iteration.
+         *
+         * <p>This is an allowlist rather than a search for references to the bound variable. The
+         * expression visitors do not see into every kind of expression -- a quantified expression,
+         * for one, has no visit method -- so a search could miss a reference and optimize a query
+         * it must not. Literal and variable patterns cover how the quantified form is written in
+         * practice.</p>
          */
-        private Expression unwrap(@Nullable final Expression expression) {
-            if (expression instanceof final PathExpr path && path.getLength() == 1) {
-                return unwrap(path.getExpression(0));
+        private boolean remainingArgumentsAreIndependentOf(final QName boundVariable, final Function function) {
+            for (int i = 1; i < function.getArgumentCount(); i++) {
+                final Expression argument = unwrapArgumentChecks(function.getArgument(i));
+                final boolean independent = argument instanceof LiteralValue
+                        || (argument instanceof final VariableReference ref && !boundVariable.equals(ref.getName()));
+                if (!independent) {
+                    return false;
+                }
             }
-            if (expression instanceof final InternalFunctionCall call) {
-                return unwrap(call.getFunction());
-            }
-            return expression;
+            return true;
         }
 
         @Override
@@ -977,33 +1009,6 @@ public class Optimizer extends DefaultExpressionVisitor {
          */
         public void reset() {
             this.optimizables = null;
-        }
-
-        /**
-         * Reports whether a named variable is referenced anywhere in an expression.
-         *
-         * <p>Extends {@link DefaultExpressionVisitor} rather than {@link BasicExpressionVisitor}
-         * because only the former descends into function arguments.</p>
-         */
-        private static class BoundVariableDetector extends DefaultExpressionVisitor {
-            private final QName variable;
-            private boolean found = false;
-
-            BoundVariableDetector(final QName variable) {
-                this.variable = variable;
-            }
-
-            boolean isFound() {
-                return found;
-            }
-
-            @Override
-            public void visitVariableReference(final VariableReference ref) {
-                if (variable.equals(ref.getName())) {
-                    found = true;
-                }
-                super.visitVariableReference(ref);
-            }
         }
     }
 

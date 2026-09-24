@@ -58,6 +58,7 @@ public class QuantifiedMatchOptimizerTest {
 
     private static final String OPTIMIZE = "declare option exist:optimize 'enable=yes'; ";
     private static final String NO_OPTIMIZE = "declare option exist:optimize 'enable=no'; ";
+    private static final String SYSTEM_MODULE = "import module namespace system = 'http://exist-db.org/xquery/system'; ";
 
     private static final String COLLECTION_NAME = "quantified-match-test";
     private static final String DOC_NAME = "fixture.xml";
@@ -130,11 +131,62 @@ public class QuantifiedMatchOptimizerTest {
         return rs.getSize();
     }
 
+    /**
+     * Runs a query with function tracing on and returns how many index uses the trace recorded as
+     * {@code OPTIMIZED}, which is what a pre-selection through the optimize pragma records. The
+     * plan cannot show this on its own: a pragma in the plan does not mean it found anything to
+     * pre-select when the query ran.
+     */
+    private long optimizedIndexUses(final String body) throws XMLDBException {
+        final XQueryService svc = server.getRoot().getService(XQueryService.class);
+        svc.query(SYSTEM_MODULE + "system:clear-trace(), system:enable-tracing(true(), false())");
+        try {
+            svc.query(OPTIMIZE + docPrefix() + body);
+            final ResourceSet rs = svc.query(SYSTEM_MODULE
+                    + "declare namespace stats = 'http://exist-db.org/xquery/profiling'; "
+                    + "count(system:trace()//stats:index[@optimization-level = 'OPTIMIZED'])");
+            return Long.parseLong(rs.getResource(0).getContent().toString());
+        } finally {
+            svc.query(SYSTEM_MODULE + "system:enable-tracing(false())");
+        }
+    }
+
+    /** The control for {@link #optimizedIndexUses}: the direct spelling is known to pre-select. */
+    @Test
+    public void theDirectFormReachesTheIndexAtRunTime() throws XMLDBException {
+        assertTrue(optimizedIndexUses("$d//speech[matches(speaker, '^CLAUD')]") > 0);
+    }
+
     @Test
     public void theQuantifiedFormReachesTheIndex() throws XMLDBException {
         final String dump = plan("$d//speech[some $s in speaker satisfies matches($s, '^HAM')]");
         assertTrue("some ... satisfies matches(...) should be wrapped in the optimize pragma. Plan:\n" + dump,
                 dump.contains(OPTIMIZE_PRAGMA_MARKER));
+    }
+
+    /** The pragma in the plan must also pre-select from the index when the query runs. */
+    @Test
+    public void theQuantifiedFormReachesTheIndexAtRunTime() throws XMLDBException {
+        assertTrue(optimizedIndexUses("$d//speech[some $s in speaker satisfies matches($s, '^HAM')]") > 0);
+    }
+
+    /** A pattern held in a variable other than the bound one is evaluated outside the quantifier. */
+    @Test
+    public void aPatternInAnotherVariableReachesTheIndex() throws XMLDBException {
+        final String body = "let $p := '^HAM' return $d//speech[some $s in speaker satisfies matches($s, $p)]";
+        assertTrue(optimizedIndexUses(body) > 0);
+        assertEquals(2, count(body, true));
+    }
+
+    /**
+     * The pre-selection finds candidate speeches; each is then checked against the bound item
+     * itself. A speech whose matching speaker is not the one the binding selects must not qualify.
+     */
+    @Test
+    public void onlyTheBoundItemsAreChecked() throws XMLDBException {
+        final String body = "$d//speech[some $s in speaker[1] satisfies matches($s, '^HOR')]";
+        assertEquals(count(body, false), count(body, true));
+        assertEquals(0, count(body, true));
     }
 
     /**
@@ -146,6 +198,7 @@ public class QuantifiedMatchOptimizerTest {
         final String dump = plan("$d//speech[every $s in speaker satisfies matches($s, '^HAM')]");
         assertFalse("every ... satisfies must not be optimized through the index. Plan:\n" + dump,
                 dump.contains(OPTIMIZE_PRAGMA_MARKER));
+        assertEquals(0, optimizedIndexUses("$d//speech[every $s in speaker satisfies matches($s, '^HAM')]"));
     }
 
     /**
@@ -160,6 +213,7 @@ public class QuantifiedMatchOptimizerTest {
         assertFalse("a disjunction in the satisfies clause must not be optimized. Plan:\n" + dump,
                 dump.contains(OPTIMIZE_PRAGMA_MARKER));
         assertEquals("and it must still return the right answer", 3, count(body, true));
+        assertEquals(0, optimizedIndexUses(body));
     }
 
     /**
@@ -173,6 +227,20 @@ public class QuantifiedMatchOptimizerTest {
         assertFalse("a pattern mentioning the bound variable must not be optimized. Plan:\n" + dump,
                 dump.contains(OPTIMIZE_PRAGMA_MARKER));
         assertEquals("every speaker matches itself as a pattern", 4, count(body, true));
+        assertEquals(0, optimizedIndexUses(body));
+    }
+
+    /**
+     * The bound variable can also hide inside a nested quantified expression in the pattern, which
+     * the expression visitors do not see into.
+     */
+    @Test
+    public void aPatternReferencingTheBoundVariableInANestedQuantifierIsLeftAlone() throws XMLDBException {
+        final String body = "$d//speech[some $s in speaker satisfies "
+                + "matches($s, if (some $z in (1, 2) satisfies matches($s, '^H')) then '^HAM' else '^CLAUD')]";
+        assertEquals(0, optimizedIndexUses(body));
+        assertEquals(count(body, false), count(body, true));
+        assertEquals(3, count(body, true));
     }
 
     /** Optimized and unoptimized runs must agree. */

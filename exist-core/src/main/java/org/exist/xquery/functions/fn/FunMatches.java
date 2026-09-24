@@ -124,6 +124,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
     private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
+    private boolean optimizedOverBoundSequence = false;
     private final GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
     public FunMatches(final XQueryContext context, final FunctionSignature signature) {
@@ -245,6 +246,12 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
     @Override
     public void optimizeOverBoundSequence(final Expression boundSequence) {
         deriveIndexTargetFrom(boundSequence);
+        optimizedOverBoundSequence = true;
+    }
+
+    @Override
+    public boolean isOptimizedOverBoundSequence() {
+        return optimizedOverBoundSequence;
     }
 
     @Override
@@ -426,8 +433,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                 }
             }
         } else {
-            contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence, null).toNodeSet();
+            result = evalPreselected(contextSequence, contextItem);
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -444,6 +450,32 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
      * @return The resulting sequence
      * @throws XPathException if an error occurs
      */
+    /** Evaluates against the nodes the optimize pragma pre-selected from the index. */
+    private Sequence evalPreselected(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        if (optimizedOverBoundSequence) {
+            return evalOverBoundSequence(contextSequence, contextItem);
+        }
+        contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
+        return getArgument(0).eval(contextSequence, null).toNodeSet();
+    }
+
+    /**
+     * Evaluates the quantified form, {@code some $v in PATH satisfies matches($v, ...)}. Here the
+     * first argument is the bound variable, one item per iteration, not the path the index was
+     * consulted for. The pre-selection already holds every node on that path the pattern matches,
+     * so the answer for this item is whether it is one of them.
+     */
+    private Sequence evalOverBoundSequence(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final Sequence input = getArgument(0).eval(contextSequence, contextItem);
+        if (input.isEmpty()) {
+            return BooleanValue.FALSE;
+        }
+        if (input.getItemCount() == 1 && input.itemAt(0) instanceof final NodeProxy node) {
+            return BooleanValue.valueOf(preselectResult.contains(node));
+        }
+        return evalGeneric(contextSequence, contextItem, input);
+    }
+
     private Sequence evalWithIndex(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

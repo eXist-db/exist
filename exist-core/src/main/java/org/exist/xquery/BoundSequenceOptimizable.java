@@ -46,4 +46,12 @@ public interface BoundSequenceOptimizable extends Optimizable {
      * @param boundSequence the quantifier's input sequence
      */
     void optimizeOverBoundSequence(Expression boundSequence);
+
+    /**
+     * Whether the optimizer has called {@link #optimizeOverBoundSequence} on this call, that is,
+     * whether it approved serving the enclosing quantified expression from the index.
+     *
+     * @return true if this call is optimized over its quantifier's input sequence
+     */
+    boolean isOptimizedOverBoundSequence();
 }
