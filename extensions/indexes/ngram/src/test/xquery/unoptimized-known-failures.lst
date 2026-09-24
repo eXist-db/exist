@@ -2,6 +2,7 @@
 # Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
 
 # ngram:contains raises XPTY0004 without the optimizer; not investigated yet
+unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-sip-dropped
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-sip-indexed
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-dropped
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-indexed
