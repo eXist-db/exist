@@ -21,6 +21,9 @@
  */
 package org.exist.repo;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -46,7 +49,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Business logic for package management operations.
@@ -58,6 +68,13 @@ public class PackageService {
 
     private static final String PKG_NAMESPACE = "http://expath.org/ns/pkg";
     private static final String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
+
+    /** At most this many registry lookups run at once during an update check. */
+    private static final int UPDATE_CHECK_THREADS = 4;
+    /** The whole update check gives up on lookups still running after this long. */
+    private static final Duration UPDATE_CHECK_TIMEOUT = Duration.ofSeconds(60);
+
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
     /**
      * List all installed packages with metadata.
@@ -129,22 +146,21 @@ public class PackageService {
     public Map<String, Object> installFromRegistry(final DBBroker broker, final Txn transaction,
                                                     final String name, final String registryUrl,
                                                     @Nullable final String version) throws PackageException, IOException {
-        final RepoPackageLoader loader = new RepoPackageLoader(registryUrl);
         // Build version constraint
         PackageLoader.Version pkgVersion = null;
         if (version != null && !version.isEmpty()) {
             pkgVersion = new PackageLoader.Version(version, true);
         }
 
-        // Download the XAR from the registry
-        final XarSource xar = loader.load(name, pkgVersion);
-        if (xar == null) {
-            throw new PackageException("Package not found in registry: " + name);
+        // the loader deletes the package and any dependencies it downloads once the installation is done
+        final Optional<String> target;
+        try (final RepoPackageLoader loader = new RepoPackageLoader(registryUrl)) {
+            final XarSource xar = loader.load(name, pkgVersion);
+            if (xar == null) {
+                throw new PackageException("Package not found in registry: " + name);
+            }
+            target = new Deployment().installAndDeploy(broker, transaction, xar, loader);
         }
-
-        // Install and deploy
-        final Deployment deployment = new Deployment();
-        final Optional<String> target = deployment.installAndDeploy(broker, transaction, xar, loader);
 
         final Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
@@ -158,18 +174,24 @@ public class PackageService {
      */
     public Map<String, Object> installFromUpload(final DBBroker broker, final Txn transaction,
                                                   final InputStream xarStream) throws PackageException, IOException {
-        // Save to temporary file
+        // Save to a temporary file, deleted once the installation has read it
         final TemporaryFileManager tempManager = TemporaryFileManager.getInstance();
         final Path tempFile = tempManager.getTemporaryFile();
-        Files.copy(xarStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+        final Optional<String> target;
+        final String name;
+        try {
+            Files.copy(xarStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-        final XarFileSource xarSource = new XarFileSource(tempFile);
-        final Deployment deployment = new Deployment();
-        final Optional<String> target = deployment.installAndDeploy(broker, transaction, xarSource, null);
+            final XarFileSource xarSource = new XarFileSource(tempFile);
+            final Deployment deployment = new Deployment();
+            target = deployment.installAndDeploy(broker, transaction, xarSource, null);
 
-        // Read package name from the XAR descriptor
-        final Optional<org.exist.dom.memtree.DocumentImpl> descriptor = deployment.getDescriptor(broker, xarSource);
-        final String name = descriptor.map(d -> d.getDocumentElement().getAttribute("name")).orElse("unknown");
+            // Read package name from the XAR descriptor
+            final Optional<org.exist.dom.memtree.DocumentImpl> descriptor = deployment.getDescriptor(broker, xarSource);
+            name = descriptor.map(d -> d.getDocumentElement().getAttribute("name")).orElse("unknown");
+        } finally {
+            tempManager.returnTemporaryFile(tempFile);
+        }
 
         final Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
@@ -264,49 +286,90 @@ public class PackageService {
         final String processorVersion = org.exist.SystemProperties.getInstance()
                 .getSystemProperty("product-version", "7.0.0");
 
-        final List<Map<String, Object>> updates = new ArrayList<>();
+        final List<Package> candidates = new ArrayList<>();
         for (final Packages packages : repo.listPackages()) {
             final Package pkg = packages.latest();
-            final String abbrev = pkg.getAbbrev();
-            final String installed = pkg.getVersion();
-            if (abbrev == null || installed == null) {
-                continue;
-            }
-            try {
-                final String queryUrl = findUrl
-                        + "?abbrev=" + URLEncoder.encode(abbrev, StandardCharsets.UTF_8)
-                        + "&processor=http://exist-db.org"
-                        + "&info=true"
-                        + "&processorVersion=" + URLEncoder.encode(processorVersion, StandardCharsets.UTF_8);
-
-                final HttpURLConnection conn = (HttpURLConnection) URI.create(queryUrl).toURL().openConnection();
-                conn.setConnectTimeout(10_000);
-                conn.setReadTimeout(10_000);
-                conn.setRequestProperty("Accept", "application/json");
-                conn.connect();
-
-                if (conn.getResponseCode() == 200) {
-                    // Parse the simple JSON response to extract version
-                    // The response format is: {"version": "x.y.z", ...}
-                    final String body;
-                    try (final InputStream is = conn.getInputStream()) {
-                        body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                    }
-                    final String available = extractJsonStringValue(body, "version");
-                    if (available != null && !available.equals(installed)) {
-                        final Map<String, Object> update = new LinkedHashMap<>();
-                        update.put("name", pkg.getName());
-                        update.put("abbrev", abbrev);
-                        update.put("installed", installed);
-                        update.put("available", available);
-                        updates.add(update);
-                    }
-                }
-            } catch (final IOException e) {
-                LOG.debug("Failed to check updates for package {}: {}", abbrev, e.getMessage());
+            if (pkg.getAbbrev() != null && pkg.getVersion() != null) {
+                candidates.add(pkg);
             }
         }
-        return updates;
+        if (candidates.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Each lookup is independent and may wait up to its connect and read timeouts on a slow
+        // registry, so run a few at a time, and bound the whole check rather than each lookup alone.
+        final ExecutorService executor = Executors.newFixedThreadPool(Math.min(UPDATE_CHECK_THREADS, candidates.size()));
+        try {
+            final List<Future<Optional<Map<String, Object>>>> lookups = new ArrayList<>(candidates.size());
+            for (final Package pkg : candidates) {
+                lookups.add(executor.submit(() -> checkUpdate(pkg, findUrl, processorVersion)));
+            }
+            final long deadline = System.nanoTime() + UPDATE_CHECK_TIMEOUT.toNanos();
+            final List<Map<String, Object>> updates = new ArrayList<>();
+            for (int i = 0; i < lookups.size(); i++) {
+                final Future<Optional<Map<String, Object>>> lookup = lookups.get(i);
+                try {
+                    lookup.get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS).ifPresent(updates::add);
+                } catch (final TimeoutException e) {
+                    lookup.cancel(true);
+                    LOG.debug("Update check for package {} did not finish in time", candidates.get(i).getAbbrev());
+                } catch (final ExecutionException e) {
+                    LOG.debug("Update check for package {} failed: {}", candidates.get(i).getAbbrev(), e.getMessage());
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            return updates;
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    /**
+     * Asks the registry for the latest version of one package.
+     *
+     * @return the update record if the registry offers a different version, otherwise empty
+     */
+    private static Optional<Map<String, Object>> checkUpdate(final Package pkg, final String findUrl,
+                                                             final String processorVersion) {
+        final String abbrev = pkg.getAbbrev();
+        final String installed = pkg.getVersion();
+        try {
+            final String queryUrl = findUrl
+                    + "?abbrev=" + URLEncoder.encode(abbrev, StandardCharsets.UTF_8)
+                    + "&processor=http://exist-db.org"
+                    + "&info=true"
+                    + "&processorVersion=" + URLEncoder.encode(processorVersion, StandardCharsets.UTF_8);
+
+            final HttpURLConnection conn = (HttpURLConnection) URI.create(queryUrl).toURL().openConnection();
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(10_000);
+            conn.setRequestProperty("Accept", "application/json");
+            conn.connect();
+
+            if (conn.getResponseCode() == 200) {
+                // Parse the simple JSON response to extract version
+                // The response format is: {"version": "x.y.z", ...}
+                final String body;
+                try (final InputStream is = conn.getInputStream()) {
+                    body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                }
+                final String available = extractJsonStringValue(body, "version");
+                if (available != null && !available.equals(installed)) {
+                    final Map<String, Object> update = new LinkedHashMap<>();
+                    update.put("name", pkg.getName());
+                    update.put("abbrev", abbrev);
+                    update.put("installed", installed);
+                    update.put("available", available);
+                    return Optional.of(update);
+                }
+            }
+        } catch (final IOException e) {
+            LOG.debug("Failed to check updates for package {}: {}", abbrev, e.getMessage());
+        }
+        return Optional.empty();
     }
 
     // --- Private helpers ---
@@ -452,23 +515,22 @@ public class PackageService {
      */
     @Nullable
     public static String extractJsonStringValue(final String json, final String key) {
-        final String search = "\"" + key + "\"";
-        final int keyIdx = json.indexOf(search);
-        if (keyIdx < 0) {
+        try (final JsonParser parser = JSON_FACTORY.createParser(json)) {
+            if (parser.nextToken() != JsonToken.START_OBJECT) {
+                return null;
+            }
+            // only the top-level members: a nested object's "name" is not the package's
+            while (parser.nextToken() == JsonToken.FIELD_NAME) {
+                final String fieldName = parser.currentName();
+                final JsonToken value = parser.nextToken();
+                if (fieldName.equals(key) && value == JsonToken.VALUE_STRING) {
+                    return parser.getText();
+                }
+                parser.skipChildren();
+            }
+            return null;
+        } catch (final IOException e) {
             return null;
         }
-        final int colonIdx = json.indexOf(':', keyIdx + search.length());
-        if (colonIdx < 0) {
-            return null;
-        }
-        final int startQuote = json.indexOf('"', colonIdx + 1);
-        if (startQuote < 0) {
-            return null;
-        }
-        final int endQuote = json.indexOf('"', startQuote + 1);
-        if (endQuote < 0) {
-            return null;
-        }
-        return json.substring(startQuote + 1, endQuote);
     }
 }

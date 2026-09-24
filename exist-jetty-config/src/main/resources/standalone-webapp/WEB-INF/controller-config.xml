@@ -20,7 +20,7 @@
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
 
     <!-- Package Management API (built-in, no XAR dependency) -->
-    <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
+    <forward pattern="/api/packages" servlet="PackageManagementServlet" optional="true"/>
 
     <!--
         ++ Main web application is served from the

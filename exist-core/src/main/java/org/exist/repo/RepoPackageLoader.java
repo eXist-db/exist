@@ -37,38 +37,38 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads packages from a remote public repository (e.g. https://exist-db.org/exist/apps/public-repo).
- * Used by {@link Deployment} to resolve package dependencies during installation,
- * and by {@link PackageService} for direct package installation from a registry.
+ * Used by {@link Deployment} to resolve dependencies during installation, by repo:install-and-deploy,
+ * and by the package management API.
  *
- * @param repoURL the base URL of the public package repository
+ * <p>Each package is downloaded to a temporary file, which must stay available while the
+ * installation reads it. Closing the loader returns every file it downloaded, including those of
+ * dependencies, to the {@link TemporaryFileManager}; so use it in a try-with-resources that spans
+ * the installation.</p>
  */
-public record RepoPackageLoader(String repoURL) implements PackageLoader {
+public final class RepoPackageLoader implements PackageLoader, AutoCloseable {
     private static final Logger LOG = LogManager.getLogger(RepoPackageLoader.class);
 
     private static final int CONNECT_TIMEOUT = 15_000;
     private static final int READ_TIMEOUT = 15_000;
 
+    private final String repoURL;
+    private final List<Path> downloaded = new ArrayList<>();
+
+    /**
+     * @param repoURL the base URL of the public package repository
+     */
+    public RepoPackageLoader(final String repoURL) {
+        this.repoURL = repoURL;
+    }
+
     @Override
     public XarSource load(final String name, final Version version) throws IOException {
-        String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
-                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
-        if (version != null) {
-            if (version.getMin() != null) {
-                pkgURL += "&semver-min=" + version.getMin();
-            }
-            if (version.getMax() != null) {
-                pkgURL += "&semver-max=" + version.getMax();
-            }
-            if (version.getSemVer() != null) {
-                pkgURL += "&semver=" + version.getSemVer();
-            }
-            if (version.getVersion() != null) {
-                pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8);
-            }
-        }
+        final String pkgURL = packageUrl(name, version);
         LOG.info("Retrieving package from {}", pkgURL);
         final HttpURLConnection connection = (HttpURLConnection) URI.create(pkgURL).toURL().openConnection();
         connection.setConnectTimeout(CONNECT_TIMEOUT);
@@ -78,12 +78,43 @@ public record RepoPackageLoader(String repoURL) implements PackageLoader {
         connection.connect();
 
         try (final InputStream is = connection.getInputStream()) {
-            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-            final Path outFile = temporaryFileManager.getTemporaryFile();
+            final Path outFile = TemporaryFileManager.getInstance().getTemporaryFile();
+            downloaded.add(outFile);
             Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
             return new XarFileSource(outFile);
         } catch (final IOException e) {
             throw new IOException("Failed to download package from " + pkgURL + ": " + e.getMessage(), e);
         }
+    }
+
+    private String packageUrl(final String name, final Version version) {
+        final StringBuilder pkgURL = new StringBuilder(repoURL)
+                .append("?name=").append(URLEncoder.encode(name, StandardCharsets.UTF_8))
+                .append("&processor=").append(SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0"));
+        if (version != null) {
+            if (version.getMin() != null) {
+                pkgURL.append("&semver-min=").append(version.getMin());
+            }
+            if (version.getMax() != null) {
+                pkgURL.append("&semver-max=").append(version.getMax());
+            }
+            if (version.getSemVer() != null) {
+                pkgURL.append("&semver=").append(version.getSemVer());
+            }
+            if (version.getVersion() != null) {
+                pkgURL.append("&version=").append(URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8));
+            }
+        }
+        return pkgURL.toString();
+    }
+
+    /** Returns every downloaded package file to the {@link TemporaryFileManager}. */
+    @Override
+    public void close() {
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        for (final Path file : downloaded) {
+            temporaryFileManager.returnTemporaryFile(file);
+        }
+        downloaded.clear();
     }
 }

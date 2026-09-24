@@ -32,10 +32,13 @@ import jakarta.servlet.http.HttpServletRequest;
 public class PathForward extends Forward {
     private final ServletConfig filterConfig;
     private String servletName;
+    private final boolean optional;
 
     public PathForward(final ServletConfig filterConfig, final Element config, final String uri) throws ServletException {
         super(config, uri);
         this.filterConfig = filterConfig;
+        final String optionalAttribute = config.getAttribute("optional");
+        this.optional = "true".equals(optionalAttribute) || "yes".equals(optionalAttribute);
         final String url = config.getAttribute("url");
         servletName = config.getAttribute("servlet");
         if (servletName.isEmpty()) {
@@ -53,6 +56,12 @@ public class PathForward extends Forward {
         super(other);
         this.filterConfig = other.filterConfig;
         this.servletName = other.servletName;
+        this.optional = other.optional;
+    }
+
+    @Override
+    protected boolean isOptional() {
+        return optional;
     }
 
     @Override

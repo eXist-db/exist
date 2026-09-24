@@ -48,7 +48,11 @@ public abstract class Forward extends URLRewrite {
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null) {
-            LOG.warn("No servlet registered for forward target '{}' — is the required module on the classpath?", uri);
+            if (!isOptional()) {
+                throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
+            }
+            // an optional target whose module is not deployed: that route simply does not exist here
+            LOG.warn("No servlet registered for optional forward target '{}'; is the module that provides it on the classpath?", uri);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Servlet not available: " + uri);
             return;
         }
@@ -57,4 +61,14 @@ public abstract class Forward extends URLRewrite {
     }
 
     protected abstract RequestDispatcher getRequestDispatcher(final HttpServletRequest request);
+
+    /**
+     * Whether a missing target is expected, because the module providing it may not be deployed.
+     * A missing target of any other forward is a configuration error and fails loudly.
+     *
+     * @return true if a missing target should answer 404 rather than fail
+     */
+    protected boolean isOptional() {
+        return false;
+    }
 }

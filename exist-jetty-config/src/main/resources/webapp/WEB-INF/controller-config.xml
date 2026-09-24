@@ -29,7 +29,7 @@
   -->
   
   <!-- Package Management API (built-in, no XAR dependency) -->
-  <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
+  <forward pattern="/api/packages" servlet="PackageManagementServlet" optional="true"/>
 
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>

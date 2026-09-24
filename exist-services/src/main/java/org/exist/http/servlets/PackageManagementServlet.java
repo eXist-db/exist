@@ -35,6 +35,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.expath.pkg.repo.PackageException;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -82,7 +83,13 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        final String pathInfo = normalizePath(request.getPathInfo());
+        final String pathInfo;
+        try {
+            pathInfo = decodePath(request.getPathInfo());
+        } catch (final InvalidPathException e) {
+            writeError(response, HttpServletResponse.SC_BAD_REQUEST, "BAD_REQUEST", e.getMessage());
+            return;
+        }
 
         try {
             if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
@@ -90,8 +97,13 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
                 handleListPackages(response);
             } else if (pathInfo.endsWith("/icon")) {
                 // GET /api/packages/{name}/icon
-                final String name = pathInfo.substring(1, pathInfo.length() - "/icon".length());
-                handleGetIcon(response, name);
+                final String name = pathInfo.substring(1, Math.max(1, pathInfo.length() - "/icon".length()));
+                if (name.isEmpty()) {
+                    writeError(response, HttpServletResponse.SC_BAD_REQUEST,
+                            "BAD_REQUEST", "Package name is required");
+                } else {
+                    handleGetIcon(response, name);
+                }
             } else {
                 // GET /api/packages/{name}
                 final String name = pathInfo.substring(1);
@@ -116,7 +128,13 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        final String pathInfo = normalizePath(request.getPathInfo());
+        final String pathInfo;
+        try {
+            pathInfo = decodePath(request.getPathInfo());
+        } catch (final InvalidPathException e) {
+            writeError(response, HttpServletResponse.SC_BAD_REQUEST, "BAD_REQUEST", e.getMessage());
+            return;
+        }
 
         try {
             if ("/install".equals(pathInfo)) {
@@ -149,15 +167,25 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        final String pathInfo = normalizePath(request.getPathInfo());
+        final String pathInfo;
+        try {
+            pathInfo = decodePath(request.getPathInfo());
+        } catch (final InvalidPathException e) {
+            writeError(response, HttpServletResponse.SC_BAD_REQUEST, "BAD_REQUEST", e.getMessage());
+            return;
+        }
         if (pathInfo == null || pathInfo.length() <= 1) {
             writeError(response, HttpServletResponse.SC_BAD_REQUEST,
                     "BAD_REQUEST", "Package name required");
             return;
         }
 
-        final String nameOrAbbrev = pathInfo.substring(1);
+        removePackage(request, response, user, pathInfo.substring(1));
+    }
 
+    /** DELETE /api/packages/{name}: refuses with 409 while other packages depend on it, unless forced. */
+    private void removePackage(final HttpServletRequest request, final HttpServletResponse response,
+            final Subject user, final String nameOrAbbrev) throws IOException {
         try {
             // Check for dependents first
             final List<String> dependents = packageService.findDependents(getPool(), nameOrAbbrev);
@@ -313,24 +341,31 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
                                       final HttpServletResponse response,
                                       final Subject user)
             throws IOException, PackageException, EXistException {
+        final Part xarPart;
         try {
-            final Part xarPart = request.getPart("xar");
-            if (xarPart == null) {
-                writeError(response, HttpServletResponse.SC_BAD_REQUEST,
-                        "BAD_REQUEST", "Missing 'xar' file part in multipart upload");
-                return;
-            }
-            try (final InputStream is = xarPart.getInputStream();
-                 final DBBroker broker = getPool().get(Optional.of(user));
-                 final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
-                final Map<String, Object> result = packageService.installFromUpload(
-                        broker, transaction, is);
-                transaction.commit();
-                writeJsonMap(response, HttpServletResponse.SC_OK, result);
-            }
+            xarPart = request.getPart("xar");
+        } catch (final IllegalStateException e) {
+            // the container rejects an upload over its configured max-file-size / max-request-size
+            writeError(response, HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                    "PAYLOAD_TOO_LARGE", "Upload exceeds the configured size limit: " + e.getMessage());
+            return;
         } catch (final ServletException e) {
             writeError(response, HttpServletResponse.SC_BAD_REQUEST,
                     "BAD_REQUEST", "Failed to process multipart upload: " + e.getMessage());
+            return;
+        }
+        if (xarPart == null) {
+            writeError(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "BAD_REQUEST", "Missing 'xar' file part in multipart upload");
+            return;
+        }
+        try (final InputStream is = xarPart.getInputStream();
+             final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+            final Map<String, Object> result = packageService.installFromUpload(
+                    broker, transaction, is);
+            transaction.commit();
+            writeJsonMap(response, HttpServletResponse.SC_OK, result);
         }
     }
 
@@ -432,11 +467,31 @@ public class PackageManagementServlet extends AbstractExistHttpServlet {
         gen.writeEndObject();
     }
 
-    private String normalizePath(final String pathInfo) {
+    /**
+     * Decodes the path info. It arrives still percent-encoded, because the controller forwards the
+     * request with a path taken from the raw request URI, and package names are usually URIs, so
+     * {@code /api/packages/http%3A%2F%2Fexist-db.org%2Fapps%2Fdashboard} has to be decoded. Only
+     * percent escapes are decoded: in a path, unlike a form body, {@code +} is a literal plus.
+     *
+     * @throws InvalidPathException if the path contains a malformed percent escape
+     */
+    private static @Nullable String decodePath(@Nullable final String pathInfo) throws InvalidPathException {
         if (pathInfo == null) {
             return null;
         }
-        // URL-decode the path
-        return URLDecoder.decode(pathInfo, StandardCharsets.UTF_8);
+        try {
+            return URLDecoder.decode(pathInfo.replace("+", "%2B"), StandardCharsets.UTF_8);
+        } catch (final IllegalArgumentException e) {
+            throw new InvalidPathException("Malformed percent escape in path: " + pathInfo);
+        }
+    }
+
+    /** A request path that cannot be decoded, answered with 400. */
+    private static final class InvalidPathException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        InvalidPathException(final String message) {
+            super(message);
+        }
     }
 }
