@@ -162,7 +162,16 @@ public class Optimize extends AbstractPragma {
                 result = ancestors;
                 contextSequence = result;
             }
-            if (contextStep == null) {
+            if (contextVar != null && innerExpr instanceof final FilteredExpression filteredExpr) {
+                // innerExpr's source is a plain variable reference (e.g. `let $a := //SPEECH
+                // return $a[ft:query(., ...)]`). VariableReference#eval ignores whatever
+                // contextSequence it is passed and always returns the variable's full,
+                // unfiltered value, so delegating to innerExpr.eval(result, null) here would
+                // silently discard the pre-selected `result` NodeSet computed above and force
+                // the predicate to be re-evaluated across the full variable value -- see
+                // GH-873. Apply the predicates directly against `result` instead.
+                return filteredExpr.evalOnPreselected(result, result);
+            } else if (contextStep == null) {
                 return innerExpr.eval(result, null);
             } else {
                 contextStep.setPreloadedData(result.getDocumentSet(), result);
