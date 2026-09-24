@@ -170,12 +170,12 @@ function unic-smp-n:ngram-contains-supplementary-sip-indexed() {
 
 (:~
  : Asserts that ngram:contains finds all supplementary characters in group sip-dropped (4 codepoints).
- : Pending until ngram fix for sip-dropped in issue #787.
+ : No longer reproduces (verified 2026-09-24).
  :
  : @return xs:string "sip-dropped: 4"
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram fails on sip-dropped characters, see #787")
     %test:assertEquals("sip-dropped: 4")
 function unic-smp-n:ngram-contains-supplementary-sip-dropped() {
     unic-smp-n:ngram-contains-count("sip-dropped")
