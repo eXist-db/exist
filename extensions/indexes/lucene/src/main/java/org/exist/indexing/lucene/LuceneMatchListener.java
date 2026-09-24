@@ -56,8 +56,6 @@ import java.io.StringReader;
 import java.util.*;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
@@ -301,34 +299,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
              final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
             stream.reset();
             while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query query = termMap.get(text);
                 if (query != null) {
                     // Phrase and near/proximity queries need to be handled differently to filter
                     // out wrong matches: only the whole phrase/proximity match should be marked,
                     // not single words which may also occur elsewhere in the document. Both forms
                     // are matched the same slop-aware way so that string ('"a b"~n') and XML
-                    // (<near slop="n">) queries highlight identically, see #833.
-                    final LuceneUtil.ProximityTerms proximity = LuceneUtil.asProximityTerms(query);
-                    if (proximity != null) {
-                        final int firstMatchedIndex = proximity.inOrder()
-                                ? (text.equals(proximity.terms().getFirst()) ? 0 : -1)
-                                : proximity.terms().indexOf(text);
-                        if (firstMatchedIndex >= 0) {
-                            final List<State> stateList = LuceneUtil.matchProximityWindow(stream, proximity, firstMatchedIndex);
-                            if (stateList != null) {
-                                // Proximity match: add one span from first to last matched term (may cross text nodes, #4584).
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.getLast());
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                addMatchSpan(start, end, offsets, str.length());
-                            }
-                        }
-                    } else {
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        addMatchSpan(offsetAttr.startOffset(), offsetAttr.endOffset(), offsets, str.length());
-                    }
+                    // (<near slop="n">) queries highlight identically (may cross text nodes, #4584),
+                    // see #833.
+                    LuceneUtil.highlightToken(stream, text, query,
+                            (start, end) -> addMatchSpan(start, end, offsets, str.length()));
                 }
             }
         } catch (final IOException e) {

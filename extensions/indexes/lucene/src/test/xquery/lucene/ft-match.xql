@@ -35,6 +35,7 @@ declare variable $ftt:COLLECTION_CONFIG :=
                     <ignore qname="div"/>
                     <ignore qname="hi"/>
                     <field name="pub-year" expression="date" analyzer="keyword"/>
+                    <field name="body" expression="p"/>
                 </text>
             </lucene>
         </index>
@@ -127,6 +128,22 @@ declare
 function ftt:field-highlight-field-matches-via-query() {
     let $hits := collection($ftt:COLLECTION)//div[ft:query-field("pub-year", "1972")],
         $result := ft:highlight-field-matches($hits, "pub-year")
+    return (count($hits), count($result//exist:match))
+};
+
+(:~
+ : ft:highlight-field-matches (Field.java) needs the same slop-aware merge as util:expand: a
+ : sloppy phrase within a field ("deed" ... "fair", 4 intervening tokens) must produce one merged
+ : exist:match, not zero (Field.java had its own separate, unfixed copy of the pre-#833-fix
+ : strict-adjacency-only phrase logic).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:assertEquals(1, 1)
+function ftt:field-highlight-field-matches-phrase-slop() {
+    let $hits := collection($ftt:COLLECTION)//div[ft:query(., 'body:"deed fair"~4')],
+        $result := ft:highlight-field-matches($hits, "body")
     return (count($hits), count($result//exist:match))
 };
 
