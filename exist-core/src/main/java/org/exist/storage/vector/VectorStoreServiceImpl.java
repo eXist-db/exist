@@ -37,6 +37,7 @@ import org.exist.util.DatabaseConfigurationException;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ServiceLoader;
 
 /**
  * Broker Pool Service for the Vector Store.
@@ -48,6 +49,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
     private Path dataDir;
     private VectorStoreImpl vectorStore;
     private BrokerPool brokerPool;
+    private VectorExtensionHook vectorExtensionHook;
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
@@ -55,6 +57,24 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
         if (dataDir == null) {
             throw new BrokerPoolServiceException("Could not determine " + BrokerPool.PROPERTY_DATA_DIR + " from the configuration");
         }
+        this.vectorExtensionHook = loadVectorExtensionHook();
+        if (vectorExtensionHook != null) {
+            try {
+                vectorExtensionHook.configure(configuration);
+            } catch (final Exception e) {
+                LOG.warn("Failed to configure vector extension: {}", e.getMessage(), e);
+            }
+        }
+    }
+
+    @Nullable
+    private static VectorExtensionHook loadVectorExtensionHook() {
+        final VectorExtensionHook hook = ServiceLoader.load(VectorExtensionHook.class,
+                VectorStoreServiceImpl.class.getClassLoader()).findFirst().orElse(null);
+        if (hook == null) {
+            LOG.debug("Vector extension not present; vector extension hooks not configured");
+        }
+        return hook;
     }
 
     @Override
@@ -77,37 +97,24 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
                 LOG.warn("Failed to register VectorStore JMX MBean: {}", e.getMessage(), e);
             }
         }
-        registerVectorExtensionJmx(systemBroker.getBrokerPool());
-    }
-
-    private static void registerVectorExtensionJmx(final BrokerPool pool) {
-        try {
-            final Class<?> lifecycle = Class.forName("org.exist.vector.VectorExtensionLifecycle");
-            lifecycle.getMethod("onBrokerPoolStartSystem", BrokerPool.class).invoke(null, pool);
-        } catch (final ClassNotFoundException e) {
-            LOG.debug("Vector extension not present; VectorEmbedding JMX MBean not registered");
-        } catch (final ReflectiveOperationException e) {
-            LOG.warn("Failed to register VectorEmbedding JMX MBean: {}", e.getMessage(), e);
-        }
-    }
-
-    private static void unregisterVectorExtensionJmx(@Nullable final BrokerPool pool) {
-        if (pool == null) {
-            return;
-        }
-        try {
-            final Class<?> lifecycle = Class.forName("org.exist.vector.VectorExtensionLifecycle");
-            lifecycle.getMethod("onBrokerPoolShutdown", BrokerPool.class).invoke(null, pool);
-        } catch (final ClassNotFoundException e) {
-            LOG.debug("Vector extension not present; VectorEmbedding JMX cleanup skipped");
-        } catch (final ReflectiveOperationException e) {
-            LOG.warn("Failed to unregister VectorEmbedding JMX state: {}", e.getMessage(), e);
+        if (vectorExtensionHook != null) {
+            try {
+                vectorExtensionHook.startSystem(systemBroker.getBrokerPool());
+            } catch (final Exception e) {
+                LOG.warn("Failed to start vector extension hooks: {}", e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public void shutdown() {
-        unregisterVectorExtensionJmx(brokerPool);
+        if (vectorExtensionHook != null && brokerPool != null) {
+            try {
+                vectorExtensionHook.shutdown(brokerPool);
+            } catch (final Exception e) {
+                LOG.warn("Failed to shut down vector extension hooks: {}", e.getMessage(), e);
+            }
+        }
         if (this.vectorStore != null) {
             try {
                 this.vectorStore.close();
