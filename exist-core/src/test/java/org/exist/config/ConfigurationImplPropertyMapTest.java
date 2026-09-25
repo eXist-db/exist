@@ -66,7 +66,7 @@ public class ConfigurationImplPropertyMapTest {
     }
 
     @Test
-    public void singleMetadataEntry_isNotLost() throws Exception {
+    public void singleMetadataEntryIsNotLost() throws Exception {
         final Configuration config = parseAccount("<metadata key='" + NAME_PERSON + "'>User 1</metadata>");
 
         final Map<String, String> metadata = config.getPropertyMap("metadata");
@@ -75,7 +75,7 @@ public class ConfigurationImplPropertyMapTest {
     }
 
     @Test
-    public void multipleMetadataEntries_areAllReadable() throws Exception {
+    public void multipleMetadataEntriesAreAllReadable() throws Exception {
         final Configuration config = parseAccount(
                 "<metadata key='" + NAME_PERSON + "'>User 1</metadata>" +
                 "<metadata key='" + EMAIL + "'>user1@example.com</metadata>");
@@ -87,14 +87,14 @@ public class ConfigurationImplPropertyMapTest {
     }
 
     @Test
-    public void noMetadataEntries_returnsEmptyMap() throws Exception {
+    public void noMetadataEntriesReturnsEmptyMap() throws Exception {
         final Configuration config = parseAccount("");
 
         assertTrue(config.getPropertyMap("metadata").isEmpty());
     }
 
     @Test
-    public void otherScalarProperties_areUnaffected() throws Exception {
+    public void otherScalarPropertiesAreUnaffected() throws Exception {
         final Configuration config = parseAccount("<metadata key='" + NAME_PERSON + "'>User 1</metadata>");
 
         assertEquals("true", config.getProperty("enabled"));
@@ -111,7 +111,7 @@ public class ConfigurationImplPropertyMapTest {
      * ordering.
      */
     @Test(timeout = 10_000)
-    public void malformedEntryBeforeWellFormed_wellFormedEntryStillReadable() throws Exception {
+    public void malformedEntryBeforeWellFormedStillReadable() throws Exception {
         final Configuration config = parseAccount(
                 "<metadata>orphan-no-key</metadata>" +
                 "<metadata key='" + NAME_PERSON + "'>User 1</metadata>");
@@ -120,7 +120,7 @@ public class ConfigurationImplPropertyMapTest {
     }
 
     @Test(timeout = 10_000)
-    public void malformedEntryAfterWellFormed_wellFormedEntryStillReadable() throws Exception {
+    public void malformedEntryAfterWellFormedStillReadable() throws Exception {
         final Configuration config = parseAccount(
                 "<metadata key='" + NAME_PERSON + "'>User 1</metadata>" +
                 "<metadata>orphan-no-key</metadata>");
@@ -136,7 +136,7 @@ public class ConfigurationImplPropertyMapTest {
      * well-formed entry.
      */
     @Test
-    public void loneMalformedEntry_isIgnoredNotScalarCached() throws Exception {
+    public void loneMalformedEntryIsIgnoredNotScalarCached() throws Exception {
         final Configuration config = parseAccount("<metadata>orphan-no-key</metadata>");
 
         assertTrue(config.getPropertyMap("metadata").isEmpty());
@@ -148,7 +148,7 @@ public class ConfigurationImplPropertyMapTest {
      * attribute.
      */
     @Test
-    public void entryWithExtraAttribute_stillReadableByKey() throws Exception {
+    public void entryWithExtraAttributeStillReadableByKey() throws Exception {
         final Configuration config = parseAccount(
                 "<metadata key='" + NAME_PERSON + "' extra='x'>User 1</metadata>");
 
