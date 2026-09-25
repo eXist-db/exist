@@ -2407,6 +2407,84 @@ public class XQUFBasicTest {
         assertEquals("<a>new</a>", serialized("doc('/db/test/superseded.xml')/a"));
     }
 
+    /*
+     * In memory, each primitive applies to the node it was created for, whatever the primitives
+     * applied before it did to the tree, in the order of upd:applyUpdates. The expected results
+     * are BaseX 12.4's.
+     */
+
+    @Test
+    public void inMemoryInsertAsFirstThenReplaceValueOfASibling() throws XMLDBException {
+        assertEquals("<a><z/><b>1</b><d/></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (insert node <z/> as first into $c, replace value of node $c/b with '1') return $c"));
+    }
+
+    @Test
+    public void inMemoryReplaceValueThenDeleteOfASibling() throws XMLDBException {
+        assertEquals("<a><b>1</b></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (replace value of node $c/b with '1', delete node $c/d) return $c"));
+    }
+
+    @Test
+    public void inMemoryInsertBeforeThenRenameOfASibling() throws XMLDBException {
+        assertEquals("<a><z/><b/><e/></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (insert node <z/> before $c/b, rename node $c/d as 'e') return $c"));
+    }
+
+    @Test
+    public void inMemoryInsertAfterThenReplaceOfASibling() throws XMLDBException {
+        assertEquals("<a><b/><z/><y/></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (insert node <z/> after $c/b, replace node $c/d with <y/>) return $c"));
+    }
+
+    @Test
+    public void inMemoryInsertsAtTwoLevelsThenDelete() throws XMLDBException {
+        assertEquals("<a><z/><b><x/></b></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (insert node <x/> into $c/b, insert node <z/> as first into $c, delete node $c/d) return $c"));
+    }
+
+    @Test
+    public void inMemoryReplaceWithTwoNodesThenReplaceValueOfASibling() throws XMLDBException {
+        assertEquals("<a><p/><q/><d>v</d></a>", serialized(
+                "copy $c := <a><b/><d/></a> modify (replace node $c/b with (<p/>, <q/>), replace value of node $c/d with 'v') return $c"));
+    }
+
+    /** Content from the copy itself is copied before the tree changes. */
+    @Test
+    public void inMemoryMoveANodeWithinTheCopy() throws XMLDBException {
+        assertEquals("<a><b><d/></b><c/></a>", serialized(
+                "copy $c := <a><b/><c><d/></c></a> modify (insert node $c/c/d into $c/b, delete node $c/c/d) return $c"));
+    }
+
+    /** Text nodes are merged only after all primitives: the delete removes only the original text. */
+    @Test
+    public void inMemoryInsertTextBeforeATextNodeThatIsDeleted() throws XMLDBException {
+        assertEquals("<a>x<b/></a>", serialized(
+                "copy $c := <a>t<b/></a> modify (insert node 'x' before $c/text(), delete node $c/text()) return $c"));
+    }
+
+    @Test
+    public void inMemoryAttributesFollowedThroughShifts() throws XMLDBException {
+        assertEquals("p=p q=q y=2", serialized("let $a := copy $c := <a x='1' y='2' w='4'/> "
+                + "modify (replace node $c/@x with (attribute p {'p'}, attribute q {'q'}), delete node $c/@w) return $c "
+                + "return string-join(for $at in $a/@* order by name($at) return name($at) || '=' || $at, ' ')"));
+        assertEquals("n=n y=Y", serialized("let $a := copy $c := <a><b x='1'/><c y='2'/></a> "
+                + "modify (insert node attribute n {'n'} into $c/b, replace value of node $c/c/@y with 'Y', delete node $c/b/@x) return $c "
+                + "return string-join(for $at in $a//@* order by name($at) return name($at) || '=' || $at, ' ')"));
+    }
+
+    @Test
+    public void inMemoryInsertIntoANodeThatIsReplaced() throws XMLDBException {
+        assertEquals("<a><y/><c/></a>", serialized(
+                "copy $c := <a><b/><c/></a> modify (insert node <x/> into $c/b, replace node $c/b with <y/>) return $c"));
+    }
+
+    @Test
+    public void inMemoryPrimitivesAtSeveralLevels() throws XMLDBException {
+        assertEquals("<a><b><C/></b><z/><e/></a>", serialized(
+                "copy $c := <a><b><c/><d/></b><e/></a> modify (replace node $c/b/c with <C/>, delete node $c/b/d, insert node <z/> after $c/b) return $c"));
+    }
+
     /** Each insert must see the element as the previous one left it. */
     @Test
     public void twoInsertsIntoOneStoredElementBothApply() throws XMLDBException {

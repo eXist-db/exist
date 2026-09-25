@@ -725,78 +725,230 @@ public class PendingUpdateList {
 
     /**
      * Apply updates to in-memory nodes (used in copy-modify expressions).
+     *
+     * <p>W3C XQuery Update Facility 3.0, upd:applyUpdates, in this order:</p>
+     * <ol>
+     *     <li>upd:insertInto, upd:insertAttributes, upd:replaceValue (not of an element), upd:rename</li>
+     *     <li>upd:insertBefore, upd:insertAfter, upd:insertIntoAsFirst, upd:insertIntoAsLast</li>
+     *     <li>upd:replaceNode</li>
+     *     <li>upd:replaceElementContent (replace value of an element)</li>
+     *     <li>upd:delete</li>
+     * </ol>
+     *
+     * <p>Each primitive applies to the node it was created for, whatever the primitives before
+     * it did to the tree: see {@link InMemoryTargets}.</p>
      */
     private void applyInMemory(final List<UpdatePrimitive> prims) throws XPathException {
-        // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
-        // Phase 1: upd:insertInto, upd:insertAttributes, upd:replaceValue (non-element), upd:rename
-        // Phase 2: upd:insertBefore, upd:insertAfter, upd:insertIntoAsFirst, upd:insertIntoAsLast
-        // Phase 3: upd:replaceNode
-        // Phase 4: upd:replaceElementContent (replaceValue on elements)
-        // Phase 5: upd:delete
         final PhasePartition partition = partitionByPhase(prims);
+
+        // decided on the tree as the query saw it, before anything is applied
         final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
-
-        applyInMemoryInserts(partition.inserts, replaceElementContentTargets);
-        // Pre-capture original attr indices for Phase 3 replaceNode BEFORE Phase 1
-        // renames, which can change attribute QNames and create ambiguity.
-        // We capture the index here (before any renames or removals).
-        final Map<UpdatePrimitive, Integer> attrReplaceIndices = captureAttributeReplaceIndices(partition.replaceNodes);
-
-        // Phase 1: renames and non-element replaceValues
-        for (final UpdatePrimitive p : partition.renames) {
-            applyInMemoryRename(p);
+        final Set<UpdatePrimitive> skipped = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (final UpdatePrimitive p : partition.inserts) {
+            if (isRedundantInsert(p, replaceElementContentTargets)) {
+                skipped.add(p);
+            }
         }
-        for (final UpdatePrimitive p : partition.replaceValues) {
-            applyInMemoryReplaceValue(p);
+        for (final UpdatePrimitive p : partition.replaceNodes) {
+            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                skipped.add(p);
+            }
         }
-        // Phase 3: replaceNode — skip if the target's parent is targeted by
-        // replaceElementContent (which will replace ALL children anyway)
-        //
-        // For attribute replaceNode: use pre-captured original indices and process
-        // in descending index order. This handles two problems:
-        // 1. Phase 1 renames can change attribute QNames, making name-based lookup ambiguous
-        // 2. removeAttribute shifts the attr arrays, invalidating stored indices
-        // By processing highest index first, each removal only shifts indices above
-        // the removed position, which we've already processed.
-
-        applyInMemoryReplaceNodes(partition.replaceNodes, attrReplaceIndices, replaceElementContentTargets);
-        // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
-        // Apply in reverse document order to prevent cross-contamination when
-        // insertChildren appends text nodes at the end of the flat array for empty elements.
-        // Without reverse order, an appended text node for an earlier element may fall
-        // in the positional subtree range of a later sibling element.
-        applyInMemoryReplaceElementContents(partition.replaceElementContents);
-        // Phase 5: deletes in reverse document order, skipping those Phase 4 superseded
-        for (int i = partition.deletes.size() - 1; i >= 0; i--) {
-            final UpdatePrimitive p = partition.deletes.get(i);
-            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
-                applyInMemoryDelete(p);
+        for (final UpdatePrimitive p : partition.deletes) {
+            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                skipped.add(p);
             }
         }
 
-        // Per W3C XQuery Update Facility spec: after applying all updates,
-        // merge adjacent text nodes and remove empty text nodes.
-        // Collect all affected documents, tracking which had structural changes.
+        final InMemoryTargets targets = new InMemoryTargets(prims);
+        final Map<UpdatePrimitive, Sequence> contents = targets.copyContentOfUpdatedDocuments(prims);
+
+        final List<UpdatePrimitive> phase1 = new ArrayList<>();
+        final List<UpdatePrimitive> phase2 = new ArrayList<>();
+        partition.inserts.sort(Comparator.comparingInt(p -> insertPriority(p.getType())));
+        for (final UpdatePrimitive p : partition.inserts) {
+            if (p.getType() == UpdatePrimitive.Type.INSERT_INTO || p.getType() == UpdatePrimitive.Type.INSERT_ATTRIBUTES) {
+                phase1.add(p);
+            } else {
+                phase2.add(p);
+            }
+        }
+        phase1.addAll(partition.renames);
+        phase1.addAll(partition.replaceValues);
+        // deletes in reverse order, as they have always been applied
+        final List<UpdatePrimitive> deletes = new ArrayList<>(partition.deletes);
+        Collections.reverse(deletes);
+
+        try {
+            for (final List<UpdatePrimitive> phase : List.of(phase1, phase2, partition.replaceNodes,
+                    partition.replaceElementContents, deletes)) {
+                for (final UpdatePrimitive p : phase) {
+                    if (skipped.contains(p)) {
+                        continue;
+                    }
+                    final org.exist.dom.memtree.NodeImpl target = targets.current(p);
+                    if (target == null) {
+                        // an earlier primitive removed the target from the tree: nothing to do
+                        continue;
+                    }
+                    applyInMemoryPrimitive(p, target, contents.getOrDefault(p, p.getContent()));
+                    if (changesStructure(p)) {
+                        targets.renumber(getDocument(target));
+                    }
+                }
+            }
+        } finally {
+            targets.finish();
+        }
+
+        // Per W3C spec: after applying all updates, merge adjacent text nodes and remove empty text nodes.
         mergeAndCompactAffectedDocuments(prims);
     }
 
+    private void applyInMemoryPrimitive(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target,
+            final Sequence content) throws XPathException {
+        switch (p.getType()) {
+            case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST, INSERT_BEFORE, INSERT_AFTER,
+                 INSERT_ATTRIBUTES -> applyInMemoryInsert(p.getType(), target, content);
+            case RENAME -> applyInMemoryRename(p, target);
+            case REPLACE_VALUE -> applyInMemoryReplaceValue(p, target);
+            case REPLACE_NODE -> applyInMemoryReplaceNode(target, content);
+            case DELETE -> applyInMemoryDelete(target);
+            default -> {
+                // fn:put is applied separately
+            }
+        }
+    }
+
     /**
-     * Sort insert primitives by W3C application priority and apply them,
-     * skipping non-attribute inserts into elements whose entire content will
-     * be replaced by a replaceElementContent primitive anyway.
+     * Whether applying a primitive can leave the tree out of document order, so that the targets
+     * of the primitives after it must be looked up again. A rename or a replace value of a
+     * non-element changes a node in place. A delete marks nodes as deleted but moves none, so
+     * the deletes of the last phase can follow each other.
      */
-    private void applyInMemoryInserts(final List<UpdatePrimitive> inserts,
-            final Set<String> replaceElementContentTargets) throws XPathException {
-        // Sort inserts by type priority per W3C spec Section 3.3.3:
-        // INSERT_INTO_AS_FIRST first, then BEFORE/AFTER/ATTRIBUTES/INTO, then INSERT_INTO_AS_LAST last.
-        inserts.sort((a, b) -> {
-            final int pa = insertPriority(a.getType());
-            final int pb = insertPriority(b.getType());
-            return Integer.compare(pa, pb);
-        });
-        for (final UpdatePrimitive p : inserts) {
-            if (!isRedundantInsert(p, replaceElementContentTargets)) {
-                applyInMemoryInsert(p);
+    private static boolean changesStructure(final UpdatePrimitive p) {
+        return switch (p.getType()) {
+            case RENAME, DELETE -> false;
+            case REPLACE_VALUE -> p.getTargetNode().getNodeType() == Node.ELEMENT_NODE;
+            default -> true;
+        };
+    }
+
+    /**
+     * The node each in-memory primitive applies to. In-memory mutations append new nodes to the
+     * end of a document's arrays, and much of the navigation assumes nodes are in document order,
+     * so after a primitive changes a document's structure, the document is renumbered
+     * ({@link org.exist.dom.memtree.DocumentImpl#renumber()}) and the targets of the primitives
+     * still to be applied are followed to their new node numbers. Attributes are followed by the
+     * identity {@link org.exist.dom.memtree.DocumentImpl#trackAttributes()} gives them, since
+     * inserting and removing attributes shifts the attribute arrays.
+     */
+    private static final class InMemoryTargets {
+        private final Map<UpdatePrimitive, int[]> numbers = new IdentityHashMap<>();
+        private final Map<UpdatePrimitive, org.exist.dom.memtree.DocumentImpl> documents = new IdentityHashMap<>();
+        private final Set<org.exist.dom.memtree.DocumentImpl> updated = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        InMemoryTargets(final List<UpdatePrimitive> prims) {
+            for (final UpdatePrimitive p : prims) {
+                final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+                final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+                documents.put(p, doc);
+                numbers.put(p, new int[] { target.getNodeNumber() });
+                if (updated.add(doc)) {
+                    doc.trackAttributes();
+                }
+            }
+        }
+
+        /**
+         * @return the primitive's target as the tree is now, or null if it is no longer in the tree
+         */
+        @Nullable org.exist.dom.memtree.NodeImpl current(final UpdatePrimitive p) {
+            final org.exist.dom.memtree.DocumentImpl doc = documents.get(p);
+            final int number = numbers.get(p)[0];
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                final int attr = doc.trackedAttribute(number);
+                return attr < 0 ? null : new org.exist.dom.memtree.AttrImpl(p.getSourceExpression(), doc, attr);
+            }
+            // a node deleted by an earlier delete keeps its number, marked as deleted
+            return number < 0 || doc.getNodeType(number) == -1 ? null : doc.getNode(number);
+        }
+
+        void renumber(final org.exist.dom.memtree.DocumentImpl doc) {
+            final org.exist.dom.memtree.DocumentImpl.Renumbering renumbering = doc.renumber();
+            for (final Map.Entry<UpdatePrimitive, int[]> e : numbers.entrySet()) {
+                if (documents.get(e.getKey()) == doc && e.getKey().getTargetNode().getNodeType() != Node.ATTRIBUTE_NODE) {
+                    e.getValue()[0] = renumbering.node(e.getValue()[0]);
+                }
+            }
+        }
+
+        /**
+         * Insertion and replacement content taken from a document that is being updated would be
+         * read through node numbers that renumbering changes. Such content is copied first, which
+         * is what XQUF does with it anyway: primitives insert copies of their content.
+         */
+        Map<UpdatePrimitive, Sequence> copyContentOfUpdatedDocuments(final List<UpdatePrimitive> prims) throws XPathException {
+            final Map<UpdatePrimitive, Sequence> copies = new IdentityHashMap<>();
+            for (final UpdatePrimitive p : prims) {
+                final Sequence content = p.getContent();
+                if (content == null || content.isEmpty() || !containsNodeOf(content, updated)) {
+                    continue;
+                }
+                final ValueSequence copy = new ValueSequence();
+                for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                    final Item item = i.nextItem();
+                    if (item instanceof final org.exist.dom.memtree.NodeImpl node && updated.contains(getDocument(node))) {
+                        copy.add(copyNode(node));
+                    } else {
+                        copy.add(item);
+                    }
+                }
+                copies.put(p, copy);
+            }
+            return copies;
+        }
+
+        private static boolean containsNodeOf(final Sequence content, final Set<org.exist.dom.memtree.DocumentImpl> docs)
+                throws XPathException {
+            for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                if (i.nextItem() instanceof final org.exist.dom.memtree.NodeImpl node && docs.contains(getDocument(node))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static org.exist.dom.memtree.NodeImpl copyNode(final org.exist.dom.memtree.NodeImpl node) throws XPathException {
+            final MemTreeBuilder builder = new MemTreeBuilder(node.getExpression());
+            builder.startDocument();
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                final org.exist.dom.memtree.AttrImpl attr = (org.exist.dom.memtree.AttrImpl) node;
+                builder.addAttribute(attr.getQName(), attr.getValue());
+                builder.endDocument();
+                return builder.getDocument().getLastAttr();
+            }
+            final boolean isDocument = node instanceof org.exist.dom.memtree.DocumentImpl;
+            try {
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(node.getExpression(), builder, true);
+                if (isDocument) {
+                    // inserting a document node inserts its children
+                    for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+                        getDocument(node).copyTo((org.exist.dom.memtree.NodeImpl) child, receiver);
+                    }
+                } else {
+                    getDocument(node).copyTo(node, receiver);
+                }
+            } catch (final SAXException e) {
+                throw new XPathException(node.getExpression(), e.getMessage(), e);
+            }
+            builder.endDocument();
+            return isDocument ? builder.getDocument() : builder.getDocument().getNode(1);
+        }
+
+        void finish() {
+            for (final org.exist.dom.memtree.DocumentImpl doc : updated) {
+                doc.stopTrackingAttributes();
             }
         }
     }
@@ -819,54 +971,6 @@ public class PendingUpdateList {
     }
 
     /**
-     * Capture the original attribute indices of attribute-targeted replaceNode
-     * primitives, before Phase 1 renames can change attribute QNames.
-     */
-    private static Map<UpdatePrimitive, Integer> captureAttributeReplaceIndices(final List<UpdatePrimitive> replaceNodes) {
-        final Map<UpdatePrimitive, Integer> attrReplaceIndices = new HashMap<>();
-        for (final UpdatePrimitive p : replaceNodes) {
-            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
-                attrReplaceIndices.put(p, ((org.exist.dom.memtree.AttrImpl) p.getTargetNode()).getNodeNumber());
-            }
-        }
-        return attrReplaceIndices;
-    }
-
-    /**
-     * Apply Phase 3 replaceNode primitives: attribute targets first in
-     * descending original-index order (removals shift the attr arrays), then
-     * the remaining targets. Targets whose parent is subject to
-     * replaceElementContent are skipped.
-     */
-    private void applyInMemoryReplaceNodes(final List<UpdatePrimitive> replaceNodes,
-            final Map<UpdatePrimitive, Integer> attrReplaceIndices,
-            final Set<String> replaceElementContentTargets) throws XPathException {
-        // Separate attribute and non-attribute replaceNodes
-        final List<UpdatePrimitive> attrReplaceNodes = new ArrayList<>();
-        final List<UpdatePrimitive> nonAttrReplaceNodes = new ArrayList<>();
-        for (final UpdatePrimitive p : replaceNodes) {
-            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
-                continue;
-            }
-            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
-                attrReplaceNodes.add(p);
-            } else {
-                nonAttrReplaceNodes.add(p);
-            }
-        }
-        // Sort attribute replaces by descending original index
-        attrReplaceNodes.sort((a, b) -> Integer.compare(
-                attrReplaceIndices.getOrDefault(b, 0),
-                attrReplaceIndices.getOrDefault(a, 0)));
-        for (final UpdatePrimitive p : attrReplaceNodes) {
-            applyInMemoryReplaceNode(p, attrReplaceIndices.get(p));
-        }
-        for (final UpdatePrimitive p : nonAttrReplaceNodes) {
-            applyInMemoryReplaceNode(p, null);
-        }
-    }
-
-    /**
      * Whether a primitive's target is a child of an element whose content a replaceElementContent
      * primitive replaces. Phase 4 has then already detached the target, so replacing or deleting
      * it has no effect (upd:delete of a parentless node is a no-op) and must not be applied to
@@ -884,22 +988,6 @@ public class PendingUpdateList {
         final Node parent = target.getParentNode();
         return parent != null && parent.getNodeType() == Node.ELEMENT_NODE
                 && replaceElementContentTargets.contains(nodeKey(parent));
-    }
-
-    /**
-     * Apply Phase 4 replaceElementContent primitives in reverse document order
-     * to prevent cross-contamination when insertChildren appends text nodes at
-     * the end of the flat array for empty elements.
-     */
-    private void applyInMemoryReplaceElementContents(final List<UpdatePrimitive> replaceElementContents) throws XPathException {
-        replaceElementContents.sort((a, b) -> {
-            final int aNum = ((org.exist.dom.memtree.NodeImpl) a.getTargetNode()).getNodeNumber();
-            final int bNum = ((org.exist.dom.memtree.NodeImpl) b.getTargetNode()).getNodeNumber();
-            return Integer.compare(bNum, aNum);  // reverse order
-        });
-        for (final UpdatePrimitive p : replaceElementContents) {
-            applyInMemoryReplaceValue(p);
-        }
     }
 
     /**
@@ -933,15 +1021,14 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryInsert(final UpdatePrimitive p) throws XPathException {
-        final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+    private void applyInMemoryInsert(final UpdatePrimitive.Type type, final org.exist.dom.memtree.NodeImpl target,
+            final Sequence content) throws XPathException {
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
-        final Sequence content = p.getContent();
         if (content == null || content.isEmpty()) {
             return;
         }
 
-        switch (p.getType()) {
+        switch (type) {
             case INSERT_INTO, INSERT_INTO_AS_LAST -> doc.insertChildren(target.getNodeNumber(), content, false);
             case INSERT_INTO_AS_FIRST -> doc.insertChildren(target.getNodeNumber(), content, true);
             case INSERT_BEFORE -> doc.insertSiblings(target.getNodeNumber(), content, true);
@@ -1019,8 +1106,7 @@ public class PendingUpdateList {
         return node.getOwnerDocument();
     }
 
-    private void applyInMemoryRename(final UpdatePrimitive p) throws XPathException {
-        final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+    private void applyInMemoryRename(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target) {
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
             // For attribute nodes, getNodeNumber() returns an index into the attr arrays
@@ -1030,8 +1116,8 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryReplaceValue(final UpdatePrimitive p) throws XPathException {
-        final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+    private void applyInMemoryReplaceValue(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target)
+            throws XPathException {
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         // Per W3C spec: atomize content, join with single space separator
         final String value = atomizeAndJoin(p.getContent());
@@ -1047,36 +1133,21 @@ public class PendingUpdateList {
         }
     }
 
-    /**
-     * @param preCapIndex for attribute targets, the original attr array index captured
-     *                    before Phase 1 renames. Attribute replaces are processed in
-     *                    descending index order so each removeAttribute only shifts
-     *                    indices above the removed position (already processed).
-     *                    null for non-attribute targets.
-     */
-    private void applyInMemoryReplaceNode(final UpdatePrimitive p, final Integer preCapIndex) throws XPathException {
-        final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+    private void applyInMemoryReplaceNode(final org.exist.dom.memtree.NodeImpl target, final Sequence content)
+            throws XPathException {
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
-        if (target.getNodeType() == Node.ATTRIBUTE_NODE && preCapIndex != null) {
-            // For attribute nodes: use pre-captured index directly.
-            // Attribute replaces are sorted by descending index, so removeAttribute
-            // on this index won't affect any remaining (lower) indices.
-            final org.exist.dom.memtree.AttrImpl attrTarget = (org.exist.dom.memtree.AttrImpl) target;
-            final org.exist.dom.memtree.NodeImpl parentElement =
-                    (org.exist.dom.memtree.NodeImpl) attrTarget.getOwnerElement();
-            final int parentElementNum = parentElement.getNodeNumber();
-            doc.removeAttribute(preCapIndex);
-            final Sequence content = p.getContent();
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            final int parentElementNum = ((org.exist.dom.memtree.NodeImpl) ((Attr) target).getOwnerElement()).getNodeNumber();
+            doc.removeAttribute(target.getNodeNumber());
             if (content != null && !content.isEmpty()) {
                 doc.insertAttributes(parentElementNum, content, false);
             }
         } else {
-            doc.replaceNode(target.getNodeNumber(), p.getContent());
+            doc.replaceNode(target.getNodeNumber(), content);
         }
     }
 
-    private void applyInMemoryDelete(final UpdatePrimitive p) throws XPathException {
-        final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+    private void applyInMemoryDelete(final org.exist.dom.memtree.NodeImpl target) {
         if (target instanceof org.exist.dom.memtree.DocumentImpl) {
             // Per W3C spec, deleting a parentless node (document node) is a no-op
             return;

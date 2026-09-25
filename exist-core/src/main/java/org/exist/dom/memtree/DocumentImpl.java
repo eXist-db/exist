@@ -47,6 +47,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -150,6 +151,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     // Maps parent node number -> first child node number when the first child
     // is no longer at the positional (parent + 1) slot due to insertions.
     private Map<Integer, Integer> firstChildOverride = null;
+
+    // While a pending update list is applied: a stable identity for each attribute, which moves
+    // with it when the attribute arrays are shifted. -1 for attributes added since. See
+    // trackAttributes().
+    private int[] attrTag = null;
 
     protected XQueryContext context;
     protected final boolean explicitlyCreated;
@@ -378,6 +384,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         attrName[nextAttr] = namePool.getSharedName(attrQname);
         attrValue[nextAttr] = value;
         attrType[nextAttr] = type;
+        if(attrTag != null) {
+            attrTag[nextAttr] = -1;
+        }
         if(alpha[nodeNum] < 0) {
             alpha[nodeNum] = nextAttr;
         }
@@ -479,6 +488,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         final NodeId[] newNodeId = new NodeId[newSize];
         System.arraycopy(attrNodeId, 0, newNodeId, 0, size);
         attrNodeId = newNodeId;
+
+        if (attrTag != null) {
+            final int[] newAttrTag = new int[newSize];
+            Arrays.fill(newAttrTag, -1);
+            System.arraycopy(attrTag, 0, newAttrTag, 0, size);
+            attrTag = newAttrTag;
+        }
     }
 
     private void growReferences() {
@@ -1975,6 +1991,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             System.arraycopy(attrParent, attrNum + 1, attrParent, attrNum, remaining);
             System.arraycopy(attrValue, attrNum + 1, attrValue, attrNum, remaining);
             System.arraycopy(attrType, attrNum + 1, attrType, attrNum, remaining);
+            if (attrTag != null) {
+                System.arraycopy(attrTag, attrNum + 1, attrTag, attrNum, remaining);
+            }
         }
         nextAttr--;
 
@@ -2393,6 +2412,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             this.attrName[insertPos + j] = namePool.getSharedName(attrQname);
             attrValue[insertPos + j] = value;
             attrType[insertPos + j] = AttrImpl.ATTR_CDATA_TYPE;
+            if (attrTag != null) {
+                attrTag[insertPos + j] = -1;
+            }
         }
 
         // Set alpha if element didn't have attrs before
@@ -2482,6 +2504,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         System.arraycopy(attrName, insertPos, attrName, insertPos + count, nextAttr - insertPos);
         System.arraycopy(attrValue, insertPos, attrValue, insertPos + count, nextAttr - insertPos);
         System.arraycopy(attrType, insertPos, attrType, insertPos + count, nextAttr - insertPos);
+        if (attrTag != null) {
+            System.arraycopy(attrTag, insertPos, attrTag, insertPos + count, nextAttr - insertPos);
+        }
 
         // Update alpha pointers for elements whose attrs shifted
         for (int n = 0; n < size; n++) {
@@ -2859,6 +2884,253 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     /**
+     * Give each attribute a stable identity, its current index, which stays with it while
+     * attributes are inserted and removed. Update primitives use it to find the attribute they
+     * were created for.
+     */
+    public void trackAttributes() {
+        if (attrName == null) {
+            return;
+        }
+        attrTag = new int[attrName.length];
+        Arrays.fill(attrTag, -1);
+        for (int a = 0; a < nextAttr; a++) {
+            attrTag[a] = a;
+        }
+    }
+
+    /**
+     * @param tag an attribute's index when {@link #trackAttributes()} was called
+     * @return that attribute's current index, or -1 if it has been removed
+     */
+    public int trackedAttribute(final int tag) {
+        if (attrTag == null) {
+            return tag;
+        }
+        for (int a = 0; a < nextAttr; a++) {
+            if (attrTag[a] == tag) {
+                return a;
+            }
+        }
+        return -1;
+    }
+
+    public void stopTrackingAttributes() {
+        attrTag = null;
+    }
+
+    /**
+     * Where the nodes and attributes of a document ended up after {@link #renumber()}.
+     *
+     * Attributes are followed through {@link #trackAttributes()} instead.
+     *
+     * @param nodes for each node number before renumbering, the new node number, or -1 if the node
+     *     is no longer in the tree
+     */
+    public record Renumbering(int[] nodes) {
+
+        public int node(final int nodeNum) {
+            return nodeNum >= 0 && nodeNum < nodes.length ? nodes[nodeNum] : -1;
+        }
+    }
+
+    /**
+     * Put the nodes of this document back in document order after in-memory mutations, keeping
+     * every node that is still in the tree as it is, and report where each node went.
+     *
+     * <p>Unlike {@link #compact()}, this does not rebuild the document through a builder, so
+     * adjacent text nodes stay separate nodes. That makes it usable between the primitives of a
+     * pending update list: each primitive can then work on a tree in document order, and the
+     * primitives still to be applied can be retargeted at the nodes they were created for.</p>
+     *
+     * @return where each node went
+     */
+    public Renumbering renumber() {
+        final int[] nodeMap = new int[size];
+        Arrays.fill(nodeMap, -1);
+        final int[] order = new int[size];
+        final short[] levels = new short[size];
+        nodeMap[0] = 0;
+        order[0] = 0;
+        levels[0] = 0;
+        final int count = collectInDocumentOrder(0, (short) 0, nodeMap, order, levels, 1);
+
+        // attributes and namespaces first: they are found through the old node arrays
+        final int[] firstAttr = renumberAttributes(order, count);
+        final int[] firstNamespace = renumberNamespaces(order, count);
+        renumberNodes(order, levels, count, firstAttr, firstNamespace);
+        this.firstChildOverride = null;
+        return new Renumbering(nodeMap);
+    }
+
+    /**
+     * Rebuild the attribute arrays in the new node order, keeping each node's attributes in their
+     * order and with their tags.
+     *
+     * @return for each new node number, the index of its first attribute, or -1
+     */
+    private int[] renumberAttributes(final int[] order, final int count) {
+        final int[] first = new int[count];
+        Arrays.fill(first, -1);
+        if (attrName == null) {
+            return first;
+        }
+        final Map<Integer, java.util.List<Integer>> attrsOf = indexByParent(attrParent, nextAttr);
+        final int capacity = Math.max(nextAttr, ATTR_SIZE);
+        final QName[] names = new QName[capacity];
+        final int[] types = new int[capacity];
+        final int[] parents = new int[capacity];
+        final String[] values = new String[capacity];
+        final int[] tags = attrTag == null ? null : new int[capacity];
+        if (tags != null) {
+            Arrays.fill(tags, -1);
+        }
+        int n = 0;
+        for (int i = 0; i < count; i++) {
+            for (final int a : attrsOf.getOrDefault(order[i], java.util.List.of())) {
+                if (first[i] < 0) {
+                    first[i] = n;
+                }
+                names[n] = attrName[a];
+                types[n] = attrType[a];
+                parents[n] = i;
+                values[n] = attrValue[a];
+                if (tags != null) {
+                    tags[n] = attrTag[a];
+                }
+                n++;
+            }
+        }
+        attrName = names;
+        attrType = types;
+        attrParent = parents;
+        attrValue = values;
+        attrNodeId = new NodeId[capacity];
+        nextAttr = n;
+        attrTag = tags;
+        return first;
+    }
+
+    /**
+     * Rebuild the namespace arrays in the new node order.
+     *
+     * @return for each new node number, the index of its first namespace, or -1
+     */
+    private int[] renumberNamespaces(final int[] order, final int count) {
+        final int[] first = new int[count];
+        Arrays.fill(first, -1);
+        if (namespaceCode == null) {
+            return first;
+        }
+        final Map<Integer, java.util.List<Integer>> namespacesOf = indexByParent(namespaceParent, nextNamespace);
+        final QName[] codes = new QName[namespaceCode.length];
+        final int[] parents = new int[namespaceCode.length];
+        int n = 0;
+        for (int i = 0; i < count; i++) {
+            for (final int ns : namespacesOf.getOrDefault(order[i], java.util.List.of())) {
+                if (first[i] < 0) {
+                    first[i] = n;
+                }
+                codes[n] = namespaceCode[ns];
+                parents[n++] = i;
+            }
+        }
+        namespaceCode = codes;
+        namespaceParent = parents;
+        nextNamespace = n;
+        return first;
+    }
+
+    private static Map<Integer, java.util.List<Integer>> indexByParent(final int[] parentOf, final int length) {
+        final Map<Integer, java.util.List<Integer>> byParent = new HashMap<>();
+        for (int i = 0; i < length; i++) {
+            byParent.computeIfAbsent(parentOf[i], k -> new java.util.ArrayList<>()).add(i);
+        }
+        return byParent;
+    }
+
+    /**
+     * Rebuild the node arrays in document order. Like {@link MemTreeBuilder}, a node's next is its
+     * parent until a following sibling comes along.
+     */
+    private void renumberNodes(final int[] order, final short[] levels, final int count,
+            final int[] firstAttr, final int[] firstNamespace) {
+        final int capacity = Math.max(count, NODE_SIZE);
+        final short[] kinds = new short[capacity];
+        final short[] newLevels = new short[capacity];
+        final int[] nexts = new int[capacity];
+        final QName[] names = new QName[capacity];
+        final int[] alphas = new int[capacity];
+        final int[] alphaLens = new int[capacity];
+        Arrays.fill(nexts, -1);
+        final int[] prevAtLevel = new int[maxLevel(levels, count) + 2];
+        Arrays.fill(prevAtLevel, -1);
+        prevAtLevel[0] = 0;
+        for (int i = 0; i < count; i++) {
+            final int old = order[i];
+            kinds[i] = nodeKind[old];
+            newLevels[i] = levels[i];
+            names[i] = nodeName[old];
+            // an element's alpha and alphaLen point at its attributes and namespaces; other nodes'
+            // at their characters or reference, which do not move
+            final boolean hasAttributeLinks = nodeKind[old] == ELEMENT_NODE || i == 0;
+            alphas[i] = hasAttributeLinks ? firstAttr[i] : alpha[old];
+            alphaLens[i] = hasAttributeLinks ? firstNamespace[i] : alphaLen[old];
+            if (i > 0) {
+                final int prev = prevAtLevel[levels[i]];
+                if (prev > -1) {
+                    nexts[prev] = i;
+                }
+                nexts[i] = prevAtLevel[levels[i] - 1];
+                prevAtLevel[levels[i]] = i;
+                prevAtLevel[levels[i] + 1] = -1;
+            }
+        }
+        nodeKind = kinds;
+        treeLevel = newLevels;
+        next = nexts;
+        nodeName = names;
+        alpha = alphas;
+        alphaLen = alphaLens;
+        nodeId = new NodeId[capacity];
+        size = count;
+    }
+
+    /**
+     * Number the descendants of a node in document order, following the same links as navigation
+     * does after in-memory mutations, and skipping deleted nodes.
+     *
+     * @return the number of nodes numbered so far
+     */
+    private int collectInDocumentOrder(final int nodeNum, final short level, final int[] nodeMap,
+            final int[] order, final short[] levels, final int countSoFar) {
+        int count = countSoFar;
+        int child = getFirstChildFor(nodeNum);
+        int steps = 0;
+        while (child >= 0 && steps++ < size) {
+            if (nodeKind[child] != -1 && nodeMap[child] < 0) {
+                nodeMap[child] = count;
+                order[count] = child;
+                levels[count] = (short) (level + 1);
+                count++;
+                if (nodeKind[child] == ELEMENT_NODE) {
+                    count = collectInDocumentOrder(child, (short) (level + 1), nodeMap, order, levels, count);
+                }
+            }
+            child = getNextSiblingFor(child);
+        }
+        return count;
+    }
+
+    private static int maxLevel(final short[] levels, final int count) {
+        int max = 0;
+        for (int i = 0; i < count; i++) {
+            max = Math.max(max, levels[i]);
+        }
+        return max;
+    }
+
+    /**
      * Compact the document by rebuilding all internal arrays from the logical
      * tree structure. After in-memory mutations (insert, delete, replace),
      * nodes may be appended at the end of the arrays, breaking the positional
@@ -2911,6 +3183,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             this.references = newDoc.references;
             this.nextReferenceIdx = newDoc.nextReferenceIdx;
             this.firstChildOverride = null;
+            this.attrTag = null;
         } catch (final SAXException e) {
             throw new IllegalStateException("Failed to compact document after mutations", e);
         }
