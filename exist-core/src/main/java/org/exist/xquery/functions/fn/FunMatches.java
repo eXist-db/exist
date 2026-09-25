@@ -41,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +51,7 @@ import net.sf.saxon.str.StringView;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * Implements the fn:matches() function.
@@ -60,7 +60,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
+public final class FunMatches extends Function implements BoundSequenceOptimizable, IndexUseReporter {
 
     private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
@@ -156,33 +156,95 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             steps.add(arg);
         }
 
-        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
-        if (!steps.isEmpty()) {
-            final LocationStep firstStep = steps.getFirst();
-            LocationStep lastStep = steps.getLast();
-            if (firstStep != null && lastStep != null) {
-                final NodeTest test = lastStep.getTest();
-                if (!test.isWildcardTest() && test.getName() != null) {
+        deriveIndexTargetFrom(path);
+    }
 
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
-                    } else {
-                        contextQName = new QName(test.getName());
-                    }
-                    contextStep = lastStep;
-                    axis = firstStep.getAxis();
-                    if (axis == Constants.SELF_AXIS && steps.size() > 1) {
-                        if (steps.get(1) != null) {
-                            axis = steps.get(1).getAxis();
-                        } else {
-                            contextQName = null;
-                            contextStep = null;
-                            axis = Constants.UNKNOWN_AXIS;
-                        }
-                    }
-                }
-            }
+    /**
+     * Works out which QName the range index should be consulted for, and on which axis, by walking
+     * the location steps of {@code path}.
+     *
+     * <p>Normally {@code path} is the function's own first argument -- {@code matches(val, 'a')}
+     * indexes on {@code val}. It can also be supplied from outside, by
+     * {@link #optimizeOverBoundSequence(Expression)}, when the path is not the argument but the
+     * sequence a quantified expression binds the argument to.</p>
+     *
+     * @param path the expression whose location steps name the indexed node
+     */
+    private void deriveIndexTargetFrom(final Expression path) {
+        contextQName = null;
+        contextStep = null;
+        axis = Constants.UNKNOWN_AXIS;
+
+        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
+        if (steps.isEmpty()) {
+            return;
         }
+
+        final LocationStep firstStep = steps.getFirst();
+        final LocationStep lastStep = steps.getLast();
+        if (firstStep == null || lastStep == null) {
+            return;
+        }
+
+        final NodeTest test = lastStep.getTest();
+        if (test.isWildcardTest() || test.getName() == null) {
+            return;
+        }
+
+        final int resolvedAxis = resolveAxis(firstStep, steps);
+        if (resolvedAxis == Constants.UNKNOWN_AXIS) {
+            return;
+        }
+
+        contextQName = indexedQNameFor(lastStep, test);
+        contextStep = lastStep;
+        axis = resolvedAxis;
+    }
+
+    /**
+     * The index is split into an element half and an attribute half, so an attribute step has to
+     * be looked up under an attribute QName.
+     */
+    private static QName indexedQNameFor(final LocationStep step, final NodeTest test) {
+        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+            return new QName(test.getName(), ElementValue.ATTRIBUTE);
+        }
+        return new QName(test.getName());
+    }
+
+    /**
+     * The axis the optimizer should search along. A leading self step tells us nothing, so the
+     * axis of the step after it is used instead.
+     *
+     * @return the axis, or {@link Constants#UNKNOWN_AXIS} if it cannot be determined
+     */
+    private static int resolveAxis(final LocationStep firstStep, final List<LocationStep> steps) {
+        final int axis = firstStep.getAxis();
+        if (axis != Constants.SELF_AXIS || steps.size() <= 1) {
+            return axis;
+        }
+        final LocationStep second = steps.get(1);
+        return second == null ? Constants.UNKNOWN_AXIS : second.getAxis();
+    }
+
+    /**
+     * Makes this call optimizable when its input arrives through a quantified binding rather than
+     * directly as a path -- {@code some $v in val satisfies matches($v, 'a')} rather than
+     * {@code matches(val, 'a')}.
+     *
+     * <p>The two select the same nodes, but only the first says so in a way the specification
+     * allows: {@code fn:matches} takes {@code xs:string?}, so a multi-valued path is a type error
+     * rather than an existential test. The index can serve the quantified spelling just as well --
+     * it only needs to be told which QName to look up, which is the quantifier's input sequence
+     * instead of this function's first argument.</p>
+     *
+     * <p>Called by the optimizer during static analysis, before {@code canOptimizeSequence}.</p>
+     *
+     * @param boundSequence the sequence the quantified expression binds the variable to
+     */
+    @Override
+    public void optimizeOverBoundSequence(final Expression boundSequence) {
+        deriveIndexTargetFrom(boundSequence);
     }
 
     @Override
@@ -407,18 +469,14 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         Sequence result = null;
 
         final String pattern;
-        if (isCalledAs("matches-regex")) {
+        final boolean literal = hasLiteral(flags);
+        if (literal) {
+            // no need to change anything
             pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
         } else {
-            final boolean literal = hasLiteral(flags);
-            if (literal) {
-                // no need to change anything
-                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-            } else {
-                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
-            }
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = !caseSensitive;
+            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
         }
 
         final NodeSet nodes = input.toNodeSet();
@@ -504,6 +562,15 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
      * @throws XPathException if an error occurs
      */
     private Sequence evalGeneric(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
+        // fn:matches takes xs:string?, so more than one item is a type error. Sequence.getStringValue
+        // below would otherwise quietly return the first item's value and test that alone, which is
+        // how matches(('x','a'), 'a') came to answer false rather than raising.
+        if (input.getItemCount() > 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Type error: the first argument of " + getName() + " must be a single item; got "
+                            + input.getItemCount() + " items", input);
+        }
+
         final String string = input.getStringValue();
 
         final String xmlRegexFlags;
@@ -514,19 +581,16 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         }
 
         final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        if (isCalledAs("matches-regex")) {
-            final int flags = parseFlags(this, xmlRegexFlags);
-            return BooleanValue.valueOf(match(string, pattern,flags));
-        } else {
-            return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
-        }
+        return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
     }
 
 
-    private boolean matchXmlRegex(String string, final String pattern, final String flags) throws XPathException {
+    private boolean matchXmlRegex(final String string, final String pattern, final String rawFlags) throws XPathException {
+        final String flags = validateFlags(this, rawFlags);
+
         // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
         // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
-        // translateXPath4Lookaround / Java-regex dispatch path.
+        // translateXPath4Lookaround / ;j dispatch path.
         if (hasXPath4Lookaround(pattern)) {
             throw new XPathException(this, ErrorCodes.XPST0017,
                     "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
@@ -535,43 +599,14 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
         // but that Saxon's XP30 mode accepts (Java/Perl extensions)
-        if (!hasLiteral(flags)) {
+        // Java syntax is the point of ';j', so the XPath-syntax check does not apply to it.
+        if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
             validateXPathRegex(this, pattern, false);
         }
 
-        try {
-            List<String> warnings = new ArrayList<>(1);
-            RegularExpression regex = context.getBroker().getBrokerPool()
-                    .getSaxonConfiguration()
-                    .compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
-
-            for (final String warning : warnings) {
-                LOG.warn(warning);
-            }
-
-            return regex.containsMatch(StringView.of(string));
-
-        } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP31 regex translator rejects some valid patterns:
-            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
-            // Fall back to Java regex before giving up.
-            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
-                try {
-                    final String javaPattern = translateRegexp(
-                            this, pattern, flags.contains("x"), flags.contains("i"));
-                    int javaFlags = parseFlags(this, flags);
-                    return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
-                } catch (final XPathException | PatternSyntaxException ignored) {
-                    // Java regex fallback also failed — throw original Saxon error below
-                }
-            }
-            switch (e.getErrorCodeQName().getLocalPart()) {
-                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
-                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
-                // no FORX0003 here since fn:matches is allowed to match an empty string
-                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-            }
-        }
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        return regex.containsMatch(StringView.of(string));
     }
 
     /**

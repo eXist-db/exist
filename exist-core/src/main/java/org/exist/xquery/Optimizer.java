@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
@@ -858,7 +859,99 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         @Override
         public void visitPredicate(final Predicate predicate) {
-            predicate.getExpression(0).accept(this);
+            final Expression inner = predicate.getExpression(0);
+            if (visitQuantifiedMatch(unwrap(inner))) {
+                return;
+            }
+            inner.accept(this);
+        }
+
+        /**
+         * Recognizes {@code some $v in PATH satisfies f($v, ...)} where {@code f} is optimizable,
+         * and points {@code f} at {@code PATH} so the range index can serve it.
+         *
+         * <p>This spelling is the specification-conformant way to ask "does any of these match?"
+         * for a function whose signature takes a single item. Without this, such a predicate falls
+         * back to evaluating the quantifier item by item, which is exactly the work the index
+         * exists to avoid -- so the conformant spelling would be the slow one.</p>
+         *
+         * <p>Quantified expressions are invisible to {@link ExpressionVisitor}, which has no visit
+         * method for them, so this is matched directly rather than through an {@code accept} call.</p>
+         *
+         * @param expression the predicate's expression
+         * @return true if this was an optimizable quantified match, and has been registered
+         */
+        private boolean visitQuantifiedMatch(final Expression expression) {
+            if (!(expression instanceof final QuantifiedExpression quantified)) {
+                return false;
+            }
+
+            // "every" cannot use the index: it needs the non-matching nodes, which a
+            // lookup by definition does not return.
+            if (quantified.getType() != FLWORClause.ClauseType.SOME) {
+                return false;
+            }
+
+            final QName boundVariable = quantified.getVariable();
+            final Expression boundSequence = quantified.getInputSequence();
+            if (boundVariable == null || boundSequence == null) {
+                return false;
+            }
+
+            // The satisfies clause must be the optimizable call itself. Anything larger -- a
+            // disjunction, say -- would make narrowing the candidate set unsound, because a node
+            // could qualify through the other branch.
+            if (!(unwrap(quantified.getReturnExpression()) instanceof final Function function)
+                    || !(function instanceof final BoundSequenceOptimizable optimizable)
+                    || !isReferenceTo(boundVariable, function)) {
+                return false;
+            }
+
+            // preSelect evaluates the remaining arguments once, outside the quantifier, where the
+            // bound variable does not exist. A pattern such as matches($v, $v) is legal XQuery, so
+            // decline rather than evaluate it unbound.
+            if (referencesVariable(boundVariable, function)) {
+                return false;
+            }
+
+            optimizable.optimizeOverBoundSequence(boundSequence);
+            addOptimizable(optimizable);
+            return true;
+        }
+
+        /** The bound variable must be the argument the function would otherwise index on. */
+        private boolean isReferenceTo(final QName boundVariable, final Function function) {
+            if (function.getArgumentCount() == 0) {
+                return false;
+            }
+            return unwrap(function.getArgument(0)) instanceof final VariableReference ref
+                    && boundVariable.equals(ref.getName());
+        }
+
+        /** True if any argument after the first mentions {@code variable}. */
+        private boolean referencesVariable(final QName variable, final Function function) {
+            final BoundVariableDetector detector = new BoundVariableDetector(variable);
+            for (int i = 1; i < function.getArgumentCount(); i++) {
+                function.getArgument(i).accept(detector);
+                if (detector.isFound()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Strips the wrappers the parser puts around an operand: a single-step {@link PathExpr},
+         * and the {@link InternalFunctionCall} that every built-in function call is wrapped in.
+         */
+        private Expression unwrap(@Nullable final Expression expression) {
+            if (expression instanceof final PathExpr path && path.getLength() == 1) {
+                return unwrap(path.getExpression(0));
+            }
+            if (expression instanceof final InternalFunctionCall call) {
+                return unwrap(call.getFunction());
+            }
+            return expression;
         }
 
         @Override
@@ -884,6 +977,33 @@ public class Optimizer extends DefaultExpressionVisitor {
          */
         public void reset() {
             this.optimizables = null;
+        }
+
+        /**
+         * Reports whether a named variable is referenced anywhere in an expression.
+         *
+         * <p>Extends {@link DefaultExpressionVisitor} rather than {@link BasicExpressionVisitor}
+         * because only the former descends into function arguments.</p>
+         */
+        private static class BoundVariableDetector extends DefaultExpressionVisitor {
+            private final QName variable;
+            private boolean found = false;
+
+            BoundVariableDetector(final QName variable) {
+                this.variable = variable;
+            }
+
+            boolean isFound() {
+                return found;
+            }
+
+            @Override
+            public void visitVariableReference(final VariableReference ref) {
+                if (variable.equals(ref.getName())) {
+                    found = true;
+                }
+                super.visitVariableReference(ref);
+            }
         }
     }
 
