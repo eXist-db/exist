@@ -21,6 +21,7 @@
  */
 package org.exist.dom.persistent;
 
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
@@ -29,6 +30,8 @@ import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
+
+import javax.xml.XMLConstants;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -94,6 +97,16 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      */
     public void setTarget(final String target) {
         this.target = target;
+    }
+
+    /**
+     * A processing instruction's name is its target, in no namespace.
+     *
+     * @return the name of this processing instruction
+     */
+    @Override
+    public QName getQName() {
+        return target == null ? null : new QName(target, XMLConstants.NULL_NS_URI);
     }
 
     @Override
