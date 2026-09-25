@@ -705,7 +705,9 @@ public class PendingUpdateList {
                 // upd:delete of a parentless node, such as a document node, leaves the XDM instance unchanged
                 continue;
             }
-            if (isPersistentNode(p.getTargetNode())) {
+            // fn:put stores to the database whatever node it puts, so it goes with the persistent
+            // primitives, which are applied after the in-memory ones: it stores the node as updated
+            if (p.getType() == UpdatePrimitive.Type.PUT || isPersistentNode(p.getTargetNode())) {
                 persistentPrimitives.add(p);
             } else {
                 inMemoryPrimitives.add(p);
@@ -815,7 +817,7 @@ public class PendingUpdateList {
             case REPLACE_NODE -> applyInMemoryReplaceNode(target, content);
             case DELETE -> applyInMemoryDelete(target);
             default -> {
-                // fn:put is applied separately
+                // fn:put is applied with the persistent primitives
             }
         }
     }
@@ -1562,6 +1564,8 @@ public class PendingUpdateList {
                 case Node.ATTRIBUTE_NODE -> {
                     final AttrImpl attr = new AttrImpl(node.getExpression(), (AttrImpl) node);
                     attr.setNodeName(newName, context.getBroker().getBrokerPool().getSymbols());
+                    // an attribute is an ID by its name, not by the name it had: a renamed xml:id no longer is one
+                    attr.setType(Namespaces.XML_ID_QNAME.equals(newName) ? AttrImpl.ID : AttrImpl.CDATA);
                     yield attr;
                 }
                 case Node.PROCESSING_INSTRUCTION_NODE -> new ProcessingInstructionImpl(node.getExpression(),
@@ -1754,6 +1758,11 @@ public class PendingUpdateList {
         if (uri == null) {
             throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
                     "fn:put: no target URI specified");
+        }
+
+        if (!XQUFFnPut.isDatabaseLocation(uri)) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FOUP0002,
+                    "fn:put: eXist-db can only store to the database, not to " + uri);
         }
 
         final NodeValue targetNode = (NodeValue) p.getTargetNode();

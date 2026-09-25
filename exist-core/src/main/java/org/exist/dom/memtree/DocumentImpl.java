@@ -1817,6 +1817,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      */
     public void renameAttribute(final int attrNum, final QName newName) {
         attrName[attrNum] = namePool.getSharedName(newName);
+        // an attribute is an ID by its name, not by the name it had: a renamed xml:id no longer is one
+        attrType[attrNum] = Namespaces.XML_ID_QNAME.equals(newName) ? AttrImpl.ATTR_ID_TYPE : AttrImpl.ATTR_CDATA_TYPE;
     }
 
     /**

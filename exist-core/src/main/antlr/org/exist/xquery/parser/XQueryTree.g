@@ -535,6 +535,8 @@ throws PermissionDeniedException, EXistException, XPathException
   boolean baseuri = false;
   boolean ordering = false;
   boolean construction = false;
+  XQueryAST revalidationDecl = null;
+  String revalidationMode = null;
   Set declaredDecimalFormats = new HashSet();
   boolean defaultDecimalFormatDeclared = false;
 
@@ -661,10 +663,19 @@ throws PermissionDeniedException, EXistException, XPathException
         |
         // === W3C XQuery Update Facility 3.0 -- Revalidation Declaration ===
         #(
-            "revalidation" ( "strict" | "lax" | "skip" )
+            rv:"revalidation"
             {
-                // eXist does not support schema revalidation; declaration is accepted and ignored
+                if (revalidationDecl != null)
+                    throw new XPathException((XQueryAST) rv, ErrorCodes.XUST0003, "Revalidation already declared.");
+                revalidationDecl = (XQueryAST) rv;
             }
+            (
+                "strict" { revalidationMode = "strict"; }
+                |
+                "lax" { revalidationMode = "lax"; }
+                |
+                "skip" { revalidationMode = "skip"; }
+            )
         )
         |
         #(
@@ -876,6 +887,14 @@ throws PermissionDeniedException, EXistException, XPathException
         |
         importDecl [path]
     )*
+    {
+        // eXist-db does not implement schema validation, so skip is the only revalidation mode
+        // it supports. Checked after the whole prolog, so that a second revalidation
+        // declaration raises XUST0003 first.
+        if (revalidationMode != null && !"skip".equals(revalidationMode))
+            throw new XPathException(revalidationDecl, ErrorCodes.XUST0026,
+                "Revalidation mode " + revalidationMode + " is not supported: eXist-db does not implement schema validation.");
+    }
     ;
 
 importDecl [PathExpr path]

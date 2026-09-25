@@ -2506,6 +2506,67 @@ public class XQUFBasicTest {
         assertEquals("<e><first/><plain/><last/></e>", serialized("doc('/db/test/as-last.xml')/root/e"));
     }
 
+    /** A prolog may declare revalidation once. */
+    @Test
+    public void aSecondRevalidationDeclaration() throws XMLDBException {
+        assertStaticError("declare revalidation skip; declare revalidation skip; 1", "XUST0003");
+        // XUST0003 rather than XUST0026, although strict is not supported either
+        assertStaticError("declare revalidation strict; declare revalidation strict; 1", "XUST0003");
+    }
+
+    /** eXist-db does not implement schema validation, so skip is the only revalidation mode it supports. */
+    @Test
+    public void anUnsupportedRevalidationMode() throws XMLDBException {
+        assertStaticError("declare revalidation strict; 1", "XUST0026");
+        assertStaticError("declare revalidation lax; 1", "XUST0026");
+        assertEquals("1", serialized("declare revalidation skip; 1"));
+    }
+
+    /** fn:put is an updating function, so it cannot be combined with a non-updating expression. */
+    @Test
+    public void fnPutIsUpdating() throws XMLDBException {
+        assertStaticError("12, fn:put(document { <test/> }, '/db/test/put-updating.xml')", "XUST0001");
+    }
+
+    @Test
+    public void fnPutToALocationOutsideTheDatabase() throws XMLDBException {
+        assertStaticError("fn:put(document { <test/> }, \"http:\\\\invalid>URI\\someURI\")", "FOUP0002");
+        assertStaticError("fn:put(document { <test/> }, 'file:///tmp/put.xml')", "FOUP0002");
+    }
+
+    /** fn:put of a constructed document stores it: its node is in memory, but its target is the database. */
+    @Test
+    public void fnPutStoresAConstructedDocument() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        service.query("fn:put(document { <test it='now'/> }, '/db/test/put-constructed.xml')");
+        assertEquals("now", queryAndGetString(service, "string(doc('/db/test/put-constructed.xml')/test/@it)"));
+    }
+
+    /** A relative URI is resolved against the static base URI, as fn:doc resolves it. */
+    @Test
+    public void fnPutResolvesARelativeUriAsFnDocDoes() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        service.query("declare base-uri 'xmldb:exist:///db/test/'; fn:put(document { <test it='now'/> }, 'sandpit/put.xml')");
+        assertEquals("now", queryAndGetString(service, "declare base-uri 'xmldb:exist:///db/test/'; string(doc('sandpit/put.xml')/test/@it)"));
+        assertEquals("now", queryAndGetString(service, "string(doc('/db/test/sandpit/put.xml')/test/@it)"));
+    }
+
+    /** An attribute is an ID by its name: renaming xml:id makes id() stop finding its element. */
+    @Test
+    public void renamingXmlIdInMemory() throws XMLDBException {
+        assertEquals("1 0", serialized("let $d := document { <r><a xml:id='x1'/></r> } "
+                + "let $c := copy $e := $d modify rename node $e//@xml:id as 'ex-id' return $e "
+                + "return count($d/id('x1')) || ' ' || count($c/id('x1'))"));
+    }
+
+    @Test
+    public void renamingXmlIdOnAStoredDocument() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("rename-id.xml", "<r><a xml:id='x1'/></r>");
+        assertEquals("1", queryAndGetString(service, "count(doc('/db/test/rename-id.xml')/id('x1'))"));
+        service.query("rename node doc('/db/test/rename-id.xml')//@xml:id as 'ex-id'");
+        assertEquals("0", queryAndGetString(service, "count(doc('/db/test/rename-id.xml')/id('x1'))"));
+    }
+
     /** A node deleted twice in one list is deleted once; the second primitive finds nothing to do. */
     @Test
     public void repeatedDeleteOfAStoredNode() throws XMLDBException {

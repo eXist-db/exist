@@ -167,9 +167,11 @@ public class ErrorCodes {
     public static final ErrorCode XUDY0030 = new W3CErrorCode("XUDY0030", "It is a dynamic error if the target of an insert attributes expression is not an element node.");
     public static final ErrorCode XUDY0031 = new W3CErrorCode("XUDY0031", "It is a dynamic error if two or more fn:put primitives have the same URI.");
     public static final ErrorCode FOUP0001 = new W3CErrorCode("FOUP0001", "It is a dynamic error if the first operand of fn:put is not a node of a supported kind.");
+    public static final ErrorCode FOUP0002 = new W3CErrorCode("FOUP0002", "It is a dynamic error if the second operand of fn:put is not a valid lexical representation of the xs:anyURI type.");
     public static final ErrorCode XUST0001 = new W3CErrorCode("XUST0001", "It is a static error if an updating expression is used in a context where it is not allowed.");
     public static final ErrorCode XUST0002 = new W3CErrorCode("XUST0002", "It is a static error if a non-updating expression other than an empty sequence is used where an updating expression is expected.");
-    public static final ErrorCode XUST0003 = new W3CErrorCode("XUST0003", "It is a static error if a revalidation declaration specifies a revalidation mode that is not supported by the implementation.");
+    public static final ErrorCode XUST0003 = new W3CErrorCode("XUST0003", "It is a static error if a Prolog contains more than one revalidation declaration.");
+    public static final ErrorCode XUST0026 = new W3CErrorCode("XUST0026", "It is a static error if a revalidation declaration in a Prolog specifies a revalidation mode that is not supported by the current implementation.");
     public static final ErrorCode XUST0028 = new W3CErrorCode("XUST0028", "It is a static error if a function declaration is declared as updating and also declares a return type.");
     public static final ErrorCode XUTY0004 = new W3CErrorCode("XUTY0004", "It is a type error if the content sequence of an insert expression with into, as first into, or as last into contains an attribute node following a node that is not an attribute node.");
     public static final ErrorCode XUTY0005 = new W3CErrorCode("XUTY0005", "It is a type error if the target expression of an insert expression with into, as first into, or as last into does not return a single element or document node.");
