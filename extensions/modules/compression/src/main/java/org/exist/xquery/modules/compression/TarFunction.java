@@ -77,6 +77,18 @@ public class TarFunction extends AbstractCompressFunction {
                             STRIP_PREFIX_PARAM,
                             ENCODING_PARAM
                     },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+
+            new FunctionSignature(
+                    TAR_FUNCTION_NAME,
+                    TAR_FUNCTION_DESCRIPTION,
+                    new SequenceType[]{
+                            SOURCES_PARAM,
+                            COLLECTION_HIERARCHY_PARAM,
+                            STRIP_PREFIX_PARAM,
+                            ENCODING_PARAM,
+                            SERIALIZATION_OPTIONS_PARAM
+                    },
                     new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
     };
 
