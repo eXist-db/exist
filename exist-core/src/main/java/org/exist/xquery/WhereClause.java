@@ -77,7 +77,11 @@ public class WhereClause extends AbstractFLWORClause {
 
     @Override
     public Sequence preEval(Sequence in) throws XPathException {
-        if (in != null && Type.subTypeOf(in.getItemType(), Type.NODE) &&
+        // Only the outer "for" this clause directly follows passes its own input here. Reached
+        // through another clause, the input belongs to an earlier "for", and the where expression
+        // may use variables bound in between that are not declared yet.
+        if (getPreviousClause() instanceof final ForExpr forExpr && forExpr.isOuterFor() &&
+                in != null && Type.subTypeOf(in.getItemType(), Type.NODE) &&
                 in.isPersistentSet() &&
                 !Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
                 //We might not be sure of the return type at this level
