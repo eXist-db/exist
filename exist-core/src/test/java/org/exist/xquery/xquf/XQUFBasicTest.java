@@ -2551,6 +2551,14 @@ public class XQUFBasicTest {
         assertEquals("now", queryAndGetString(service, "string(doc('/db/test/sandpit/put.xml')/test/@it)"));
     }
 
+    /** An unprefixed new name puts an attribute in no namespace: the default element namespace is for elements. */
+    @Test
+    public void renamingAnAttributeIgnoresTheDefaultElementNamespace() throws XMLDBException {
+        assertEquals("|b|urn:e", serialized("declare default element namespace 'urn:e'; "
+                + "let $c := copy $e := <r a='1'><x/></r> modify (rename node $e/@a as 'b', rename node $e/x as 'y') return $e "
+                + "return string-join((namespace-uri($c/@*), name($c/@*), namespace-uri($c/*)), '|')"));
+    }
+
     /** An attribute is an ID by its name: renaming xml:id makes id() stop finding its element. */
     @Test
     public void renamingXmlIdInMemory() throws XMLDBException {

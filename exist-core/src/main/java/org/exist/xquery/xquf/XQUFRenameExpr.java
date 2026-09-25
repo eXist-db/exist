@@ -27,6 +27,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
+
 /**
  * W3C XQuery Update Facility 3.0 - rename expression.
  *
@@ -129,7 +131,7 @@ public class XQUFRenameExpr extends AbstractExpression {
         final Item rawItem = nameSeq.itemAt(0);
         final Item nameItem = Type.subTypeOf(rawItem.getType(), Type.NODE) ? rawItem.atomize() : rawItem;
 
-        final QName qname = toQName(nameItem);
+        final QName qname = toQName(nameItem, nodeType);
 
         // XQDY0064: PI target name must not be "xml" (case-insensitive)
         if (nodeType == Node.PROCESSING_INSTRUCTION_NODE && "xml".equalsIgnoreCase(qname.getLocalPart())) {
@@ -142,7 +144,7 @@ public class XQUFRenameExpr extends AbstractExpression {
     /**
      * Convert the atomized new-name item to a QName (XPTY0004/XQDY0074).
      */
-    private QName toQName(final Item nameItem) throws XPathException {
+    private QName toQName(final Item nameItem, final int nodeType) throws XPathException {
         if (nameItem.getType() == Type.QNAME) {
             return ((QNameValue) nameItem).getQName();
         }
@@ -150,7 +152,10 @@ public class XQUFRenameExpr extends AbstractExpression {
             final String nameStr = nameItem.getStringValue().trim();
             final QName qname;
             try {
-                qname = QName.parse(context, nameStr);
+                // like a computed constructor's name: only an element's takes the default element namespace
+                qname = nodeType == Node.ELEMENT_NODE
+                        ? QName.parse(context, nameStr)
+                        : QName.parse(context, nameStr, XMLConstants.NULL_NS_URI);
             } catch (final QName.IllegalQNameException e) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Invalid QName for rename: " + nameStr);
             }
