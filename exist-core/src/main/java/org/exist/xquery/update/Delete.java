@@ -128,6 +128,9 @@ public class Delete extends Modification {
                         throw new XPathException(this,
                             "It is not possible to remove the document element.");
 
+                    } else if (parent instanceof final DocumentImpl parentDoc && node.getNodeType() != Node.ELEMENT_NODE) {
+                        // a comment or processing instruction around the document element
+                        parentDoc.removeChild(transaction, node);
                     } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("parent = {}; {}", parent.getNodeType(), parent.getNodeName());
