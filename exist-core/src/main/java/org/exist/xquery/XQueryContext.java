@@ -53,6 +53,8 @@ import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.LinearMap;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.*;
 import net.jcip.annotations.Immutable;
@@ -388,7 +390,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected Profiler profiler;
 
     //For holding the environment variables
-    private Map<String, String> envs;
+    private IMap<String, String> envs;
+
+    //For holding the Java System Properties
+    private IMap<String, String> props;
 
     private ContextUpdateListener updateListener = null;
 
@@ -3007,11 +3012,36 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @return Map of environment variables
      */
-    public Map<String, String> getEnvironmentVariables() {
+    public IMap<String, String> getEnvironmentVariables() {
         if (envs == null) {
-            envs = System.getenv();
+            envs = io.lacuna.bifurcan.Map.from(System.getenv());
         }
         return envs;
+    }
+
+    /**
+     * Get Java System properties. The properties shall not change
+     * during execution of query.
+     *
+     * @return Map of Java System Properties
+     */
+    public IMap<String, String> getJavaSystemProperties() {
+        if (props == null) {
+            final IMap<String, String> strProps = new LinearMap<>();
+            // Properties#clone() is synchronized on the live, JVM-wide System.getProperties()
+            // instance, so this takes a safe, consistent snapshot even if another thread calls
+            // System.setProperty()/clearProperty() concurrently, rather than iterating the live
+            // Hashtable directly and risking a ConcurrentModificationException.
+            final Properties systemProperties = (Properties) System.getProperties().clone();
+            for (final Map.Entry<Object, Object> prop : systemProperties.entrySet()) {
+                final Object value = prop.getValue();
+                if (value instanceof String) {
+                    strProps.put(prop.getKey().toString(), (String) value);
+                }
+            }
+            props = strProps.forked();
+        }
+        return props;
     }
 
     /**
