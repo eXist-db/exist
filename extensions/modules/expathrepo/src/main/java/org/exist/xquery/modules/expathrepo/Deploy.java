@@ -22,17 +22,11 @@
 package org.exist.xquery.modules.expathrepo;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.net.MalformedURLException;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -40,16 +34,15 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
+import org.exist.repo.RepoPackageLoader;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.XarFileSource;
 import org.expath.pkg.repo.XarSource;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -202,8 +195,8 @@ public class Deploy extends BasicFunction {
     }
 
     private Optional<String> installAndDeploy(final Txn transaction, final String pkgName, final String version, final String repoURI) throws XPathException {
-        try {
-            final RepoPackageLoader loader = new RepoPackageLoader(repoURI);
+        // the loader deletes the package and any dependencies it downloads once the installation is done
+        try (final RepoPackageLoader loader = new RepoPackageLoader(repoURI)) {
             final Deployment deployment = new Deployment();
             final XarSource xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null) {
@@ -230,14 +223,15 @@ public class Deploy extends BasicFunction {
                 throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(this, path));
             }
 
-            RepoPackageLoader loader = null;
-            if (repoURI != null) {
-                loader = new RepoPackageLoader(repoURI);
-            }
-
             final XarSource xarSource =  new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc);
             final Deployment deployment = new Deployment();
-            return deployment.installAndDeploy(context.getBroker(), transaction, xarSource, loader);
+            if (repoURI == null) {
+                return deployment.installAndDeploy(context.getBroker(), transaction, xarSource, null);
+            }
+            // the loader deletes any dependencies it downloads once the installation is done
+            try (final RepoPackageLoader loader = new RepoPackageLoader(repoURI)) {
+                return deployment.installAndDeploy(context.getBroker(), transaction, xarSource, loader);
+            }
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(this, e.getMessage()));
@@ -269,45 +263,4 @@ public class Deploy extends BasicFunction {
 	public void resetState(final boolean postOptimization) {
 		super.resetState(postOptimization);
 	}
-
-    private record RepoPackageLoader(String repoURL) implements PackageLoader {
-
-        @Override
-            public XarSource load(final String name, final Version version) throws IOException {
-                String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
-                        "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
-                if (version != null) {
-                    if (version.getMin() != null) {
-                        pkgURL += "&semver-min=" + version.getMin();
-                    }
-                    if (version.getMax() != null) {
-                        pkgURL += "&semver-max=" + version.getMax();
-                    }
-                    if (version.getSemVer() != null) {
-                        pkgURL += "&semver=" + version.getSemVer();
-                    }
-                    if (version.getVersion() != null) {
-                        pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8);
-                    }
-                }
-                LOG.info("Retrieving package from {}", pkgURL);
-                final HttpURLConnection connection = (HttpURLConnection) URI.create(pkgURL).toURL().openConnection();
-                connection.setConnectTimeout(15 * 1000);
-                connection.setReadTimeout(15 * 1000);
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) " +
-                        "Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
-                connection.connect();
-
-                // TODO(AR) we likely don't need temporary caching here! could just use UriXarSource
-                try (final InputStream is = connection.getInputStream()) {
-                    final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-                    final Path outFile = temporaryFileManager.getTemporaryFile();
-                    Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
-                    return new XarFileSource(outFile);
-                } catch (IOException e) {
-                    throw new IOException("Failed to install dependency from " + pkgURL + ": " + e.getMessage());
-                }
-            }
-        }
 }

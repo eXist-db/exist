@@ -4,7 +4,7 @@
            xmlns:exist="http://exist.sourceforge.net/NS/exist"
            elementFormDefault="qualified"
            targetNamespace="http://exist.sourceforge.net/NS/exist"
-           version="1.1.1">
+           version="1.1.2">
   <xs:include schemaLocation="schema-version-type.xsd"/>
   <xs:element name="configuration">
     <xs:complexType>
@@ -19,6 +19,11 @@
     <xs:complexType>
       <xs:attribute name="pattern" use="required" type="xs:string"/>
       <xs:attribute name="servlet" use="required" type="xs:string"/>
+      <xs:attribute name="optional" use="optional" type="xs:boolean" default="false">
+        <xs:annotation>
+          <xs:documentation>If true, the servlet may not be deployed: a request then gets 404 rather than an error.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="root">
