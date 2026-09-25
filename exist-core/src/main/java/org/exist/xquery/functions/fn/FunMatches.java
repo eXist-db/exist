@@ -60,7 +60,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
+public final class FunMatches extends Function implements BoundSequenceOptimizable, IndexUseReporter {
 
     private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
@@ -156,33 +156,95 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             steps.add(arg);
         }
 
-        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
-        if (!steps.isEmpty()) {
-            final LocationStep firstStep = steps.getFirst();
-            LocationStep lastStep = steps.getLast();
-            if (firstStep != null && lastStep != null) {
-                final NodeTest test = lastStep.getTest();
-                if (!test.isWildcardTest() && test.getName() != null) {
+        deriveIndexTargetFrom(path);
+    }
 
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
-                    } else {
-                        contextQName = new QName(test.getName());
-                    }
-                    contextStep = lastStep;
-                    axis = firstStep.getAxis();
-                    if (axis == Constants.SELF_AXIS && steps.size() > 1) {
-                        if (steps.get(1) != null) {
-                            axis = steps.get(1).getAxis();
-                        } else {
-                            contextQName = null;
-                            contextStep = null;
-                            axis = Constants.UNKNOWN_AXIS;
-                        }
-                    }
-                }
-            }
+    /**
+     * Works out which QName the range index should be consulted for, and on which axis, by walking
+     * the location steps of {@code path}.
+     *
+     * <p>Normally {@code path} is the function's own first argument -- {@code matches(val, 'a')}
+     * indexes on {@code val}. It can also be supplied from outside, by
+     * {@link #optimizeOverBoundSequence(Expression)}, when the path is not the argument but the
+     * sequence a quantified expression binds the argument to.</p>
+     *
+     * @param path the expression whose location steps name the indexed node
+     */
+    private void deriveIndexTargetFrom(final Expression path) {
+        contextQName = null;
+        contextStep = null;
+        axis = Constants.UNKNOWN_AXIS;
+
+        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
+        if (steps.isEmpty()) {
+            return;
         }
+
+        final LocationStep firstStep = steps.getFirst();
+        final LocationStep lastStep = steps.getLast();
+        if (firstStep == null || lastStep == null) {
+            return;
+        }
+
+        final NodeTest test = lastStep.getTest();
+        if (test.isWildcardTest() || test.getName() == null) {
+            return;
+        }
+
+        final int resolvedAxis = resolveAxis(firstStep, steps);
+        if (resolvedAxis == Constants.UNKNOWN_AXIS) {
+            return;
+        }
+
+        contextQName = indexedQNameFor(lastStep, test);
+        contextStep = lastStep;
+        axis = resolvedAxis;
+    }
+
+    /**
+     * The index is split into an element half and an attribute half, so an attribute step has to
+     * be looked up under an attribute QName.
+     */
+    private static QName indexedQNameFor(final LocationStep step, final NodeTest test) {
+        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+            return new QName(test.getName(), ElementValue.ATTRIBUTE);
+        }
+        return new QName(test.getName());
+    }
+
+    /**
+     * The axis the optimizer should search along. A leading self step tells us nothing, so the
+     * axis of the step after it is used instead.
+     *
+     * @return the axis, or {@link Constants#UNKNOWN_AXIS} if it cannot be determined
+     */
+    private static int resolveAxis(final LocationStep firstStep, final List<LocationStep> steps) {
+        final int axis = firstStep.getAxis();
+        if (axis != Constants.SELF_AXIS || steps.size() <= 1) {
+            return axis;
+        }
+        final LocationStep second = steps.get(1);
+        return second == null ? Constants.UNKNOWN_AXIS : second.getAxis();
+    }
+
+    /**
+     * Makes this call optimizable when its input arrives through a quantified binding rather than
+     * directly as a path -- {@code some $v in val satisfies matches($v, 'a')} rather than
+     * {@code matches(val, 'a')}.
+     *
+     * <p>The two select the same nodes, but only the first says so in a way the specification
+     * allows: {@code fn:matches} takes {@code xs:string?}, so a multi-valued path is a type error
+     * rather than an existential test. The index can serve the quantified spelling just as well --
+     * it only needs to be told which QName to look up, which is the quantifier's input sequence
+     * instead of this function's first argument.</p>
+     *
+     * <p>Called by the optimizer during static analysis, before {@code canOptimizeSequence}.</p>
+     *
+     * @param boundSequence the sequence the quantified expression binds the variable to
+     */
+    @Override
+    public void optimizeOverBoundSequence(final Expression boundSequence) {
+        deriveIndexTargetFrom(boundSequence);
     }
 
     @Override
@@ -504,6 +566,15 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
      * @throws XPathException if an error occurs
      */
     private Sequence evalGeneric(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
+        // fn:matches takes xs:string?, so more than one item is a type error. Sequence.getStringValue
+        // below would otherwise quietly return the first item's value and test that alone, which is
+        // how matches(('x','a'), 'a') came to answer false rather than raising.
+        if (input.getItemCount() > 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Type error: the first argument of " + getName() + " must be a single item; got "
+                            + input.getItemCount() + " items", input);
+        }
+
         final String string = input.getStringValue();
 
         final String xmlRegexFlags;
