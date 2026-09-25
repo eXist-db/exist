@@ -31,9 +31,8 @@ import org.exist.xquery.value.*;
  *  
  * @author wolf
  */
-public class DynamicTypeCheck extends AbstractExpression implements RewritableExpression {
+public class DynamicTypeCheck extends AbstractRewritableExpression {
 
-	private Expression expression;
 	final private int requiredType;
 	final private ErrorCodes.ErrorCode typeMismatchError;
 
@@ -43,12 +42,11 @@ public class DynamicTypeCheck extends AbstractExpression implements RewritableEx
 
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr,
 			ErrorCodes.ErrorCode typeMismatchError) {
-		super(context);
+		super(context, expr);
 		this.requiredType = requiredType;
-		this.expression = expr;
 		this.typeMismatchError = typeMismatchError;
 	}
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
@@ -222,41 +220,5 @@ public class DynamicTypeCheck extends AbstractExpression implements RewritableEx
     public void accept(ExpressionVisitor visitor) {
 		expression.accept(visitor);
 	}
-
-    public int getSubExpressionCount() {
-    	return 1;
-    }
-    
-    public Expression getSubExpression(int index) {
-    	if (index == 0) {return expression;}
-
-	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
-    }
-
-    /* RewritableExpression API: lets the optimizer rewrite the wrapped
-     * expression in place -- e.g. to attach an (#exist:optimize#) pragma to
-     * a function argument -- without dropping this type check. See GH-873. */
-
-    @Override
-    public void replace(final Expression oldExpr, final Expression newExpr) {
-        if (expression == oldExpr) {
-            expression = newExpr;
-        }
-    }
-
-    @Override
-    public void remove(final Expression oldExpr) throws XPathException {
-        // no-op
-    }
-
-    @Override
-    public Expression getPrevious(final Expression current) {
-        return null;
-    }
-
-    @Override
-    public Expression getFirst() {
-        return expression;
-    }
 
 }
