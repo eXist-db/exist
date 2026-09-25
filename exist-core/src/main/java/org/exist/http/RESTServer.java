@@ -94,15 +94,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
 import java.io.*;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.util.Properties;
 import java.util.*;
-import java.util.function.BiFunction;
 
-import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.RESTServerParameter.*;
 
@@ -158,9 +152,17 @@ public class RESTServer {
     private final EXistServlet.FeatureEnabled xquerySubmission;
     private final EXistServlet.FeatureEnabled xupdateSubmission;
 
-    //EXQuery Request Module details
-    private String xqueryContextExqueryRequestAttribute = null;
-    private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter = null;
+    // Matches org.exist.extensions.exquery.modules.request.RequestModule#EXQ_REQUEST_ATTR - a
+    // fixed string, not read reflectively; duplicated here rather than depending on that
+    // (separate, optional) extension module just for this one constant.
+    private static final String EXQ_REQUEST_ATTR = "exquery-request";
+
+    // Optional: only non-null when the EXQuery RestXQ extension is on the classpath - see
+    // ExQueryRequestAdapterFactory.
+    @Nullable
+    private final ExQueryRequestAdapterFactory exQueryRequestAdapterFactory =
+            ServiceLoader.load(ExQueryRequestAdapterFactory.class, RESTServer.class.getClassLoader())
+                    .findFirst().orElse(null);
 
     // Constructor
     public RESTServer(final String formEncoding,
@@ -172,43 +174,6 @@ public class RESTServer {
         this.sessionManager = new SessionManager();
         this.xquerySubmission = xquerySubmission;
         this.xupdateSubmission = xupdateSubmission;
-
-        //get (optiona) EXQuery Request Module details
-        try {
-            Class clazz = Class.forName("org.exist.extensions.exquery.modules.request.RequestModule");
-            if(clazz != null) {
-                final Field fldExqRequestAttr = clazz.getDeclaredField("EXQ_REQUEST_ATTR");
-                if(fldExqRequestAttr != null) {
-                    this.xqueryContextExqueryRequestAttribute = (String)fldExqRequestAttr.get(null);
-
-                    if(this.xqueryContextExqueryRequestAttribute != null) {
-                        clazz = Class.forName("org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter");
-                        if(clazz != null) {
-                            final MethodHandles.Lookup lookup = MethodHandles.lookup();
-                            final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, HttpServletRequest.class, FilterInputStreamCacheConfiguration.class));
-
-                            this.cstrHttpServletRequestAdapter =
-                                    (BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest>)
-                                            LambdaMetafactory.metafactory(
-                                                    lookup, "apply", methodType(BiFunction.class),
-                                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                        }
-                    }
-
-                }
-            }
-        } catch(final InterruptedException e) {
-            // NOTE: must set interrupted flag
-            Thread.currentThread().interrupt();
-
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
-            }
-        } catch(final Throwable e) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
-            }
-        }
     }
 
     /**
@@ -1957,13 +1922,14 @@ public class RESTServer {
         final ResponseWrapper respw = new HttpResponseWrapper(response);
         context.setHttpContext(new XQueryContext.HttpContext(reqw, respw));
 
-        //enable EXQuery Request Module (if present)
+        //enable EXQuery Request Module (if the RestXQ extension is on the classpath)
         try {
-            if(xqueryContextExqueryRequestAttribute != null && cstrHttpServletRequestAdapter != null) {
-                final HttpRequest exqueryRequestAdapter = cstrHttpServletRequestAdapter.apply(request, () -> (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
+            if(exQueryRequestAdapterFactory != null) {
+                final HttpRequest exqueryRequestAdapter = exQueryRequestAdapterFactory.adapt(request,
+                        () -> (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
 
                 if(exqueryRequestAdapter != null) {
-                    context.setAttribute(xqueryContextExqueryRequestAttribute, exqueryRequestAdapter);
+                    context.setAttribute(EXQ_REQUEST_ATTR, exqueryRequestAdapter);
                 }
             }
         } catch(final Exception e) {
