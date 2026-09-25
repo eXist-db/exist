@@ -25,9 +25,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.numbering.NodeId;
 import org.exist.EXistException;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.Namespaces;
 import org.exist.collections.ManagedLocks;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -41,7 +40,6 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NodePath;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.ManagedDocumentLock;
@@ -59,6 +57,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -702,6 +701,10 @@ public class PendingUpdateList {
         final List<UpdatePrimitive> inMemoryPrimitives = new ArrayList<>();
 
         for (final UpdatePrimitive p : primitives) {
+            if (p.getType() == UpdatePrimitive.Type.DELETE && p.getTargetNode().getNodeType() == Node.DOCUMENT_NODE) {
+                // upd:delete of a parentless node, such as a document node, leaves the XDM instance unchanged
+                continue;
+            }
             if (isPersistentNode(p.getTargetNode())) {
                 persistentPrimitives.add(p);
             } else {
@@ -1162,6 +1165,11 @@ public class PendingUpdateList {
         // Phase 6: puts
         final PhasePartition partition = partitionByPhase(prims);
         final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
+        final Map<DocumentImpl, Set<NodeId>> touchedElements = touchedElements(prims);
+        final Set<String> replacedTargets = new HashSet<>();
+        for (final UpdatePrimitive p : partition.replaceNodes) {
+            replacedTargets.add(nodeKey(p.getTargetNode()));
+        }
 
         applyPersistentInserts(context, transaction, partition.inserts, replaceElementContentTargets, modifiedDocuments);
         for (final UpdatePrimitive p : partition.renames) {
@@ -1177,16 +1185,21 @@ public class PendingUpdateList {
         for (final UpdatePrimitive p : partition.replaceElementContents) {
             applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
         }
-        // Delete in reverse document order, skipping those Phase 4 superseded
+        // Delete in reverse document order, skipping those Phase 4 superseded, and those whose target
+        // Phase 3 replaced: replaceChild gives the replacement the old node's id, so deleting by id
+        // would remove the replacement instead of doing nothing to the (now parentless) target
         for (int i = partition.deletes.size() - 1; i >= 0; i--) {
             final UpdatePrimitive p = partition.deletes.get(i);
-            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)
+                    && !replacedTargets.contains(nodeKey(p.getTargetNode()))) {
                 applyPersistentDelete(context, transaction, p, modifiedDocuments);
             }
         }
         for (final UpdatePrimitive p : partition.puts) {
             applyPersistentPut(context, transaction, p);
         }
+
+        normalizeTextNodes(transaction, touchedElements, modifiedDocuments);
 
         storeModifiedAndFinishTriggers(context, broker, transaction, modifiedDocuments, triggers);
     }
@@ -1280,6 +1293,86 @@ public class PendingUpdateList {
     }
 
     /**
+     * The stored elements whose children the primitives change: the target of an insert into or a
+     * replace value of an element, otherwise the target's parent. Recorded by node id before any
+     * primitive is applied, and looked up again afterwards.
+     */
+    private static Map<DocumentImpl, Set<NodeId>> touchedElements(final List<UpdatePrimitive> prims) {
+        final Map<DocumentImpl, Set<NodeId>> touched = new HashMap<>();
+        for (final UpdatePrimitive p : prims) {
+            if (p.getTargetNode() instanceof final StoredNode<?> target) {
+                final boolean onChildren = target.getNodeType() == Node.ELEMENT_NODE
+                        && (p.getType() == UpdatePrimitive.Type.INSERT_INTO
+                            || p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST
+                            || p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST
+                            || p.getType() == UpdatePrimitive.Type.REPLACE_VALUE);
+                final NodeId id = onChildren ? target.getNodeId() : target.getNodeId().getParentId();
+                if (id != null && !NodeId.DOCUMENT_NODE.equals(id)) {
+                    touched.computeIfAbsent(target.getOwnerDocument(), d -> new HashSet<>()).add(id);
+                }
+            }
+        }
+        return touched;
+    }
+
+    /**
+     * upd:applyUpdates merges adjacent text nodes and removes empty text nodes among the children
+     * of the nodes it changed. The in-memory path does it with mergeAdjacentTextNodes; on stored
+     * documents it is done here, on each touched element, after every primitive has been applied.
+     */
+    private static void normalizeTextNodes(final Txn transaction, final Map<DocumentImpl, Set<NodeId>> touchedElements,
+            final MutableDocumentSet modifiedDocuments) {
+        for (final Map.Entry<DocumentImpl, Set<NodeId>> entry : touchedElements.entrySet()) {
+            final DocumentImpl doc = entry.getKey();
+            for (final NodeId id : entry.getValue()) {
+                if (new NodeProxy(null, doc, id).getNode() instanceof final ElementImpl element
+                        && normalizeTextChildren(transaction, element)) {
+                    modifiedDocuments.add(doc);
+                }
+            }
+        }
+    }
+
+    /** @return true if the element's children changed */
+    private static boolean normalizeTextChildren(final Txn transaction, final ElementImpl element) {
+        final NodeList childList = element.getChildNodes();
+        final List<Node> children = new ArrayList<>(childList.getLength());
+        for (int i = 0; i < childList.getLength(); i++) {
+            children.add(childList.item(i));
+        }
+        boolean changed = false;
+        int i = 0;
+        while (i < children.size()) {
+            if (children.get(i).getNodeType() != Node.TEXT_NODE) {
+                i++;
+                continue;
+            }
+            final StringBuilder run = new StringBuilder();
+            int end = i;
+            while (end < children.size() && children.get(end).getNodeType() == Node.TEXT_NODE) {
+                run.append(children.get(end).getNodeValue());
+                end++;
+            }
+            if (run.isEmpty()) {
+                for (int j = i; j < end; j++) {
+                    element.removeChild(transaction, children.get(j));
+                }
+                changed = true;
+            } else if (end - i > 1) {
+                final TextImpl merged = new TextImpl((Expression) null, run.toString());
+                merged.setOwnerDocument(element.getOwnerDocument());
+                element.updateChild(transaction, children.get(i), merged);
+                for (int j = i + 1; j < end; j++) {
+                    element.removeChild(transaction, children.get(j));
+                }
+                changed = true;
+            }
+            i = end;
+        }
+        return changed;
+    }
+
+    /**
      * Store all modified documents, send update notifications, and finish the
      * per-document triggers.
      */
@@ -1309,16 +1402,22 @@ public class PendingUpdateList {
      * as its child count from that moment; after an earlier primitive in the same list has
      * changed that node, the held copy is stale. Two inserts into one element would otherwise
      * both write their first new child under the same node id, and only the last would survive.
+     *
+     * @return the node, or null if it no longer exists because an earlier primitive removed it
      */
-    private static StoredNode<?> currentStoredTarget(final UpdatePrimitive p) {
+    private static @Nullable StoredNode<?> currentStoredTarget(final UpdatePrimitive p) {
         final StoredNode<?> held = (StoredNode<?>) p.getTargetNode();
         final Node current = new NodeProxy(p.getSourceExpression(), held.getOwnerDocument(), held.getNodeId()).getNode();
-        return current instanceof final StoredNode<?> stored ? stored : held;
+        return current instanceof final StoredNode<?> stored ? stored : null;
     }
 
     private void applyPersistentInsert(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1342,21 +1441,17 @@ public class PendingUpdateList {
                     }
                 }
                 case INSERT_ATTRIBUTES -> {
-                    final ElementImpl elem = (ElementImpl) node;
+                    // always add new attribute nodes: an attribute of the same name is either deleted or
+                    // renamed later in this list, or the list raised XUDY0021. Updating it in place instead
+                    // would leave the later delete to remove the inserted attribute.
+                    final NodeListImpl attrs = new NodeListImpl(contentList.getLength());
                     for (int i = 0; i < contentList.getLength(); i++) {
-                        final Node attrNode = contentList.item(i);
-                        if (attrNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-                            final Attr attr = (Attr) attrNode;
-                            final String nsUri = attr.getNamespaceURI();
-                            if (nsUri != null && !nsUri.isEmpty()) {
-                                elem.setAttributeNS(nsUri,
-                                        (attr.getPrefix() != null ? attr.getPrefix() + ":" : "")
-                                                + attr.getLocalName(),
-                                        attr.getValue());
-                            } else {
-                                elem.setAttribute(attr.getName(), attr.getValue());
-                            }
+                        if (contentList.item(i).getNodeType() == Node.ATTRIBUTE_NODE) {
+                            attrs.add(contentList.item(i));
                         }
+                    }
+                    if (!attrs.isEmpty()) {
+                        ((ElementImpl) node).removeAppendAttributes(transaction, null, attrs);
                     }
                 }
                 default -> {
@@ -1374,21 +1469,42 @@ public class PendingUpdateList {
     private void applyPersistentRename(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
         try {
-            final NamedNode newNode = switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
-                case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
+            final QName newName = p.getNewName();
+            final StoredNode<?> newNode = switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE -> {
+                    final ElementImpl element = new ElementImpl(node.getExpression(), (ElementImpl) node);
+                    element.setNodeName(newName, context.getBroker().getBrokerPool().getSymbols());
+                    // declare the new name's namespace on the element, or it serializes in no namespace
+                    if (newName.hasNamespace()) {
+                        element.addNamespaceMapping(newName.getPrefix() == null ? "" : newName.getPrefix(), newName.getNamespaceURI());
+                    }
+                    yield element;
+                }
+                case Node.ATTRIBUTE_NODE -> {
+                    final AttrImpl attr = new AttrImpl(node.getExpression(), (AttrImpl) node);
+                    attr.setNodeName(newName, context.getBroker().getBrokerPool().getSymbols());
+                    yield attr;
+                }
+                case Node.PROCESSING_INSTRUCTION_NODE -> new ProcessingInstructionImpl(node.getExpression(),
+                        newName.getLocalPart(), ((ProcessingInstructionImpl) node).getData());
                 default -> throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0012,
                         "Target of rename must be an element, attribute, or processing instruction node.");
             };
-            newNode.setNodeName(p.getNewName(), context.getBroker().getBrokerPool().getSymbols());
+            newNode.setOwnerDocument(doc);
 
             final Node parent = getParent(node);
-            if (parent instanceof ElementImpl parentElem) {
+            if (parent instanceof final ElementImpl parentElem) {
                 parentElem.updateChild(transaction, node, newNode);
+            } else if (parent instanceof final DocumentImpl parentDoc) {
+                parentDoc.updateChild(transaction, node, newNode);
             }
 
             doc.setLastModified(System.currentTimeMillis());
@@ -1403,6 +1519,10 @@ public class PendingUpdateList {
     private void applyPersistentReplaceValue(final XQueryContext context, final Txn transaction,
                                               final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1443,10 +1563,10 @@ public class PendingUpdateList {
                     final Node parent = node.getParentNode();
                     final CommentImpl newComment =
                             new CommentImpl(node.getExpression(), newValue);
-                    if (parent instanceof ElementImpl parentElem) {
+                    newComment.setOwnerDocument(doc);
+                    if (parent instanceof final ElementImpl parentElem) {
                         parentElem.updateChild(transaction, node, newComment);
-                    } else if (parent instanceof DocumentImpl parentDoc) {
-                        newComment.setOwnerDocument(doc);
+                    } else if (parent instanceof final DocumentImpl parentDoc) {
                         parentDoc.updateChild(transaction, node, newComment);
                     }
                 }
@@ -1455,10 +1575,10 @@ public class PendingUpdateList {
                     final ProcessingInstructionImpl newPI =
                             new ProcessingInstructionImpl(
                                     node.getExpression(), node.getNodeName(), newValue);
-                    if (parent instanceof ElementImpl parentElem) {
+                    newPI.setOwnerDocument(doc);
+                    if (parent instanceof final ElementImpl parentElem) {
                         parentElem.updateChild(transaction, node, newPI);
-                    } else if (parent instanceof DocumentImpl parentDoc) {
-                        newPI.setOwnerDocument(doc);
+                    } else if (parent instanceof final DocumentImpl parentDoc) {
                         parentDoc.updateChild(transaction, node, newPI);
                     }
                 }
@@ -1478,6 +1598,10 @@ public class PendingUpdateList {
     private void applyPersistentReplaceNode(final XQueryContext context, final Txn transaction,
                                              final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1488,24 +1612,25 @@ public class PendingUpdateList {
                         "Target node of replace has no parent.");
             }
 
-            final Sequence contentSeq = deepCopy(context, p.getContent());
+            final NodeList replacement = sequenceToNodeList(deepCopy(context, p.getContent()));
+            if (!(parent instanceof final ElementImpl parentElement)) {
+                throw new XPathException(p.getSourceExpression(),
+                        "Replacing a child of the document node is not supported on stored documents.");
+            }
 
-            switch (node.getNodeType()) {
-                case Node.TEXT_NODE -> {
-                    final TextImpl text =
-                            new TextImpl(node.getExpression(), contentSeq.getStringValue());
-                    ((ElementImpl) parent).updateChild(transaction, node, text);
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                // an attribute is replaced by zero or more attributes
+                final NodeListImpl removed = new NodeListImpl();
+                removed.add(node);
+                parentElement.removeAppendAttributes(transaction, removed, replacement);
+            } else if (replacement.getLength() == 1) {
+                parentElement.replaceChild(transaction, replacement.item(0), node);
+            } else {
+                // zero or several nodes take the target's place: insert them before it, then remove it
+                if (replacement.getLength() > 0) {
+                    parentElement.insertBefore(transaction, replacement, node);
                 }
-                // elements, attributes, and all other node kinds replace via the parent
-                default -> {
-                    if (contentSeq.getItemCount() > 0) {
-                        final Item newItem = contentSeq.itemAt(0);
-                        if (Type.subTypeOf(newItem.getType(), Type.NODE)) {
-                            final Node newNode = ((NodeValue) newItem).getNode();
-                            ((ElementImpl) parent).replaceChild(transaction, newNode, node);
-                        }
-                    }
-                }
+                parentElement.removeChild(transaction, node);
             }
 
             doc.setLastModified(System.currentTimeMillis());
@@ -1520,6 +1645,10 @@ public class PendingUpdateList {
     private void applyPersistentDelete(final XQueryContext context, final Txn transaction,
                                         final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
 
@@ -1532,15 +1661,8 @@ public class PendingUpdateList {
             if (parent.getNodeType() == Node.ELEMENT_NODE) {
                 ((ElementImpl) parent).removeChild(transaction, node);
             } else if (parent.getNodeType() == Node.DOCUMENT_NODE) {
-                // Document-level node (comment, PI) — remove directly via broker
-                final DBBroker broker = context.getBroker();
-                final NodePath nodePath = node.getPath();
-                final IndexController indexes = broker.getIndexController();
-                indexes.setDocument(doc);
-                indexes.setMode(ReindexMode.REMOVE_SOME_NODES);
-                broker.removeAllNodes(transaction, node, nodePath, indexes.getStreamListener());
-                broker.endRemove(transaction);
-                broker.flush();
+                // a comment or processing instruction around the document element
+                ((DocumentImpl) parent).removeChild(transaction, node);
             } else {
                 throw new XPathException(p.getSourceExpression(),
                         "Cannot delete node: parent is neither element nor document node.");

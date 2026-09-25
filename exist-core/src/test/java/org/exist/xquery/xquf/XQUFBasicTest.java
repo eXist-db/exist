@@ -2428,6 +2428,95 @@ public class XQUFBasicTest {
         assertEquals("<e><first/><plain/><last/></e>", serialized("doc('/db/test/as-last.xml')/root/e"));
     }
 
+    /** A node deleted twice in one list is deleted once; the second primitive finds nothing to do. */
+    @Test
+    public void repeatedDeleteOfAStoredNode() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("repeated-delete.xml", "<root><a/><b/></root>");
+        service.query("let $a := doc('/db/test/repeated-delete.xml')/root/a return delete nodes ($a, $a)");
+        assertEquals("<root><b/></root>", serialized("doc('/db/test/repeated-delete.xml')/root"));
+    }
+
+    /** Deleting a document node is a no-op: it has no parent. */
+    @Test
+    public void deleteOfAStoredDocumentNodeIsANoOp() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("delete-doc.xml", "<root><a/></root>");
+        service.query("delete node doc('/db/test/delete-doc.xml')");
+        assertEquals("<root><a/></root>", serialized("doc('/db/test/delete-doc.xml')/root"));
+    }
+
+    /** After the updates, adjacent text nodes are merged and empty ones removed, on stored documents as in memory. */
+    @Test
+    public void adjacentStoredTextNodesAreMerged() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("text-merge.xml", "<root><a>x<b/>y</a><c/></root>");
+        service.query("let $r := doc('/db/test/text-merge.xml')/root "
+                + "return (delete node $r/a/b, insert node 'z' into $r/c, insert node text { '' } into $r/c)");
+        assertEquals("1 xy 1 z", queryAndGetString(service, "let $r := doc('/db/test/text-merge.xml')/root "
+                + "return string-join((count($r/a/text()), $r/a/text(), count($r/c/text()), $r/c/text()), ' ')"));
+    }
+
+    @Test
+    public void replaceAStoredNodeWithSeveralNodes() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("replace-many.xml", "<root><a/><b/></root>");
+        service.query("replace node doc('/db/test/replace-many.xml')/root/a with (<x/>, <y/>)");
+        assertEquals("<root><x/><y/><b/></root>", serialized("doc('/db/test/replace-many.xml')/root"));
+    }
+
+    @Test
+    public void replaceAStoredAttributeWithSeveralAttributes() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("replace-attrs.xml", "<root a='1' b='2'/>");
+        service.query("replace node doc('/db/test/replace-attrs.xml')/root/@a with (attribute x {'3'}, attribute y {'4'})");
+        assertEquals("b=2 x=3 y=4", queryAndGetString(service,
+                "string-join(for $a in doc('/db/test/replace-attrs.xml')/root/@* order by name($a) return name($a) || '=' || $a, ' ')"));
+    }
+
+    /** A node both replaced and deleted in one list is replaced; the delete does not remove the replacement. */
+    @Test
+    public void replaceAndDeleteOfTheSameStoredNode() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("replace-delete.xml", "<root><a/><b/></root>");
+        service.query("let $a := doc('/db/test/replace-delete.xml')/root/a return (replace node $a with <x/>, delete node $a)");
+        assertEquals("<root><x/><b/></root>", serialized("doc('/db/test/replace-delete.xml')/root"));
+    }
+
+    @Test
+    public void replaceValueOfAStoredCommentAndProcessingInstruction() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("replace-value-cpi.xml", "<root><!--old--><?p old?></root>");
+        service.query("let $r := doc('/db/test/replace-value-cpi.xml')/root "
+                + "return (replace value of node $r/comment() with 'new', replace value of node $r/processing-instruction() with 'new')");
+        assertEquals("<root><!--new--><?p new?></root>", serialized("doc('/db/test/replace-value-cpi.xml')/root"));
+    }
+
+    /**
+     * A renamed element is bound to its new namespace, and keeps the bindings it already had,
+     * so a second rename leaves the first one's binding in place (as BaseX does).
+     */
+    @Test
+    public void renameAStoredElementIntoANamespace() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("rename-ns.xml", "<root><a/></root>");
+        service.query("rename node doc('/db/test/rename-ns.xml')/root/a as QName('urn:x', 'x:a')");
+        assertEquals("urn:x x:a", queryAndGetString(service,
+                "let $a := doc('/db/test/rename-ns.xml')/root/* return namespace-uri($a) || ' ' || name($a)"));
+        assertEquals("<root><x:a xmlns:x=\"urn:x\"/></root>", serialized("doc('/db/test/rename-ns.xml')/root"));
+        service.query("rename node doc('/db/test/rename-ns.xml')/root/*:a as QName('urn:y', 'b')");
+        assertEquals("<root><b xmlns=\"urn:y\" xmlns:x=\"urn:x\"/></root>", serialized("doc('/db/test/rename-ns.xml')/root"));
+    }
+
+    @Test
+    public void renameAStoredProcessingInstruction() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("rename-pi.xml", "<root><?old data?></root>");
+        service.query("rename node doc('/db/test/rename-pi.xml')/root/processing-instruction() as 'new'");
+        assertEquals("<root><?new data?></root>", serialized("doc('/db/test/rename-pi.xml')/root"));
+    }
+
+    /** The old attribute is deleted and the inserted one of the same name kept, as in upd:applyUpdates. */
+    @Test
+    public void insertAndDeleteOfAStoredAttributeWithTheSameName() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService("attr-insert-delete.xml", "<root name='old' other='1'/>");
+        service.query("let $r := doc('/db/test/attr-insert-delete.xml')/root "
+                + "return (insert node attribute name {'new'} into $r, delete node $r/@name)");
+        assertEquals("name=new other=1", queryAndGetString(service,
+                "string-join(for $a in doc('/db/test/attr-insert-delete.xml')/root/@* order by name($a) return name($a) || '=' || $a, ' ')"));
+    }
+
     /** Insert content follows element-constructor content: adjacent atomic values become one text node. */
     @Test
     public void insertedAtomicValuesAreJoinedWithSpaces() throws XMLDBException {
