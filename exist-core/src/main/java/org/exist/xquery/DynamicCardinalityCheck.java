@@ -32,23 +32,17 @@ import org.exist.xquery.value.Sequence;
  * 
  * @author wolf
  */
-public class DynamicCardinalityCheck extends AbstractExpression {
+public class DynamicCardinalityCheck extends AbstractRewritableExpression {
 
-    final private Expression expression;
     final private Cardinality requiredCardinality;
     private Error error;
 
     public DynamicCardinalityCheck(final XQueryContext context, final Cardinality requiredCardinality,
             final Expression expr, final Error error) {
-        super(context);
+        super(context, expr);
         this.requiredCardinality = requiredCardinality;
-        this.expression = expr;
         this.error = error;
         setLocation(expression.getLine(), expression.getColumn());
-    }
-
-    public Expression getExpression() {
-        return expression;
     }
 
     /* (non-Javadoc)
@@ -143,13 +137,4 @@ public class DynamicCardinalityCheck extends AbstractExpression {
         expression.accept(visitor);
     }
 
-    public int getSubExpressionCount() {
-        return 1;
-    }
-    
-    public Expression getSubExpression(int index) {
-        if (index == 0)
-            {return expression;}
-        throw new IndexOutOfBoundsException("Index: " + index + ", Size: "+getSubExpressionCount());
-    }
 }

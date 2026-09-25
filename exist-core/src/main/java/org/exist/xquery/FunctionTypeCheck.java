@@ -30,15 +30,13 @@ import org.exist.xquery.value.*;
  *
  * @author wolf
  */
-public class FunctionTypeCheck extends AbstractExpression {
+public class FunctionTypeCheck extends AbstractRewritableExpression {
 
-    private final Expression expression;
     private final FunctionParameterFunctionSequenceType requiredType;
 
     public FunctionTypeCheck(XQueryContext context, final FunctionParameterFunctionSequenceType requiredType, Expression expr) {
-        super(context);
+        super(context, expr);
         this.requiredType = requiredType;
-        this.expression = expr;
     }
 
     /* (non-Javadoc)
@@ -121,20 +119,6 @@ public class FunctionTypeCheck extends AbstractExpression {
     @Override
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
-    }
-
-    @Override
-    public int getSubExpressionCount() {
-        return 1;
-    }
-
-    @Override
-    public Expression getSubExpression(int index) {
-        if (index == 0) {
-            return expression;
-        }
-
-        throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + getSubExpressionCount());
     }
 
 }

@@ -151,3 +151,19 @@ function fto:indirect-query-uses-index($term as xs:string) {
     let $hits := collection($fto:COLLECTION)//name
     return $hits[ft:query(., $term)]
 };
+
+(:~
+ : count($a[pred]) must return the same hit count as the direct
+ : count(X[pred]) form, regardless of whether the optimizer rewrite kicks in.
+ : @param $term full-text search term
+ : @return (direct-count, count-wrapped-count) for assertion
+ : @see https://github.com/eXist-db/exist/issues/6759
+ :)
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals(1, 1)
+function fto:count-wrapped-matches-direct($term as xs:string) {
+    let $direct := count(collection($fto:COLLECTION)//name[ft:query(., $term)]),
+        $countWrapped := (let $a := collection($fto:COLLECTION)//name return count($a[ft:query(., $term)]))
+    return ($direct, $countWrapped)
+};
