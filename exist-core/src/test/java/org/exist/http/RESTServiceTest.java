@@ -219,6 +219,10 @@ public class RESTServiceTest {
     private static final XmldbURI TEST_XMLDECL_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xmldecl");
     private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
+    private static final XmldbURI TEST_INDENT_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-indent");
+    private static final String XML_FOR_INDENT = "<root><child>text</child></root>";
+    private static final XmldbURI TEST_XML_DOC_FOR_INDENT_URI = XmldbURI.create("test-indent.xml");
+
     private static String credentials;
     private static String badCredentials;
 
@@ -257,6 +261,10 @@ public class RESTServiceTest {
 
     private static String getResourceWithXmlDeclUri() {
         return getServerUri() + TEST_XMLDECL_COLLECTION_URI.append(TEST_XML_DOC_WITH_XMLDECL_URI);
+    }
+
+    private static String getResourceForIndentUri() {
+        return getServerUri() + TEST_INDENT_COLLECTION_URI.append(TEST_XML_DOC_FOR_INDENT_URI);
     }
 
     /* About path components of URIs:
@@ -351,6 +359,11 @@ public class RESTServiceTest {
 
             try (final Collection col = broker.getOrCreateCollection(transaction, TEST_XMLDECL_COLLECTION_URI)) {
                 broker.storeDocument(transaction, TEST_XML_DOC_WITH_XMLDECL_URI, new StringInputSource(XML_WITH_XMLDECL), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_INDENT_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XML_DOC_FOR_INDENT_URI, new StringInputSource(XML_FOR_INDENT), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 
@@ -663,7 +676,7 @@ try {
     @Test
     void queryPost() throws IOException, SAXException, ParserConfigurationException {
         uploadData();
-        
+
         final HttpURLConnection connect = preparePost(QUERY_REQUEST, getResourceUri());
         try {
             connect.connect();
@@ -1445,6 +1458,17 @@ try {
         assertEquals("{\"saved\":true}", response.body());
     }
 
+    /**
+     * An _indent parameter of the request takes precedence over the query's own output:indent option, which
+     * in turn takes precedence over the conf.xml default.
+     */
+    @Test
+    void storedQueryIndentParameterOverridesQueryOption() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-indent-param.xq", "array { 1, 2 }", null, "?_indent=yes");
+        assertEquals("application/json", response.contentType());
+        assertTrue(response.body().contains("\n"), "Expected indented JSON, got: " + response.body());
+    }
+
     @Test
     public void storedQueryInQueryJsonMethodArray() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-array.xq", "array { 1, 2 }", null);
@@ -1526,6 +1550,10 @@ try {
      * exactly) and the media type, if given, and GETs it.
      */
     private StoredQueryResponse getStoredJsonQuery(final String name, final String result, @Nullable final String mediaType) throws IOException {
+        return getStoredJsonQuery(name, result, mediaType, "");
+    }
+
+    private StoredQueryResponse getStoredJsonQuery(final String name, final String result, @Nullable final String mediaType, final String queryString) throws IOException {
         final String mediaTypeOption = mediaType == null ? "" : "declare option output:media-type \"" + mediaType + "\";\n";
         final String xquery = """
                 xquery version "3.1";
@@ -1535,7 +1563,7 @@ try {
                 """ + mediaTypeOption + result;
         doPut(xquery, name, HttpStatus.CREATED_201);
 
-        final HttpURLConnection connect = getConnection(getCollectionUri() + "/" + name);
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/" + name + queryString);
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("GET");
@@ -1708,10 +1736,7 @@ try {
 
     @Test
     void getDocWithXslPi() throws IOException {
-        assertDocWithXslPi();
-    }
-
-    private void assertDocWithXslPi() throws IOException {
+        // conf.xml serializer/@enable-xsl defaults to "no" — REST must honor that (GH-58)
         final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI);
         final HttpURLConnection connect = getConnection(docWithXslPiUri);
         try {
@@ -1726,25 +1751,17 @@ try {
                 contentType = contentType.substring(0, semicolon).trim();
             }
 
-            // NOTE(AR) At present the RESTServer will force XHTML with text/html mimetype and indenting if an xsl-pi is used... this should probably be improved in future!
-            assertEquals("text/html", contentType, "Server returned content type " + contentType);
+            assertEquals("application/xml", contentType, "Server returned content type " + contentType);
 
             final String response = readResponse(connect.getInputStream());
 
-            final Source expectedSource = Input.from("""
-                    <?xml version="1.0" encoding="UTF-8"?>
-                    <copied>
-                        <bookmap id="bookmap-1"></bookmap>
-                    </copied>
-                    """).build();
-            final Source actualSource = Input.from(response).build();
-
-            final Diff diff = DiffBuilder.compare(expectedSource)
-                    .withTest(actualSource)
-                    .checkForSimilar()
-                    .build();
-
-            assertFalse(diff.hasDifferences(), diff.toString());
+            // Untransformed: xml-stylesheet PI preserved, XSLT wrapper not applied
+            assertTrue(response.contains("xml-stylesheet") && response.contains("test-with-xslpi.xslt"),
+                    "Expected xml-stylesheet PI in response, got: " + response);
+            assertTrue(response.contains("<bookmap") && response.contains("bookmap-1"),
+                    "Expected bookmap element in response, got: " + response);
+            assertFalse(response.contains("<copied>"),
+                    "XSL PI must not be applied when enable-xsl=no, got: " + response);
 
         } finally {
             connect.disconnect();
@@ -1752,10 +1769,57 @@ try {
     }
 
     @Test
+    void getDocWithXslPiEnabledViaParam() throws IOException {
+        // Explicit _xsl=yes overrides conf.xml enable-xsl="no"
+        final String response = fetchDocWithXslPiEnabledViaParam();
+
+        final Source expectedSource = Input.from("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <copied>
+                    <bookmap id="bookmap-1"></bookmap>
+                </copied>
+                """).build();
+        final Source actualSource = Input.from(response).build();
+
+        final Diff diff = DiffBuilder.compare(expectedSource)
+                .withTest(actualSource)
+                .checkForSimilar()
+                .build();
+
+        assertFalse(diff.hasDifferences(), diff.toString());
+    }
+
+    @Test
     void getDocWithXslPiTwice() throws IOException {
         // NOTE(AR) doing this twice revealed an issue with the Serializer not being correctly reset
-        assertDocWithXslPi();
-        assertDocWithXslPi();
+        final String first = fetchDocWithXslPiEnabledViaParam();
+        final String second = fetchDocWithXslPiEnabledViaParam();
+        assertEquals(first, second, "Serializer must produce identical output on repeated GETs");
+    }
+
+    private String fetchDocWithXslPiEnabledViaParam() throws IOException {
+        final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI)
+                + "?" + RESTServerParameter.XSL.queryStringKey() + "=yes";
+        final HttpURLConnection connect = getConnection(docWithXslPiUri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+
+            // RESTServer forces text/html when an xsl-pi is applied
+            assertEquals("text/html", contentType, "Server returned content type " + contentType);
+
+            return readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
@@ -1829,6 +1893,65 @@ try {
 
             assertEquals("<bookmap id=\"bookmap-2\"/>\r\n", response);
 
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    void getIndentDefault() throws IOException {
+        // conf.xml serializer/@indent defaults to "yes"
+        final HttpURLConnection connect = getConnection(getResourceForIndentUri());
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("<root>\r\n") || response.contains("<root>\n"),
+                    "Expected pretty-printed XML when indent defaults to yes, got: " + response);
+            assertTrue(response.contains("<child>") && response.contains("text"));
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    void getIndentNo() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceForIndentUri()
+                + "?" + RESTServerParameter.Indent.queryStringKey() + "=no");
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            final String response = readResponse(connect.getInputStream());
+            // Compact serialization: no internal newlines between elements
+            assertEquals("<root><child>text</child></root>\r\n", response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    void getIndentYes() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceForIndentUri()
+                + "?" + RESTServerParameter.Indent.queryStringKey() + "=yes");
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("<root>\r\n") || response.contains("<root>\n"),
+                    "Expected pretty-printed XML with _indent=yes, got: " + response);
+            assertTrue(response.contains("<child>") && response.contains("text"));
         } finally {
             connect.disconnect();
         }
