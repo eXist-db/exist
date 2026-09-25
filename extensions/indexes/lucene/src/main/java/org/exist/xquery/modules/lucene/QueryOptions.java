@@ -36,6 +36,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -82,6 +83,42 @@ public class QueryOptions {
 
     public QueryOptions() {
         // default options
+    }
+
+    /**
+     * Builds options from an already-evaluated argument sequence: a map ({@link #QueryOptions(AbstractMapType)})
+     * or an XML element ({@link #QueryOptions(XQueryContext, NodeValue)}), or the defaults if
+     * {@code optSeq} is {@code null} (the argument wasn't statically provided at all). Shared
+     * dispatch for every {@code ft:query*} function's trailing {@code options} argument — see
+     * {@link Query#parseOptions(org.exist.xquery.Function, Sequence, Item, int)} and
+     * {@link AbstractVectorQueryFunction#parseOptionsArg(Sequence[])}.
+     *
+     * <p>Deliberately does <em>not</em> special-case a non-null but empty {@code optSeq} (an
+     * argument that WAS provided but evaluated to {@code ()}): {@link Type#EMPTY_SEQUENCE} isn't
+     * a subtype of {@link Type#ELEMENT} or {@link Type#MAP_ITEM}, so it falls through to the same
+     * error every other wrong-shaped argument gets. ft:query/ft:query-field have always thrown
+     * here (matching an explicit, if unusual, {@code ft:query(nodes, "text", ())} call); callers
+     * that want a provided-but-empty options argument to mean "defaults" (as
+     * ft:query-vector/ft:query-field-vector do) need to make that call themselves, by passing
+     * {@code null} instead of the empty sequence — see parseOptionsArg.</p>
+     *
+     * @param context the XQuery context, needed to stream an XML-element root
+     * @param errorExpr the expression to attribute a type error to
+     * @param optSeq the evaluated options argument, or {@code null} if not provided
+     * @throws XPathException if optSeq is non-null and neither a map nor an XML element (empty included)
+     */
+    public static QueryOptions fromSequence(final XQueryContext context, final Expression errorExpr,
+            @Nullable final Sequence optSeq) throws XPathException {
+        if (optSeq == null) {
+            return new QueryOptions();
+        }
+        if (Type.subTypeOf(optSeq.getItemType(), Type.ELEMENT)) {
+            return new QueryOptions(context, (NodeValue) optSeq.itemAt(0));
+        }
+        if (Type.subTypeOf(optSeq.getItemType(), Type.MAP_ITEM)) {
+            return new QueryOptions((AbstractMapType) optSeq.itemAt(0));
+        }
+        throw new XPathException(errorExpr, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
     }
 
     public QueryOptions(XQueryContext context, NodeValue root) throws XPathException {

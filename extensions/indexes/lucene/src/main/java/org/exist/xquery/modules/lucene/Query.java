@@ -29,7 +29,6 @@ import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
@@ -414,15 +413,8 @@ public class Query extends Function implements Optimizable {
         if (funct.getArgumentCount() < position) {
             return new QueryOptions();
         }
-
         final Sequence optSeq = funct.getArgument(position - 1).eval(contextSequence, contextItem);
-        if (Type.subTypeOf(optSeq.getItemType(), Type.ELEMENT)) {
-            return new QueryOptions(funct.getContext(), (NodeValue) optSeq.itemAt(0));
-        } else if (Type.subTypeOf(optSeq.getItemType(), Type.MAP_ITEM)) {
-            return new QueryOptions((AbstractMapType) optSeq.itemAt(0));
-        } else {
-            throw new XPathException(funct, LuceneModule.EXXQDYFT0004, "Argument 3 should be either a map or an XML element");
-        }
+        return QueryOptions.fromSequence(funct.getContext(), funct, optSeq);
     }
 
     @Override

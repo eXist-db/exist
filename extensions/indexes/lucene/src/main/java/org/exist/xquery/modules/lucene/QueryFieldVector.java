@@ -26,12 +26,9 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 
 import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.param;
@@ -41,8 +38,14 @@ import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 /**
  * ft:query-field-vector(field, vector, k?, options?) — KNN vector search by field name.
  * Uses context sequence's document set (like ft:query-field).
+ *
+ * <p>See {@link AbstractVectorQueryFunction} for the shared {@link Optimizable} machinery and
+ * why it's needed. Unlike {@link QueryVector}, arg0 here is always a field name (a string), never
+ * a node reference, so {@link #getDependencies()} doesn't need the "does arg0 depend on the
+ * context item" check — the whole point of ft:query-field-vector is that it always operates on
+ * the full context sequence.</p>
  */
-public class QueryFieldVector extends BasicFunction {
+public class QueryFieldVector extends AbstractVectorQueryFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING,
             "The vector field name (from vector-field config).");
@@ -91,23 +94,11 @@ public class QueryFieldVector extends BasicFunction {
         if (vector == null) {
             throw new XPathException(this, "Second argument must be an array of numbers");
         }
+        final int k = parseK(args);
+        final QueryOptions options = parseOptionsArg(args);
 
-        int kValue = 10;
-        QueryOptions queryOptions = new QueryOptions();
-        if (args.length >= 3 && !args[2].isEmpty()) {
-            kValue = args[2].itemAt(0).toJavaObject(Integer.class);
-            if (kValue <= 0) {
-                kValue = 10;
-            }
-        }
-        if (args.length >= 4 && !args[3].isEmpty()) {
-            queryOptions = parseOptions(args[3]);
-        }
-        final int k = kValue;
-        final QueryOptions options = queryOptions;
-
-        DocumentSet docs;
-        NodeSet contextSet;
+        final DocumentSet docs;
+        final NodeSet contextSet;
         if (contextSequence != null && contextSequence.isPersistentSet()) {
             docs = contextSequence.getDocumentSet();
             contextSet = contextSequence.toNodeSet();
@@ -116,47 +107,55 @@ public class QueryFieldVector extends BasicFunction {
             contextSet = null;
         }
 
+        return runSearch(docs, contextSet, field, vector, k, options);
+    }
+
+    @Override
+    public NodeSet preSelect(final Sequence contextSequence, final boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        if (contextSequence == null || !contextSequence.isPersistentSet()) {
+            // in-memory node sets won't have an index
+            preselectResult = NodeSet.EMPTY_SET;
+            return preselectResult;
+        }
+
+        final Sequence[] args = evalArgs(contextSequence, 0);
+        final String field = args[0].getStringValue();
+        final float[] vector = arrayToFloats(args[1]);
+        if (vector == null) {
+            throw new XPathException(this, "Second argument must be an array of numbers");
+        }
+        final int k = parseK(args);
+        final QueryOptions options = parseOptionsArg(args);
+
+        final NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
+        final Sequence result = runSearch(contextSequence.getDocumentSet(), contextSet, field, vector, k, options);
+        preselectResult = result.toNodeSet();
+        return preselectResult;
+    }
+
+    /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index and run the KNN search. */
+    private Sequence runSearch(final DocumentSet docs, @Nullable final NodeSet contextSet, final String field,
+            final float[] vector, final int k, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForField(index, docs, field);
-
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
                 () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
     }
 
-    private static float[] arrayToFloats(final Sequence seq) throws XPathException {
-        if (seq.isEmpty() || seq.getItemType() != Type.ARRAY_ITEM) {
-            return null;
+    /**
+     * Declares {@link Dependency#CONTEXT_SET} without {@link Dependency#CONTEXT_ITEM} — see class
+     * javadoc and {@link QueryVector#getDependencies()} for why this matters: without it,
+     * {@link PathExpr#eval} forces one KNN search per candidate document instead of one search
+     * over the whole candidate set, silently ignoring {@code k}.
+     */
+    @Override
+    public int getDependencies() {
+        if (anyArgVariesPerCandidate(0)) {
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
         }
-        final ArrayType arr = (ArrayType) seq.itemAt(0);
-        final int n = arr.getSize();
-        final float[] out = new float[n];
-        for (int i = 0; i < n; i++) {
-            final Sequence item = arr.get(i);
-            if (item.isEmpty()) {
-                return null;
-            }
-            final Item it = item.itemAt(0);
-            if (it instanceof NumericValue nv) {
-                out[i] = (float) nv.getDouble();
-            } else {
-                out[i] = (float) Double.parseDouble(it.getStringValue());
-            }
-        }
-        return out;
-    }
-
-    private QueryOptions parseOptions(final Sequence optSeq) throws XPathException {
-        if (optSeq.isEmpty()) {
-            return new QueryOptions();
-        }
-        final Item item = optSeq.itemAt(0);
-        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
-            return new QueryOptions((AbstractMapType) item);
-        }
-        if (Type.subTypeOf(item.getType(), Type.NODE)) {
-            return new QueryOptions(context, (NodeValue) item);
-        }
-        throw new XPathException(this, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
+        return Dependency.CONTEXT_SET;
     }
 }
