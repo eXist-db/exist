@@ -869,16 +869,11 @@ public class LocationStep extends Step {
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
-        // TODO : understand this. I guess comments should be treated in a
-        // similar way ? -pb
-        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
-                    test, contextId, contextSet);
-            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return vset;
-        }
 
-        if (test.isWildcardTest()) {
+        // A processing instruction is not in the structural index, so it is matched while streaming
+        // the siblings, like a wildcard test. The VirtualNodeSet it was handed to instead found no
+        // sibling processing instructions at all.
+        if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             final AVLTreeNodeSet result = new AVLTreeNodeSet();
             try {
                 final int limit = computeLimit();
