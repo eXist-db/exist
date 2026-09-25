@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.dom.QName;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -168,10 +169,13 @@ public class SequenceType {
      * @return true, if item is a subtype of primaryType
      */
     public boolean checkType(final Item item) {
-        int type = item.getType();
+        // an in-memory reference to a stored node has the kind and name of the node it refers to
+        final Item node = item instanceof final ReferenceNode reference ? reference.getReference() : item;
+        int type = node.getType();
         if (type == Type.NODE) {
-            final Node realNode = ((NodeValue) item).getNode();
-            type = realNode.getNodeType();
+            // the kind is not known yet, e.g. of a stored node not read so far: take it from the
+            // node itself, mapping its DOM node kind to the XQuery type it stands for
+            type = Type.fromDomNodeType(((NodeValue) node).getNode().getNodeType());
         }
         if (!Type.subTypeOf(type, primaryType)) {
             return false;
@@ -193,16 +197,18 @@ public class SequenceType {
             return true;
         }
         //TODO : how to improve performance ?
-        final QName realName = getRealName(item);
+        final QName realName = getRealName(node);
 
         if (realName == null) {
             return false;
         }
-        if (nodeName.getNamespaceURI() != null &&
+        // a wildcard part of the expected name matches any, as in NameTest: processing-instruction(NAME)
+        // has a wildcard namespace, since a processing instruction's name has none to compare
+        if (!(nodeName instanceof QName.WildcardNamespaceURIQName) && nodeName.getNamespaceURI() != null &&
                 !nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
             return false;
         }
-        if (nodeName.getLocalPart() != null) {
+        if (!(nodeName instanceof QName.WildcardLocalPartQName) && nodeName.getLocalPart() != null) {
             return nodeName.getLocalPart().equals(realName.getLocalPart());
         }
         return true;
