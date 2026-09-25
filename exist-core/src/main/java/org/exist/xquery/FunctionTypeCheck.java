@@ -30,15 +30,13 @@ import org.exist.xquery.value.*;
  *
  * @author wolf
  */
-public class FunctionTypeCheck extends AbstractExpression implements RewritableExpression {
+public class FunctionTypeCheck extends AbstractRewritableExpression {
 
-    private Expression expression;
     private final FunctionParameterFunctionSequenceType requiredType;
 
     public FunctionTypeCheck(XQueryContext context, final FunctionParameterFunctionSequenceType requiredType, Expression expr) {
-        super(context);
+        super(context, expr);
         this.requiredType = requiredType;
-        this.expression = expr;
     }
 
     /* (non-Javadoc)
@@ -121,46 +119,6 @@ public class FunctionTypeCheck extends AbstractExpression implements RewritableE
     @Override
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
-    }
-
-    @Override
-    public int getSubExpressionCount() {
-        return 1;
-    }
-
-    @Override
-    public Expression getSubExpression(int index) {
-        if (index == 0) {
-            return expression;
-        }
-
-        throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + getSubExpressionCount());
-    }
-
-    /* RewritableExpression API: lets the optimizer rewrite the wrapped
-     * expression in place -- e.g. to attach an (#exist:optimize#) pragma to
-     * a function argument -- without dropping this type check. See GH-873. */
-
-    @Override
-    public void replace(final Expression oldExpr, final Expression newExpr) {
-        if (expression == oldExpr) {
-            expression = newExpr;
-        }
-    }
-
-    @Override
-    public void remove(final Expression oldExpr) throws XPathException {
-        // no-op
-    }
-
-    @Override
-    public Expression getPrevious(final Expression current) {
-        return null;
-    }
-
-    @Override
-    public Expression getFirst() {
-        return expression;
     }
 
 }
