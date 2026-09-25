@@ -38,9 +38,9 @@ import org.exquery.http.HttpRequest;
  * {@link RESTServer} discovers it via {@link java.util.ServiceLoader}; if the RestXQ
  * extension is not on the classpath, no implementation is found and EXQuery request-module
  * support is simply skipped — mirroring how
- * {@link org.exist.storage.vector.VectorExtensionHook} lets the optional vector extension
+ * org.exist.storage.vector.VectorExtensionHook lets the optional vector extension
  * hook into broker pool lifecycle the same way, and how
- * {@link org.exist.xquery.ModuleFactory}/{@link org.exist.indexing.IndexFactory} let optional
+ * org.exist.xquery.ModuleFactory and org.exist.indexing.IndexFactory let optional
  * modules/indexes self-register.
  */
 public interface ExQueryRequestAdapterFactory {
