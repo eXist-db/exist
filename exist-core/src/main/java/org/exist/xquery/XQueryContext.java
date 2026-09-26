@@ -1581,6 +1581,25 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         attributes.clear();
 
+        // In-scope namespaces declared outside an element constructor -- by attribute namespace
+        // fixup, or by a caller configuring the context before execution -- land in these top-level
+        // maps. On a pooled context they would otherwise survive into whichever execution next
+        // borrows it, where the fixup would trust them (#6704).
+        //
+        // Only when globals are not kept: compilation also resets, with keepGlobals, when the
+        // optimizer rewrites the tree and the query is analyzed again, and namespaces the caller
+        // declared before compiling must still resolve then.
+        //
+        // Fresh maps rather than clear(): updateContext() shares these by reference with
+        // util:eval's inner context, and resetting that must not empty the outer query's bindings
+        // mid-evaluation.
+        if (!keepGlobals) {
+            inScopeNamespaces = new HashMap<>();
+            inScopePrefixes = new HashMap<>();
+            inheritedInScopeNamespaces = new HashMap<>();
+            inheritedInScopePrefixes = new HashMap<>();
+        }
+
         clearUpdateListeners();
 
         profiler.reset();
