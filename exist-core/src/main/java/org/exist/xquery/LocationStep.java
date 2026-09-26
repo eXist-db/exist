@@ -550,18 +550,23 @@ public class LocationStep extends Step {
 
             if (Type.subTypeOf(nodeTestType, Type.NODE)) {
                 if (Expression.NO_CONTEXT_ID != contextId) {
-                    if (contextSet instanceof VirtualNodeSet set) {
+                    if (contextSet instanceof VirtualNodeSet set && test.getType() == Type.NODE) {
+                        // self::node() selects every node of the set, which can stay virtual
                         set.setInPredicate(true);
                         set.setContextId(contextId);
                         set.setSelfIsContext();
-                    } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
-                        for (final NodeProxy p : contextSet) {
-                            if (test.matches(p)) {
-                                p.addContextNode(contextId, p);
-                            }
+                        return contextSet;
+                    }
+                    // only the nodes that pass the test: returning the whole context set made
+                    // e.g. node()[self::comment()] select every node, and node()[not(self::*)] none
+                    final NewArrayNodeSet results = new NewArrayNodeSet();
+                    for (final NodeProxy p : contextSet) {
+                        if (test.matches(p)) {
+                            p.addContextNode(contextId, p);
+                            results.add(p);
                         }
                     }
-                    return contextSet;
+                    return results;
                 } else {
                     final NewArrayNodeSet results = new NewArrayNodeSet();
                     for (final NodeProxy p : contextSet) {
