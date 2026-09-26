@@ -117,7 +117,6 @@ public class RESTServer {
 
     protected final static Logger LOG = LogManager.getLogger(RESTServer.class);
     public final static String SERIALIZATION_METHOD_PROPERTY = "output-as";
-    // Should we not obey the instance's defaults? /ljo
     protected final static Properties defaultProperties = new Properties();
 
     static {
@@ -125,7 +124,9 @@ public class RESTServer {
         defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-        defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+        // Collection listings do not process XSL PIs; leave unset on document GET
+        // so Serializer keeps conf.xml serializer/@enable-xsl (see parseStylesheetParameter).
+        defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
     }
     public final static Properties defaultOutputKeysProperties = new Properties();
 
@@ -425,7 +426,8 @@ public class RESTServer {
         if ((option = getParameter(request, Cache)) != null) {
             options.cache = "yes".equals(option);
         }
-        setOutputPropertyIfPresent(request, outputProperties, Indent, OutputKeys.INDENT);
+        setOutputProperty(broker, request, outputProperties, Indent,
+                OutputKeys.INDENT, Serializer.PROPERTY_INDENT, "yes");
         setOutputProperty(broker, request, outputProperties, Output_Doctype,
                 EXistOutputKeys.OUTPUT_DOCTYPE, Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
         setOutputProperty(broker, request, outputProperties, Omit_Xml_Declaration,
@@ -546,23 +548,31 @@ public class RESTServer {
     /**
      * Parses the {@code _xsl} parameter from the query string of a GET request.
      *
+     * <p>When {@code _xsl} is absent, {@link EXistOutputKeys#PROCESS_XSL_PI} is left
+     * unset so {@link Serializer} keeps {@code conf.xml} {@code serializer/@enable-xsl}.
+     * Explicit {@code _xsl=yes} / {@code _xsl=no} override that default; any other value
+     * is treated as a stylesheet path.</p>
+     *
      * @param request the request
      * @param outputProperties the serialization properties
      *
      * @return the stylesheet to apply, or null if none was requested
      */
-    private String parseStylesheetParameter(final HttpServletRequest request, final Properties outputProperties) {
+    private String parseStylesheetParameter(final HttpServletRequest request,
+            final Properties outputProperties) {
         String stylesheet;
         if ((stylesheet = getParameter(request, XSL)) != null) {
             if ("no".equals(stylesheet)) {
                 outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
                 outputProperties.remove(EXistOutputKeys.STYLESHEET);
                 stylesheet = null;
+            } else if ("yes".equals(stylesheet)) {
+                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+                outputProperties.remove(EXistOutputKeys.STYLESHEET);
+                stylesheet = null;
             } else {
                 outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
             }
-        } else {
-            outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
         }
         return stylesheet;
     }
