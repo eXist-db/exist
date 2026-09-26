@@ -730,18 +730,26 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     /**
-     * Escapes '\', '(', and ')' characters.
+     * Escapes the special characters that are significant inside an LDAP search
+     * filter value per RFC 4515 \u00a73: backslash, '(', ')', '*' and the NUL
+     * character. Each is replaced with its hexadecimal escape so a value supplied
+     * by an unauthenticated principal can never break out of the filter value and
+     * alter the structure of the constructed filter. The backslash is replaced
+     * first so the escapes produced for the other characters are not themselves
+     * re-escaped.
      *
      * @param searchAttribute The search attribute string.
      *
      * @return the escaped search attribute.
      */
-    private String escapeSearchAttribute(final String searchAttribute) {
+    static String escapeSearchAttribute(final String searchAttribute) {
         return searchAttribute
-                .replace("\\", "\\5c")
-                .replace("(", "\\28")
-                .replace(")", "\\29");
-    }
+                 .replace("\\", "\\5c")
+                 .replace("(", "\\28")
+                 .replace(")", "\\29")
+                 .replace("*", "\\2a")
+                 .replace("\u0000", "\\00");
+     }
 
     private SearchResult findAccountByAccountName(final DirContext ctx, final String accountName) throws NamingException {
 

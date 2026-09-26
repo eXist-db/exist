@@ -636,21 +636,37 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private void sendError(final PrintWriter out, final String message, final String description) {
-        out.print("<html><head>");
-        out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
-        out.println("<body><h1>Error found</h1>");
-        out.print("<div class='message'><b>Message: </b>");
-        out.print(message);
-        out.print("</div>");
-
-        if(!hideErrorMessages) {
-            out.print("<div class='description'><pre>");
-            out.print(description);
-            out.print("</pre></div>");
-        }
-
-        out.print("</body></html>");
+        out.print(renderErrorPage(message, description, hideErrorMessages));
         out.flush();
-    }
+      }
+
+     /**
+      * Builds the HTML error page as a string, escaping both the message and the
+      * description so that a user-derived value (e.g. a requested source path
+      * embedded in the description) cannot inject markup into the response.
+      *
+      * @param message the message to display; may be {@code null}
+      * @param description the description to display; may be {@code null}
+      * @param hideDescription {@code true} to suppress the description entirely
+      * @return the complete HTML error page
+      */
+    static String renderErrorPage(final String message, final String description, final boolean hideDescription) {
+        final StringBuilder out = new StringBuilder();
+        out.append("<html><head>");
+        out.append("<title>XQueryServlet Error</title>");
+        out.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
+        out.append("<body><h1>Error found</h1>");
+        out.append("<div class='message'><b>Message: </b>");
+        out.append(message == null ? "" : XMLUtil.encodeAttrMarkup(message));
+        out.append("</div>");
+
+        if (!hideDescription && description != null) {
+            out.append("<div class='description'><pre>");
+            out.append(XMLUtil.encodeAttrMarkup(description));
+            out.append("</pre></div>");
+         }
+
+        out.append("</body></html>");
+        return out.toString();
+      }
 }
