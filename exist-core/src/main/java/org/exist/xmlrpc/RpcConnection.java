@@ -3151,19 +3151,36 @@ public class RpcConnection implements RpcAPI {
         final LockMode srcCollectionMode = move
                 || docUri.removeLastSegment().equals(destUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
 
+        /*
+         * Lock the destination Collection first, then the source Collection, and only then the document, and hold
+         * all three until the operation is done:
+         *
+         * - taking both Collection locks before the document lock avoids waiting for a Collection while holding a
+         *   document that a reader, which locks Collections before their documents, may be waiting for;
+         * - taking the WRITE_LOCK first avoids upgrading a READ_LOCK on a shared ancestor Collection (e.g. /db) to
+         *   a WRITE_LOCK when copying;
+         * - NativeBroker#moveResource expects the source Collection to be locked, so it is not released early.
+         */
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(srcCollectionMode, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
-                        this.<Boolean>writeDocument(broker1, transaction1, source, docUri).apply((document, broker2, transaction2) ->
-                                this.<Boolean>writeCollection(broker2, transaction2, destUri).apply((destination, broker3, transaction3) -> {
-                                    if (move) {
-                                        broker3.moveResource(transaction3, document, destination, newName);
-                                    } else {
-                                        broker3.copyResource(transaction3, document, destination, newName, preserve);
+                this.<Boolean>writeCollection(broker, transaction, destUri).apply((destination, broker1, transaction1) ->
+                        this.<Boolean>withCollection(srcCollectionMode, broker1, transaction1, docUri.removeLastSegment()).apply((source, broker2, transaction2) -> {
+                            try (final LockedDocument lockedDocument = source.getDocumentWithLock(broker2, docUri.lastSegment(), LockMode.WRITE_LOCK)) {
+                                if (lockedDocument == null) {
+                                    final String msg = "document " + docUri + " not found!";
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug(msg);
                                     }
-                                    return true;
-                                })
-                        )
+                                    throw new EXistException(msg);
+                                }
 
+                                if (move) {
+                                    broker2.moveResource(transaction2, lockedDocument.getDocument(), destination, newName);
+                                } else {
+                                    broker2.copyResource(transaction2, lockedDocument.getDocument(), destination, newName, preserve);
+                                }
+                                return true;
+                            }
+                        })
                 )
         );
     }
@@ -3944,21 +3961,6 @@ public class RpcConnection implements RpcAPI {
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDocument(LockMode.WRITE_LOCK, broker, transaction, uri);
-    }
-
-    /**
-     * Higher-order function for performing write locked operations on a document
-     *
-     * @param broker      The broker to use for the operation
-     * @param transaction The transaction to use for the operation
-     * @param collection  The collection in which the document resides
-     * @param uri         The full XmldbURI of the document
-     * @return A function to receive an operation to perform on the locked database document
-     * @throws EXistException if an internal error occurs
-     * @throws PermissionDeniedException If the current user is not allowed to perform this action
-     */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(LockMode.WRITE_LOCK, broker, transaction, collection, uri);
     }
 
     //TODO(AR) consider interleaving the collection and document access, i.e. we could be finished with (and release the lock on) the collection once we have access to a handle to the document
