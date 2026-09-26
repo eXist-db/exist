@@ -36,6 +36,11 @@ xquery version "3.1";
  : Test for binary value lifetimes.
  : This also checks that the escape analysis is correct for LetExpr calling XQueryContext#popLocalVariables.
  :
+ : The tests at the end cover passing a value *into* a function rather than returning one out of it
+ : (issues #5030 and #6725). Those are meaningful here only because ModuleContext delegates the whole
+ : binary value registry to the root context: before that it delegated registration alone, so an XQSuite
+ : function silently exercised a different code path than a main module did.
+ :
  : @author Adam Retter
  :)
 module namespace bv = "http://exist-db.org/xquery/test/binary-value";
@@ -57,6 +62,10 @@ declare variable $bv:doc7 := "doc7.bin";
 declare variable $bv:doc8 := "doc8.bin";
 declare variable $bv:doc9 := "doc9.bin";
 declare variable $bv:doc10 := "doc10.bin";
+declare variable $bv:doc11 := "doc11.bin";
+declare variable $bv:doc12 := "doc12.bin";
+declare variable $bv:doc13 := "doc13.bin";
+declare variable $bv:doc14 := "doc14.bin";
 declare variable $bv:bin := fn:current-dateTime() cast as xs:string;
 
 declare
@@ -64,7 +73,8 @@ declare
 function bv:setup() {
   let $src-collection := xmldb:create-collection($bv:db, $bv:src-collection-name)
   let $_ := xmldb:create-collection($bv:db, $bv:dst-collection-name)
-  for $doc-name in ($bv:doc1, $bv:doc2, $bv:doc3, $bv:doc4, $bv:doc5, $bv:doc6, $bv:doc7, $bv:doc8, $bv:doc9, $bv:doc10)
+  for $doc-name in ($bv:doc1, $bv:doc2, $bv:doc3, $bv:doc4, $bv:doc5, $bv:doc6, $bv:doc7, $bv:doc8, $bv:doc9, $bv:doc10,
+      $bv:doc11, $bv:doc12, $bv:doc13, $bv:doc14)
   return
     xmldb:store($src-collection, $doc-name, $bv:bin, "application/octet-stream")
 };
@@ -253,4 +263,76 @@ function bv:escape-sequence-in-array() {
   let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
   return
     xmldb:store($dst-collection, $bv:doc10, $m?1[1], "application/octet-stream")
+};
+
+
+(:~
+ : Passing a value to a function must not release it: the value belongs to the scope that created it,
+ : and the function's parameter is only another name for it.
+ :
+ : @see https://github.com/eXist-db/exist/issues/6725
+ :)
+declare
+  %private
+function bv:noop($b) {
+  1
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc11.bin")
+function bv:pass-to-function-then-store() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc11)
+  let $_ := bv:noop($b)
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc11, $b, "application/octet-stream")
+};
+
+declare
+  %private
+function bv:inner-passthrough($b) {
+  $b
+};
+
+declare
+  %private
+function bv:outer-passthrough($b) {
+  bv:inner-passthrough($b)
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc12.bin")
+function bv:pass-through-two-function-levels() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc12)
+  let $_ := bv:outer-passthrough($b)
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc12, $b, "application/octet-stream")
+};
+
+declare
+  %private
+function bv:wrap-in-map($b) {
+  map { "content": $b }
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc13.bin")
+function bv:pass-into-function-returning-map() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc13)
+  let $m := bv:wrap-in-map($b)
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc13, $m?content, "application/octet-stream")
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc14.bin")
+function bv:pass-into-inline-function() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc14)
+  let $f := function($v) { $v }
+  let $_ := $f($b)
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc14, $b, "application/octet-stream")
 };

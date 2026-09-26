@@ -40,9 +40,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for accessing binaries using XQuery via various APIs.
  *
- * @see <a href="https://github.com/eXist-db/exist/issues/790">Binary streaming is broken</a>
- *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ * @see <a href="https://github.com/eXist-db/exist/issues/790">Binary streaming is broken</a>
  */
 public abstract class AbstractBinariesTest<T, U, E extends Exception> {
 
@@ -92,14 +91,14 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
      * the second read failed with "Underlying channel has been closed". {@code count($w)} forces the
      * constructor to be evaluated before {@code $b} is read again.
      *
-     * <p>This must run as a <em>root-context main module</em> to reproduce, which is why it is a Java
-     * (executeXQuery) test rather than an XQSuite function: in a {@code ModuleContext} (an XQSuite test
-     * function, or {@code util:eval}) {@code registerBinaryValueInstance()} delegates to the parent/root
-     * context while {@code enterEnclosedExpr()}/{@code exitEnclosedExpr()} act on the {@code ModuleContext}'s
-     * own (empty) deque, so the constructor's {@code exitEnclosedExpr()} never sees the binary there and the
-     * premature close does not occur (it defers harmlessly to {@code popLocalVariables} after the read).
-     * Both {@code executeXQuery()} implementations here run the query as a main module (embedded and REST),
-     * so {@code exitEnclosedExpr()} and the binary share one context and the bug is exercised.</p>
+     * <p>This runs as a <em>root-context main module</em>, the shape in which the bug was reported.
+     * It used to be the only shape that reproduced it: a {@code ModuleContext} (an XQSuite test function,
+     * or {@code util:eval}) delegated {@code registerBinaryValueInstance()} to the parent/root context
+     * while the enclosed-expression hooks acted on the {@code ModuleContext}'s own (empty) deque, so a
+     * module context silently never saw the premature close. {@code ModuleContext} now delegates the
+     * whole binary value registry, so XQSuite exercises this path too - see
+     * {@code exist-core/src/test/xquery/binary-value.xqm}. Keep the Java tests regardless: they are the
+     * ones that run the query as a main module.</p>
      */
     @Test
     public void readBinaryUsedInElementConstructorThenReadAgain() throws Exception {
@@ -205,6 +204,169 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     /**
+     * A binary value passed to a user-defined function must stay usable in the caller after that
+     * function returns. When a function returns, its parameter variables go out of scope and
+     * {@code XQueryContext.popLocalVariables} destroyed them - which closed the <em>caller's</em> value,
+     * even though the callee never read it and the caller still holds it. The store then failed with
+     * "error while obtaining length of binary value".
+     *
+     * <p>A value now belongs to the scope that created it, so the parameter alias in the callee owns
+     * nothing and can release nothing.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     * @see <a href="https://github.com/eXist-db/exist/issues/5030">Error trying to access binary data from an HTTP response</a>
+     */
+    @Test
+    public void passBinaryToUserFunctionThenStore() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                declare function local:noop($b) { 1 };
+                let $b := file:read-binary('%1$s')
+                return (local:noop($b), xmldb:store('%2$s', 'passed-to-function.bin', $b, 'application/octet-stream'), $b)[3]""".formatted(tmpFile.toAbsolutePath(), TEST_COLLECTION);
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * The same value passed to a user-defined function twice: each return pops a scope, so a single
+     * surviving call proves nothing if the second pop can still close the value.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void passBinaryToUserFunctionTwice() throws Exception {
+        final String query = """
+                declare function local:size($b) { string-length(util:binary-to-string($b)) };
+                let $b := util:binary-doc('%s')
+                return (local:size($b), local:size($b), $b)[3]""".formatted(TEST_COLLECTION.append(BIN1_FILENAME));
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(BIN1_CONTENT, getBytes(item));
+        });
+    }
+
+    /**
+     * A binary value handed down through two levels of user-defined function, and returned back up
+     * through both: the value is created in the caller's scope, so neither callee may release it, and
+     * returning it must not release it either.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void passBinaryThroughTwoFunctionLevels() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                declare function local:inner($b) { $b };
+                declare function local:outer($b) { local:inner($b) };
+                let $b := file:read-binary('%s')
+                return (local:outer($b), $b)[2]""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * A binary value created inside a user-defined function and returned to the caller escapes the
+     * function's scope, so it must be handed to the caller rather than released with that scope.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void binaryReturnedFromUserFunction() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                declare function local:load() { file:read-binary('%s') };
+                let $b := local:load()
+                return (count($b), $b)[2]""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * A binary value created in a user-defined function and captured by an inline function it returns
+     * escapes through the closure, not through the returned sequence itself, and must survive the
+     * defining function's scope.
+     */
+    @Test
+    public void binaryCapturedInClosureUsedAfterFrame() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                declare function local:make($path) {
+                    let $b := file:read-binary($path)
+                    return function() { $b }
+                };
+                let $f := local:make('%s')
+                return $f()""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
+     * A binary value carried through a tail-recursive function, whose arguments eXist defers
+     * (DeferredFunctionCall) rather than evaluating in the popped scope.
+     */
+    @Test
+    public void binaryPassedThroughTailRecursion() throws Exception {
+        final byte[] data = randomData(1024);
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = """
+                import module namespace file = "http://exist-db.org/xquery/file";
+                declare function local:loop($n, $b) {
+                    if ($n eq 0) then $b else local:loop($n - 1, $b)
+                };
+                let $b := file:read-binary('%s')
+                return (local:loop(3, $b), $b)[2]""".formatted(tmpFile.toAbsolutePath());
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+            final U item = item(results, 0);
+            assertTrue(isBinaryType(item));
+            assertArrayEquals(data, getBytes(item));
+        });
+    }
+
+    /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
      */
     @Test
@@ -244,16 +406,25 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
         return f;
     }
 
-    @FunctionalInterface interface QueryResultAccessor<T, E extends Exception> extends Consumer2E<Consumer2E<T, AssertionError, E>, AssertionError, E> {
+    @FunctionalInterface
+    interface QueryResultAccessor<T, E extends Exception> extends Consumer2E<Consumer2E<T, AssertionError, E>, AssertionError, E> {
     }
 
     protected abstract void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception;
+
     protected abstract void removeCollection(final XmldbURI collectionUri) throws Exception;
+
     protected abstract QueryResultAccessor<T, E> executeXQuery(final String query) throws Exception;
+
     protected abstract long size(T results) throws E;
+
     protected abstract U item(T results, int index) throws E;
+
     protected abstract boolean isBinaryType(U item) throws E;
+
     protected abstract boolean isBooleanType(U item) throws E;
+
     protected abstract byte[] getBytes(U item) throws E;
+
     protected abstract boolean getBoolean(U item) throws E;
 }

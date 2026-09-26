@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.storage.DBBroker;
 import org.exist.security.Subject;
 import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.Sequence;
 import org.junit.Test;
 import org.easymock.EasyMock;
 
@@ -164,10 +165,199 @@ public class XQueryContextTest {
         verify(mockBin1, mockBin2, mockBin3, mockBin4, mockBin5, mockBin6, mockBin7, mockWatchdog);
     }
 
+    /**
+     * A frame releases the values registered while it was innermost, and only those: values the
+     * enclosing scope registered are below its boundary and must be left alone. This is what stops a
+     * called function from closing its caller's value.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void frameReleasesOnlyItsOwnValues() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+
+        final BinaryValue callersValue = createMock(BinaryValue.class);
+        final BinaryValue calleesValue = createMock(BinaryValue.class);
+
+        // only the value the inner frame registered is closed
+        calleesValue.close();
+        expectLastCall().times(1);
+        replay(callersValue, calleesValue);
+
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(callersValue);
+
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(calleesValue);
+        context.popBinaryValueFrame(null);
+
+        assertEquals(1, countBinaryValueInstances(context));
+
+        verify(callersValue, calleesValue);
+    }
+
+    /**
+     * A value reachable from the sequence a frame returns escapes it, and belongs to the enclosing
+     * frame from then on - so it is released when <em>that</em> frame is left.
+     */
+    @Test
+    public void frameHandsEscapingValueToEnclosingFrame() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+
+        final BinaryValue escaping = createMock(BinaryValue.class);
+        final Sequence result = createMock(Sequence.class);
+        expect(result.containsReference(escaping)).andReturn(true).anyTimes();
+
+        escaping.close();
+        expectLastCall().times(1);
+        replay(escaping, result);
+
+        context.pushBinaryValueFrame();
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(escaping);
+
+        // the inner frame returns it: not released, still registered
+        context.popBinaryValueFrame(result);
+        assertEquals(1, countBinaryValueInstances(context));
+
+        // the enclosing frame now owns it
+        context.popBinaryValueFrame(null);
+        assertEquals(0, countBinaryValueInstances(context));
+
+        verify(escaping, result);
+    }
+
+    /**
+     * A frame whose escape set is unknown promotes rather than releases: deferring release to the end
+     * of the query is recoverable, closing a value the query still needs is not.
+     */
+    @Test
+    public void framePromoteReleasesNothing() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+        final XQueryWatchDog mockWatchdog = createMock(XQueryWatchDog.class);
+        context.setWatchDog(mockWatchdog);
+
+        final BinaryValue binaryValue = createMock(BinaryValue.class);
+
+        // closed once, by the end-of-query cleanup rather than by the frame
+        binaryValue.close();
+        expectLastCall().times(1);
+        replay(binaryValue, mockWatchdog);
+
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(binaryValue);
+        context.promoteBinaryValueFrame();
+
+        assertEquals(1, countBinaryValueInstances(context));
+
+        context.runCleanupTasks();
+        assertEquals(0, countBinaryValueInstances(context));
+
+        verify(binaryValue, mockWatchdog);
+    }
+
+    /**
+     * Marks and pops are not always balanced - WindowExpr opens frames it does not always close - so
+     * the registry must tolerate both directions: a frame left open at the end of the query is drained
+     * by the cleanup, and a pop with no frame open releases nothing at all.
+     */
+    @Test
+    public void unbalancedFramesDeferReleaseRatherThanOverReach() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+        final XQueryWatchDog mockWatchdog = createMock(XQueryWatchDog.class);
+        context.setWatchDog(mockWatchdog);
+
+        final BinaryValue neverPopped = createMock(BinaryValue.class);
+        final BinaryValue afterUnbalancedPop = createMock(BinaryValue.class);
+
+        neverPopped.close();
+        expectLastCall().times(1);
+        afterUnbalancedPop.close();
+        expectLastCall().times(1);
+        replay(neverPopped, afterUnbalancedPop, mockWatchdog);
+
+        // a frame that is opened and never closed strands nothing: the cleanup drains it
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(neverPopped);
+        context.runCleanupTasks();
+        assertEquals(0, countBinaryValueInstances(context));
+
+        // and a pop with no frame open releases nothing, rather than reaching into what is left
+        context.popBinaryValueFrame(null);
+        context.registerBinaryValueInstance(afterUnbalancedPop);
+        context.popBinaryValueFrame(null);
+        assertEquals(1, countBinaryValueInstances(context));
+
+        context.runCleanupTasks();
+        assertEquals(0, countBinaryValueInstances(context));
+
+        verify(neverPopped, afterUnbalancedPop, mockWatchdog);
+    }
+
+    /**
+     * A value registered before any frame was opened (a global, or a top-level expression) belongs to
+     * no frame, and is released only by the end-of-query cleanup.
+     */
+    @Test
+    public void valueRegisteredBeforeAnyFrameSurvivesPops() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+        final XQueryWatchDog mockWatchdog = createMock(XQueryWatchDog.class);
+        context.setWatchDog(mockWatchdog);
+
+        final BinaryValue global = createMock(BinaryValue.class);
+
+        global.close();
+        expectLastCall().times(1);
+        replay(global, mockWatchdog);
+
+        context.registerBinaryValueInstance(global);
+
+        context.pushBinaryValueFrame();
+        context.popBinaryValueFrame(null);
+        assertEquals(1, countBinaryValueInstances(context));
+
+        context.runCleanupTasks();
+        assertEquals(0, countBinaryValueInstances(context));
+
+        verify(global, mockWatchdog);
+    }
+
+    /**
+     * Deregistering a value shifts the values after it down, so the frames that start after it must
+     * shift with them - otherwise a frame boundary drifts and a later pop releases the wrong values.
+     */
+    @Test
+    public void deregisteringAValueKeepsFrameBoundariesAligned() throws NoSuchFieldException, IllegalAccessException, IOException {
+        final XQueryContext context = new XQueryContext();
+
+        final BinaryValue outerValue = createMock(BinaryValue.class);
+        final BinaryValue innerValue = createMock(BinaryValue.class);
+
+        // only the inner frame's value is closed; the outer one was deregistered by hand
+        innerValue.close();
+        expectLastCall().times(1);
+        replay(outerValue, innerValue);
+
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(outerValue);
+
+        context.pushBinaryValueFrame();
+        context.registerBinaryValueInstance(innerValue);
+
+        // remove the value that sits *before* the inner frame's boundary
+        context.destroyBinaryValue(outerValue);
+        assertEquals(1, countBinaryValueInstances(context));
+
+        context.popBinaryValueFrame(null);
+        assertEquals(0, countBinaryValueInstances(context));
+
+        verify(outerValue, innerValue);
+    }
+
     private int countBinaryValueInstances(final XQueryContext context) throws NoSuchFieldException, IllegalAccessException {
         final Field fldBinaryValueInstances = context.getClass().getDeclaredField("binaryValueInstances");
         fldBinaryValueInstances.setAccessible(true);
-        final Deque<BinaryValue> binaryValueInstances = (Deque<BinaryValue>) fldBinaryValueInstances.get(context);
+        final Collection<BinaryValue> binaryValueInstances = (Collection<BinaryValue>) fldBinaryValueInstances.get(context);
         return binaryValueInstances.size();
     }
 
@@ -179,7 +369,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testDeclareNamespace () throws XPathException {
+    public void testDeclareNamespace() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("first", "ns/a");
         context.declareNamespace("second", "ns/b");
@@ -187,10 +377,11 @@ public class XQueryContextTest {
         context.declareNamespace("third", "ns/a");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.addAll(Arrays.asList("first", "second", "third"));
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
     }
+
     @Test
-    public void testReDeclareNamespaceAllowed () throws XPathException {
+    public void testReDeclareNamespaceAllowed() throws XPathException {
         final XQueryContext context = new XQueryContext();
         final String nsAllowedToBeRebound = "xs";
         assertEquals("http://www.w3.org/2001/XMLSchema",
@@ -199,39 +390,40 @@ public class XQueryContextTest {
         context.declareNamespace(nsAllowedToBeRebound, "schemaless");
 
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("schemaless",  context.staticNamespaces.get(nsAllowedToBeRebound));
-    }
-    @Test
-    public void testReDeclareNamespaceNullNull () throws XPathException {
-        final XQueryContext context = new XQueryContext();
-        context.declareNamespace(null, null);
-        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
-        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("schemaless", context.staticNamespaces.get(nsAllowedToBeRebound));
     }
 
     @Test
-    public void testDeclareNamespaceEmptyPrefix () throws XPathException {
+    public void testReDeclareNamespaceNullNull() throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(null, null);
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        assertEquals(expected, context.staticNamespaces.keySet());
+    }
+
+    @Test
+    public void testDeclareNamespaceEmptyPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    public void testDeclareNamespaceNullPrefix () throws XPathException {
+    public void testDeclareNamespaceNullPrefix() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace(null, "default");
         final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
         expected.add("");
-        assertEquals(expected,  context.staticNamespaces.keySet());
-        assertEquals("default",  context.staticNamespaces.get(""));
+        assertEquals(expected, context.staticNamespaces.keySet());
+        assertEquals("default", context.staticNamespaces.get(""));
     }
 
     @Test
-    public void testReDeclareNamespaceEmptyPrefixFail () throws XPathException {
+    public void testReDeclareNamespaceEmptyPrefixFail() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("", "default");
         // context.declareNamespace("", "");
@@ -242,22 +434,22 @@ public class XQueryContextTest {
         } catch (XPathException e) {
             assertEquals("err:XQST0066 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
                     e.getMessage());
-            assertEquals("default",  context.staticNamespaces.get(""));
+            assertEquals("default", context.staticNamespaces.get(""));
         }
     }
 
     @Test
-    public void testReDeclareNamespaceEmptyPrefixSuccess () throws XPathException {
+    public void testReDeclareNamespaceEmptyPrefixSuccess() throws XPathException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("mutable", "ns/initial");
         context.declareNamespace("mutable", "");
         context.declareNamespace("mutable", null);
         context.declareNamespace("mutable", "ns/new");
-        assertEquals("ns/new",  context.staticNamespaces.get("mutable"));
+        assertEquals("ns/new", context.staticNamespaces.get("mutable"));
     }
 
     @Test
-    public void testReDeclareNamespaceForbidden () {
+    public void testReDeclareNamespaceForbidden() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "html");
@@ -268,7 +460,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testReDeclareNamespaceForbiddenEmpty () {
+    public void testReDeclareNamespaceForbiddenEmpty() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", "");
@@ -279,7 +471,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testReDeclareNamespaceForbiddenNull () {
+    public void testReDeclareNamespaceForbiddenNull() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("xml", null);
@@ -290,7 +482,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void testXmlNsProtected () {
+    public void testXmlNsProtected() {
         try {
             final XQueryContext context = new XQueryContext();
             context.declareNamespace("test", XMLConstants.XML_NS_URI);
