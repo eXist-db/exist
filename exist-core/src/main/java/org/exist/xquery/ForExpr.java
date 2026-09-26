@@ -244,6 +244,14 @@ public class ForExpr extends BindingExpression {
         return true;
     }
 
+    /**
+     * @return true unless this "for" is nested in another, whose evaluation then pre-evaluates
+     *     the clauses that follow
+     */
+    boolean isOuterFor() {
+        return isOuterFor;
+    }
+
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
         // if preEval gets called, we know we're inside another FOR
