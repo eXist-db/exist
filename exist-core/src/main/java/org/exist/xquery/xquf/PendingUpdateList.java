@@ -1,0 +1,1940 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xquery.xquf;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.numbering.NodeId;
+import org.exist.EXistException;
+import org.exist.Namespaces;
+import org.exist.collections.ManagedLocks;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggers;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.NodeListImpl;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.ManagedDocumentLock;
+import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.annotation.Nullable;
+import java.util.*;
+
+/**
+ * W3C XQuery Update Facility 3.0 Pending Update List.
+ *
+ * Accumulates update primitives during query evaluation and applies them
+ * atomically at snapshot boundaries (end of outermost expression evaluation).
+ *
+ * @see <a href="https://www.w3.org/TR/xquery-update-30/">XQuery Update Facility 3.0</a>
+ */
+public class PendingUpdateList {
+
+    private static final Logger LOG = LogManager.getLogger(PendingUpdateList.class);
+
+    private final List<UpdatePrimitive> primitives = new ArrayList<>();
+
+    /**
+     * Add a primitive to this PUL.
+     */
+    public void addPrimitive(final UpdatePrimitive primitive) {
+        primitives.add(primitive);
+    }
+
+    /**
+     * Merge another PUL into this one (for combining sub-expression PULs).
+     */
+    public void merge(final PendingUpdateList other) {
+        primitives.addAll(other.primitives);
+    }
+
+    /**
+     * @return true if this PUL contains no primitives
+     */
+    public boolean isEmpty() {
+        return primitives.isEmpty();
+    }
+
+    /**
+     * @return the number of primitives in this PUL
+     */
+    public int size() {
+        return primitives.size();
+    }
+
+    /**
+     * Check that all target nodes in this PUL are descendants of (or equal to)
+     * one of the given copied root nodes. Used for XUDY0014 in transform expressions.
+     *
+     * @param copiedRoots the root nodes created by copy bindings
+     * @param expr        the expression for error reporting
+     * @throws XPathException if any target is not a descendant of a copy root
+     */
+    public void checkTransformTargets(final List<Node> copiedRoots, final Expression expr) throws XPathException {
+        for (final UpdatePrimitive p : primitives) {
+            final Node target = p.getTargetNode();
+            if (!isDescendantOfAny(target, copiedRoots)) {
+                throw new XPathException(expr, ErrorCodes.XUDY0014,
+                        "Target node of update in transform expression was not created by the copy clause.");
+            }
+        }
+    }
+
+    private static boolean isDescendantOfAny(final Node target, final List<Node> roots) {
+        for (final Node root : roots) {
+            if (isDescendantOrSelf(target, root)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isDescendantOrSelf(final Node node, final Node ancestor) {
+        // Check self first (handles standalone attribute copies where owner element is null)
+        if (nodesAreSame(node, ancestor)) {
+            return true;
+        }
+        Node current = node;
+        // For attribute nodes, start from the owner element
+        if (current.getNodeType() == Node.ATTRIBUTE_NODE) {
+            current = ((Attr) current).getOwnerElement();
+            if (current == null) {
+                return false;
+            }
+        }
+        while (current != null) {
+            if (nodesAreSame(current, ancestor)) {
+                return true;
+            }
+            current = current.getParentNode();
+        }
+        // Fallback for memtree: getParentNode() returns null when the parent is a
+        // document that is not "explicitly created" (see NodeImpl line 232).
+        // Handle two cases:
+        // 1. Ancestor is a document node: check if target belongs to that document
+        // 2. Ancestor is an element: check if both share the same document
+        //    (the parent walk stopped at null because the doc wasn't explicitly created)
+        if (node instanceof org.exist.dom.memtree.NodeImpl memNode
+                && ancestor instanceof org.exist.dom.memtree.NodeImpl memAncestor) {
+            if (ancestor.getNodeType() == Node.DOCUMENT_NODE
+                    && ancestor instanceof org.exist.dom.memtree.DocumentImpl memDoc) {
+                return memNode.getOwnerDocument() == memDoc;
+            }
+            // Both are elements in the same (non-explicitly-created) document —
+            // verify ancestor's nodeNumber is actually an ancestor of node's
+            if (memNode.getOwnerDocument() == memAncestor.getOwnerDocument()) {
+                return isMemtreeAncestor(memNode, memAncestor);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Walk up the memtree parent chain using the internal parentNodeFor array,
+     * bypassing the isExplicitlyCreated check in NodeImpl.getParentNode().
+     */
+    private static boolean isMemtreeAncestor(final org.exist.dom.memtree.NodeImpl node,
+                                              final org.exist.dom.memtree.NodeImpl ancestor) {
+        final org.exist.dom.memtree.DocumentImpl doc = node.getOwnerDocument();
+        final int ancestorNum = ancestor.getNodeNumber();
+        int current = node.getNodeNumber();
+        while (current >= 0) {
+            if (current == ancestorNum) {
+                return true;
+            }
+            current = doc.getParentNodeFor(current);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
+    private static boolean nodesAreSame(final Node a, final Node b) {
+        // NOTE: intentional reference identity comparison
+        if (a == b) {
+            return true;
+        }
+        // memtree nodes: compare by document identity + nodeNumber
+        if (a instanceof final org.exist.dom.memtree.NodeImpl memA
+                && b instanceof final org.exist.dom.memtree.NodeImpl memB) {
+            return memA.getOwnerDocument() == memB.getOwnerDocument()
+                    && memA.getNodeNumber() == memB.getNodeNumber();
+        }
+        return false;
+    }
+
+    /**
+     * Check the PUL for conflicts per the W3C spec before applying.
+     *
+     * Checks:
+     * - XUDY0015: multiple renames on same node
+     * - XUDY0016: multiple replace-node on same node
+     * - XUDY0017: multiple replace-value on same node
+     * - XUDY0021: duplicate attribute names on an element after updates
+     * - XUDY0023: new namespace binding conflicts with existing binding on element
+     * - XUDY0024: new namespace bindings from different primitives conflict with each other
+     * - XUDY0031: multiple fn:put with same URI
+     *
+     * @throws XPathException if conflicting primitives are found
+     */
+    public void checkConflicts() throws XPathException {
+        // Track nodes that have been targeted by rename, replaceNode, replaceValue.
+        // Use nodeKey() string representation instead of Node identity because
+        // persistent StoredNode objects don't override equals()/hashCode(), so
+        // different wrapper objects for the same underlying node need to be
+        // detected as duplicates.
+        final Set<String> renameTargets = new HashSet<>();
+        final Set<String> replaceNodeTargets = new HashSet<>();
+        final Set<String> replaceValueTargets = new HashSet<>();
+        final Set<String> putUris = new HashSet<>();
+
+        for (final UpdatePrimitive p : primitives) {
+            final Expression expr = p.getSourceExpression();
+
+            switch (p.getType()) {
+                case RENAME -> {
+                    if (!renameTargets.add(nodeKey(p.getTargetNode()))) {
+                        throw new XPathException(expr, ErrorCodes.XUDY0015,
+                                "Multiple rename primitives applied to the same target node.");
+                    }
+                }
+                case REPLACE_NODE -> {
+                    if (!replaceNodeTargets.add(nodeKey(p.getTargetNode()))) {
+                        throw new XPathException(expr, ErrorCodes.XUDY0016,
+                                "Multiple replace node primitives applied to the same target node.");
+                    }
+                }
+                case REPLACE_VALUE -> {
+                    if (!replaceValueTargets.add(nodeKey(p.getTargetNode()))) {
+                        throw new XPathException(expr, ErrorCodes.XUDY0017,
+                                "Multiple replace value primitives applied to the same target node.");
+                    }
+                }
+                case PUT -> {
+                    if (!putUris.add(p.getUri())) {
+                        throw new XPathException(expr, ErrorCodes.XUDY0031,
+                                "Multiple fn:put primitives with the same URI: " + p.getUri());
+                    }
+                }
+                default -> {
+                    // other primitive types have no same-target compatibility constraint
+                }
+            }
+        }
+
+        // Check XUDY0021 (duplicate attributes), XUDY0023 (conflict with existing ns),
+        // and XUDY0024 (conflict between new ns bindings)
+        checkAttributeAndNamespaceConflicts();
+    }
+
+    /**
+     * For each element affected by attribute-modifying operations,
+     * compute the resulting attribute set and check for:
+     * - XUDY0021: duplicate attribute QNames
+     * - XUDY0023: new namespace binding conflicts with existing element namespace binding
+     * - XUDY0024: new namespace bindings from different operations conflict with each other
+     */
+    private void checkAttributeAndNamespaceConflicts() throws XPathException {
+        // Group attribute operations by target element, then check each
+        // affected element for attribute and namespace conflicts.
+        for (final ElementAttrState state : collectElementAttrStates().values()) {
+            checkDuplicateAttributes(state);
+            checkNamespaceConflicts(state);
+        }
+    }
+
+    /**
+     * Group attribute operations by target element.
+     * A string key is used for node identity because persistent DOM proxies
+     * may return different Java objects for the same underlying node.
+     */
+    private Map<String, ElementAttrState> collectElementAttrStates() throws XPathException {
+        final Map<String, ElementAttrState> elementStates = new LinkedHashMap<>();
+
+        for (final UpdatePrimitive p : primitives) {
+            switch (p.getType()) {
+                case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST -> {
+                    // Target is the element; content may include attributes
+                    final Node target = p.getTargetNode();
+                    if (target.getNodeType() == Node.ELEMENT_NODE) {
+                        final ElementAttrState state = getOrCreateState(elementStates, target);
+                        addContentAttributes(state, p);
+                    }
+                }
+                case INSERT_BEFORE, INSERT_AFTER -> {
+                    // For attribute insertion before/after, the target's parent is the element
+                    final Node target = p.getTargetNode();
+                    final Node parent = target.getNodeType() == Node.ATTRIBUTE_NODE
+                            ? ((Attr) target).getOwnerElement()
+                            : target.getParentNode();
+                    if (parent != null && parent.getNodeType() == Node.ELEMENT_NODE) {
+                        final ElementAttrState state = getOrCreateState(elementStates, parent);
+                        addContentAttributes(state, p);
+                    }
+                }
+                case INSERT_ATTRIBUTES -> {
+                    // Target is the element
+                    final Node target = p.getTargetNode();
+                    if (target.getNodeType() == Node.ELEMENT_NODE) {
+                        final ElementAttrState state = getOrCreateState(elementStates, target);
+                        addContentAttributes(state, p);
+                    }
+                }
+                case REPLACE_NODE -> {
+                    final Node target = p.getTargetNode();
+                    if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+                        final Node parent = ((Attr) target).getOwnerElement();
+                        if (parent != null) {
+                            final ElementAttrState state = getOrCreateState(elementStates, parent);
+                            // Mark the old attribute as removed
+                            state.removedAttrs.add(getExpandedName(target));
+                            // Add new attributes from the replacement content
+                            addContentAttributes(state, p);
+                        }
+                    }
+                }
+                case DELETE -> {
+                    final Node target = p.getTargetNode();
+                    if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+                        final Node parent = ((Attr) target).getOwnerElement();
+                        if (parent != null) {
+                            final ElementAttrState state = getOrCreateState(elementStates, parent);
+                            state.removedAttrs.add(getExpandedName(target));
+                        }
+                    }
+                }
+                case RENAME -> {
+                    final Node target = p.getTargetNode();
+                    final QName newName = p.getNewName();
+                    if (target.getNodeType() == Node.ATTRIBUTE_NODE && newName != null) {
+                        final Node parent = ((Attr) target).getOwnerElement();
+                        if (parent != null) {
+                            final ElementAttrState state = getOrCreateState(elementStates, parent);
+                            state.removedAttrs.add(getExpandedName(target));
+                            state.addedAttrs.add(new ExpandedName(
+                                    newName.getNamespaceURI() == null ? "" : newName.getNamespaceURI(),
+                                    newName.getLocalPart(),
+                                    newName.getPrefix() == null ? "" : newName.getPrefix()));
+                            addNamespaceBinding(state, newName.getPrefix(), newName.getNamespaceURI(), p);
+                        }
+                    } else if (target.getNodeType() == Node.ELEMENT_NODE && newName != null) {
+                        // Renaming an element also introduces a namespace binding
+                        final ElementAttrState state = getOrCreateState(elementStates, target);
+                        addNamespaceBinding(state, newName.getPrefix(), newName.getNamespaceURI(), p);
+                    }
+                }
+                default -> {
+                    // other primitive types do not affect attributes or namespace bindings
+                }
+            }
+        }
+
+        return elementStates;
+    }
+
+    /**
+     * XUDY0021: check that after applying all updates the element has no
+     * duplicate attribute QNames.
+     */
+    private static void checkDuplicateAttributes(final ElementAttrState state) throws XPathException {
+        // Build the final attribute set: existing attrs - removed + added
+        final Set<ExpandedName> finalAttrs = new HashSet<>();
+
+        // Add existing attributes
+        final org.w3c.dom.NamedNodeMap existingAttrs = state.elementNode.getAttributes();
+        if (existingAttrs != null) {
+            for (int i = 0; i < existingAttrs.getLength(); i++) {
+                final Node attr = existingAttrs.item(i);
+                // Skip xmlns declarations
+                if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                    continue;
+                }
+                final ExpandedName name = getExpandedName(attr);
+                if (!state.removedAttrs.contains(name)) {
+                    finalAttrs.add(name);
+                }
+            }
+        }
+
+        // Check added attributes for duplicates with existing and with each other
+        for (final ExpandedName addedName : state.addedAttrs) {
+            if (!finalAttrs.add(addedName)) {
+                // XUDY0021: duplicate attribute name
+                throw new XPathException(state.firstExpr, ErrorCodes.XUDY0021,
+                        "Duplicate attribute name after update: " +
+                                (addedName.prefix.isEmpty() ? "" : addedName.prefix + ":") +
+                                addedName.localName);
+            }
+        }
+    }
+
+    /**
+     * XUDY0023/XUDY0024: check the element's new namespace bindings against
+     * its existing in-scope bindings and against each other.
+     */
+    private static void checkNamespaceConflicts(final ElementAttrState state) throws XPathException {
+        // Collect existing in-scope namespace bindings for this element
+        final Map<String, String> existingNsBindings = collectInScopeNamespaces(state.elementNode);
+
+        // XUDY0023: check new bindings against existing bindings
+        for (final NsBinding binding : state.newNsBindings) {
+            if (isNonConflictingBinding(binding)) {
+                continue;
+            }
+            final String existingUri = existingNsBindings.get(binding.prefix);
+            if (existingUri != null && !existingUri.equals(binding.uri)) {
+                throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0023,
+                        "New namespace binding for prefix '" + binding.prefix +
+                                "' with URI '" + binding.uri +
+                                "' conflicts with existing binding to URI '" + existingUri + "'.");
+            }
+        }
+
+        // XUDY0024: check new bindings against each other
+        final Map<String, String> newBindingsMap = new HashMap<>();
+        for (final NsBinding binding : state.newNsBindings) {
+            if (isNonConflictingBinding(binding)) {
+                continue;
+            }
+            final String prevUri = newBindingsMap.put(binding.prefix, binding.uri);
+            if (prevUri != null && !prevUri.equals(binding.uri)) {
+                throw new XPathException(binding.expr.getSourceExpression(), ErrorCodes.XUDY0024,
+                        "Conflicting namespace bindings for prefix '" + binding.prefix +
+                                "': URI '" + prevUri + "' vs '" + binding.uri + "'.");
+            }
+        }
+    }
+
+    /**
+     * A binding with no prefix (default namespace) or no URI cannot conflict
+     * for attribute purposes.
+     */
+    private static boolean isNonConflictingBinding(final NsBinding binding) {
+        return binding.prefix == null || binding.prefix.isEmpty()
+                || binding.uri == null || binding.uri.isEmpty();
+    }
+
+    /**
+     * State tracking for attribute/namespace changes to a single element.
+     */
+    private static class ElementAttrState {
+        final Node elementNode;
+        final Set<ExpandedName> removedAttrs = new HashSet<>();
+        final List<ExpandedName> addedAttrs = new ArrayList<>();
+        final List<NsBinding> newNsBindings = new ArrayList<>();
+        Expression firstExpr;
+
+        ElementAttrState(final Node elementNode) {
+            this.elementNode = elementNode;
+        }
+    }
+
+    /**
+     * A namespace prefix-to-URI binding introduced by an update primitive.
+     */
+    private static class NsBinding {
+        final String prefix;
+        final String uri;
+        final UpdatePrimitive expr;
+
+        NsBinding(final String prefix, final String uri, final UpdatePrimitive expr) {
+            this.prefix = prefix;
+            this.uri = uri;
+            this.expr = expr;
+        }
+    }
+
+    /**
+     * Expanded name (namespace URI + local name) for attribute identity.
+     */
+    private static class ExpandedName {
+        final String namespaceURI;
+        final String localName;
+        final String prefix;
+
+        ExpandedName(final String namespaceURI, final String localName, final String prefix) {
+            this.namespaceURI = namespaceURI == null ? "" : namespaceURI;
+            this.localName = localName;
+            this.prefix = prefix == null ? "" : prefix;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (o instanceof final ExpandedName that) {
+                return namespaceURI.equals(that.namespaceURI) && localName.equals(that.localName);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(namespaceURI, localName);
+        }
+    }
+
+    private ElementAttrState getOrCreateState(final Map<String, ElementAttrState> states, final Node element) {
+        return states.computeIfAbsent(nodeKey(element), k -> new ElementAttrState(element));
+    }
+
+    /**
+     * Create a stable identity key for a DOM node that works for both
+     * in-memory (memtree) and persistent nodes.
+     * Both may create different Java objects for the same underlying node,
+     * so we can't rely on object identity.
+     */
+    private static String nodeKey(final Node node) {
+        return switch (node) {
+            case final org.exist.dom.memtree.NodeImpl memNode ->
+                    "mem:" + System.identityHashCode(memNode.getOwnerDocument()) + ":" + memNode.getNodeNumber();
+            case final IStoredNode<?> storedNode ->
+                    "db:" + storedNode.getOwnerDocument().getDocId() + ":" + storedNode.getNodeId();
+            case final NodeProxy proxy ->
+                    "db:" + proxy.getOwnerDocument().getDocId() + ":" + proxy.getNodeId();
+            // Fallback: use identity hash
+            case null, default -> "id:" + System.identityHashCode(node);
+        };
+    }
+
+    private static ExpandedName getExpandedName(final Node node) {
+        return new ExpandedName(
+                node.getNamespaceURI(),
+                node.getLocalName() != null ? node.getLocalName() : node.getNodeName(),
+                node.getPrefix());
+    }
+
+    /**
+     * Extract attribute nodes from the content sequence of an update primitive
+     * and add them to the element state.
+     */
+    private void addContentAttributes(final ElementAttrState state, final UpdatePrimitive p) throws XPathException {
+        if (state.firstExpr == null) {
+            state.firstExpr = p.getSourceExpression();
+        }
+        final Sequence content = p.getContent();
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+        for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (Type.subTypeOf(item.getType(), Type.ATTRIBUTE)) {
+                final Node attrNode = ((NodeValue) item).getNode();
+                final ExpandedName name = getExpandedName(attrNode);
+                state.addedAttrs.add(name);
+                addNamespaceBinding(state,
+                        attrNode.getPrefix(),
+                        attrNode.getNamespaceURI(),
+                        p);
+            } else if (Type.subTypeOf(item.getType(), Type.ELEMENT)) {
+                // Collect namespace bindings from the inserted element subtree.
+                // These must be checked against the target's in-scope namespaces
+                // for XUDY0023 (namespace propagation conflicts).
+                final Node elemNode = ((NodeValue) item).getNode();
+                collectElementNamespaceBindings(elemNode, state, p);
+            }
+        }
+    }
+
+    /**
+     * Collect namespace bindings from the top level of an inserted element for XUDY0023 checking.
+     * Only the root element's bindings are collected — descendants with their own re-declarations
+     * are handled by upd:propagateNamespace at each level individually.
+     */
+    private static void collectElementNamespaceBindings(final Node node, final ElementAttrState state,
+                                                         final UpdatePrimitive p) {
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            return;
+        }
+        // Element's own namespace
+        addNamespaceBinding(state, node.getPrefix(), node.getNamespaceURI(), p);
+
+        // Namespace declarations on this element
+        if (node instanceof org.exist.dom.memtree.ElementImpl memElem) {
+            final Map<String, String> nsMap = memElem.getNamespaceMap();
+            for (final Map.Entry<String, String> e : nsMap.entrySet()) {
+                addNamespaceBinding(state, e.getKey(), e.getValue(), p);
+            }
+        }
+
+        // Namespace bindings from attributes
+        final org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
+        if (attrs != null) {
+            for (int i = 0; i < attrs.getLength(); i++) {
+                final Node attr = attrs.item(i);
+                if (!XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                    addNamespaceBinding(state, attr.getPrefix(), attr.getNamespaceURI(), p);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a namespace binding to the element state if the prefix is non-empty and URI is non-empty.
+     */
+    private static void addNamespaceBinding(final ElementAttrState state,
+                                            final String prefix, final String uri,
+                                            final UpdatePrimitive p) {
+        if (prefix != null && !prefix.isEmpty() && uri != null && !uri.isEmpty()) {
+            state.newNsBindings.add(new NsBinding(prefix, uri, p));
+        }
+    }
+
+    /**
+     * Collect the in-scope namespace bindings for an element node.
+     */
+    private static Map<String, String> collectInScopeNamespaces(final Node element) {
+        final Map<String, String> nsBindings = new HashMap<>();
+
+        // Walk up the ancestor chain to collect inherited namespace bindings
+        Node current = element;
+        while (current != null && current.getNodeType() == Node.ELEMENT_NODE) {
+            // Check element's own namespace
+            final String nsUri = current.getNamespaceURI();
+            final String prefix = current.getPrefix();
+            if (nsUri != null && !nsUri.isEmpty()) {
+                final String p = prefix == null ? "" : prefix;
+                nsBindings.putIfAbsent(p, nsUri);
+            }
+
+            // Check namespace declarations on this element
+            switch (current) {
+                case final org.exist.dom.memtree.ElementImpl memElem -> {
+                    final Map<String, String> map = new LinkedHashMap<>();
+                    memElem.getNamespaceMap(map);
+                    for (final Map.Entry<String, String> e : map.entrySet()) {
+                        nsBindings.putIfAbsent(e.getKey(), e.getValue());
+                    }
+                }
+                case final ElementImpl elemImpl -> {
+                    if (elemImpl.declaresNamespacePrefixes()) {
+                        for (final Iterator<String> iter = elemImpl.getPrefixes(); iter.hasNext(); ) {
+                            final String p = iter.next();
+                            nsBindings.putIfAbsent(p, elemImpl.getNamespaceForPrefix(p));
+                        }
+                    }
+                }
+                default -> {
+                    // Generic DOM: check attributes for xmlns declarations
+                    final org.w3c.dom.NamedNodeMap attrs = current.getAttributes();
+                    if (attrs != null) {
+                        for (int i = 0; i < attrs.getLength(); i++) {
+                            final Node attr = attrs.item(i);
+                            if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                                final String attrLocal = attr.getLocalName();
+                                final String p = XMLConstants.XMLNS_ATTRIBUTE.equals(attrLocal) ? "" : attrLocal;
+                                nsBindings.putIfAbsent(p, attr.getNodeValue());
+                            }
+                        }
+                    }
+                }
+            }
+
+            current = current.getParentNode();
+        }
+
+        return nsBindings;
+    }
+
+    /**
+     * Apply all accumulated update primitives.
+     *
+     * The W3C spec defines a specific application order:
+     * 1. Insert before/after/into (merging compatible inserts)
+     * 2. Rename
+     * 3. Replace value
+     * 4. Replace node
+     * 5. Delete
+     * 6. Put
+     *
+     * This method handles both persistent and in-memory nodes.
+     *
+     * @param context the XQuery context
+     * @throws XPathException on update errors
+     */
+    public void apply(final XQueryContext context) throws XPathException {
+        if (primitives.isEmpty()) {
+            return;
+        }
+
+        checkConflicts();
+
+        // Separate into persistent and in-memory primitives
+        final List<UpdatePrimitive> persistentPrimitives = new ArrayList<>();
+        final List<UpdatePrimitive> inMemoryPrimitives = new ArrayList<>();
+
+        for (final UpdatePrimitive p : primitives) {
+            if (p.getType() == UpdatePrimitive.Type.DELETE && p.getTargetNode().getNodeType() == Node.DOCUMENT_NODE) {
+                // upd:delete of a parentless node, such as a document node, leaves the XDM instance unchanged
+                continue;
+            }
+            // fn:put stores to the database whatever node it puts, so it goes with the persistent
+            // primitives, which are applied after the in-memory ones: it stores the node as updated
+            if (p.getType() == UpdatePrimitive.Type.PUT || isPersistentNode(p.getTargetNode())) {
+                persistentPrimitives.add(p);
+            } else {
+                inMemoryPrimitives.add(p);
+            }
+        }
+
+        // Apply in-memory updates (for copy-modify)
+        if (!inMemoryPrimitives.isEmpty()) {
+            applyInMemory(inMemoryPrimitives);
+        }
+
+        // Apply persistent updates
+        if (!persistentPrimitives.isEmpty()) {
+            applyPersistent(context, persistentPrimitives);
+        }
+    }
+
+    /**
+     * Apply updates to in-memory nodes (used in copy-modify expressions).
+     *
+     * <p>W3C XQuery Update Facility 3.0, upd:applyUpdates, in this order:</p>
+     * <ol>
+     *     <li>upd:insertInto, upd:insertAttributes, upd:replaceValue (not of an element), upd:rename</li>
+     *     <li>upd:insertBefore, upd:insertAfter, upd:insertIntoAsFirst, upd:insertIntoAsLast</li>
+     *     <li>upd:replaceNode</li>
+     *     <li>upd:replaceElementContent (replace value of an element)</li>
+     *     <li>upd:delete</li>
+     * </ol>
+     *
+     * <p>Each primitive applies to the node it was created for, whatever the primitives before
+     * it did to the tree: see {@link InMemoryTargets}.</p>
+     */
+    private void applyInMemory(final List<UpdatePrimitive> prims) throws XPathException {
+        final PhasePartition partition = partitionByPhase(prims);
+
+        // decided on the tree as the query saw it, before anything is applied
+        final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
+        final Set<UpdatePrimitive> skipped = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (final UpdatePrimitive p : partition.inserts) {
+            if (isRedundantInsert(p, replaceElementContentTargets)) {
+                skipped.add(p);
+            }
+        }
+        for (final UpdatePrimitive p : partition.replaceNodes) {
+            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                skipped.add(p);
+            }
+        }
+        for (final UpdatePrimitive p : partition.deletes) {
+            if (isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                skipped.add(p);
+            }
+        }
+
+        final InMemoryTargets targets = new InMemoryTargets(prims);
+        final Map<UpdatePrimitive, Sequence> contents = targets.copyContentOfUpdatedDocuments(prims);
+
+        final List<UpdatePrimitive> phase1 = new ArrayList<>();
+        final List<UpdatePrimitive> phase2 = new ArrayList<>();
+        partition.inserts.sort(Comparator.comparingInt(p -> insertPriority(p.getType())));
+        for (final UpdatePrimitive p : partition.inserts) {
+            if (p.getType() == UpdatePrimitive.Type.INSERT_INTO || p.getType() == UpdatePrimitive.Type.INSERT_ATTRIBUTES) {
+                phase1.add(p);
+            } else {
+                phase2.add(p);
+            }
+        }
+        phase1.addAll(partition.renames);
+        phase1.addAll(partition.replaceValues);
+        // deletes in reverse order, as they have always been applied
+        final List<UpdatePrimitive> deletes = new ArrayList<>(partition.deletes);
+        Collections.reverse(deletes);
+
+        try {
+            for (final List<UpdatePrimitive> phase : List.of(phase1, phase2, partition.replaceNodes,
+                    partition.replaceElementContents, deletes)) {
+                for (final UpdatePrimitive p : phase) {
+                    if (skipped.contains(p)) {
+                        continue;
+                    }
+                    final org.exist.dom.memtree.NodeImpl target = targets.current(p);
+                    if (target == null) {
+                        // an earlier primitive removed the target from the tree: nothing to do
+                        continue;
+                    }
+                    applyInMemoryPrimitive(p, target, contents.getOrDefault(p, p.getContent()));
+                    if (changesStructure(p)) {
+                        targets.renumber(getDocument(target));
+                    }
+                }
+            }
+        } finally {
+            targets.finish();
+        }
+
+        // Per W3C spec: after applying all updates, merge adjacent text nodes and remove empty text nodes.
+        mergeAndCompactAffectedDocuments(prims);
+    }
+
+    private void applyInMemoryPrimitive(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target,
+            final Sequence content) throws XPathException {
+        switch (p.getType()) {
+            case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST, INSERT_BEFORE, INSERT_AFTER,
+                 INSERT_ATTRIBUTES -> applyInMemoryInsert(p.getType(), target, content);
+            case RENAME -> applyInMemoryRename(p, target);
+            case REPLACE_VALUE -> applyInMemoryReplaceValue(p, target);
+            case REPLACE_NODE -> applyInMemoryReplaceNode(target, content);
+            case DELETE -> applyInMemoryDelete(target);
+            default -> {
+                // fn:put is applied with the persistent primitives
+            }
+        }
+    }
+
+    /**
+     * Whether applying a primitive can leave the tree out of document order, so that the targets
+     * of the primitives after it must be looked up again. A rename or a replace value of a
+     * non-element changes a node in place. A delete marks nodes as deleted but moves none, so
+     * the deletes of the last phase can follow each other.
+     */
+    private static boolean changesStructure(final UpdatePrimitive p) {
+        return switch (p.getType()) {
+            case RENAME, DELETE -> false;
+            case REPLACE_VALUE -> p.getTargetNode().getNodeType() == Node.ELEMENT_NODE;
+            default -> true;
+        };
+    }
+
+    /**
+     * The node each in-memory primitive applies to. In-memory mutations append new nodes to the
+     * end of a document's arrays, and much of the navigation assumes nodes are in document order,
+     * so after a primitive changes a document's structure, the document is renumbered
+     * ({@link org.exist.dom.memtree.DocumentImpl#renumber()}) and the targets of the primitives
+     * still to be applied are followed to their new node numbers. Attributes are followed by the
+     * identity {@link org.exist.dom.memtree.DocumentImpl#trackAttributes()} gives them, since
+     * inserting and removing attributes shifts the attribute arrays.
+     */
+    private static final class InMemoryTargets {
+        private final Map<UpdatePrimitive, int[]> numbers = new IdentityHashMap<>();
+        private final Map<UpdatePrimitive, org.exist.dom.memtree.DocumentImpl> documents = new IdentityHashMap<>();
+        private final Set<org.exist.dom.memtree.DocumentImpl> updated = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        InMemoryTargets(final List<UpdatePrimitive> prims) {
+            for (final UpdatePrimitive p : prims) {
+                final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+                final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+                documents.put(p, doc);
+                numbers.put(p, new int[] { target.getNodeNumber() });
+                if (updated.add(doc)) {
+                    doc.trackAttributes();
+                }
+            }
+        }
+
+        /**
+         * @return the primitive's target as the tree is now, or null if it is no longer in the tree
+         */
+        @Nullable org.exist.dom.memtree.NodeImpl current(final UpdatePrimitive p) {
+            final org.exist.dom.memtree.DocumentImpl doc = documents.get(p);
+            final int number = numbers.get(p)[0];
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                final int attr = doc.trackedAttribute(number);
+                return attr < 0 ? null : new org.exist.dom.memtree.AttrImpl(p.getSourceExpression(), doc, attr);
+            }
+            // a node deleted by an earlier delete keeps its number, marked as deleted
+            return number < 0 || doc.getNodeType(number) == -1 ? null : doc.getNode(number);
+        }
+
+        void renumber(final org.exist.dom.memtree.DocumentImpl doc) {
+            final org.exist.dom.memtree.DocumentImpl.Renumbering renumbering = doc.renumber();
+            for (final Map.Entry<UpdatePrimitive, int[]> e : numbers.entrySet()) {
+                if (documents.get(e.getKey()) == doc && e.getKey().getTargetNode().getNodeType() != Node.ATTRIBUTE_NODE) {
+                    e.getValue()[0] = renumbering.node(e.getValue()[0]);
+                }
+            }
+        }
+
+        /**
+         * Insertion and replacement content taken from a document that is being updated would be
+         * read through node numbers that renumbering changes. Such content is copied first, which
+         * is what XQUF does with it anyway: primitives insert copies of their content.
+         */
+        Map<UpdatePrimitive, Sequence> copyContentOfUpdatedDocuments(final List<UpdatePrimitive> prims) throws XPathException {
+            final Map<UpdatePrimitive, Sequence> copies = new IdentityHashMap<>();
+            for (final UpdatePrimitive p : prims) {
+                final Sequence content = p.getContent();
+                if (content == null || content.isEmpty() || !containsNodeOf(content, updated)) {
+                    continue;
+                }
+                final ValueSequence copy = new ValueSequence();
+                for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                    final Item item = i.nextItem();
+                    if (item instanceof final org.exist.dom.memtree.NodeImpl node && updated.contains(getDocument(node))) {
+                        copy.add(copyNode(node));
+                    } else {
+                        copy.add(item);
+                    }
+                }
+                copies.put(p, copy);
+            }
+            return copies;
+        }
+
+        private static boolean containsNodeOf(final Sequence content, final Set<org.exist.dom.memtree.DocumentImpl> docs)
+                throws XPathException {
+            for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                if (i.nextItem() instanceof final org.exist.dom.memtree.NodeImpl node && docs.contains(getDocument(node))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static org.exist.dom.memtree.NodeImpl copyNode(final org.exist.dom.memtree.NodeImpl node) throws XPathException {
+            final MemTreeBuilder builder = new MemTreeBuilder(node.getExpression());
+            builder.startDocument();
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                final org.exist.dom.memtree.AttrImpl attr = (org.exist.dom.memtree.AttrImpl) node;
+                builder.addAttribute(attr.getQName(), attr.getValue());
+                builder.endDocument();
+                return builder.getDocument().getLastAttr();
+            }
+            final boolean isDocument = node instanceof org.exist.dom.memtree.DocumentImpl;
+            try {
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(node.getExpression(), builder, true);
+                if (isDocument) {
+                    // inserting a document node inserts its children
+                    for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+                        getDocument(node).copyTo((org.exist.dom.memtree.NodeImpl) child, receiver);
+                    }
+                } else {
+                    getDocument(node).copyTo(node, receiver);
+                }
+            } catch (final SAXException e) {
+                throw new XPathException(node.getExpression(), e.getMessage(), e);
+            }
+            builder.endDocument();
+            return isDocument ? builder.getDocument() : builder.getDocument().getNode(1);
+        }
+
+        void finish() {
+            for (final org.exist.dom.memtree.DocumentImpl doc : updated) {
+                doc.stopTrackingAttributes();
+            }
+        }
+    }
+
+    /**
+     * An insert into an element is redundant when that element's content is
+     * replaced wholesale by a replaceElementContent primitive.
+     */
+    private boolean isRedundantInsert(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
+        if (replaceElementContentTargets.isEmpty()) {
+            return false;
+        }
+        final Node insertTarget = p.getTargetNode();
+        final boolean isInsertIntoElement =
+                (p.getType() == UpdatePrimitive.Type.INSERT_INTO ||
+                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST ||
+                 p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST) &&
+                insertTarget.getNodeType() == Node.ELEMENT_NODE;
+        return isInsertIntoElement && replaceElementContentTargets.contains(nodeKey(insertTarget));
+    }
+
+    /**
+     * Whether a primitive's target is a child of an element whose content a replaceElementContent
+     * primitive replaces. Phase 4 has then already detached the target, so replacing or deleting
+     * it has no effect (upd:delete of a parentless node is a no-op) and must not be applied to
+     * whatever now occupies its place. Attributes are not children and are never superseded:
+     * replace value of an element leaves its attributes alone.
+     */
+    private boolean isSupersededByReplaceElementContent(final UpdatePrimitive p, final Set<String> replaceElementContentTargets) {
+        if (replaceElementContentTargets.isEmpty()) {
+            return false;
+        }
+        final Node target = p.getTargetNode();
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return false;
+        }
+        final Node parent = target.getParentNode();
+        return parent != null && parent.getNodeType() == Node.ELEMENT_NODE
+                && replaceElementContentTargets.contains(nodeKey(parent));
+    }
+
+    /**
+     * Per W3C XQuery Update Facility spec: after applying all updates, merge
+     * adjacent text nodes, and compact documents whose tree structure changed.
+     */
+    private void mergeAndCompactAffectedDocuments(final List<UpdatePrimitive> prims) {
+        final Set<org.exist.dom.memtree.DocumentImpl> affectedDocs = new HashSet<>();
+        final Set<org.exist.dom.memtree.DocumentImpl> structurallyChanged = new HashSet<>();
+        for (final UpdatePrimitive p : prims) {
+            final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
+            final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+            affectedDocs.add(doc);
+            // Inserts, deletes, replaceNode, and replaceElementContent on elements
+            // change tree structure. replaceValue on element nodes may call insertChildren
+            // to add text nodes, which appends to the flat array and requires compact().
+            if (p.getType() != UpdatePrimitive.Type.RENAME
+                    && !(p.getType() == UpdatePrimitive.Type.REPLACE_VALUE
+                         && p.getTargetNode().getNodeType() != Node.ELEMENT_NODE)) {
+                structurallyChanged.add(doc);
+            }
+        }
+        for (final org.exist.dom.memtree.DocumentImpl doc : affectedDocs) {
+            doc.mergeAdjacentTextNodes();
+            // Only compact documents with structural changes — compact rebuilds
+            // the tree from scratch and would lose standalone attributes/nodes
+            // that aren't children of the document node.
+            if (structurallyChanged.contains(doc)) {
+                doc.compact();
+            }
+        }
+    }
+
+    private void applyInMemoryInsert(final UpdatePrimitive.Type type, final org.exist.dom.memtree.NodeImpl target,
+            final Sequence content) throws XPathException {
+        final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+
+        switch (type) {
+            case INSERT_INTO, INSERT_INTO_AS_LAST -> doc.insertChildren(target.getNodeNumber(), content, false);
+            case INSERT_INTO_AS_FIRST -> doc.insertChildren(target.getNodeNumber(), content, true);
+            case INSERT_BEFORE -> doc.insertSiblings(target.getNodeNumber(), content, true);
+            case INSERT_AFTER -> doc.insertSiblings(target.getNodeNumber(), content, false);
+            case INSERT_ATTRIBUTES -> doc.insertAttributes(target.getNodeNumber(), content, false);
+            default -> {
+                // not an insert primitive
+            }
+        }
+    }
+
+    /**
+     * Validate content constraints for node values per the XML specification.
+     * Called during PUL application for replace value of node.
+     *
+     * @param nodeType the type of the target node
+     * @param value the new value to validate
+     * @param expr the source expression for error reporting
+     * @throws XPathException if the value violates XML constraints
+     */
+    private static void validateNodeContent(final short nodeType, final String value,
+                                            final Expression expr) throws XPathException {
+        switch (nodeType) {
+            case Node.COMMENT_NODE -> {
+                // XML spec: comment content must not contain "--" or end with "-"
+                if (value.contains("--") || value.endsWith("-")) {
+                    throw new XPathException(expr, ErrorCodes.XQDY0072,
+                            "Comment content must not contain '--' or end with '-'.");
+                }
+            }
+            case Node.PROCESSING_INSTRUCTION_NODE -> {
+                // XML spec: PI content must not contain "?>"
+                if (value.contains("?>")) {
+                    throw new XPathException(expr, ErrorCodes.XQDY0026,
+                            "Processing instruction content must not contain '?>'.");
+                }
+            }
+            default -> {
+                // other node kinds have no content constraints
+            }
+        }
+    }
+
+    /**
+     * Atomize a sequence and join the resulting string values with a single space.
+     * Per W3C XQuery Update Facility spec Section 2.4.4:
+     * "The string value is computed by atomizing the expression and joining
+     * the resulting values with a single space separator."
+     */
+    public static String atomizeAndJoin(final Sequence content) throws XPathException {
+        if (content == null || content.isEmpty()) {
+            return "";
+        }
+        if (content.getItemCount() == 1) {
+            return content.itemAt(0).atomize().getStringValue();
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (final SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(i.nextItem().atomize().getStringValue());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Get the memtree DocumentImpl for a node. Handles the case where the node
+     * IS the document node (getOwnerDocument() returns null for document nodes).
+     */
+    private static org.exist.dom.memtree.DocumentImpl getDocument(final org.exist.dom.memtree.NodeImpl node) {
+        if (node instanceof final org.exist.dom.memtree.DocumentImpl doc) {
+            return doc;
+        }
+        return node.getOwnerDocument();
+    }
+
+    private void applyInMemoryRename(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target) {
+        final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            // For attribute nodes, getNodeNumber() returns an index into the attr arrays
+            doc.renameAttribute(target.getNodeNumber(), p.getNewName());
+        } else {
+            doc.renameNode(target.getNodeNumber(), p.getNewName());
+        }
+    }
+
+    private void applyInMemoryReplaceValue(final UpdatePrimitive p, final org.exist.dom.memtree.NodeImpl target)
+            throws XPathException {
+        final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+        // Per W3C spec: atomize content, join with single space separator
+        final String value = atomizeAndJoin(p.getContent());
+
+        // Validate content constraints per XML spec
+        validateNodeContent(target.getNodeType(), value, p.getSourceExpression());
+
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            // For attribute nodes, getNodeNumber() returns an index into the attr arrays
+            doc.replaceAttributeValue(target.getNodeNumber(), value);
+        } else {
+            doc.replaceValue(target.getNodeNumber(), value);
+        }
+    }
+
+    private void applyInMemoryReplaceNode(final org.exist.dom.memtree.NodeImpl target, final Sequence content)
+            throws XPathException {
+        final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            final int parentElementNum = ((org.exist.dom.memtree.NodeImpl) ((Attr) target).getOwnerElement()).getNodeNumber();
+            doc.removeAttribute(target.getNodeNumber());
+            if (content != null && !content.isEmpty()) {
+                doc.insertAttributes(parentElementNum, content, false);
+            }
+        } else {
+            doc.replaceNode(target.getNodeNumber(), content);
+        }
+    }
+
+    private void applyInMemoryDelete(final org.exist.dom.memtree.NodeImpl target) {
+        if (target instanceof org.exist.dom.memtree.DocumentImpl) {
+            // Per W3C spec, deleting a parentless node (document node) is a no-op
+            return;
+        }
+        final org.exist.dom.memtree.DocumentImpl doc = target.getOwnerDocument();
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
+            doc.removeAttribute(target.getNodeNumber());
+        } else {
+            doc.removeNode(target.getNodeNumber());
+        }
+    }
+
+    /**
+     * Apply updates to persistent (stored) database nodes.
+     * Follows locking and transaction patterns from existing Modification class.
+     */
+    private void applyPersistent(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
+        final DBBroker broker = context.getBroker();
+        final MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
+        final Int2ObjectMap<DocumentTrigger> triggers = new Int2ObjectOpenHashMap<>();
+
+        // Collect all affected documents
+        final Set<DocumentImpl> affectedDocs = new LinkedHashSet<>();
+        for (final UpdatePrimitive p : prims) {
+            final Node node = p.getTargetNode();
+            if (node instanceof final StoredNode<?> storedNode) {
+                affectedDocs.add(storedNode.getOwnerDocument());
+            }
+        }
+
+        ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks = null;
+
+        try {
+            // Acquire global update lock and then document-level write locks
+            final java.util.concurrent.locks.Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+            globalLock.lock();
+            try {
+                final DefaultDocumentSet docSet = new DefaultDocumentSet();
+                for (final DocumentImpl doc : affectedDocs) {
+                    docSet.add(doc);
+                }
+                lockedDocumentsLocks = docSet.lock(broker, true);
+
+                // Prepare triggers
+                for (final DocumentImpl doc : affectedDocs) {
+                    prepareTrigger(broker, triggers, doc);
+                }
+            } finally {
+                globalLock.unlock();
+            }
+
+            // Apply within a transaction
+            try (final Txn transaction = broker.continueOrBeginTransaction()) {
+
+                applyPersistentPrimitives(context, broker, transaction, prims, modifiedDocuments, triggers);
+
+                transaction.commit();
+            } catch (final TriggerException | org.exist.storage.txn.TransactionException e) {
+                throw new XPathException((Expression) null, e.getMessage(), e);
+            }
+
+        } catch (final LockException | TriggerException e) {
+            throw new XPathException((Expression) null, e.getMessage(), e);
+        } finally {
+            if (lockedDocumentsLocks != null) {
+                lockedDocumentsLocks.close();
+            }
+        }
+    }
+
+
+    /**
+     * Partition the primitives by type and apply them in W3C application
+     * order within the given transaction, then store modified documents and
+     * finish triggers.
+     */
+    private void applyPersistentPrimitives(final XQueryContext context, final DBBroker broker,
+            final Txn transaction, final List<UpdatePrimitive> prims,
+            final MutableDocumentSet modifiedDocuments, final Int2ObjectMap<DocumentTrigger> triggers)
+            throws XPathException, TriggerException {
+        // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
+        // Phase 1: inserts, replaceValue (non-element), renames
+        // Phase 3: replaceNode
+        // Phase 4: replaceElementContent (replaceValue on elements)
+        // Phase 5: deletes
+        // Phase 6: puts
+        final PhasePartition partition = partitionByPhase(prims);
+        final Set<String> replaceElementContentTargets = partition.replaceElementContentTargets();
+        final Map<DocumentImpl, Set<NodeId>> touchedElements = touchedElements(prims);
+        final Set<String> replacedTargets = new HashSet<>();
+        for (final UpdatePrimitive p : partition.replaceNodes) {
+            replacedTargets.add(nodeKey(p.getTargetNode()));
+        }
+
+        applyPersistentInserts(context, transaction, partition.inserts, replaceElementContentTargets, modifiedDocuments);
+        for (final UpdatePrimitive p : partition.renames) {
+            applyPersistentRename(context, transaction, p, modifiedDocuments);
+        }
+        for (final UpdatePrimitive p : partition.replaceValues) {
+            applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
+        }
+        // Phase 3: replaceNode — skip if the target's parent is targeted by
+        // replaceElementContent (which will replace ALL children anyway)
+        applyPersistentReplaceNodes(context, transaction, partition.replaceNodes, replaceElementContentTargets, modifiedDocuments);
+        // Phase 4: replaceElementContent (after replaceNode)
+        for (final UpdatePrimitive p : partition.replaceElementContents) {
+            applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
+        }
+        // Delete in reverse document order, skipping those Phase 4 superseded, and those whose target
+        // Phase 3 replaced: replaceChild gives the replacement the old node's id, so deleting by id
+        // would remove the replacement instead of doing nothing to the (now parentless) target
+        for (int i = partition.deletes.size() - 1; i >= 0; i--) {
+            final UpdatePrimitive p = partition.deletes.get(i);
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)
+                    && !replacedTargets.contains(nodeKey(p.getTargetNode()))) {
+                applyPersistentDelete(context, transaction, p, modifiedDocuments);
+            }
+        }
+        for (final UpdatePrimitive p : partition.puts) {
+            applyPersistentPut(context, transaction, p);
+        }
+
+        normalizeTextNodes(transaction, touchedElements, modifiedDocuments);
+
+        storeModifiedAndFinishTriggers(context, broker, transaction, modifiedDocuments, triggers);
+    }
+
+    /**
+     * Apply insert primitives, skipping non-attribute inserts into elements
+     * whose content will be replaced wholesale.
+     */
+    private void applyPersistentInserts(final XQueryContext context, final Txn transaction,
+            final List<UpdatePrimitive> inserts, final Set<String> replaceElementContentTargets,
+            final MutableDocumentSet modifiedDocuments) throws XPathException {
+        // Same W3C order as the in-memory path: as first, then before/after/attributes/into, then as last
+        inserts.sort((a, b) -> Integer.compare(insertPriority(a.getType()), insertPriority(b.getType())));
+        for (final UpdatePrimitive p : inserts) {
+            if (!isRedundantInsert(p, replaceElementContentTargets)) {
+                applyPersistentInsert(context, transaction, p, modifiedDocuments);
+            }
+        }
+    }
+
+    /**
+     * Apply replaceNode primitives, skipping targets whose parent element is
+     * subject to replaceElementContent.
+     */
+    private void applyPersistentReplaceNodes(final XQueryContext context, final Txn transaction,
+            final List<UpdatePrimitive> replaceNodes, final Set<String> replaceElementContentTargets,
+            final MutableDocumentSet modifiedDocuments) throws XPathException {
+        for (final UpdatePrimitive p : replaceNodes) {
+            if (!isSupersededByReplaceElementContent(p, replaceElementContentTargets)) {
+                applyPersistentReplaceNode(context, transaction, p, modifiedDocuments);
+            }
+        }
+    }
+
+    /**
+     * Update primitives partitioned by their W3C application phase.
+     */
+    private static final class PhasePartition {
+        final List<UpdatePrimitive> inserts = new ArrayList<>();
+        final List<UpdatePrimitive> renames = new ArrayList<>();
+        final List<UpdatePrimitive> replaceValues = new ArrayList<>();
+        final List<UpdatePrimitive> replaceElementContents = new ArrayList<>();
+        final List<UpdatePrimitive> replaceNodes = new ArrayList<>();
+        final List<UpdatePrimitive> deletes = new ArrayList<>();
+        final List<UpdatePrimitive> puts = new ArrayList<>();
+
+        /**
+         * Collect the elements targeted by replaceElementContent — per W3C spec,
+         * replaceElementContent replaces ALL children, so inserts into these
+         * elements and replaceNode of their children are redundant.
+         *
+         * @return the node keys of the targeted elements
+         */
+        Set<String> replaceElementContentTargets() {
+            final Set<String> targets = new HashSet<>();
+            for (final UpdatePrimitive p : replaceElementContents) {
+                targets.add(nodeKey(p.getTargetNode()));
+            }
+            return targets;
+        }
+    }
+
+    /**
+     * Partition primitives by the W3C application phase they belong to.
+     * REPLACE_VALUE on elements is replaceElementContent (Phase 4); on other
+     * node kinds it is replaceValue (Phase 1).
+     */
+    private static PhasePartition partitionByPhase(final List<UpdatePrimitive> prims) {
+        final PhasePartition partition = new PhasePartition();
+        for (final UpdatePrimitive p : prims) {
+            switch (p.getType()) {
+                case INSERT_INTO, INSERT_INTO_AS_FIRST, INSERT_INTO_AS_LAST,
+                     INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES -> partition.inserts.add(p);
+                case RENAME -> partition.renames.add(p);
+                case REPLACE_VALUE -> {
+                    if (p.getTargetNode().getNodeType() == Node.ELEMENT_NODE) {
+                        partition.replaceElementContents.add(p);
+                    } else {
+                        partition.replaceValues.add(p);
+                    }
+                }
+                case REPLACE_NODE -> partition.replaceNodes.add(p);
+                case DELETE -> partition.deletes.add(p);
+                case PUT -> partition.puts.add(p);
+                default -> {
+                    // no other primitive types exist
+                }
+            }
+        }
+        return partition;
+    }
+
+    /**
+     * The stored elements whose children the primitives change: the target of an insert into or a
+     * replace value of an element, otherwise the target's parent. Recorded by node id before any
+     * primitive is applied, and looked up again afterwards.
+     */
+    private static Map<DocumentImpl, Set<NodeId>> touchedElements(final List<UpdatePrimitive> prims) {
+        final Map<DocumentImpl, Set<NodeId>> touched = new HashMap<>();
+        for (final UpdatePrimitive p : prims) {
+            if (p.getTargetNode() instanceof final StoredNode<?> target) {
+                final boolean onChildren = target.getNodeType() == Node.ELEMENT_NODE
+                        && (p.getType() == UpdatePrimitive.Type.INSERT_INTO
+                            || p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_FIRST
+                            || p.getType() == UpdatePrimitive.Type.INSERT_INTO_AS_LAST
+                            || p.getType() == UpdatePrimitive.Type.REPLACE_VALUE);
+                final NodeId id = onChildren ? target.getNodeId() : target.getNodeId().getParentId();
+                if (id != null && !NodeId.DOCUMENT_NODE.equals(id)) {
+                    touched.computeIfAbsent(target.getOwnerDocument(), d -> new HashSet<>()).add(id);
+                }
+            }
+        }
+        return touched;
+    }
+
+    /**
+     * upd:applyUpdates merges adjacent text nodes and removes empty text nodes among the children
+     * of the nodes it changed. The in-memory path does it with mergeAdjacentTextNodes; on stored
+     * documents it is done here, on each touched element, after every primitive has been applied.
+     */
+    private static void normalizeTextNodes(final Txn transaction, final Map<DocumentImpl, Set<NodeId>> touchedElements,
+            final MutableDocumentSet modifiedDocuments) {
+        for (final Map.Entry<DocumentImpl, Set<NodeId>> entry : touchedElements.entrySet()) {
+            final DocumentImpl doc = entry.getKey();
+            for (final NodeId id : entry.getValue()) {
+                if (new NodeProxy(null, doc, id).getNode() instanceof final ElementImpl element
+                        && normalizeTextChildren(transaction, element)) {
+                    modifiedDocuments.add(doc);
+                }
+            }
+        }
+    }
+
+    /** @return true if the element's children changed */
+    private static boolean normalizeTextChildren(final Txn transaction, final ElementImpl element) {
+        final NodeList childList = element.getChildNodes();
+        final List<Node> children = new ArrayList<>(childList.getLength());
+        for (int i = 0; i < childList.getLength(); i++) {
+            children.add(childList.item(i));
+        }
+        boolean changed = false;
+        int i = 0;
+        while (i < children.size()) {
+            if (children.get(i).getNodeType() != Node.TEXT_NODE) {
+                i++;
+                continue;
+            }
+            final StringBuilder run = new StringBuilder();
+            int end = i;
+            while (end < children.size() && children.get(end).getNodeType() == Node.TEXT_NODE) {
+                run.append(children.get(end).getNodeValue());
+                end++;
+            }
+            if (run.isEmpty()) {
+                for (int j = i; j < end; j++) {
+                    element.removeChild(transaction, children.get(j));
+                }
+                changed = true;
+            } else if (end - i > 1) {
+                final TextImpl merged = new TextImpl((Expression) null, run.toString());
+                merged.setOwnerDocument(element.getOwnerDocument());
+                element.updateChild(transaction, children.get(i), merged);
+                for (int j = i + 1; j < end; j++) {
+                    element.removeChild(transaction, children.get(j));
+                }
+                changed = true;
+            }
+            i = end;
+        }
+        return changed;
+    }
+
+    /**
+     * Store all modified documents, send update notifications, and finish the
+     * per-document triggers.
+     */
+    private void storeModifiedAndFinishTriggers(final XQueryContext context, final DBBroker broker,
+            final Txn transaction, final MutableDocumentSet modifiedDocuments,
+            final Int2ObjectMap<DocumentTrigger> triggers) throws TriggerException {
+        final NotificationService notifier = broker.getBrokerPool().getNotificationService();
+        final Iterator<DocumentImpl> storeIter = modifiedDocuments.getDocumentIterator();
+        while (storeIter.hasNext()) {
+            final DocumentImpl doc = storeIter.next();
+            broker.storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+        }
+
+        final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+        while (iterator.hasNext()) {
+            final DocumentImpl doc = iterator.next();
+            context.addModifiedDoc(doc);
+            finishTrigger(broker, triggers, doc);
+        }
+        triggers.clear();
+    }
+
+    /**
+     * The stored node a primitive targets, loaded afresh from its node id. The node the
+     * primitive holds was loaded when its target expression was evaluated, and carries state such
+     * as its child count from that moment; after an earlier primitive in the same list has
+     * changed that node, the held copy is stale. Two inserts into one element would otherwise
+     * both write their first new child under the same node id, and only the last would survive.
+     *
+     * @return the node, or null if it no longer exists because an earlier primitive removed it
+     */
+    private static @Nullable StoredNode<?> currentStoredTarget(final UpdatePrimitive p) {
+        final StoredNode<?> held = (StoredNode<?>) p.getTargetNode();
+        final Node current = new NodeProxy(p.getSourceExpression(), held.getOwnerDocument(), held.getNodeId()).getNode();
+        return current instanceof final StoredNode<?> stored ? stored : null;
+    }
+
+    private void applyPersistentInsert(final XQueryContext context, final Txn transaction,
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
+        final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
+        final DocumentImpl doc = node.getOwnerDocument();
+        checkWritePermission(context, doc, p.getSourceExpression());
+
+        final Sequence contentSeq = deepCopy(context, p.getContent());
+        final NodeList contentList = sequenceToNodeList(contentSeq);
+
+        try {
+            switch (p.getType()) {
+                case INSERT_INTO, INSERT_INTO_AS_LAST -> node.appendChildren(transaction, contentList, -1);
+                case INSERT_INTO_AS_FIRST -> node.appendChildren(transaction, contentList, 1);
+                case INSERT_BEFORE -> {
+                    final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
+                    if (parent != null) {
+                        parent.insertBefore(transaction, contentList, node);
+                    }
+                }
+                case INSERT_AFTER -> {
+                    final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
+                    if (parent != null) {
+                        parent.insertAfter(transaction, contentList, node);
+                    }
+                }
+                case INSERT_ATTRIBUTES -> {
+                    // always add new attribute nodes: an attribute of the same name is either deleted or
+                    // renamed later in this list, or the list raised XUDY0021. Updating it in place instead
+                    // would leave the later delete to remove the inserted attribute.
+                    final NodeListImpl attrs = new NodeListImpl(contentList.getLength());
+                    for (int i = 0; i < contentList.getLength(); i++) {
+                        if (contentList.item(i).getNodeType() == Node.ATTRIBUTE_NODE) {
+                            attrs.add(contentList.item(i));
+                        }
+                    }
+                    if (!attrs.isEmpty()) {
+                        ((ElementImpl) node).removeAppendAttributes(transaction, null, attrs);
+                    }
+                }
+                default -> {
+                    // not an insert primitive
+                }
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
+        }
+    }
+
+    private void applyPersistentRename(final XQueryContext context, final Txn transaction,
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
+        final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
+        final DocumentImpl doc = node.getOwnerDocument();
+        checkWritePermission(context, doc, p.getSourceExpression());
+
+        try {
+            final QName newName = p.getNewName();
+            final StoredNode<?> newNode = switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE -> {
+                    final ElementImpl element = new ElementImpl(node.getExpression(), (ElementImpl) node);
+                    element.setNodeName(newName, context.getBroker().getBrokerPool().getSymbols());
+                    // declare the new name's namespace on the element, or it serializes in no namespace
+                    if (newName.hasNamespace()) {
+                        element.addNamespaceMapping(newName.getPrefix() == null ? "" : newName.getPrefix(), newName.getNamespaceURI());
+                    }
+                    yield element;
+                }
+                case Node.ATTRIBUTE_NODE -> {
+                    final AttrImpl attr = new AttrImpl(node.getExpression(), (AttrImpl) node);
+                    attr.setNodeName(newName, context.getBroker().getBrokerPool().getSymbols());
+                    // an attribute is an ID by its name, not by the name it had: a renamed xml:id no longer is one
+                    attr.setType(Namespaces.XML_ID_QNAME.equals(newName) ? AttrImpl.ID : AttrImpl.CDATA);
+                    yield attr;
+                }
+                case Node.PROCESSING_INSTRUCTION_NODE -> new ProcessingInstructionImpl(node.getExpression(),
+                        newName.getLocalPart(), ((ProcessingInstructionImpl) node).getData());
+                default -> throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0012,
+                        "Target of rename must be an element, attribute, or processing instruction node.");
+            };
+            newNode.setOwnerDocument(doc);
+
+            final Node parent = getParent(node);
+            if (parent instanceof final ElementImpl parentElem) {
+                parentElem.updateChild(transaction, node, newNode);
+            } else if (parent instanceof final DocumentImpl parentDoc) {
+                parentDoc.updateChild(transaction, node, newNode);
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
+        }
+    }
+
+    private void applyPersistentReplaceValue(final XQueryContext context, final Txn transaction,
+                                              final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
+        final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
+        final DocumentImpl doc = node.getOwnerDocument();
+        checkWritePermission(context, doc, p.getSourceExpression());
+
+        try {
+            // Per W3C spec: atomize content, join with single space separator
+            final String newValue = atomizeAndJoin(p.getContent());
+
+            // Validate content constraints per XML spec
+            validateNodeContent(node.getNodeType(), newValue, p.getSourceExpression());
+
+            switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE -> {
+                    // Replace all children of element with a single text node
+                    final NodeListImpl content = new NodeListImpl();
+                    content.add(new TextImpl(node.getExpression(), newValue));
+                    ((ElementImpl) node).update(transaction, content);
+                }
+                case Node.TEXT_NODE -> {
+                    final ElementImpl parent = (ElementImpl) node.getParentNode();
+                    final TextImpl text =
+                            new TextImpl(node.getExpression(), newValue);
+                    text.setOwnerDocument(doc);
+                    parent.updateChild(transaction, node, text);
+                }
+                case Node.ATTRIBUTE_NODE -> {
+                    final AttrImpl oldAttr =
+                            (AttrImpl) node;
+                    final ElementImpl parent = (ElementImpl) ((Attr) node).getOwnerElement();
+                    if (parent != null) {
+                        final AttrImpl newAttr =
+                                new AttrImpl(node.getExpression(),
+                                        oldAttr.getQName(), newValue, context.getBroker().getBrokerPool().getSymbols());
+                        newAttr.setOwnerDocument(doc);
+                        parent.updateChild(transaction, node, newAttr);
+                    }
+                }
+                case Node.COMMENT_NODE -> {
+                    final Node parent = node.getParentNode();
+                    final CommentImpl newComment =
+                            new CommentImpl(node.getExpression(), newValue);
+                    newComment.setOwnerDocument(doc);
+                    if (parent instanceof final ElementImpl parentElem) {
+                        parentElem.updateChild(transaction, node, newComment);
+                    } else if (parent instanceof final DocumentImpl parentDoc) {
+                        parentDoc.updateChild(transaction, node, newComment);
+                    }
+                }
+                case Node.PROCESSING_INSTRUCTION_NODE -> {
+                    final Node parent = node.getParentNode();
+                    final ProcessingInstructionImpl newPI =
+                            new ProcessingInstructionImpl(
+                                    node.getExpression(), node.getNodeName(), newValue);
+                    newPI.setOwnerDocument(doc);
+                    if (parent instanceof final ElementImpl parentElem) {
+                        parentElem.updateChild(transaction, node, newPI);
+                    } else if (parent instanceof final DocumentImpl parentDoc) {
+                        parentDoc.updateChild(transaction, node, newPI);
+                    }
+                }
+                default -> throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0007,
+                            "Target of replace value must be an element, attribute, text, comment, or processing instruction node.");
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
+        }
+    }
+
+    private void applyPersistentReplaceNode(final XQueryContext context, final Txn transaction,
+                                             final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
+        final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
+        final DocumentImpl doc = node.getOwnerDocument();
+        checkWritePermission(context, doc, p.getSourceExpression());
+
+        try {
+            final StoredNode parent = node.getParentStoredNode();
+            if (parent == null) {
+                throw new XPathException(p.getSourceExpression(), ErrorCodes.XUDY0009,
+                        "Target node of replace has no parent.");
+            }
+
+            final NodeList replacement = sequenceToNodeList(deepCopy(context, p.getContent()));
+            if (!(parent instanceof final ElementImpl parentElement)) {
+                throw new XPathException(p.getSourceExpression(),
+                        "Replacing a child of the document node is not supported on stored documents.");
+            }
+
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                // an attribute is replaced by zero or more attributes
+                final NodeListImpl removed = new NodeListImpl();
+                removed.add(node);
+                parentElement.removeAppendAttributes(transaction, removed, replacement);
+            } else if (replacement.getLength() == 1) {
+                parentElement.replaceChild(transaction, replacement.item(0), node);
+            } else {
+                // zero or several nodes take the target's place: insert them before it, then remove it
+                if (replacement.getLength() > 0) {
+                    parentElement.insertBefore(transaction, replacement, node);
+                }
+                parentElement.removeChild(transaction, node);
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
+        }
+    }
+
+    private void applyPersistentDelete(final XQueryContext context, final Txn transaction,
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
+        final StoredNode<?> node = currentStoredTarget(p);
+        if (node == null) {
+            // an earlier primitive in this list removed the target, e.g. a repeated delete: nothing to do
+            return;
+        }
+        final DocumentImpl doc = node.getOwnerDocument();
+        checkWritePermission(context, doc, p.getSourceExpression());
+
+        try {
+            final Node parent = getParent(node);
+            if (parent == null) {
+                // Per W3C spec, deleting a parentless node is a no-op
+                return;
+            }
+            if (parent.getNodeType() == Node.ELEMENT_NODE) {
+                ((ElementImpl) parent).removeChild(transaction, node);
+            } else if (parent.getNodeType() == Node.DOCUMENT_NODE) {
+                // a comment or processing instruction around the document element
+                ((DocumentImpl) parent).removeChild(transaction, node);
+            } else {
+                throw new XPathException(p.getSourceExpression(),
+                        "Cannot delete node: parent is neither element nor document node.");
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
+        }
+    }
+
+    private void applyPersistentPut(final XQueryContext context, final Txn transaction,
+                                     final UpdatePrimitive p) throws XPathException {
+        final String uri = p.getUri();
+        if (uri == null) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
+                    "fn:put: no target URI specified");
+        }
+
+        if (!XQUFFnPut.isDatabaseLocation(uri)) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FOUP0002,
+                    "fn:put: eXist-db can only store to the database, not to " + uri);
+        }
+
+        final NodeValue targetNode = (NodeValue) p.getTargetNode();
+        final DBBroker broker = context.getBroker();
+
+        try {
+            // Parse the target URI to determine collection and document name
+            final org.exist.xmldb.XmldbURI targetUri = org.exist.xmldb.XmldbURI.xmldbUriFor(uri);
+            final org.exist.xmldb.XmldbURI collectionUri = targetUri.removeLastSegment();
+            final org.exist.xmldb.XmldbURI docName = targetUri.lastSegment();
+
+            // Get or create the target collection
+            final org.exist.collections.Collection collection =
+                    broker.getOrCreateCollection(transaction, collectionUri);
+            if (collection == null) {
+                throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
+                        "fn:put: collection not found and could not be created: " + collectionUri);
+            }
+            broker.saveCollection(transaction, collection);
+
+            // Serialize the node to a string for storage
+            final Serializer serializer = broker.borrowSerializer();
+            final String serialized;
+            try {
+                serialized = serializer.serialize(targetNode);
+            } finally {
+                broker.returnSerializer(serializer);
+            }
+
+            // Store the document
+            broker.storeDocument(transaction, docName,
+                    new org.exist.util.StringInputSource(serialized),
+                    org.exist.util.MimeType.XML_TYPE, collection);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("fn:put stored document at {}", targetUri);
+            }
+        } catch (final java.net.URISyntaxException e) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0005,
+                    "fn:put: invalid URI: " + uri + " — " + e.getMessage());
+        } catch (final PermissionDeniedException e) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
+                    "fn:put: permission denied storing to " + uri + " — " + e.getMessage());
+        } catch (final Exception e) {
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
+                    "fn:put: failed to store document at " + uri + " — " + e.getMessage());
+        }
+    }
+
+    /**
+     * Reset this PUL (clear all primitives).
+     */
+    public void clear() {
+        primitives.clear();
+    }
+
+    // Utility methods
+
+    /**
+     * Return a priority for insert primitive types, controlling application order.
+     * Per W3C spec: INSERT_INTO_AS_FIRST first, INSERT_INTO_AS_LAST last,
+     * INSERT_INTO and others in between.
+     */
+    private static int insertPriority(final UpdatePrimitive.Type type) {
+        return switch (type) {
+            case INSERT_INTO_AS_FIRST -> 0;
+            case INSERT_BEFORE, INSERT_AFTER, INSERT_ATTRIBUTES -> 1;
+            case INSERT_INTO -> 2;
+            case INSERT_INTO_AS_LAST -> 3;
+            default -> 1;
+        };
+    }
+
+    private static boolean isPersistentNode(final Node node) {
+        return node instanceof StoredNode;
+    }
+
+    private static void checkWritePermission(final XQueryContext context, final DocumentImpl doc,
+                                              final Expression expr) throws XPathException {
+        try {
+            if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("User '" + context.getSubject().getName()
+                        + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+            }
+        } catch (final PermissionDeniedException e) {
+            throw new XPathException(expr, e.getMessage(), e);
+        }
+    }
+
+    private static Node getParent(final Node node) {
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return ((Attr) node).getOwnerElement();
+        }
+        return node.getParentNode();
+    }
+
+    /**
+     * Deep copy a sequence, detaching nodes from their source documents.
+     * Reuses the pattern from Modification.deepCopy().
+     */
+    private static Sequence deepCopy(final XQueryContext context, final Sequence inSeq) throws XPathException {
+        if (inSeq == null || inSeq.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        context.pushDocumentContext();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(context.getRootExpression(), builder);
+        final Serializer serializer = context.getBroker().borrowSerializer();
+        serializer.setReceiver(receiver);
+
+        try {
+            final Sequence out = new ValueSequence();
+            for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                if (item.getType() == Type.DOCUMENT) {
+                    if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        final NodeHandle root = (NodeHandle) ((NodeProxy) item).getOwnerDocument().getDocumentElement();
+                        item = new NodeProxy(context.getRootExpression(), root);
+                    } else {
+                        item = (Item) ((org.w3c.dom.Document) item).getDocumentElement();
+                    }
+                }
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        final int last = builder.getDocument().getLastNode();
+                        final NodeProxy p = (NodeProxy) item;
+                        serializer.toReceiver(p, false, false);
+                        if (p.getNodeType() == Node.ATTRIBUTE_NODE) {
+                            item = builder.getDocument().getLastAttr();
+                        } else {
+                            item = builder.getDocument().getNode(last + 1);
+                        }
+                    } else {
+                        ((org.exist.dom.memtree.NodeImpl) item).deepCopy();
+                    }
+                }
+                out.add(item);
+            }
+            return out;
+        } catch (final SAXException e) {
+            throw new XPathException(context.getRootExpression(), e.getMessage(), e);
+        } finally {
+            context.getBroker().returnSerializer(serializer);
+            context.popDocumentContext();
+        }
+    }
+
+    private static NodeList sequenceToNodeList(final Sequence seq) throws XPathException {
+        final NodeListImpl nl = new NodeListImpl();
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                nl.add(((NodeValue) item).getNode());
+            }
+        }
+        return nl;
+    }
+
+    private static void prepareTrigger(final DBBroker broker, final Int2ObjectMap<DocumentTrigger> triggers,
+                                        final DocumentImpl doc) throws TriggerException {
+        final org.exist.collections.Collection col = doc.getCollection();
+        final DocumentTrigger trigger = new DocumentTriggers(broker, null, col);
+        trigger.beforeUpdateDocument(broker, broker.getCurrentTransaction(), doc);
+        triggers.put(doc.getDocId(), trigger);
+    }
+
+    private static void finishTrigger(final DBBroker broker, final Int2ObjectMap<DocumentTrigger> triggers,
+                                       final DocumentImpl doc) throws TriggerException {
+        final DocumentTrigger trigger = triggers.get(doc.getDocId());
+        if (trigger != null) {
+            trigger.afterUpdateDocument(broker, broker.getCurrentTransaction(), doc);
+        }
+    }
+}

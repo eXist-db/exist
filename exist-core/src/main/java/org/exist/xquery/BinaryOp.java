@@ -69,8 +69,12 @@ public abstract class BinaryOp extends PathExpr {
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) != 0;
     	contextId = contextInfo.getContextId();
     	inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
-    	getLeft().analyze(new AnalyzeContextInfo(contextInfo));
-    	getRight().analyze(new AnalyzeContextInfo(contextInfo));
+    	final AnalyzeContextInfo leftInfo = new AnalyzeContextInfo(contextInfo);
+    	leftInfo.addFlag(NON_UPDATING_CONTEXT);
+    	getLeft().analyze(leftInfo);
+    	final AnalyzeContextInfo rightInfo = new AnalyzeContextInfo(contextInfo);
+    	rightInfo.addFlag(NON_UPDATING_CONTEXT);
+    	getRight().analyze(rightInfo);
     }
 
     /*

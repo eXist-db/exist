@@ -129,6 +129,7 @@ public class Predicate extends PathExpr {
         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         // set flag to signal subexpression that we are in a predicate
         newContextInfo.addFlag(IN_PREDICATE);
+        newContextInfo.addFlag(NON_UPDATING_CONTEXT);
         newContextInfo.removeFlag(IN_WHERE_CLAUSE); // remove where clause flag
         newContextInfo.removeFlag(DOT_TEST);
         outerContextId = newContextInfo.getContextId();

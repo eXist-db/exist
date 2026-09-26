@@ -119,6 +119,12 @@ public class FunctionCall extends Function {
 
         // check that FunctionCall#resolveForwardReference(UserDefinedFunction) has been called first!
         if (functionDef != null) {
+            // XUST0001: calling an updating function in a non-updating context
+            if (functionDef.getSignature().isUpdating() && contextInfo.hasFlag(NON_UPDATING_CONTEXT)) {
+                throw new XPathException(this, ErrorCodes.XUST0001,
+                        "call to updating function " + functionDef.getSignature().getName() +
+                        " is not allowed in a non-updating context");
+            }
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
             newContextInfo.setParent(this);
             newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
@@ -451,6 +457,11 @@ public class FunctionCall extends Function {
         this.recursive = recursive;
     }
     
+    @Override
+    public boolean isUpdating() {
+        return functionDef != null && functionDef.getSignature().isUpdating();
+    }
+
     public boolean isRecursive(){
     	return recursive;
     }

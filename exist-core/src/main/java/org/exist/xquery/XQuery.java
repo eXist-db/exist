@@ -50,6 +50,7 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
+import org.exist.xquery.xquf.PendingUpdateList;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
@@ -462,6 +463,13 @@ public class XQuery {
                     result = expression.eval(contextSequence, null);
                 }
 
+                // W3C XQuery Update Facility 3.0: apply Pending Update List at snapshot boundary
+                final PendingUpdateList pul = context.getPendingUpdateList();
+                if (!pul.isEmpty()) {
+                    pul.apply(context);
+                    pul.clear();
+                }
+
                 if(LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
                     LOG.debug("Execution took {} ms", nf.format(System.currentTimeMillis() - start));
@@ -481,6 +489,12 @@ public class XQuery {
                 if (call != null) {
                     call.reset();
                 }
+
+                // Discard pending updates a failed evaluation left behind; the success path has
+                // already applied and cleared them. Without this, a context that is not reset --
+                // util:eval's cached path passes resetContext=false -- would carry them into its
+                // next execution from the pool and apply them there.
+                context.getPendingUpdateList().clear();
 
                 if(resetContext) {
                     context.reset();
