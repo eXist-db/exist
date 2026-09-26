@@ -28,9 +28,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
+import org.exist.indexing.ngram.NGramMatch;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
@@ -93,9 +96,22 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             formEvaluatableTriples(expressionId);
         }
 
-        if (expressions.isEmpty())
-            return new EmptyNodeSet();
-        // TODO: Should probably return nodes the satisfying the size constraint when wildcards are present
+        if (expressions.isEmpty()) {
+            // The pattern was made up of nothing but wildcards and/or anchors (e.g. ".", ".*", "^.+$"):
+            // there is no literal text left to seed an ngram index lookup with, so fall back to
+            // evaluating the wildcard's length constraint directly against the candidate nodes.
+            // Any wildcard reaching this point was necessarily captured as leadingWildcard: the
+            // extraction above always tries the leading position first, and consecutive Wildcard
+            // tokens are always merged into one by the constructor, so at most one can exist here.
+            if (leadingWildcard == null || nodeSet == null) {
+                // nodeSet is null when this is reached via the Optimizable preSelect path with
+                // useContext=false (see NGramSearch#preSelect) - i.e. there is no candidate set to
+                // scan and no literal text to search the index with either. Not supported: such a
+                // query returns no matches rather than scanning every indexed node in the database.
+                return new EmptyNodeSet();
+            }
+            return matchWildcardOnly(leadingWildcard, startAnchorPresent, endAnchorPresent, nodeSet, expressionId);
+        }
 
         if (expressions.size() != 1 || !(expressions.getFirst() instanceof EvaluatableExpression)) { // Should not happen.
             LOG.error("Expression {} could not be evaluated", toString());
@@ -119,11 +135,70 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         return result;
     }
 
+    /**
+     * Matches a wildcard-only pattern (no literal text, e.g. ".", ".*", "^.+$") against each candidate
+     * node directly, since there is no term to look up in the ngram index.
+     *
+     * <p>Length is compared in Unicode codepoints, not UTF-16 code units, so that a lone supplementary
+     * character (a surrogate pair, i.e. {@code String.length() == 2}) is correctly counted as a single
+     * "character" and not split across two wildcard positions.
+     *
+     * @param wildcard the (possibly merged) length constraint of the pattern
+     * @param startAnchorPresent whether the pattern is anchored at the start ('^')
+     * @param endAnchorPresent whether the pattern is anchored at the end ('$')
+     * @param nodeSet the candidate nodes to check
+     * @param expressionId the context id to tag the synthesized matches with
+     *
+     * @return the nodes whose content satisfies the wildcard's length constraint, each with a match
+     *         covering the qualifying span attached
+     */
+    private static NodeSet matchWildcardOnly(
+            final Wildcard wildcard, final boolean startAnchorPresent, final boolean endAnchorPresent,
+            final NodeSet nodeSet, final int expressionId) throws XPathException {
+        final NodeSet result = new ExtArrayNodeSet(nodeSet.getItemCount());
+        for (final NodeProxy proxy : nodeSet) {
+            final String value = proxy.getNodeValue();
+            final int codepointLength = value.codePointCount(0, value.length());
+            if (codepointLength < wildcard.getMinimumLength()) {
+                continue;
+            }
+
+            final int matchCodepoints;
+            final int matchStartCodepoint;
+            if (startAnchorPresent && endAnchorPresent) {
+                // anchored at both ends: the whole content must fit within the bounds
+                if (codepointLength > wildcard.getMaximumLength()) {
+                    continue;
+                }
+                matchCodepoints = codepointLength;
+                matchStartCodepoint = 0;
+            } else if (endAnchorPresent) {
+                // anchored at the end only: the longest matching suffix
+                matchCodepoints = Math.min(codepointLength, wildcard.getMaximumLength());
+                matchStartCodepoint = codepointLength - matchCodepoints;
+            } else {
+                // anchored at the start only, or not anchored at all: the longest matching prefix
+                matchCodepoints = Math.min(codepointLength, wildcard.getMaximumLength());
+                matchStartCodepoint = 0;
+            }
+
+            final int startOffset = value.offsetByCodePoints(0, matchStartCodepoint);
+            final int endOffset = value.offsetByCodePoints(startOffset, matchCodepoints);
+
+            final NGramMatch match = new NGramMatch(expressionId, proxy.getNodeId(), value.substring(startOffset, endOffset));
+            match.addOffset(startOffset, endOffset - startOffset);
+            proxy.addMatch(match);
+            result.add(proxy);
+        }
+        result.iterate(); // ensure result is ready to use
+        return result;
+    }
+
     private NodeSet expandMatchesForward(final Wildcard trailingWildcard, final NodeSet nodes, final int expressionId) throws XPathException {
         return NodeSets.transformNodes(nodes, proxy ->
                 NodeProxies.transformOwnMatches(
                         proxy,
-                        match -> match.expandForward(trailingWildcard.minimumLength, trailingWildcard.maximumLength, proxy.getNodeValue().length()),
+                        match -> match.expandForwardCodepoints(trailingWildcard.minimumLength, trailingWildcard.maximumLength, proxy.getNodeValue()),
                         expressionId
                 )
         );
@@ -133,7 +208,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         return NodeSets.transformNodes(nodes, proxy ->
                 NodeProxies.transformOwnMatches(
                         proxy,
-                        match -> match.expandBackward(leadingWildcard.minimumLength, leadingWildcard.maximumLength),
+                        match -> match.expandBackwardCodepoints(leadingWildcard.minimumLength, leadingWildcard.maximumLength, proxy.getNodeValue()),
                         expressionId
                 )
         );
