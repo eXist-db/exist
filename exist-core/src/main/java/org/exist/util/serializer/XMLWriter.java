@@ -90,6 +90,7 @@ public class XMLWriter implements SerializerWriter {
      * compared to retrieving resources from the database.
      */
     private boolean xdmSerialization = false;
+    private boolean preserveCdata = true;
     private boolean xml11 = false;
     @Nullable private java.text.Normalizer.Form normalizationForm = null;
 
@@ -165,6 +166,7 @@ public class XMLWriter implements SerializerWriter {
         }
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
+        this.preserveCdata = !"no".equals(outputProperties.getProperty(EXistOutputKeys.PRESERVE_CDATA, "yes"));
         this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
         this.normalizationForm = parseNormalizationForm(outputProperties.getProperty("normalization-form", "none"));
     }
@@ -614,7 +616,7 @@ public class XMLWriter implements SerializerWriter {
             closeStartTag(false);
         }
 
-        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || preserveCdata || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("<![CDATA[");
                 this.cdataSetionElement = true;
@@ -625,7 +627,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void endCdataSection() throws TransformerException {
-        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || preserveCdata || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("]]>");
                 this.cdataSetionElement = false;
