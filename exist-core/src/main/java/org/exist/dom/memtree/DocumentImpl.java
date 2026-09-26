@@ -2403,9 +2403,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         shiftAttributesFrom(insertPos, count, elementNodeNum);
+        writeInsertedAttributes(elementNodeNum, insertPos, newAttrs);
 
-        // Insert new attributes at the contiguous position
-        for (int j = 0; j < count; j++) {
+        // Set alpha if element didn't have attrs before
+        if (alpha[elementNodeNum] < 0) {
+            alpha[elementNodeNum] = insertPos;
+        }
+
+        nextAttr += count;
+    }
+
+    /**
+     * Write the new attributes into the contiguous slots from {@code insertPos}, which
+     * {@link #shiftAttributesFrom(int, int, int)} has freed.
+     */
+    private void writeInsertedAttributes(final int elementNodeNum, final int insertPos, final java.util.List<Object[]> newAttrs) {
+        for (int j = 0; j < newAttrs.size(); j++) {
             final Object[] entry = newAttrs.get(j);
             final QName qname = (QName) entry[0];
             final String value = (String) entry[1];
@@ -2418,13 +2431,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 attrTag[insertPos + j] = -1;
             }
         }
-
-        // Set alpha if element didn't have attrs before
-        if (alpha[elementNodeNum] < 0) {
-            alpha[elementNodeNum] = insertPos;
-        }
-
-        nextAttr += count;
     }
 
     /**
