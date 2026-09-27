@@ -418,7 +418,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                             if (getDefaultUser().equals(user)) {
                                 getAuthenticator().sendChallenge(request, response);
                             } else {
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. (no read access)");
                             }
                             return;
                         }
@@ -432,7 +432,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                     return;
                 } else {
                    
-                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. Must be explicitly defined in descriptor.xml");
                    return;
                 }
             }
@@ -576,7 +576,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 			if (getDefaultUser().equals(user)) {
 				getAuthenticator().sendChallenge(request, response);
 			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + path + " denied.");
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + escapeHtml(path) + " denied.");
 			}
 			return;
            
@@ -630,27 +630,76 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     private void writeError(final PrintWriter out, final Throwable e) {
         out.print("<error>");
         if (e.getMessage() != null && !hideErrorMessages) {
-            out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
+            out.print(escapeHtml(e.getMessage()));
         }
         out.println("</error>");
     }
 
     private void sendError(final PrintWriter out, final String message, final String description) {
-        out.print("<html><head>");
-        out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
-        out.println("<body><h1>Error found</h1>");
-        out.print("<div class='message'><b>Message: </b>");
-        out.print(message);
-        out.print("</div>");
+        out.print(renderErrorPage(message, description, hideErrorMessages));
+        out.flush();
+    }
 
-        if(!hideErrorMessages) {
-            out.print("<div class='description'><pre>");
-            out.print(description);
-            out.print("</pre></div>");
+    /**
+     * Builds the HTML error page as a string, escaping both the message and the
+     * description so that a user-derived value (e.g. a requested source path
+     * embedded in the description) cannot inject markup into the response.
+     *
+     * @param message the message to display; may be {@code null}
+     * @param description the description to display; may be {@code null}
+     * @param hideDescription {@code true} to suppress the description entirely
+     * @return the complete HTML error page
+     */
+    static String renderErrorPage(final String message, final String description, final boolean hideDescription) {
+        final StringBuilder out = new StringBuilder();
+        out.append("<html><head>");
+        out.append("<title>XQueryServlet Error</title>");
+        out.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
+        out.append("<body><h1>Error found</h1>");
+        out.append("<div class='message'><b>Message: </b>");
+        out.append(message == null ? "" : escapeHtml(message));
+        out.append("</div>");
+
+        if (!hideDescription && description != null) {
+            out.append("<div class='description'><pre>");
+            out.append(escapeHtml(description));
+            out.append("</pre></div>");
         }
 
-        out.print("</body></html>");
-        out.flush();
+        out.append("</body></html>");
+        return out.toString();
+    }
+
+    /**
+     * Escapes the characters that are significant in HTML text content: {@code &}, {@code <},
+     * {@code >}, {@code "} and {@code '}. Unlike {@link XMLUtil#encodeAttrMarkup(String)} (an XML
+     * attribute-value escaper that intentionally leaves an already-well-formed entity reference
+     * alone), this always escapes {@code &} literally, which is what's needed when embedding an
+     * arbitrary user-derived value into an HTML response.
+     *
+     * @param str the string to escape; {@code null} is returned as the literal {@code "null"} to
+     *     match Java's string-concatenation behaviour at the call sites that don't already guard
+     *     against {@code null}.
+     *
+     * @return the escaped string.
+     */
+    private static String escapeHtml(final String str) {
+        if (str == null) {
+            return "null";
+        }
+
+        final StringBuilder buf = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            final char ch = str.charAt(i);
+            buf.append(switch (ch) {
+                case '&' -> "&amp;";
+                case '<' -> "&lt;";
+                case '>' -> "&gt;";
+                case '"' -> "&quot;";
+                case '\'' -> "&#39;";
+                default -> String.valueOf(ch);
+            });
+        }
+        return buf.toString();
     }
 }
