@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/http/servlets/XQueryServletErrorPageTest.java
+  s_d83678d4636c5b::t_dc043d92fa5481 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d7a3b358d48011b25a0773b95da5485e5a5be4d8",
+  "prompts": {},
+  "sessions": {
+    "s_d83678d4636c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8a8905f-224a-4206-a7a5-f02a9f11406d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
