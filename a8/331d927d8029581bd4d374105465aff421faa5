@@ -1,0 +1,32 @@
+exist-core/src/main/java/org/exist/http/servlets/XQueryServlet.java
+  s_fb0ea4df23c056::t_6ab0a914e93df8 639-666,669-671
+  s_fb0ea4df23c056::t_59b1a4a282ca79 672-674
+  s_d83678d4636c5b::t_0de6d75583ef41 421,435,579,633,675-703
+exist-core/src/test/java/org/exist/http/servlets/XQueryServletErrorPageTest.java
+  s_d83678d4636c5b::t_dc043d92fa5481 20
+  s_fb0ea4df23c056::t_0b4c815b1ccb57 1-19,21-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a8331d927d8029581bd4d374105465aff421faa5",
+  "prompts": {},
+  "sessions": {
+    "s_d83678d4636c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8a8905f-224a-4206-a7a5-f02a9f11406d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_fb0ea4df23c056": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f222ef02bffe8lRdgCid0o93q2",
+        "model": "qwen3.8:27b-mlx"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
