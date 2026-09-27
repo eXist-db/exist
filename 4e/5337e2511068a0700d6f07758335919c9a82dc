@@ -1,0 +1,22 @@
+exist-core/src/test/java/org/exist/http/RESTServiceTest.java
+  s_cf829adf72994e::t_d901df4cb152d6 223-226,267-270,366-370,681,1545,1560-1595,1621,1703-1761
+  s_cf829adf72994e::t_cf4fbff778e474 1623-1624
+exist-core/src/main/java/org/exist/http/RESTServer.java
+  s_cf829adf72994e::t_6d44c371e0e740 427-428,549-553,559-560,567-570
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4e5337e2511068a0700d6f07758335919c9a82dc",
+  "prompts": {},
+  "sessions": {
+    "s_cf829adf72994e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1fa647ff-0799-496e-a419-a7b49f7c0151",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": null
+    }
+  }
+}
