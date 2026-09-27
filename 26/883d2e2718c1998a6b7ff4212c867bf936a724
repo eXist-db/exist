@@ -1,0 +1,42 @@
+extensions/security/ldap/README.md
+  s_d83678d4636c5b::t_befbdf41c75360 1,3-15,17-18,20,25-35,37-41,44,48-127,129-134
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPRealmHasPrincipalTest.java
+  s_d83678d4636c5b::t_d6fadcc35c525e 1-87
+extensions/security/ldap/src/main/java/org/exist/security/realm/ldap/LDAPRealm.java
+  s_d83678d4636c5b::t_c8754d14e3cbe3 665
+  s_d83678d4636c5b::t_f99b90f419a5c3 537
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPAccountCachingIT.java
+  s_cf829adf72994e::t_e1c8c2c22845c7 130
+  s_d83678d4636c5b::t_027f64828e3a7c 1-44,46-48,65,89,93,97-102,104-129,131-167
+  s_cf829adf72994e::t_d6076300c33b81 96
+  s_d83678d4636c5b::t_d088fd6fdea190 103
+  s_d83678d4636c5b::t_d771c0c3e90bf3 45,49-64,66-88,90-92,94-95
+extensions/security/ldap/pom.xml
+  s_d83678d4636c5b::t_4295076b8cd1a0 84-107
+extensions/security/ldap/src/test/resources-filtered/conf-fixture.xsl
+  s_d83678d4636c5b::t_e4780c27e99d0e 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "26883d2e2718c1998a6b7ff4212c867bf936a724",
+  "prompts": {},
+  "sessions": {
+    "s_cf829adf72994e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1fa647ff-0799-496e-a419-a7b49f7c0151",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": null
+    },
+    "s_d83678d4636c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8a8905f-224a-4206-a7a5-f02a9f11406d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": null
+    }
+  }
+}
