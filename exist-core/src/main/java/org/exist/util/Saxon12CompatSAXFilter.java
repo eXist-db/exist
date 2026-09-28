@@ -25,16 +25,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.XMLConstants;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A SAX ContentHandler filter that adapts eXist's serializer output to Saxon 12's
- * stricter SAX expectations. Saxon 12's {@code LinkedTreeBuilder} rejects two patterns
+ * stricter SAX expectations. Saxon 12's {@code LinkedTreeBuilder} rejects patterns
  * that earlier Saxon versions tolerated:
  *
  * <ol>
@@ -45,25 +47,44 @@ import javax.xml.XMLConstants;
  *       (URI {@code http://www.w3.org/XML/1998/namespace}) — eXist's persistent DOM
  *       stores these in its namespace mappings, but Saxon 12 treats redeclaring the
  *       xml namespace as an error.</li>
+ *   <li>An {@code xml:}-namespaced attribute reported with some other, spurious
+ *       prefix (see #3417 / #6781) — Saxon 12 rejects this outright rather than
+ *       tolerating it.</li>
  * </ol>
  *
- * This filter wraps a delegate handler and silently drops the offending events while
- * passing everything else through unchanged. It also implements {@link LexicalHandler},
- * forwarding to the delegate when the delegate implements it, so wrapping a handler in
- * this filter does not silently drop comment/CDATA/DTD events for callers (such as
- * {@link org.exist.util.serializer.ReceiverToSAX}) that detect lexical-handler support
- * via {@code instanceof}.
+ * This filter wraps a delegate {@link ContentHandler} (via {@link XMLFilterImpl},
+ * which forwards every SAX event this class doesn't itself override) and silently
+ * drops or rewrites the offending events while passing everything else through
+ * unchanged.
+ *
+ * <p>It also implements {@link LexicalHandler}, forwarding to the delegate when the
+ * delegate implements one, but this only benefits a caller that uses an instance of
+ * this filter itself as the content handler passed to something that does its own
+ * {@code instanceof LexicalHandler} detection — e.g. {@link
+ * org.exist.util.serializer.ReceiverToSAX}'s constructor, which is how {@link
+ * org.exist.http.servlets.XSLTServlet} uses this filter. A caller that instead goes
+ * through {@link org.exist.storage.serializers.Serializer#setSAXHandlers(ContentHandler,
+ * LexicalHandler)} with an explicit {@code null} lexical handler — as {@code
+ * StylesheetResolverAndCompiler} and {@code EXistDbXMLReader} both do — gets no benefit
+ * from this, since {@code setSAXHandlers} overwrites whatever {@code ReceiverToSAX}
+ * would otherwise have auto-detected.</p>
  */
-public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
+public class Saxon12CompatSAXFilter extends XMLFilterImpl implements LexicalHandler {
 
     private static final Logger LOG = LogManager.getLogger(Saxon12CompatSAXFilter.class);
 
-    private final ContentHandler delegate;
     private final LexicalHandler lexicalDelegate;
     private boolean documentStarted = false;
 
+    /** Prefixes whose {@link #startPrefixMapping(String, String)} call was suppressed,
+     *  with a count to correctly pair nested/repeated declarations of the same prefix
+     *  with their matching {@link #endPrefixMapping(String)} calls, which must be
+     *  suppressed too — otherwise the delegate would see an endPrefixMapping with no
+     *  matching start. */
+    private final Map<String, Integer> suppressedPrefixMappings = new HashMap<>();
+
     public Saxon12CompatSAXFilter(final ContentHandler delegate) {
-        this.delegate = delegate;
+        setContentHandler(delegate);
         this.lexicalDelegate = delegate instanceof LexicalHandler lh ? lh : null;
     }
 
@@ -71,7 +92,7 @@ public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
     public void startDocument() throws SAXException {
         if (!documentStarted) {
             documentStarted = true;
-            delegate.startDocument();
+            super.startDocument();
         }
     }
 
@@ -88,28 +109,33 @@ public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
     }
 
     @Override
-    public void setDocumentLocator(final Locator locator) {
-        delegate.setDocumentLocator(locator);
-    }
-
-    @Override
     public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
         // Saxon 12 rejects any namespace declaration involving the XML namespace URI
         // (http://www.w3.org/XML/1998/namespace) — the xml prefix is always implicitly bound
         if ("xml".equals(prefix) || XMLConstants.XML_NS_URI.equals(uri)) {
+            suppressedPrefixMappings.merge(prefix, 1, Integer::sum);
             return;
         }
-        delegate.startPrefixMapping(prefix, uri);
+        super.startPrefixMapping(prefix, uri);
     }
 
     @Override
     public void endPrefixMapping(final String prefix) throws SAXException {
-        delegate.endPrefixMapping(prefix);
+        final Integer suppressedCount = suppressedPrefixMappings.get(prefix);
+        if (suppressedCount != null) {
+            if (suppressedCount == 1) {
+                suppressedPrefixMappings.remove(prefix);
+            } else {
+                suppressedPrefixMappings.put(prefix, suppressedCount - 1);
+            }
+            return;
+        }
+        super.endPrefixMapping(prefix);
     }
 
     @Override
     public void startElement(final String uri, final String localName, final String qName, final Attributes atts) throws SAXException {
-        delegate.startElement(uri, localName, qName, sanitizeXmlNamespaceAttributes(atts));
+        super.startElement(uri, localName, qName, sanitizeXmlNamespaceAttributes(atts));
     }
 
     /**
@@ -117,10 +143,11 @@ public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
      * {@code http://www.w3.org/XML/1998/namespace}, and no other prefix is ever legally
      * used for that URI. eXist's persistent node layer has been observed to occasionally
      * hand back an attribute qName with a different, spurious prefix for that URI (see
-     * #3417) even though the attribute's own uri/localName are correct; Saxon 12 rejects
-     * such a mismatch outright with "Invalid prefix for XML namespace" instead of ignoring
-     * it. Rather than trust whatever prefix eXist supplied, this always rewrites an
-     * xml-namespaced attribute's qName to the canonical {@code xml:}-prefixed form.
+     * #3417, root cause still tracked under #6781) even though the attribute's own
+     * uri/localName are correct; Saxon 12 rejects such a mismatch outright with "Invalid
+     * prefix for XML namespace" instead of ignoring it. Rather than trust whatever prefix
+     * eXist supplied, this always rewrites an xml-namespaced attribute's qName to the
+     * canonical {@code xml:}-prefixed form.
      */
     private static Attributes sanitizeXmlNamespaceAttributes(final Attributes atts) {
         AttributesImpl sanitized = null;
@@ -136,31 +163,6 @@ public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
             }
         }
         return sanitized == null ? atts : sanitized;
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        delegate.endElement(uri, localName, qName);
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        delegate.characters(ch, start, length);
-    }
-
-    @Override
-    public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
-        delegate.ignorableWhitespace(ch, start, length);
-    }
-
-    @Override
-    public void processingInstruction(final String target, final String data) throws SAXException {
-        delegate.processingInstruction(target, data);
-    }
-
-    @Override
-    public void skippedEntity(final String name) throws SAXException {
-        delegate.skippedEntity(name);
     }
 
     @Override
