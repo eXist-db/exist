@@ -1,0 +1,84 @@
+exist-core/src/test/resources/org/exist/xquery/functions/util/conf-sys-props-admins-only.xml
+  s_057db35e4d626e::t_ac4f382c751ccf 1-835
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunEnvironment.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24-25,35,46,49-67,70,75-78,84-88,95-98,102
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_057db35e4d626e::t_395609d4f87139 3040-3041
+  s_057db35e4d626e::t_ac4f382c751ccf 56-57,393-396,3015,3017,3022-3039
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnModule.java
+  s_057db35e4d626e::t_6ce24c5c9a0318 290
+  s_057db35e4d626e::t_ac4f382c751ccf 26,28-30,32,34,291-295,319-346
+exist-core/src/main/java/org/exist/launcher/SplashScreen.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24,71,74-75
+exist-core/src/main/java/org/exist/xquery/functions/system/GetProductName.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24,52
+exist-core/src/main/java/org/exist/xquery/functions/system/GetRevision.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24,57
+exist-core/src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java
+  s_057db35e4d626e::t_ac4f382c751ccf 1-148
+exist-core/src/main/java/org/exist/xquery/AbstractInternalModule.java
+  s_057db35e4d626e::t_ac4f382c751ccf 101-109
+exist-core/src/main/java/org/exist/xquery/functions/util/UtilModule.java
+  s_057db35e4d626e::t_23c121493036e7 171
+  s_057db35e4d626e::t_f7d607920657fc 170
+  s_057db35e4d626e::t_3ac701f147e6f1 254
+  s_057db35e4d626e::t_ac4f382c751ccf 26,28-30,32,34,45,107-108,172-174,227-253
+exist-core/pom.xml
+  s_057db35e4d626e::t_ac4f382c751ccf 785-786,794,955-956,964
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_057db35e4d626e::t_ab1861de416397 339-342
+  s_057db35e4d626e::t_ac4f382c751ccf 37
+exist-core/src/main/java/org/exist/repo/ClasspathHelper.java
+  s_057db35e4d626e::t_ff3068fe4200ce 26
+  s_057db35e4d626e::t_ac4f382c751ccf 111
+exist-core/src/main/java/org/exist/management/impl/SystemInfo.java
+  s_057db35e4d626e::t_1ac516c7ce68d7 24
+  s_057db35e4d626e::t_6b91a349f78f30 53
+  s_057db35e4d626e::t_5501ba9fbb6cd8 48
+  s_057db35e4d626e::t_ac4f382c751ccf 63
+  s_057db35e4d626e::t_66eaf1ee8355ef 58
+exist-core/src/main/java/org/exist/client/ClientFrame.java
+  s_057db35e4d626e::t_6e84248a427744 244
+  s_057db35e4d626e::t_ac4f382c751ccf 26
+exist-core/src/main/java/org/exist/Version.java
+  s_057db35e4d626e::t_ac4f382c751ccf 39-44
+exist-core/src/main/java/org/exist/xquery/functions/system/GetVersion.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24,56
+exist-core/src/main/java/org/exist/xquery/functions/system/GetBuild.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24,56
+exist-core/src/main/java/org/exist/xquery/functions/util/SystemProperty.java
+  s_057db35e4d626e::t_ac4f382c751ccf 24-28,33,37-43,46-47,50,54-62,65-75,80-119,121,124
+exist-core/src/main/java/org/exist/repo/Deployment.java
+  s_057db35e4d626e::t_ac4f382c751ccf 28,267
+exist-core/src/test/resources/org/exist/xquery/functions/fn/conf-env-vars-admins-only.xml
+  s_057db35e4d626e::t_ac4f382c751ccf 1-828
+exist-distribution/src/main/config/conf.xml
+  s_057db35e4d626e::t_ac4f382c751ccf 957-975,992-1007
+exist-core/src/main/java/org/exist/client/InteractiveClient.java
+  s_057db35e4d626e::t_ac4f382c751ccf 80-81
+  s_057db35e4d626e::t_2cb15f3adc66c2 2513,2518,2520-2521
+exist-core/src/main/java/org/exist/webstart/JnlpWriter.java
+  s_057db35e4d626e::t_ac4f382c751ccf 38,104
+exist-core/src/main/java/org/exist/ExistSystemProperties.java
+  s_057db35e4d626e::t_ac4f382c751ccf 1-87
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java
+  s_057db35e4d626e::t_ac4f382c751ccf 1-144
+exist-core/src/main/java/org/exist/xquery/functions/AccessUtil.java
+  s_057db35e4d626e::t_ac4f382c751ccf 1-191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f104308364107dc833a0ce1d5860528e2894eb93",
+  "prompts": {},
+  "sessions": {
+    "s_057db35e4d626e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d098492-80f8-475a-9242-9398c5410f52",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
