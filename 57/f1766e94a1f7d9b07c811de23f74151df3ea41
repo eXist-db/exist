@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/util/Saxon12CompatSAXFilter.java
+  s_29b98f13efd9f8::t_ab26831f53fafb 31,34-35,39,50-52,55-70,72,79-85,87,95,116,119,124-133,138,146-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "57f1766e94a1f7d9b07c811de23f74151df3ea41",
+  "prompts": {},
+  "sessions": {
+    "s_29b98f13efd9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e52dd4af-6bf8-4758-836d-9edf0ec35cfe",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
