@@ -23,6 +23,7 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.w3c.dom.*;
 
+import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -46,6 +48,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -226,6 +229,27 @@ public class NodeTest {
                 return true;
             };
             rootNode.accept(visitor);
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    public void replacingADocumentLevelCommentWithAnElementIsRejected() throws EXistException, LockException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"), LockMode.WRITE_LOCK)) {
+            final DocumentImpl doc = lockedDoc.getDocument();
+            final Node comment = doc.getFirstChild();
+            assertEquals(Node.COMMENT_NODE, comment.getNodeType());
+
+            final ElementImpl element = new ElementImpl(new QName("other", XMLConstants.NULL_NS_URI), pool.getSymbols());
+            element.setOwnerDocument(doc);
+
+            // a second document element would make the document not well-formed
+            final DOMException e = assertThrows(DOMException.class, () -> doc.updateChild(transaction, comment, element));
+            assertEquals(DOMException.INVALID_MODIFICATION_ERR, e.code);
+            assertEquals(3, doc.getChildNodes().getLength());
+            assertEquals(Node.COMMENT_NODE, doc.getFirstChild().getNodeType());
         }
     }
 
