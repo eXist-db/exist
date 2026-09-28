@@ -46,6 +46,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
@@ -128,17 +129,15 @@ public class Delete extends Modification {
                         throw new XPathException(this,
                             "It is not possible to remove the document element.");
 
-                    } else if (parent instanceof final DocumentImpl parentDoc && node.getNodeType() != Node.ELEMENT_NODE) {
+                    } else if (parent instanceof final DocumentImpl parentDoc) {
+                        // the only element child of a document is its document element
+                        if (node.getNodeType() == Node.ELEMENT_NODE) {
+                            throw new XPathException(this,
+                                "you cannot remove the document element. Use update "
+                                    + "instead");
+                        }
                         // a comment or processing instruction around the document element
                         parentDoc.removeChild(transaction, node);
-                    } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("parent = {}; {}", parent.getNodeType(), parent.getNodeName());
-                        }
-                        //transact.abort(transaction);
-                        throw new XPathException(this,
-                            "you cannot remove the document element. Use update "
-                                + "instead");
                     } else {
                         parent.removeChild(transaction, node);
                     }
@@ -151,7 +150,7 @@ public class Delete extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 transaction.commit();
-            } catch (final EXistException | PermissionDeniedException | LockException | TriggerException e) {
+            } catch (final EXistException | PermissionDeniedException | LockException | TriggerException | DOMException e) {
                 throw new XPathException(this, e.getMessage(), e);
             } finally {
                 unlockDocuments();
