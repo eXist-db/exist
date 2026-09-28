@@ -38,6 +38,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public class Optimize extends AbstractPragma {
     public static final String OPTIMIZE_PRAGMA_LOCAL_NAME = "optimize";
@@ -78,6 +79,21 @@ public class Optimize extends AbstractPragma {
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         this.contextId = contextInfo.getContextId();
+    }
+
+    /**
+     * The call in a quantified expression's satisfies clause, if the optimizer approved serving it
+     * from the index. A quantified expression has no visit method, so {@code accept()} never
+     * reaches that call; and the optimizer's approval matters, because it declines {@code every},
+     * larger satisfies clauses and patterns that depend on the bound variable.
+     */
+    private static Optional<BoundSequenceOptimizable> approvedQuantifiedMatch(final Expression expression) {
+        if (Optimizer.unwrapOperand(expression) instanceof final QuantifiedExpression quantified
+                && Optimizer.unwrapOperand(quantified.getReturnExpression()) instanceof final BoundSequenceOptimizable optimizable
+                && optimizable.isOptimizedOverBoundSequence()) {
+            return Optional.of(optimizable);
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -248,7 +264,8 @@ public class Optimize extends AbstractPragma {
 
             @Override
             public void visitPredicate(final Predicate predicate) {
-                predicate.getExpression(0).accept(this);
+                final Expression inner = predicate.getExpression(0);
+                approvedQuantifiedMatch(inner).ifPresentOrElse(optimizable -> addOptimizable(optimizable), () -> inner.accept(this));
             }
 
             @Override
