@@ -27,6 +27,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.XMLConstants;
 
 /**
  * A SAX ContentHandler filter that adapts eXist's serializer output to Saxon 12's
@@ -44,17 +48,23 @@ import org.xml.sax.SAXException;
  * </ol>
  *
  * This filter wraps a delegate handler and silently drops the offending events while
- * passing everything else through unchanged.
+ * passing everything else through unchanged. It also implements {@link LexicalHandler},
+ * forwarding to the delegate when the delegate implements it, so wrapping a handler in
+ * this filter does not silently drop comment/CDATA/DTD events for callers (such as
+ * {@link org.exist.util.serializer.ReceiverToSAX}) that detect lexical-handler support
+ * via {@code instanceof}.
  */
-public class Saxon12CompatSAXFilter implements ContentHandler {
+public class Saxon12CompatSAXFilter implements ContentHandler, LexicalHandler {
 
     private static final Logger LOG = LogManager.getLogger(Saxon12CompatSAXFilter.class);
 
     private final ContentHandler delegate;
+    private final LexicalHandler lexicalDelegate;
     private boolean documentStarted = false;
 
     public Saxon12CompatSAXFilter(final ContentHandler delegate) {
         this.delegate = delegate;
+        this.lexicalDelegate = delegate instanceof LexicalHandler lh ? lh : null;
     }
 
     @Override
@@ -67,11 +77,11 @@ public class Saxon12CompatSAXFilter implements ContentHandler {
 
     @Override
     public void endDocument() throws SAXException {
-        // Suppress — the caller will call endDocument on the delegate directly.
-        // If endDocument arrives before any startDocument, that's a spurious SAX event
-        // (a downstream issue rather than the duplicate-startDocument case this guard
-        // exists for) — log at debug level so it's visible during diagnosis without
-        // adding noise to normal operation.
+        // Always suppress — callers are expected to invoke the delegate's endDocument()
+        // directly themselves once the SAX pipeline this filter guards has finished (see
+        // StylesheetResolverAndCompiler, EXistDbXMLReader, XSLTServlet), so an endDocument
+        // arriving here is always the duplicate that Saxon 12's LinkedTreeBuilder rejects
+        // on a second call (it NPEs rather than ignoring it, unlike startDocument).
         if (!documentStarted && LOG.isDebugEnabled()) {
             LOG.debug("endDocument received without a preceding startDocument; suppressing");
         }
@@ -86,7 +96,7 @@ public class Saxon12CompatSAXFilter implements ContentHandler {
     public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
         // Saxon 12 rejects any namespace declaration involving the XML namespace URI
         // (http://www.w3.org/XML/1998/namespace) — the xml prefix is always implicitly bound
-        if ("xml".equals(prefix) || javax.xml.XMLConstants.XML_NS_URI.equals(uri)) {
+        if ("xml".equals(prefix) || XMLConstants.XML_NS_URI.equals(uri)) {
             return;
         }
         delegate.startPrefixMapping(prefix, uri);
@@ -99,7 +109,33 @@ public class Saxon12CompatSAXFilter implements ContentHandler {
 
     @Override
     public void startElement(final String uri, final String localName, final String qName, final Attributes atts) throws SAXException {
-        delegate.startElement(uri, localName, qName, atts);
+        delegate.startElement(uri, localName, qName, sanitizeXmlNamespaceAttributes(atts));
+    }
+
+    /**
+     * The {@code xml} prefix is fixed by the XML namespaces spec to always be bound to
+     * {@code http://www.w3.org/XML/1998/namespace}, and no other prefix is ever legally
+     * used for that URI. eXist's persistent node layer has been observed to occasionally
+     * hand back an attribute qName with a different, spurious prefix for that URI (see
+     * #3417) even though the attribute's own uri/localName are correct; Saxon 12 rejects
+     * such a mismatch outright with "Invalid prefix for XML namespace" instead of ignoring
+     * it. Rather than trust whatever prefix eXist supplied, this always rewrites an
+     * xml-namespaced attribute's qName to the canonical {@code xml:}-prefixed form.
+     */
+    private static Attributes sanitizeXmlNamespaceAttributes(final Attributes atts) {
+        AttributesImpl sanitized = null;
+        for (int i = 0; i < atts.getLength(); i++) {
+            if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
+                final String canonicalQName = XMLConstants.XML_NS_PREFIX + ':' + atts.getLocalName(i);
+                if (!canonicalQName.equals(atts.getQName(i))) {
+                    if (sanitized == null) {
+                        sanitized = new AttributesImpl(atts);
+                    }
+                    sanitized.setQName(i, canonicalQName);
+                }
+            }
+        }
+        return sanitized == null ? atts : sanitized;
     }
 
     @Override
@@ -125,5 +161,54 @@ public class Saxon12CompatSAXFilter implements ContentHandler {
     @Override
     public void skippedEntity(final String name) throws SAXException {
         delegate.skippedEntity(name);
+    }
+
+    @Override
+    public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.startDTD(name, publicId, systemId);
+        }
+    }
+
+    @Override
+    public void endDTD() throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.endDTD();
+        }
+    }
+
+    @Override
+    public void startEntity(final String name) throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.startEntity(name);
+        }
+    }
+
+    @Override
+    public void endEntity(final String name) throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.endEntity(name);
+        }
+    }
+
+    @Override
+    public void startCDATA() throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.startCDATA();
+        }
+    }
+
+    @Override
+    public void endCDATA() throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.endCDATA();
+        }
+    }
+
+    @Override
+    public void comment(final char[] ch, final int start, final int length) throws SAXException {
+        if (lexicalDelegate != null) {
+            lexicalDelegate.comment(ch, start, length);
+        }
     }
 }

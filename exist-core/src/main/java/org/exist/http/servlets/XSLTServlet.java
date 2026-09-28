@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.util.Saxon12CompatSAXFilter;
 import org.exist.util.serializer.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -218,7 +219,10 @@ public class XSLTServlet extends HttpServlet {
             handler.setResult(result);
 
             final Serializer serializer = broker.borrowSerializer();
-            Receiver receiver = new ReceiverToSAX(handler);
+            // Saxon 12 rejects SAX events that redeclare the implicit xml namespace
+            // (http://www.w3.org/XML/1998/namespace), which eXist's persistent DOM can
+            // emit via its namespace mappings; see Saxon12CompatSAXFilter and #3417.
+            Receiver receiver = new ReceiverToSAX(new Saxon12CompatSAXFilter(handler));
             try {
                 XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                 receiver = xinclude;
@@ -262,6 +266,12 @@ public class XSLTServlet extends HttpServlet {
                         pool.getParserPool().returnXMLReader(reader);
                     }
                 }
+
+                // Saxon12CompatSAXFilter always suppresses endDocument (see its javadoc) to
+                // avoid a duplicate call crashing Saxon 12's LinkedTreeBuilder, so the pipeline's
+                // real endDocument must be delivered directly to the handler here, matching the
+                // pattern used by StylesheetResolverAndCompiler and EXistDbXMLReader.
+                handler.endDocument();
 
             } catch (final SAXParseException e) {
                 LOG.error(e.getMessage());
