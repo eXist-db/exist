@@ -789,17 +789,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             // callers such as the XML:DB API ask for the document's content through the document node
             return getDocumentElement();
         }
-        if(p.getNodeId().getTreeLevel() == 1) {
-            // a child of the document: the document element, or a comment or processing instruction around it
-            final NodeList cl = getChildNodes();
-            for(int i = 0; i < cl.getLength(); i++) {
-                final Node child = cl.item(i);
-                if(child instanceof final IStoredNode<?> storedChild && p.getNodeId().equals(storedChild.getNodeId())) {
-                    return child;
-                }
-            }
-            return null;
-        }
         try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(p);
         } catch(final Exception e) {
@@ -974,48 +963,77 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         if(!(oldChild instanceof IStoredNode<?> oldNode) || !(newChild instanceof IStoredNode<?> newNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         }
-        if(oldChild.getNodeType() == ELEMENT_NODE && newChild.getNodeType() != ELEMENT_NODE) {
-            throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
-                    "A node replacing the document root needs to be an element");
-        }
+        checkOneDocumentElement(oldChild, newChild);
         final int index = childIndex(oldNode);
-        final boolean element = oldNode.getNodeType() == ELEMENT_NODE;
         try(final DBBroker broker = pool.getBroker()) {
-            final long oldAddress = oldNode.getInternalAddress();
             final NodePath oldPath = oldNode.getPath();
-            final IndexController indexes = broker.getIndexController();
-            final NativeValueIndex valueIndex = broker.getValueIndex();
-            IStoredNode<?> valueReindexRoot = null;
-            if(element) {
-                // the document element's descendants are indexed under its name: remove them, and
-                // index them again below under the new node, as ElementImpl#updateChild does
-                indexes.setDocument(this);
-                indexes.setMode(ReindexMode.REMOVE_SOME_NODES);
-                indexes.reindex(transaction, oldNode, ReindexMode.REMOVE_SOME_NODES);
-                valueReindexRoot = valueIndex.getReindexRoot(oldNode, oldPath);
-                valueIndex.reindex(valueReindexRoot);
-            }
-            newNode.setNodeId(oldNode.getNodeId());
-            broker.insertNodeAfter(transaction, oldNode, newNode);
-            oldNode.setInternalAddress(oldAddress);
-            broker.removeNode(transaction, oldNode, oldPath, null);
-            broker.endRemove(transaction);
-            final NodePath path = newNode.getPath();
-            broker.indexNode(transaction, newNode, path);
-            if(element) {
-                broker.endElement(newNode, path, null);
-            }
-            childAddress[index] = newNode.getInternalAddress();
-            if(element) {
-                indexes.reindex(transaction, newNode, ReindexMode.STORE);
-                // at the top level, the value index's reindex root can only be the document element itself
-                valueIndex.reindex(valueReindexRoot == null ? null : newNode);
+            if(oldNode.getNodeType() == ELEMENT_NODE) {
+                replaceDocumentElement(transaction, broker, oldNode, oldPath, newNode, index);
+            } else {
+                replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, index);
             }
             broker.flush();
         } catch(final EXistException e) {
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         }
         return newNode;
+    }
+
+    /**
+     * A document has exactly one document element: it can only be replaced by an element, and
+     * nothing else can be replaced by one.
+     */
+    private static void checkOneDocumentElement(final Node oldChild, final Node newChild) throws DOMException {
+        if(oldChild.getNodeType() == ELEMENT_NODE && newChild.getNodeType() != ELEMENT_NODE) {
+            throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+                    "A node replacing the document root needs to be an element");
+        }
+        if(oldChild.getNodeType() != ELEMENT_NODE && newChild.getNodeType() == ELEMENT_NODE) {
+            throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+                    "A document can have only one document element");
+        }
+    }
+
+    /**
+     * Replace the document element. Its descendants are indexed under its name: remove them from the
+     * indexes, and index them again under the new element, as {@link ElementImpl#updateChild} does.
+     */
+    private void replaceDocumentElement(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
+            final NodePath oldPath, final IStoredNode<?> newNode, final int index) {
+        final IndexController indexes = broker.getIndexController();
+        final NativeValueIndex valueIndex = broker.getValueIndex();
+        indexes.setDocument(this);
+        indexes.setMode(ReindexMode.REMOVE_SOME_NODES);
+        indexes.reindex(transaction, oldNode, ReindexMode.REMOVE_SOME_NODES);
+        final IStoredNode<?> valueReindexRoot = valueIndex.getReindexRoot(oldNode, oldPath);
+        valueIndex.reindex(valueReindexRoot);
+
+        final NodePath path = replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, index);
+        broker.endElement(newNode, path, null);
+
+        indexes.reindex(transaction, newNode, ReindexMode.STORE);
+        // at the top level, the value index's reindex root can only be the document element itself
+        valueIndex.reindex(valueReindexRoot == null ? null : newNode);
+    }
+
+    /**
+     * Write the new child directly after the old one, then remove the old one, so that a child with no
+     * previous sibling can be replaced too.
+     *
+     * @return the path of the new child
+     */
+    private NodePath replaceStoredChild(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
+            final NodePath oldPath, final IStoredNode<?> newNode, final int index) {
+        final long oldAddress = oldNode.getInternalAddress();
+        newNode.setNodeId(oldNode.getNodeId());
+        broker.insertNodeAfter(transaction, oldNode, newNode);
+        oldNode.setInternalAddress(oldAddress);
+        broker.removeNode(transaction, oldNode, oldPath, null);
+        broker.endRemove(transaction);
+        final NodePath path = newNode.getPath();
+        broker.indexNode(transaction, newNode, path);
+        childAddress[index] = newNode.getInternalAddress();
+        return path;
     }
 
     /**
