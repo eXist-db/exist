@@ -1,5 +1,5 @@
 Source path,Artifact ID,Group ID,Name,Description,Version,Parent project,Module count
-pom.xml,exist,,eXist-db,eXist-db multi-module project,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,10
+pom.xml,exist,,eXist-db,eXist-db multi-module project,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,11
 extensions/modules/process/pom.xml,exist-process,,eXist-db Process Module,eXist-db XQuery Process Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/indexes/range/pom.xml,exist-index-range,,eXist-db Lucene Range Index,eXist-db NoSQL Database Lucene Range Index,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/modules/counter/pom.xml,exist-counter,,eXist-db Counter Module,eXist-db XQuery Counter Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
@@ -40,6 +40,9 @@ extensions/security/iprange/pom.xml,exist-security-iprange,,eXist-db IP Range Se
 exist-distribution/pom.xml,exist-distribution,,eXist-db Distributions,Distributions for eXist-db NoSQL Database Client/Server,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/modules/compression/pom.xml,exist-compression,,eXist-db Compression Module,eXist-db XQuery Compression Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/indexes/pom.xml,exist-indexes,,eXist-db Index Extensions,eXist-db NoSQL Database Index Extensions,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,7
+exist-services/pom.xml,exist-services,,eXist-db Platform Services,"Built-in HTTP services for the eXist-db platform: package management REST API
+        and OpenAPI-based routing. These services are compiled into the platform and
+        require no XAR package installation.",,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 exist-start/pom.xml,exist-start,,eXist-db Startup,Startup for eXist-db NoSQL Database Client/Server,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/exquery/modules/request/pom.xml,exist-exquery-request-module,,eXist-db EXQuery Request Module,eXist-db NoSQL Database EXQuery Request Module,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
 extensions/webdav/pom.xml,exist-webdav,,eXist-db WebDAV Extension,eXist-db NoSQL Database WebDAV Extension,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
