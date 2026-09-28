@@ -283,8 +283,8 @@ public class PackageService {
         }
         final Repository repo = maybeRepo.get().getParentRepo();
         final String findUrl = registryUrl + "/find";
-        final String processorVersion = org.exist.SystemProperties.getInstance()
-                .getSystemProperty("product-version", "7.0.0");
+        final String processorVersion = org.exist.ExistSystemProperties.getInstance()
+                .getExistSystemProperty(org.exist.ExistSystemProperties.PROP_PRODUCT_VERSION, "7.0.0");
 
         final List<Package> candidates = new ArrayList<>();
         for (final Packages packages : repo.listPackages()) {
