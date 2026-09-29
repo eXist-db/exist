@@ -961,8 +961,11 @@
                     and fn:environment-variable#1 functions can be restricted for Security Purposes.
                     The syntax of the parameter keys is:
                         "environmentVariableAccess.<Name of an Environment Variable>.[requiresGroup|requiresUser]"
-                    If you have multiple users who wish to access the same Environment Variable, then you may
-                    add multiple parameters for the same key, e.g.:
+                    Each parameter's value is a single group or user name; it is NOT a comma- or
+                    space-separated list (e.g. value="dba,admin" is treated as one literal name
+                    that will never match, not as "dba" or "admin"). If you have multiple groups
+                    or users who wish to access the same Environment Variable, then you may add
+                    multiple parameters repeating the same key, e.g.:
                     <parameter name="environmentVariableAccess.PATH.requiresGroup" value="dba"/>
                     <parameter name="environmentVariableAccess.PATH.requiresGroup" value="admin"/>
                     <parameter name="environmentVariableAccess.PATH.requiresUser" value="my-special-user"/>
@@ -995,8 +998,11 @@
                     and util:system-property#1 functions can be restricted for Security Purposes.
                     The syntax of the parameter keys is:
                         "systemPropertyAccess.<Name of a Java System Property>.[requiresGroup|requiresUser]"
-                    If you have multiple users who wish to access the same System Property, then you may
-                    add multiple parameters for the same key, e.g.:
+                    Each parameter's value is a single group or user name; it is NOT a comma- or
+                    space-separated list (e.g. value="dba,admin" is treated as one literal name
+                    that will never match, not as "dba" or "admin"). If you have multiple groups
+                    or users who wish to access the same System Property, then you may add
+                    multiple parameters repeating the same key, e.g.:
                     <parameter name="systemPropertyAccess.PATH.requiresGroup" value="dba"/>
                     <parameter name="systemPropertyAccess.PATH.requiresGroup" value="admin"/>
                     <parameter name="systemPropertyAccess.PATH.requiresUser" value="my-special-user"/>

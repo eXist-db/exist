@@ -150,6 +150,19 @@ public class AccessUtil {
         return groupRulesWithDefault;
     }
 
+    /**
+     * Converts a parameter's raw values into a Set of principal names.
+     *
+     * <p>Each {@code <parameter>} element contributes exactly one name to {@code values}; a
+     * value is never split on commas or whitespace, so {@code value="dba,admin"} is one literal
+     * (unmatchable) name, not the two groups "dba" and "admin". To grant several groups or users
+     * access, repeat the {@code <parameter>} element with the same {@code name} attribute and a
+     * different {@code value} for each principal.</p>
+     *
+     * @param values the raw parameter values.
+     *
+     * @return the principal names.
+     */
     private static Set<String> toSet(final List<?> values) {
         if (values.isEmpty()) {
             return Collections.emptySet();
