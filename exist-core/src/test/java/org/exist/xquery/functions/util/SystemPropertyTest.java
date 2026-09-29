@@ -42,11 +42,12 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -57,23 +58,26 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class SystemPropertyTest {
 
-    @Parameterized.Parameter(value = 0)
+    @Parameter(0)
     public String testTypeName;
 
-    @Parameterized.Parameter(value = 1)
+    @Parameter(1)
     public String confFileName;
 
-    @Parameterized.Parameter(value = 2)
+    @Parameter(2)
     public boolean shouldReturnEmptySequence;
 
     private ExistEmbeddedServer existEmbeddedServer = null;
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "non-secure", null, false },
@@ -81,7 +85,7 @@ public class SystemPropertyTest {
         });
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws URISyntaxException, DatabaseConfigurationException, EXistException, IOException {
         if (confFileName == null) {
             existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -92,7 +96,7 @@ public class SystemPropertyTest {
         existEmbeddedServer.startDb();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (existEmbeddedServer != null) {
             existEmbeddedServer.stopDb();
@@ -143,6 +147,60 @@ public class SystemPropertyTest {
             } else {
                 assertFalse(result.isEmpty());
             }
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343054210">
+     *     line-o's review comment on PR #6721</a> asking for a test that a specific rule can
+     *     "overrule" the generic denial.
+     */
+    @Test
+    public void systemPropertySpecificRuleOverridesGenericDenial() throws EXistException, XPathException, PermissionDeniedException {
+        assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            // "os.name" is only covered by the "*" -> "admins" wildcard; the system subject
+            // (a DBA) is not a member of "admins", so it remains denied
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "java.version" has a specific "requiresGroup=dba" rule, which takes precedence
+            // over the wildcard and grants the DBA access
+            result = xqueryService.execute(broker, "util:system-property('java.version')", null);
+            assertFalse(result.isEmpty());
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343093364">
+     *     line-o's review comment on PR #6721</a> asking for a test covering the default use
+     *     case of allowing an additional group to read a single property.
+     */
+    @Test
+    public void systemPropertyAdditionalGroupGrantsAccess() throws EXistException, XPathException, PermissionDeniedException {
+        assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
+
+            // the guest subject is in neither "admins" nor "dba", so the "*" wildcard denies it
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "os.arch" has a specific "requiresGroup=guest" rule granting the guest group access
+            result = xqueryService.execute(broker, "util:system-property('os.arch')", null);
+            assertFalse(result.isEmpty());
         }
     }
 }

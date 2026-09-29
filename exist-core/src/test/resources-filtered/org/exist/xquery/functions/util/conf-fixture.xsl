@@ -56,10 +56,19 @@
 
     <!-- SystemPropertyTest's "secure" fixture: restrict util:available-system-properties#0 /
          util:system-property#1 to the "admins" group, so a caller who is not a member of that
-         group (even a DBA) is denied and the AccessUtil access-control path is exercised. -->
+         group (even a DBA) is denied and the AccessUtil access-control path is exercised.
+
+         Two additional per-name rules cover cases raised in review of PR eXist-db/exist#6721:
+         - "java.version" grants the "dba" group, so a DBA is allowed here even though the
+           wildcard above denies it everything else (a specific rule overrules the generic
+           "otherwise" denial).
+         - "os.arch" grants the built-in "guest" group, the everyday case of opening up a
+           single property to an additional, non-admin group. -->
     <xsl:param name="extra-modules" as="element()*">
         <module xmlns="" uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
             <parameter name="systemPropertyAccess.*.requiresGroup" value="admins"/>
+            <parameter name="systemPropertyAccess.java.version.requiresGroup" value="dba"/>
+            <parameter name="systemPropertyAccess.os.arch.requiresGroup" value="guest"/>
         </module>
     </xsl:param>
 
