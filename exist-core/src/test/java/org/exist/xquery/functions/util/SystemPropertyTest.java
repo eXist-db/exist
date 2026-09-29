@@ -43,6 +43,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,6 +144,60 @@ public class SystemPropertyTest {
             } else {
                 assertFalse(result.isEmpty());
             }
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343054210">
+     *     line-o's review comment on PR #6721</a> asking for a test that a specific rule can
+     *     "overrule" the generic denial.
+     */
+    @Test
+    public void systemPropertySpecificRuleOverridesGenericDenial() throws EXistException, XPathException, PermissionDeniedException {
+        Assume.assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            // "os.name" is only covered by the "*" -> "admins" wildcard; the system subject
+            // (a DBA) is not a member of "admins", so it remains denied
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "java.version" has a specific "requiresGroup=dba" rule, which takes precedence
+            // over the wildcard and grants the DBA access
+            result = xqueryService.execute(broker, "util:system-property('java.version')", null);
+            assertFalse(result.isEmpty());
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343093364">
+     *     line-o's review comment on PR #6721</a> asking for a test covering the default use
+     *     case of allowing an additional group to read a single property.
+     */
+    @Test
+    public void systemPropertyAdditionalGroupGrantsAccess() throws EXistException, XPathException, PermissionDeniedException {
+        Assume.assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
+
+            // the guest subject is in neither "admins" nor "dba", so the "*" wildcard denies it
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "os.arch" has a specific "requiresGroup=guest" rule granting the guest group access
+            result = xqueryService.execute(broker, "util:system-property('os.arch')", null);
+            assertFalse(result.isEmpty());
         }
     }
 }
