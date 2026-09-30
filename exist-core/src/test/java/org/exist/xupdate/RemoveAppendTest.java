@@ -35,12 +35,9 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -51,12 +48,12 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author wolf
  *
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class RemoveAppendTest {
     
     private final static String XU_REMOVE =
@@ -70,7 +67,7 @@ public class RemoveAppendTest {
     private Collection testCol;
     private final Random rand = new Random();
 
-    @Rule
+    @RegisterExtension
     public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Disabled("Test setup broken — ITEM_COUNT is zero")

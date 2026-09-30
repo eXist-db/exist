@@ -40,10 +40,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.TerminatedException;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -53,10 +51,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * @author wolf
  *
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class DOMFileRecoverTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test

@@ -30,11 +30,8 @@ import org.exist.security.SecurityManager;
 import org.exist.test.ExistWebServer;
 import org.exist.util.MimeType;
 import org.exist.xmldb.*;
-import org.junit.Rule;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
@@ -56,6 +53,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.nio.file.Files;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.FileUtils.withUnixSep;
@@ -63,11 +61,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@ExtendWith(ExternalResourceSupport.class)
 public class XMLDBRestoreTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String PORT_PLACEHOLDER = "${PORT}";

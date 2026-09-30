@@ -30,14 +30,12 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,12 +44,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Currently, tests for the {@link org.exist.storage.XQueryPool}
  * with the {@link StringSource}. 
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class LowLevelTextTest {
 
 	private static final String TEST_XQUERY_SOURCE = "/test";
 
-	@Rule
+	@RegisterExtension
 	public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	private DBBroker broker;

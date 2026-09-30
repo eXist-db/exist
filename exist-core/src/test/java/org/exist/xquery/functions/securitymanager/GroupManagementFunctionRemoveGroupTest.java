@@ -34,15 +34,11 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.Rule;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-@ExtendWith(ExternalResourceSupport.class)
 public class GroupManagementFunctionRemoveGroupTest {
 
     private static final String USER1_NAME = "user1";
@@ -53,7 +49,7 @@ public class GroupManagementFunctionRemoveGroupTest {
     private static final String OTHER_GROUP1_NAME = "otherGroup";
     private static final String OTHER_GROUP2_NAME = "otherGroup2";
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
     @org.junit.jupiter.api.Test

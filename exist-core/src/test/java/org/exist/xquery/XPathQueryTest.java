@@ -25,7 +25,6 @@ import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -226,8 +225,7 @@ public class XPathQueryTest {
     
     private Collection testCollection;
     
-    @BeforeEach
-    public void setUp() throws Exception {
+    private void setUp() throws ReflectiveOperationException, XMLDBException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.getDeclaredConstructor().newInstance();
@@ -247,8 +245,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void childWildcards(String apiName, String baseUri) throws XMLDBException {
+    public void childWildcards(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String docName = "testChildWildcards.xml";
         final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test xmlns=\"http://test\"/>");
@@ -267,8 +266,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void pathExpression(String apiName, String baseUri) throws XMLDBException {
+    public void pathExpression(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -316,8 +316,9 @@ public class XPathQueryTest {
 
     /** test simple queries involving attributes */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void attributes(String apiName, String baseUri) throws XMLDBException {
+    public void attributes(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String testDocument = "numbers.xml";
 
         final XQueryService service = storeXMLStringAndGetQueryService(
@@ -339,8 +340,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void starAxis(String apiName, String baseUri) throws XMLDBException {
+    public void starAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -359,8 +361,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void starAxisConstraints(String apiName, String baseUri) throws XMLDBException {
+    public void starAxisConstraints(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
         service.setNamespace("t", "http://www.foo.com");
@@ -399,8 +402,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void starAxisConstraints2(String apiName, String baseUri) throws XMLDBException {
+    public void starAxisConstraints2(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
         service.setNamespace("t", "http://www.foo.com");
@@ -415,8 +419,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void starAxisConstraints3(String apiName, String baseUri) throws XMLDBException {
+    public void starAxisConstraints3(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
         service.setNamespace("t", "http://www.foo.com");
@@ -427,8 +432,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void root(String apiName, String baseUri) throws XMLDBException {
+    public void root(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         storeXMLStringAndGetQueryService("nested2.xml", nested2);
         final XQueryService service = storeXMLStringAndGetQueryService("numbers.xml", numbers);
         String query = "let $doc := <a><b/></a> return root($doc)";
@@ -448,8 +454,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void name(String apiName, String baseUri) throws XMLDBException {
+    public void name(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
 
@@ -462,8 +469,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parentAxis(String apiName, String baseUri) throws XMLDBException {
+    public void parentAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XQueryService service =
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
 
@@ -492,8 +500,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parentSelfAxis(String apiName, String baseUri) throws XMLDBException {
+    public void parentSelfAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
         storeXMLStringAndGetQueryService("numbers.xml", numbers);
@@ -512,8 +521,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void selfAxis(String apiName, String baseUri) throws XMLDBException {
+    public void selfAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("self.xml", self);
 
@@ -540,8 +550,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void ancestorAxis(String apiName, String baseUri) throws XMLDBException {
+    public void ancestorAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("nested3.xml", nested3);
 
@@ -560,8 +571,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void ancestorIndex(String apiName, String baseUri) throws XMLDBException {
+    public void ancestorIndex(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
 
@@ -574,8 +586,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void precedingSiblingAxis_persistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void precedingSiblingAxis_persistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -639,8 +652,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void precedingSiblingAxis_memtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void precedingSiblingAxis_memtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
@@ -697,8 +711,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingSiblingAxis_persistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void followingSiblingAxis_persistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XQueryService service = storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
@@ -753,8 +768,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingSiblingAxis_memtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void followingSiblingAxis_memtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
@@ -800,8 +816,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingAxis(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void followingAxis(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -816,8 +833,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void precedingAxis(String apiName, String baseUri) throws XMLDBException {
+    public void precedingAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -835,8 +853,9 @@ public class XPathQueryTest {
      * @see <a href="https://github.com/eXist-db/exist/issues/691">#691</a>
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void dslashWithReverseAxis(String apiName, String baseUri) throws XMLDBException {
+    public void dslashWithReverseAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xml = """
                 <root>
                    <a>
@@ -888,8 +907,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void position(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void position(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
 
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
@@ -978,8 +998,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void last(String apiName, String baseUri) throws XMLDBException {
+    public void last(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
             storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -994,8 +1015,9 @@ public class XPathQueryTest {
 
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void numbers(String apiName, String baseUri) throws XMLDBException {
+    public void numbers(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -1026,8 +1048,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void dates(String apiName, String baseUri) throws XMLDBException {
+    public void dates(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -1043,16 +1066,18 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void generalComparison(String apiName, String baseUri) throws XMLDBException {
+    public void generalComparison(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("dates.xml", date);
         queryResource(service, "dates.xml", "/timestamp[@date = xs:date('2006-04-29+02:00')]", 1);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void predicates(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String numbers =
                 "<test>"
                 + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
@@ -1101,8 +1126,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates2(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void predicates2(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String numbers =
                 "<test>"
                 + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
@@ -1234,8 +1260,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460610&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates_bug1460610(String apiName, String baseUri) throws XMLDBException {
+    public void predicates_bug1460610(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "(1, 2, 3)[ . lt 3]";
         
         final XQueryService service = getQueryService();
@@ -1252,8 +1279,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1537355&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates_bug1537355(String apiName, String baseUri) throws XMLDBException {
+    public void predicates_bug1537355(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "let $one := 1 return (1, 2, 3)[$one + 1]";
         
         final XQueryService service = getQueryService();
@@ -1268,8 +1296,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1533053&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void nestedPredicates_bug1533053(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void nestedPredicates_bug1533053(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         String xQuery = "let $doc := <objects>" +
     	    "<detail><class/><source><dynamic>false</dynamic></source></detail>" +
     	    "<detail><class/><source><dynamic>true</dynamic></source></detail>" +
@@ -1304,8 +1333,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicate_bug1488303(String apiName, String baseUri) throws XMLDBException {
+    public void predicate_bug1488303(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XQueryService service = getQueryService();
         ResourceSet rs=null;
         
@@ -1336,8 +1366,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void descendantOrSelf_bug1460791(String apiName, String baseUri) throws XMLDBException {
+    public void descendantOrSelf_bug1460791(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; let $test:=<z><a>aaa</a><z>zzz</z></z> "
                 +"return ( <one>{$test//z}</one>, <two>{$test/descendant-or-self::node()/child::z}</two> )";
         
@@ -1360,8 +1391,9 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1462120&group_id=17691&atid=1176
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void xpath_bug1462120(String apiName, String baseUri) throws XMLDBException {
+    public void xpath_bug1462120(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 +"let $m:=<Units><Unit name=\"g\" size=\"1\"/>"
                 +"<Unit name=\"kg\" size=\"1000\"/></Units> "
@@ -1393,8 +1425,9 @@ public class XPathQueryTest {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicate_bug_wiki_1(String apiName, String baseUri) throws XMLDBException {
+    public void predicate_bug_wiki_1(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "let $dum := <dummy><el>1</el><el>2</el></dummy> return $dum/el[2]";
         
         final XQueryService service = getQueryService();
@@ -1406,8 +1439,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicate_bug_andrzej(String apiName, String baseUri) throws XMLDBException {
+    public void predicate_bug_andrzej(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery =
             "doc('/db/test/predicates.xml')//elem1/elem2[ string-length( ./elem3 ) > 0][1]/elem3/text()";
         final XQueryService service =
@@ -1422,8 +1456,9 @@ public class XPathQueryTest {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void cardinalitySelf_bug_wiki_2(String apiName, String baseUri) throws XMLDBException {
+    public void cardinalitySelf_bug_wiki_2(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "let $test := <test><works><employee>a</employee><employee>b</employee></works></test> "
                 + "for $h in $test/works/employee[2] return fn:name($h/self::employee)";
 
@@ -1442,8 +1477,9 @@ public class XPathQueryTest {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void virtualNodeset_bug_wiki_3(String apiName, String baseUri) throws XMLDBException {
+    public void virtualNodeset_bug_wiki_3(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 + "let $node := (<c id=\"OK\"><b id=\"cool\"/></c>)"
                 + "/descendant::*/attribute::id return <a>{$node}</a>";
@@ -1462,8 +1498,9 @@ public class XPathQueryTest {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void virtualNodeset_bug_wiki_4(String apiName, String baseUri) throws XMLDBException {
+    public void virtualNodeset_bug_wiki_4(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 + "let $node := (<c id=\"OK\">"
                 + "<b id=\"cool\"/></c>)/descendant-or-self::*/child::b "
@@ -1483,8 +1520,9 @@ public class XPathQueryTest {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void virtualNodeset_bug_wiki_5(String apiName, String baseUri) throws XMLDBException {
+    public void virtualNodeset_bug_wiki_5(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 + "let $node := (<c id=\"OK\"><b id=\"cool\"/>"
                 + "</c>)/descendant-or-self::*/descendant::b return <a>{$node}</a>";
@@ -1499,8 +1537,9 @@ public class XPathQueryTest {
 
     // It seems that the document builder receives events that are irrelevant.
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void documentBuilder_bug_wiki_6(String apiName, String baseUri) throws XMLDBException {
+    public void documentBuilder_bug_wiki_6(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 + "declare function local:test() {let $results := <dummy/>"
                 + "return \"id\" }; "
@@ -1515,8 +1554,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void castInPredicate_bug_wiki_7(String apiName, String baseUri) throws XMLDBException {
+    public void castInPredicate_bug_wiki_7(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "let $number := 2, $list := (\"a\", \"b\", \"c\") return $list[xs:int($number * 2) - 1]";
 
         final XQueryService service = getQueryService();
@@ -1532,8 +1572,9 @@ public class XPathQueryTest {
      * wrapper expression is used. Using, e.g. where data($x/@id) eq "id" works !
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void computation_bug_wiki_8(String apiName, String baseUri) throws XMLDBException {
+    public void computation_bug_wiki_8(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                  + "let $a := element node1 { attribute id {'id'}, "
                  + "element node1 { '1'},element node2 { '2'} }"
@@ -1548,8 +1589,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void strings(String apiName, String baseUri) throws XMLDBException {
+    public void strings(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
 
@@ -1564,8 +1606,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void quotes(String apiName, String baseUri) throws XMLDBException {
+    public void quotes(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
 
         final XQueryService service =
                 storeXMLStringAndGetQueryService("quotes.xml", quotes);
@@ -1577,8 +1620,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void booleans(String apiName, String baseUri) throws XMLDBException {
+    public void booleans(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
 
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
@@ -1646,8 +1690,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void not(String apiName, String baseUri) throws XMLDBException {
+    public void not(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
 
         final XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
@@ -1674,8 +1719,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void logicalOr(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void logicalOr(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
             
@@ -1689,8 +1735,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void logicalAnd(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void logicalAnd(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
 
@@ -1704,8 +1751,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void ids_persistent(String apiName, String baseUri) throws XMLDBException {
+    public void ids_persistent(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("ids.xml", ids);
 
@@ -1731,8 +1779,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void ids_memtree(String apiName, String baseUri) throws XMLDBException {
+    public void ids_memtree(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         ResourceSet result = service.query("document { " + ids_content + " }//a/id(@ref)");
@@ -1752,8 +1801,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void idsOnEmptyCollection(String apiName, String baseUri) throws XMLDBException {
+    public void idsOnEmptyCollection(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final Collection root = DatabaseManager.getCollection(getBaseUri(), "admin", "");
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
 		final Collection emptyCollection = service.createCollection("empty");
@@ -1763,8 +1813,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void idRefs_persistent(String apiName, String baseUri) throws XMLDBException {
+    public void idRefs_persistent(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
        final XQueryService service =
           storeXMLStringAndGetQueryService("ids.xml", ids);
   
@@ -1776,8 +1827,9 @@ public class XPathQueryTest {
 
     @Disabled("Not yet supported in eXist") @MethodSource("data")
     @ParameterizedTest(name = "{0}")
-    public void idRefs_memtree(String apiName, String baseUri) throws XMLDBException {
+    public void idRefs_memtree(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         ResourceSet result = service.query("document {" + ids_content + "}/idref('id2')");
@@ -1794,8 +1846,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void externalVars(String apiName, String baseUri) throws XMLDBException {
+    public void externalVars(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XQueryService service =
             storeXMLStringAndGetQueryService("strings.xml", strings);
 
@@ -1868,8 +1921,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void externalVars2(String apiName, String baseUri) throws ParserConfigurationException, IOException, SAXException, XMLDBException {
+    public void externalVars2(String apiName, String baseUri) throws ParserConfigurationException, IOException, SAXException, XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         final DocumentBuilder builder = factory.newDocumentBuilder();
         final InputSource source = new InputSource(new StringReader(strings));
@@ -1883,8 +1937,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void queryResource(String apiName, String baseUri) throws XMLDBException {
+    public void queryResource(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         XMLResource doc = testCollection.createResource("strings.xml", XMLResource.class);
         doc.setContent(strings);
         testCollection.storeResource(doc);
@@ -1909,8 +1964,9 @@ public class XPathQueryTest {
      * 			The result is the ancestor <<<<<<<<<<
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void ancestor(String apiName, String baseUri) throws XMLDBException {
+    public void ancestor(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -1929,8 +1985,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void namespaces(String apiName, String baseUri) throws XMLDBException {
+    public void namespaces(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
 
@@ -1956,8 +2013,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void preserveSpace(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void preserveSpace(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("whitespace.xml", ws);
 
@@ -1972,8 +2030,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void nestedElements(String apiName, String baseUri) throws XMLDBException {
+    public void nestedElements(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("nested.xml", nested);
 
@@ -1982,8 +2041,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void staticVariables(String apiName, String baseUri) throws XMLDBException {
+    public void staticVariables(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XMLResource doc =
                 testCollection.createResource(
                 "numbers.xml", XMLResource.class );
@@ -2010,8 +2070,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void membersAsResource(String apiName, String baseUri) throws XMLDBException, IOException {
+    public void membersAsResource(String apiName, String baseUri) throws XMLDBException, IOException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
 //			XPathQueryService service =
 //				(XPathQueryService) testCollection.getService(
 //					"XPathQueryService",
@@ -2037,8 +2098,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void satisfies(String apiName, String baseUri) throws XMLDBException {
+    public void satisfies(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         ResourceSet result = queryAndAssert(service,
@@ -2065,8 +2127,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void intersect(String apiName, String baseUri) throws XMLDBException {
+    public void intersect(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         String query = "()  intersect ()";
@@ -2080,8 +2143,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void union(String apiName, String baseUri) throws XMLDBException {
+    public void union(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         String query = "()  union ()";
@@ -2115,8 +2179,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void except(String apiName, String baseUri) throws XMLDBException {
+    public void except(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         String query = "()  except ()";
@@ -2144,8 +2209,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void convertToBoolean(String apiName, String baseUri) throws XMLDBException {
+    public void convertToBoolean(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
 
@@ -2188,8 +2254,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void compile(String apiName, String baseUri) throws XMLDBException {
+    public void compile(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String invalidQuery = "for $i in (1 to 10)\n return $b";
         final String validQuery = "for $i in (1 to 10) return $i";
         final String validModule = """
@@ -2231,8 +2298,9 @@ public class XPathQueryTest {
      */
     @Disabled("Parser treats 'xpointer' as reserved keyword") @MethodSource("data")
     @ParameterizedTest(name = "{0}")
-    public void xpointerElementNameHandling(String apiName, String baseUri) throws XMLDBException {
+    public void xpointerElementNameHandling(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = storeXMLStringAndGetQueryService(
                 "xpointer.xml", xpointerElementName);
 
@@ -2245,8 +2313,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void atomization(String apiName, String baseUri) throws XMLDBException, IOException, SAXException {
+    public void atomization(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String query =
                 """
                 declare namespace ex = "http://example.org";
@@ -2266,8 +2335,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void substring(String apiName, String baseUri) throws XMLDBException {
+    public void substring(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
         
         // Test cases by MIKA
@@ -2286,8 +2356,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void cdataPersistentDom(String apiName, String baseUri) throws XMLDBException {
+    public void cdataPersistentDom(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String docName = "cdata.xml";
 
         final XQueryService service =
@@ -2327,8 +2398,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void cdataMemtreeDom(String apiName, String baseUri) throws XMLDBException, IOException {
+    public void cdataMemtreeDom(String apiName, String baseUri) throws XMLDBException, IOException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final String docName = "cdata.xml";
         final Path tempFile = File.createTempFile("junit", null, tempFolder).toPath();
         Files.write(tempFile, Arrays.asList(cdata_xml));
@@ -2367,8 +2439,9 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void cdataComputedDom(String apiName, String baseUri) throws XMLDBException {
+    public void cdataComputedDom(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
+        setUp();
         final XQueryService service = getQueryService();
 
         String query =

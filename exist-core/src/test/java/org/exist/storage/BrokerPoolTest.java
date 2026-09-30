@@ -26,14 +26,12 @@ import org.exist.security.Subject;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.Optional;
 import java.util.concurrent.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,10 +40,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class BrokerPoolTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test

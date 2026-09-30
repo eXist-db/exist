@@ -45,17 +45,15 @@ import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
@@ -63,11 +61,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
-
-@ExtendWith(ExternalResourceSupport.class)
 public class MoveCollectionRecoveryTest {
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test

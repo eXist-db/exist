@@ -49,10 +49,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -60,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test recovery after a forced database corruption.
@@ -67,7 +65,6 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class RecoveryTest {
     
     private static String TEST_XML =
@@ -77,7 +74,7 @@ public class RecoveryTest {
         "  <para>Hello World!</para>" +
         "</test>";
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach

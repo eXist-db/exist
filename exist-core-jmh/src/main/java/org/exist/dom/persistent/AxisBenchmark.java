@@ -146,8 +146,8 @@ public class AxisBenchmark {
 
     /**
      * Widens {@link ExistXmldbEmbeddedServer#before()} / {@code after()} from
-     * protected (JUnit's {@code ExternalResource} contract) to public so JMH's
-     * {@code @Setup} / {@code @TearDown} can drive the lifecycle directly.
+     * protected to public so JMH's {@code @Setup} / {@code @TearDown} can drive
+     * the lifecycle directly.
      */
     private static final class LifecycleEmbeddedServer extends ExistXmldbEmbeddedServer {
         LifecycleEmbeddedServer() {
@@ -155,7 +155,7 @@ public class AxisBenchmark {
         }
 
         @Override
-        public void before() throws Throwable {
+        public void before() throws ReflectiveOperationException, XMLDBException {
             super.before();
         }
 

@@ -57,12 +57,9 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -71,6 +68,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.storage.NativeBroker.COLLECTIONS_DBX_ID;
 import static org.exist.util.ByteConversion.byteToInt;
@@ -84,7 +82,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public abstract class AbstractJournalTest<T> {
 
     protected static final boolean COMMIT = true;
@@ -97,7 +94,7 @@ public abstract class AbstractJournalTest<T> {
      * We set useTemporaryStorage=true for ExistEmbeddedServer
      * so that each test runs on its own data directory.
      */
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 

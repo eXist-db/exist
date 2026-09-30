@@ -22,14 +22,11 @@
 
 package org.exist.xquery.functions.fn;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -51,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
-@RunWith(ParallelParameterized.class)
+
 public class ExtDocTest {
 
     @RegisterExtension
@@ -69,8 +66,7 @@ public class ExtDocTest {
     public String docContent;
     public Path externalDoc;
 
-    @BeforeEach
-    public void storeExtDoc() throws IOException {
+    private void storeExtDoc() throws IOException {
         final Path externalDocFile = Files.createTempFile(docName, "xml");
         Files.write(externalDocFile, docContent.getBytes(UTF_8));
         this.externalDoc = externalDocFile;
@@ -84,9 +80,10 @@ public class ExtDocTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parse(String docName, String docContent, Path externalDoc) throws XMLDBException {
+    public void parse(String docName, String docContent, Path externalDoc) throws XMLDBException, IOException {
         initExtDocTest(docName, docContent, externalDoc);
-        final URI docUri = externalDoc.toUri();
+        storeExtDoc();
+        final URI docUri = this.externalDoc.toUri();
         final ResourceSet result = existEmbeddedServer.executeQuery(
             "xquery version \"3.1\";\n" +
             "\n" +

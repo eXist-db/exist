@@ -34,12 +34,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import javax.annotation.Nullable;
 
@@ -48,6 +45,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests to check that the acquire/release lease lifetimes
@@ -56,7 +54,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class NativeBrokerLockingTest {
 
     private final static XmldbURI TEST_COLLECTION =  XmldbURI.ROOT_COLLECTION_URI.append("test");
@@ -65,7 +62,7 @@ public class NativeBrokerLockingTest {
 
     private final static int TRACE_STACK_DEPTH = 5;
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach

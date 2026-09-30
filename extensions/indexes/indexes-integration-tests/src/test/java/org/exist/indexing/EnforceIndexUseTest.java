@@ -45,7 +45,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
@@ -93,8 +92,9 @@ public class EnforceIndexUseTest {
             </root>""";
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws PermissionDeniedException, EXistException, XPathException {
+    public void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws Throwable {
         initEnforceIndexUseTest(enforceIndexUseValue, expectedSearchCount);
+        setup();
         //query and expand
         final String query = "for $hit in collection(\"" + TestConstants.TEST_COLLECTION_URI.toString() + "\")//foo[matches(@bar, \"^b\")]\n" +
                 "return $hit";
@@ -130,8 +130,7 @@ public class EnforceIndexUseTest {
     }
 
 
-    @BeforeEach
-    public void setup() throws Throwable {
+    private void setup() throws Throwable {
         existEmbeddedServer = new ExistEmbeddedServer(
                 propertiesBuilder()
                         .put(XQueryContext.PROPERTY_ENFORCE_INDEX_USE, enforceIndexUseValue).build()

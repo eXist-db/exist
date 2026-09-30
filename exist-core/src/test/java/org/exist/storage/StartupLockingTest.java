@@ -32,17 +32,15 @@ import org.exist.storage.lock.LockTable;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -53,7 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class StartupLockingTest {
 
     private static LockCountListener lockCountListener = new LockCountListener();
@@ -66,7 +63,7 @@ public class StartupLockingTest {
 
     private static LockTable lockTable;
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach

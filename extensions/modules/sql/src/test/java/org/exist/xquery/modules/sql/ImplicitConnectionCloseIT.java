@@ -57,12 +57,9 @@ import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.osjava.sj.loader.JndiLoader;
 import org.xml.sax.SAXException;
 
@@ -76,6 +73,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -93,7 +91,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class ImplicitConnectionCloseIT {
 
     private static final String JNDI_DS_NAME = "com.fusiondb.xquery.modules.sql.MockDataSource";
@@ -101,7 +98,7 @@ public class ImplicitConnectionCloseIT {
     private static final String STUB_JDBC_USER = "sa";
     private static final String STUB_JDBC_PASSWORD = "sa";
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private Context ctx = null;

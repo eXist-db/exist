@@ -54,12 +54,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.jdbcx.JdbcDataSourceFactory;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.osjava.sj.loader.JndiLoader;
 import org.xml.sax.SAXException;
 
@@ -70,6 +67,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -84,15 +82,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class JndiConnectionIT {
 
     private static final String JNDI_DS_NAME = "com.fusiondb.xquery.modules.sql.H2DataSource";
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Rule
+    @RegisterExtension
     public H2DatabaseResource h2Database = new H2DatabaseResource();
 
     private Context ctx = null;

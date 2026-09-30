@@ -31,9 +31,10 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,11 +45,11 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * JUnit {@link org.junit.rules.ExternalResource} that starts an embedded eXist Jetty server for tests.
+ * JUnit 5 extension that starts an embedded eXist Jetty server for tests.
  * <p>
- * Prefer {@link org.junit.ClassRule} over {@link org.junit.Rule} when every test method in the class
- * can share one server instance -- or, better still where the scenarios are otherwise unrelated,
- * across several {@code @Test} methods grouped into one class specifically to amortize this
+ * Prefer a static {@code @RegisterExtension} field over a non-static one when every test method in
+ * the class can share one server instance -- or, better still where the scenarios are otherwise
+ * unrelated, across several {@code @Test} methods grouped into one class specifically to amortize this
  * startup cost across all of them (for example
  * {@code org.exist.http.urlrewrite.UrlRewritePipelineHttpTest}, which folds nine previously
  * separate classes' worth of scenarios into one shared server).
@@ -83,11 +84,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  * <p>
  * Prefer {@link #builder()} over the boolean constructor chain for readable test setup.
  * <p>
- * Supports both JUnit 4 (via {@code ExternalResource}, use with {@code @Rule}/{@code @ClassRule})
- * and JUnit 5 (via {@link BeforeAllCallback}/{@link AfterAllCallback}, use with
- * {@code @RegisterExtension static final}).
+ * Use with {@code @RegisterExtension static final} for class-level (once per test class)
+ * lifecycle, or {@code @RegisterExtension final} (non-static) for per-test lifecycle.
  */
-public class ExistWebServer extends ExternalResource implements BeforeAllCallback, AfterAllCallback {
+public class ExistWebServer implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private static final Logger LOG =  LogManager.getLogger(ExistWebServer.class);
 
@@ -99,6 +99,7 @@ public class ExistWebServer extends ExternalResource implements BeforeAllCallbac
     private static final String PROP_JETTY_SSL_PORT = "jetty.ssl.port";
 
     private JettyStart server = null;
+    private boolean startedByBeforeAll = false;
     private String prevAutoDeploy = "off";
 
     private final boolean useRandomPort;
@@ -212,8 +213,7 @@ public class ExistWebServer extends ExternalResource implements BeforeAllCallbac
         }
     }
 
-    @Override
-    protected void before() throws Throwable {
+    protected void before() throws IOException {
         if(disableAutoDeploy) {
             this.prevAutoDeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
             System.setProperty(AUTODEPLOY_PROPERTY, "off");
@@ -232,19 +232,22 @@ public class ExistWebServer extends ExternalResource implements BeforeAllCallbac
         } else {
             throw new IllegalStateException("ExistWebServer already running");
         }
-        super.before();
     }
 
     @Override
     public void beforeAll(final ExtensionContext context) throws Exception {
-        try {
+        before();
+        this.startedByBeforeAll = true;
+    }
+
+    @Override
+    public void beforeEach(final ExtensionContext context) throws Exception {
+        // a static @RegisterExtension field gets beforeEach/afterEach invoked per-test in
+        // addition to beforeAll/afterAll once per class (JUnit5 does not distinguish by the
+        // field's static/instance modifier, only by which callback interfaces are implemented),
+        // so skip here if the class-level lifecycle already started the server.
+        if (!startedByBeforeAll) {
             before();
-        } catch (final Exception e) {
-            throw e;
-        } catch (final Throwable t) {
-            // before() declares `throws Throwable`, broader than beforeAll()'s `throws Exception`;
-            // wrap the rare non-Exception case (e.g. an Error) rather than throwing a raw Exception.
-            throw new RuntimeException(t);
         }
     }
 
@@ -269,7 +272,6 @@ public class ExistWebServer extends ExternalResource implements BeforeAllCallbac
         }
     }
 
-    @Override
     protected void after() {
         if(server != null) {
             shutdownJettyServer();
@@ -282,13 +284,19 @@ public class ExistWebServer extends ExternalResource implements BeforeAllCallbac
             //set the autodeploy trigger enablement back to how it was before this test class
             System.setProperty(AUTODEPLOY_PROPERTY, this.prevAutoDeploy);
         }
-
-        super.after();
     }
 
     @Override
     public void afterAll(final ExtensionContext context) {
         after();
+        this.startedByBeforeAll = false;
+    }
+
+    @Override
+    public void afterEach(final ExtensionContext context) {
+        if (!startedByBeforeAll) {
+            after();
+        }
     }
 
     private void startJettyServer() {

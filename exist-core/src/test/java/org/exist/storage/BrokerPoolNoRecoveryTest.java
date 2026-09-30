@@ -22,22 +22,19 @@
 package org.exist.storage;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:ohumbel@gmail.com">Otmar Humbel</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class BrokerPoolNoRecoveryTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(createConfigProperties(), true, true);
 

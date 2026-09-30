@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
@@ -66,6 +65,7 @@ public class RenameCollectionTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void rename_sameName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
+        setUp();
         /*
          * Create the collections:
          *
@@ -100,6 +100,7 @@ public class RenameCollectionTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void rename_differentName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
+        setUp();
         /*
          * Create the collections:
          *
@@ -125,8 +126,7 @@ public class RenameCollectionTest {
         service.move(XmldbURI.create(ZERO_COLLECTION_NAME), null, newName);
     }
 
-    @BeforeEach
-    public void setUp() throws XMLDBException {
+    private void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);

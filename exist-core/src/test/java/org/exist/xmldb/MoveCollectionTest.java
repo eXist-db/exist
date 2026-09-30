@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
@@ -65,6 +64,7 @@ public class MoveCollectionTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void move(String apiName, String baseUri) throws XMLDBException {
         initMoveCollectionTest(apiName, baseUri);
+        setUp();
         /*
          * Create the collections:
          *
@@ -93,8 +93,7 @@ public class MoveCollectionTest {
         service.move(XmldbURI.create(X_COLLECTION_NAME), XmldbURI.create(oneCollection.getName()), null);
     }
 
-    @BeforeEach
-    public void setUp() throws XMLDBException {
+    private void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);

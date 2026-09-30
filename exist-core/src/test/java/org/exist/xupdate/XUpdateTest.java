@@ -41,12 +41,8 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 
 import org.exist.util.LockException;
 import org.exist.xmldb.UserManagementService;
-import org.hamcrest.junit.MatcherAssume;
-import org.junit.Rule;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -64,14 +60,14 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author berlinge-to
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class XUpdateTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     //TODO should not execute as 'admin' user
@@ -121,9 +117,10 @@ public class XUpdateTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void xupdate(String testName, String sourceFile) throws Exception {
         initXUpdateTest(testName, sourceFile);
+        startup();
 
         //skip tests from Geoff Shuetrim (see above!)
-        MatcherAssume.assumeThat(testName, not(anyOf(equalTo("rename_root_element"), equalTo("rename_including_namespace"))));
+        Assumptions.assumeTrue(not(anyOf(equalTo("rename_root_element"), equalTo("rename_including_namespace"))).matches(testName));
 
         //update input xml file
         final Path modFile = getRelFile(MODIFICATION_DIR_NAME + "/" + testName + ".xml");
@@ -186,8 +183,7 @@ public class XUpdateTest {
         return ((String) ret.getContent());
     }
 
-    @BeforeEach
-    public void startup() throws XMLDBException, IOException, URISyntaxException {
+    private void startup() throws XMLDBException, IOException, URISyntaxException {
         col = existXmldbEmbeddedServer.getRoot().getChildCollection(XUPDATE_COLLECTION);
 
         if (col == null) {
