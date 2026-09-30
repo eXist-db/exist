@@ -65,8 +65,7 @@ public class JSONSerializer {
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
         final JsonFactory factory = JsonFactory.builder().build();
-        try {
-            JsonGenerator generator = factory.createGenerator(writer);
+        try (JsonGenerator generator = factory.createGenerator(writer)) {
             generator.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
             if (isBooleanTrue(outputProperties.getProperty(OutputKeys.INDENT, "no"))) {
                 final int indentSpaces = Integer.parseInt(
@@ -90,7 +89,6 @@ public class JSONSerializer {
             if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
                 generator.writeRaw('\n');
             }
-            generator.close();
         } catch (IOException | XPathException e) {
             throw new SAXException(e.getMessage(), e);
         }
