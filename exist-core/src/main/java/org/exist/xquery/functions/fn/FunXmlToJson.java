@@ -549,8 +549,7 @@ public class FunXmlToJson extends BasicFunction {
         final JsonFactory jsonFactory = new JsonFactory();
         final StringBuilder unescapedJsonStringBuilder = new StringBuilder();
         final String unescapedJsonString;
-        try {
-            final JsonParser jsonParser = jsonFactory.createParser("\"" + escapedJsonString + "\"");
+        try (final JsonParser jsonParser = jsonFactory.createParser("\"" + escapedJsonString + "\"")) {
             while (!jsonParser.isClosed()) {
                 jsonParser.nextToken();
                 if (jsonParser.hasTextCharacters()) {
