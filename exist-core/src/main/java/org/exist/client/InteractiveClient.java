@@ -77,7 +77,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -2509,15 +2509,15 @@ public class InteractiveClient {
     }
 
     public String getNotice() {
-        return getNotice(SystemProperties.getInstance()::getSystemProperty);
+        return getNotice(ExistSystemProperties.getInstance()::getExistSystemProperty);
     }
 
     String getNotice(BinaryOperator<String> propertyAction) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(propertyAction.apply("product-name", "eXist-db"));
+        builder.append(propertyAction.apply(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist-db"));
         builder.append(" version ");
-        builder.append(propertyAction.apply("product-version", "unknown"));
-        final String gitCommitId = propertyAction.apply("git-commit", "");
+        builder.append(propertyAction.apply(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+        final String gitCommitId = propertyAction.apply(ExistSystemProperties.PROP_GIT_COMMIT, "");
         if (!gitCommitId.isEmpty()) {
             builder.append(" (").append(gitCommitId).append(")");
         }

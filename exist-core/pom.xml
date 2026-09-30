@@ -782,6 +782,8 @@
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Materializable.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/AccessUtil.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</exclude>
@@ -789,6 +791,7 @@
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/pragmas/TimePragma.java</exclude>
+                                <include>src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java</include>
                                 <exclude>src/test/java/org/exist/xquery/util/URIUtilsTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</exclude>
@@ -949,6 +952,8 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Materializable.java</include>
                                 <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/AccessUtil.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</include>
@@ -956,6 +961,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
                                 <include>src/main/java/org/exist/xquery/pragmas/TimePragma.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java</include>
                                 <include>src/test/java/org/exist/xquery/util/URIUtilsTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</include>
@@ -1203,6 +1209,22 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                     </includes>
                                     <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/transform/conf-fixture.xsl</stylesheet>
                                     <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/transform</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/fn/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/fn</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xquery/functions/util/conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xquery/functions/util</outputDir>
                                 </transformationSet>
                                 <transformationSet>
                                     <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
