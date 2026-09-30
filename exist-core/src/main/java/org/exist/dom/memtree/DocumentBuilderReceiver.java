@@ -223,47 +223,100 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     /**
-     * Resolves a namespaced attribute QName against the current in-scope
-     * namespaces, rebinding to a freshly generated prefix on prefix-to-URI
-     * conflict, and emitting a namespace node on the parent element to make
-     * the binding visible to the serializer.
+     * Resolves the prefix of a namespaced attribute being added to the element under construction.
+     *
+     * <p>The decision is made from the bindings actually on that element -- its own name and the
+     * namespace nodes already attached to it -- rather than from the query context's in-scope
+     * namespace maps. Those maps are shared, per-context state: they can carry bindings from an
+     * earlier execution of a pooled query, or from another element entirely, and trusting them
+     * is how an attribute came to be emitted with a prefix the element binds to a different URI
+     * (XQTS Constr-inscope-1 to -4, #6704). The element is the only authority on what a prefix
+     * means where the attribute will be serialized.</p>
+     *
+     * <ul>
+     *   <li>prefix not bound on the element: keep it, and declare it there;</li>
+     *   <li>bound to the same URI: keep it;</li>
+     *   <li>bound to a different URI (XQuery 3.1 &sect;3.9.3.4, copy-namespaces preserve): reuse a
+     *       prefix the element already binds to this URI, or else generate one it does not use.</li>
+     * </ul>
+     *
+     * <p>A namespaced attribute with no prefix is treated as a conflict from the start, since an
+     * attribute cannot be in a namespace without one.</p>
      */
     private QName resolveAttributeQName(final QName qname) {
-        final XQueryContext context = builder.getContext();
+        final DocumentImpl doc = builder.getDocument();
+        final int element = doc.getLastNode();
+        if (!isElementParent(doc, element)) {
+            return qname;
+        }
+
         final String uri = qname.getNamespaceURI();
         String prefix = qname.getPrefix();
+        final boolean conflicts;
         if (prefix == null || prefix.isEmpty()) {
-            // Attribute with namespace but no prefix: pick an existing prefix
-            // mapped to this URI, or generate a fresh one.
-            final String existing = context == null ? null : context.getInScopePrefix(uri);
-            if (existing != null && !existing.isEmpty()) {
-                prefix = existing;
-            } else {
-                prefix = generatePrefix(context, null);
-                if (context != null) {
-                    context.declareInScopeNamespace(prefix, uri);
-                }
-                emitNamespaceNode(prefix, uri);
-                return new QName(qname.getLocalPart(), uri, prefix);
-            }
-        } else if (context != null) {
-            final String boundUri = context.getInScopeNamespace(prefix);
-            if (boundUri == null) {
-                // Prefix is not in scope -> declare it
-                context.declareInScopeNamespace(prefix, uri);
-            } else if (!boundUri.equals(uri)) {
-                // Prefix is bound to a different URI -> generate a fresh prefix
-                String reuse = context.getInScopePrefix(uri);
-                if (reuse == null || reuse.isEmpty()) {
-                    prefix = generatePrefix(context, null);
-                    context.declareInScopeNamespace(prefix, uri);
-                } else {
-                    prefix = reuse;
-                }
-            }
+            conflicts = true;
+        } else {
+            final String bound = uriBoundOnElement(doc, element, prefix);
+            conflicts = bound != null && !bound.equals(uri);
         }
+
+        if (conflicts) {
+            final String existing = prefixBoundOnElement(doc, element, uri);
+            prefix = existing != null ? existing : freshPrefix(doc, element);
+        }
+
         emitNamespaceNode(prefix, uri);
         return new QName(qname.getLocalPart(), uri, prefix);
+    }
+
+    /** The URI the element binds {@code prefix} to, through its own name or a namespace node; or null. */
+    private static String uriBoundOnElement(final DocumentImpl doc, final int element, final String prefix) {
+        final QName name = doc.nodeName[element];
+        if (name != null && prefix.equals(name.getPrefix())) {
+            return name.getNamespaceURI();
+        }
+        final int firstNs = doc.alphaLen[element];
+        if (firstNs < 0) {
+            return null;
+        }
+        for (int ns = firstNs; ns < doc.nextNamespace && doc.namespaceParent[ns] == element; ns++) {
+            final QName nsName = doc.namespaceCode[ns];
+            if (nsName != null && prefix.equals(nsName.getLocalPart())) {
+                return nsName.getNamespaceURI();
+            }
+        }
+        return null;
+    }
+
+    /** A non-empty prefix the element already binds to {@code uri}; or null. */
+    private static String prefixBoundOnElement(final DocumentImpl doc, final int element, final String uri) {
+        final QName name = doc.nodeName[element];
+        if (name != null && name.getPrefix() != null && !name.getPrefix().isEmpty()
+                && uri.equals(name.getNamespaceURI())) {
+            return name.getPrefix();
+        }
+        final int firstNs = doc.alphaLen[element];
+        if (firstNs < 0) {
+            return null;
+        }
+        for (int ns = firstNs; ns < doc.nextNamespace && doc.namespaceParent[ns] == element; ns++) {
+            final QName nsName = doc.namespaceCode[ns];
+            if (nsName != null && !nsName.getLocalPart().isEmpty() && uri.equals(nsName.getNamespaceURI())) {
+                return nsName.getLocalPart();
+            }
+        }
+        return null;
+    }
+
+    /** "XXX", "XXX1", "XXX2", ... -- the first the element does not already bind. */
+    private static String freshPrefix(final DocumentImpl doc, final int element) {
+        String candidate = "XXX";
+        int i = 0;
+        while (uriBoundOnElement(doc, element, candidate) != null) {
+            i++;
+            candidate = "XXX" + i;
+        }
+        return candidate;
     }
 
     /**
