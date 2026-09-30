@@ -1,0 +1,24 @@
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingProvider.java
+  s_f03fe8b0b5549a::t_06c17ad769382b 56-64
+extensions/vector/src/main/java/org/exist/vector/OnnxVectorProvider.java
+  s_f03fe8b0b5549a::t_1ad6976e59ad01 83-97
+  s_f03fe8b0b5549a::t_93967b9f810219 227-231,233,235,242-251,257-264
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_f03fe8b0b5549a::t_21c6b2e106b80d 171-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1e7ba154d3205f5abfa428de5fa105a8f4145cc5",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
