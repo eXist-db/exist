@@ -24,9 +24,12 @@ package org.exist.xquery.functions.xmldb;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.xmldb.CollectionCloseUtil;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -193,11 +196,37 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
     protected final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
         final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI().toString()), "/");
-        while (tok.hasMoreTokens()) {
-            final String token = tok.nextToken();
-            current = createCollection(current, token);
+        try {
+            while (tok.hasMoreTokens()) {
+                final String token = tok.nextToken();
+                final Collection next = createCollection(current, token);
+                // createCollection() always returns a distinct child collection, so `current`
+                // is only ever `parentColl` on the first iteration -- every collection created
+                // in a later iteration is an intermediate step this method owns and must close
+                // once we've walked past it; the last one becomes the return value instead.
+                closeIfOwn(parentColl, current);
+                current = next;
+            }
+            return current;
+        } catch (final XMLDBException e) {
+            // createCollection() failed for a later segment -- `current` (the last
+            // successfully created/looked-up intermediate) would otherwise never be closed.
+            closeIfOwn(parentColl, current);
+            throw e;
         }
-        return current;
+    }
+
+    /**
+     * Closes {@code candidate} unless it is {@code borrowed} -- a collection passed in by,
+     * and owned by, the caller -- or {@code null}. Used by subclasses and this class's own
+     * path-walking helpers to release intermediate collections they created themselves
+     * without ever closing a collection they don't own. A close failure is logged rather
+     * than thrown, since it's cleanup of an already-superseded or already-returned
+     * collection, not a reason to fail whatever operation produced it.
+     */
+    protected static void closeIfOwn(final Collection borrowed, @Nullable final Collection candidate) {
+        CollectionCloseUtil.closeIfOwn(borrowed, candidate,
+                e -> LOGGER.warn("Unable to close collection: {}", e.getMessage(), e));
     }
 
 }

@@ -161,52 +161,58 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         String relDir;
         String prevDir = null;
 
-        // store according to each pattern
-        for (final String includedFile : directoryScanner.getIncludedFiles()) {
-            final Path file = baseDir.resolve(includedFile);
-            try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(file.toAbsolutePath().toString());
-                }
-
-                String relPath = file.toString().substring(baseDir.toString().length());
-                final int p = relPath.lastIndexOf(java.io.File.separatorChar);
-
-                if (p >= 0) {
-                    relDir = relPath.substring(0, p);
-                    relDir = relDir.replace(java.io.File.separatorChar, '/');
-                } else {
-                    relDir = relPath;
-                }
-
-                if (keepDirStructure && (prevDir == null || (!relDir.equals(prevDir)))) {
-                    col = createCollectionPath(collection, relDir);
-                    prevDir = relDir;
-                }
-
-                MimeType mimeType = mimeTypeFromArgs;
-                if (mimeType == null) {
-                    mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
-                    if (mimeType == null) {
-                        mimeType = MimeType.BINARY_TYPE;
+        try {
+            // store according to each pattern
+            for (final String includedFile : directoryScanner.getIncludedFiles()) {
+                final Path file = baseDir.resolve(includedFile);
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(file.toAbsolutePath().toString());
                     }
+
+                    String relPath = file.toString().substring(baseDir.toString().length());
+                    final int p = relPath.lastIndexOf(java.io.File.separatorChar);
+
+                    if (p >= 0) {
+                        relDir = relPath.substring(0, p);
+                        relDir = relDir.replace(java.io.File.separatorChar, '/');
+                    } else {
+                        relDir = relPath;
+                    }
+
+                    if (keepDirStructure && (prevDir == null || (!relDir.equals(prevDir)))) {
+                        final Collection newCol = createCollectionPath(collection, relDir);
+                        closeIfOwn(collection, col);
+                        col = newCol;
+                        prevDir = relDir;
+                    }
+
+                    MimeType mimeType = mimeTypeFromArgs;
+                    if (mimeType == null) {
+                        mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
+                        if (mimeType == null) {
+                            mimeType = MimeType.BINARY_TYPE;
+                        }
+                    }
+
+                    //TODO  : these probably need to be encoded and checked for right mime type
+                    final Resource resource = col.createResource(FileUtils.fileName(file), mimeType.getXMLDBType());
+                    resource.setContent(file.toFile());
+
+                    ((EXistResource) resource).setMimeType(mimeType.getName());
+
+                    col.storeResource(resource);
+
+                    //TODO : use dedicated function in XmldbURI
+                    stored.add(new StringValue(this, col.getName() + "/" + resource.getId()));
+                } catch (final XMLDBException e) {
+                    logger.error("Could not store file {}: {}", file.toAbsolutePath(), e.getMessage());
                 }
-
-                //TODO  : these probably need to be encoded and checked for right mime type
-                final Resource resource = col.createResource(FileUtils.fileName(file), mimeType.getXMLDBType());
-                resource.setContent(file.toFile());
-
-                ((EXistResource) resource).setMimeType(mimeType.getName());
-
-                col.storeResource(resource);
-
-                //TODO : use dedicated function in XmldbURI
-                stored.add(new StringValue(this, col.getName() + "/" + resource.getId()));
-            } catch (final XMLDBException e) {
-                logger.error("Could not store file {}: {}", file.toAbsolutePath(), e.getMessage());
             }
-        }
 
-        return stored;
+            return stored;
+        } finally {
+            closeIfOwn(collection, col);
+        }
     }
 }
