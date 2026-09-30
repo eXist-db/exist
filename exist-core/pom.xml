@@ -548,7 +548,8 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <!-- not just test scope, as needed for org.exist.test.ExistEmbeddedServer's
+                 BeforeAllCallback/AfterAllCallback support, used by downstream modules' tests -->
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
