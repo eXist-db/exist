@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
@@ -64,6 +63,7 @@ public class DeleteCollectionTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void delete(String apiName, String baseUri) throws XMLDBException {
         initDeleteCollectionTest(apiName, baseUri);
+        setUp();
         /*
          * Create the collections:
          *
@@ -87,8 +87,7 @@ public class DeleteCollectionTest {
         service.removeCollection(ZERO_COLLECTION_NAME);
     }
 
-    @BeforeEach
-    public void setUp() throws XMLDBException {
+    private void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);

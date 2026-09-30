@@ -27,15 +27,11 @@ import java.nio.file.Path;
 
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.storage.NativeBroker.DEFAULT_DATA_DIR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@ExtendWith(ExternalResourceSupport.class)
 public class StatisticsIndexTest {
 
     private static Path configFile;
@@ -49,7 +45,7 @@ public class StatisticsIndexTest {
         configFile = Path.of(loader.getResource(packagePath + separator + "conf.xml").toURI());
     }
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer("db1", configFile, null, true);
 
     @org.junit.jupiter.api.Test

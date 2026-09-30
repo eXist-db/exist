@@ -32,14 +32,10 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.InputStreamSupplierInputSource;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
-
-@ExtendWith(ExternalResourceSupport.class)
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class RemoveRootCollectionTest {
 
     private DBBroker broker;
@@ -84,7 +80,7 @@ public class RemoveRootCollectionTest {
         assertEquals(0, root.getDocumentCount(broker));
     }
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach

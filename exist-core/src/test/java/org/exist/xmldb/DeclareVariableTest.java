@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
@@ -62,8 +61,7 @@ public class DeclareVariableTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @BeforeEach
-    public void setUp() throws XMLDBException {
+    private void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -81,6 +79,7 @@ public class DeclareVariableTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void declareBigInteger(String apiName, String baseUri) throws XMLDBException {
         initDeclareVariableTest(apiName, baseUri);
+        setUp();
         final Resource result = executeQueryWithExternalVariable(new BigInteger("123456789123456789123456789"));
         assertEquals("123456789123456789123456789", result.getContent());
     }
@@ -88,6 +87,7 @@ public class DeclareVariableTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void declareBigDecimal(String apiName, String baseUri) throws XMLDBException {
         initDeclareVariableTest(apiName, baseUri);
+        setUp();
         final Resource result = executeQueryWithExternalVariable(new BigDecimal("1.1"));
         assertEquals("1.1", result.getContent());
     }

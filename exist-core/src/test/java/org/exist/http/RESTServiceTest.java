@@ -65,7 +65,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.junit.MatcherAssume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -510,7 +510,7 @@ try {
 
     @Test
     public void testPutPlus() throws IOException {
-        assumeThat("Requires non-Windows platform", System.getProperty("os.name").toLowerCase(), not(containsString("win")));
+        assumeTrue(not(containsString("win")).matches(System.getProperty("os.name").toLowerCase()), "Requires non-Windows platform");
 
         final int r = uploadDataPlus();
         assertEquals(HttpStatus.CREATED_201, r, "Server returned response code " + r);

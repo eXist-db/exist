@@ -21,14 +21,11 @@
  */
 package org.exist.ant;
 
-import org.apache.tools.ant.BuildFileRule;
 import org.apache.tools.ant.Project;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.annotation.Nullable;
 
@@ -36,8 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-
-@ExtendWith(ExternalResourceSupport.class)
 public abstract class AbstractTaskTest {
 
     protected static final String PROP_ANT_ADMIN_USER = "admin.user";
@@ -45,10 +40,10 @@ public abstract class AbstractTaskTest {
 
     protected static final String PROP_ANT_TEST_DATA_RESULT = "test.data.result";
 
-    @Rule
-    public BuildFileRule buildFileRule = new BuildFileRule();
+    @RegisterExtension
+    public final AntBuildFileExtension buildFileRule = new AntBuildFileExtension();
 
-    @Rule
+    @RegisterExtension
     public final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeEach

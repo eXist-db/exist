@@ -34,19 +34,15 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-@ExtendWith(ExternalResourceSupport.class)
 public class AccountManagementFunctionRemoveAccountTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
     @Test

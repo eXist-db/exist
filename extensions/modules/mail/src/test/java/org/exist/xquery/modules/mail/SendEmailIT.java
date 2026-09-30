@@ -32,7 +32,7 @@
  */
 package org.exist.xquery.modules.mail;
 
-import com.icegreen.greenmail.junit4.GreenMailRule;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
 import jakarta.mail.Address;
@@ -58,12 +58,8 @@ import org.exist.util.UUIDGenerator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
@@ -85,7 +81,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class SendEmailIT {
 
     enum SmtpImplementation {
@@ -120,8 +115,8 @@ public class SendEmailIT {
     private static final String EMAIL_UID = "emailuid";
     private static final String EMAIL_PWD = "emailpwd";
 
-    @Rule
-    public final GreenMailRule greenMail = new GreenMailRule(new ServerSetup(0, "127.0.0.1", "smtp"));
+    @RegisterExtension
+    public final GreenMailExtension greenMail = new GreenMailExtension(new ServerSetup(0, "127.0.0.1", "smtp"));
 
     @BeforeAll
     public static void setup() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
@@ -138,8 +133,7 @@ public class SendEmailIT {
         }
     }
 
-    @BeforeEach
-    public void setSmtpAuth() {
+    private void setSmtpAuth() {
         if (authenticationOption == AuthenticationOption.AUTHENTICATED) {
             greenMail.setUser(EMAIL_UID, EMAIL_PWD);
         }
@@ -148,6 +142,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -160,6 +155,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -187,6 +183,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -214,6 +211,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -247,6 +245,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendHtmlEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -265,6 +264,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendHtmlEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -297,6 +297,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendHtmlEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -329,6 +330,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendHtmlEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -367,6 +369,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextAndHtmlEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -400,6 +403,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextAndHtmlEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -447,6 +451,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextAndHtmlEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -494,6 +499,7 @@ public class SendEmailIT {
     @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
     public void sendTextAndHtmlEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
         initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 

@@ -37,7 +37,6 @@ import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
@@ -74,8 +73,7 @@ public class LockManagerTest {
     public String apiName;
     public boolean enablePathsMultiWriterState;
 
-    @BeforeEach
-    public void enableLockEventsState() {
+    private void enableLockEventsState() {
         previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
         previousPathsMultiWriterState = System.setProperty(LockManager.PROP_ENABLE_PATHS_MULTI_WRITER, Boolean.toString(enablePathsMultiWriterState));
     }
@@ -97,6 +95,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void getCollectionLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final MultiLock dbLock1 = lockManager.getPathLock("/db");
@@ -126,6 +125,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionReadLock_root(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
         final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try(final ManagedCollectionLock rootLock
@@ -163,6 +163,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionReadLock_depth2(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -219,6 +220,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionReadLock_depth3(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -291,6 +293,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_root_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         acquireCollectionWriteLock_root(false);
     }
 
@@ -302,6 +305,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_root_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         acquireCollectionWriteLock_root(true);
     }
 
@@ -342,6 +346,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_depth2_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -399,6 +404,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_depth2_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -454,6 +460,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_depth3_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -530,6 +537,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireCollectionWriteLock_depth3_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -599,6 +607,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void getDocumentLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final MultiLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
@@ -628,6 +637,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireDocumentReadLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -665,6 +675,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireDocumentWriteLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -697,6 +708,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void getBtreeLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final ReentrantLock btree1Lock1 = lockManager.getBTreeLock("btree1.dbx");
@@ -726,6 +738,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireBTreeReadLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String btree1Name = "btree1.dbx";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -763,6 +776,7 @@ public class LockManagerTest {
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void acquireBTreeWriteLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
+        enableLockEventsState();
         final String btree1Name = "btree1.dbx";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);

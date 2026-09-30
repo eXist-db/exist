@@ -42,12 +42,10 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,7 +53,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author alex
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class TwoDatabasesTest {
 
     private static Path config1File;
@@ -79,10 +76,10 @@ public class TwoDatabasesTest {
         config2File = Path.of(loader.getResource(packagePath + separator + "conf2.xml").toURI());
     }
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer1 = new ExistEmbeddedServer("db1", config1File, null, true);
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer2 = new ExistEmbeddedServer("db2", config2File, null, true);
 
     private Subject user1;

@@ -24,16 +24,14 @@ package org.exist.test.runner;
 
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,10 +41,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Asserts that the discovery XQuery returns the expected test list for known files,
  * and that XQueryTestRunner uses discovery when the DB is up and runs the same tests.
  */
-@ExtendWith(ExternalResourceSupport.class)
 public class XSuiteDiscoveryTest {
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
