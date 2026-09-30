@@ -1,0 +1,23 @@
+.github/workflows/ci-xqts.yml
+  s_f03fe8b0b5549a::t_5e26ab07b00b52 13-20
+.github/workflows/ci-test.yml
+  s_f03fe8b0b5549a::t_bba37734b027e4 5-10
+.github/workflows/sonarcloud.yml
+  s_f03fe8b0b5549a::t_d29d80de72dc47 7-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2ed7325c55de440e45c94d08e3d84023111beda7",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
