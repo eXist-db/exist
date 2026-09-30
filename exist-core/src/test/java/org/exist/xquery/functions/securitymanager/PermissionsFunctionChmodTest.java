@@ -46,17 +46,21 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PermissionsFunctionChmodTest {
 
     private static final boolean IS_SET = true;
@@ -78,50 +82,54 @@ public class PermissionsFunctionChmodTest {
     private static final String RWXRWS__ = "rwxrws---";
     private static final String RWXRWSRWX = "rwxrwsrwx";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeDocumentModeAsDBA() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         changeMode(adminUser, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeCollectionModeAsDBA() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         changeMode(adminUser, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeDocumentModeAsNonDBAOwner() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         changeMode(user1, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeCollectionModeAsNonDBAOwner() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         changeMode(user1, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX);
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void changeDocumentModeAsNonOwner() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
-        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        extractPermissionDenied(() ->
-                changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX)
-        );
+    @org.junit.jupiter.api.Test
+    public void changeDocumentModeAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+            extractPermissionDenied(() ->
+                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX)
+            );
+        });
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void changeCollectionModeAsNonOwner() throws AuthenticationException, XPathException, PermissionDeniedException, EXistException {
-        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        extractPermissionDenied(() ->
-            changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX)
-        );
+    @org.junit.jupiter.api.Test
+    public void changeCollectionModeAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+            extractPermissionDenied(() ->
+                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX)
+            );
+        });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeDocumentModeAsDbaPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
@@ -135,7 +143,7 @@ public class PermissionsFunctionChmodTest {
         assertDocumentSetGid(adminUser, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), IS_SET);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeCollectionModeAsDbaPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
@@ -149,7 +157,7 @@ public class PermissionsFunctionChmodTest {
         assertCollectionSetGid(adminUser, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeDocumentModeAsNonDbaOwnerPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
 
@@ -163,7 +171,7 @@ public class PermissionsFunctionChmodTest {
         assertDocumentSetGid(user1, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), IS_SET);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void changeCollectionModeAsNonDbaOwnerPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
 
@@ -177,36 +185,40 @@ public class PermissionsFunctionChmodTest {
         assertCollectionSetGid(user1, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void changeDocumentModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
-        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+    @org.junit.jupiter.api.Test
+    public void changeDocumentModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, XPathException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
 
-        // check the setGid bit is set before we begin
-        assertDocumentSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), IS_SET);
+            // check the setGid bit is set before we begin
+            assertDocumentSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), IS_SET);
 
-        // change the mode
-        extractPermissionDenied(() ->
-            changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), RWXRWSRWX)
-        );
+            // change the mode
+            extractPermissionDenied(() ->
+                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), RWXRWSRWX)
+            );
 
-        // check the setGid bit still set
-        assertDocumentSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), NOT_SET);
+            // check the setGid bit still set
+            assertDocumentSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_XQUERY1), NOT_SET);
+        });
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void changeCollectionModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
-        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+    @org.junit.jupiter.api.Test
+    public void changeCollectionModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, XPathException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
 
-        // check the setGid bit is set before we begin
-        assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
+            // check the setGid bit is set before we begin
+            assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
 
-        // change the mode
-        extractPermissionDenied(() ->
-                changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), RWXRWSRWX)
-        );
+            // change the mode
+            extractPermissionDenied(() ->
+                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), RWXRWSRWX)
+            );
 
-        // check the setGid bit still set
-        assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), NOT_SET);
+            // check the setGid bit still set
+            assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), NOT_SET);
+        });
     }
 
     private void changeMode(final Subject execAsUser, final XmldbURI uri, final String newMode) throws EXistException, PermissionDeniedException, XPathException {
@@ -227,7 +239,7 @@ public class PermissionsFunctionChmodTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
@@ -253,7 +265,7 @@ public class PermissionsFunctionChmodTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
 
@@ -284,7 +296,7 @@ public class PermissionsFunctionChmodTest {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -298,7 +310,7 @@ public class PermissionsFunctionChmodTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();

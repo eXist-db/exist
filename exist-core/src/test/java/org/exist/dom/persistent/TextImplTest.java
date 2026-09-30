@@ -24,16 +24,17 @@ package org.exist.dom.persistent;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.numbering.DLN;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.DOMException;
 
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -199,12 +200,14 @@ public class TextImplTest {
         assertEquals("helloworld", text.getTextContent());
     }
 
-    @Test(expected=DOMException.class)
+    @Test
     public void insertData_pastEnd() {
-        final TextImpl text = new TextImpl("hello");
-        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () -> {
+            final TextImpl text = new TextImpl("hello");
+            assertEquals("hello", text.getTextContent());
 
-        text.insertData(10, "world");
+            text.insertData(10, "world");
+        });
     }
 
     @Test
@@ -252,12 +255,14 @@ public class TextImplTest {
         assertEquals("hellworld", text.getTextContent());
     }
 
-    @Test(expected=DOMException.class)
+    @Test
     public void replaceData_pastEnd() {
-        final TextImpl text = new TextImpl("hello");
-        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () -> {
+            final TextImpl text = new TextImpl("hello");
+            assertEquals("hello", text.getTextContent());
 
-        text.insertData(10, "world");
+            text.insertData(10, "world");
+        });
     }
 
     @Test

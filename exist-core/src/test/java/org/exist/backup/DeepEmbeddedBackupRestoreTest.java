@@ -36,21 +36,24 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test that creates a deep and Wide Collection hierarchy
@@ -61,11 +64,11 @@ import static org.junit.Assert.*;
  */
 public class DeepEmbeddedBackupRestoreTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @ClassRule
-    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public static File temporaryFolder;
 
     private static final String EOL = "\n";
     private static final long XXHASH64_SEED = 0x79742bc8;
@@ -73,7 +76,7 @@ public class DeepEmbeddedBackupRestoreTest {
     private final XXHashFactory xxHashFactory = XXHashFactory.fastestJavaInstance();
     private final XXHash64 hash64 = xxHashFactory.hash64();
 
-    @BeforeClass
+    @BeforeAll
     public static void registerXmldbDatabaseDriver() throws XMLDBException {
         final DatabaseImpl databaseImpl = new DatabaseImpl();
         DatabaseManager.registerDatabase(databaseImpl);
@@ -86,7 +89,7 @@ public class DeepEmbeddedBackupRestoreTest {
         assertFalse(collectionsAndDocs.collectionUris.isEmpty());
         assertFalse(collectionsAndDocs.documentInfos.isEmpty());
 
-        final Path backupDir = temporaryFolder.newFolder("exist-EmbeddedBackupRestoreWithAppsTest").toPath();
+        final Path backupDir = newFolder(temporaryFolder, "exist-EmbeddedBackupRestoreWithAppsTest").toPath();
         final Properties backupProperties = new Properties();
 
         final Backup backup = new Backup(
@@ -114,7 +117,7 @@ public class DeepEmbeddedBackupRestoreTest {
 
             final byte[] documentData = Files.readAllBytes(documentPath);
             final long documentHash = hash64.hash(documentData, 0, documentData.length, XXHASH64_SEED);
-            assertEquals("Expected hash '" + documentInfo.hash + "' for document '" + documentPath.toAbsolutePath() + "' but found '" + documentHash + "'", documentInfo.hash, documentHash);
+            assertEquals(documentInfo.hash, documentHash, "Expected hash '" + documentInfo.hash + "' for document '" + documentPath.toAbsolutePath() + "' but found '" + documentHash + "'");
         }
     }
 
@@ -195,6 +198,23 @@ public class DeepEmbeddedBackupRestoreTest {
             this.uri = uri;
             this.hash = hash;
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }
 

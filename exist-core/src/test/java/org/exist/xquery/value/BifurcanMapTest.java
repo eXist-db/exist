@@ -34,12 +34,12 @@ package org.exist.xquery.value;
 
 import io.lacuna.bifurcan.IMap;
 import io.lacuna.bifurcan.LinearMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
 import static org.exist.xquery.functions.map.MapType.newLinearMap;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to demonstrate Bifurcan Map behaviour

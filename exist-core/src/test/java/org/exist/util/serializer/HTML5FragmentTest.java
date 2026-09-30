@@ -30,15 +30,16 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.io.StringWriter;
 import java.util.Properties;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests that HTML5 serialization does not emit DOCTYPE for fragments
@@ -46,7 +47,7 @@ import static org.junit.Assert.*;
  */
 public class HTML5FragmentTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private String serialize(final String xquery, final String method, final String version)
@@ -75,31 +76,31 @@ public class HTML5FragmentTest {
     @Test
     public void htmlDocumentGetsDoctype() throws Exception {
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "5.0");
-        assertTrue("HTML document should have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE html>"));
+        assertTrue(result.contains("<!DOCTYPE html>"),
+                "HTML document should have DOCTYPE: " + result);
     }
 
     @Test
     public void htmlFragmentNoDoctype() throws Exception {
         final String result = serialize("<p>hello</p>", "html", "5.0");
-        assertFalse("HTML fragment should NOT have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE"));
-        assertTrue("Fragment content should be preserved: " + result,
-                result.contains("<p>hello</p>"));
+        assertFalse(result.contains("<!DOCTYPE"),
+                "HTML fragment should NOT have DOCTYPE: " + result);
+        assertTrue(result.contains("<p>hello</p>"),
+                "Fragment content should be preserved: " + result);
     }
 
     @Test
     public void htmlFragmentDivNoDoctype() throws Exception {
         final String result = serialize("<div><span>text</span></div>", "html", "5.0");
-        assertFalse("HTML div fragment should NOT have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE"));
+        assertFalse(result.contains("<!DOCTYPE"),
+                "HTML div fragment should NOT have DOCTYPE: " + result);
     }
 
     @Test
     public void htmlFragmentListNoDoctype() throws Exception {
         final String result = serialize("<li>item</li>", "html", "5.0");
-        assertFalse("HTML li fragment should NOT have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE"));
+        assertFalse(result.contains("<!DOCTYPE"),
+                "HTML li fragment should NOT have DOCTYPE: " + result);
     }
 
     @Test
@@ -107,8 +108,8 @@ public class HTML5FragmentTest {
         final String result = serialize(
                 "<html xmlns='http://www.w3.org/1999/xhtml'><body><p>hello</p></body></html>",
                 "xhtml", "5.0");
-        assertTrue("XHTML document should have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE html>"));
+        assertTrue(result.contains("<!DOCTYPE html>"),
+                "XHTML document should have DOCTYPE: " + result);
     }
 
     @Test
@@ -116,8 +117,8 @@ public class HTML5FragmentTest {
         final String result = serialize(
                 "<p xmlns='http://www.w3.org/1999/xhtml'>hello</p>",
                 "xhtml", "5.0");
-        assertFalse("XHTML fragment should NOT have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE"));
+        assertFalse(result.contains("<!DOCTYPE"),
+                "XHTML fragment should NOT have DOCTYPE: " + result);
     }
 
     @Test
@@ -142,8 +143,8 @@ public class HTML5FragmentTest {
             final String output = writer.toString();
 
             // li should NOT have indentation inside it
-            assertTrue("li content should not be indented: " + output,
-                    output.contains("<li><p>One</p></li>"));
+            assertTrue(output.contains("<li><p>One</p></li>"),
+                    "li content should not be indented: " + output);
         }
     }
 
@@ -161,8 +162,8 @@ public class HTML5FragmentTest {
             final String output = result.getStringValue();
 
             // li should NOT have indentation inside it
-            assertTrue("li content should not be indented via fn:serialize: " + output,
-                    output.contains("<li><p>One</p></li>"));
+            assertTrue(output.contains("<li><p>One</p></li>"),
+                    "li content should not be indented via fn:serialize: " + output);
         }
     }
 
@@ -189,10 +190,10 @@ public class HTML5FragmentTest {
             serializer.serialize(result);
             final String output = writer.toString();
 
-            assertFalse("HTML output should not contain CDATA: " + output,
-                    output.contains("<![CDATA["));
-            assertTrue("Text should be preserved: " + output,
-                    output.contains("<b>No CDATA</b>"));
+            assertFalse(output.contains("<![CDATA["),
+                    "HTML output should not contain CDATA: " + output);
+            assertTrue(output.contains("<b>No CDATA</b>"),
+                    "Text should be preserved: " + output);
         }
     }
 
@@ -202,17 +203,17 @@ public class HTML5FragmentTest {
         // but text content inside script elements must NOT be escaped
         final String result = serialize("<html><head><script language='Jack&amp;Jill'>go &amp;&amp; run();</script></head><body/></html>",
                 "html", "5.0");
-        assertTrue("Script attribute & should be escaped: " + result,
-                result.contains("language=\"Jack&amp;Jill\""));
-        assertTrue("Script body && should NOT be escaped: " + result,
-                result.contains("go && run()"));
+        assertTrue(result.contains("language=\"Jack&amp;Jill\""),
+                "Script attribute & should be escaped: " + result);
+        assertTrue(result.contains("go && run()"),
+                "Script body && should NOT be escaped: " + result);
     }
 
     @Test
     public void html40NoDoctypeWithoutPublicSystem() throws Exception {
         // HTML 4.0 without doctype-public/doctype-system should not emit DOCTYPE
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "4.0");
-        assertFalse("HTML 4.0 without public/system should NOT have DOCTYPE: " + result,
-                result.contains("<!DOCTYPE"));
+        assertFalse(result.contains("<!DOCTYPE"),
+                "HTML 4.0 without public/system should NOT have DOCTYPE: " + result);
     }
 }

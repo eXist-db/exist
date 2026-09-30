@@ -24,13 +24,13 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ReplaceResourceAction;
 import org.exist.xmldb.concurrent.action.RetrieveResourceAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
 
 /**
  * Test concurrent access to resources.
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConcurrentResourceTest extends ConcurrentTestBase {
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		final Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		assertNotNull(c1);

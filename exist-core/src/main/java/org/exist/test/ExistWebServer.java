@@ -30,6 +30,9 @@ import org.exist.jetty.JettyStart;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
@@ -37,8 +40,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.Assert.fail;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * JUnit {@link org.junit.rules.ExternalResource} that starts an embedded eXist Jetty server for tests.
@@ -79,8 +82,12 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * ({@code webAppStartupFailureDetail} is included in the exception message).
  * <p>
  * Prefer {@link #builder()} over the boolean constructor chain for readable test setup.
+ * <p>
+ * Supports both JUnit 4 (via {@code ExternalResource}, use with {@code @Rule}/{@code @ClassRule})
+ * and JUnit 5 (via {@link BeforeAllCallback}/{@link AfterAllCallback}, use with
+ * {@code @RegisterExtension static final}).
  */
-public class ExistWebServer extends ExternalResource {
+public class ExistWebServer extends ExternalResource implements BeforeAllCallback, AfterAllCallback {
 
     private static final Logger LOG =  LogManager.getLogger(ExistWebServer.class);
 
@@ -228,6 +235,19 @@ public class ExistWebServer extends ExternalResource {
         super.before();
     }
 
+    @Override
+    public void beforeAll(final ExtensionContext context) throws Exception {
+        try {
+            before();
+        } catch (final Exception e) {
+            throw e;
+        } catch (final Throwable t) {
+            // before() declares `throws Throwable`, broader than beforeAll()'s `throws Exception`;
+            // wrap the rare non-Exception case (e.g. an Error) rather than throwing a raw Exception.
+            throw new RuntimeException(t);
+        }
+    }
+
     /**
      * Shuts down and restarts the embedded Jetty server.
      * <p>
@@ -264,6 +284,11 @@ public class ExistWebServer extends ExternalResource {
         }
 
         super.after();
+    }
+
+    @Override
+    public void afterAll(final ExtensionContext context) {
+        after();
     }
 
     private void startJettyServer() {

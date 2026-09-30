@@ -22,16 +22,16 @@
 package org.exist.validation;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Some tests regarding invalid collection.xconf documents.
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class CollectionConfigurationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String invalidConfig = "<invalid/>";
@@ -57,7 +57,7 @@ public class CollectionConfigurationTest {
     private void storeCollectionXconf(final String collection, final String document) throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + DEFAULT_COLLECTION_CONFIG_FILE + "\", " + document + ")");
         final String r = (String) result.getResource(0).getContent();
-        assertEquals("Store xconf", collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r);
+        assertEquals(collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r, "Store xconf");
     }
 
 

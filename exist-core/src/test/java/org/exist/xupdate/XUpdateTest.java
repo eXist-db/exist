@@ -41,16 +41,19 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 
 import org.exist.util.LockException;
 import org.exist.xmldb.UserManagementService;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
+import org.hamcrest.junit.MatcherAssume;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -65,7 +68,7 @@ import org.xmlunit.diff.Diff;
 /**
  * @author berlinge-to
  */
-@RunWith(Parameterized.class)
+@ExtendWith(ExternalResourceSupport.class)
 public class XUpdateTest {
 
     @Rule
@@ -74,7 +77,6 @@ public class XUpdateTest {
     //TODO should not execute as 'admin' user
     //also additional tests needed to verify update permissions
 
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"append", "address.xml"},
@@ -104,11 +106,7 @@ public class XUpdateTest {
                 {"rename_including_namespace", "namespaces.xml"}
         });
     }
-
-    @Parameter
     public String testName;
-
-    @Parameter(value = 1)
     public String sourceFile;
 
     private final static String XUPDATE_COLLECTION = "xupdate_tests";
@@ -120,11 +118,12 @@ public class XUpdateTest {
 
     private Collection col = null;
 
-    @Test
-    public void xupdate() throws Exception {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void xupdate(String testName, String sourceFile) throws Exception {
+        initXUpdateTest(testName, sourceFile);
 
         //skip tests from Geoff Shuetrim (see above!)
-        Assume.assumeThat(testName, not(anyOf(equalTo("rename_root_element"), equalTo("rename_including_namespace"))));
+        MatcherAssume.assumeThat(testName, not(anyOf(equalTo("rename_root_element"), equalTo("rename_including_namespace"))));
 
         //update input xml file
         final Path modFile = getRelFile(MODIFICATION_DIR_NAME + "/" + testName + ".xml");
@@ -142,7 +141,7 @@ public class XUpdateTest {
                 .checkForIdentical()
                 .build();
 
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     private void addDocument(final String sourceFile) throws XMLDBException, IOException, URISyntaxException {
@@ -187,7 +186,7 @@ public class XUpdateTest {
         return ((String) ret.getContent());
     }
 
-    @Before
+    @BeforeEach
     public void startup() throws XMLDBException, IOException, URISyntaxException {
         col = existXmldbEmbeddedServer.getRoot().getChildCollection(XUPDATE_COLLECTION);
 
@@ -204,11 +203,16 @@ public class XUpdateTest {
         addDocument(sourceFile);
     }
 
-    @After
+    @AfterEach
     public void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         removeDocument();
 
         TestUtils.cleanupDB();
         col.close();
+    }
+
+    public void initXUpdateTest(String testName, String sourceFile) {
+        this.testName = testName;
+        this.sourceFile = sourceFile;
     }
 }

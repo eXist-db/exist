@@ -33,7 +33,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.TransformerException;
@@ -44,12 +46,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests around security exploits of the {@link org.xml.sax.XMLReader}
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
 
     private static final String EXPECTED_EXPANSION_DISABLED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo/>";

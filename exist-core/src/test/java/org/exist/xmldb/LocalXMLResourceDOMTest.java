@@ -24,10 +24,9 @@ package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceIterator;
@@ -38,18 +37,18 @@ import org.xmldb.api.modules.XMLResource;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class LocalXMLResourceDOMTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static String TEST_RESOURCE_NAME = "doc1.xml";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
@@ -65,7 +64,7 @@ public class LocalXMLResourceDOMTest {
         coll.storeResource(r);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()

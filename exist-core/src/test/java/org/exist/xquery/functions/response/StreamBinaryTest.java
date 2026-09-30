@@ -22,8 +22,8 @@
 package org.exist.xquery.functions.response;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -35,7 +35,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.binary.Base64;
 
 import org.exist.http.RESTTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests expected behaviour of response:stream-binary() XQuery function

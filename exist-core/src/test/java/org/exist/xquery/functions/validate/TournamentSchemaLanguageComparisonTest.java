@@ -24,11 +24,12 @@ package org.exist.xquery.functions.validate;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
@@ -38,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * The {@code tournament/1.5} sample fixtures ship an XSD, an RNG, and a Schematron schema side by
@@ -69,7 +71,7 @@ public class TournamentSchemaLanguageComparisonTest {
     private static final String[] TEST_RESOURCES =
             { "Tournament-valid.xml", "Tournament-invalid.xml", "Tournament.xsd", "Tournament.rng" };
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
@@ -77,7 +79,7 @@ public class TournamentSchemaLanguageComparisonTest {
             "    <validation mode='no'/>" +
             "</collection>";
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareResources() throws Exception {
 
         // Switch off validation
@@ -95,7 +97,7 @@ public class TournamentSchemaLanguageComparisonTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, XpathException, IOException {
         // No xsi:schemaLocation hint on the instance -- resolved purely by Tournament.xsd's
         // targetNamespace via directory-search, the same mechanism JaxpXsdCatalogTest's
@@ -105,7 +107,7 @@ public class TournamentSchemaLanguageComparisonTest {
                 "cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, XpathException, IOException {
         // Bare XSD structural validation cannot see the Singles/nbrParticipants-vs-nbrTeams
         // co-occurrence constraint -- proven here by getting the exact same verdict and error as
@@ -116,13 +118,13 @@ public class TournamentSchemaLanguageComparisonTest {
                 "cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, XpathException, IOException {
         executeAndEvaluate("validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/Tournament.rng') )", "valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, XpathException, IOException {
         // Same co-occurrence limitation as the XSD case above, for RELAX NG.
         executeAndEvaluate("validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +

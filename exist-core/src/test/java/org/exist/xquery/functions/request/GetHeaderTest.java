@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.request;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -33,7 +33,7 @@ import java.net.http.HttpRequest;
 
 import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.http.RESTTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 /**

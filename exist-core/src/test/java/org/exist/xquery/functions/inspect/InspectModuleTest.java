@@ -41,20 +41,24 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class InspectModuleTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("test-inspectModule");
@@ -154,7 +158,7 @@ public class InspectModuleTest {
             inspect:inspect-module(xs:anyURI("xmldb:exist://%s"))/function[@name eq "%s"]
             """;
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void withAtSignInline() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun1";
         final String expectedDescription = "Some description.";
@@ -167,14 +171,14 @@ public class InspectModuleTest {
     }
 
     /** eXist-db/exist#1386: an '@' mid-prose must not truncate the description. */
-    @Test
+    @org.junit.jupiter.api.Test
     public void atSignInDescriptionDoesNotTruncate() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun5",
                 "Selects taxonomy[@type = \"reign\"] from the source.\n THIS SENTENCE MUST SURVIVE.");
     }
 
     /** eXist-db/exist#1386: a bare '@', an email address, and a trailing '@' are all prose. */
-    @Test
+    @org.junit.jupiter.api.Test
     public void bareAtSignAndEmailInDescriptionSurvive() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun6",
                 "Costs 5 @ 3 dollars each. Write to info@exist-db.org for a quote@");
@@ -185,7 +189,7 @@ public class InspectModuleTest {
      * not a tag. Previously such a line vanished from the description and reappeared as an element
      * named after the word — including names XML does not permit, such as "2024".
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void lineStartAtSignThatIsNotAnXQDocTagIsProse() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun8",
                 "A description whose later lines open with an '@'.\n @home is where the heart is."
@@ -193,20 +197,20 @@ public class InspectModuleTest {
     }
 
     /** ...while the tags xqDoc does define still open a tag at line start. */
-    @Test
+    @org.junit.jupiter.api.Test
     public void lineStartXQDocTagsStillParseAsTags() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun9", "Tags xqDoc defines still open a tag.");
     }
 
     /** eXist-db/exist#1386: tags still parse, and an '@' inside a tag's value survives too. */
-    @Test
+    @org.junit.jupiter.api.Test
     public void tagsStillParseWithAtSignsInTheirValues() throws PermissionDeniedException, XPathException, EXistException {
         assertInspection("x:fun7", "A description before the tags.",
                 new String[]{ "takes x/@attr as its value" }, new String[]{}, new String[]{},
                 "a result mentioning info@exist-db.org");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void withParamsAndReturn() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun2";
         final String expectedDescription = "Some other description.";
@@ -218,7 +222,7 @@ public class InspectModuleTest {
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void multilineDescription() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun3";
         final String expectedDescription = "This is a multiline description and therefore\n spans multiple\n lines.";
@@ -230,7 +234,7 @@ public class InspectModuleTest {
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onAnnotatedFunction() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun4";
         final String expectedDescription = "An annotated function.";
@@ -322,7 +326,7 @@ public class InspectModuleTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -337,7 +341,7 @@ public class InspectModuleTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

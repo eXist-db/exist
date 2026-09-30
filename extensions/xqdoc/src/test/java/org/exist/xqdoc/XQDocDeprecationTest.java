@@ -22,13 +22,13 @@
 package org.exist.xqdoc;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pins the deprecation of {@code xqdm:scan}, agreed for 7.0.0 in
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class XQDocDeprecationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String NS = "declare namespace xqdm='http://exist-db.org/xquery/xqdoc'; ";
@@ -57,10 +57,10 @@ public class XQDocDeprecationTest {
     public void describeFunctionReportsDeprecation() throws XMLDBException {
         final String deprecated = query(NS
                 + "string-join(util:describe-function(xs:QName('xqdm:scan'))//deprecated, '|')");
-        assertTrue("xqdm:scan should report a deprecation notice, got: " + deprecated,
-                deprecated.contains("Deprecated for removal"));
-        assertTrue("the notice should name the replacement, got: " + deprecated,
-                deprecated.contains("inspect:inspect-module"));
+        assertTrue(deprecated.contains("Deprecated for removal"),
+                "xqdm:scan should report a deprecation notice, got: " + deprecated);
+        assertTrue(deprecated.contains("inspect:inspect-module"),
+                "the notice should name the replacement, got: " + deprecated);
     }
 
     /** The same notice is reachable via inspect:inspect-module. */
@@ -68,8 +68,8 @@ public class XQDocDeprecationTest {
     public void inspectModuleReportsDeprecation() throws XMLDBException {
         final String deprecated = query(NS + "string((inspect:inspect-module-uri(xs:anyURI('"
                 + MODULE_URI + "'))//function[@name='xqdm:scan']/deprecated)[1])");
-        assertTrue("inspect:inspect-module should report the deprecation, got: " + deprecated,
-                deprecated.contains("Deprecated for removal"));
+        assertTrue(deprecated.contains("Deprecated for removal"),
+                "inspect:inspect-module should report the deprecation, got: " + deprecated);
     }
 
     /** The module's own description carries the notice too. */
@@ -77,10 +77,10 @@ public class XQDocDeprecationTest {
     public void moduleDescriptionReportsDeprecation() throws XMLDBException {
         final String description = query(NS
                 + "string(inspect:inspect-module-uri(xs:anyURI('" + MODULE_URI + "'))/description)");
-        assertTrue("the module description should say it is deprecated, got: " + description,
-                description.contains("DEPRECATED FOR REMOVAL"));
-        assertTrue("the module description should link the decision, got: " + description,
-                description.contains("issues/6717"));
+        assertTrue(description.contains("DEPRECATED FOR REMOVAL"),
+                "the module description should say it is deprecated, got: " + description);
+        assertTrue(description.contains("issues/6717"),
+                "the module description should link the decision, got: " + description);
     }
 
     /** Deprecated is not disabled: the function is still resolvable in a default configuration. */

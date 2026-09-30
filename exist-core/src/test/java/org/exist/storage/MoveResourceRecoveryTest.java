@@ -46,11 +46,14 @@ import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.EXistCollectionManagementService;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -59,12 +62,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class MoveResourceRecoveryTest {
 
     @Rule
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
@@ -75,7 +79,7 @@ public class MoveResourceRecoveryTest {
         read();
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
@@ -86,7 +90,7 @@ public class MoveResourceRecoveryTest {
         readAborted();
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, URISyntaxException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();
@@ -138,7 +142,7 @@ public class MoveResourceRecoveryTest {
             final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), LockMode.READ_LOCK)) {
-                assertNotNull("Document should not be null", lockedDoc);
+                assertNotNull(lockedDoc, "Document should not be null");
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             } finally {
@@ -200,7 +204,7 @@ public class MoveResourceRecoveryTest {
             final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), LockMode.READ_LOCK)) {
-                assertNotNull("Document should not be null", lockedDoc);
+                assertNotNull(lockedDoc, "Document should not be null");
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             } finally {
@@ -249,7 +253,7 @@ public class MoveResourceRecoveryTest {
     private void xmldbRead() throws XMLDBException {
         final org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB +  "/test", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final Resource res = test.getResource("new_test3.xml");
-        assertNotNull("Document should not be null", res);
+        assertNotNull(res, "Document should not be null");
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
@@ -257,7 +261,7 @@ public class MoveResourceRecoveryTest {
         mgr.removeCollection(XmldbURI.create("test2"));
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

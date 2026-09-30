@@ -21,11 +21,12 @@
  */
 package org.exist.collections;
 
-import static org.junit.Assert.*;
-
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(ParallelRunner.class)
 public class CollectionURITest {

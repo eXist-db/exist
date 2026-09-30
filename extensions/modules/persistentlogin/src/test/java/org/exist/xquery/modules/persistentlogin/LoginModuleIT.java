@@ -26,10 +26,9 @@ import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -43,9 +42,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration test: requires ExistWebServer (Jetty) with XML-RPC and REST.
@@ -58,7 +58,7 @@ public class LoginModuleIT {
             "login:set-user('org.exist.login', (), false())," +
             "sm:id()/(descendant::sm:effective,descendant::sm:real)[1]/sm:username/string()";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String XQUERY_FILENAME = "test-login.xql";
@@ -66,7 +66,7 @@ public class LoginModuleIT {
     private static Collection root;
     private static HttpClient client;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws XMLDBException {
         final int port = existWebServer.getPort();
         final String uri = "xmldb:exist://localhost:" + port + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
@@ -106,7 +106,7 @@ public class LoginModuleIT {
                 .build();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         if (root != null) {
             final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
@@ -143,7 +143,7 @@ public class LoginModuleIT {
             throw new IOException("Interrupted while awaiting HTTP response", e);
         }
         final String responseBody = response.body();
-        assertEquals(responseBody, HTTP_OK, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode(), responseBody);
         assertEquals(expected, responseBody);
     }
 

@@ -22,8 +22,8 @@
 package org.exist.xquery.functions.request;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,9 +36,9 @@ import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -74,7 +74,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
 
     private static Collection root;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         final BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
@@ -85,7 +85,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
         ums.chmod(res, 0777);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws XMLDBException {
         final BinaryResource res = (BinaryResource) root.getResource(XQUERY_FILENAME);
         root.removeResource(res);
@@ -99,10 +99,10 @@ public class GetUploadedFileHeadersTest extends RESTTest {
                 .build();
 
         final String result = post(body, "fileUpload");
-        assertTrue("one header map for the single uploaded file: " + result, result.contains("count=1"));
-        assertTrue("file names aligned: " + result, result.contains("names=[helloworld.txt]"));
-        assertTrue("Content-Type exposed: " + result, result.contains("file1:ct=text/plain:"));
-        assertTrue("Content-Disposition exposed with filename: " + result, result.contains("filename=\"helloworld.txt\""));
+        assertTrue(result.contains("count=1"), "one header map for the single uploaded file: " + result);
+        assertTrue(result.contains("names=[helloworld.txt]"), "file names aligned: " + result);
+        assertTrue(result.contains("file1:ct=text/plain:"), "Content-Type exposed: " + result);
+        assertTrue(result.contains("filename=\"helloworld.txt\""), "Content-Disposition exposed with filename: " + result);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
                 .build();
 
         final String result = post(body, "param1");
-        assertTrue("a plain form field is not a file part, so no header maps: " + result, result.contains("count=0"));
+        assertTrue(result.contains("count=0"), "a plain form field is not a file part, so no header maps: " + result);
     }
 
     @Test
@@ -124,13 +124,13 @@ public class GetUploadedFileHeadersTest extends RESTTest {
                 .build();
 
         final String result = post(body, "fileUpload");
-        assertTrue("one header map per uploaded file: " + result, result.contains("count=2"));
-        assertTrue("both file names present and ordered: " + result, result.contains("names=[first.xml,second.json]"));
+        assertTrue(result.contains("count=2"), "one header map per uploaded file: " + result);
+        assertTrue(result.contains("names=[first.xml,second.json]"), "both file names present and ordered: " + result);
         // header map i aligns with file name i
-        assertTrue("first file's headers align with first.xml: " + result,
-                result.contains("file1:ct=application/xml:") && result.contains("filename=\"first.xml\""));
-        assertTrue("second file's headers align with second.json: " + result,
-                result.contains("file2:ct=application/json:") && result.contains("filename=\"second.json\""));
+        assertTrue(result.contains("file1:ct=application/xml:") && result.contains("filename=\"first.xml\""),
+                "first file's headers align with first.xml: " + result);
+        assertTrue(result.contains("file2:ct=application/json:") && result.contains("filename=\"second.json\""),
+                "second file's headers align with second.json: " + result);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
                 .build();
 
         final String result = post(body, "doesNotExist");
-        assertTrue("an unknown parameter yields the empty sequence: " + result, result.contains("count=0"));
+        assertTrue(result.contains("count=0"), "an unknown parameter yields the empty sequence: " + result);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
                 .build();
         final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, get));
         assertEquals(200, result.statusCode());
-        assertTrue("a non-multipart request yields the empty sequence: " + result.body(), result.body().contains("count=0"));
+        assertTrue(result.body().contains("count=0"), "a non-multipart request yields the empty sequence: " + result.body());
     }
 
     private static HttpRequest.BodyPublisher filePart(final String content, final MediaType mediaType) {

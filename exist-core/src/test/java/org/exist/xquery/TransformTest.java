@@ -24,10 +24,9 @@ package org.exist.xquery;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -36,13 +35,12 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class TransformTest {
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String TEST_COLLECTION_NAME = "transform-test";
@@ -87,7 +85,7 @@ public class TransformTest {
     	c.storeResource(r);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
@@ -151,7 +149,7 @@ public class TransformTest {
         addXMLDocument(xsl3, doc3, "3.xsl");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         Collection root =
             DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");

@@ -57,10 +57,12 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -72,8 +74,8 @@ import java.util.stream.Stream;
 
 import static org.exist.storage.NativeBroker.COLLECTIONS_DBX_ID;
 import static org.exist.util.ByteConversion.byteToInt;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests to check that the correct entries
@@ -82,6 +84,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ExtendWith(ExternalResourceSupport.class)
 public abstract class AbstractJournalTest<T> {
 
     protected static final boolean COMMIT = true;
@@ -98,7 +101,7 @@ public abstract class AbstractJournalTest<T> {
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 
-    @After
+    @AfterEach
     public void tearDown() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
@@ -964,7 +967,7 @@ public abstract class AbstractJournalTest<T> {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
     public void replaceSameContentWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
@@ -1063,7 +1066,7 @@ public abstract class AbstractJournalTest<T> {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
     public void replaceDifferentContentWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
@@ -1580,9 +1583,9 @@ public abstract class AbstractJournalTest<T> {
             try (final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK)) {
 
                 if (!shouldExist) {
-                    assertNull("Document should not exist in the database: " + uri, lockedDoc);
+                    assertNull(lockedDoc, "Document should not exist in the database: " + uri);
                 } else {
-                    assertNotNull("Document does not exist in the database: " + uri, lockedDoc);
+                    assertNotNull(lockedDoc, "Document does not exist in the database: " + uri);
 
                     readAndVerify(broker, lockedDoc.getDocument(), file, dbFilename);
                 }

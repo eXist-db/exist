@@ -22,15 +22,15 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression test for the processing-instruction half of issue #6689, raised in review of the
@@ -46,7 +46,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SelfAxisProcessingInstructionRegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -58,12 +58,12 @@ public class SelfAxisProcessingInstructionRegressionTest {
     private static final String PERSISTENT = "let $r := doc('" + TEST_DOC + "')/root ";
     private static final String IN_MEMORY = "let $r := parse-xml('" + CONTENT + "')/root ";
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestDocument() throws XMLDBException {
         query("xmldb:store('/db', 'i6689-pi.xml', '" + CONTENT + "', 'application/xml')");
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'i6689-pi.xml')");
     }

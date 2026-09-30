@@ -38,14 +38,15 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestDataGenerator;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
-import static org.junit.Assert.*;
-import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
@@ -205,7 +206,7 @@ public class RemoveCollectionIT {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             if (checkResource) {
                 lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
-                assertNull("Resource should have been removed", lockedDoc);
+                assertNull(lockedDoc, "Resource should have been removed");
             }
 	    } finally {
             if (lockedDoc != null) {
@@ -219,12 +220,12 @@ public class RemoveCollectionIT {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

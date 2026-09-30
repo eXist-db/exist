@@ -24,12 +24,15 @@ package org.exist.xquery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -38,17 +41,17 @@ import org.xmldb.api.modules.XMLResource;
  * source code. 
  * @author Jason Smith
  */
-public class TestXPathOpOrSpecialCase extends Assert {
+public class TestXPathOpOrSpecialCase {
 
 	private static final Logger LOG = LogManager.getLogger(TestXPathOpOrSpecialCase.class);
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	/** Database test collection (<code>/db/blah</code>). */
 	private Collection testCollection;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception 
 	{
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
@@ -56,7 +59,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
         assertNotNull(testCollection);
     }
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		final CollectionManagementService service =
 				existEmbeddedServer.getRoot().getService(
@@ -70,7 +73,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
 	 * query the document with a bogus predicate containing an <code>or<code> operation;
 	 * expect <code>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</code>.
 	 */
-	@Test
+	@org.junit.jupiter.api.Test
 	public void verifyOpOrInPredicate() throws Exception
 	{
 		try

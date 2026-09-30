@@ -24,7 +24,7 @@ package org.exist.xmldb.concurrent;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ValueAppendAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 	        "</exist:index>" +
         "</exist:collection>";
 
-	@Before
+	@BeforeEach
     public void setUp() throws Exception {
 		DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XCONF);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");

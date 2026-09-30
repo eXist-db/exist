@@ -27,9 +27,8 @@ import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -37,15 +36,18 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests for retrieving a document containing CDATA via
@@ -53,11 +55,11 @@ import static org.junit.Assert.*;
  */
 public class CDataIntergationTest extends AbstractHttpTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    @ClassRule
-    public static final TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public static File tempFolder;
 
     private final static String cdata_content = "Hello there \"Bob?\"";
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";

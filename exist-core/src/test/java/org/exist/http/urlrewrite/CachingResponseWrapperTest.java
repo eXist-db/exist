@@ -25,7 +25,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -34,13 +34,13 @@ import java.util.List;
 
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Direct unit tests for {@link CachingResponseWrapper} -- fast, in-process coverage of the
@@ -86,8 +86,8 @@ public class CachingResponseWrapperTest {
         final PrintWriter first = wrapper.getWriter();
         final PrintWriter second = wrapper.getWriter();
 
-        assertSame("A repeat call to getWriter() must return the same writer, not throw",
-                first, second);
+        assertSame(first,
+                second, "A repeat call to getWriter() must return the same writer, not throw");
     }
 
     @Test
@@ -96,8 +96,8 @@ public class CachingResponseWrapperTest {
         final ServletOutputStream first = wrapper.getOutputStream();
         final ServletOutputStream second = wrapper.getOutputStream();
 
-        assertSame("A repeat call to getOutputStream() must return the same stream, not throw",
-                first, second);
+        assertSame(first,
+                second, "A repeat call to getOutputStream() must return the same stream, not throw");
     }
 
     @Test
@@ -107,8 +107,8 @@ public class CachingResponseWrapperTest {
 
         wrapper.setHeader("X-Foo", "bar");
 
-        assertTrue("A buffered step's header must not reach the real response before flush()",
-                real.calls.isEmpty());
+        assertTrue(real.calls.isEmpty(),
+                "A buffered step's header must not reach the real response before flush()");
     }
 
     @Test
@@ -118,8 +118,8 @@ public class CachingResponseWrapperTest {
 
         wrapper.addHeader("X-Foo", "bar");
 
-        assertTrue("A buffered step's header must not reach the real response before flush()",
-                real.calls.isEmpty());
+        assertTrue(real.calls.isEmpty(),
+                "A buffered step's header must not reach the real response before flush()");
     }
 
     @Test
@@ -158,10 +158,10 @@ public class CachingResponseWrapperTest {
         wrapper.getOutputStream().write("four".getBytes());
         wrapper.flush();
 
-        assertFalse("A buffered Content-Length header must never be replayed",
-                real.calls.contains("setHeader(Content-Length, 999)"));
-        assertTrue("flush() must set the real Content-Length from the actual buffered byte count",
-                real.calls.contains("setContentLengthLong(4)"));
+        assertFalse(real.calls.contains("setHeader(Content-Length, 999)"),
+                "A buffered Content-Length header must never be replayed");
+        assertTrue(real.calls.contains("setContentLengthLong(4)"),
+                "flush() must set the real Content-Length from the actual buffered byte count");
     }
 
     @Test
@@ -235,7 +235,7 @@ public class CachingResponseWrapperTest {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.setContentLength(42);
-        assertTrue("setContentLength(int) must be suppressed while buffering", real.calls.isEmpty());
+        assertTrue(real.calls.isEmpty(), "setContentLength(int) must be suppressed while buffering");
 
         final CachingResponseWrapper notCaching = new CachingResponseWrapper(real, false);
         notCaching.setContentLength(42);
@@ -247,8 +247,8 @@ public class CachingResponseWrapperTest {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.setContentLengthLong(42L);
-        assertTrue("setContentLengthLong(long) must be suppressed while buffering -- flush() "
-                + "derives the real value instead", real.calls.isEmpty());
+        assertTrue(real.calls.isEmpty(), "setContentLengthLong(long) must be suppressed while buffering -- flush() "
+                + "derives the real value instead");
 
         final CachingResponseWrapper notCaching = new CachingResponseWrapper(real, false);
         notCaching.setContentLengthLong(42L);
@@ -260,8 +260,8 @@ public class CachingResponseWrapperTest {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.flushBuffer();
-        assertTrue("flushBuffer() must be a no-op while buffering -- flush() is the real commit point",
-                real.calls.isEmpty());
+        assertTrue(real.calls.isEmpty(),
+                "flushBuffer() must be a no-op while buffering -- flush() is the real commit point");
 
         final CachingResponseWrapper notCaching = new CachingResponseWrapper(real, false);
         notCaching.flushBuffer();
@@ -275,10 +275,10 @@ public class CachingResponseWrapperTest {
 
         wrapper.setStatus(404);
 
-        assertEquals("getStatus() must reflect the last setStatus() call", 404, wrapper.getStatus());
-        assertEquals("Status is not buffered -- service()/applyViews() read getStatus() right "
+        assertEquals(404, wrapper.getStatus(), "getStatus() must reflect the last setStatus() call");
+        assertEquals(List.of("setStatus(404)"), real.calls, "Status is not buffered -- service()/applyViews() read getStatus() right "
                 + "after doRewrite() returns to decide the error-handler path, so it must be "
-                + "visible on the real response immediately", List.of("setStatus(404)"), real.calls);
+                + "visible on the real response immediately");
     }
 
     @Test

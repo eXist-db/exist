@@ -24,28 +24,28 @@ package org.exist.vector;
 import org.exist.management.impl.VectorEmbedding;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class VectorEmbeddingJmxTest {
+class VectorEmbeddingJmxTest {
 
-    @ClassRule
-    public static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
+    @RegisterExtension
+    static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     @Test
     public void registersVectorEmbeddingAtBrokerPoolStartup() throws Exception {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         final ObjectName query = new ObjectName(VectorEmbedding.getAllInstancesQuery());
         final Set<ObjectName> names = server.queryNames(query, null);
-        assertFalse("VectorEmbedding MBean should be registered at broker pool startup", names.isEmpty());
+        assertFalse(names.isEmpty(), "VectorEmbedding MBean should be registered at broker pool startup");
     }
 
     @Test
@@ -67,11 +67,11 @@ public class VectorEmbeddingJmxTest {
 
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         final ObjectName query = new ObjectName(VectorEmbedding.getAllInstancesQuery());
-        assertFalse("VectorEmbedding MBean should be present after re-registration", server.queryNames(query, null).isEmpty());
+        assertFalse(server.queryNames(query, null).isEmpty(), "VectorEmbedding MBean should be present after re-registration");
 
         SERVER.restart();
 
-        assertFalse("VectorEmbedding MBean should be present after broker pool restart",
-                server.queryNames(query, null).isEmpty());
+        assertFalse(server.queryNames(query, null).isEmpty(),
+                "VectorEmbedding MBean should be present after broker pool restart");
     }
 }

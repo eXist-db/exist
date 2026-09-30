@@ -21,8 +21,6 @@
  */
 package org.exist.storage.lock;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -50,11 +48,11 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -64,6 +62,11 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Integration test for deadlock detection and resolution.
@@ -71,7 +74,6 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author wolf
  */
-@RunWith(Parameterized.class)
 public class DeadlockIT {
 
 	private static final Logger LOG = LogManager.getLogger(DeadlockIT.class);
@@ -127,7 +129,6 @@ public class DeadlockIT {
     }
 
     /** Use 4 test runs, querying different collections */
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "testRandomCollection", TEST_RANDOM_COLLECTION },
@@ -174,17 +175,13 @@ public class DeadlockIT {
             </book>""";
 
 	private final Random random = new Random();
-
-	@Parameter
 	public String testName;
-        
-	@Parameter(value = 1)
 	public int mode;
 
-	@ClassRule
+	@RegisterExtension
 	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeClass
+	@BeforeAll
 	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -211,15 +208,16 @@ public class DeadlockIT {
 		}
 	}
 
-    @After
+    @AfterEach
     public void clearDB() throws XMLDBException {
 		final org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
 		CollectionManagementService service = root.getService(CollectionManagementService.class);
 		service.removeCollection(".");
     }
 
-	@Test(timeout = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000)
-	public void runTasks() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}") @Timeout(value = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    public void runTasks(String testName, int mode) {
+        initDeadlockIT(testName, mode);
 		taskFailure.set(null);
 		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         final CountDownLatch storeComplete = new CountDownLatch(1);
@@ -238,8 +236,8 @@ public class DeadlockIT {
 		}
         if (mode == TEST_REMOVE) {
             try {
-                assertTrue("Store task did not finish before document removals started",
-                        storeComplete.await(AWAIT_TERMINATION_MINUTES, TimeUnit.MINUTES));
+                assertTrue(storeComplete.await(AWAIT_TERMINATION_MINUTES, TimeUnit.MINUTES),
+                        "Store task did not finish before document removals started");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.error(e.getMessage(), e);
@@ -261,7 +259,7 @@ public class DeadlockIT {
 		}
 		if (!terminated) {
 			executor.shutdownNow();
-			assertTrue("Executor did not terminate within " + AWAIT_TERMINATION_MINUTES + " minutes; possible deadlock or hang", terminated);
+			assertTrue(terminated, "Executor did not terminate within " + AWAIT_TERMINATION_MINUTES + " minutes; possible deadlock or hang");
 		}
 		rethrowTaskFailure();
 	}
@@ -411,5 +409,10 @@ public class DeadlockIT {
                         "Could not remove a document after " + MAX_REMOVE_ATTEMPTS + " attempts"));
             }
         }
+    }
+
+    public void initDeadlockIT(String testName, int mode) {
+        this.testName = testName;
+        this.mode = mode;
     }
 }

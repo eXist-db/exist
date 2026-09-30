@@ -22,16 +22,16 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression test for issue #2129. Wildcard {@code following::*} previously
@@ -51,13 +51,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class FollowingAxisPositionRegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String LARGE_DOC = "/db/words-large.xml";
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -73,7 +73,7 @@ public class FollowingAxisPositionRegressionTest {
                 """);
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -163,12 +163,12 @@ public class FollowingAxisPositionRegressionTest {
 
         final long threshold = Math.max(500L, earlyMs * 3L);
         assertTrue(
+                lateMs <= threshold,
                 "following:: at position 45000 took " + lateMs + "ms; "
                         + "at position 5000 it took " + earlyMs + "ms; "
                         + "threshold=" + threshold + "ms (3x early or 500ms min). "
                         + "If this regressed, the StAX reader is probably walking "
-                        + "from the document root again - see issue #2129.",
-                lateMs <= threshold);
+                        + "from the document root again - see issue #2129.");
     }
 
     private static long timeQuery(final XQueryService xqs, final String query)

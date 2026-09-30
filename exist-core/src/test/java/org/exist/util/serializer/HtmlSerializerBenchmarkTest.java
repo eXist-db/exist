@@ -22,15 +22,15 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.QName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.transform.OutputKeys;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Microbenchmark for HTML serialization that exercises the writeChars/writeCharSeq
@@ -156,21 +156,21 @@ public class HtmlSerializerBenchmarkTest {
         // leaves the closing "</tag>" for endElement), but the delta must be
         // a small constant, not proportional to the number of '<' in script.
         final long perCharDelta = withScript.perCharWriteCalls - empty.perCharWriteCalls;
-        assertTrue("Script body's '<' chars should NOT trigger per-char writes; "
+        assertTrue(perCharDelta < ltInScript,
+                "Script body's '<' chars should NOT trigger per-char writes; "
                 + "empty=" + empty.perCharWriteCalls + " withScript="
                 + withScript.perCharWriteCalls + " delta=" + perCharDelta
-                + " ('<' count in script=" + ltInScript + ")",
-                perCharDelta < ltInScript);
+                + " ('<' count in script=" + ltInScript + ")");
         // And the script body characters must show up in bulk string output.
         // (Allow a small tolerance — empty/non-empty <script> differ by 1 char
         // because closeStartTag(true) writes "></script>" while non-empty
         // splits the close across two writers.write() calls.)
         final long stringCharsDelta = withScript.stringCharsWritten - empty.stringCharsWritten;
-        assertTrue("Script body should add bulk string output close to its size; "
+        assertTrue(stringCharsDelta >= script.length() - 5,
+                "Script body should add bulk string output close to its size; "
                 + "empty=" + empty.stringCharsWritten + " withScript="
                 + withScript.stringCharsWritten + " delta=" + stringCharsDelta
-                + " script.length()=" + script.length(),
-                stringCharsDelta >= script.length() - 5);
+                + " script.length()=" + script.length());
     }
 
     private CountingWriter serializeWithScript(final String script) throws TransformerException {
@@ -229,8 +229,8 @@ public class HtmlSerializerBenchmarkTest {
         System.out.println("[HtmlSerializerBenchmarkTest]   speedup:       "
                 + String.format("%.2fx", perCharMs * 1.0 / Math.max(1, bulkMs)));
 
-        assertTrue("Bulk path should be faster than per-char path; bulk="
-                + bulkMs + "ms perChar=" + perCharMs + "ms", bulkMs < perCharMs);
+        assertTrue(bulkMs < perCharMs, "Bulk path should be faster than per-char path; bulk="
+                + bulkMs + "ms perChar=" + perCharMs + "ms");
     }
 
     @Test
@@ -267,8 +267,8 @@ public class HtmlSerializerBenchmarkTest {
         // bulk writes (Writer.write(char[],int,int) or Writer.write(String,int,int)).
         // Special-character escapes still go through per-char writes, but those
         // are a tiny minority of output for typical HTML.
-        assertTrue("Expected >90% of chars to be flushed in bulk, but got " + bulkPct + "%",
-                bulkPct > 90.0);
+        assertTrue(bulkPct > 90.0,
+                "Expected >90% of chars to be flushed in bulk, but got " + bulkPct + "%");
     }
 
     private void run(final Writer out) throws TransformerException {

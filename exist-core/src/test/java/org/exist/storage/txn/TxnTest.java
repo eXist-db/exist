@@ -34,10 +34,10 @@ package org.exist.storage.txn;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

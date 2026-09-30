@@ -28,21 +28,23 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
 import java.io.FileOutputStream;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
-
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
@@ -50,7 +52,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class DbStore2Test {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServerWithAnyURI = new ExistXmldbEmbeddedServer(false, true,
             true, getConfig());
 
@@ -75,7 +77,7 @@ public class DbStore2Test {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
 
         jettyPort += new Random().nextInt(15000);
@@ -102,13 +104,13 @@ public class DbStore2Test {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         jettyServer.stop();
         FileUtils.deleteDirectory(jettyRootDir.toFile());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public final void testWithAnyUriEnabled() throws XMLDBException {
         final Collection rootCol = existEmbeddedServerWithAnyURI.getRoot();
         Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
@@ -129,7 +131,7 @@ public class DbStore2Test {
         assertNotNull(rs);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public final void testLargeFileStore() throws XMLDBException, IOException {
         final byte buff[] = new byte[BUFFER_SIZE];
         try (final FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {

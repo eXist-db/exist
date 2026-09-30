@@ -38,22 +38,21 @@ import org.exist.storage.txn.Txn;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
-import org.junit.ClassRule;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.*;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class DirtyShutdownTest {
 
     private static final Logger LOG = LogManager.getLogger(DirtyShutdownTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
     
     @Test

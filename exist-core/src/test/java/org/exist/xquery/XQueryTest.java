@@ -39,7 +39,9 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -62,11 +64,16 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLUnit.compareXML;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * I propose that we put here in XQueryTest the tests involving all the
@@ -79,7 +86,7 @@ public class XQueryTest {
 
     private final static Logger LOG = LogManager.getLogger(XQueryTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String NUMBERS_XML = "numbers.xml";
@@ -204,14 +211,14 @@ public class XQueryTest {
     private String file_name = "detail_xml.xml";
     private String xml;
 
-    @Before
+    @BeforeEach
     public void setup() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.createCollection("test");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
@@ -222,7 +229,7 @@ public class XQueryTest {
         return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void let() throws XMLDBException, IOException, SAXException {
         ResourceSet result;
         String query;
@@ -235,14 +242,14 @@ public class XQueryTest {
         //Non null context sequence
         query = "/test/item[let $id := ./@id return $id]";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 4, result.getSize());
+        assertEquals(4, result.getSize(), "XQuery: " + query);
         query = "/test/item[let $id := ./@id return not(/test/set[@id=$id])]";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 4, result.getSize());
+        assertEquals(4, result.getSize(), "XQuery: " + query);
         query = "let $test := <test><a> a </a><a>a</a></test> " +
                 "return distinct-values($test/a/normalize-space(.))";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
 
         //Ordered value sequence
         query = "let $unordset := (for $val in reverse(1 to 100) return " +
@@ -254,7 +261,7 @@ public class XQueryTest {
                 "return $ordset/ancestor::node()";
 
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 50, result.getSize());
+        assertEquals(50, result.getSize(), "XQuery: " + query);
 
         //WARNING : the return order CHANGES !!!!!!!!!!!!!!!!!!
 
@@ -262,7 +269,7 @@ public class XQueryTest {
         assertXMLEqual("<value>1</value>", result.getResource(49).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testFor() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -272,29 +279,29 @@ public class XQueryTest {
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
         query = "for $f in /*/item return $f";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 4, result.getSize());
+        assertEquals(4, result.getSize(), "XQuery: " + query);
         query = "for $f in /*/item  order by $f ascending  return $f";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("id"));
+        assertEquals("3", ((Element) resu.getContentAsDOM()).getAttribute("id"), "XQuery: " + query);
         query = "for $f in /*/item  order by $f descending  return $f";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "2", ((Element) resu.getContentAsDOM()).getAttribute("id"));
+        assertEquals("2", ((Element) resu.getContentAsDOM()).getAttribute("id"), "XQuery: " + query);
         query = "for $f in /*/item  order by xs:double($f/price) descending  return $f";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "4", ((Element) resu.getContentAsDOM()).getAttribute("id"));
+        assertEquals("4", ((Element) resu.getContentAsDOM()).getAttribute("id"), "XQuery: " + query);
         query = "for $f in //item where $f/@id = '3' return $f";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("id"));
+        assertEquals("3", ((Element) resu.getContentAsDOM()).getAttribute("id"), "XQuery: " + query);
 
         //Non null context sequence
         query = "/test/item[for $id in ./@id return $id]";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, 4, result.getSize());
+        assertEquals(4, result.getSize(), "XQuery: " + query);
 
         //Ordered value sequence
         query = "let $doc := <doc><value>Z</value><value>Y</value><value>X</value></doc> " +
@@ -307,16 +314,16 @@ public class XQueryTest {
 
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "<value>X</value>", resu.getContent());
+        assertEquals("<value>X</value>", resu.getContent(), "XQuery: " + query);
 
         //Ordered value sequence
         query = "for $e in (1) order by $e return $e";
         result = service.queryResource(NUMBERS_XML, query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "1", resu.getContent());
+        assertEquals("1", resu.getContent(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void recursion() throws XMLDBException {
         String q1 =
                 """
@@ -333,7 +340,7 @@ public class XQueryTest {
         assertEquals(result.getSize(), 5000);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void constructedNode1() throws XMLDBException {
         String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
@@ -343,7 +350,7 @@ public class XQueryTest {
         assertEquals(0, result.getSize());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void combiningNodeSequences() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -357,8 +364,8 @@ public class XQueryTest {
                 )\
                 return $b""";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<a/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<a/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = """
                 let $a := <a/>\s
                 let $aa := ($a, $a)\s
@@ -366,8 +373,8 @@ public class XQueryTest {
                 )\
                 return $b""";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<a/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<a/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = """
                 let $a := <a/>\s
                 let $aa := ($a, $a)\s
@@ -375,13 +382,13 @@ public class XQueryTest {
                 )\
                 return $b""";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
     }
 
     /**
      * @author Gev
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void inMemoryNodeSequences() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -391,46 +398,46 @@ public class XQueryTest {
 
         query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
 
         query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+        assertEquals("<t>text<a/>\n</t>", result.getResource(0).getContent(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void variable() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -450,9 +457,9 @@ public class XQueryTest {
                 return ($param:a, $param:a)
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, "b", result.getResource(0).getContent());
-        assertEquals("XQuery: " + query, "b", result.getResource(1).getContent());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals("b", result.getResource(0).getContent(), "XQuery: " + query);
+        assertEquals("b", result.getResource(1).getContent(), "XQuery: " + query);
         query = """
                 xquery version "1.0";
                 declare namespace param="param";
@@ -462,9 +469,9 @@ public class XQueryTest {
                 return param:a(), param:a()
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, "a", result.getResource(0).getContent());
-        assertEquals("XQuery: " + query, "a", result.getResource(1).getContent());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals("a", result.getResource(0).getContent(), "XQuery: " + query);
+        assertEquals("a", result.getResource(1).getContent(), "XQuery: " + query);
         query = """
                 declare variable $foo := "foo1";
                 let $foo := "foo2"
@@ -473,8 +480,8 @@ public class XQueryTest {
                   return $foo
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "foo3", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("foo3", result.getResource(0).getContent(), "XQuery: " + query);
 
         try {
             message = "";
@@ -497,8 +504,8 @@ public class XQueryTest {
                 param:f()
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "a", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("a", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <root> " +
                 "<b name='1'>" +
                 "  <c name='x'> " +
@@ -514,14 +521,14 @@ public class XQueryTest {
                 "return $bar " +
                 "return $b";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "2", ((Element) resu.getContentAsDOM()).getAttribute("name"));
+        assertEquals("2", ((Element) resu.getContentAsDOM()).getAttribute("name"), "XQuery: " + query);
         resu = (XMLResource) result.getResource(1);
-        assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("name"));
+        assertEquals("3", ((Element) resu.getContentAsDOM()).getAttribute("name"), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void virtualNodesets() throws XMLDBException, IOException, SAXException {
         ResourceSet result;
         String query;
@@ -539,29 +546,29 @@ public class XQueryTest {
         query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant::*/attribute::id " +
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         assertXMLEqual("<a id='cool'/>", result.getResource(0).getContent().toString());
 
         query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/child::b " +
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         assertXMLEqual("<a><b id='cool'/></a>", result.getResource(0).getContent().toString());
 
         query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/descendant::b " +
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         assertXMLEqual("<a><b id='cool'/></a>", result.getResource(0).getContent().toString());
 
         query = "let $doc := <a id='a'><b id='b'/></a> " +
                 "return $doc/*/(<id>{@id}</id>)";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         assertXMLEqual("<id id='b' />", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void whereClause() throws XMLDBException, IOException, SAXException {
         ResourceSet result;
         String query;
@@ -585,12 +592,12 @@ public class XQueryTest {
                 "where $x/@id eq 'id' " +
                 "return $x";
         result = service.queryResource(NUMBERS_XML, query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         assertXMLEqual("<node1 id='id'><node1>1</node1><node2>2</node2></node1>",
                 result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void typedVariables() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -607,18 +614,18 @@ public class XQueryTest {
                 return $x
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
-        assertEquals("XQuery: " + query, "assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals(Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType(), "XQuery: " + query);
+        assertEquals("assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName(), "XQuery: " + query);
         query = "let $v as node()* := ()\n" + "return $v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "let $v as item()* := ()\n" + "return $v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "let $v as empty-sequence() := ()\n" + "return $v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "let $v as item() := ()\n" + "return $v";
         try {
             exceptionThrown = false;
@@ -627,13 +634,13 @@ public class XQueryTest {
             exceptionThrown = true;
             message = e.getMessage();
         }
-        assertTrue("XQuery: " + query, exceptionThrown);
+        assertTrue(exceptionThrown, "XQuery: " + query);
         query = "let $v as item()* := ( <a/> , 1 )\n" + "return $v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
-        assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
-        assertEquals("XQuery: " + query, "1", result.getResource(1).getContent());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals(Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType(), "XQuery: " + query);
+        assertEquals("a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName(), "XQuery: " + query);
+        assertEquals("1", result.getResource(1).getContent(), "XQuery: " + query);
         query = "let $v as node()* := ( <a/> , 1 )\n" + "return $v";
         try {
             exceptionThrown = false;
@@ -664,18 +671,18 @@ public class XQueryTest {
                 $x
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
-        assertEquals("XQuery: " + query, "assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals(Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType(), "XQuery: " + query);
+        assertEquals("assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName(), "XQuery: " + query);
         query = "declare variable $v as node()* := ();\n" + "$v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "declare variable $v as item()* := ();\n" + "$v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "declare variable $v as empty-sequence() := ();\n" + "$v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "declare variable $v as item() := ();\n" + "$v";
         try {
             exceptionThrown = false;
@@ -684,13 +691,13 @@ public class XQueryTest {
             exceptionThrown = true;
             message = e.getMessage();
         }
-        assertTrue("XQuery: " + query, exceptionThrown);
+        assertTrue(exceptionThrown, "XQuery: " + query);
         query = "declare variable $v as item()* := ( <a/> , 1 );\n" + "$v";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
-        assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
-        assertEquals("XQuery: " + query, "1", result.getResource(1).getContent());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals(Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType(), "XQuery: " + query);
+        assertEquals("a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName(), "XQuery: " + query);
+        assertEquals("1", result.getResource(1).getContent(), "XQuery: " + query);
         query = "declare variable $v as node()* := ( <a/> , 1 );\n" + "$v";
         try {
             exceptionThrown = false;
@@ -718,13 +725,13 @@ public class XQueryTest {
                 return $v
                 """.formatted(XmldbURI.ROOT_COLLECTION, NUMBERS_XML);
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         //TODO : no way to test the node type ?
         //assertEquals( "XQuery: " + query, Node.DOCUMENT_NODE, ((XMLResource)result.getResource(0)));
-        assertEquals("XQuery: " + query, "test", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
+        assertEquals("test", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void precedence() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -744,12 +751,12 @@ public class XQueryTest {
                 return $blah:param, $blah:param
                 """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
-        assertEquals("XQuery: " + query, "value-2", result.getResource(0).getContent());
-        assertEquals("XQuery: " + query, "value-1", result.getResource(1).getContent());
+        assertEquals(2, result.getSize(), "XQuery: " + query);
+        assertEquals("value-2", result.getResource(0).getContent(), "XQuery: " + query);
+        assertEquals("value-1", result.getResource(1).getContent(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void improbableAxesAndNodeTestsCombinations() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -761,20 +768,20 @@ public class XQueryTest {
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
         query = "let $a := <x>a<!--b-->c</x>/self::comment() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/parent::comment() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/ancestor::comment() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::comment() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
 
 //			This one is intercepted by the parser
         query = "let $a := <x>a<!--b-->c</x>/attribute::comment() return <z>{$a}</z>";
@@ -799,48 +806,48 @@ public class XQueryTest {
         assertTrue(exceptionThrown);
         query = "let $a := <x>a<!--b-->c</x>/self::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/parent::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/ancestor::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/child::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/descendant::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/descendant-or-self::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/preceding::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/preceding-sibling::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/following::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $a := <x>a<!--b-->c</x>/following-sibling::attribute() return <z>{$a}</z>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<z/>", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<z/>", result.getResource(0).getContent(), "XQuery: " + query);
 
 //			This one is intercepted by the parser
         query = "let $a := <x>a<!--b-->c</x>/namespace::attribute() return <z>{$a}</z>";
@@ -900,7 +907,7 @@ public class XQueryTest {
         assertTrue(exceptionThrown);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void namespace() throws XMLDBException, IOException, SAXException {
         Resource doc;
         ResourceSet result;
@@ -985,8 +992,8 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue("Expected XQST0088 for empty module namespace literal, got: " + message,
-                message.indexOf("XQST0088") > -1);
+        assertTrue(message.indexOf("XQST0088") > -1,
+                "Expected XQST0088 for empty module namespace literal, got: " + message);
         query = """
                 xquery version "1.0";
                 import module namespace foo="blah" at "%s/test/%s";
@@ -998,25 +1005,24 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue("Expected XQST0088 for empty module namespace literal, got: " + message,
-                message.indexOf("XQST0088") > -1);
+        assertTrue(message.indexOf("XQST0088") > -1,
+                "Expected XQST0088 for empty module namespace literal, got: " + message);
         query = "declare namespace x = \"http://www.foo.com\"; \n" +
                 "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//x:edition";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "declare namespace x = \"http://www.foo.com\"; \n" +
                 "declare namespace y = \"http://exist.sourceforge.net/dc-ext\"; \n" +
                 "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//y:edition";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "<x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>",
-                result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("<x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>", result.getResource(0).getContent(),
+                "XQuery: " + query);
         query = "<result xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//rdf:Description}</result>";
         result = service.query(query);
-        assertEquals(query,
-                """
+        assertEquals("""
                 <result xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                     <rdf:Description id="3">
                         <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">title</dc:title>
@@ -1025,11 +1031,11 @@ public class XQueryTest {
                         <x:edition xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:edition>
                     </rdf:Description>
                 </result>""",
-                result.getResource(0).getContent());
+                result.getResource(0).getContent(),
+                query);
         query = "<result xmlns='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//Description}</result>";
         result = service.query(query);
-        assertEquals("XQuery: " + query,
-                """
+        assertEquals("""
                 <result xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                     <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" id="3">
                         <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">title</dc:title>
@@ -1038,7 +1044,8 @@ public class XQueryTest {
                         <x:edition xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:edition>
                     </rdf:Description>
                 </result>""",
-                result.getResource(0).getContent());
+                result.getResource(0).getContent(),
+                "XQuery: " + query);
 
         //Interesting one : let's see with XQuery gurus :-)
         //declare namespace fn="";
@@ -1057,7 +1064,7 @@ public class XQueryTest {
                 result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void namespaceWithTransform() throws XMLDBException {
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
 
@@ -1095,7 +1102,7 @@ public class XQueryTest {
         assertTrue(content.indexOf("<div>text</div>") > -1);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void module() throws XMLDBException {
         Resource doc;
         ResourceSet result;
@@ -1142,8 +1149,8 @@ public class XQueryTest {
                 $blah:param
                 """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("value-1", result.getResource(0).getContent(), "XQuery: " + query);
 
 //            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + getUri + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param := \"value-2\";\n" + "$blah:param";
 //            try {
@@ -1160,8 +1167,8 @@ public class XQueryTest {
                 $blah2:param
                 """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("value-1", result.getResource(0).getContent(), "XQuery: " + query);
         query = """
                 xquery version "1.0";
                 import module namespace blah="bla" at "%s/test/%s";
@@ -1180,10 +1187,10 @@ public class XQueryTest {
                 $foo:bar, $foo:bar1, $foo:bar2
                 """.formatted(LOCAL_DB_URI, FATHER_MODULE_NAME);
         result = service.query(query);
-        assertEquals("XQuery: " + query, 3, result.getSize());
-        assertEquals("XQuery: " + query, "bar", result.getResource(0).getContent());
-        assertEquals("XQuery: " + query, "bar1", result.getResource(1).getContent());
-        assertEquals("XQuery: " + query, "bar2", result.getResource(2).getContent());
+        assertEquals(3, result.getSize(), "XQuery: " + query);
+        assertEquals("bar", result.getResource(0).getContent(), "XQuery: " + query);
+        assertEquals("bar1", result.getResource(1).getContent(), "XQuery: " + query);
+        assertEquals("bar2", result.getResource(2).getContent(), "XQuery: " + query);
 
 //			Non-transitive inheritance check
         query = """
@@ -1251,7 +1258,7 @@ public class XQueryTest {
             //WARNING !
             //This result is false ! The external vairable has not been resolved
             //Furthermore it is not in the module's namespace !
-            assertEquals("XQuery: " + query, 0, result.getSize());
+            assertEquals(0, result.getSize(), "XQuery: " + query);
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
@@ -1259,7 +1266,7 @@ public class XQueryTest {
         //assertTrue(message.indexOf("XQST0048") > -1);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void modulesAndNS() throws XMLDBException, IOException, SAXException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE7_NAME, BinaryResource.class);
@@ -1292,7 +1299,7 @@ public class XQueryTest {
                 result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void importExternalClasspathMainModule() throws EXistException, IOException, PermissionDeniedException, XPathException, QName.IllegalQNameException {
         final long timestamp = System.currentTimeMillis();
         final BrokerPool brokerPool = BrokerPool.getInstance();
@@ -1330,7 +1337,7 @@ public class XQueryTest {
                         .withTest(actual)
                         .checkForSimilar()
                         .build();
-                assertFalse(diff.toString(), diff.hasDifferences());
+                assertFalse(diff.hasDifferences(), diff.toString());
 
             } finally {
                 if (compiled != null) {
@@ -1346,7 +1353,7 @@ public class XQueryTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void importExternalClasspathLibraryModule() throws XMLDBException {
         final long timestamp = System.currentTimeMillis();
         final Collection testCollection = getTestCollection();
@@ -1370,10 +1377,10 @@ public class XQueryTest {
                 .withTest(actual)
                 .checkForIdentical()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void doubleDocNode_2078755() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE8_NAME, BinaryResource.class);
@@ -1398,7 +1405,7 @@ public class XQueryTest {
         assertEquals("1", result.getResource(1).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void globalVars() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE5_NAME, BinaryResource.class);
@@ -1432,22 +1439,22 @@ public class XQueryTest {
                     """.formatted(LOCAL_DB_URI, MODULE6_NAME);
             result = service.query(query);
         } catch (XMLDBException e) {
-            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+            assertTrue(e.getMessage().indexOf("err:XQST0049") > -1, "Test should generate err:XQST0049, got: " + e.getMessage());
             gotException = true;
         }
-        assertTrue("Duplicate global variable should generate error", gotException);
+        assertTrue(gotException, "Duplicate global variable should generate error");
         gotException = false;
         try {
             query = "xquery version \"1.0\";\n" + "declare variable $local:a := 'abc';" + "declare variable $local:a := 'abc';" + "$local:a";
             result = service.query(query);
         } catch (XMLDBException e) {
-            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+            assertTrue(e.getMessage().indexOf("err:XQST0049") > -1, "Test should generate err:XQST0049, got: " + e.getMessage());
             gotException = true;
         }
-        assertTrue("Duplicate global variable should generate error", gotException);
+        assertTrue(gotException, "Duplicate global variable should generate error");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void functionDoc() throws XMLDBException, IOException, SAXException {
         ResourceSet result;
         String query;
@@ -1460,7 +1467,7 @@ public class XQueryTest {
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
         query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
 
         Node n = ((XMLResource) result.getResource(0)).getContentAsDOM();
         DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
@@ -1470,7 +1477,7 @@ public class XQueryTest {
 
         query = "let $v := ()\n" + "return doc($v)";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
         try {
             exceptionThrown = false;
@@ -1484,21 +1491,21 @@ public class XQueryTest {
         assertEquals(0, result.getSize());
         query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("true", result.getResource(0).getContent(), "XQuery: " + query);
         query = "let $v := ()\n" + "return doc-available($v)";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("false", result.getResource(0).getContent(), "XQuery: " + query);
         query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("false", result.getResource(0).getContent(), "XQuery: " + query);
     }
 
     /**
      * This test only works if there is an Internet access
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void functionDocExternal() throws XMLDBException {
         boolean hasInternetAccess = false;
 
@@ -1514,35 +1521,35 @@ public class XQueryTest {
         } catch (IOException e) {
             //Ignore
         }
-        assumeTrue("No Internet access: skipping 'functionDocExternal' tests", hasInternetAccess);
+        assumeTrue(hasInternetAccess, "No Internet access: skipping 'functionDocExternal' tests");
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
         String query = "if (doc-available(\"http://www.w3.org/XML/Core/\")) then doc(\"http://www.w3.org/XML/Core/\") else ()";
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
         query = "if (doc-available(\"http://www.w3.org/XML/dummy\")) then doc(\"http://www.w3.org/XML/dummy\") else ()";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "doc-available(\"http://www.w3.org/XML/Core/\")";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("true", result.getResource(0).getContent(), "XQuery: " + query);
         query = "doc-available(\"http://www.google.com/404\")";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("false", result.getResource(0).getContent(), "XQuery: " + query);
         //A redirected 404
         query = "doc-available(\"http://java.sun.com/404\")";
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("false", result.getResource(0).getContent(), "XQuery: " + query);
         query = "if (doc-available(\"file:////doesnotexist.xml\")) then doc(\"file:////doesnotexist.xml\") else ()";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
         query = "doc-available(\"file:////doesnotexist.xml\")";
         result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals("false", result.getResource(0).getContent(), "XQuery: " + query);
     }
 
     private String makeString(final int n) {
@@ -1551,21 +1558,21 @@ public class XQueryTest {
         return new String(buf);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void textConstructor() throws XMLDBException {
         String query = "text{ \"a\" }, text{ \"b\" }, text{ \"c\" }, text{ \"d\" }";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 4, result.getSize());
+        assertEquals(4, result.getSize(), "XQuery: " + query);
 
-        assertEquals("XQuery: " + query, "a", result.getResource(0).getContent().toString());
-        assertEquals("XQuery: " + query, "b", result.getResource(1).getContent().toString());
-        assertEquals("XQuery: " + query, "c", result.getResource(2).getContent().toString());
-        assertEquals("XQuery: " + query, "d", result.getResource(3).getContent().toString());
+        assertEquals("a", result.getResource(0).getContent().toString(), "XQuery: " + query);
+        assertEquals("b", result.getResource(1).getContent().toString(), "XQuery: " + query);
+        assertEquals("c", result.getResource(2).getContent().toString(), "XQuery: " + query);
+        assertEquals("d", result.getResource(3).getContent().toString(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void userEscalationForInMemoryNodes() throws XMLDBException {
         String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), sm:id()/sm:id/sm:effective/sm:username/text(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return sm:id()/sm:id/sm:effective/sm:username/text()";
 
@@ -1576,16 +1583,16 @@ public class XQueryTest {
         Resource currentUserAfterInMemoryOp = result.getResource(2);
 
         //check the login as guest worked
-        assertEquals("Logged in as quest: " + loggedIn.getContent().toString(), "true", loggedIn.getContent().toString());
+        assertEquals("true", loggedIn.getContent().toString(), "Logged in as quest: " + loggedIn.getContent().toString());
 
         //check that we are guest
-        assertEquals("After Login as guest, User should be guest and is: " + currentUser.getContent().toString(), "guest", currentUser.getContent().toString());
+        assertEquals("guest", currentUser.getContent().toString(), "After Login as guest, User should be guest and is: " + currentUser.getContent().toString());
 
         //check that we are still guest
-        assertEquals("After Query, User should still be guest and is: " + currentUserAfterInMemoryOp.getContent().toString(), "guest", currentUserAfterInMemoryOp.getContent().toString());
+        assertEquals("guest", currentUserAfterInMemoryOp.getContent().toString(), "After Query, User should still be guest and is: " + currentUserAfterInMemoryOp.getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void constructedAttributeValue() throws XMLDBException {
         String query = "let $attr := attribute d { \"xxx\" } " + "return string($attr)";
         XPathQueryService service = getTestCollection().getService(
@@ -1595,7 +1602,7 @@ public class XQueryTest {
         assertEquals("xxx", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void attributeAxis() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1610,10 +1617,10 @@ public class XQueryTest {
                 "return <a>{$node}</a>";
         result = service.query(query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "OK", ((Element) resu.getContentAsDOM()).getAttribute("id"));
+        assertEquals("OK", ((Element) resu.getContentAsDOM()).getAttribute("id"), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void instanceOfDocumentNode() throws XMLDBException {
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -1621,10 +1628,10 @@ public class XQueryTest {
         String query = "let $doc := document { <element/> } " +
                 "return $doc/root() instance of document-node()";
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, "true", result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void instanceOfNamespaceNode() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("namespace test { 'test' } instance of namespace-node()");
         assertEquals(1,result.getSize());
@@ -1635,7 +1642,7 @@ public class XQueryTest {
         assertEquals("false", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void largeAttributeSimple() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1648,10 +1655,10 @@ public class XQueryTest {
 
         query = "doc('" + file_name + "') / details/metadata[@docid= '" + large + "' ]";
         result = service.queryResource(file_name, query);
-        assertEquals("XQuery: " + query, nbElem, result.getSize());
+        assertEquals(nbElem, result.getSize(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void cdataSerialization() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1664,10 +1671,10 @@ public class XQueryTest {
                 "return $doc/root/string()";
         result = service.query(query);
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "gaga", resu.getContent().toString());
+        assertEquals("gaga", resu.getContent().toString(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void cdataQuery() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1681,19 +1688,19 @@ public class XQueryTest {
         result = service.queryResource("cdata.xml", query);
         assertEquals(1, result.getSize());
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "world", resu.getContent().toString());
+        assertEquals("world", resu.getContent().toString(), "XQuery: " + query);
 
         query = "//node/text()";
         result = service.queryResource("cdata.xml", query);
         assertEquals(1, result.getSize());
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "world", resu.getContent().toString());
+        assertEquals("world", resu.getContent().toString(), "XQuery: " + query);
 
         query = "//node/node()";
         result = service.queryResource("cdata.xml", query);
         assertEquals(1, result.getSize());
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "world", resu.getContent().toString());
+        assertEquals("world", resu.getContent().toString(), "XQuery: " + query);
 
         query = "/root[node = 'world']";
         result = service.queryResource("cdata.xml", query);
@@ -1701,13 +1708,13 @@ public class XQueryTest {
 
         // NOTE - no cdata-section-elements specified for XDM serialization
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "<root><node>world</node></root>", resu.getContent().toString());
+        assertEquals("<root><node>world</node></root>", resu.getContent().toString(), "XQuery: " + query);
     }
 
     /**
      * Tests that no result will be returned if an attribute's value is selected on a node which wasn't found
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void attributeForNoResult() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " + //
                 "return /a[./c]/@id/string()";
@@ -1717,7 +1724,7 @@ public class XQueryTest {
         assertEquals(0, result.getSize());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void largeAttributeContains() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1731,10 +1738,10 @@ public class XQueryTest {
 
         query = "doc('" + file_name + "') / details/metadata[ contains(@docid, 'aa') ]";
         result = service.queryResource(file_name, query);
-        assertEquals("XQuery: " + query, nbElem, result.getSize());
+        assertEquals(nbElem, result.getSize(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void largeAttributeKeywordOperator() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1747,10 +1754,10 @@ public class XQueryTest {
 
         query = "doc('" + file_name + "') / details/metadata[ @docid = '" + large + "' ]";
         result = service.queryResource(file_name, query);
-        assertEquals("XQuery: " + query, nbElem, result.getSize());
+        assertEquals(nbElem, result.getSize(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void attributeNamespace() throws XMLDBException {
 
         String query = "declare function local:copy($nodes as node()*) as node()* {" + "for $n in $nodes return " + "if ($n instance of element()) then " + "  element {node-name($n)} {(local:copy($n/@*), local:copy($n/node()))} " + "else if ($n instance of attribute()) then " + "  attribute {node-name($n)} {$n} " + "else if ($n instance of text()) then " + "  text {$n} " + "else " + "  <Other/>" + "};" + "let $c :=" + "<c:C  xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">" + "ccc" + "</c:C>" + "return local:copy($c)";
@@ -1766,10 +1773,10 @@ public class XQueryTest {
                 .withTest(actual)
                 .checkForIdentical()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void nameConflicts() throws XMLDBException {
         String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";
 
@@ -1780,7 +1787,7 @@ public class XQueryTest {
         assertEquals("<wrap name=\"Test\"/>", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void serialization() throws XMLDBException {
         @SuppressWarnings("unused")
 		ResourceSet result;
@@ -1829,7 +1836,7 @@ public class XQueryTest {
         return large;
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieveLargeAttribute() throws XMLDBException {
         createXMLContentWithLargeString();
         storeXMLStringAndGetQueryService(file_name, xml);
@@ -1837,7 +1844,7 @@ public class XQueryTest {
         assertTrue(res != null);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void largeAttributeText() throws XMLDBException {
         final String large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
         String xml = "<details format='xml'><metadata docid='" + large +
@@ -1858,7 +1865,7 @@ public class XQueryTest {
         assertEquals(1, result.getSize());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateWithAdjacentTextNodes() throws XMLDBException {
         String query = "let $name := xmldb:store('/db' , 'xupdateTest.xml', <test>aaa</test>)" +
                 "let $xu :=" +
@@ -1874,13 +1881,13 @@ public class XQueryTest {
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
     }
 
     //TODO : understand this test and make sure that the expected result is correct
     //expected:<3> but was:<2>
-    @Ignore
-    @Test
+    @Disabled
+    @org.junit.jupiter.api.Test
     public void xupdateAttributesAndElements() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -1910,22 +1917,22 @@ public class XQueryTest {
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(BOWLING_XML, bowling);
         result = service.query(query);
-        assertEquals("XQuery: " + query, 3, result.getSize());
+        assertEquals(3, result.getSize(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void nodeName() throws XMLDBException {
         String query = "declare function local:name($node as node()) as xs:string? { " + " if ($node/self::element() != '') then name($node) else () }; " + " let $n := <!-- Just a comment! --> return local:name($n) ";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
     }
 
     /**
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1691112&group_id=17691&atid=117691
      */
     //DWES Funny in sandbox and REST it fails ; here it is OK... sometimes
-    @Test
+    @org.junit.jupiter.api.Test
     public void order_1691112() throws XMLDBException {
 
         String query = "declare namespace tt = \"http://example.com\";" +
@@ -1979,19 +1986,19 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1691177&group_id=17691&atid=117691
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void attribute_1691177() throws XMLDBException {
         String query = "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " + "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) " + "let $node := doc($uri)/element() " + "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* " + "return update insert $attrib into $node  ";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 0, result.getSize());
+        assertEquals(0, result.getSize(), "XQuery: " + query);
     }
 
     /**
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1691174&group_id=17691&atid=117691
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void attribute_1691174() throws XMLDBException {
         String query = "declare function local:show($el1, $el2) { " 
                 + "	<Foobar> "
@@ -2006,10 +2013,10 @@ public class XQueryTest {
                 + ")  ";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void qnameToString_1632365() throws XMLDBException {
         String query = "let $qname := QName(\"http://test.org\", \"test:name\") " +
                 "return xs:string($qname)";
@@ -2020,7 +2027,7 @@ public class XQueryTest {
         assertEquals(expectedresult, result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void comments_1715035() throws XMLDBException {
         String query = "<!-- < aa > -->";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2033,7 +2040,7 @@ public class XQueryTest {
         assertEquals(query, result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void documentNode_1730690() throws XMLDBException {
         String query = "let $doc := document { <element/> } " +
                 "return $doc/root() instance of document-node()";
@@ -2042,7 +2049,7 @@ public class XQueryTest {
         assertEquals("true", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void enclosedExpressions() throws XMLDBException, IOException, SAXException {
         String query = "let $a := <docum><titolo>titolo</titolo><autor>giulio</autor></docum> " +
                 "return <row>{$a/titolo/text()} {' '} {$a/autor/text()}</row>";
@@ -2051,7 +2058,7 @@ public class XQueryTest {
         assertXMLEqual("<row>titolo giulio</row>", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void orderCompareAtomicType_1733265() throws XMLDBException {
         String query = "( ) = \"A\"";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2063,7 +2070,7 @@ public class XQueryTest {
         assertEquals("false", result.getResource(0).getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void positionInPredicate() throws XMLDBException {
         String query = "let $example := <Root> <Element>1</Element> <Element>2</Element> </Root>" +
                 "return  $example/Element[1] ";
@@ -2080,7 +2087,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1740880
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void elementConstructionWithNamespace_1740880() throws XMLDBException {
         String query = "let $a := <foo:Bar xmlns:foo=\"urn:foo\"/> " +
                 "let $b := element { QName(\"urn:foo\", \"foo:Bar\") } { () } " +
@@ -2088,13 +2095,13 @@ public class XQueryTest {
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertEquals("Oops", "true", result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(), "Oops");
     }
 
     /**
      * http://sourceforge.net/support/tracker.php?aid=1740883
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void noErrorNeOperatorWithSequence_1740883() {
         try {
             String query = "let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo> " +
@@ -2117,7 +2124,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1740885
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void neOperatorDoesNotWork_1740885() throws XMLDBException {
         String query = "let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo>" +
                 "return $foo/Bar[. ne \"B\"]";
@@ -2126,14 +2133,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals("First", "<Bar>A</Bar>", result.getResource(0).getContent().toString());
-        assertEquals("Second", "<Bar>C</Bar>", result.getResource(1).getContent().toString());
+        assertEquals("<Bar>A</Bar>", result.getResource(0).getContent().toString(), "First");
+        assertEquals("<Bar>C</Bar>", result.getResource(1).getContent().toString(), "Second");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1740891
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalLoosesContext_1740891() throws XMLDBException {
         String module = "module namespace tst = \"urn:test\"; " +
                 "declare namespace util = \"http://exist-db.org/xquery/util\";" +
@@ -2161,15 +2168,15 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(3, result.getSize());
-        assertEquals("First", "<Bar/>", result.getResource(0).getContent().toString());
-        assertEquals("Second", "<Bar/>", result.getResource(1).getContent().toString());
-        assertEquals("Third", "<Bar/>", result.getResource(2).getContent().toString());
+        assertEquals("<Bar/>", result.getResource(0).getContent().toString(), "First");
+        assertEquals("<Bar/>", result.getResource(1).getContent().toString(), "Second");
+        assertEquals("<Bar/>", result.getResource(2).getContent().toString(), "Third");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1740886
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void cardinalityIssues_1740886() throws XMLDBException, IOException, SAXException {
         String xmldoc = "<Foo><Bar/><Bar/><Bar/></Foo>";
         String query =
@@ -2193,7 +2200,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1755910
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void qnameString_1755910() throws XMLDBException {
         String query = "let $qname1 := QName(\"http://www.w3.org/2001/XMLSchema\", \"xs:element\") " + "let $qname2 := QName(\"http://foo.com\", \"foo:bar\") " + "return (xs:string($qname1), xs:string($qname2))";
 
@@ -2202,14 +2209,14 @@ public class XQueryTest {
 
         assertEquals(2, result.getSize());
 
-        assertEquals("First", "xs:element", result.getResource(0).getContent().toString());
-        assertEquals("Second", "foo:bar", result.getResource(1).getContent().toString());
+        assertEquals("xs:element", result.getResource(0).getContent().toString(), "First");
+        assertEquals("foo:bar", result.getResource(1).getContent().toString(), "Second");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1665215
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void predicateMinLast_1665215() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "let $data :=<parent><child>1</child><child>2</child><child>3</child><child>4</child></parent>" +
@@ -2219,13 +2226,13 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals("First", "<result><child>3</child></result>", result.getResource(0).getContent().toString());
+        assertEquals("<result><child>3</child></result>", result.getResource(0).getContent().toString(), "First");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1665213
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void predicatePositionLast_1665213() throws XMLDBException {
         // OK, regression
         String query = "(1, 2, 3)[ position() = last() ]";
@@ -2234,7 +2241,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals("First", "3", result.getResource(0).getContent().toString());
+        assertEquals("3", result.getResource(0).getContent().toString(), "First");
 
 
         query = "(1, 2, 3)[(position()=last() and position() < 4)]";
@@ -2243,7 +2250,7 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals("First", "3", result.getResource(0).getContent().toString());
+        assertEquals("3", result.getResource(0).getContent().toString(), "First");
 
 
         query = "(1, 2, 3)[(position()=last())]";
@@ -2252,13 +2259,13 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals("First", "3", result.getResource(0).getContent().toString());
+        assertEquals("3", result.getResource(0).getContent().toString(), "First");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1769086
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void cce_IndexOf_1769086() throws XMLDBException {
         String query = "(\"One\", \"Two\", \"Three\")[index-of((\"1\", \"2\", \"3\"), \"2\")]";
 
@@ -2266,10 +2273,10 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals("First", "Two", result.getResource(0).getContent().toString());
+        assertEquals("Two", result.getResource(0).getContent().toString(), "First");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void shortVersionPositionPredicate() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" + "let $foo :=  <foo>    <bar baz=\"\"/>  </foo>" + "let $bar1 := $foo/bar[exists(@baz)][1]" + "let $bar2 := $foo/bar[exists(@baz)][position() = 1]" + "return  <found> <bar1>{$bar1}</bar1> <bar2>{$bar2}</bar2> </found>";
 
@@ -2277,7 +2284,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<found><bar1><bar baz=\"\"/></bar1><bar2><bar baz=\"\"/></bar2></found>", result.getResource(0).getContent().toString());
+        assertEquals("<found><bar1><bar baz=\"\"/></bar1><bar2><bar baz=\"\"/></bar2></found>", result.getResource(0).getContent().toString(), query);
     }
 
     /***
@@ -2286,7 +2293,7 @@ public class XQueryTest {
      *
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1787285&group_id=17691&atid=117691
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void wrongInvalidTypeError_1787285() throws XMLDBException {
         String query = "let $arg1 as xs:string := \"A String\"" + "let $arg2 as xs:integer := 3 return $arg2";
 
@@ -2294,7 +2301,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "3", result.getResource(0).getContent().toString());
+        assertEquals("3", result.getResource(0).getContent().toString(), query);
     }
 
     /**
@@ -2304,8 +2311,8 @@ public class XQueryTest {
      *
      * Same as {@link #asDouble_1840775()}
      */
-    @Ignore
-    @Test
+    @Disabled
+    @org.junit.jupiter.api.Test
     public void wrongAttributeTypeCheck_1805612() throws XMLDBException {
 
         // OK
@@ -2317,7 +2324,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<result/>", result.getResource(0).getContent().toString());
+        assertEquals("<result/>", result.getResource(0).getContent().toString(), query);
 
         // NOK
         query = "declare namespace tst = \"http://test\"; "
@@ -2331,7 +2338,7 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<result/>", result.getResource(0).getContent().toString());
+        assertEquals("<result/>", result.getResource(0).getContent().toString(), query);
     }
 
     /**
@@ -2339,7 +2346,7 @@ public class XQueryTest {
      *
      * @see http://sourceforge.net/support/tracker.php?aid=1805609
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void wrongAttributeCardinalityCount_1805609() throws XMLDBException {
 
         // OK
@@ -2349,7 +2356,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString());
+        assertEquals("<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString(), query);
 
         // NOK
         query = "element {\"a\"} { <element b=\"\" c=\"\"/>" + "/attribute()[namespace-uri(.) != \"http://www.asml.com/metainformation\"]}";
@@ -2358,7 +2365,7 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString());
+        assertEquals("<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString(), query);
     }
 
     /**
@@ -2366,7 +2373,7 @@ public class XQueryTest {
      *
      * @see http://sourceforge.net/support/tracker.php?aid=1806901
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void doubleDefaultNamespace_1806901() throws XMLDBException {
         // OK
         String query = "declare namespace xf = \"http://a\"; " + "declare option exist:serialize 'indent=no';" + "<html xmlns=\"http://b\"><xf:model><xf:instance xmlns=\"\"/></xf:model></html>";
@@ -2375,14 +2382,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<html xmlns=\"http://b\"><xf:model xmlns:xf=\"http://a\">" + "<xf:instance xmlns=\"\"/></xf:model></html>",
-                result.getResource(0).getContent().toString());
+        assertEquals("<html xmlns=\"http://b\"><xf:model xmlns:xf=\"http://a\">" + "<xf:instance xmlns=\"\"/></xf:model></html>", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1828168
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void predicateInPredicateEmptyResult_1828168() throws XMLDBException {
         String query = "let $docs := <Document/> return $docs[a[1] = 'b']";
 
@@ -2402,7 +2409,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1846228
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void namespaceHandlingSameModule_1846228() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "declare function local:table () {" +
@@ -2416,11 +2423,11 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query,
-                "<foobar xmlns=\"http://www.w3.org/1999/xhtml\">" +
+        assertEquals("<foobar xmlns=\"http://www.w3.org/1999/xhtml\">" +
                 "<a><b>Foo</b></a>" +
                 "<c><d xmlns=\"\">Bar</d></c>" +
-                "</foobar>", result.getResource(0).getContent().toString());
+                "</foobar>",
+                result.getResource(0).getContent().toString(), query);
     }
 
     /**
@@ -2429,7 +2436,7 @@ public class XQueryTest {
      *
      * @see  http://sourceforge.net/support/tracker.php?aid=1841105
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void stringOfEmptySequence_1841105() throws XMLDBException {
         // OK
         String query = "empty( ()/string() )";
@@ -2438,15 +2445,15 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "true",
-                result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2871975
      */
-    @Ignore
-    @Test
+    @Disabled
+    @org.junit.jupiter.api.Test
     public void stringOfEmptySequenceWithExplicitContext_2871975() throws XMLDBException {
 
         // OK
@@ -2456,8 +2463,8 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "true",
-                result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(),
+                query);
 
         // NOK
         query = "empty( ()/string(.) )";
@@ -2466,14 +2473,14 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "true",
-                result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1970717
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void constructTextNodeWithEmptyString_1970717() throws XMLDBException {
         String query = "text {\"\"} =\"\"";
 
@@ -2481,15 +2488,15 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "true",
-                result.getResource(0).getContent().toString());
+        assertEquals("true", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1848497
      */
-    @Ignore
-    @Test
+    @Disabled
+    @org.junit.jupiter.api.Test
     public void attributeNamespaceDeclaration_1848497() throws XMLDBException {
         String query = "declare namespace foo = \"foo\";" +
                 "declare function foo:boe() { \"boe\" };" +
@@ -2499,14 +2506,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<xml xmlns:foo2=\"foo\">boe</xml>",
-                result.getResource(0).getContent().toString());
+        assertEquals("<xml xmlns:foo2=\"foo\">boe</xml>", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1884403
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void atomization_1884403() throws XMLDBException {
         String query = "declare namespace tst = \"tt\"; " +
                 "declare function tst:foo() as xs:string { <string>myTxt</string> }; " +
@@ -2516,14 +2523,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "myTxt",
-                result.getResource(0).getContent().toString());
+        assertEquals("myTxt", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1884360
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void cardinalityAttributeNamespace_1884360() throws XMLDBException {
         String query = "let $el := <element a=\"1\" b=\"2\"/> " +
                 "for $attr in $el/attribute()[namespace-uri(.) ne \"h\"] " +
@@ -2533,13 +2540,13 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query, "<c a=\"1\"/>",
-                result.getResource(0).getContent().toString());
-        assertEquals(query, "<c b=\"2\"/>",
-                result.getResource(1).getContent().toString());
+        assertEquals("<c a=\"1\"/>", result.getResource(0).getContent().toString(),
+                query);
+        assertEquals("<c b=\"2\"/>", result.getResource(1).getContent().toString(),
+                query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void currentDateTimeInModules_1894009() throws XMLDBException {
         String module = """
                 module namespace dt = "dt";
@@ -2573,14 +2580,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals("First", result.getResource(0).getContent().toString(),
-                result.getResource(1).getContent().toString());
+        assertEquals(result.getResource(0).getContent().toString(), result.getResource(1).getContent().toString(),
+                "First");
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1909505
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void testXmldbStoreComment_1909505() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "let $docIn := <a><!-- b --></a>" +
@@ -2591,14 +2598,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<a><!-- b --></a>",
-                result.getResource(0).getContent().toString());
+        assertEquals("<a><!-- b --></a>", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1938498
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void memproc_1938498() throws XMLDBException {
         String xmldocument = "<Root><Child/></Root>";
         String location = "1938498.xml";
@@ -2610,12 +2617,12 @@ public class XQueryTest {
                 storeXMLStringAndGetQueryService(location, xmldocument);
 
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, output,
-                result.getResource(0).getContent().toString());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals(output, result.getResource(0).getContent().toString(),
+                "XQuery: " + query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void cce_SaxException() throws XMLDBException {
         String xmldocument = "<a><b><c>mmm</c></b></a>";
         String location = "ccesax.xml";
@@ -2634,15 +2641,15 @@ public class XQueryTest {
                 storeXMLStringAndGetQueryService(location, xmldocument);
 
         ResourceSet result = service.query(query);
-        assertEquals("XQuery: " + query, 1, result.getSize());
-        assertEquals("XQuery: " + query, output,
-                result.getResource(0).getContent().toString());
+        assertEquals(1, result.getSize(), "XQuery: " + query);
+        assertEquals(output, result.getResource(0).getContent().toString(),
+                "XQuery: " + query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2003042
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void xpty0018_MixNodesAtomicValues_2003042() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no'; <a>{2}<b/></a>";
 
@@ -2650,14 +2657,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<a>2<b/></a>", //checked with saxon
-                result.getResource(0).getContent().toString());
+        assertEquals("<a>2<b/></a>", result.getResource(0).getContent().toString(), //checked with saxon
+                query);
     }
     
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1816496
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void divYieldsWrongInf_1816496() throws XMLDBException {
         String query = "let $negativeZero := xs:double(-1.0e-1024) let $positiveZero := xs:double(1.0e-1024) "
                 +"return ("
@@ -2673,19 +2680,19 @@ public class XQueryTest {
 
         assertEquals(11, result.getSize());
 
-        assertEquals(query, "INF", result.getResource(0).getContent().toString());
-        assertEquals(query, "INF", result.getResource(1).getContent().toString());
-        assertEquals(query, "-INF", result.getResource(2).getContent().toString());
+        assertEquals("INF", result.getResource(0).getContent().toString(), query);
+        assertEquals("INF", result.getResource(1).getContent().toString(), query);
+        assertEquals("-INF", result.getResource(2).getContent().toString(), query);
 
-        assertEquals(query, "-INF", result.getResource(3).getContent().toString());
-        assertEquals(query, "-INF", result.getResource(4).getContent().toString());
-        assertEquals(query, "INF", result.getResource(5).getContent().toString());
+        assertEquals("-INF", result.getResource(3).getContent().toString(), query);
+        assertEquals("-INF", result.getResource(4).getContent().toString(), query);
+        assertEquals("INF", result.getResource(5).getContent().toString(), query);
 
-        assertEquals(query, "NaN", result.getResource(6).getContent().toString());
-        assertEquals(query, "NaN", result.getResource(7).getContent().toString());
-        assertEquals(query, "NaN", result.getResource(8).getContent().toString());
-        assertEquals(query, "NaN", result.getResource(9).getContent().toString());
-        assertEquals(query, "NaN", result.getResource(10).getContent().toString());
+        assertEquals("NaN", result.getResource(6).getContent().toString(), query);
+        assertEquals("NaN", result.getResource(7).getContent().toString(), query);
+        assertEquals("NaN", result.getResource(8).getContent().toString(), query);
+        assertEquals("NaN", result.getResource(9).getContent().toString(), query);
+        assertEquals("NaN", result.getResource(10).getContent().toString(), query);
 
         query = "xs:float(2) div xs:float(0)";
 
@@ -2693,14 +2700,14 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "INF",
-                result.getResource(0).getContent().toString());
+        assertEquals("INF", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see https://github.com/eXist-db/exist/issues/3441
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void divErrorArgVariable() throws XMLDBException {
         String query = "let $x := 2 " +
                 "return 1 div $x * 4";
@@ -2710,14 +2717,14 @@ public class XQueryTest {
 
         assertEquals(1, result.getSize());
 
-        assertEquals(query, "2", result.getResource(0).getContent().toString());
+        assertEquals("2", result.getResource(0).getContent().toString(), query);
 
     }
 
     /**
             * @see https://github.com/eXist-db/exist/issues/3441
             */
-    @Test
+    @org.junit.jupiter.api.Test
     public void divErrorArgVariable2() throws XMLDBException {
         String query = """
                 let $x := 2\s
@@ -2729,14 +2736,14 @@ public class XQueryTest {
 
         assertEquals(1, result.getSize());
 
-        assertEquals(query, "2", result.getResource(0).getContent().toString());
+        assertEquals("2", result.getResource(0).getContent().toString(), query);
 
     }
     
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1841635
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void resolveBaseURI_1841635() throws XMLDBException {
         String xmldoc = "<Root><Node1><Node2><Node3></Node3></Node2></Node1></Root>";
 
@@ -2776,7 +2783,7 @@ public class XQueryTest {
     /**
      * @see <a href="https://github.com/eXist-db/exist/issues/3497">[BUG] ()/fn:base-uri() incorrectly raises XPDY0002</a>
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void resolveBaseURIErrorCases() throws XMLDBException {
         final XPathQueryService service = existEmbeddedServer.getRoot().getService(XPathQueryService.class);
 
@@ -2806,7 +2813,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2429093
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void xpty0018_mixedsequences_2429093() throws XMLDBException {
         String query = """
                 declare variable $a := <A><B/></A>;
@@ -2816,13 +2823,13 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query, "<B/>",
-                result.getResource(0).getContent().toString());
-        assertEquals(query, "delete",
-                result.getResource(1).getContent().toString());
+        assertEquals("<B/>", result.getResource(0).getContent().toString(),
+                query);
+        assertEquals("delete", result.getResource(1).getContent().toString(),
+                query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void messageDigester() throws XMLDBException {
         String query = """
                 let $value:="ABCDEF"
@@ -2834,10 +2841,10 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query, "8827a41122a5028b9808c7bf84b9fcf6",
-                result.getResource(0).getContent().toString());
-        assertEquals(query, "iCekESKlAouYCMe/hLn89g==",
-                result.getResource(1).getContent().toString());
+        assertEquals("8827a41122a5028b9808c7bf84b9fcf6", result.getResource(0).getContent().toString(),
+                query);
+        assertEquals("iCekESKlAouYCMe/hLn89g==", result.getResource(1).getContent().toString(),
+                query);
 
         query = """
                 let $value:="ABCDEF"
@@ -2849,10 +2856,10 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query, "970093678b182127f60bb51b8af2c94d539eca3a",
-                result.getResource(0).getContent().toString());
-        assertEquals(query, "lwCTZ4sYISf2C7UbivLJTVOeyjo=",
-                result.getResource(1).getContent().toString());
+        assertEquals("970093678b182127f60bb51b8af2c94d539eca3a", result.getResource(0).getContent().toString(),
+                query);
+        assertEquals("lwCTZ4sYISf2C7UbivLJTVOeyjo=", result.getResource(1).getContent().toString(),
+                query);
 
         query = """
                 let $value:="ABCDEF"
@@ -2864,16 +2871,16 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query, "e9c0f8b575cbfcb42ab3b78ecc87efa3b011d9a5d10b09fa4e96f240bf6a82f5",
-                result.getResource(0).getContent().toString());
-        assertEquals(query, "6cD4tXXL/LQqs7eOzIfvo7AR2aXRCwn6TpbyQL9qgvU=",
-                result.getResource(1).getContent().toString());
+        assertEquals("e9c0f8b575cbfcb42ab3b78ecc87efa3b011d9a5d10b09fa4e96f240bf6a82f5", result.getResource(0).getContent().toString(),
+                query);
+        assertEquals("6cD4tXXL/LQqs7eOzIfvo7AR2aXRCwn6TpbyQL9qgvU=", result.getResource(1).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/tracker/?func=detail&aid=2846187&group_id=17691&atid=317691
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void dynamicallySizedNamePool() throws XMLDBException {
         String query = "<root> { for $i in 1 to 2000  "
                 + "return element {concat(\"elt-\", $i)} {} } </root>";
@@ -2886,7 +2893,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2903815
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void replaceBug_2903815() throws XMLDBException {
         String query = "let $f := <z>fred</z>" +
                 "let $s:= <s>xxxxtxxx</s>" +
@@ -2897,8 +2904,8 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "xxxxfredxxx",
-                result.getResource(0).getContent().toString());
+        assertEquals("xxxxfredxxx", result.getResource(0).getContent().toString(),
+                query);
 
         query = "let $f := \"fred\"" +
                 "let $s:= <s>xxxxtxxx</s>" +
@@ -2909,8 +2916,8 @@ public class XQueryTest {
         result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "xxxxfredxxx",
-                result.getResource(0).getContent().toString());
+        assertEquals("xxxxfredxxx", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
@@ -2918,8 +2925,8 @@ public class XQueryTest {
      *
      * Same as {@link #wrongAttributeTypeCheck_1805612()}
      */
-    @Ignore
-    @Test
+    @Disabled
+    @org.junit.jupiter.api.Test
     public void asDouble_1840775() throws XMLDBException {
         String query = "declare function local:testCase($failure as element(Failure)?)"
                 + "as element(TestCase) { <TestCase/> };"
@@ -2934,7 +2941,7 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2117655
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void typeMismatch_2117655() throws XMLDBException {
         String query = "declare namespace t = \"test\"; "
                 +"declare function t:foo() as xs:string{"
@@ -2945,14 +2952,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "23",
-                result.getResource(0).getContent().toString());
+        assertEquals("23", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1959010
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void noNamepaceDefinedForPrefix_1959010() throws XMLDBException {
         String query =
                  "declare function local:copy($nodes as node()*) as node()* "
@@ -2983,13 +2990,13 @@ public class XQueryTest {
                 .withTest(actual)
                 .checkForIdentical()
                 .build();
-        assertFalse(query + "\n" + diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), query + "\n" + diff.toString());
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1807014
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void wrongAddNamespace_1807014() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource("a.xqy", BinaryResource.class);
@@ -3011,15 +3018,15 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
-                +"<ul xmlns=\"\" class=\"a\"/></html>",
-                result.getResource(0).getContent().toString());
+        assertEquals("<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                +"<ul xmlns=\"\" class=\"a\"/></html>", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1789370
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void orderBy_1789370() throws XMLDBException {
         String query =
                  "(for $vi in <elem>text</elem> order by $vi return $vi)/text()";
@@ -3028,14 +3035,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query, "text",
-                result.getResource(0).getContent().toString());
+        assertEquals("text", result.getResource(0).getContent().toString(),
+                query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1817822
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void variableScopeBug_1817822() throws XMLDBException {
         String query =
                      "declare namespace test = \"http://example.com\"; "
@@ -3065,14 +3072,14 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(query,
-                result.getResource(0).getContent().toString(), "<Result>6</Result>");
+        assertEquals(result.getResource(0).getContent().toString(),
+                "<Result>6</Result>", query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1718626
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void constructednodePosition_1718626() throws XMLDBException {
         String query =
                  "declare variable $categories := "
@@ -3091,16 +3098,16 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query,
-                result.getResource(0).getContent().toString(), "<category uid=\"1\">Fruit</category>");
-        assertEquals(query,
-                result.getResource(1).getContent().toString(), "<category uid=\"1\">Fruit</category>");
+        assertEquals(result.getResource(0).getContent().toString(),
+                "<category uid=\"1\">Fruit</category>", query);
+        assertEquals(result.getResource(1).getContent().toString(),
+                "<category uid=\"1\">Fruit</category>", query);
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1460791
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void descendantOrSelf_1460791() throws XMLDBException {
         String query =
                  "declare option exist:serialize 'indent=no';"
@@ -3116,13 +3123,13 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(query,
-                result.getResource(0).getContent().toString(), "<one><z> zzz </z></one>");
-        assertEquals(query,
-                result.getResource(1).getContent().toString(), "<two><z> zzz </z></two>");
+        assertEquals(result.getResource(0).getContent().toString(),
+                "<one><z> zzz </z></one>", query);
+        assertEquals(result.getResource(1).getContent().toString(),
+                "<two><z> zzz </z></two>", query);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void attributesSerialization() throws XMLDBException {
         final XPathQueryService service =
                 storeXMLStringAndGetQueryService(attributesSERIALIZATION, attributes);
@@ -3139,27 +3146,29 @@ public class XQueryTest {
             //@*\s
             """;
         result = service.query(query);
-        assertEquals("XQuery: " + query, 3, result.getSize());
+        assertEquals(3, result.getSize(), "XQuery: " + query);
     }
 
-    @Test(expected=XPathException.class)
-    public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException, XPathException {
-        final String query = """
-                declare function local:test() { (1,<n/>) };
-                <x/>/local:test()""";
-        try {
-            existEmbeddedServer.executeQuery(query);
-        } catch(final XMLDBException e) {
-            if(e.getCause() instanceof XPathException xpe) {
-                assertEquals(ErrorCodes.XPTY0018, xpe.getErrorCode());
-                throw xpe;
-            } else {
-                throw e;
+    @org.junit.jupiter.api.Test
+    public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException {
+        assertThrows(XPathException.class, () -> {
+            final String query = """
+                    declare function local:test() { (1,<n/>) };
+                    <x/>/local:test()""";
+            try {
+                existEmbeddedServer.executeQuery(query);
+            } catch (final XMLDBException e) {
+                if (e.getCause() instanceof XPathException xpe) {
+                    assertEquals(ErrorCodes.XPTY0018, xpe.getErrorCode());
+                    throw xpe;
+                } else {
+                    throw e;
+                }
             }
-        }
+        });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void exprContainingNodesAndNonNodes() throws XMLDBException, XPathException {
         final String query = """
                 declare function local:test() { (1,<n/>) };
@@ -3174,7 +3183,7 @@ public class XQueryTest {
     /**
      * @see https://github.com/eXist-db/exist/issues/1121
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException, XPathException {
         final String query = """
                 declare variable $a := 'a';

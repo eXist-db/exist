@@ -24,18 +24,18 @@ package org.exist.xquery.modules.persistentlogin;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.DurationValue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PersistentLoginTest {
 
     private static DurationValue oneDay;
 
-    @BeforeClass
+    @BeforeAll
     public static void initDuration() throws XPathException {
         oneDay = new DayTimeDurationValue("P1D");
     }

@@ -42,17 +42,20 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class CopyResourceRecoveryTest {
 
     @Rule
@@ -134,7 +137,7 @@ public class CopyResourceRecoveryTest {
             final Serializer serializer = broker.borrowSerializer();
 
 			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK)) {
-				assertNotNull("Document should not be null", lockedDoc);
+				assertNotNull(lockedDoc, "Document should not be null");
 				final String data = serializer.serialize(lockedDoc.getDocument());
 				assertNotNull(data);
             } finally {
@@ -191,7 +194,7 @@ public class CopyResourceRecoveryTest {
             final Serializer serializer = broker.borrowSerializer();
 
 			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK)) {
-				assertNotNull("Document should not be null", lockedDoc);
+				assertNotNull(lockedDoc, "Document should not be null");
 				final String data = serializer.serialize(lockedDoc.getDocument());
 				assertNotNull(data);
             } finally {
@@ -199,12 +202,12 @@ public class CopyResourceRecoveryTest {
             }
 
 			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK)) {
-                assertNull("Document should not exist as copy was not committed", lockedDoc);
+                assertNull(lockedDoc, "Document should not exist as copy was not committed");
             }
 		}
 	}
 
-    @After
+    @AfterEach
     public void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

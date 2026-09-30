@@ -26,14 +26,15 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *	note: some of these tests rely on local timezone override to -05:00, done in super.setUp()
@@ -43,15 +44,19 @@ import static org.junit.Assert.fail;
 @RunWith(ParallelRunner.class)
 public class DateTimeTest extends AbstractTimeRelatedTestCase {
 
-	@Test(expected = XPathException.class)
-	public void create1() throws XPathException {
-        new DateTimeValue("2005-10-11");
-	}
+	@Test
+	public void create1() {
+        assertThrows(XPathException.class, () -> {
+            new DateTimeValue("2005-10-11");
+        });
+    }
 
-    @Test(expected = XPathException.class)
-	public void create2() throws XPathException {
-        new DateTimeValue("10:00:00Z");
-	}
+    @Test
+	public void create2() {
+        assertThrows(XPathException.class, () -> {
+            new DateTimeValue("10:00:00Z");
+        });
+    }
 
     @Test
 	public void stringFormat1() throws XPathException {
@@ -267,23 +272,29 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		assertEquals("2002-03-06T15:00:00-08:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 
-    @Test(expected = XPathException.class)
-	public void adjustedToTimezone7() throws XPathException {
-		final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
-        v1.adjustedToTimezone(new DayTimeDurationValue("-PT15H"));
-	}
+    @Test
+	public void adjustedToTimezone7() {
+        assertThrows(XPathException.class, () -> {
+            final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
+            v1.adjustedToTimezone(new DayTimeDurationValue("-PT15H"));
+        });
+    }
 
-    @Test(expected = XPathException.class)
-	public void adjustedToTimezone8() throws XPathException {
-		final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
-        v1.adjustedToTimezone(new DayTimeDurationValue("PT14H01M"));
-	}
+    @Test
+	public void adjustedToTimezone8() {
+        assertThrows(XPathException.class, () -> {
+            final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
+            v1.adjustedToTimezone(new DayTimeDurationValue("PT14H01M"));
+        });
+    }
 
-    @Test(expected = XPathException.class)
-	public void adjustedToTimezone9() throws XPathException {
-		final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
-        v1.adjustedToTimezone(new DayTimeDurationValue("PT8H4S"));
-	}
+    @Test
+	public void adjustedToTimezone9() {
+        assertThrows(XPathException.class, () -> {
+            final AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
+            v1.adjustedToTimezone(new DayTimeDurationValue("PT8H4S"));
+        });
+    }
 
     @Test
 	public void adjustedToTimezone10() throws XPathException {
@@ -446,7 +457,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 			assertSame(ErrorCodes.FODT0001, ex.getErrorCode());
 		}
 		final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
-		assertTrue("Guard must reject in <1s; took " + elapsedMs + "ms", elapsedMs < 1000);
+		assertTrue(elapsedMs < 1000, "Guard must reject in <1s; took " + elapsedMs + "ms");
 	}
 
 	@Test
@@ -461,7 +472,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 			assertSame(ErrorCodes.FODT0001, ex.getErrorCode());
 		}
 		final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
-		assertTrue("Guard must reject in <1s; took " + elapsedMs + "ms", elapsedMs < 1000);
+		assertTrue(elapsedMs < 1000, "Guard must reject in <1s; took " + elapsedMs + "ms");
 	}
 
 	@Test
@@ -471,7 +482,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		final DurationValue d = new DayTimeDurationValue("P36524250D");
 		final ComputableValue r = t.plus(d);
 		// Year arithmetic: 2026 + 100000 = 102026 (modulo Gregorian leap-year drift).
-		assertTrue("expected year ~102026, got " + r,
-				r.getStringValue().startsWith("102026") || r.getStringValue().startsWith("102025"));
+		assertTrue(r.getStringValue().startsWith("102026") || r.getStringValue().startsWith("102025"),
+				"expected year ~102026, got " + r);
 	}
 }

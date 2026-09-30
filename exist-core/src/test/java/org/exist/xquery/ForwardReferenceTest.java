@@ -35,9 +35,8 @@ import org.exist.util.StringInputSource;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -45,15 +44,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.test.Util.*;
-import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ForwardReferenceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/test-deferred-function-call");
@@ -117,7 +116,7 @@ public class ForwardReferenceTest {
             """).getBytes(UTF_8));
     private static XmldbURI TEST_PAGES_MODULE_URI = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool brokerPool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));

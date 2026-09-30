@@ -37,8 +37,8 @@ import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -58,15 +58,15 @@ import java.net.http.HttpRequest;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.AbstractHttpTest.assertRequestResponse;
 import static org.exist.http.AbstractHttpTest.executeForStatusAndBody;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
 
     private static final String USER1_UID = "user1";
     private static final String USER1_PWD = "user1";
 
-    @Before
+    @BeforeEach
     public void beforeClass() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final UserManagementService ums = root.getService(UserManagementService.class);
@@ -111,7 +111,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -142,7 +142,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -173,7 +173,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -212,7 +212,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -251,7 +251,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -286,7 +286,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     @Test
@@ -321,7 +321,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
                 .withTest(actual)
                 .checkForSimilar()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     /**

@@ -26,14 +26,17 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class VectorStoreImplTest {
 
     @Rule
@@ -41,7 +44,7 @@ public class VectorStoreImplTest {
 
     private VectorStoreImpl store;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final VectorStore vectorStore = pool.getVectorStore();

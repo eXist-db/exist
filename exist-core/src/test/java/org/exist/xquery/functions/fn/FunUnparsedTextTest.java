@@ -35,8 +35,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayInputStream;
@@ -44,16 +43,17 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 @RunWith(ParallelRunner.class)
 public class FunUnparsedTextTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
@@ -150,22 +150,24 @@ public class FunUnparsedTextTest {
         }
     }
 
-    @Test(expected = XPathException.class)
-    public void unparsedTextLines_noDataStream() throws XPathException, EXistException, PermissionDeniedException {
-        final BrokerPool pool = BrokerPool.getInstance();
+    @Test
+    public void unparsedTextLines_noDataStream() throws EXistException, PermissionDeniedException {
+        assertThrows(XPathException.class, () -> {
+            final BrokerPool pool = BrokerPool.getInstance();
 
-        final String text = "hello, the time is: " + System.currentTimeMillis();
-        final String textUri = "http://from-dynamic-context/doc1";
-        final String query = "fn:unparsed-text-lines('" + textUri + "')";
+            final String text = "hello, the time is: " + System.currentTimeMillis();
+            final String textUri = "http://from-dynamic-context/doc1";
+            final String query = "fn:unparsed-text-lines('" + textUri + "')";
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final XQueryContext context = new XQueryContext(pool);
-            context.addDynamicallyAvailableTextResource(textUri, UTF_8,
-                    (broker2, transaction, uri, charset) -> new InputStreamReader(null, charset));
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                final XQueryContext context = new XQueryContext(pool);
+                context.addDynamicallyAvailableTextResource(textUri, UTF_8,
+                        (broker2, transaction, uri, charset) -> new InputStreamReader(null, charset));
 
-            final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(context, query);
-            final Sequence result = xqueryService.execute(broker, compiled, null);
-        }
+                final XQuery xqueryService = pool.getXQueryService();
+                final CompiledXQuery compiled = xqueryService.compile(context, query);
+                final Sequence result = xqueryService.execute(broker, compiled, null);
+            }
+        });
     }
 }

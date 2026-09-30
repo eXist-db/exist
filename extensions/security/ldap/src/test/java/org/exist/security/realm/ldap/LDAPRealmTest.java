@@ -21,8 +21,6 @@
  */
 package org.exist.security.realm.ldap;
 
-import static org.junit.Assert.*;
-
 import java.io.InputStream;
 
 import org.exist.config.Configuration;
@@ -30,12 +28,13 @@ import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Account;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -56,7 +55,7 @@ public class LDAPRealmTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		try (final InputStream is = UnsynchronizedByteArrayInputStream.builder().setByteArray(config.getBytes(UTF_8)).get()) {
 			Configuration config = Configurator.parse(is);
@@ -67,14 +66,14 @@ public class LDAPRealmTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() {
 	}
 
 	/**
 	 * Test method for {@link org.exist.security.realm.ldap.LDAPRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
-	@Ignore("Requires external LDAP server")
+	@Disabled("Requires external LDAP server")
 	@Test
 	public void testAuthenticate() {
 		Account account = null;

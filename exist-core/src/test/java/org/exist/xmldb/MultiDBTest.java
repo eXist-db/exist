@@ -23,16 +23,16 @@ package org.exist.xmldb;
 
 import org.exist.TestUtils;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -93,16 +93,16 @@ public class MultiDBTest {
         }
     }
 
-    @ClassRule
-    public static TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
+    @TempDir
+    public static File TEMP_FOLDER;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException, XMLDBException {
 
         // initialize database drivers
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         for (int i = 0; i < INSTANCE_COUNT; i++) {
-            final Path dir = TEMP_FOLDER.newFolder("db" + i).toPath();
+            final Path dir = newFolder(TEMP_FOLDER, "db" + i).toPath();
             final Path conf = dir.resolve("conf.xml");
 
             try (final OutputStream os = Files.newOutputStream(conf)) {
@@ -117,7 +117,7 @@ public class MultiDBTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", "");
@@ -127,5 +127,22 @@ public class MultiDBTest {
             final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
             mgr.shutdown();
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

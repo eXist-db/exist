@@ -23,10 +23,10 @@ package org.exist.util.hashtable;
 
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class NamePoolTest {
 

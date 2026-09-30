@@ -30,6 +30,9 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.ExternalResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -49,13 +52,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Exist embedded XML:DB Server Rule for JUnit.
+ * <p>
+ * Supports both JUnit 4 (via {@code ExternalResource}, use with {@code @Rule}/{@code @ClassRule})
+ * and JUnit 5 (via {@link BeforeAllCallback}/{@link AfterAllCallback}, use with
+ * {@code @RegisterExtension static final}).
  */
-public class ExistXmldbEmbeddedServer extends ExternalResource {
+public class ExistXmldbEmbeddedServer extends ExternalResource implements BeforeAllCallback, AfterAllCallback {
 
     private final boolean asGuest;
     private final ExistEmbeddedServer existEmbeddedServer;
@@ -110,6 +117,19 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         super.before();
     }
 
+    @Override
+    public void beforeAll(final ExtensionContext context) throws Exception {
+        try {
+            before();
+        } catch (final Exception e) {
+            throw e;
+        } catch (final Throwable t) {
+            // before() declares `throws Throwable`, broader than beforeAll()'s `throws Exception`;
+            // wrap the rare non-Exception case (e.g. an Error) rather than throwing a raw Exception.
+            throw new RuntimeException(t);
+        }
+    }
+
     private void startDb() throws ReflectiveOperationException, XMLDBException {
         try {
             existEmbeddedServer.startDb();
@@ -150,6 +170,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     protected void after() {
         stopDb(true);
         super.after();
+    }
+
+    @Override
+    public void afterAll(final ExtensionContext context) {
+        after();
     }
 
     private void stopDb(final boolean clearTemporaryStorage) {

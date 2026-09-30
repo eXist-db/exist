@@ -32,10 +32,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.junit.ComparisonFailure;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+import org.opentest4j.AssertionFailedError;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -92,7 +92,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
                 oneLine += "\n\tat (" + shortFileName + ":" + lineNumber + ")";
             }
             XQueryFailureLog.log(oneLine);
-            final AssertionError failureReason = new ComparisonFailure(oneLine, expectedToString(expected), actualToString(actual));
+            final AssertionError failureReason = new AssertionFailedError(oneLine, expectedToString(expected), actualToString(actual));
 
             // Stack trace for IDE navigation. IntelliJ linkifies short "filename:line" in stack traces
             // but not absolute paths; use short filename so the stack line becomes clickable.

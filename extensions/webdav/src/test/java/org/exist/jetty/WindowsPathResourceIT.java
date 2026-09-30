@@ -25,15 +25,15 @@ import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.exist.util.OSUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Windows integration regression test for Jetty 12.1 {@link PathResource#resolve(String)} on
@@ -45,17 +45,17 @@ public class WindowsPathResourceIT {
 
     @Test
     public void resolveWebInfOnWindowsDriveUri() throws Exception {
-        assumeTrue("Windows-only PathResource URI regression", OSUtil.isWindows());
+        assumeTrue(OSUtil.isWindows(), "Windows-only PathResource URI regression");
 
         final ResourceFactory resourceFactory = ResourceFactory.root();
         final Path webapp = Files.createTempDirectory("webapp");
         Files.createDirectory(webapp.resolve("WEB-INF"));
         try {
             final Resource resource = resourceFactory.newResource(webapp);
-            assumeTrue("Expected PathResource for local webapp directory", resource instanceof PathResource);
+            assumeTrue(resource instanceof PathResource, "Expected PathResource for local webapp directory");
             final String uriPath = resource.getURI().getPath();
-            assumeTrue("Expected absolute Windows drive URI path, got: " + uriPath,
-                    uriPath != null && uriPath.matches("/[A-Za-z]:/.*"));
+            assumeTrue(uriPath != null && uriPath.matches("/[A-Za-z]:/.*"),
+                    "Expected absolute Windows drive URI path, got: " + uriPath);
 
             final PathResource pathResource = (PathResource) resource;
             try {
@@ -69,7 +69,7 @@ public class WindowsPathResourceIT {
             assertNotSame(pathResource, wrapped);
 
             final Resource webInf = wrapped.resolve("WEB-INF/");
-            assertTrue("WEB-INF should resolve to a directory", webInf.isDirectory());
+            assertTrue(webInf.isDirectory(), "WEB-INF should resolve to a directory");
         } finally {
             Files.deleteIfExists(webapp.resolve("WEB-INF"));
             Files.deleteIfExists(webapp);

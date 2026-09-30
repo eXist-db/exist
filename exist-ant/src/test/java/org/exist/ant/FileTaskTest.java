@@ -24,10 +24,10 @@ package org.exist.ant;
 import org.apache.tools.ant.Project;
 import org.exist.TestUtils;
 import org.exist.xmldb.EXistResource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -39,7 +39,7 @@ import java.net.URL;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class FileTaskTest extends AbstractTaskTest {
@@ -58,7 +58,7 @@ public class FileTaskTest extends AbstractTaskTest {
         return getClass().getResource("file.xml");
     }
 
-    @Before
+    @BeforeEach
     public void fileSetup() throws XMLDBException {
         final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
         final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.class);
@@ -66,7 +66,7 @@ public class FileTaskTest extends AbstractTaskTest {
         col.storeResource(res);
     }
 
-    @After
+    @AfterEach
     public void fileCleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
@@ -107,7 +107,7 @@ public class FileTaskTest extends AbstractTaskTest {
         assertEquals(TestUtils.GUEST_DB_USER, res.getPermissions().getGroup().getName());
     }
 
-    @Ignore("Would require implementing an UnlockResourceTask as well")
+    @Disabled("Would require implementing an UnlockResourceTask as well")
     @Test
     public void lockResource() {
         buildFileRule.executeTarget("lockResource");

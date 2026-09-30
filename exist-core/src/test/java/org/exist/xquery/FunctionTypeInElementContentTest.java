@@ -24,7 +24,7 @@ package org.exist.xquery;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.XQueryCompilationTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.exist.test.DiffMatcher.elemSource;
 import static org.exist.test.XQueryAssertions.*;

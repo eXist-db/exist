@@ -24,29 +24,36 @@ package org.exist.xquery.value;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunWith(ParallelRunner.class)
 public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
 
-    @Test(expected = XPathException.class)
-    public void create1() throws XPathException {
-        new DayTimeDurationValue("P1Y4M");
+    @Test
+    public void create1() {
+        assertThrows(XPathException.class, () -> {
+            new DayTimeDurationValue("P1Y4M");
+        });
     }
 
-    @Test(expected = XPathException.class)
-    public void create2() throws XPathException {
-        new DayTimeDurationValue("P1Y");
+    @Test
+    public void create2() {
+        assertThrows(XPathException.class, () -> {
+            new DayTimeDurationValue("P1Y");
+        });
     }
 
-    @Test(expected = XPathException.class)
-    public void create3() throws XPathException {
-        new DayTimeDurationValue("P4M");
+    @Test
+    public void create3() {
+        assertThrows(XPathException.class, () -> {
+            new DayTimeDurationValue("P4M");
+        });
     }
 
     @Test

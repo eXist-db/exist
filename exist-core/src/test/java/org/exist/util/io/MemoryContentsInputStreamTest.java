@@ -23,8 +23,8 @@
 package org.exist.util.io;
 
 import org.easymock.IArgumentMatcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reportMatcher;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -44,7 +44,7 @@ public class MemoryContentsInputStreamTest {
     private MemoryContents memoryContents;
     private MemoryContentsInputStream inputStream;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         memoryContents = createMock(MemoryContents.class);
         inputStream = new MemoryContentsInputStream(memoryContents);

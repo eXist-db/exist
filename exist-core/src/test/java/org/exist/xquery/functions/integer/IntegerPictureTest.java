@@ -23,8 +23,8 @@
 package org.exist.xquery.functions.integer;
 
 import org.exist.xquery.XPathException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -34,9 +34,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class IntegerPictureTest {
 
-    @Test(expected = XPathException.class)
-    public void pictureEmpty() throws XPathException {
-        IntegerPicture.fromString("");
+    @Test
+    public void pictureEmpty() {
+        assertThrows(XPathException.class, () ->
+            IntegerPicture.fromString(""));
     }
 
     @Test
@@ -491,7 +492,7 @@ public class IntegerPictureTest {
         assertEquals("Quinta", fmt("Ww;o(-a)", 5L, "it"));
     }
 
-    @Ignore("kanji is not yet implemented")
+    @Disabled("kanji is not yet implemented")
     @Test
     public void kanji() throws XPathException {
         //System.err.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");

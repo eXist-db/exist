@@ -23,15 +23,15 @@ package org.exist.xmldb;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests the TreeLevelOrder function.
@@ -39,10 +39,9 @@ import static org.junit.Assert.assertNotNull;
  * @author Tobias Wunden
  * @version 1.0
  */
-
 public class TreeLevelOrderTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String DOC1_NAME = "survey.xml";

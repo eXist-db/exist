@@ -24,10 +24,10 @@ package org.exist.xquery;
 
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class RangeSequenceTest {
 

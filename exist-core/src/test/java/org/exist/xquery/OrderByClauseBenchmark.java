@@ -22,14 +22,14 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Micro-benchmark for {@code order by} clause performance.
@@ -57,7 +57,7 @@ import java.util.Map;
  */
 public class OrderByClauseBenchmark {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -83,9 +83,9 @@ public class OrderByClauseBenchmark {
 
     @Test
     public void benchmark() throws XMLDBException {
-        Assume.assumeTrue(
-                "Benchmark skipped by default. Re-run with -Dexist.run.benchmarks=true",
-                Boolean.getBoolean("exist.run.benchmarks"));
+        Assumptions.assumeTrue(
+                Boolean.getBoolean("exist.run.benchmarks"),
+                "Benchmark skipped by default. Re-run with -Dexist.run.benchmarks=true");
 
         System.out.println("\n=== OrderByClause benchmark ===");
         System.out.printf("%-24s  %8s  %8s  %8s%n", "Query variant", "avg (ms)", "min (ms)", "ops/s");

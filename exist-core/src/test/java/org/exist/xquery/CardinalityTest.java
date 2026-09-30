@@ -21,12 +21,13 @@
  */
 package org.exist.xquery;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static junit.framework.TestCase.assertTrue;
+import org.junit.jupiter.api.Test;
+
 import static org.exist.xquery.Cardinality.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -83,13 +84,13 @@ public class CardinalityTest {
     }
 
     private static void isSubCardinalityOrEqualOf(final Cardinality subject, final Cardinality test) {
-        assertTrue(subject.name() + ".isSubCardinalityOrEqualOf(" + test.name() + ") == false, expected true",
-                subject.isSubCardinalityOrEqualOf(test));
+        assertTrue(subject.isSubCardinalityOrEqualOf(test),
+                subject.name() + ".isSubCardinalityOrEqualOf(" + test.name() + ") == false, expected true");
     }
 
     private static void notSubCardinalityOrEqualOf(final Cardinality subject, final Cardinality test) {
-        assertFalse(subject.name() + ".isSubCardinalityOrEqualOf(" + test.name() + ") == true, expected false",
-                subject.isSubCardinalityOrEqualOf(test));
+        assertFalse(subject.isSubCardinalityOrEqualOf(test),
+                subject.name() + ".isSubCardinalityOrEqualOf(" + test.name() + ") == true, expected false");
     }
 
     @Test
@@ -126,13 +127,13 @@ public class CardinalityTest {
     }
 
     private static void isSuperCardinalityOrEqualOf(final Cardinality subject, final Cardinality test) {
-        assertTrue(subject.name() + ".isSuperCardinalityOrEqualOf(" + test.name() + ") == false, expected true",
-                subject.isSuperCardinalityOrEqualOf(test));
+        assertTrue(subject.isSuperCardinalityOrEqualOf(test),
+                subject.name() + ".isSuperCardinalityOrEqualOf(" + test.name() + ") == false, expected true");
     }
 
     private static void notSuperCardinalityOrEqualOf(final Cardinality subject, final Cardinality test) {
-        assertFalse(subject.name() + ".isSuperCardinalityOrEqualOf(" + test.name() + ") == true, expected false",
-                subject.isSuperCardinalityOrEqualOf(test));
+        assertFalse(subject.isSuperCardinalityOrEqualOf(test),
+                subject.name() + ".isSuperCardinalityOrEqualOf(" + test.name() + ") == true, expected false");
     }
 
     @Test

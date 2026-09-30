@@ -33,19 +33,23 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
 import static org.exist.collections.CollectionConfigurationManager.CONFIG_COLLECTION_URI;
 import static org.exist.test.Util.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Checks that multiple XQuery Triggers can be formed into a chain,
@@ -77,7 +81,7 @@ import static org.junit.Assert.*;
  */
 public class XQueryTriggerChainTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
 
 	private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerChain");
@@ -130,7 +134,7 @@ public class XQueryTriggerChainTest {
             "  </exist:triggers>" +
             "</exist:collection>";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -165,7 +169,7 @@ public class XQueryTriggerChainTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xqueryTriggerChain() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final String uuid = UUID.randomUUID().toString();
         final String documentName = uuid + ".xml";

@@ -25,11 +25,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
-
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.*;
 import org.junit.runner.RunWith;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test case for mime-type mapping.
@@ -47,131 +50,131 @@ public class MimeTableTest  {
 	 * The distribution version of mime-types.xml does not use the
 	 * default mime type capability.
 	 */
-    @Test
+    @org.junit.jupiter.api.Test
 	public void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
-		assertNotNull("Mime table not found", mimeTable);
+		assertNotNull(mimeTable, "Mime table not found");
 
 		MimeType mt;
 
 		mt = mimeTable.getContentTypeFor("test.xml");
-		assertNotNull("Mime type not found for test.xml", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.xml");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.html");
-		assertNotNull("Mime type not found for test.html", mt);
-		assertEquals("Incorrect mime type", "text/html", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.html");
+		assertEquals("text/html", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.jpg");
-		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "image/jpeg", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.jpg");
+		assertEquals("image/jpeg", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("foo");
-		assertNull("Should return null mime type for file without extension", mt);
+		assertNull(mt, "Should return null mime type for file without extension");
 
 		mt = mimeTable.getContentTypeFor("foo.bar");
-		assertNull("Should return null mime type for file with extension not configured in mime-types.xml", mt);
+		assertNull(mt, "Should return null mime type for file with extension not configured in mime-types.xml");
 	}
 
 	/**
 	 * This test checks the behavior of the mime-types@default-resource-type attribute
 	 * The test config assigns all resources to application/xml
 	 */
-    @Test
+    @org.junit.jupiter.api.Test
 	public void testWithDefaultResourceTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-xml-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
-		assertNotNull("Mime table not found", mimeTable);
+		assertNotNull(mimeTable, "Mime table not found");
 
 		MimeType mt;
 
 		mt = mimeTable.getContentTypeFor("test.xml");
-		assertNotNull("Mime type not found for test.xml", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.xml");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.html");
-		assertNotNull("Mime type not found for test.html", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.html");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.jpg");
-		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.jpg");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("foo");
-		assertNotNull("Mime type not found for foo", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for foo");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("foo.bar");
-		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "application/xml", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.jpg");
+		assertEquals("application/xml", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 	}
 
 	/**
 	 * This test checks the behavior of the mime-types@default-mime-type attribute
 	 * The test config assigns all resources to foo/bar (BINARY)
 	 */
-    @Test
+    @org.junit.jupiter.api.Test
 	public void testWithDefaultMimeTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-foo-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
-		assertNotNull("Mime table not found", mimeTable);
+		assertNotNull(mimeTable, "Mime table not found");
 
 		MimeType mt;
 
 		mt = mimeTable.getContentTypeFor("test.xml");
-		assertNotNull("Mime type not found for test.xml", mt);
-		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.xml");
+		assertEquals("foo/bar", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.html");
-		assertNotNull("Mime type not found for test.html", mt);
-		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.html");
+		assertEquals("foo/bar", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("test.jpg");
-		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.jpg");
+		assertEquals("foo/bar", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("foo");
-		assertNotNull("Mime type not found for foo", mt);
-		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for foo");
+		assertEquals("foo/bar", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 
 		mt = mimeTable.getContentTypeFor("foo.bar");
-		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
-		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+		assertNotNull(mt, "Mime type not found for test.jpg");
+		assertEquals("foo/bar", mt.getName(), "Incorrect mime type");
+		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 	}
 
-	@Test
+	@org.junit.jupiter.api.Test
 	public void testClasspathDefaultIncludesApplicationXquery() {
 		final MimeTable mimeTable = new MimeTable();
 		final MimeType xquery = mimeTable.getContentType("application/xquery");
-		assertNotNull("application/xquery must be registered in the default mime-types.xml", xquery);
+		assertNotNull(xquery, "application/xquery must be registered in the default mime-types.xml");
 		assertEquals("application/xquery", xquery.getName());
 	}
 
-	@Test
+	@org.junit.jupiter.api.Test
 	public void testUnreadablePathThrows() {
 		final Path missing = Path.of("/nonexistent/mime-types-does-not-exist.xml");
 		final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> new MimeTable(missing));
 		assertTrue(ex.getMessage().contains("not readable"));
 	}
 
-	@Test
+	@org.junit.jupiter.api.Test
 	public void testInvalidXmlThrows() throws Exception {
 		final Path broken = Files.createTempFile("mime-types-broken", ".xml");
 		try {

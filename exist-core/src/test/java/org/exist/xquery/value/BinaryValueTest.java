@@ -26,13 +26,12 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>

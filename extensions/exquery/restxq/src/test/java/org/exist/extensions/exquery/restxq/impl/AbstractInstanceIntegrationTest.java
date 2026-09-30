@@ -28,13 +28,16 @@ package org.exist.extensions.exquery.restxq.impl;
 
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
 
+@ExtendWith(ExternalResourceSupport.class)
 public abstract class AbstractInstanceIntegrationTest extends AbstractIntegrationTest {
 
     @Rule
@@ -42,7 +45,7 @@ public abstract class AbstractInstanceIntegrationTest extends AbstractIntegratio
 
     protected HttpClient httpClient = null;
 
-    @Before
+    @BeforeEach
     public void setupExecutor() {
         httpClient = AbstractHttpTest.newHttpClient();
     }

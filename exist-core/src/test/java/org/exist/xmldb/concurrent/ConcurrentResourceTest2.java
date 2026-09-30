@@ -24,16 +24,16 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.MultiResourcesAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 
 import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author wolf
@@ -48,7 +48,7 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
         "declare default element namespace 'http://www.loc.gov/mods/v3';" +
         "<result>{for $t in distinct-values(collection(\"" + XmldbURI.ROOT_COLLECTION + "\")//mods/subject/topic) order by $t return <topic>{$t}</topic>}</result>";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
         assertNotNull(c1);

@@ -22,16 +22,16 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression test for GH-4050: fn:deep-equal was ~24x slower than
@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class FunDeepEqualPerformanceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -106,7 +106,7 @@ public class FunDeepEqualPerformanceTest {
      * attributes per element, compareAttributes' O(attrs^2) NamedNodeMap
      * lookup also bites.
      */
-    @BeforeClass
+    @BeforeAll
     public static void storeLargeDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -129,7 +129,7 @@ public class FunDeepEqualPerformanceTest {
                 """);
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeStoredDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -169,9 +169,9 @@ public class FunDeepEqualPerformanceTest {
         System.out.println("[GH-4050] in-memory equal 10k-element trees: " + elapsedMs + "ms");
         final long threshold = 3000L;
         assertTrue(
+                elapsedMs <= threshold,
                 "fn:deep-equal on 10,000-element in-memory equal trees took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms)",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms)");
     }
 
     @Test
@@ -191,9 +191,9 @@ public class FunDeepEqualPerformanceTest {
         // regression that puts us back into multi-second territory.
         final long threshold = 5000L;
         assertTrue(
+                elapsedMs <= threshold,
                 "fn:deep-equal on stored 10,000-element docs took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); GH-4050 regression?",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms); GH-4050 regression?");
     }
 
     @Test
@@ -205,9 +205,9 @@ public class FunDeepEqualPerformanceTest {
         System.out.println("[GH-4050] deep-equal on root-mismatched 10k-element trees: " + elapsedMs + "ms");
         final long threshold = 1500L;
         assertTrue(
+                elapsedMs <= threshold,
                 "Root-mismatch fn:deep-equal took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); pre-check ordering broken?",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms); pre-check ordering broken?");
     }
 
     @Test

@@ -23,12 +23,12 @@
 package org.exist.security;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Security Manager round trip tests against the XML:DB Local API
@@ -37,7 +37,7 @@ import java.io.IOException;
  */
 public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRoundtripTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Override

@@ -26,8 +26,8 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
@@ -92,7 +92,7 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
             """;
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
 
-    @BeforeClass
+    @BeforeAll
     public static void storeResourceFunctions() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
         storeXquery(TEST_COLLECTION, XQUERY1_FILENAME, XQUERY1);

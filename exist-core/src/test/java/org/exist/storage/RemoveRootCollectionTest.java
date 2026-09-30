@@ -21,8 +21,8 @@
  */
 package org.exist.storage;
 
-import static org.junit.Assert.*;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Optional;
 
@@ -32,14 +32,20 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.InputStreamSupplierInputSource;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class RemoveRootCollectionTest {
 
     private DBBroker broker;
     Collection root;
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void removeEmptyRootCollection() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
@@ -51,7 +57,7 @@ public class RemoveRootCollectionTest {
         assertEquals(0, root.getDocumentCount(broker));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void removeRootCollectionWithChildCollection() throws Exception {
         addChildToRoot();
         final BrokerPool pool = BrokerPool.getInstance();
@@ -64,8 +70,8 @@ public class RemoveRootCollectionTest {
         assertEquals(0, root.getDocumentCount(broker));
     }
 
-    @Ignore("Document count not zero after removing root collection, see #6158")
-    @Test
+    @Disabled("Document count not zero after removing root collection, see #6158")
+    @org.junit.jupiter.api.Test
     public void removeRootCollectionWithDocument() throws Exception {
         addDocumentToRoot();
         final BrokerPool pool = BrokerPool.getInstance();
@@ -81,14 +87,14 @@ public class RemoveRootCollectionTest {
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
+    @BeforeEach
     public void startDB() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
         root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
     }
 
-    @After
+    @AfterEach
     public void stopDB() {
         if (broker != null) {
             broker.close();

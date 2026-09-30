@@ -23,7 +23,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.Project;
 import org.exist.TestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.net.URL;
@@ -31,7 +31,7 @@ import java.net.URL;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UserTaskTest extends AbstractTaskTest {
 

@@ -44,9 +44,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -55,24 +56,16 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
 public class EnforceIndexUseTest {
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "always", 1 },
                 { "strict", 3 }
         });
     }
-
-    @Parameterized.Parameter
     public String enforceIndexUseValue;
-    // always means the database will only get results from the collections indexed by range index it will ignore un-indexed collections
-    // strict means it will get results from all the collections and will not ignore un-indexed
-
-    @Parameterized.Parameter(value = 1)
     public int expectedSearchCount;
 
     private ExistEmbeddedServer existEmbeddedServer;
@@ -99,8 +92,9 @@ public class EnforceIndexUseTest {
             <foo bar="baz"/>
             </root>""";
 
-    @Test
-    public void matchesWithDiffrentIndexStyles() throws PermissionDeniedException, EXistException, XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws PermissionDeniedException, EXistException, XPathException {
+        initEnforceIndexUseTest(enforceIndexUseValue, expectedSearchCount);
         //query and expand
         final String query = "for $hit in collection(\"" + TestConstants.TEST_COLLECTION_URI.toString() + "\")//foo[matches(@bar, \"^b\")]\n" +
                 "return $hit";
@@ -136,7 +130,7 @@ public class EnforceIndexUseTest {
     }
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Throwable {
         existEmbeddedServer = new ExistEmbeddedServer(
                 propertiesBuilder()
@@ -173,7 +167,7 @@ public class EnforceIndexUseTest {
 
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -193,5 +187,10 @@ public class EnforceIndexUseTest {
 
         existEmbeddedServer.stopDb(true);
         existEmbeddedServer = null;
+    }
+
+    public void initEnforceIndexUseTest(String enforceIndexUseValue, int expectedSearchCount) {
+        this.enforceIndexUseValue = enforceIndexUseValue;
+        this.expectedSearchCount = expectedSearchCount;
     }
 }

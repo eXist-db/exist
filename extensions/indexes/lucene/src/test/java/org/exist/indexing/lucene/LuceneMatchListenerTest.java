@@ -52,24 +52,24 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.AfterClass;
-
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class LuceneMatchListenerTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static String XML = """
@@ -182,14 +182,14 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
+            assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
                     MATCH_END + "</hi> content.</para>", result);
 
             seq = xquery.execute(broker, "//para[ft:query(., '+nested +inner +elements')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" +
+            assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" +
                     MATCH_END + "</hi> " + MATCH_START +
                     "inner" + MATCH_END + "</note> " + MATCH_START + "elements" + MATCH_END + ".</para>", result);
 
@@ -197,14 +197,14 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END +
+            assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END +
                     "</term>.</para>", result);
 
             seq = xquery.execute(broker, "//para[ft:query(., '+double +match')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<para>" + MATCH_START + "double" + MATCH_END + " " +
+            assertEquals("<para>" + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para>", result);
 
@@ -215,7 +215,7 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<hit><para>" + MATCH_START + "double" + MATCH_END + " " +
+            assertEquals("<hit><para>" + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para></hit>", result);
         }
@@ -275,21 +275,21 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
+            assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
                     "</s><s>" + MATCH_START + "ed" + MATCH_END + "</s> content are <s>danger</s>ous.</p>", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'ignored')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
+            assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
                     MATCH_START + "ignored" + MATCH_END + ".</p>", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'highlighted')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
+            assertEquals("<p>A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
                     "highlighted" + MATCH_END + "</hi> text <note>and a note</note> to be " +
                     "ignored.</p>", result);
 
@@ -297,13 +297,13 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<hi>" + MATCH_START + "highlighted" + MATCH_END + "</hi>", result);
+            assertEquals("<hi>" + MATCH_START + "highlighted" + MATCH_END + "</hi>", result);
             
             seq = xquery.execute(broker, "//head[ft:query(., 'title')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
+            assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
                     result);
         }
     }
@@ -395,14 +395,14 @@ public class LuceneMatchListenerTest {
                 "let $doc := doc('" + TestConstants.TEST_COLLECTION_URI + "/test_matches.xml') " +
                 "return $doc//p[ft:query(., 'letter')]", null);
             assertNotNull(hits);
-            assertEquals("Should have 5 ft:query hits", 5, hits.getItemCount());
+            assertEquals(5, hits.getItemCount(), "Should have 5 ft:query hits");
             int withMatches = 0;
             for (int i = 0; i < hits.getItemCount(); i++) {
                 if (hits.itemAt(i) instanceof NodeProxy np && np.getMatches() != null) {
                     withMatches++;
                 }
             }
-            assertEquals("All 5 hits should have matches before util:expand (withMatches=" + withMatches + ")", 5, withMatches);
+            assertEquals(5, withMatches, "All 5 hits should have matches before util:expand (withMatches=" + withMatches + ")");
 
             // Per-item exist:match counts (diagnostic)
             Sequence perItem = xquery.execute(broker,
@@ -413,7 +413,7 @@ public class LuceneMatchListenerTest {
             for (int i = 0; i < perItem.getItemCount(); i++) {
                 total += perItem.itemAt(i).toJavaObject(Integer.class).intValue();
             }
-            assertEquals("Direct p hits: all 5 should get exist:match", 5, total);
+            assertEquals(5, total, "Direct p hits: all 5 should get exist:match");
 
             // Batch
             Sequence seq = xquery.execute(broker,
@@ -422,7 +422,7 @@ public class LuceneMatchListenerTest {
                 "let $result := util:expand($hits) " +
                 "return count($result//exist:match)", null);
             assertNotNull(seq);
-            assertEquals("Direct p hits (batch)", 5, seq.itemAt(0).toJavaObject(Integer.class).intValue());
+            assertEquals(5, seq.itemAt(0).toJavaObject(Integer.class).intValue(), "Direct p hits (batch)");
 
             seq = xquery.execute(broker,
                 "let $doc := doc('" + TestConstants.TEST_COLLECTION_URI + "/test_matches.xml') " +
@@ -430,7 +430,7 @@ public class LuceneMatchListenerTest {
                 "let $result := util:expand($hits) " +
                 "return count($result//exist:match)", null);
             assertNotNull(seq);
-            assertEquals("Parent div hits: all 5 p in 3 divs should get exist:match", 5, seq.itemAt(0).toJavaObject(Integer.class).intValue());
+            assertEquals(5, seq.itemAt(0).toJavaObject(Integer.class).intValue(), "Parent div hits: all 5 p in 3 divs should get exist:match");
         }
     }
 
@@ -475,7 +475,7 @@ public class LuceneMatchListenerTest {
                             <w>љуте</w>.</s>
                     </p>""".formatted(MATCH_START, MATCH_END);
 
-            XMLAssert.assertEquals(expected, result);
+            assertEquals(expected, result);
         }
     }
 
@@ -501,7 +501,7 @@ public class LuceneMatchListenerTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -521,7 +521,7 @@ public class LuceneMatchListenerTest {
         XMLUnit.setXpathNamespaceContext(ctx);
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }

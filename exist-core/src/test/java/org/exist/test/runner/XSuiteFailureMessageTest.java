@@ -22,12 +22,12 @@
 
 package org.exist.test.runner;
 
-import org.junit.ComparisonFailure;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
+import org.opentest4j.AssertionFailedError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,13 +46,13 @@ class XSuiteFailureMessageTest {
 
     @Test
     void nodeResultIsNotEscapedIntoTheFailureMessage() {
-        final ComparisonFailure failure = runSuiteAndGetComparisonFailure();
+        final AssertionFailedError failure = runSuiteAndGetComparisonFailure();
 
-        assertEquals("<doc a=\"1\">text</doc>", failure.getActual(),
+        assertEquals("<doc a=\"1\">text</doc>", failure.getActual().getValue(),
             "a node-valued result should reach the failure message as markup, not XML-escaped");
     }
 
-    private static ComparisonFailure runSuiteAndGetComparisonFailure() {
+    private static AssertionFailedError runSuiteAndGetComparisonFailure() {
         final List<Failure> collected = new ArrayList<>();
         final JUnitCore core = new JUnitCore();
         core.addListener(new RunListener() {
@@ -65,10 +65,10 @@ class XSuiteFailureMessageTest {
         final Result result = core.run(SerializationFailureMessageSuite.class);
         assertFalse(result.wasSuccessful(), "suite is expected to fail (failing-serialization.xqm)");
 
-        final ComparisonFailure comparisonFailure = collected.stream()
+        final AssertionFailedError comparisonFailure = collected.stream()
             .map(Failure::getException)
-            .filter(ComparisonFailure.class::isInstance)
-            .map(ComparisonFailure.class::cast)
+            .filter(AssertionFailedError.class::isInstance)
+            .map(AssertionFailedError.class::cast)
             .findFirst()
             .orElse(null);
         assertNotNull(comparisonFailure,
