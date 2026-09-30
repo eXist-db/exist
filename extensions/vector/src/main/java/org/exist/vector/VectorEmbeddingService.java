@@ -168,7 +168,10 @@ public final class VectorEmbeddingService {
    */
   public void evict(@Nonnull final String modelId, @Nonnull final Path modelPath) {
     final String cacheKey = modelId + ":" + modelPath.toAbsolutePath();
-    cache.remove(cacheKey);
+    final VectorEmbeddingProvider removed = cache.remove(cacheKey);
+    if (removed != null) {
+      removed.close();
+    }
   }
 
   /**

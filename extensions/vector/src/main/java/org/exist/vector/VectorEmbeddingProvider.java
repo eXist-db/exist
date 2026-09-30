@@ -53,4 +53,16 @@ public interface VectorEmbeddingProvider {
   default float[] embed(String text, boolean forQuery) {
     return embed(text);
   }
+
+  /**
+   * Releases any resources held by this provider (e.g. native model handles, an HTTP
+   * client's connection pool). Called when a provider is evicted from
+   * {@link VectorEmbeddingService}'s cache; implementations that hold resources should
+   * guard against a concurrent {@link #embed} call still in flight on another thread.
+   * Default implementation does nothing, for providers that hold nothing beyond ordinary,
+   * GC-managed heap objects.
+   */
+  default void close() {
+    // intentionally empty: see javadoc above
+  }
 }
