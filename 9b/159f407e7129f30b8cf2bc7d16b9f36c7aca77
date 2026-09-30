@@ -1,0 +1,43 @@
+exist-core/src/main/java/org/exist/scheduler/impl/ShutdownTask.java
+  s_f03fe8b0b5549a::t_4928f345b9aa64 58-60
+  s_f03fe8b0b5549a::t_0e893accece705 34
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunXmlToJson.java
+  s_f03fe8b0b5549a::t_62af797fbec72d 552
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBCreateCollection.java
+  s_f03fe8b0b5549a::t_79eeebbee8a055 80-85,87
+exist-core/src/main/java/org/exist/util/serializer/json/JSONSerializer.java
+  s_f03fe8b0b5549a::t_7bcff658ea98d5 68
+exist-core/src/main/java/org/exist/management/client/JMXtoXML.java
+  s_f03fe8b0b5549a::t_b458e45848bc6f 265
+exist-core/src/main/java/org/exist/backup/Main.java
+  s_f03fe8b0b5549a::t_ba3741f2eead10 418
+extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/GMLHSQLIndex.java
+  s_f03fe8b0b5549a::t_e51fae3a3e0a54 106-108
+  s_f03fe8b0b5549a::t_825cbabd9e383c 213
+  s_f03fe8b0b5549a::t_2b2436ead317a2 261
+  s_f03fe8b0b5549a::t_490804509de460 214-260
+  s_f03fe8b0b5549a::t_15271f54ae984c 142-145
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingProvider.java
+  s_f03fe8b0b5549a::t_06c17ad769382b 56-64
+extensions/vector/src/main/java/org/exist/vector/OnnxVectorProvider.java
+  s_f03fe8b0b5549a::t_1ad6976e59ad01 83-89,107,108-109
+  s_f03fe8b0b5549a::t_93967b9f810219 239-243,245,247,260-267
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_f03fe8b0b5549a::t_21c6b2e106b80d 171-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9b159f407e7129f30b8cf2bc7d16b9f36c7aca77",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
