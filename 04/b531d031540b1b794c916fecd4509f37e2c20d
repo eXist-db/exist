@@ -1,0 +1,28 @@
+extensions/vector/src/main/java/org/exist/vector/OnnxVectorProvider.java
+  s_f03fe8b0b5549a::t_90f8ead60db664 42
+  s_f03fe8b0b5549a::t_822a68eef2bd57 94-97,101-110,126-130
+  s_f03fe8b0b5549a::t_2f8c7281c7b051 68-76
+  s_f03fe8b0b5549a::t_33b3fa189e8f58 140,142-144,168-169
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingProvider.java
+  s_f03fe8b0b5549a::t_0e5962d17e5904 58-63
+extensions/vector/src/main/java/org/exist/vector/HttpVectorProvider.java
+  s_f03fe8b0b5549a::t_c6e57873e15efc 73-81
+  s_f03fe8b0b5549a::t_63ec89eae23574 42
+  s_f03fe8b0b5549a::t_df4a9988a9643e 99-116,129,131-133,142-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "04b531d031540b1b794c916fecd4509f37e2c20d",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
