@@ -1,0 +1,37 @@
+exist-core/src/main/java/org/exist/scheduler/impl/ShutdownTask.java
+  s_f03fe8b0b5549a::t_4928f345b9aa64 58-60
+  s_f03fe8b0b5549a::t_0e893accece705 34
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunXmlToJson.java
+  s_f03fe8b0b5549a::t_62af797fbec72d 552
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBCreateCollection.java
+  s_f03fe8b0b5549a::t_1cec204c61909d 89-93
+  s_f03fe8b0b5549a::t_79eeebbee8a055 80-88,94-95
+exist-core/src/main/java/org/exist/util/serializer/json/JSONSerializer.java
+  s_f03fe8b0b5549a::t_7bcff658ea98d5 68
+exist-core/src/main/java/org/exist/management/client/JMXtoXML.java
+  s_f03fe8b0b5549a::t_b458e45848bc6f 265
+exist-core/src/main/java/org/exist/backup/Main.java
+  s_f03fe8b0b5549a::t_ba3741f2eead10 418
+extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/GMLHSQLIndex.java
+  s_f03fe8b0b5549a::t_e51fae3a3e0a54 106-108
+  s_f03fe8b0b5549a::t_825cbabd9e383c 213
+  s_f03fe8b0b5549a::t_2b2436ead317a2 261
+  s_f03fe8b0b5549a::t_490804509de460 214-260
+  s_f03fe8b0b5549a::t_15271f54ae984c 142-145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4b6ac6a10b4ee8a618e778132289c461a5bf9f89",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
