@@ -128,23 +128,37 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
 
         final XmldbURI[] segments = collPath.getPathSegments();
 
-        for( final XmldbURI segment : segments ) {
-            baseUri = baseUri.append( segment );
+        try {
+            for( final XmldbURI segment : segments ) {
+                baseUri = baseUri.append( segment );
 
-            log( "Get collection " + baseUri, Project.MSG_DEBUG );
-            c = DatabaseManager.getCollection( baseUri.toString(), user, password );
+                log( "Get collection " + baseUri, Project.MSG_DEBUG );
+                c = DatabaseManager.getCollection( baseUri.toString(), user, password );
 
-            if( c == null ) {
-                log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
-                mgtService = current.getService( CollectionManagementService.class);
-                log( "Create child collection " + segment );
-                current = mgtService.createCollection( segment.toString() );
-                log( "Created collection " + current.getName() + '.' );
+                final Collection next;
+                if( c == null ) {
+                    log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
+                    mgtService = current.getService( CollectionManagementService.class);
+                    log( "Create child collection " + segment );
+                    next = mgtService.createCollection( segment.toString() );
+                    log( "Created collection " + next.getName() + '.' );
 
-            } else {
-                current = c;
+                } else {
+                    next = c;
+                }
+                // DatabaseManager.getCollection()/createCollection() always return a distinct
+                // collection handle, so `current` is only ever `root` on the first iteration --
+                // every later one is an intermediate this method owns and must close once we've
+                // walked past it; the last one becomes the return value instead.
+                closeIfOwn( root, current );
+                current = next;
             }
+            return( current );
+        } catch( final XMLDBException e ) {
+            // getCollection()/createCollection() failed for a later segment -- `current`
+            // (the last successfully created/looked-up intermediate) would otherwise leak.
+            closeIfOwn( root, current );
+            throw e;
         }
-        return( current );
     }
 }

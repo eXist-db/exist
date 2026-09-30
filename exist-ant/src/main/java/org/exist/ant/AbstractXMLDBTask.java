@@ -29,6 +29,7 @@ import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.SyntaxException;
+import org.exist.xmldb.CollectionCloseUtil;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -196,34 +197,60 @@ public abstract class AbstractXMLDBTask extends Task
         ///TODO : use dedicated function in XmldbURI
         final StringTokenizer             tokenizer = new StringTokenizer( relPath, "/" );
 
-        while( tokenizer.hasMoreTokens() ) {
+        try {
+            while( tokenizer.hasMoreTokens() ) {
 
-            token = tokenizer.nextToken();
+                token = tokenizer.nextToken();
 
-            if( path != null ) {
-                path = path + "/" + token;
-            } else {
-                path = "/" + token;
+                if( path != null ) {
+                    path = path + "/" + token;
+                } else {
+                    path = "/" + token;
+                }
+
+                log( "Get collection " + baseURI + path, Project.MSG_DEBUG );
+                collection = DatabaseManager.getCollection( baseURI + path, user, password );
+
+                final Collection next;
+                if( collection == null ) {
+                    log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
+                    mgtService = current.getService( CollectionManagementService.class );
+                    log( "Create child collection " + token, Project.MSG_DEBUG );
+                    next = mgtService.createCollection( token );
+                    log( "Created collection " + next.getName() + '.', Project.MSG_DEBUG );
+
+                } else {
+                    next = collection;
+                }
+                // DatabaseManager.getCollection()/createCollection() always return a distinct
+                // collection handle, so `current` is only ever `rootCollection` on the first
+                // iteration -- every later one is an intermediate this method owns and must
+                // close once we've walked past it; the last one becomes the return value instead.
+                closeIfOwn( rootCollection, current );
+                current = next;
             }
-
-            log( "Get collection " + baseURI + path, Project.MSG_DEBUG );
-            collection = DatabaseManager.getCollection( baseURI + path, user, password );
-
-            if( collection == null ) {
-                log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
-                mgtService = current.getService( CollectionManagementService.class );
-                log( "Create child collection " + token, Project.MSG_DEBUG );
-                current = mgtService.createCollection( token );
-                log( "Created collection " + current.getName() + '.', Project.MSG_DEBUG );
-
-            } else {
-                current = collection;
-            }
+            return( current );
+        } catch( final XMLDBException e ) {
+            // getCollection()/createCollection() failed for a later segment -- `current`
+            // (the last successfully created/looked-up intermediate) would otherwise leak.
+            closeIfOwn( rootCollection, current );
+            throw e;
         }
-        return( current );
     }
-    
-    
+
+    /**
+     * Closes {@code candidate} unless it is {@code borrowed} -- a collection passed in by,
+     * and owned by, the caller -- or {@code null}. A close failure is logged rather than
+     * thrown, since it's cleanup of an already-superseded or already-returned collection,
+     * not a reason to fail whatever operation produced it.
+     */
+    protected final void closeIfOwn( final Collection borrowed, final Collection candidate )
+    {
+        CollectionCloseUtil.closeIfOwn( borrowed, candidate,
+                e -> log( "Unable to close collection: " + e.getMessage(), e, Project.MSG_WARN ) );
+    }
+
+
     protected final void setPermissions(final Resource res ) throws BuildException
     {
     	Collection            base    = null;
