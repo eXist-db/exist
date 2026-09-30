@@ -24,7 +24,7 @@ package org.exist.indexing.range;
 import nl.altindag.log.LogCaptor;
 import org.apache.logging.log4j.Logger;
 import org.easymock.Capture;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -37,7 +37,7 @@ import static org.easymock.EasyMock.*;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
 import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RangeIndexConfigTest {
 

@@ -24,7 +24,7 @@ package org.exist.xquery.modules.httpclient;
 import org.exist.Namespaces;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.httpclient.config.RequestOptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,10 +34,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import java.net.http.HttpClient;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RequestOptionsNamespaceTest {
 
@@ -56,7 +56,7 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertFalse("follow-redirect should be false when set via namespaced attribute", options.requestOptions().followRedirect());
+        assertFalse(options.requestOptions().followRedirect(), "follow-redirect should be false when set via namespaced attribute");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertFalse("follow-redirect should be false when set via exist-namespaced attribute", options.requestOptions().followRedirect());
+        assertFalse(options.requestOptions().followRedirect(), "follow-redirect should be false when set via exist-namespaced attribute");
     }
 
     @Test
@@ -78,7 +78,7 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertFalse("auto-accept-encoding should be false when set via exist-namespaced attribute", options.requestOptions().autoAcceptEncoding());
+        assertFalse(options.requestOptions().autoAcceptEncoding(), "auto-accept-encoding should be false when set via exist-namespaced attribute");
     }
 
     @Test
@@ -89,7 +89,7 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertTrue("auto-accept-encoding should be true (default) when set via no-namespace attribute", options.requestOptions().autoAcceptEncoding());
+        assertTrue(options.requestOptions().autoAcceptEncoding(), "auto-accept-encoding should be true (default) when set via no-namespace attribute");
     }
 
     @Test
@@ -100,8 +100,8 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
-                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
+        assertEquals(HttpClient.Version.HTTP_1_1,
+                options.requestOptions().httpVersion(), "http-version should be HTTP_1_1 when set via exist-namespaced attribute");
     }
 
     @Test
@@ -112,8 +112,8 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertEquals("http-version should be HTTP_2 when set via exist-namespaced attribute",
-                HttpClient.Version.HTTP_2, options.requestOptions().httpVersion());
+        assertEquals(HttpClient.Version.HTTP_2,
+                options.requestOptions().httpVersion(), "http-version should be HTTP_2 when set via exist-namespaced attribute");
     }
 
     @Test
@@ -134,8 +134,8 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
-                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
+        assertEquals(HttpClient.Version.HTTP_1_1,
+                options.requestOptions().httpVersion(), "http-version should be HTTP_1_1 when set via exist-namespaced attribute");
     }
 
     @Test
@@ -145,7 +145,7 @@ public class RequestOptionsNamespaceTest {
         doc.appendChild(reqElem);
 
         final RequestOptions options = RequestOptionsParser.parse(reqElem);
-        assertEquals("http-version should be HTTP_1_1 when set via exist-namespaced attribute",
-                HttpClient.Version.HTTP_1_1, options.requestOptions().httpVersion());
+        assertEquals(HttpClient.Version.HTTP_1_1,
+                options.requestOptions().httpVersion(), "http-version should be HTTP_1_1 when set via exist-namespaced attribute");
     }
 }

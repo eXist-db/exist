@@ -31,7 +31,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.OutputKeys;
@@ -48,7 +49,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AbstractXMLReaderSecurityTest {
 
@@ -72,7 +73,7 @@ public abstract class AbstractXMLReaderSecurityTest {
 
     protected abstract ExistEmbeddedServer getExistEmbeddedServer();
 
-    @Before
+    @BeforeEach
     public void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = getExistEmbeddedServer().getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
@@ -90,7 +91,7 @@ public abstract class AbstractXMLReaderSecurityTest {
         return collection;
     }
 
-    @After
+    @AfterEach
     public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = getExistEmbeddedServer().getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));

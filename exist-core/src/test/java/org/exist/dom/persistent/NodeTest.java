@@ -35,15 +35,17 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.w3c.dom.*;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -53,7 +55,7 @@ import static org.junit.Assert.assertNull;
  */
 public class NodeTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	private static final String XML =
@@ -67,7 +69,7 @@ public class NodeTest {
         "<!-- doc ends here -->";
 	private static Collection root = null;
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void document() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -81,7 +83,7 @@ public class NodeTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void childAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -123,7 +125,7 @@ public class NodeTest {
         }
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void siblingAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -146,7 +148,7 @@ public class NodeTest {
             assertEquals(secondNode, docElement);
             final Element child = (Element) docElement.getFirstChild();
             assertNotNull(child);
-            assertEquals("a", child.getNodeName(), "a");
+            assertEquals(child.getNodeName(), "a", "a");
             Node sibling = child.getNextSibling();
             assertNotNull(sibling);
             assertEquals("b", sibling.getNodeName());
@@ -169,7 +171,7 @@ public class NodeTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -212,7 +214,7 @@ public class NodeTest {
 	}
 
     @Deprecated
-	@Test
+	@org.junit.jupiter.api.Test
     public void visitor() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -227,7 +229,7 @@ public class NodeTest {
         }
     }
 
-	@BeforeClass
+	@BeforeAll
     public static void setUp() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -244,7 +246,7 @@ public class NodeTest {
         }
 	}
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();

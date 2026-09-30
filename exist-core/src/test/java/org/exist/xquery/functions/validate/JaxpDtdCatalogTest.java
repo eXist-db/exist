@@ -24,12 +24,14 @@ package org.exist.xquery.functions.validate;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +40,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -46,7 +49,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JaxpDtdCatalogTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
@@ -54,7 +57,7 @@ public class JaxpDtdCatalogTest {
             "    <validation mode='no'/>" +
             "</collection>";
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareResources() throws Exception {
 
         // Switch off validation
@@ -92,7 +95,7 @@ public class JaxpDtdCatalogTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void clearGrammarCache() throws XMLDBException {
         final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
         results.getResource(0).getContent();
@@ -101,7 +104,7 @@ public class JaxpDtdCatalogTest {
     /*
      * ***********************************************************************************
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
@@ -109,7 +112,7 @@ public class JaxpDtdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
@@ -117,7 +120,7 @@ public class JaxpDtdCatalogTest {
         executeAndEvaluate(query,"invalid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
@@ -125,7 +128,7 @@ public class JaxpDtdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
@@ -139,7 +142,7 @@ public class JaxpDtdCatalogTest {
      * DIZZZZ: doc('/db/parse/instance/valid-dtd.xml') does not work xs:anyURI does
      *
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
@@ -147,7 +150,7 @@ public class JaxpDtdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void dtd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +

@@ -24,17 +24,17 @@ package org.exist.util.serializer;
 import java.io.StringWriter;
 
 import org.exist.dom.QName;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HTML5WriterTest {
 
     private HTML5Writer writer;
     private StringWriter targetWriter;
     
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         targetWriter = new StringWriter();
         writer = new HTML5Writer(targetWriter);

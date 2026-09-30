@@ -24,9 +24,8 @@ package org.exist.xquery.update;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -34,14 +33,15 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public abstract class AbstractTestUpdate {
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     // required for updateAttributeInNamespacedElement
@@ -56,7 +56,7 @@ public abstract class AbstractTestUpdate {
 
     protected Collection testCollection;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
@@ -67,7 +67,7 @@ public abstract class AbstractTestUpdate {
         idx.configureCollection(XCONF);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
@@ -118,9 +118,9 @@ public abstract class AbstractTestUpdate {
             final String query, final int expected, final String message) throws XMLDBException {
         final ResourceSet result = service.queryResource(resource, query);
         if (message == null) {
-            assertEquals(query, expected, result.getSize());
+            assertEquals(expected, result.getSize(), query);
         } else {
-            assertEquals(message, expected, result.getSize());
+            assertEquals(expected, result.getSize(), message);
         }
         return result;
     }

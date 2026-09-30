@@ -42,7 +42,7 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,8 +52,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FacetPollutionJavaReproducerTest {
 
@@ -167,9 +167,9 @@ public class FacetPollutionJavaReproducerTest {
                 LOG.info("date-prefixed $facets terms (sample): {}", terms.dateTerms);
                 LOG.info("terms containing humanities/Germany/Berlin/Wroc (sample): {}", terms.termsWithHumanitiesOrGermany);
 
-                assertTrue("Hierarchical facet terms expected but were missing after polluter run. " +
-                    "subjectExists=" + terms.subjectExists + " locationExists=" + terms.locationExists + " dateExists=" + terms.dateExists,
-                    terms.subjectExists && terms.locationExists && terms.dateExists);
+                assertTrue(terms.subjectExists && terms.locationExists && terms.dateExists,
+                    "Hierarchical facet terms expected but were missing after polluter run. " +
+                    "subjectExists=" + terms.subjectExists + " locationExists=" + terms.locationExists + " dateExists=" + terms.dateExists);
 
                 // Cleanup facets collection (keep temp modules only).
                 final String facetTearDownQuery =
@@ -258,9 +258,9 @@ public class FacetPollutionJavaReproducerTest {
                 LOG.info("baseline date-prefixed $facets terms (sample): {}", terms.dateTerms);
                 LOG.info("baseline terms containing humanities/Germany/Berlin/Wroc (sample): {}", terms.termsWithHumanitiesOrGermany);
 
-                assertTrue("Hierarchical facet terms expected in clean state but were missing. " +
-                    "subjectExists=" + terms.subjectExists + " locationExists=" + terms.locationExists + " dateExists=" + terms.dateExists,
-                    terms.subjectExists && terms.locationExists && terms.dateExists);
+                assertTrue(terms.subjectExists && terms.locationExists && terms.dateExists,
+                    "Hierarchical facet terms expected in clean state but were missing. " +
+                    "subjectExists=" + terms.subjectExists + " locationExists=" + terms.locationExists + " dateExists=" + terms.dateExists);
 
                 // Cleanup facets collection.
                 final String facetTearDownQuery =
@@ -334,10 +334,10 @@ public class FacetPollutionJavaReproducerTest {
 
     private static FacetsIndexTerms readFacetsTerms(final DBBroker broker) throws IOException {
         final LuceneIndexWorker indexWorker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        assertNotNull("Lucene index worker not available", indexWorker);
+        assertNotNull(indexWorker, "Lucene index worker not available");
 
         final LuceneIndex luceneIndex = indexWorker.index;
-        assertNotNull("Lucene index instance not available", luceneIndex);
+        assertNotNull(luceneIndex, "Lucene index instance not available");
 
         return luceneIndex.withReader(new FunctionE<IndexReader, FacetsIndexTerms, IOException>() {
             @Override

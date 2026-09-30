@@ -24,13 +24,13 @@ package org.exist.jetty;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URL;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Regression test for issue #4087 — the eXist Jetty 12 context XML must
@@ -79,7 +79,7 @@ public class JettyMaxFormContentSizeTest {
     private static WebAppContext configureContext(final String resource,
                                                   final Map<String, String> properties) throws Exception {
         final URL url = JettyMaxFormContentSizeTest.class.getResource(resource);
-        assertNotNull("missing classpath resource " + resource, url);
+        assertNotNull(url, "missing classpath resource " + resource);
         final XmlConfiguration xml = new XmlConfiguration(
                 ResourceFactory.root().newResource(url));
         xml.getProperties().putAll(properties);

@@ -32,9 +32,11 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.exist.util.ConfigurationHelper;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -42,16 +44,20 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Base64BinaryValueTypeTest {
 
-    @Test(expected=XPathException.class)
-    public void verify_invalidBase64_fails() throws XPathException {
-        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-        base64Type.verifyString("=aaabbcd");
+    @Test
+    public void verify_invalidBase64_fails() {
+        assertThrows(XPathException.class, () -> {
+            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+            base64Type.verifyString("=aaabbcd");
+        });
     }
 
-    @Test(expected=XPathException.class)
-    public void verify_invalidBase64_fails_2() throws XPathException {
-        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-        base64Type.verifyString("frfhforlksid745323==");
+    @Test
+    public void verify_invalidBase64_fails_2() {
+        assertThrows(XPathException.class, () -> {
+            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+            base64Type.verifyString("frfhforlksid745323==");
+        });
     }
 
     @Test

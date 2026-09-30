@@ -42,9 +42,8 @@ import static java.lang.Boolean.TRUE;
 import static org.exist.test.TestConstants.TEST_XML_URI;
 import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
 import static org.exist.xmlrpc.RpcConnection.MAX_DOWNLOAD_CHUNK_SIZE;
-
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -66,11 +65,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.junit.After;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -81,7 +80,7 @@ import org.xmlunit.diff.Diff;
  */
 public class XmlRpcTest {
 
-    @ClassRule
+    @RegisterExtension
     public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
@@ -125,7 +124,7 @@ public class XmlRpcTest {
         return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = getClient();
         assertThat(xmlrpc.execute("removeCollection", List.of(TARGET_COLLECTION.toString()))).isInstanceOf(Boolean.class);

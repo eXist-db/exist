@@ -23,8 +23,9 @@ package org.exist.client.security;
 
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BasicPermissionsTableModelTest {
     

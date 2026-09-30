@@ -32,9 +32,9 @@ import javax.xml.transform.Source;
 import static org.exist.test.DiffMatcher.hasIdenticalXml;
 import static org.exist.test.DiffMatcher.hasSimilarXml;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * This set of assertions are meant to help when testing XQuery compilation, execution and errors
@@ -50,7 +50,7 @@ public class XQueryAssertions {
     }
 
     public static void assertXQStaticError(final ErrorCodes.ErrorCode expectedCode, final int line, final int column, final Either<XPathException, CompiledXQuery> actual) {
-        assertTrue("Expected static error: " + expectedCode.getErrorQName() + ", but no error was thrown.", actual.isLeft());
+        assertTrue(actual.isLeft(), "Expected static error: " + expectedCode.getErrorQName() + ", but no error was thrown.");
         final XPathException xpe = actual.left().get();
         assertXQErrorCode(expectedCode, xpe);
         assertXQErrorLine(line, xpe);
@@ -63,7 +63,7 @@ public class XQueryAssertions {
     }
 
     public static void assertXQDynamicError(final ErrorCodes.ErrorCode expectedCode, final int line, final int column, final Either<XPathException, Sequence> actual) {
-        assertTrue("Expected dynamic error: " + expectedCode.getErrorQName() + ", but no error was thrown.", actual.isLeft());
+        assertTrue(actual.isLeft(), "Expected dynamic error: " + expectedCode.getErrorQName() + ", but no error was thrown.");
         final XPathException xpe = actual.left().get();
         assertXQErrorLine(line, xpe);
         assertXQErrorColumn(column, xpe);
@@ -87,22 +87,22 @@ public class XQueryAssertions {
     }
 
     public static void assertXQErrorCode(final ErrorCodes.ErrorCode expectedCode, final XPathException exception) {
-        assertEquals("Expected: " + expectedCode.getErrorQName() + ", but got: " + exception.getErrorCode().getErrorQName(),
-                expectedCode, exception.getErrorCode());
+        assertEquals(expectedCode,
+                exception.getErrorCode(), "Expected: " + expectedCode.getErrorQName() + ", but got: " + exception.getErrorCode().getErrorQName());
     }
 
     public static void assertXQErrorLine(final int expectedLine, final XPathException exception) {
-        assertEquals("Expected line to be " + expectedLine + ", but got " + exception.getLine(),
-                expectedLine, exception.getLine());
+        assertEquals(expectedLine,
+                exception.getLine(), "Expected line to be " + expectedLine + ", but got " + exception.getLine());
     }
 
     public static void assertXQErrorColumn(final int expectedColumn, final XPathException exception) {
-        assertEquals("Expected column to be " + expectedColumn + ", but got " + exception.getColumn(),
-                expectedColumn, exception.getColumn());
+        assertEquals(expectedColumn,
+                exception.getColumn(), "Expected column to be " + expectedColumn + ", but got " + exception.getColumn());
     }
 
     public static void assertXQErrorMessage(final String expectedMessage, final XPathException exception) {
-        assertEquals("Expected message to be " + expectedMessage + ", but got " + exception.getMessage(),
-                expectedMessage, exception.getDetailMessage());
+        assertEquals(expectedMessage,
+                exception.getDetailMessage(), "Expected message to be " + expectedMessage + ", but got " + exception.getMessage());
     }
 }

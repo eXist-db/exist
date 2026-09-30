@@ -23,7 +23,7 @@ package org.exist.xmldb.concurrent;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.TextUpdateAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +36,7 @@ public class TextUpdateTest extends ConcurrentTestBase {
 	private static final String XML =
 		"<article/>";
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);
 	}

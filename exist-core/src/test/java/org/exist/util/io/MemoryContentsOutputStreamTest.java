@@ -22,8 +22,8 @@
 
 package org.exist.util.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -41,7 +41,7 @@ public class MemoryContentsOutputStreamTest {
     private MemoryContents memoryContents;
     private MemoryContentsOutputStream outputStream;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         memoryContents = createMock(MemoryContents.class);
         outputStream = new MemoryContentsOutputStream(memoryContents);

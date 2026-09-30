@@ -23,9 +23,6 @@ package org.exist.xquery.modules.file;
 
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.BinaryResource;
@@ -35,6 +32,10 @@ import org.xmldb.api.modules.XQueryService;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
@@ -43,25 +44,23 @@ import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resource, XMLDBException> {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "local", "xmldb:exist://" },
                 { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     }
-
-    @Parameterized.Parameter
+    @Parameter(0)
     public String apiName;
-
-    @Parameterized.Parameter(value = 1)
+    @Parameter(1)
     public String baseUri;
 
     private final String getBaseUri() {

@@ -23,13 +23,13 @@ package org.exist.http.urlrewrite;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * {@code XQueryURLRewrite#findSourceFromFs(String, String[])} passed
@@ -57,6 +57,6 @@ public class XQueryURLRewriteFindSourceFromFsTest {
 
         // Before the fix: Path.of(null) throws NullPointerException.
         final Object sourceInfo = rewrite.findSourceFromFs("/", new String[]{"apps", "optimize.xql"});
-        assertNull("no filesystem controller can be found when the container has no real path", sourceInfo);
+        assertNull(sourceInfo, "no filesystem controller can be found when the container has no real path");
     }
 }

@@ -32,7 +32,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -42,14 +44,15 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that util:inspect-function returns line and source attributes for user-defined functions.
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class InspectLineSourceTest {
 
     @Rule
@@ -63,15 +66,15 @@ public class InspectLineSourceTest {
             throw new AssertionError("Test resource missing: " + path);
         }
         final Sequence result = AbstractTestRunner.executeQuery(pool, new FileSource(path, UTF_8, false), Collections.emptyList(), path.getParent());
-        assertNotNull("query should return a result", result);
-        assertTrue("query should return at least one item", result.getItemCount() >= 1);
+        assertNotNull(result, "query should return a result");
+        assertTrue(result.getItemCount() >= 1, "query should return at least one item");
         final Node first = ((NodeValue) result.itemAt(0)).getNode();
-        assertEquals("first result should be an element", Node.ELEMENT_NODE, first.getNodeType());
+        assertEquals(Node.ELEMENT_NODE, first.getNodeType(), "first result should be an element");
         final Element func = (Element) first;
-        assertTrue("function element should have @line for UDF", func.hasAttribute("line"));
+        assertTrue(func.hasAttribute("line"), "function element should have @line for UDF");
         final String lineStr = func.getAttribute("line");
-        assertTrue("line should be a positive number", Integer.parseInt(lineStr) > 0);
-        assertTrue("function element should have @source for UDF", func.hasAttribute("source"));
-        assertFalse("source should be non-empty", func.getAttribute("source").isEmpty());
+        assertTrue(Integer.parseInt(lineStr) > 0, "line should be a positive number");
+        assertTrue(func.hasAttribute("source"), "function element should have @source for UDF");
+        assertFalse(func.getAttribute("source").isEmpty(), "source should be non-empty");
     }
 }

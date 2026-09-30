@@ -48,7 +48,9 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.io.IOException;
 import java.util.Map;
@@ -56,8 +58,11 @@ import java.util.Map;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class ConnectionPoolIT {
 
     @Rule

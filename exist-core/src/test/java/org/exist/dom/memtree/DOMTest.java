@@ -33,7 +33,7 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.serializer.DOMSerializer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,9 +44,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author wolf

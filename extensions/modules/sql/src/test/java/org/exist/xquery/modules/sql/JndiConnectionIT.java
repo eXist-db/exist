@@ -54,10 +54,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.jdbcx.JdbcDataSourceFactory;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.osjava.sj.loader.JndiLoader;
 import org.xml.sax.SAXException;
 
@@ -73,13 +75,16 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * SQL Connection Integration Tests.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class JndiConnectionIT {
 
     private static final String JNDI_DS_NAME = "com.fusiondb.xquery.modules.sql.H2DataSource";
@@ -92,7 +97,7 @@ public class JndiConnectionIT {
 
     private Context ctx = null;
 
-    @Before
+    @BeforeEach
     public void setupJndiEnvironment() throws NamingException {
         final Properties properties = new Properties();
         properties.setProperty(JNDI_DS_NAME + ".type", JdbcDataSource.class.getName());
@@ -108,7 +113,7 @@ public class JndiConnectionIT {
         loader.load(properties, ctx);
     }
 
-    @After
+    @AfterEach
     public void teardownJndiEnvironment() throws NamingException {
         ctx.unbind(JNDI_DS_NAME);
         ctx.close();

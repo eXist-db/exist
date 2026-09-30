@@ -30,11 +30,6 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.UserManagementService;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -42,30 +37,32 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "local", "xmldb:exist://" },
             { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     }
-    
-    @Parameter
+    @Parameter(0)
     public String apiName;
-    
-    @Parameter(value = 1)
+    @Parameter(1)
     public String baseUri;
 
     private final String getBaseUri() {

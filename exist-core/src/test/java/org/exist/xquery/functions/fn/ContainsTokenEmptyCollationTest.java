@@ -30,12 +30,12 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Verifies that fn:contains-token accepts an empty sequence as the optional $collation
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ContainsTokenEmptyCollationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test

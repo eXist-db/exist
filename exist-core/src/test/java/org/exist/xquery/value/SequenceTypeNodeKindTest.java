@@ -32,15 +32,15 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.XMLConstants;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link SequenceType#checkType(Item)} of nodes whose type is only known as {@link Type#NODE}:
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class SequenceTypeNodeKindTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     private static final String STORE_AND_SELECT =

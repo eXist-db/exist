@@ -41,9 +41,11 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.TerminatedException;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests transaction management  and basic recovery for the DOMFile class.
@@ -51,6 +53,7 @@ import static org.junit.Assert.assertNotNull;
  * @author wolf
  *
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class DOMFileRecoverTest {
 
     @Rule

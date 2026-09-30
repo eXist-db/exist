@@ -33,12 +33,14 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
+
+import static org.junit.jupiter.api.Assertions.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.net.URL;
@@ -47,8 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Runs the W3C XInclude 1.0 Test Suite against eXist-db's XInclude implementation.
@@ -58,10 +59,9 @@ import static org.junit.Assert.*;
  * serializes the input document with XInclude expansion and compares
  * the output to the expected result.
  */
-@RunWith(Parameterized.class)
 public class W3CXIncludeTestSuite {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String TEST_SUITE_DIR = "xinclude-test-suite";
@@ -70,15 +70,15 @@ public class W3CXIncludeTestSuite {
     // Track which contributor directories have been stored (avoid redundant uploads)
     private static final Set<String> storedContributors = new HashSet<>();
 
-    private final String testId;
-    private final String basedir;
-    private final String href;
-    private final String type;
-    private final String outputPath;
-    private final String description;
-    private final String features;
+    private String testId;
+    private String basedir;
+    private String href;
+    private String type;
+    private String outputPath;
+    private String description;
+    private String features;
 
-    public W3CXIncludeTestSuite(String testId, String basedir, String href, String type,
+    public void initW3CXIncludeTestSuite(String testId, String basedir, String href, String type,
                                  String outputPath, String description, String features) {
         this.testId = testId;
         this.basedir = basedir;
@@ -89,7 +89,6 @@ public class W3CXIncludeTestSuite {
         this.features = features;
     }
 
-    @Parameterized.Parameters(name = "{0}: {5}")
     public static java.util.Collection<Object[]> data() throws Exception {
         final List<Object[]> tests = new ArrayList<>();
         final Path catalogPath = getTestSuitePath().resolve("testdescr.xml");
@@ -154,17 +153,18 @@ public class W3CXIncludeTestSuite {
         return tests;
     }
 
-    @Test
-    public void runTestCase() throws Exception {
+    @MethodSource("data") @ParameterizedTest(name = "{0}: {5}")
+    public void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
+        initW3CXIncludeTestSuite(testId, basedir, href, type, outputPath, description, features);
         // Skip tests requiring features eXist doesn't support
         if (features != null && !features.isEmpty()) {
-            Assume.assumeFalse("Skipping: requires xpointer-scheme", features.contains("xpointer-scheme"));
-            Assume.assumeFalse("Skipping: requires unexpanded-entities", features.contains("unexpanded-entities"));
-            Assume.assumeFalse("Skipping: requires unparsed-entities", features.contains("unparsed-entities"));
+            Assumptions.assumeFalse(features.contains("xpointer-scheme"), "Skipping: requires xpointer-scheme");
+            Assumptions.assumeFalse(features.contains("unexpanded-entities"), "Skipping: requires unexpanded-entities");
+            Assumptions.assumeFalse(features.contains("unparsed-entities"), "Skipping: requires unparsed-entities");
             // XInclude 1.1 features not yet supported
-            Assume.assumeFalse("Skipping: requires XInclude 1.1 attribute copying", features.contains("attcopy"));
-            Assume.assumeFalse("Skipping: requires XInclude 1.1 RFC 5147 fragid", features.contains("fragid"));
-            Assume.assumeFalse("Skipping: requires fixup-xml-lang processor parameter", features.contains("fixup-xml-lang"));
+            Assumptions.assumeFalse(features.contains("attcopy"), "Skipping: requires XInclude 1.1 attribute copying");
+            Assumptions.assumeFalse(features.contains("fragid"), "Skipping: requires XInclude 1.1 RFC 5147 fragid");
+            Assumptions.assumeFalse(features.contains("fixup-xml-lang"), "Skipping: requires fixup-xml-lang processor parameter");
         }
 
         // Skip tests that reference external HTTP URLs (network-dependent)
@@ -173,7 +173,7 @@ public class W3CXIncludeTestSuite {
         if (Files.exists(inputFile)) {
             final String content = new String(Files.readAllBytes(inputFile), StandardCharsets.UTF_8);
             if (content.contains("href=\"http://") || content.contains("href='http://")) {
-                Assume.assumeTrue("Skipping: references external HTTP URL", false);
+                Assumptions.assumeTrue(false, "Skipping: references external HTTP URL");
             }
         }
 
@@ -205,18 +205,18 @@ public class W3CXIncludeTestSuite {
                 // Expected — XInclude error (StackOverflow for infinite recursion tests)
             }
         } else {
-            assertNotNull("Success test must have expected output: " + testId, outputPath);
+            assertNotNull(outputPath, "Success test must have expected output: " + testId);
 
             final String result = executeXQuery(pool, xquery);
             final Path expectedPath = testSuitePath.resolve(basedir).resolve(outputPath);
-            assertTrue("Expected output file not found: " + expectedPath, Files.exists(expectedPath));
+            assertTrue(Files.exists(expectedPath), "Expected output file not found: " + expectedPath);
 
             final String expected = new String(Files.readAllBytes(expectedPath), StandardCharsets.UTF_8).trim();
 
             final String normalizedExpected = normalizeXml(expected);
             final String normalizedResult = normalizeXml(result);
 
-            assertEquals("Test " + testId + ": " + description, normalizedExpected, normalizedResult);
+            assertEquals(normalizedExpected, normalizedResult, "Test " + testId + ": " + description);
         }
     }
 

@@ -21,11 +21,11 @@
  */
 package org.exist.start;
 
-import org.junit.Test;
-
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CompatibleJavaVersionCheckTest {
 
@@ -172,34 +172,40 @@ public class CompatibleJavaVersionCheckTest {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("11.0.11"));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava12() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.1"));
+    @Test
+    public void checkJava12() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.1")));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava12_BellSoft() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.2-BellSoft"));
+    @Test
+    public void checkJava12_BellSoft() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.2-BellSoft")));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava13() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("13.0.2"));
+    @Test
+    public void checkJava13() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("13.0.2")));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava14() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("14.0.2"));
+    @Test
+    public void checkJava14() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("14.0.2")));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava15_0_0() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.0"));
+    @Test
+    public void checkJava15_0_0() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.0")));
     }
 
-    @Test(expected = StartException.class)
-    public void checkJava15_0_1() throws StartException {
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.1"));
+    @Test
+    public void checkJava15_0_1() {
+        assertThrows(StartException.class, () ->
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.1")));
     }
 
     @Test

@@ -34,18 +34,20 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import javax.annotation.Nullable;
+
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests to check that the acquire/release lease lifetimes
@@ -54,6 +56,7 @@ import static org.junit.Assert.*;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class NativeBrokerLockingTest {
 
     private final static XmldbURI TEST_COLLECTION =  XmldbURI.ROOT_COLLECTION_URI.append("test");
@@ -65,7 +68,7 @@ public class NativeBrokerLockingTest {
     @Rule
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
+    @BeforeEach
     public void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
@@ -85,7 +88,7 @@ public class NativeBrokerLockingTest {
         return collection;
     }
 
-    @After
+    @AfterEach
     public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));

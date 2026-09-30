@@ -30,19 +30,19 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Integration test with ONNX model: full Lucene vector indexing + query using vector:embed.
@@ -58,7 +58,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class VectorSearchEmbeddingIT {
 
-    @ClassRule
+    @RegisterExtension
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String MODEL = "all-MiniLM-L6-v2";
@@ -95,9 +95,9 @@ public class VectorSearchEmbeddingIT {
     private static final String INLINE_DATA =
         "<articles><article><p> this is a <bold>cute</bold> cat</p></article></articles>";
 
-    @Before
+    @BeforeEach
     public void checkModel() {
-        assumeTrue("ONNX model not found — run with -Ponnx-model", hasEmbeddingModel());
+        assumeTrue(hasEmbeddingModel(), "ONNX model not found — run with -Ponnx-model");
     }
 
     @Test
@@ -136,8 +136,8 @@ public class VectorSearchEmbeddingIT {
             xquery version "3.1";
             import module namespace vector="http://exist-db.org/xquery/vector";
             count(vector:diagnostics())""");
-        assertTrue("diagnostics should return at least one entry",
-            result.itemAt(0).toJavaObject(Integer.class).intValue() >= 1);
+        assertTrue(result.itemAt(0).toJavaObject(Integer.class).intValue() >= 1,
+            "diagnostics should return at least one entry");
     }
 
     @Test
@@ -232,7 +232,7 @@ public class VectorSearchEmbeddingIT {
         }
     }
 
-    @After
+    @AfterEach
     public void cleanupCollections() {
         cleanupCollection(COLLECTION, CONFIG_COLLECTION);
     }
@@ -298,7 +298,7 @@ public class VectorSearchEmbeddingIT {
 
     private void assertCount(final String message, final String query, final int expected) throws EXistException, PermissionDeniedException, XPathException {
         final Sequence result = executeQuery(query);
-        assertEquals(message, expected, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        assertEquals(expected, result.itemAt(0).toJavaObject(Integer.class).intValue(), message);
     }
 
     private Sequence executeQuery(final String query) throws EXistException, PermissionDeniedException, XPathException {

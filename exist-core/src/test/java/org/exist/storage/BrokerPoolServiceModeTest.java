@@ -25,17 +25,17 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the service-mode state of BrokerPool.
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BrokerPoolServiceModeTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 
@@ -61,18 +61,18 @@ public class BrokerPoolServiceModeTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().getSystemSubject();
 
-        assertFalse("pool must not be in service mode initially", pool.isInServiceMode());
+        assertFalse(pool.isInServiceMode(), "pool must not be in service mode initially");
 
         // enterServiceMode returns the internal service broker; callers must not close it —
         // exitServiceMode handles pool cleanup. Follow the same pattern as GetReleaseBrokerDeadlocksTest.
         pool.enterServiceMode(admin);
         try {
-            assertTrue("pool must report in-service after enterServiceMode", pool.isInServiceMode());
+            assertTrue(pool.isInServiceMode(), "pool must report in-service after enterServiceMode");
         } finally {
             pool.exitServiceMode(admin);
         }
 
-        assertFalse("pool must not be in service mode after exitServiceMode", pool.isInServiceMode());
+        assertFalse(pool.isInServiceMode(), "pool must not be in service mode after exitServiceMode");
     }
 
     /**
@@ -132,8 +132,8 @@ public class BrokerPoolServiceModeTest {
             pool.enterServiceMode(admin);
             serviceModeEnteredLatch.countDown();       // tell observer to read
 
-            assertTrue("observer must signal within 10s",
-                    observedEnteredLatch.await(10, TimeUnit.SECONDS));
+            assertTrue(observedEnteredLatch.await(10, TimeUnit.SECONDS),
+                    "observer must signal within 10s");
 
             pool.exitServiceMode(admin);
             serviceModeExitedLatch.countDown();        // tell observer to read again
@@ -141,10 +141,10 @@ public class BrokerPoolServiceModeTest {
             observer.join(10_000);
         }
 
-        assertNull("observer thread must not throw", observerError.get());
-        assertTrue("observer must see isInServiceMode() == true while in service mode",
-                seenInServiceMode.get());
-        assertTrue("observer must see isInServiceMode() == false after exit",
-                seenExitedMode.get());
+        assertNull(observerError.get(), "observer thread must not throw");
+        assertTrue(seenInServiceMode.get(),
+                "observer must see isInServiceMode() == true while in service mode");
+        assertTrue(seenExitedMode.get(),
+                "observer must see isInServiceMode() == false after exit");
     }
 }

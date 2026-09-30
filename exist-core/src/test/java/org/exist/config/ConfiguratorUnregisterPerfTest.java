@@ -24,8 +24,8 @@ package org.exist.config;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression test for GH-3557: Configurator.unregister must not call
@@ -48,7 +48,7 @@ public class ConfiguratorUnregisterPerfTest {
 
     private final List<FullXmldbURI> registeredKeys = new ArrayList<>();
 
-    @After
+    @AfterEach
     public void cleanup() {
         for (final FullXmldbURI key : registeredKeys) {
             Configurator.hotConfigs.remove(key);
@@ -81,9 +81,9 @@ public class ConfiguratorUnregisterPerfTest {
         // ConcurrentHashMap.containsValue() precheck called equals() on every
         // surviving entry per call, totalling ~ N*(N-1)/2 = 19,900 for N=200.
         final long calls = EqualsCountingConfiguration.equalsCalls.get();
-        assertTrue("unregister called Configuration.equals() " + calls
-                        + " times for " + n + " principals; expected 0 (regression of GH-3557).",
-                calls == 0);
+        assertTrue(calls == 0,
+                "unregister called Configuration.equals() " + calls
+                        + " times for " + n + " principals; expected 0 (regression of GH-3557).");
 
         for (final Configuration cfg : configs) {
             assertNull(lookupKeyByValue(cfg));

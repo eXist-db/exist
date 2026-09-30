@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.SyntaxException;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -120,13 +122,15 @@ public class UnixStylePermissionAiderTest {
         }
     }
 
-    @Test(expected=SyntaxException.class)
-    public void fromStringInvalidSyntax_tooShort() throws SyntaxException{
-       UnixStylePermissionAider.fromString("rwx");
+    @Test
+    public void fromStringInvalidSyntax_tooShort() {
+        assertThrows(SyntaxException.class, () ->
+            UnixStylePermissionAider.fromString("rwx"));
     }
 
-    @Test(expected=SyntaxException.class)
-    public void fromStringInvalidSyntax_invalidChars() throws SyntaxException{
-       UnixStylePermissionAider.fromString("rwurwurwu");
+    @Test
+    public void fromStringInvalidSyntax_invalidChars() {
+        assertThrows(SyntaxException.class, () ->
+            UnixStylePermissionAider.fromString("rwurwurwu"));
     }
 }

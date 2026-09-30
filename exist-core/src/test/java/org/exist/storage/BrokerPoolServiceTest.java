@@ -37,16 +37,16 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for exercising the BrokerPoolService

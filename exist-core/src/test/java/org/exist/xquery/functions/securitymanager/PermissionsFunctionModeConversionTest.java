@@ -27,9 +27,11 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -56,16 +58,18 @@ public class PermissionsFunctionModeConversionTest {
        assertEquals("0750", result.itemAt(0).toString());
     }
     
-    @Test(expected=XPathException.class)
-    public void modeToOctal_invalidMode() throws XPathException {
-       final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
+    @Test
+    public void modeToOctal_invalidMode() {
+        assertThrows(XPathException.class, () -> {
+            final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
-       final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
-       Sequence args[] = {
-           new StringValue("invalid")
-       };
-       
-       permissionsFunctions.eval(args, null);
+            final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
+            Sequence args[] = {
+                    new StringValue("invalid")
+            };
+
+            permissionsFunctions.eval(args, null);
+        });
     }
     
     @Test

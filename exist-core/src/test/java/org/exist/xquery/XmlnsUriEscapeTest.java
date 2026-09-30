@@ -26,10 +26,10 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.XQueryCompilationTest;
 import org.exist.xquery.value.Sequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests XQuery 3.1 attribute-value normalization on namespace declaration
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
 public class XmlnsUriEscapeTest extends XQueryCompilationTest {
 
     private static String stringResult(final Either<XPathException, Sequence> r) throws XPathException {
-        assertTrue("query returned an error: " + (r.isLeft() ? r.left().get().getMessage() : ""), r.isRight());
+        assertTrue(r.isRight(), "query returned an error: " + (r.isLeft() ? r.left().get().getMessage() : ""));
         return r.right().get().getStringValue();
     }
 

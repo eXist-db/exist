@@ -30,7 +30,7 @@ import org.exist.storage.DBBroker;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQueryContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 

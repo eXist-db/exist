@@ -27,16 +27,20 @@ import java.nio.file.Path;
 
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import static org.exist.storage.NativeBroker.DEFAULT_DATA_DIR;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(ExternalResourceSupport.class)
 public class StatisticsIndexTest {
 
     private static Path configFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws URISyntaxException {
         final ClassLoader loader = StatisticsIndexTest.class.getClassLoader();
         final char separator = System.getProperty("file.separator").charAt(0);
@@ -48,7 +52,7 @@ public class StatisticsIndexTest {
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer("db1", configFile, null, true);
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void statsFileExists() {
         final Path dataDir = existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(DEFAULT_DATA_DIR));
         assertTrue(Files.exists(dataDir.resolve("stats.dbx")));

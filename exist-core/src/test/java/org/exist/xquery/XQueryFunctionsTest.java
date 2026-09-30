@@ -30,17 +30,18 @@ import java.util.Locale;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for various standard XQuery functions
@@ -60,7 +61,7 @@ import static org.junit.Assert.*;
 @RunWith(ParallelRunner.class)
 public class XQueryFunctionsTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
     private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
@@ -1015,8 +1016,8 @@ public class XQueryFunctionsTest {
                 + "xmldb:store(\"" + TEST_COLLECTION + "\", \"" + XML_RESOURCE_FILENAME + "\", $embedded)";
 
         ResourceSet resultStore = existEmbeddedServer.executeQuery(queryStore);
-        assertEquals("store, Expect single result", 1, resultStore.getSize());
-        assertEquals("Expect stored filename as result", TEST_COLLECTION + "/" + XML_RESOURCE_FILENAME, resultStore.getResource(0).getContent().toString());
+        assertEquals(1, resultStore.getSize(), "store, Expect single result");
+        assertEquals(TEST_COLLECTION + "/" + XML_RESOURCE_FILENAME, resultStore.getResource(0).getContent().toString(), "Expect stored filename as result");
 
         //retrieve the base64 image from the XML resource and try to cast to xs:base64Binary
         String queryRetreive = "xquery version \"1.0\";\n\n"
@@ -1024,7 +1025,7 @@ public class XQueryFunctionsTest {
                 + "$image/text() cast as xs:base64Binary";
 
         ResourceSet resultRetreive = existEmbeddedServer.executeQuery(queryRetreive);
-        assertEquals("retreive, Expect single result", 1, resultRetreive.getSize());
+        assertEquals(1, resultRetreive.getSize(), "retreive, Expect single result");
     }
 
     @Test

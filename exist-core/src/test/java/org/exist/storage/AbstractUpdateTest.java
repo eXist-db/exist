@@ -42,15 +42,15 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.Optional;
-
-import static org.junit.Assert.assertNotNull;
 
 public abstract class AbstractUpdateTest {
 
@@ -97,7 +97,7 @@ public abstract class AbstractUpdateTest {
             final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK)) {
 
-                assertNotNull("Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null", lockedDoc);
+                assertNotNull(lockedDoc, "Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null");
                 serializer.serialize(lockedDoc.getDocument());
             } finally {
                 broker.returnSerializer(serializer);
@@ -135,7 +135,7 @@ public abstract class AbstractUpdateTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

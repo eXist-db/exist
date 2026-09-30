@@ -22,21 +22,20 @@
 
 package org.exist.util.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.easymock.EasyMock.aryEq;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -46,7 +45,7 @@ public class OverflowToDiskStreamTest {
     private OutputStreamSupplier overflowStreamSupplier;
     private OverflowToDiskStream overflowToDiskStream;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         memoryContents = createMock(MemoryContents.class);
         overflowStreamSupplier = createMock(OutputStreamSupplier.class);
@@ -125,7 +124,7 @@ public class OverflowToDiskStreamTest {
         private int flushCount;
 
         public void assertClosedContent(byte[] expected, int expectedFlushes) {
-            assertTrue("Stream not closed", closed);
+            assertTrue(closed, "Stream not closed");
             assertEquals(expectedFlushes, flushCount);
             assertArrayEquals(expected, toByteArray());
         }

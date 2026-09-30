@@ -25,12 +25,12 @@ package org.exist.dom.persistent;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class NodeProxyTest {
 

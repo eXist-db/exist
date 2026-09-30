@@ -47,12 +47,12 @@ import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test recovery after a forced database corruption.
@@ -123,7 +123,7 @@ public class Recovery2Test {
             final Serializer serializer = broker.borrowSerializer();
 
             try (final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK)) {
-                assertNotNull("Document should not be null", lockedDoc);
+                assertNotNull(lockedDoc, "Document should not be null");
                 String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             } finally {
@@ -137,7 +137,7 @@ public class Recovery2Test {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         try {
             existEmbeddedServer.stopDb(true);

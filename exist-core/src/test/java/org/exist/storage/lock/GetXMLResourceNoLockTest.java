@@ -31,7 +31,6 @@ import org.exist.test.ExistWebServer;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
-import org.junit.*;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
@@ -43,9 +42,10 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.xml.sax.SAXException;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 
@@ -54,13 +54,13 @@ import static org.junit.Assert.*;
  */
 public class GetXMLResourceNoLockTest {
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, false, true);
 
     private static String EMPTY_BINARY_FILE = "What's an up dog?";
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 	
-	@Test
+	@org.junit.jupiter.api.Test
 	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
 
 		storeTestResource();
@@ -81,7 +81,7 @@ public class GetXMLResourceNoLockTest {
 
             final LockManager lockManager = broker.getBrokerPool().getLockManager();
             final MultiLock colLock = lockManager.getPathLock(testCollection.getURI().toString());
-            assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
+            assertEquals(true, colLock.getReadHoldCount() > 0, "Collection does not have lock!");
 		}
 	}
 

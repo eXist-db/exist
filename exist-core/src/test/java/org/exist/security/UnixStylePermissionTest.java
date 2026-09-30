@@ -35,10 +35,12 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.runner.RunWith;
 
 /**
@@ -365,7 +367,7 @@ public class UnixStylePermissionTest {
     private void assertTestSafeExecutable(final int inputMode, final int expectedMode) {
         final int permission = UnixStylePermission.safeSetExecutable(inputMode);
         final String message = Integer.toOctalString(expectedMode) + "<>" + Integer.toOctalString(permission);
-        assertEquals(message, expectedMode, permission);
+        assertEquals(expectedMode, permission, message);
     }
 
     @Test

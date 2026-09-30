@@ -26,8 +26,8 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
+import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -37,8 +37,8 @@ import javax.xml.parsers.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

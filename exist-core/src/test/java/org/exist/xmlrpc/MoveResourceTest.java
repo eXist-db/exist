@@ -44,14 +44,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.AfterClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for deadlocks when moving resources from one collection to another. Uses
@@ -69,10 +68,10 @@ public class MoveResourceTest {
     private static final int REST_RETRY_MAX = 3;
     private static final int REST_RETRY_DELAY_MS = 100;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    @AfterClass
+    @AfterAll
     public static void closeHttpConnectionManager() {
         CheckThread.closeConnectionManager();
     }
@@ -250,7 +249,7 @@ public class MoveResourceTest {
                     }
                     Thread.sleep(REST_RETRY_DELAY_MS);
                 }
-                assertEquals("HTTP " + lastStatus, HTTP_OK, lastStatus);
+                assertEquals(HTTP_OK, lastStatus, "HTTP " + lastStatus);
 
                 Thread.sleep(DELAY);
             }

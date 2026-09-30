@@ -30,14 +30,13 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
-
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class NonLazyCacheTest {
 
     private static Path getLazyConfig() {
@@ -48,7 +47,7 @@ public class NonLazyCacheTest {
         }
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test
@@ -58,7 +57,7 @@ public class NonLazyCacheTest {
             fail("Should not be able to lazily create a cache when lazy creation is disabled");
         } catch (final XPathException e) {
             final ErrorCodes.ErrorCode errorCode = e.getErrorCode();
-            assertEquals("Expected lazy creation disabled error", CacheModule.LAZY_CREATION_DISABLED, errorCode);
+            assertEquals(CacheModule.LAZY_CREATION_DISABLED, errorCode, "Expected lazy creation disabled error");
         }
     }
 

@@ -29,11 +29,10 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -43,8 +42,9 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.IOException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression test for GH-3918: a compound predicate of the form
@@ -77,11 +77,11 @@ public class ContextDependencyRegressionTest {
 
     private static Collection testCollection;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void initDatabase() throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, XMLDBException {
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -92,7 +92,7 @@ public class ContextDependencyRegressionTest {
         final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection("issue-3918");
-        Assert.assertNotNull(testCollection);
+        Assertions.assertNotNull(testCollection);
 
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -105,7 +105,7 @@ public class ContextDependencyRegressionTest {
                 + "return xmldb:store('" + testCollection.getName() + "', 'test.xml', $doc)");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupDb() throws LockException, TriggerException,
             PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();

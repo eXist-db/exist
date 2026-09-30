@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.value;
 
-import org.junit.Test;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Guards the Object.equals/hashCode contract across {@link AtomicValue} subclasses

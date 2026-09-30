@@ -36,52 +36,51 @@ import com.evolvedbinary.j8fu.function.RunnableE;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import javax.annotation.Nullable;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests to ensure the correct behaviour of the LockManager
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(Parameterized.class)
 public class LockManagerTest {
 
     private static final int CONCURRENCY_LEVEL = 100;
     private static String previousLockEventsState = null;
     private static String previousPathsMultiWriterState = null;
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "Collection single-writer/multi-reader", false},
                 { "Collection multi-writer/multi-reader", true }
         });
     }
-
-    @Parameterized.Parameter
     public String apiName;
-
-    @Parameterized.Parameter(value = 1)
     public boolean enablePathsMultiWriterState;
 
-    @Before
+    @BeforeEach
     public void enableLockEventsState() {
         previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
         previousPathsMultiWriterState = System.setProperty(LockManager.PROP_ENABLE_PATHS_MULTI_WRITER, Boolean.toString(enablePathsMultiWriterState));
     }
 
-    @After
+    @AfterEach
     public void restoreLockEventsState() {
         restorePreviousPropertyState(LockTable.PROP_DISABLE, previousLockEventsState);
         restorePreviousPropertyState(LockManager.PROP_ENABLE_PATHS_MULTI_WRITER, previousPathsMultiWriterState);
@@ -95,8 +94,9 @@ public class LockManagerTest {
         }
     }
 
-    @Test
-    public void getCollectionLock_isStripedByPath() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getCollectionLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final MultiLock dbLock1 = lockManager.getPathLock("/db");
@@ -123,8 +123,9 @@ public class LockManagerTest {
      * ensure that we only take a single READ lock on the
      * root Collection
      */
-    @Test
-    public void acquireCollectionReadLock_root() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionReadLock_root(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
         final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try(final ManagedCollectionLock rootLock
@@ -159,8 +160,9 @@ public class LockManagerTest {
      * and that we have performed top-down locking on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionReadLock_depth2() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionReadLock_depth2(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -214,8 +216,9 @@ public class LockManagerTest {
      * and that we have performed top-down locking on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionReadLock_depth3() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionReadLock_depth3(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -285,8 +288,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * root Collection
      */
-    @Test
-    public void acquireCollectionWriteLock_root_withoutLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_root_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         acquireCollectionWriteLock_root(false);
     }
 
@@ -295,8 +299,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * root Collection... even when lockParent is set
      */
-    @Test
-    public void acquireCollectionWriteLock_root_withLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_root_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         acquireCollectionWriteLock_root(true);
     }
 
@@ -334,8 +339,9 @@ public class LockManagerTest {
      * sub-collection and perform top-down locking with INTENTION_WRITE locks on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionWriteLock_depth2_withoutLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_depth2_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -390,8 +396,9 @@ public class LockManagerTest {
      * with READ locks (unless as in this-case the parent is the root, then WRITE locks) on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionWriteLock_depth2_withLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_depth2_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionPath = "/db/colA";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -444,8 +451,9 @@ public class LockManagerTest {
      * descendant-collection and perform top-down locking with INTENTION_WRITE locks on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionWriteLock_depth3_withoutLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_depth3_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -519,8 +527,9 @@ public class LockManagerTest {
      * with INTENTION_WRITE locks (apart from the parent which takes a WRITE lock) on the
      * collection hierarchy to get there
      */
-    @Test
-    public void acquireCollectionWriteLock_depth3_withLockParent() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireCollectionWriteLock_depth3_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
@@ -587,8 +596,9 @@ public class LockManagerTest {
         assertIntentionWriteOrWriteMode(event9.mode);
     }
 
-    @Test
-    public void getDocumentLock_isStripedByPath() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getDocumentLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final MultiLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
@@ -615,8 +625,9 @@ public class LockManagerTest {
      * ensure that we only take a single READ lock on the
      * Document
      */
-    @Test
-    public void acquireDocumentReadLock() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireDocumentReadLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -651,8 +662,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * Document
      */
-    @Test
-    public void acquireDocumentWriteLock() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireDocumentWriteLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -682,8 +694,9 @@ public class LockManagerTest {
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
 
-    @Test
-    public void getBtreeLock_isStripedByPath() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getBtreeLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final ReentrantLock btree1Lock1 = lockManager.getBTreeLock("btree1.dbx");
@@ -710,8 +723,9 @@ public class LockManagerTest {
      * ensure that we only take a single BTree lock on the
      * Document
      */
-    @Test
-    public void acquireBTreeReadLock() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireBTreeReadLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String btree1Name = "btree1.dbx";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -746,8 +760,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * BTree
      */
-    @Test
-    public void acquireBTreeWriteLock() throws LockException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void acquireBTreeWriteLock(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+        initLockManagerTest(apiName, enablePathsMultiWriterState);
         final String btree1Name = "btree1.dbx";
 
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -861,5 +876,10 @@ public class LockManagerTest {
             this.timestamp = timestamp;
             this.stackTrace = stackTrace;
         }
+    }
+
+    public void initLockManagerTest(String apiName, boolean enablePathsMultiWriterState) {
+        this.apiName = apiName;
+        this.enablePathsMultiWriterState = enablePathsMultiWriterState;
     }
 }

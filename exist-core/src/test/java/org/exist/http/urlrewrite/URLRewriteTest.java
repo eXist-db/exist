@@ -32,10 +32,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.replay;
 import org.exist.Namespaces;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 

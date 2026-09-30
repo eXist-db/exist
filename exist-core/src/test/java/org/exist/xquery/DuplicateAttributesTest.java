@@ -25,7 +25,9 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -34,19 +36,17 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 @RunWith(ParallelRunner.class)
 public class DuplicateAttributesTest {
 
     private static final Logger LOG = LogManager.getLogger(DuplicateAttributesTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static Collection testCollection;
@@ -79,15 +79,17 @@ public class DuplicateAttributesTest {
     /**
      * Add attribute to element which already has an attribute of that name.
      */
-    @Test (expected=XMLDBException.class)
-    public void appendStoredAttrFail() throws XMLDBException {
-        XQueryService xqs = testCollection.getService(XQueryService.class);
-        String query =
-            """
-            let $a :=\s
-            <node attr="a" b="c">{doc("/db/test/stored1.xml")//@attr}</node>\
-            return $a""";
-        xqs.query(query);
+    @Test
+    public void appendStoredAttrFail() {
+        assertThrows(XMLDBException.class, () -> {
+            XQueryService xqs = testCollection.getService(XQueryService.class);
+            String query =
+                    """
+                            let $a :=\s
+                            <node attr="a" b="c">{doc("/db/test/stored1.xml")//@attr}</node>\
+                            return $a""";
+            xqs.query(query);
+        });
     }
 
     /**
@@ -115,32 +117,36 @@ public class DuplicateAttributesTest {
      * Add constructed in-memory attribute to element which already has an
      * attribute of that name.
      */
-    @Test (expected=XMLDBException.class)
-    public void appendConstrAttr() throws XMLDBException {
-        XQueryService xqs = testCollection.getService(XQueryService.class);
-        String query =
-            """
-            let $a := <root attr="ab"/>\
-            let $b :=\s
-               <node attr="a" b="c">{$a//@attr}</node>\
-            return $a""";
-        xqs.query(query);
+    @Test
+    public void appendConstrAttr() {
+        assertThrows(XMLDBException.class, () -> {
+            XQueryService xqs = testCollection.getService(XQueryService.class);
+            String query =
+                    """
+                            let $a := <root attr="ab"/>\
+                            let $b :=\s
+                               <node attr="a" b="c">{$a//@attr}</node>\
+                            return $a""";
+            xqs.query(query);
+        });
     }
 
     /**
      * Add attribute to element which already has an
      * attribute of that name (using idref).
      */
-    @Test (expected=XMLDBException.class)
-    public void appendIdref() throws XMLDBException {
-        XQueryService xqs = testCollection.getService(XQueryService.class);
-        String query =
-            "<results>{fn:idref(('id1', 'id2'), doc('/db/test/docdtd.xml')/IDS)}</results>";
-        ResourceSet result = xqs.query(query);
-        result.getResource(0).getContent();
+    @Test
+    public void appendIdref() {
+        assertThrows(XMLDBException.class, () -> {
+            XQueryService xqs = testCollection.getService(XQueryService.class);
+            String query =
+                    "<results>{fn:idref(('id1', 'id2'), doc('/db/test/docdtd.xml')/IDS)}</results>";
+            ResourceSet result = xqs.query(query);
+            result.getResource(0).getContent();
+        });
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
@@ -159,7 +165,7 @@ public class DuplicateAttributesTest {
         testCollection.storeResource(resource);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");

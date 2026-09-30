@@ -36,8 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,6 +49,7 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -60,7 +60,7 @@ public class DOMTest {
 
 	private static final Logger LOG =  LogManager.getLogger(DOMTest.class);
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private static String name = "test.xml";

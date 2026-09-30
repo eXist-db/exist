@@ -25,10 +25,9 @@ package org.exist.dom.memtree;
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -37,6 +36,8 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
@@ -45,27 +46,21 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertFalse;
-
 @RunWith(ParallelParameterized.class)
 public class MemtreeBuilderTest {
 
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "namespaceAware", true },
                 { "namespaceIgnorant", false }
         });
     }
-
-    @Parameter
     public String parameterizedTestsName;
-
-    @Parameter(value = 1)
     public boolean namespaceAware;
 
-    @Test
-    public void parseSimple() throws IOException, SAXException, ParserConfigurationException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void parseSimple(String parameterizedTestsName, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
+        initMemtreeBuilderTest(parameterizedTestsName, namespaceAware);
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
         final DocumentImpl parsedDoc = parse(doc);
 
@@ -77,7 +72,7 @@ public class MemtreeBuilderTest {
                 .checkForSimilar()
                 .build();
 
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     private DocumentImpl parse(final String xml) throws ParserConfigurationException, SAXException, IOException {
@@ -96,5 +91,10 @@ public class MemtreeBuilderTest {
         }
 
         return saxAdapter.getDocument();
+    }
+
+    public void initMemtreeBuilderTest(String parameterizedTestsName, boolean namespaceAware) {
+        this.parameterizedTestsName = parameterizedTestsName;
+        this.namespaceAware = namespaceAware;
     }
 }

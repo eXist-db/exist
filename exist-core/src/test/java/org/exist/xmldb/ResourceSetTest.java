@@ -23,29 +23,27 @@ package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 
 import java.io.InputStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
-
 public class ResourceSetTest {
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private final static String TEST_COLLECTION = "testResourceSet";
 
 	private Collection testCollection;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 		testCollection = service.createCollection(TEST_COLLECTION);
@@ -64,7 +62,7 @@ public class ResourceSetTest {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws XMLDBException {
 		//delete the test collection
 		final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);
@@ -83,7 +81,7 @@ public class ResourceSetTest {
         final ResourceSet result1 = service.query(query1);
         final ResourceSet result2 = service.query(query2);
 
-        assertEquals("size of intersection of " + query1 + " and " + query2 + " yields ", expected, ResourceSetHelper.intersection(result1, result2).getSize());
+        assertEquals(expected, ResourceSetHelper.intersection(result1, result2).getSize(), "size of intersection of " + query1 + " and " + query2 + " yields ");
 	}
 
 	@Test
@@ -98,6 +96,6 @@ public class ResourceSetTest {
 		final ResourceSet result1 = service.query(query1);
 		final ResourceSet result2 = service.query(query2);
 
-		assertEquals("size of intersection of " + query1 + " and " + query2 + " yields ", expected, ResourceSetHelper.intersection(result1, result2).getSize());
+		assertEquals(expected, ResourceSetHelper.intersection(result1, result2).getSize(), "size of intersection of " + query1 + " and " + query2 + " yields ");
 	}
 }

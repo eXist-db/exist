@@ -32,7 +32,11 @@ import org.exist.storage.lock.LockTable;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
 import java.io.IOException;
 import java.util.Map;
@@ -40,8 +44,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Simple test that Starts the database and checks that no Collection Locks are still held
@@ -49,6 +53,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class StartupLockingTest {
 
     private static LockCountListener lockCountListener = new LockCountListener();
@@ -64,14 +69,14 @@ public class StartupLockingTest {
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
+    @BeforeEach
     public void addListener() {
         lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
         while(!lockCountListener.isRegistered()) {}
     }
 
-    @After
+    @AfterEach
     public void removeListener() {
         if (lockCountListener.isRegistered()) {
             lockTable.deregisterListener(lockCountListener);
@@ -87,7 +92,7 @@ public class StartupLockingTest {
      *   1) Locks have been acquired but not released
      *   2) A bug has been introduced in {@link org.exist.storage.lock.LockManager}
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void noCollectionLocksAfterStartup() throws InterruptedException {
         lockTable.deregisterListener(lockCountListener);
 
@@ -107,7 +112,7 @@ public class StartupLockingTest {
      * to {@link NativeBroker#getOrCreateCollectionExplicit(Txn, XmldbURI)} should be the same
      * as before the call was made
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void getOrCreateCollectionDoesNotGainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
         lockTable.deregisterListener(lockCountListener);
 

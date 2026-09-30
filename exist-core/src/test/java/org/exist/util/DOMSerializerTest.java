@@ -32,13 +32,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.exist.util.serializer.DOMSerializer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author wolf

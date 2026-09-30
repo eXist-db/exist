@@ -21,7 +21,8 @@
  */
 package org.exist.resolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -33,10 +34,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Regression tests for two long-standing catalog-resolution issues, exercised directly against
@@ -93,7 +95,7 @@ public class CatalogResolutionRegressionTest {
      * This is governed by {@code org.xmlresolver.ResolverFeature#ALWAYS_RESOLVE}, which {@link
      * ResolverFactory} never sets, relying on the library default of {@code false}.
      */
-    @Test(timeout = 5000)
+    @Test @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void catalogWithoutMatchingEntryDoesNotFetchUnmatchedRemoteSystemId() throws Exception {
         final Path tempDir = Files.createTempDirectory("catalog-2476-test");
         try {
@@ -113,8 +115,8 @@ public class CatalogResolutionRegressionTest {
             // behavior) rather than declining, this call would hang/time out instead of returning
             // promptly.
             final InputSource result = resolver.resolveEntity(null, null, null, "http://203.0.113.1:1/unmatched.dtd");
-            assertNull("a catalog with no matching entry must decline to resolve, not fetch the literal URI itself",
-                    result);
+            assertNull(result,
+                    "a catalog with no matching entry must decline to resolve, not fetch the literal URI itself");
         } finally {
             Files.deleteIfExists(tempDir.resolve("catalog.xml"));
             Files.deleteIfExists(tempDir);

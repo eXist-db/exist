@@ -39,11 +39,12 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
@@ -52,15 +53,15 @@ import static org.exist.security.SecurityManager.DBA_GROUP;
 import static org.exist.security.SecurityManager.DBA_USER;
 import static org.exist.security.SecurityManager.GUEST_USER;
 import static org.exist.test.Util.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class XQueryTriggerSetUidTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
 
 	private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerSetUid");
@@ -101,7 +102,7 @@ public class XQueryTriggerSetUidTest {
     private final static String TRIGGERING_DOCUMENT_CONTENT =
 		  "<test/>";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -147,7 +148,7 @@ public class XQueryTriggerSetUidTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void triggerSetUid() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));  // NOTE: "guest" user

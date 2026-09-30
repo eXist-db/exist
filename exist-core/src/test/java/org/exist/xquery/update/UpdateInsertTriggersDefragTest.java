@@ -35,25 +35,24 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.test.Util.executeQuery;
 import static org.exist.test.Util.withCompiledQuery;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class UpdateInsertTriggersDefragTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build(), true, true);
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
@@ -72,12 +71,12 @@ public class UpdateInsertTriggersDefragTest {
     public void triggerDefragAfterUpdate() throws Exception {
         final String updateQuery = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//list";
         assertQuery(updateQuery, updateResults ->
-            assertTrue("Update expression returns an empty sequence", updateResults.isEmpty())
+            assertTrue(updateResults.isEmpty(), "Update expression returns an empty sequence")
         );
 
         final String searchQuery = "doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//item";
         assertQuery(searchQuery, searchResults ->
-            assertEquals("Both items are returned", 2, searchResults.getItemCount())
+            assertEquals(2, searchResults.getItemCount(), "Both items are returned")
         );
     }
 

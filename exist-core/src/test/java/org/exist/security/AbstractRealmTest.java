@@ -24,8 +24,8 @@ package org.exist.security;
 import java.util.Collections;
 
 import org.exist.storage.DBBroker;
+import org.junit.jupiter.api.Test;
 import org.exist.Database;
-import org.junit.Test;
 import org.easymock.EasyMock;
 import org.exist.EXistException;
 import org.exist.config.Configuration;

@@ -23,19 +23,19 @@ package org.exist.xquery.value;
 
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class AbstractTimeRelatedTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         TimeUtils.getInstance().overrideLocalTimezoneOffset(-5 * 60 * 60 * 1000);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         TimeUtils.getInstance().resetLocalTimezoneOffset();
     }

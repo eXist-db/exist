@@ -22,16 +22,16 @@
 package org.exist.xquery.xqsuite;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression test for issue #6422: XQSuite must surface errors thrown
@@ -49,16 +49,16 @@ public class XQSuiteTearDownErrorTest {
 
     private static final String COLLECTION = "/db/test-6422";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer embedded =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void createCollection() throws XMLDBException {
         embedded.executeQuery("xmldb:create-collection('/db', 'test-6422')");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         try {
             embedded.executeQuery("xmldb:remove('" + COLLECTION + "')");
@@ -78,10 +78,10 @@ public class XQSuiteTearDownErrorTest {
                 """;
         final String suiteXml = runSuiteAgainstStoredModule("clean.xqm",
                 module, "http://exist-db.org/xquery/test/6422-clean");
-        assertFalse("clean tearDown should not emit a system-err marker: " + suiteXml,
-                suiteXml.contains("tearDown error"));
-        assertTrue("testsuite errors=\"0\" expected for clean tearDown: " + suiteXml,
-                suiteXml.contains("errors=\"0\""));
+        assertFalse(suiteXml.contains("tearDown error"),
+                "clean tearDown should not emit a system-err marker: " + suiteXml);
+        assertTrue(suiteXml.contains("errors=\"0\""),
+                "testsuite errors=\"0\" expected for clean tearDown: " + suiteXml);
     }
 
     @Test
@@ -101,17 +101,17 @@ public class XQSuiteTearDownErrorTest {
 
         // The bug was that suiteXml had no mention of the tearDown failure
         // at all — neither a marker element nor a bumped errors count.
-        assertTrue("throwing tearDown must produce a <system-err>tearDown error: ...</system-err> on the testsuite, got: "
-                        + suiteXml,
-                suiteXml.contains("tearDown error: ")
-                        && suiteXml.contains("tearDown blew up here"));
+        assertTrue(suiteXml.contains("tearDown error: ")
+                        && suiteXml.contains("tearDown blew up here"),
+                "throwing tearDown must produce a <system-err>tearDown error: ...</system-err> on the testsuite, got: "
+                        + suiteXml);
 
         // Test itself passed → tests="1", failures="0". The tearDown failure
         // counts as one additional error.
-        assertTrue("testsuite must count the tearDown failure as one error: " + suiteXml,
-                suiteXml.contains("errors=\"1\""));
-        assertTrue("the passing test should still be present: " + suiteXml,
-                suiteXml.contains("tests=\"1\"") && suiteXml.contains("failures=\"0\""));
+        assertTrue(suiteXml.contains("errors=\"1\""),
+                "testsuite must count the tearDown failure as one error: " + suiteXml);
+        assertTrue(suiteXml.contains("tests=\"1\"") && suiteXml.contains("failures=\"0\""),
+                "the passing test should still be present: " + suiteXml);
     }
 
     @Test
@@ -133,12 +133,12 @@ public class XQSuiteTearDownErrorTest {
                 """;
         final String suiteXml = runSuiteAgainstStoredModule("both.xqm",
                 module, "http://exist-db.org/xquery/test/6422-both");
-        assertTrue("setUp error must still be surfaced: " + suiteXml,
-                suiteXml.contains("setUp blew up"));
-        assertTrue("tearDown error must now be surfaced even when setUp also failed: "
-                        + suiteXml,
-                suiteXml.contains("tearDown error: ")
-                        && suiteXml.contains("tearDown also blew up"));
+        assertTrue(suiteXml.contains("setUp blew up"),
+                "setUp error must still be surfaced: " + suiteXml);
+        assertTrue(suiteXml.contains("tearDown error: ")
+                        && suiteXml.contains("tearDown also blew up"),
+                "tearDown error must now be surfaced even when setUp also failed: "
+                        + suiteXml);
     }
 
     /**

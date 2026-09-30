@@ -42,11 +42,11 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RecoverBinary2Test {
 
@@ -103,7 +103,7 @@ public class RecoverBinary2Test {
     public void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull("Collection " + TestConstants.TEST_COLLECTION_URI2 + " should exist after store()", test2);
+            assertNotNull(test2, "Collection " + TestConstants.TEST_COLLECTION_URI2 + " should exist after store()");
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
             }
@@ -143,7 +143,7 @@ public class RecoverBinary2Test {
         // Get files in directory (from test resources)
         final Path dir = getBinaryResourcesDir();
         final List<Path> files = FileUtils.list(dir);
-        assertNotNull("Check directory '"+ dir.toAbsolutePath() +"'.",files);
+        assertNotNull(files,"Check directory '"+ dir.toAbsolutePath() +"'.");
         
         // store some documents.
         for (int j = 0; j < 10; j++) {
@@ -165,7 +165,7 @@ public class RecoverBinary2Test {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb(true);
     }

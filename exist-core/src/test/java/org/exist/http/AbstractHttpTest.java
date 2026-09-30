@@ -35,7 +35,7 @@ import java.util.Base64;
 
 import org.exist.test.ExistWebServer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Shared HTTP test infrastructure, built on the JDK {@link java.net.http.HttpClient} (no Apache

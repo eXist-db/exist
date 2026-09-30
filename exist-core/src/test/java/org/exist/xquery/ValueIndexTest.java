@@ -27,10 +27,9 @@ import java.nio.file.Path;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -40,16 +39,17 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author wolf
  */
 public class ValueIndexTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     protected static final String ITEMS_FILENAME = "items.xml";
@@ -101,7 +101,7 @@ public class ValueIndexTest {
     
     private Collection testCollection;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot()
                 .getService(CollectionManagementService.class);
@@ -109,7 +109,7 @@ public class ValueIndexTest {
         assertNotNull(testCollection);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot()
                 .getService(CollectionManagementService.class);
@@ -417,7 +417,7 @@ public class ValueIndexTest {
         if (message == null)
             assertEquals(expected, result.getSize());
         else
-            assertEquals(message, expected, result.getSize());
+            assertEquals(expected, result.getSize(), message);
         return result;
     }
 

@@ -21,15 +21,15 @@
  */
 package org.exist.dom.persistent;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class XMLUtilTest {
 
@@ -43,7 +43,7 @@ public class XMLUtilTest {
 
 		final String expectedDecl = "<?xml version=\"1.0\"?>";
 		final String decl = XMLUtil.getXMLDecl(Files.readAllBytes(testFile));
-		assertEquals("XML Declaration for the UTF-8 encode example file wasn't resolved properly", expectedDecl, decl);
+		assertEquals(expectedDecl, decl, "XML Declaration for the UTF-8 encode example file wasn't resolved properly");
 	}
 
 	@Test
@@ -53,6 +53,6 @@ public class XMLUtilTest {
 
 		final String expectedDecl = "<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>";
 		final String decl = XMLUtil.getXMLDecl(Files.readAllBytes(testFile));
-		assertEquals("XML Declaration for the UTF-16 encode example file wasn't resolved properly", expectedDecl, decl);
+		assertEquals(expectedDecl, decl, "XML Declaration for the UTF-16 encode example file wasn't resolved properly");
 	}
 }

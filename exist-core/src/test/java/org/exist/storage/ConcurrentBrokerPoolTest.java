@@ -33,7 +33,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -54,9 +54,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -128,7 +128,7 @@ public class ConcurrentBrokerPoolTest {
                             .build();
 
                     // ASSERT
-                    assertFalse(diff.toString(), diff.hasDifferences());
+                    assertFalse(diff.hasDifferences(), diff.toString());
 
                 }
             }

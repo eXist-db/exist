@@ -37,8 +37,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
-import junit.framework.Assert;
-
 import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -59,7 +57,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -68,6 +68,10 @@ import org.xml.sax.XMLReader;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -79,17 +83,17 @@ public abstract class TestCase {
 
 	public static final String testLocation = "test/external/";
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-        Assert.assertNotNull(broker);
+        assertNotNull(broker);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		if (testCollection == null) {
 			final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -100,7 +104,7 @@ public abstract class TestCase {
 						loadTS();
 						testCollection = broker.getCollection(getCollection());
 						if (testCollection == null) {
-							Assert.fail("There is no Test Suite data at database");
+							fail("There is no Test Suite data at database");
 						}
 					}
 				}
@@ -110,7 +114,7 @@ public abstract class TestCase {
 
 	public abstract void loadTS() throws Exception;
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		if(broker != null) {
 			broker.close();
@@ -135,11 +139,11 @@ public abstract class TestCase {
 
 	public boolean compareResult(String testCase, String folder, Element outputFile, Sequence result) {
 		if (outputFile == null)
-			Assert.fail("no expected result information");
+			fail("no expected result information");
 
 		Path expectedResult = Path.of(testLocation+folder, outputFile.getTextContent());
 		if (!Files.isReadable(expectedResult)) {
-			Assert.fail("can't read expected result");
+			fail("can't read expected result");
 		}
 		
 		String compare = outputFile.getAttribute("compare");

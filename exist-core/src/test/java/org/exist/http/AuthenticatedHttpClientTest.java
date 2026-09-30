@@ -24,16 +24,16 @@ package org.exist.http;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression test for preemptive HTTP Basic authentication against the eXist-db REST end-point.
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class AuthenticatedHttpClientTest extends AbstractHttpTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test

@@ -26,8 +26,8 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -65,7 +65,7 @@ public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIn
 
     private static String STAGE3_XQUERY = STAGE1_XQUERY;
 
-    @BeforeClass
+    @BeforeAll
     public static void storeResourceFunctions() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
     }

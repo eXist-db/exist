@@ -24,12 +24,12 @@ package org.exist.dom.persistent;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.numbering.DLN;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by aretter on 25/04/2017.

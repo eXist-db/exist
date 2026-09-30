@@ -36,7 +36,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
@@ -44,14 +46,15 @@ import java.io.IOException;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * SQL Execute Integration Tests.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class ExecuteIT {
 
     @Rule

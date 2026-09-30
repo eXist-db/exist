@@ -32,6 +32,9 @@ import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.ExternalResource;
 
 import javax.annotation.Nullable;
@@ -46,8 +49,12 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
 /**
  * Exist embedded Server Rule for JUnit.
+ * <p>
+ * Supports both JUnit 4 (via {@code ExternalResource}, use with {@code @Rule}/{@code @ClassRule})
+ * and JUnit 5 (via {@link BeforeAllCallback}/{@link AfterAllCallback}, use with
+ * {@code @RegisterExtension static final}).
  */
-public class ExistEmbeddedServer extends ExternalResource {
+public class ExistEmbeddedServer extends ExternalResource implements BeforeAllCallback, AfterAllCallback {
 
     private static final Logger LOG =  LogManager.getLogger(ExistEmbeddedServer.class);
 
@@ -110,6 +117,19 @@ public class ExistEmbeddedServer extends ExternalResource {
     protected void before() throws Throwable {
         startDb();
         super.before();
+    }
+
+    @Override
+    public void beforeAll(final ExtensionContext context) throws Exception {
+        try {
+            before();
+        } catch (final Exception e) {
+            throw e;
+        } catch (final Throwable t) {
+            // before() declares `throws Throwable`, broader than beforeAll()'s `throws Exception`;
+            // wrap the rare non-Exception case (e.g. an Error) rather than throwing a raw Exception.
+            throw new RuntimeException(t);
+        }
     }
 
     public void startDb() throws DatabaseConfigurationException, EXistException, IOException {
@@ -182,6 +202,11 @@ public class ExistEmbeddedServer extends ExternalResource {
         stopDb();
 
         super.after();
+    }
+
+    @Override
+    public void afterAll(final ExtensionContext context) {
+        after();
     }
 
     public void stopDb() {

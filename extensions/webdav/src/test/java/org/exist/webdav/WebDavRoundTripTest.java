@@ -23,18 +23,18 @@ package org.exist.webdav;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * eXist-specific WebDAV round-trip tests (XML serialization edge cases).
@@ -60,19 +60,19 @@ public class WebDavRoundTripTest {
 
     private static final String XML_WITH_NON_ASCII = "<doc>café — 日本語</doc>";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer EXIST_WEB_SERVER = new ExistWebServer(true, false, true, true);
 
     private static final List<String> STORED_DOCUMENTS = new ArrayList<>();
 
     private static String prevPropfindMethodXmlSize = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         prevPropfindMethodXmlSize = System.setProperty("org.exist.webdav.PROPFIND_METHOD_XML_SIZE", "exact");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         try {
             deleteStoredDocuments();
@@ -125,12 +125,12 @@ public class WebDavRoundTripTest {
                 EXIST_WEB_SERVER.getPort(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         final int putStatus = webDav.putDocument(docName, content, expectedMediaType);
-        assertEquals("PUT " + docName + " failed with status " + putStatus, HttpURLConnection.HTTP_CREATED, putStatus);
+        assertEquals(HttpURLConnection.HTTP_CREATED, putStatus, "PUT " + docName + " failed with status " + putStatus);
 
         final HttpResponse<String> getResponse = webDav.getDocument(docName);
-        assertEquals("GET " + docName + " failed", HttpURLConnection.HTTP_OK, getResponse.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, getResponse.statusCode(), "GET " + docName + " failed");
         final String contentType = getResponse.headers().firstValue("Content-Type").orElse("");
-        assertTrue("Unexpected Content-Type: " + contentType, contentType.startsWith(expectedMediaType));
+        assertTrue(contentType.startsWith(expectedMediaType), "Unexpected Content-Type: " + contentType);
         return getResponse.body();
     }
 
@@ -142,7 +142,7 @@ public class WebDavRoundTripTest {
                 EXIST_WEB_SERVER.getPort(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         for (final String docName : STORED_DOCUMENTS) {
             final int deleteStatus = webDav.deleteDocument(docName);
-            assertTrue("DELETE " + docName + " failed with status " + deleteStatus, isSuccess(deleteStatus));
+            assertTrue(isSuccess(deleteStatus), "DELETE " + docName + " failed with status " + deleteStatus);
         }
         STORED_DOCUMENTS.clear();
     }

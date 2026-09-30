@@ -27,8 +27,9 @@ import java.util.function.BiFunction;
 
 import org.exist.util.io.Base64OutputStream;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *

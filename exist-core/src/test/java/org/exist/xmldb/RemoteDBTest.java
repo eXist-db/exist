@@ -22,15 +22,15 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistWebServer;
-import org.junit.ClassRule;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /** An abstract wrapper for remote DB tests
  * @author <a href="mailto:pierrick.brihaye@free.fr">Sebastian Bossung, Technische Universitaet Hamburg-Harburg
@@ -39,7 +39,7 @@ import static org.junit.Assert.fail;
 //TODO : manage content from here, not from the derived classes
 public abstract class RemoteDBTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";

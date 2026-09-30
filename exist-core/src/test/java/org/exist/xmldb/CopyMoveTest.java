@@ -22,24 +22,23 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.After;
 import org.exist.security.Account;
 import org.exist.security.Permission;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.exist.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
-
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class CopyMoveTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testCopyMove";
@@ -121,7 +120,7 @@ public class CopyMoveTest {
         assertEquals("rw-r--r--", prm.toString());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
@@ -132,7 +131,7 @@ public class CopyMoveTest {
         ums.chmod("rwxr-xr-x");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);

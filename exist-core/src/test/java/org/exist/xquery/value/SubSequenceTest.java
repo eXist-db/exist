@@ -35,14 +35,14 @@ package org.exist.xquery.value;
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.xquery.RangeSequence;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -53,7 +53,6 @@ public class SubSequenceTest {
     private static final long RANGE_START = 1;
     private static final long RANGE_END = 99;
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"0 until 10",      0,    10,   0},
@@ -70,17 +69,9 @@ public class SubSequenceTest {
                 {"100 until 110", 100,   110,   0},
         });
     }
-
-    @Parameterized.Parameter
     public String subSequenceStartEndName;
-
-    @Parameterized.Parameter(value = 1)
     public long fromInclusive;
-
-    @Parameterized.Parameter(value = 2)
     public int toExclusive;
-
-    @Parameterized.Parameter(value = 3)
     public int expectedSubsequenceLength;
 
     private static final RangeSequence range = new RangeSequence(new IntegerValue(RANGE_START), new IntegerValue(RANGE_END));
@@ -89,33 +80,39 @@ public class SubSequenceTest {
         return new SubSequence(fromInclusive, toExclusive, range);
     }
 
-    @Test
-    public void itemAt_0() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_0(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(0);
     }
 
-    @Test
-    public void itemAt_1() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_1(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(1);
     }
 
-    @Test
-    public void itemAt_2() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_2(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(2);
     }
 
-    @Test
-    public void itemAt_8() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_8(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(8);
     }
 
-    @Test
-    public void itemAt_9() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_9(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(9);
     }
 
-    @Test
-    public void itemAt_10() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void itemAt_10(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(10);
     }
 
@@ -132,5 +129,12 @@ public class SubSequenceTest {
         } else {
             assertNull(getSubsequence().itemAt(pos));
         }
+    }
+
+    public void initSubSequenceTest(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        this.subSequenceStartEndName = subSequenceStartEndName;
+        this.fromInclusive = fromInclusive;
+        this.toExclusive = toExclusive;
+        this.expectedSubsequenceLength = expectedSubsequenceLength;
     }
 }

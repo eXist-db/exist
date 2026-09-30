@@ -25,7 +25,7 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>

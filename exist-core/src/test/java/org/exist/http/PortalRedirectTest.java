@@ -22,23 +22,23 @@
 package org.exist.http;
 
 import org.exist.test.ExistWebServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Distribution-mode portal at {@code /} — landing page and redirect target to {@code /exist}.
  */
 public class PortalRedirectTest extends AbstractHttpTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
@@ -49,9 +49,9 @@ public class PortalRedirectTest extends AbstractHttpTest {
         assertEquals(HTTP_OK, result.statusCode());
 
         final String body = result.body();
-        assertTrue("Expected portal title", body.contains("Open Source Native XML Database"));
-        assertTrue("Expected JS redirect to /exist", body.contains("window.location.replace(\"/exist\")"));
-        assertTrue("Expected noscript fallback link to /exist", body.contains("href=\"/exist\""));
+        assertTrue(body.contains("Open Source Native XML Database"), "Expected portal title");
+        assertTrue(body.contains("window.location.replace(\"/exist\")"), "Expected JS redirect to /exist");
+        assertTrue(body.contains("href=\"/exist\""), "Expected noscript fallback link to /exist");
     }
 
     private static String portalUri(final ExistWebServer existWebServer) {

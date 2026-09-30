@@ -21,10 +21,10 @@
  */
 package org.exist.management.client;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,9 +34,9 @@ import java.util.Properties;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Covers the resolution paths that {@code system:get-jmx-token()} relies on but can't itself
@@ -46,8 +46,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class JMXTokenProviderTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     private static JMXtoXML clientReturning(final String dataDir) {
         return new JMXtoXML() {
@@ -69,7 +69,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getDataDirUsesMBeanValueWhenAvailable() throws IOException {
-        final Path dataDir = temporaryFolder.newFolder("mbean-data-dir").toPath();
+        final Path dataDir = newFolder(temporaryFolder, "mbean-data-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
         assertEquals(Optional.of(dataDir), provider.getDataDir());
@@ -77,7 +77,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getDataDirFallsBackWhenMBeanReturnsNull() throws IOException {
-        final Path fallback = temporaryFolder.newFolder("fallback-data-dir").toPath();
+        final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(null), fallback);
 
         assertEquals(Optional.of(fallback), provider.getDataDir());
@@ -92,7 +92,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getDataDirFallsBackWhenMBeanLookupThrows() throws IOException {
-        final Path fallback = temporaryFolder.newFolder("fallback-data-dir").toPath();
+        final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
         final JMXtoXML client = clientThrowing(new NullPointerException("no MBean connection"));
         final JMXTokenProvider provider = new JMXTokenProvider(client, fallback);
 
@@ -117,7 +117,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getTokenCreatesAndPersistsNewTokenWhenFileAbsent() throws IOException {
-        final Path dataDir = temporaryFolder.newFolder("new-token-dir").toPath();
+        final Path dataDir = newFolder(temporaryFolder, "new-token-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
         final Optional<String> token = provider.getToken();
@@ -141,7 +141,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getTokenReadsExistingTokenRatherThanCreatingNew() throws IOException {
-        final Path dataDir = temporaryFolder.newFolder("existing-token-dir").toPath();
+        final Path dataDir = newFolder(temporaryFolder, "existing-token-dir").toPath();
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties existing = new Properties();
         existing.setProperty("token", "existing-token-value");
@@ -156,7 +156,7 @@ public class JMXTokenProviderTest {
 
     @Test
     public void getTokenRegeneratesTokenWhenExistingFileHasNoTokenProperty() throws IOException {
-        final Path dataDir = temporaryFolder.newFolder("corrupt-token-dir").toPath();
+        final Path dataDir = newFolder(temporaryFolder, "corrupt-token-dir").toPath();
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties withoutTokenKey = new Properties();
         withoutTokenKey.setProperty("not-the-token-key", "irrelevant");
@@ -175,5 +175,22 @@ public class JMXTokenProviderTest {
             persisted.load(is);
         }
         assertEquals(token.get(), persisted.getProperty("token"));
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

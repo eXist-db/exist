@@ -23,9 +23,9 @@ package org.exist.xmldb;
 
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.util.URIUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -78,12 +78,12 @@ public class RemoteCollectionTest extends RemoteDBTest {
     private final static String XML_CONTENT = "<xml/>";
     private final static String BINARY_CONTENT = "TEXT";
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
         setUpRemoteDatabase();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         removeCollection();
     }

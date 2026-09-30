@@ -27,13 +27,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Targeted tests for the QT4 XQTS prod-CompAttrConstructor failure patterns
@@ -43,7 +43,7 @@ import static org.junit.Assert.fail;
  */
 public class CompAttrConstructorErrorCodeTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -85,8 +85,8 @@ public class CompAttrConstructorErrorCodeTest {
             fail("Expected error " + expectedErrorCode + " but query returned: " + result.getStringValue());
         } catch (final XPathException e) {
             final String actual = e.getErrorCode() == null ? "<null>" : e.getErrorCode().getErrorQName().getLocalPart();
-            assertEquals("Wrong error code (message: " + e.getMessage() + ")",
-                    expectedErrorCode, actual);
+            assertEquals(expectedErrorCode,
+                    actual, "Wrong error code (message: " + e.getMessage() + ")");
         } catch (final Exception e) {
             // unwrap nested XPathException
             Throwable cause = e;
@@ -95,8 +95,8 @@ public class CompAttrConstructorErrorCodeTest {
             }
             if (cause instanceof XPathException xpe) {
                 final String actual = xpe.getErrorCode() == null ? "<null>" : xpe.getErrorCode().getErrorQName().getLocalPart();
-                assertEquals("Wrong error code (message: " + xpe.getMessage() + ")",
-                        expectedErrorCode, actual);
+                assertEquals(expectedErrorCode,
+                        actual, "Wrong error code (message: " + xpe.getMessage() + ")");
             } else {
                 fail("Unexpected exception type: " + e.getClass().getName() + " - " + e.getMessage());
             }

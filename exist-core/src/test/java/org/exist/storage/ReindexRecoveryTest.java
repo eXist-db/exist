@@ -35,14 +35,16 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -149,7 +151,7 @@ public class ReindexRecoveryTest {
         final BrokerPool pool = startDb();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
-            assertNull("Removed collection does still exist", root);
+            assertNull(root, "Removed collection does still exist");
         }
     }
 
@@ -158,12 +160,12 @@ public class ReindexRecoveryTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

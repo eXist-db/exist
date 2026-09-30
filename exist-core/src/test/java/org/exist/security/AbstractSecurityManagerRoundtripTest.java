@@ -27,12 +27,14 @@ import java.util.List;
 import org.exist.EXistException;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.UserManagementService;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.xmldb.api.base.XMLDBException;
 
 /**

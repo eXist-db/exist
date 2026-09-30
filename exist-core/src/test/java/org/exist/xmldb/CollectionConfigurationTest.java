@@ -22,15 +22,18 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.exist.security.Account;
 
 import static org.exist.TestUtils.*;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.exist.collections.CollectionConfiguration;
 import org.exist.test.TestConstants;
 import org.exist.xquery.Constants;
@@ -42,10 +45,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class CollectionConfigurationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testIndexConfiguration";
@@ -157,7 +160,7 @@ public class CollectionConfigurationTest {
          </index>
         </collection>""";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 
@@ -177,14 +180,14 @@ public class CollectionConfigurationTest {
         //  configColl = cms.createCollection(CONF_COLL_URI.toString());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
         service.removeCollection(CONF_COLL_URI.toString()); //Removes the collection config collection *manually*
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService1() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -213,7 +216,7 @@ public class CollectionConfigurationTest {
         assertEquals(1, result.getSize());
    }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testCollectionConfigurationService2() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -262,7 +265,7 @@ public class CollectionConfigurationTest {
         assertEquals(1, result.getSize());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService3() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -294,7 +297,7 @@ public class CollectionConfigurationTest {
    }
     
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void collectionConfigurationService4() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
    
@@ -342,7 +345,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
    } 
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void collectionConfigurationService5() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -381,7 +384,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
    } 
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void collectionConfigurationService6() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -444,7 +447,7 @@ public class CollectionConfigurationTest {
    }
 
     /** Check if configurations are properly passed down the collection hierarchy. */
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService7() throws XMLDBException {
 
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
@@ -482,7 +485,7 @@ public class CollectionConfigurationTest {
    }
 
     /** Overwrite configuration in a sub collection */
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService8() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -519,7 +522,7 @@ public class CollectionConfigurationTest {
    }
 
     /** Overwrite configuration in a sub collection 2 times */
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService9() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
@@ -585,7 +588,7 @@ public class CollectionConfigurationTest {
    }
 
     /** Remove config document */
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService10() throws XMLDBException {
 
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
@@ -643,7 +646,7 @@ public class CollectionConfigurationTest {
    }
 
     /** Remove config collection */
-    @Test
+    @org.junit.jupiter.api.Test
     public void collectionConfigurationService11() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -696,7 +699,7 @@ public class CollectionConfigurationTest {
         assertEquals(0, result.getSize());
    }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void invalidConfiguration1() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -723,7 +726,7 @@ public class CollectionConfigurationTest {
         assertEquals(0, result.getSize());
     }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void rangeIndex1() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
@@ -823,7 +826,7 @@ public class CollectionConfigurationTest {
        } catch (XMLDBException e) {
            exceptionCaught = true;
        }
-       assertTrue("contains() should not use index of type xs:double", exceptionCaught);
+       assertTrue(exceptionCaught, "contains() should not use index of type xs:double");
        exceptionCaught = false;
        try {
            result = service.query("/test[(# exist:force-index-use #) { matches(d, '1') }]");
@@ -831,13 +834,13 @@ public class CollectionConfigurationTest {
        } catch (XMLDBException e) {
            exceptionCaught = true;
        }
-       assertTrue("matches() should not use index of type xs:double", exceptionCaught);
+       assertTrue(exceptionCaught, "matches() should not use index of type xs:double");
 
        result = service.query("/test[matches(h, '1')]");
        assertEquals(1, result.getSize());
   }   
 
-   @Test @Ignore("Range index query with dateTime cast / where clause")
+   @org.junit.jupiter.api.Test @Disabled("Range index query with dateTime cast / where clause")
     public void rangeIndex2() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -937,7 +940,7 @@ public class CollectionConfigurationTest {
        } catch (XMLDBException e) {
            exceptionCaught = true;
        }
-       assertTrue("contains() should not use index of type xs:double", exceptionCaught);
+       assertTrue(exceptionCaught, "contains() should not use index of type xs:double");
        exceptionCaught = false;
        try {
            result = service.query("(# exist:force-index-use #) { /test[matches(d, '1')] }");
@@ -945,13 +948,13 @@ public class CollectionConfigurationTest {
        } catch (XMLDBException e) {
            exceptionCaught = true;
        }
-       assertTrue("matches() should not use index of type xs:double", exceptionCaught);
+       assertTrue(exceptionCaught, "matches() should not use index of type xs:double");
 
        result = service.query("/test[matches(h, '1')]");
        assertEquals(1, result.getSize());
   }
 
-   @Test @Ignore("Range index query with dateTime cast / where clause")
+   @org.junit.jupiter.api.Test @Disabled("Range index query with dateTime cast / where clause")
     public void rangeIndex3() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
@@ -1034,7 +1037,7 @@ public class CollectionConfigurationTest {
         assertTrue(exceptionCaught);
     }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void rangeIndexOverAttributes() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
@@ -1218,7 +1221,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
   }   
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void missingRangeIndexes() throws Exception {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        @SuppressWarnings("unused")
@@ -1244,7 +1247,7 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
        }
-       assertTrue("Exception expected : missing index", exceptionThrown);
+       assertTrue(exceptionThrown, "Exception expected : missing index");
 
        try {
                exceptionThrown = false;
@@ -1254,7 +1257,7 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
            }
-           assertTrue("Exception expected : missing index", exceptionThrown);
+           assertTrue(exceptionThrown, "Exception expected : missing index");
 
            try {
                exceptionThrown = false;
@@ -1264,7 +1267,7 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
                }
-               assertTrue("Exception expected : missing index", exceptionThrown);
+               assertTrue(exceptionThrown, "Exception expected : missing index");
 
            try {
                exceptionThrown = false;
@@ -1274,7 +1277,7 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
                     }
-                    assertTrue("Exception expected : missing index", exceptionThrown);
+                    assertTrue(exceptionThrown, "Exception expected : missing index");
 
             try {
                exceptionThrown = false;
@@ -1284,7 +1287,7 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
                }
-               assertTrue("Exception expected : missing index", exceptionThrown);
+               assertTrue(exceptionThrown, "Exception expected : missing index");
 
            try {
                exceptionThrown = false;
@@ -1294,85 +1297,85 @@ public class CollectionConfigurationTest {
                        exceptionThrown = true;
                else throw e;
            }
-           assertTrue("Exception expected : missing index", exceptionThrown);
+           assertTrue(exceptionThrown, "Exception expected : missing index");
   }   
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations00() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations01() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_2, false);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations02() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations03() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations04() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_1, false);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations05() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations06() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations07() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations08() {          
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations09() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations10() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations11() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_2, false);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations12() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations13() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations14() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_1, false);
    }
 
-   @Test
+   @org.junit.jupiter.api.Test
    public void multipleConfigurations15() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }

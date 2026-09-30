@@ -41,10 +41,9 @@ import org.exist.storage.journal.Journal;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
@@ -52,6 +51,8 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -61,25 +62,25 @@ import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class RecoverXmlTest extends AbstractRecoverTest {
 
-    @ClassRule
-    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public static File temporaryFolder;
     private static Path testFile1 = null;
     private static Path testFile2 = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTempXmlDocs() throws IOException {
-        testFile1 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc1.xml");
+        testFile1 = temporaryFolder.toPath().resolve("RecoverXmlTest.doc1.xml");
         Files.write(testFile1, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element1>text1</element1>"), CREATE_NEW);
 
-        testFile2 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc2.xml");
+        testFile2 = temporaryFolder.toPath().resolve("RecoverXmlTest.doc2.xml");
         Files.write(testFile2, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element2>text2</element2>"), CREATE_NEW);
     }
 
@@ -150,7 +151,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
                 .checkForIdentical()
                 .build();
 
-        assertFalse("XML identical: " + diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), "XML identical: " + diff.toString());
     }
 
     private final String readAll(final Reader reader) throws IOException {
@@ -184,6 +185,6 @@ public class RecoverXmlTest extends AbstractRecoverTest {
                 .checkForIdentical()
                 .build();
 
-        assertFalse("XML identical: " + diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), "XML identical: " + diff.toString());
     }
 }

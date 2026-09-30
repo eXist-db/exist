@@ -32,17 +32,17 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test for https://github.com/eXist-db/exist/issues/1610.
@@ -68,7 +68,7 @@ public class StartupTriggerUpdateAccountAndGroupTest {
     private final static String PASSWORD = "testpass";
     private final static String GROUP = "testgroup2";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, null, properties(), true, true);
 
     public static Properties properties() {

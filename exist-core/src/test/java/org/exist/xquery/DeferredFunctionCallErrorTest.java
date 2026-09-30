@@ -33,14 +33,14 @@ import org.apache.logging.log4j.core.config.Property;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test: an error raised inside a deferred (tail-call) function must be logged once, not
@@ -60,7 +60,7 @@ public class DeferredFunctionCallErrorTest {
 
     private CountingAppender appender;
 
-    @Before
+    @BeforeEach
     public void attachAppender() {
         appender = new CountingAppender();
         appender.start();
@@ -82,7 +82,7 @@ public class DeferredFunctionCallErrorTest {
         ctx.updateLoggers();
     }
 
-    @After
+    @AfterEach
     public void detachAppender() {
         final Logger logger = (Logger) LogManager.getLogger(DEFERRED_LOGGER);
         final LoggerContext ctx = logger.getContext();
@@ -122,8 +122,8 @@ public class DeferredFunctionCallErrorTest {
         dfc.itemAt(0);
         dfc.getItemType();
 
-        assertEquals("deferred body must run exactly once", 1, executeCount.get());
-        assertEquals("the error must be logged once, not once per accessor", 1, appender.count.get());
+        assertEquals(1, executeCount.get(), "deferred body must run exactly once");
+        assertEquals(1, appender.count.get(), "the error must be logged once, not once per accessor");
 
         // the failure must still surface to the caller through a throwing accessor — the fix de-dupes
         // the logging, it does not hide the error.
@@ -133,8 +133,8 @@ public class DeferredFunctionCallErrorTest {
         } catch (final XPathException expected) {
             // expected: realize() re-throws the cached exception
         }
-        assertEquals("the body must still run only once", 1, executeCount.get());
-        assertEquals("surfacing the error must not add a log line", 1, appender.count.get());
+        assertEquals(1, executeCount.get(), "the body must still run only once");
+        assertEquals(1, appender.count.get(), "surfacing the error must not add a log line");
     }
 
     private static final class CountingAppender extends AbstractAppender {

@@ -23,13 +23,13 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  */
 public class DbStoreTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testAnyUri";

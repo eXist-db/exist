@@ -31,11 +31,14 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,15 +48,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class RestoreAppsTest {
 
-    @ClassRule
-    public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public static File temporaryFolder;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String REPO_XML_APP =
@@ -237,7 +238,7 @@ public class RestoreAppsTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             SystemExport export = new SystemExport(broker, transaction, null, null, false);
-            String backupDir = temporaryFolder.newFolder().getAbsolutePath();
+            String backupDir = newFolder(temporaryFolder, "junit").getAbsolutePath();
             backup = export.export(backupDir, false, true, null);
 
             transaction.commit();
@@ -254,7 +255,7 @@ public class RestoreAppsTest {
                 "   <title>Backup Test App</title>\n" +
                 "   <dependency processor=\"http://exist-db.org\" semver-min=\"5.0.0-RC8\"/>\n" +
                 "</package>";
-        Path xarFile = temporaryFolder.newFile().toPath();
+        Path xarFile = File.createTempFile("junit", null, temporaryFolder).toPath();
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(xarFile, StandardOpenOption.WRITE))) {
             ZipEntry entry = new ZipEntry("expath-pkg.xml");
             zos.putNextEntry(entry);
@@ -335,5 +336,22 @@ public class RestoreAppsTest {
         public void finished() {
             // unused
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

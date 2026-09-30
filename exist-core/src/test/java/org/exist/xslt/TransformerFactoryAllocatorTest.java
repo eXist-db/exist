@@ -23,40 +23,35 @@ package org.exist.xslt;
 
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized;
-import org.junit.runner.RunWith;
 import java.util.Hashtable;
 import org.exist.util.Configuration;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import javax.xml.transform.sax.SAXTransformerFactory;
 import org.easymock.EasyMock;
 import org.exist.storage.BrokerPool;
-import org.junit.Test;
 
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import org.junit.runners.Parameterized.Parameter;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-@RunWith(value = Parameterized.class)
 public class TransformerFactoryAllocatorTest {
 
-    @Parameters(name = "{0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "net.sf.saxon.TransformerFactoryImpl" }
         });
     }
-
-    @Parameter
     public String transformerFactoryClass;
 
-    @Test
-    public void getTransformerFactory() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getTransformerFactory(String transformerFactoryClass) {
+        initTransformerFactoryAllocatorTest(transformerFactoryClass);
 
         final  Hashtable<String,Object> testAttributes = new Hashtable<String,Object>();
 
@@ -74,5 +69,9 @@ public class TransformerFactoryAllocatorTest {
         assertEquals(transformerFactoryClass, transformerFactory.getClass().getName());
 
         verify(mockBrokerPool, mockConfiguration);
+    }
+
+    public void initTransformerFactoryAllocatorTest(String transformerFactoryClass) {
+        this.transformerFactoryClass = transformerFactoryClass;
     }
 }

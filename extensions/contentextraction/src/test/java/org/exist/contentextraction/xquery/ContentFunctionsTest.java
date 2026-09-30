@@ -37,25 +37,26 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.contentextraction.xquery.Util.executeQuery;
 import static org.exist.contentextraction.xquery.Util.withCompiledQuery;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ContentFunctionsTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -79,7 +80,7 @@ public class ContentFunctionsTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -93,7 +94,7 @@ public class ContentFunctionsTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void getMetadataFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
@@ -123,7 +124,7 @@ public class ContentFunctionsTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void getMetadataAndContentFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
@@ -152,8 +153,8 @@ public class ContentFunctionsTest {
         }
     }
 
-    @Ignore("see https://github.com/eXist-db/exist/issues/3835")
-    @Test
+    @Disabled("see https://github.com/eXist-db/exist/issues/3835")
+    @org.junit.jupiter.api.Test
     public void getMetadataFromXlsx() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """

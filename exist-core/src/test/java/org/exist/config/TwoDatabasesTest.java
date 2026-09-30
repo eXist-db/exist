@@ -42,21 +42,26 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 import org.xml.sax.SAXException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author alex
  */
+@ExtendWith(ExternalResourceSupport.class)
 public class TwoDatabasesTest {
 
     private static Path config1File;
     private static Path config2File;
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws URISyntaxException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
@@ -83,7 +88,7 @@ public class TwoDatabasesTest {
     private Subject user1;
     private Subject user2;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         user1 = pool1.getSecurityManager().getSystemSubject();
@@ -100,7 +105,7 @@ public class TwoDatabasesTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         put();
         get();

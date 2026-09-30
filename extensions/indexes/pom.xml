@@ -54,5 +54,7 @@
         <url>scm:git:https://github.com/exist-db/exist.git</url>
         <tag>HEAD</tag>
     </scm>
+    <dependencies>
+    </dependencies>
 
 </project>

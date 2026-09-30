@@ -35,7 +35,10 @@ package org.exist.xquery.functions.session;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Rule;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.migrationsupport.rules.ExternalResourceSupport;
 
+@ExtendWith(ExternalResourceSupport.class)
 public abstract class AbstractSessionTest {
 
     /**

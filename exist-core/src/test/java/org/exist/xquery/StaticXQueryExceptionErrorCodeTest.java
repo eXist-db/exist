@@ -25,11 +25,11 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Targeted regression tests for the XQTS prod-Literal sub-cluster where
@@ -44,7 +44,7 @@ import static org.junit.Assert.fail;
  */
 public class StaticXQueryExceptionErrorCodeTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -127,8 +127,8 @@ public class StaticXQueryExceptionErrorCodeTest {
             final String actual = e.getErrorCode() == null
                     ? "<null>"
                     : e.getErrorCode().getErrorQName().getLocalPart();
-            assertEquals("Wrong error code for query [" + query + "] (message: " + e.getMessage() + ")",
-                    "XPST0003", actual);
+            assertEquals("XPST0003",
+                    actual, "Wrong error code for query [" + query + "] (message: " + e.getMessage() + ")");
         } catch (final Exception e) {
             fail("Unexpected exception for query [" + query + "]: " + e.getClass().getName() + " - " + e.getMessage());
         }

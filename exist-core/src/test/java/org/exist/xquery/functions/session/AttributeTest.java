@@ -33,7 +33,7 @@
 package org.exist.xquery.functions.session;
 
 import org.exist.util.UUIDGenerator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.CookieManager;

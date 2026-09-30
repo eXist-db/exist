@@ -22,11 +22,12 @@
 
 package org.exist.util.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests the {@link ByteArrayContent} implementation.
@@ -36,14 +37,15 @@ import static org.junit.Assert.assertEquals;
 public class ByteArrayContentTest {
     private ByteArrayContent content;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         content = ByteArrayContent.of("test data");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testOfNullString() {
-        ByteArrayContent.of((String) null);
+        assertThrows(NullPointerException.class, () ->
+            ByteArrayContent.of((String) null));
     }
 
     @Test
