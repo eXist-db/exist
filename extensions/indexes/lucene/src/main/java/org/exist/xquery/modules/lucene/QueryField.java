@@ -63,7 +63,13 @@ public class QueryField extends Query implements Optimizable {
                                        <phrase-slop>number</phrase-slop>
                                        <leading-wildcard>yes|no</leading-wildcard>
                                        <filter-rewrite>yes|no</filter-rewrite>
-                                    </options>"""
+                                       <phrase-as-near>yes|no</phrase-as-near>
+                                    </options>
+
+                                    phrase-as-near makes a string proximity query ('"a b"~n') match with the same
+                                    ordered, non-reordering-tolerant slop semantics as an XML <near slop="n">
+                                    query, instead of Lucene's reordering-tolerant phrase slop; see ft:query and
+                                    https://github.com/eXist-db/exist/issues/833"""
                             )
                     )
             )

@@ -27,6 +27,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.MultiTermQuery;
+import org.exist.indexing.lucene.PhraseAsNearRewriter;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.util.Configuration;
@@ -61,6 +62,17 @@ public class QueryOptions {
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
     public static final String OPTION_FILTER_QUERY = "filter-query";
     public static final String OPTION_FILTER = "filter";
+    /**
+     * When {@code yes}/{@code true}, sloppy phrase queries ({@code "a b"~n}) are matched with the
+     * same ordered, positional-gap slop semantics as an XML {@code <near slop="n">} query, instead
+     * of Lucene's {@link org.apache.lucene.search.PhraseQuery} edit-distance semantics (which
+     * tolerates some term reordering). Use this to make string- and XML-syntax proximity queries
+     * agree on which documents match.
+     *
+     * @see org.exist.indexing.lucene.PhraseAsNearRewriter
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    public static final String OPTION_PHRASE_AS_NEAR = "phrase-as-near";
 
     protected enum DefaultOperator {
         OR,
@@ -72,6 +84,7 @@ public class QueryOptions {
     protected boolean allowLeadingWildcard = false;
     protected Optional<Integer> phraseSlop = Optional.empty();
 
+    protected boolean phraseAsNear = false;
     protected boolean filterRewrite = false;
     protected boolean lowercaseExpandedTerms = false;
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
@@ -270,6 +283,9 @@ public class QueryOptions {
                     throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
                 }
                 break;
+            case OPTION_PHRASE_AS_NEAR:
+                phraseAsNear = Configuration.parseBoolean(value, false);
+                break;
             case OPTION_FILTER_REWRITE:
                 filterRewrite = Configuration.parseBoolean(value, false);
                 break;
@@ -309,6 +325,20 @@ public class QueryOptions {
         if (lowercaseExpandedTerms) {
             // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
+    }
+
+    /**
+     * If the {@code phrase-as-near} option is set, rewrite every phrase-query clause of
+     * {@code query} into an equivalent ordered near/span query. Otherwise return {@code query}
+     * unchanged.
+     *
+     * @param query the freshly-parsed query
+     * @return the (possibly rewritten) query
+     *
+     * @see org.exist.indexing.lucene.PhraseAsNearRewriter
+     */
+    public org.apache.lucene.search.Query applyPhraseAsNear(final org.apache.lucene.search.Query query) {
+        return phraseAsNear ? PhraseAsNearRewriter.rewrite(query) : query;
     }
 
     public String  getQueryAnalyzerId() { return queryAnalyzerId; }

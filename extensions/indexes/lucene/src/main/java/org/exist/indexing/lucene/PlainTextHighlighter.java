@@ -24,12 +24,8 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.MemTreeBuilder;
 
@@ -69,61 +65,24 @@ public class PlainTextHighlighter {
     }
 
     public List<Offset> getOffsets(String content, Analyzer analyzer) throws IOException {
-        List<Offset> offsets = null;
+        final List<Offset> offsets = new ArrayList<>();
         try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(content));
              MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
             stream.reset();
             while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query termQuery = termMap.get(text);
                 if (termQuery != null) {
-                    // Phrase queries need special handling to avoid marking partial matches.
-                    if (termQuery instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan ahead to verify a complete phrase match.
-                            stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-                            // Consume tokens to confirm the full phrase; rewind to mark on first mismatch.
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    stream.rewindToMark();
-                                    break;
-                                }
-                            }
-                            if (stateList.size() == terms.length) {
-                                if (offsets == null) {
-                                    offsets = new ArrayList<>();
-                                }
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                offsets.add(new Offset(start, end));
-
-                                // Restore to the end of the confirmed phrase for continued scanning.
-                                stream.restoreState(stateList.getLast());
-                            }
-                        }
-                    } else {
-                        if (offsets == null) {
-                            offsets = new ArrayList<>();
-                        }
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
-                    }
+                    // Phrase and near/proximity queries need special handling to avoid marking
+                    // partial matches; both forms are matched the same slop-aware way so that
+                    // string ('"a b"~n') and XML (<near slop="n">) queries highlight identically,
+                    // see #833.
+                    LuceneUtil.highlightToken(stream, text, termQuery,
+                            (start, end) -> offsets.add(new Offset(start, end)));
                 }
             }
         }
-        return offsets;
+        return offsets.isEmpty() ? null : offsets;
     }
 
     public static class Offset {
