@@ -1,0 +1,30 @@
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBAbstractCollectionManipulator.java
+  s_f03fe8b0b5549a::t_20e1f695ad8e42 199-213,215,228-229
+  s_f03fe8b0b5549a::t_0a7b43e67a174b 32
+exist-core/src/main/java/org/exist/xmldb/CollectionCloseUtil.java
+  s_f03fe8b0b5549a::t_48011e956109c2 1-62
+exist-ant/src/main/java/org/exist/ant/XMLDBCreateTask.java
+  s_f03fe8b0b5549a::t_71f06a1b031ce5 131-133,135-136,138-144,146-154,156-159,161
+exist-core/src/main/java/org/exist/client/InteractiveClient.java
+  s_f03fe8b0b5549a::t_1519ef99b39a8d 1708-1709
+  s_f03fe8b0b5549a::t_57c7a8612de119 104
+exist-ant/src/main/java/org/exist/ant/AbstractXMLDBTask.java
+  s_f03fe8b0b5549a::t_463761cfeb3b5a 32
+  s_f03fe8b0b5549a::t_39ce53c33308f7 200-201,203,205-209,211-212,214-220,222-230,232-235,237,249-250
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "65df7101a6ab302b365a904d3032b391ef0bac64",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
