@@ -4,6 +4,12 @@ on:
     branches:
       - develop
       - master
+# Serialize rather than cancel: dropping analysis of an actual merged commit
+# loses history, but two analyses racing against the same SonarCloud project
+# can corrupt its incremental state, so back-to-back pushes queue instead.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     name: SonarCloud Analysis

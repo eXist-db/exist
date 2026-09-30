@@ -10,6 +10,14 @@ on:
     - cron: '17 2 * * 0,3'
 permissions:
   contents: read
+# Cancel superseded runs (e.g. a force-push/amend during review) to free up
+# runners, but never cancel a develop/master run in progress so CI history
+# stays complete for bisecting regressions. A cancelled PR run just means
+# ci-xqts-comment.yml (which only fires on conclusion == 'success') won't
+# post a stale comment — harmless, since the newer run's comment supersedes it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master' }}
 
 jobs:
   xqts:

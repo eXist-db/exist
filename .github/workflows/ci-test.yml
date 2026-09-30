@@ -2,6 +2,12 @@ name: Test & documentation
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
+# Cancel superseded runs (e.g. a force-push/amend during review) to free up
+# runners, but never cancel a develop/master run in progress so CI history
+# stays complete for bisecting regressions.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master' }}
 env:
   MAVEN_OPTS: -DtrimStackTrace=false
   DEV_JDK: '21'
