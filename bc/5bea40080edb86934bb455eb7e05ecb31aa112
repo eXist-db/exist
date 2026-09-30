@@ -1,0 +1,19 @@
+.github/workflows/ci-release-prepare.yml
+  s_f03fe8b0b5549a::t_4ea89b50780682 44-52,54-55,60,64-65,72-74,76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bc5bea40080edb86934bb455eb7e05ecb31aa112",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
