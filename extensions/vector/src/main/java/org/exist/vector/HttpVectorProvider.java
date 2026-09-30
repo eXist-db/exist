@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * HTTP-based vector embedding provider for external APIs (OpenAI, Cohere).
@@ -69,6 +70,15 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
   private final ApiType apiType;
   private final HttpClient httpClient;
 
+  // Guards httpClient against a concurrent close(): VectorEmbeddingService caches providers
+  // and can evict (and close) one from a different thread than whichever is mid-embed() on
+  // it. embed() holds the read lock for its duration (an in-flight HTTP call can run for up
+  // to the 60s request timeout below); close() takes the write lock, so it can't run until
+  // every in-flight embed() has finished, and any embed() that starts afterward sees
+  // `closed` and returns null instead of sending a request on a closed client.
+  private final ReentrantReadWriteLock lifecycleLock = new ReentrantReadWriteLock();
+  private volatile boolean closed = false;
+
   private HttpVectorProvider(final String modelId, final String baseUrl, final String apiKey,
       final int dimension, final ApiType apiType) {
     this.modelId = modelId;
@@ -86,6 +96,24 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
     return dimension;
   }
 
+  /**
+   * Closes the underlying {@link HttpClient}, blocking until any in-flight {@link #embed}
+   * call finishes.
+   */
+  @Override
+  public void close() {
+    lifecycleLock.writeLock().lock();
+    try {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      httpClient.close();
+    } finally {
+      lifecycleLock.writeLock().unlock();
+    }
+  }
+
   @Override
   @Nullable
   public float[] embed(final String text) {
@@ -98,7 +126,11 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
     if (text == null || apiKey == null || apiKey.isEmpty()) {
       return null;
     }
+    lifecycleLock.readLock().lock();
     try {
+      if (closed) {
+        return null;
+      }
       return switch (apiType) {
         case OPENAI -> embedOpenAI(text);
         case COHERE -> embedCohere(text, forQuery);
@@ -107,6 +139,8 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
     } catch (final Exception e) {
       LOG.warn("HTTP embedding failed for {}: {}", modelId, e.getMessage());
       return null;
+    } finally {
+      lifecycleLock.readLock().unlock();
     }
   }
 
@@ -223,6 +257,16 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
       return null;
     }
     return new HttpVectorProvider(modelId, baseUrl.trim(), key, dimension, type);
+  }
+
+  /**
+   * Test-only factory: bypasses {@link #detectApiType}'s api.openai.com/api.cohere URL
+   * restriction, so tests can point a provider at a local mock server. Package-private --
+   * not part of the public API.
+   */
+  static HttpVectorProvider createForTesting(final String modelId, final String baseUrl,
+      final String apiKey, final int dimension, final ApiType apiType) {
+    return new HttpVectorProvider(modelId, baseUrl, apiKey, dimension, apiType);
   }
 
   @Nullable
