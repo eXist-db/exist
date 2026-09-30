@@ -1,0 +1,24 @@
+extensions/vector/src/test/java/org/exist/vector/HttpVectorProviderConcurrencyTest.java
+  s_f03fe8b0b5549a::t_e83d34cd3f1f79 1-30,34-36,40-50,52-56,59-77,80-83,85-95,98-109,111-116,119-124
+  s_f03fe8b0b5549a::t_a339f369df8520 31-33,37-39,51,57-58,78-79,84,96-97,110,117-118
+extensions/vector/src/main/java/org/exist/vector/HttpVectorProvider.java
+  s_f03fe8b0b5549a::t_f8b558eaf33d56 262-271
+extensions/vector/pom.xml
+  s_f03fe8b0b5549a::t_aa1a81fd4dc8b1 94-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6779d7d4740be4e46d542dfd98836136e679c48a",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
