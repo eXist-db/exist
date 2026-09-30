@@ -46,7 +46,7 @@
     </scm>
 
     <properties>
-        <tika.version>4.0.0</tika.version>
+        <tika.version>4.1.0</tika.version>
     </properties>
 
     <dependencies>
