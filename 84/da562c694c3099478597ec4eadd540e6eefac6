@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xmldb/CollectionCloseUtilTest.java
+  s_f03fe8b0b5549a::t_f3b952b5268d4c 1-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "84da562c694c3099478597ec4eadd540e6eefac6",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
