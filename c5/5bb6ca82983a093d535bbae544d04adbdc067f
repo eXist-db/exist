@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_3e30a8da43b49c::t_8c221b9b99bc57 80,97,110,142
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSchedulingTest.java
+  s_3e30a8da43b49c::t_b19f0e4edfddb7 200
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_3e30a8da43b49c::t_fdd7fe0ede99ea 74-79
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSettings.java
+  s_3e30a8da43b49c::t_1046347344487e 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c55bb6ca82983a093d535bbae544d04adbdc067f",
+  "prompts": {},
+  "sessions": {
+    "s_3e30a8da43b49c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f0757b4e1ffeCuw281t3TMddov",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
