@@ -1,0 +1,37 @@
+exist-core/src/test/java/org/exist/test/runner/XSuiteFailureMessageTest.java
+  s_f03fe8b0b5549a::t_0d7a1fcb8cfd1d 51
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/AbstractBinariesTest.java
+  s_f03fe8b0b5549a::t_75965389f80007 29,56
+exist-core/src/test/java/org/exist/security/XmldbApiSecurityTest.java
+  s_f03fe8b0b5549a::t_f054b8c3140388 41-43,49-50,63,65
+exist-core/src/test/java/org/exist/xquery/XmldbBinariesTest.java
+  s_f03fe8b0b5549a::t_f054b8c3140388 37-39,48-49,62,64
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/XmldbBinariesTest.java
+  s_f03fe8b0b5549a::t_f054b8c3140388 36-38,47-48,61,63
+extensions/modules/file/pom.xml
+  s_1253ffb84560e1::t_039ca4893379ed 121-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7c891ba21511382e4e0198c57a86fb024f44edd3",
+  "prompts": {},
+  "sessions": {
+    "s_1253ffb84560e1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ad97d5ac-6d02-4345-8d1e-03195239e289",
+        "model": "grok-4.7"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
