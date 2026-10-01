@@ -267,6 +267,72 @@ public abstract class Match implements Comparable<Match> {
         return result;
     }
 
+    /**
+     * Expand the match backwards by at least minExpand up to maxExpand Unicode codepoints
+     * (not UTF-16 code units), so that a supplementary character (a surrogate pair) is counted
+     * as a single "character" and not split across two expansion steps. The match is expanded
+     * as much as possible.
+     *
+     * @param minExpand The minimum number of codepoints to expand this match by
+     * @param maxExpand The maximum number of codepoints to expand this match by
+     * @param data The full string value of the node the match is against, used to translate
+     *             codepoint counts into UTF-16 offsets
+     * @return The expanded match if possible, or null if no offset is far enough from the start.
+     */
+    public @Nullable Match expandBackwardCodepoints(final int minExpand, final int maxExpand, final String data) {
+        @Nullable Match result = null;
+        for (int i = 0; i < currentOffset; i++) {
+            final int availableCodepoints = data.codePointCount(0, offsets[i]);
+            if (availableCodepoints >= minExpand) {
+                final int expandCodepoints = Math.min(availableCodepoints, maxExpand);
+                final int newStart = data.offsetByCodePoints(offsets[i], -expandCodepoints);
+                if (result == null) {
+                    final StringBuilder matched = new StringBuilder();
+                    for (int ii = 0; ii < expandCodepoints; ii++) {
+                        matched.append('?');
+                    }
+                    matched.append(matchTerm);
+                    result = createInstance(context, nodeId, matched.toString());
+                }
+                result.addOffset(newStart, offsets[i] - newStart + lengths[i]);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Expand the match forward by at least minExpand up to maxExpand Unicode codepoints
+     * (not UTF-16 code units), so that a supplementary character (a surrogate pair) is counted
+     * as a single "character" and not split across two expansion steps. The match is expanded
+     * as much as possible.
+     *
+     * @param minExpand  The minimum number of codepoints to expand this match by
+     * @param maxExpand  The maximum number of codepoints to expand this match by
+     * @param data The full string value of the node the match is against, used to translate
+     *             codepoint counts into UTF-16 offsets
+     * @return The expanded match if possible, or null if no offset is far enough from the end.
+     */
+    public @Nullable Match expandForwardCodepoints(final int minExpand, final int maxExpand, final String data) {
+        @Nullable Match result = null;
+        for (int i = 0; i < currentOffset; i++) {
+            final int matchEnd = offsets[i] + lengths[i];
+            final int availableCodepoints = data.codePointCount(matchEnd, data.length());
+            if (availableCodepoints >= minExpand) {
+                final int expandCodepoints = Math.min(availableCodepoints, maxExpand);
+                final int newEnd = data.offsetByCodePoints(matchEnd, expandCodepoints);
+                if (result == null) {
+                    final StringBuilder matched = new StringBuilder(matchTerm);
+                    for (int ii = 0; ii < expandCodepoints; ii++) {
+                        matched.append('?');
+                    }
+                    result = createInstance(context, nodeId, matched.toString());
+                }
+                result.addOffset(offsets[i], newEnd - offsets[i]);
+            }
+        }
+        return result;
+    }
+
     private @Nullable Match filterOffsets(final Predicate<Offset> predicate) {
         final Match result = createInstance(context, nodeId, matchTerm);
         getOffsets().stream().filter(predicate).forEach(result::addOffset);
