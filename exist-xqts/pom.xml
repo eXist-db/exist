@@ -78,6 +78,21 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- exist-xqts-runner uses exist-core's org.exist.test.ExistEmbeddedServer (which implements
+             the JUnit Jupiter extension callbacks) and loads JUnit classes (junit.framework.Test)
+             at startup, but it declares neither library. They used to arrive transitively via
+             exist-core, which now only has them at provided scope. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- needed for the AppAssembler booter approach -->
         <dependency>
             <groupId>org.codehaus.mojo.appassembler</groupId>

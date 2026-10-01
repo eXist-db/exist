@@ -522,16 +522,16 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test:
-                 both for org.exist.test.runner's JUnit4 Runner-API-based custom test runner
-                 (XSuite et al.), and org.exist.test.ExistEmbeddedServer/ExistXmldbEmbeddedServer/
-                 ExistWebServer extending org.junit.rules.ExternalResource for JUnit 4 backward
-                 compatibility alongside their JUnit 5 BeforeAllCallback/AfterAllCallback support. -->
+            <!-- provided: needed to compile org.exist.test.runner's JUnit 4 Runner-API-based custom
+                 test runner (XSuite et al.). Not transitive, so it does not leak to consumers of
+                 exist-core; modules that run XSuite suites declare it themselves. -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+            <!-- provided: needed to compile org.exist.test (DiffMatcher et al.); not transitive -->
+            <scope>provided</scope>
         </dependency>
 
         <!-- test dependencies -->
@@ -555,14 +555,17 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <!-- not just test scope, as needed for org.exist.test.ExistEmbeddedServer's
-                 BeforeAllCallback/AfterAllCallback support, used by downstream modules' tests -->
+            <!-- provided: needed to compile org.exist.test.ExistEmbeddedServer's
+                 BeforeAllCallback/AfterAllCallback support; not transitive, downstream
+                 modules declare it for their own tests -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.opentest4j</groupId>
             <artifactId>opentest4j</artifactId>
-            <!-- not test scope: org.exist.test.runner.ExtTestFailureFunction (main source) throws
+            <!-- provided: org.exist.test.runner.ExtTestFailureFunction (main source) throws
                  AssertionFailedError for rich IDE diff rendering of XQSuite test failures -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -587,6 +590,8 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
+            <!-- provided: needed to compile org.exist.test (XmlStringDiffMatcher et al.); not transitive -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
