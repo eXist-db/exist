@@ -28,9 +28,10 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.SaxonRegexTermMatcher;
+import org.exist.storage.TermMatcher;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
-import org.exist.util.PatternFactory;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
@@ -41,17 +42,14 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.str.StringView;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 import static org.exist.xquery.regex.RegexUtil.*;
+import static org.exist.xquery.regex.SaxonRegex.*;
 
 /**
  * Implements the fn:matches() function.
@@ -115,8 +113,6 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             )
     );
 
-    protected Matcher matcher = null;
-    protected Pattern pat = null;
 
     protected boolean hasUsedIndex = false;
 
@@ -289,31 +285,17 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             LOG.trace("Using QName index on type {}", Type.getTypeName(indexType));
         }
 
-        final int flags;
-        if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, null).getStringValue();
-            flags = parseFlags(this, flagsArg);
-        } else {
-            flags = 0;
-        }
-
-        final boolean caseSensitive = !hasCaseInsensitive(flags);
-
-        final String pattern;
-        final boolean literal = hasLiteral(flags);
-        if (literal) {
-            // no need to change anything
-            pattern = getArgument(1).eval(contextSequence, null).getStringValue();
-        } else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = !caseSensitive;
-            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, null).getStringValue(), ignoreWhitespace, caseBlind);
-        }
+        final String flags = validateFlags(this, getSignature().getArgumentCount() == 3
+                ? getArgument(2).eval(contextSequence, null).getStringValue() : "");
+        final boolean caseSensitive = !isCaseInsensitive(flags);
+        final String pattern = getArgument(1).eval(contextSequence, null).getStringValue();
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
 
         try {
-            preselectResult = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(),
+            preselectResult = context.getBroker().getValueIndex().matchRegex(context.getWatchDog(), contextSequence.getDocumentSet(),
                     useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
-                    contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                    contextQName, new SaxonRegexTermMatcher(regex), caseSensitive);
             hasUsedIndex = true;
         } catch (final EXistException e) {
             throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
@@ -488,32 +470,15 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             }
         }
 
-        final int flags;
-        if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
-            flags = parseFlags(this, flagsArg);
-        } else {
-            flags = 0;
-        }
-
-        final boolean caseSensitive = !hasCaseInsensitive(flags);
+        final String flags = validateFlags(this, getSignature().getArgumentCount() == 3
+                ? getArgument(2).eval(contextSequence, contextItem).getStringValue() : "");
+        final boolean caseSensitive = !isCaseInsensitive(flags);
+        final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        final TermMatcher matcher = new SaxonRegexTermMatcher(regex);
 
         Sequence result = null;
-
-        final String pattern;
-        if (isCalledAs("matches-regex")) {
-            pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        } else {
-            final boolean literal = hasLiteral(flags);
-            if (literal) {
-                // no need to change anything
-                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-            } else {
-                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
-            }
-        }
 
         final NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
@@ -541,7 +506,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                     indexScan = true;
                 }
             } else {
-                result = evalFallback(nodes, pattern, flags, indexType);
+                result = evalFallback(nodes, regex, indexType);
             }
 
             if (result == null) {
@@ -557,16 +522,16 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                         LOG.trace("Using range index for fn:matches expression: {}", pattern);
                     }
                     if (indexScan) {
-                        result = index.matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.matchAllRegex(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, matcher, caseSensitive);
                     } else {
-                        result = index.match(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.matchRegex(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, matcher, caseSensitive);
                     }
                 } catch (final EXistException e) {
                     throw new XPathException(this, e);
                 }
             }
         } else {
-            result = evalFallback(nodes, pattern, flags, indexType);
+            result = evalFallback(nodes, regex, indexType);
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -577,13 +542,14 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
     }
 
-    private Sequence evalFallback(final NodeSet nodes, final String pattern, final int flags, final int indexType) throws XPathException {
+    private Sequence evalFallback(final NodeSet nodes, final RegularExpression regex, final int indexType) throws XPathException {
         if (LOG.isTraceEnabled()) {
             LOG.trace("fn:matches: can't use existing range index of type {}. Need a string index.", Type.getTypeName(indexType));
         }
+        final TermMatcher matcher = new SaxonRegexTermMatcher(regex);
         final Sequence result = new ExtArrayNodeSet();
         for (final NodeProxy node : nodes) {
-            if (match(node.getStringValue(), pattern, flags)) {
+            if (matcher.matches(node.getStringValue())) {
                 result.add(node);
             }
         }
@@ -598,6 +564,15 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
      * @throws XPathException if an error occurs
      */
     private Sequence evalGeneric(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
+        // fn:matches takes xs:string?, so more than one item is a type error. Sequence.getStringValue
+        // below would otherwise quietly return the first item's value and test that alone, which is
+        // how matches(('x','a'), 'a') came to answer false rather than raising.
+        if (input.getItemCount() > 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Type error: the first argument of " + getName() + " must be a single item; got "
+                            + input.getItemCount() + " items", input);
+        }
+
         final String string = input.getStringValue();
 
         final String xmlRegexFlags;
@@ -608,19 +583,16 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         }
 
         final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        if (isCalledAs("matches-regex")) {
-            final int flags = parseFlags(this, xmlRegexFlags);
-            return BooleanValue.valueOf(match(string, pattern,flags));
-        } else {
-            return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
-        }
+        return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
     }
 
 
-    private boolean matchXmlRegex(String string, final String pattern, final String flags) throws XPathException {
+    private boolean matchXmlRegex(final String string, final String pattern, final String rawFlags) throws XPathException {
+        final String flags = validateFlags(this, rawFlags);
+
         // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
         // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
-        // translateXPath4Lookaround / Java-regex dispatch path.
+        // translateXPath4Lookaround / ;j dispatch path.
         if (hasXPath4Lookaround(pattern)) {
             throw new XPathException(this, ErrorCodes.XPST0017,
                     "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
@@ -629,68 +601,16 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
         // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
         // but that Saxon's XP30 mode accepts (Java/Perl extensions)
-        if (!hasLiteral(flags)) {
+        // Java syntax is the point of ';j', so the XPath-syntax check does not apply to it.
+        if (!hasLiteral(flags) && !usesJavaEngine(flags)) {
             validateXPathRegex(this, pattern, false);
         }
 
-        try {
-            List<String> warnings = new ArrayList<>(1);
-            RegularExpression regex = context.getBroker().getBrokerPool()
-                    .getSaxonConfiguration()
-                    .compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
-
-            for (final String warning : warnings) {
-                LOG.warn(warning);
-            }
-
-            return regex.containsMatch(StringView.of(string));
-
-        } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP31 regex translator rejects some valid patterns:
-            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
-            // Fall back to Java regex before giving up.
-            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
-                try {
-                    final String javaPattern = translateRegexp(
-                            this, pattern, flags.contains("x"), flags.contains("i"));
-                    int javaFlags = parseFlags(this, flags);
-                    return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
-                } catch (final XPathException | PatternSyntaxException ignored) {
-                    // Java regex fallback also failed — throw original Saxon error below
-                }
-            }
-            switch (e.getErrorCodeQName().getLocalPart()) {
-                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
-                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
-                // no FORX0003 here since fn:matches is allowed to match an empty string
-                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-            }
-        }
+        final RegularExpression regex = compile(this,
+                context.getBroker().getBrokerPool().getSaxonConfiguration(), pattern, flags);
+        return regex.containsMatch(StringView.of(string));
     }
 
-    /**
-     * @param string the value
-     * @param pattern the pattern
-     * @param flags the flags
-     * @return Whether the string matches the given pattern with the given flags
-     * @throws XPathException if an error occurs
-     */
-    private boolean match(final String string, final String pattern, final int flags) throws XPathException {
-        try {
-            if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-                pat = PatternFactory.getInstance().getPattern(pattern, flags);
-                //TODO : make matches('&#x212A;', '[A-Z]', 'i') work !
-                matcher = pat.matcher(string);
-            } else {
-                matcher.reset(string);
-            }
-
-            return matcher.find();
-
-        } catch (final PatternSyntaxException e) {
-            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
-        }
-    }
 
     @Override
     public void reset() {
@@ -704,5 +624,10 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    /** Whether the validated flags include {@code i}. */
+    private static boolean isCaseInsensitive(final String flags) {
+        return flags.indexOf('i') >= 0;
     }
 }
