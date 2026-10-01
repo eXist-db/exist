@@ -23,6 +23,8 @@
 package org.exist.test.runner;
 
 import org.junit.jupiter.api.Test;
+import java.util.List;
+import org.exist.storage.BrokerPool;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 
@@ -67,6 +69,21 @@ class AbstractTestRunnerTest {
             @Override
             public Description getDescription() {
                 return Description.createTestDescription(getClass(), "testRun");
+            }
+
+            @Override
+            public String getSuiteName() {
+                return "testRun";
+            }
+
+            @Override
+            public List<String> getTestNames() {
+                return List.of();
+            }
+
+            @Override
+            public void run(final TestEvents events, final BrokerPool brokerPool) {
+                // no action
             }
         };
 

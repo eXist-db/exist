@@ -290,7 +290,17 @@ public class XSuite extends ParentRunner<Runner> {
         }
     }
 
-    private static @Nullable Runner getRunner(final Path path, final boolean parallel) throws InitializationError {
+    /**
+     * Creates the test runner for a file of tests.
+     *
+     * @param path the XQuery or XML test file
+     * @param parallel true if the tests will be run in parallel
+     *
+     * @return the runner, or null if the file is not a test file
+     *
+     * @throws InitializationError if the file cannot be read as a test file
+     */
+    public static @Nullable AbstractTestRunner newTestRunner(final Path path, final boolean parallel) throws InitializationError {
         if(XMLFilenameFilter.asPredicate().test(path)) {
             return new XMLTestRunner(path, parallel);
         } else if(XQueryFilenameFilter.asPredicate().test(path) && !"runTests.xql".equals(path.getFileName().toString())) {
@@ -298,6 +308,10 @@ public class XSuite extends ParentRunner<Runner> {
         } else {
             return null;
         }
+    }
+
+    private static @Nullable Runner getRunner(final Path path, final boolean parallel) throws InitializationError {
+        return newTestRunner(path, parallel);
     }
 
     @Override
