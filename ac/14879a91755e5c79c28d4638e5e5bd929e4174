@@ -1,0 +1,139 @@
+exist-core/src/test/java/org/exist/dom/persistent/SymbolTableTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,46
+exist-core/src/test/java/org/exist/xquery/value/DateTimeTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,44
+exist-core/src/test/java/org/exist/util/sorters/SortTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,48
+exist-core/src/test/java/org/exist/xquery/value/NumericOpPromotionTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,38
+exist-core/src/test/java/org/exist/source/SourceFactoryTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,45
+exist-core/src/test/java/org/exist/xquery/XQueryDeclareContextItemTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,66
+exist-core/src/test/java/org/exist/xquery/value/BinaryValueTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,39
+exist-core/src/test/java/org/exist/dom/memtree/MemtreeBuilderTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,49
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunUnparsedTextTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,53
+exist-core/src/test/java/org/exist/xquery/OptimizerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,60
+exist-core/src/test/java/org/exist/dom/memtree/DocumentImplTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,47
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunSubSequenceTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,41
+exist-core/src/test/java/org/exist/util/io/CachingFilterInputStreamNonMarkableByteArrayInputStreamTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 29-30,56
+exist-core/src/test/java/org/exist/security/SimpleACLPermissionTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,50
+exist-core/src/test/java/org/exist/dom/memtree/TextImplTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,39
+exist-core/src/test/java/org/exist/xquery/value/DurationTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,38
+exist-core/src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 35-36,52
+exist-core/src/test/java/org/exist/dom/persistent/ElementImplTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,37
+exist-core/src/test/java/org/exist/xquery/DuplicateAttributesTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,44
+exist-core/src/test/java/org/exist/xquery/value/DateTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,40
+exist-core/src/test/java/org/exist/storage/structural/NativeStructuralIndexWorkerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,41
+exist-core/src/test/java/org/exist/xquery/value/SubSequenceTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 35-36,50
+exist-core/src/test/java/org/exist/collections/CollectionURITest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,31
+exist-core/src/test/java/org/exist/dom/memtree/MemtreeInXQueryTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,36
+exist-core/src/test/java/org/exist/dom/persistent/DocTypeTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,67
+exist-core/src/test/java/org/exist/dom/memtree/DOMIndexerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,62
+exist-core/src/test/java/org/exist/storage/txn/TxnTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 35-36,45
+extensions/indexes/lucene/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_a7691ceb6c09fb 1-4
+exist-core/src/test/java/org/exist/dom/memtree/MemtreeTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,49
+exist-core/src/test/java/org/exist/util/io/CachingFilterInputStreamTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,50
+exist-core/src/test/java/org/exist/util/MimeTableTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,44
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/OptimizerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,52
+exist-core/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_a7691ceb6c09fb 1-4
+exist-core/src/test/java/org/exist/xquery/MemtreeDescendantOrSelfNodeKindTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,32
+exist-core/src/test/java/org/exist/stax/EmbeddedXMLStreamReaderTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,63
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/IdFunctionTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,50
+exist-core/src/test/java/org/exist/config/ConfigurableTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,48
+exist-core/src/test/java/org/exist/xquery/XQueryFunctionsTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,61
+exist-core/src/test/java/org/exist/http/AuditTrailSessionListenerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,56
+exist-core/src/test/java/org/exist/xquery/value/DayTimeDurationTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,35
+exist-core/src/test/java/org/exist/xquery/value/BinaryValueFromInputStreamTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,45
+exist-core/src/test/java/org/exist/dom/persistent/BasicNodeSetTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,81
+exist-core/src/test/java/org/exist/numbering/DLNTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,35
+exist-core/src/test/java/org/exist/xquery/ConstructedNodesTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,42
+exist-core/src/test/java/org/exist/xqj/MarshallerTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,74
+exist-core/src/test/java/org/exist/xquery/value/YearMonthDurationTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,35
+exist-core/src/test/java/org/exist/http/urlrewrite/XQueryURLRewriteTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,42
+exist-core/src/test/java/org/exist/dom/persistent/TextImplTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,42
+exist-core/src/test/java/org/exist/dom/memtree/DOMTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,54
+exist-core/src/test/java/org/exist/xquery/value/TimeTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,40
+exist-core/src/test/java/org/exist/dom/persistent/DocumentImplTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,49
+exist-core/src/test/java/org/exist/dom/persistent/DefaultDocumentSetTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,41
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionModeConversionTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,40
+exist-core/src/test/java/org/exist/security/UnixStylePermissionTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,50
+exist-core/src/test/java/org/exist/dom/memtree/DocumentBuilderReceiverTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,42
+exist-core/src/test/java/org/exist/xquery/PersistentDescendantOrSelfNodeKindTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,37
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,49
+exist-core/src/test/java/org/exist/dom/memtree/DocumentBuilderReceiverIntegrationTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 25-26,51
+exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 24-25,47
+extensions/exquery/restxq/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_a7691ceb6c09fb 1-4
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/ExistXqueryRegistryTest.java
+  s_f03fe8b0b5549a::t_b686b481363186 29-30,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ac14879a91755e5c79c28d4638e5e5bd929e4174",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
