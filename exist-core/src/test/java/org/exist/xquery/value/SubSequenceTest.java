@@ -32,12 +32,12 @@
  */
 package org.exist.xquery.value;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.RangeSequence;
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SubSequenceTest {
 
     private static final long RANGE_START = 1;

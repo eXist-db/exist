@@ -21,7 +21,8 @@
  */
 package org.exist.indexing.lucene;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
@@ -29,7 +30,6 @@ import org.exist.xmldb.IndexQueryService;
 import org.exist.xquery.FunctionFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -49,7 +49,7 @@ import static org.exist.samples.Samples.SAMPLES;
 /**
  *
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class OptimizerTest {
 
     @RegisterExtension

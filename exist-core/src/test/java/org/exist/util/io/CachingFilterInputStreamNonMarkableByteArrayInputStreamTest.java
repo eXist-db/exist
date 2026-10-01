@@ -26,7 +26,8 @@
  */
 package org.exist.util.io;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.commons.io.input.MarkShieldInputStream;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
@@ -35,7 +36,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
 import java.util.Arrays;
-import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(value = ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
 
     public static Collection data() {

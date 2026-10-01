@@ -21,14 +21,14 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Test;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.runner.RunWith;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.expect;
@@ -39,7 +39,7 @@ import static org.easymock.EasyMock.verify;
  *
  * @author aretter
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class XQueryURLRewriteTest
 {
     @Test

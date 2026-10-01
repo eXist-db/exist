@@ -21,7 +21,8 @@
  */
 package org.exist.xquery;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
@@ -34,7 +35,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runner.RunWith;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -57,7 +57,7 @@ import static org.exist.samples.Samples.SAMPLES;
 /**
  * 
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class OptimizerTest {
 
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";

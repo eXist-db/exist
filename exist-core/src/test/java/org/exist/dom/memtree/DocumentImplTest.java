@@ -22,13 +22,13 @@
 
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
 import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.runner.RunWith;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -44,7 +44,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DocumentImplTest {
 
     private static final String DOC_WITH_NAMESPACES =

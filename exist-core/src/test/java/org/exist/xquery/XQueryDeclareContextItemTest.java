@@ -22,7 +22,8 @@
 
 package org.exist.xquery;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -46,7 +47,6 @@ import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -63,7 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author aretter
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class XQueryDeclareContextItemTest {
 
     private static final String SYSEVENT_XML = "<log xmlns=\"http://syslog\">some-event</log>";

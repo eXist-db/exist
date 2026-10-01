@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
@@ -56,7 +57,6 @@ import org.exist.xquery.value.Type;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -78,7 +78,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author <a href="mailto:adam@exist-db.org">wolf
  * @author Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class BasicNodeSetTest {
 
     private final static String NESTED_XML =

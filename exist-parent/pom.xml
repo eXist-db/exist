@@ -151,7 +151,6 @@
         <objenesis.version>3.6</objenesis.version>
         <assertj.version>3.27.7</assertj.version>
         <awaitility.version>4.3.0</awaitility.version>
-        <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
 
         <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
@@ -657,12 +656,6 @@
             </dependency>
 
             <!-- test dependencies -->
-            <dependency>
-                <groupId>com.googlecode.junit-toolbox</groupId>
-                <artifactId>junit-toolbox</artifactId>
-                <version>${junit.toolbox.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>

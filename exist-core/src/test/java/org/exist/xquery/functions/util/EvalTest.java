@@ -48,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author jim.fuller@webcomposite.com
  */
-//@RunWith(ParallelRunner.class)
 public class EvalTest {
 
     @RegisterExtension

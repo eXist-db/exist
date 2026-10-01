@@ -76,7 +76,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
  * @author Pierrick Brihaye</a>
  */
-//@RunWith(ParallelRunner.class)    // TODO(AR) when running in parallel a deadlock is encountered in eXist-db... this needs to be resolved!
 public class RESTServiceTest {
 
     @RegisterExtension
