@@ -307,7 +307,9 @@ public abstract class Function extends PathExpr {
         if (returnType != Type.ITEM && !Type.subTypeOf(returnType, argType.getPrimaryType())) {
             if (!(Type.subTypeOf(argType.getPrimaryType(), returnType) ||
                     //Because () is seen as a node
-                    (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
+                    (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE) ||
+                    // XQuery 4.0: allow implicit casts and relabeling
+                    isXQ4CoercionAllowed(returnType, argType.getPrimaryType()))) {
                 LOG.debug(ExpressionDumper.dump(argument));
                 throw new XPathException(this, ErrorCodes.XPTY0004, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
                         String.valueOf(argPosition), mySignature, argType.toString(), Type.getTypeName(returnType)));
@@ -326,6 +328,17 @@ public abstract class Function extends PathExpr {
         }
 
         return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
+    }
+
+    /**
+     * Whether a value of {@code sourceType} may be implicitly coerced to {@code requiredType}
+     * under the XQuery 4.0 function coercion rules (spec §3.4.1): implicit casting or relabeling.
+     * Always false below XQuery 4.0.
+     */
+    private boolean isXQ4CoercionAllowed(final int sourceType, final int requiredType) {
+        return context.getXQueryVersion() >= 40
+                && (DynamicTypeCheck.isXQ4ImplicitCast(sourceType, requiredType)
+                    || DynamicTypeCheck.isXQ4Relabeling(sourceType, requiredType));
     }
 
     protected boolean checkArgumentTypeCardinality(
