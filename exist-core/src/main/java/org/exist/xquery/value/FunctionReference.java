@@ -36,7 +36,9 @@ import java.util.List;
  */
 public class FunctionReference extends AtomicValue implements AutoCloseable {
 
-    /** the expression from which this type derives */
+    /**
+     * the expression from which this type derives
+     */
     private Expression expression;
 
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
@@ -59,6 +61,37 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     public FunctionReference(final Expression expression, final FunctionCall functionCall) {
         super(expression);
         this.functionCall = functionCall;
+    }
+
+    /**
+     * A value captured by this function's closure is still reachable through it, even though it is
+     * not part of the sequence the defining scope returned.
+     *
+     * <p>Without this, a binary value captured by an inline function would be released when the scope
+     * that created it is left, and calling the function later would find it closed.</p>
+     *
+     * @param item the item to look for
+     * @return true if this reference is the item, or holds it in its closure
+     */
+    @Override
+    public boolean containsReference(final Item item) {
+        if (this == item) {
+            return true;
+        }
+
+        final List<ClosureVariable> closureVariables = functionCall.getFunction().getClosureVariables();
+        if (closureVariables == null) {
+            return false;
+        }
+
+        for (final ClosureVariable closureVariable : closureVariables) {
+            final Sequence value = closureVariable.getValue();
+            if (value != null && (value == item || value.containsReference(item))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void setCapturedContext(final Sequence contextSequence, final Item contextItem) {
@@ -86,7 +119,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /**
      * Gets the expression from which this type derives.
      *
-     * @return  the expression from which this type derives
+     * @return the expression from which this type derives
      */
     @Override
     public Expression getExpression() {
@@ -96,7 +129,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /**
      * Sets the expression from which this type derives.
      *
-     * @param   expression  the expression to use
+     * @param expression the expression to use
      */
     public void setExpression(final Expression expression) {
         this.expression = expression;
@@ -135,7 +168,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
-     * @param contextItem optional: the current context item
+     * @param contextItem     optional: the current context item
      * @return evaluation result of the function call
      * @throws XPathException in case of dynamic error
      */
@@ -159,8 +192,8 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
-     * @param contextItem optional: the current context item
-     * @param seq array of parameters to be passed to the function
+     * @param contextItem     optional: the current context item
+     * @param seq             array of parameters to be passed to the function
      * @return evaluation result of the function call
      * @throws XPathException in case of dynamic error
      */

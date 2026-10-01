@@ -66,7 +66,7 @@ public class FilterInputStreamCacheMonitorTest {
         final Path icon = Path.of(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
 
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
-        try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.class)) {
+        try (final EXistResource resource = (EXistResource) testCollection.createResource("icon.png", BinaryResource.class)) {
             resource.setContent(icon);
             testCollection.storeResource(resource);
         }
@@ -86,7 +86,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." +  System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -96,9 +96,9 @@ public class FilterInputStreamCacheMonitorTest {
 
             assertEquals(1, resourceSet.getSize());
 
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertTrue(resource instanceof LocalBinaryResource);
-                assertTrue(((ExtendedResource)resource).getExtendedContent() instanceof BinaryValue);
+                assertTrue(((ExtendedResource) resource).getExtendedContent() instanceof BinaryValue);
 
                 // one active binary (as it is in the result set)
                 assertEquals(1, monitor.getActive().size());
@@ -107,11 +107,79 @@ public class FilterInputStreamCacheMonitorTest {
             // assert no active binaries as we just closed the resource in the try-with-resources
             activeCount = monitor.getActive().size();
             if (activeCount != 0) {
-                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
             }
 
         } finally {
             resourceSet.clear();
+        }
+    }
+
+    /**
+     * The leak-direction guard for scope ownership: a binary value created in a scope and merely
+     * passed through a user-defined function is released when that scope is left, exactly once.
+     *
+     * <p>A value is now released by the scope that created it, rather than by whichever scope happened
+     * to hold the last reference. This test fails if that deferral leaks instead.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6725">Passing a binary value to a user-defined function closes it for the caller</a>
+     */
+    @Test
+    public void userDefinedFunctionCleanup() throws XMLDBException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        assertNoActiveBinaries(monitor, "before the query");
+
+        ResourceSet resourceSet = null;
+        try {
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    declare function local:size($b) { string-length(util:binary-to-string($b)) };
+                    let $b := util:binary-doc('/db/%s/icon.png')
+                    return local:size($b)""".formatted(TEST_COLLECTION_NAME));
+
+            assertEquals(1, resourceSet.getSize());
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
+                assertFalse(resource instanceof LocalBinaryResource);
+                assertNoActiveBinaries(monitor, "after the query");
+            }
+        } finally {
+            resourceSet.clear();
+        }
+    }
+
+    /**
+     * Binary values created inside a loop and not returned by it must not accumulate for the whole
+     * query.
+     *
+     * <p>Note what this does <em>not</em> claim: ForExpr opens one scope around the whole loop, so the
+     * values are released when the loop ends rather than per iteration - the count during the loop is
+     * not asserted here. Per-iteration release is a separate change.</p>
+     */
+    @Test
+    public void loopDoesNotAccumulateCaches() throws XMLDBException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        assertNoActiveBinaries(monitor, "before the query");
+
+        ResourceSet resourceSet = null;
+        try {
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    sum(for $i in 1 to 20 return
+                      string-length(util:binary-to-string(util:binary-doc('/db/%s/icon.png'))))""".formatted(TEST_COLLECTION_NAME));
+
+            assertEquals(1, resourceSet.getSize());
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
+                assertFalse(resource instanceof LocalBinaryResource);
+                assertNoActiveBinaries(monitor, "after the query");
+            }
+        } finally {
+            resourceSet.clear();
+        }
+    }
+
+    private static void assertNoActiveBinaries(final FilterInputStreamCacheMonitor monitor, final String when) {
+        final int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            fail("FilterInputStreamCacheMonitor should have no active binaries " + when + ", but found: "
+                    + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
         }
     }
 
@@ -122,7 +190,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -132,13 +200,13 @@ public class FilterInputStreamCacheMonitorTest {
                             "return xmldb:store('/db/" + TEST_COLLECTION_NAME + "', 'icon.xml', $embedded)");
 
             assertEquals(1, resourceSet.getSize());
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
                 }
             }
 
@@ -161,18 +229,18 @@ public class FilterInputStreamCacheMonitorTest {
         try {
             resourceSet = existXmldbEmbeddedServer.executeQuery(
                     "let $bin := util:binary-doc('/db/" + TEST_COLLECTION_NAME + "/icon.png')\n" +
-                    "let $embedded := <logo><image>{$bin}</image></logo>\n" +
-                    "let $embedded-2 := <other>{$bin}</other>\n" +
-                    "return xmldb:store('/db/" + TEST_COLLECTION_NAME + "', 'icon.xml', $embedded)");
+                            "let $embedded := <logo><image>{$bin}</image></logo>\n" +
+                            "let $embedded-2 := <other>{$bin}</other>\n" +
+                            "return xmldb:store('/db/" + TEST_COLLECTION_NAME + "', 'icon.xml', $embedded)");
 
             assertEquals(1, resourceSet.getSize());
-            try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator" ) + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
                 }
             }
 
