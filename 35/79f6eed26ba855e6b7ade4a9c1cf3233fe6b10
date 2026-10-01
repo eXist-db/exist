@@ -1,0 +1,41 @@
+exist-core/src/main/java/org/exist/test/runner/AbstractTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 56,60
+exist-core/src/test/resources/org/exist/test/runner/hyphenated-prefix.xqm
+  s_f03fe8b0b5549a::t_56faa6d7d16fe5 1-21,23-41
+  s_f03fe8b0b5549a::t_73d488c01095ac 22
+exist-core/src/test/java/org/exist/test/runner/TestDiscoveryTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 1-72
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_f03fe8b0b5549a::t_b6dca8aa3328fe 62-65,108-137
+  s_f03fe8b0b5549a::t_c3e73d760b59d8 138
+exist-core/src/main/java/org/exist/test/runner/TestRunners.java
+  s_f03fe8b0b5549a::t_976c6ca8aeff50 1-67
+exist-core/src/test/java/org/exist/test/runner/XMLTestRunnerTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 39,43,45-46,50-62,65-73
+exist-core/src/main/java/org/exist/test/runner/TestInitializationException.java
+  s_f03fe8b0b5549a::t_976c6ca8aeff50 1-36
+exist-core/src/main/java/org/exist/test/runner/XMLTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 80,83-84,88,93,100,121,134
+exist-core/src/main/java/org/exist/test/runner/XQueryTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 75,77-78,84,91,93,138,147,219
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_f03fe8b0b5549a::t_eca89133a67a48 27,59,170
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunnerTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 29,38-57,59-61,65-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3579f6eed26ba855e6b7ade4a9c1cf3233fe6b10",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
