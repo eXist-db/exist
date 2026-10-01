@@ -72,6 +72,7 @@ public class SortTest {
 		checker.sort();
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void random(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -82,6 +83,7 @@ public class SortTest {
 		}
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void constant(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -90,6 +92,7 @@ public class SortTest {
 		checker.check();
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void ascending(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -98,6 +101,7 @@ public class SortTest {
 		checker.check();
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void descending(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -106,6 +110,7 @@ public class SortTest {
 		checker.check();
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void sortSubsection1(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -133,6 +138,7 @@ public class SortTest {
 		}
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void sortSubsection2(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
@@ -158,6 +164,7 @@ public class SortTest {
 		}
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void sortSubsection3(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);
