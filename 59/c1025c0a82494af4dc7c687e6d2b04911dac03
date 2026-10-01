@@ -1,0 +1,41 @@
+exist-core/src/main/java/org/exist/test/runner/XMLTestRunner.java
+  s_f03fe8b0b5549a::t_6976e75ad7c775 185
+  s_f03fe8b0b5549a::t_dab1e2feddc287 192-197
+exist-core/src/main/java/org/exist/test/runner/ExtTestFinishedFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 36-37,45
+exist-core/src/main/java/org/exist/test/runner/JUnitIntegrationFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 37,44,46,50,55
+exist-core/src/main/java/org/exist/test/runner/XQueryTestRunner.java
+  s_f03fe8b0b5549a::t_dab1e2feddc287 312,318-323
+exist-core/src/main/java/org/exist/test/runner/ExtTestFailureFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 53,57,63,103,106
+  s_f03fe8b0b5549a::t_207799ed790455 54
+exist-core/src/main/java/org/exist/test/runner/RunNotifierTestEvents.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 1-72
+exist-core/src/main/java/org/exist/test/runner/ExtTestAssumptionFailedFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 38,43,57,60,66,83
+exist-core/src/main/java/org/exist/test/runner/ExtTestIgnoredFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 36-37,45
+exist-core/src/main/java/org/exist/test/runner/ExtTestErrorFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 40,45,61,64
+exist-core/src/main/java/org/exist/test/runner/TestEvents.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 1-47
+exist-core/src/main/java/org/exist/test/runner/ExtTestStartedFunction.java
+  s_f03fe8b0b5549a::t_94b3bb7450d264 36-37,45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "59c1025c0a82494af4dc7c687e6d2b04911dac03",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
