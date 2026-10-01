@@ -1,0 +1,19 @@
+exist-core/pom.xml
+  s_f03fe8b0b5549a::t_59349de565cee3 525-528,533-534,558-561,566,568,593-594
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "78ad09ba1d6df00207cbdb2ea13ec7006786fd97",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
