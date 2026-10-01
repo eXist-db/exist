@@ -291,7 +291,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void insert_atEnd() {
+    public void insertAtEnd() {
         assertThrows(PermissionDeniedException.class, () -> {
             final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
             final Database mockDatabase = EasyMock.createMock(Database.class);

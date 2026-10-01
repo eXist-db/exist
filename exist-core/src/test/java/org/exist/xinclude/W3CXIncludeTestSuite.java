@@ -70,25 +70,6 @@ public class W3CXIncludeTestSuite {
     // Track which contributor directories have been stored (avoid redundant uploads)
     private static final Set<String> storedContributors = new HashSet<>();
 
-    private String testId;
-    private String basedir;
-    private String href;
-    private String type;
-    private String outputPath;
-    private String description;
-    private String features;
-
-    public void initW3CXIncludeTestSuite(String testId, String basedir, String href, String type,
-                                 String outputPath, String description, String features) {
-        this.testId = testId;
-        this.basedir = basedir;
-        this.href = href;
-        this.type = type;
-        this.outputPath = outputPath;
-        this.description = description;
-        this.features = features;
-    }
-
     public static java.util.Collection<Object[]> data() throws Exception {
         final List<Object[]> tests = new ArrayList<>();
         final Path catalogPath = getTestSuitePath().resolve("testdescr.xml");
@@ -155,7 +136,6 @@ public class W3CXIncludeTestSuite {
 
     @MethodSource("data") @ParameterizedTest(name = "{0}: {5}")
     public void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
-        initW3CXIncludeTestSuite(testId, basedir, href, type, outputPath, description, features);
         // Skip tests requiring features eXist doesn't support
         if (features != null && !features.isEmpty()) {
             Assumptions.assumeFalse(features.contains("xpointer-scheme"), "Skipping: requires xpointer-scheme");

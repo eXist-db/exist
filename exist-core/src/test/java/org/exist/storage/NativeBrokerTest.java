@@ -115,7 +115,7 @@ public class NativeBrokerTest {
      * we should NOT be allowed to copy the Collection.
      */
     @Test
-    public void copyCollection_noDescendants_toNonExistingDest_cannotWriteDest() throws LockException {
+    public void copyCollectionNoDescendantsToNonExistingDestCannotWriteDest() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
             final XmldbURI src = XmldbURI.create("/db/test/source");
             final XmldbURI dest = XmldbURI.create("/db/test");
@@ -396,7 +396,7 @@ public class NativeBrokerTest {
      * we should NOT be allowed to copy the content of the Collection.
      */
     @Test
-    public void copyCollection_noDescendants_toExistingDest_cannotWriteDest() throws LockException {
+    public void copyCollectionNoDescendantsToExistingDestCannotWriteDest() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
             final XmldbURI src = XmldbURI.create("/db/test/source");
             final XmldbURI dest = XmldbURI.create("/db/test");
@@ -466,7 +466,7 @@ public class NativeBrokerTest {
      * we should NOT be allowed to copy the content of the Collection.
      */
     @Test
-    public void copyCollection_noDescendants_toExistingDest_cannotWriteNewDest() throws LockException {
+    public void copyCollectionNoDescendantsToExistingDestCannotWriteNewDest() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
             final XmldbURI src = XmldbURI.create("/db/test/source");
             final XmldbURI dest = XmldbURI.create("/db/test");
@@ -614,7 +614,7 @@ public class NativeBrokerTest {
      * we should NOT be allowed to copy the content of the Collection.
      */
     @Test
-    public void copyCollection_oneSubDoc_toExistingDest_cannotReadSubDoc() throws LockException {
+    public void copyCollectionOneSubDocToExistingDestCannotReadSubDoc() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
 
             final XmldbURI src = XmldbURI.create("/db/test/source");

@@ -123,13 +123,13 @@ public class UnixStylePermissionAiderTest {
     }
 
     @Test
-    public void fromStringInvalidSyntax_tooShort() {
+    public void fromStringInvalidSyntaxTooShort() {
         assertThrows(SyntaxException.class, () ->
             UnixStylePermissionAider.fromString("rwx"));
     }
 
     @Test
-    public void fromStringInvalidSyntax_invalidChars() {
+    public void fromStringInvalidSyntaxInvalidChars() {
         assertThrows(SyntaxException.class, () ->
             UnixStylePermissionAider.fromString("rwurwurwu"));
     }

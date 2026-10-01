@@ -47,6 +47,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIntegrationTest {
 
+    private static final int MAX_WAIT_PERIOD = 10 * 1000;  // 10 seconds
+    private static final int WAIT_INTERVAL = 1000;
+    public String storeFirstModuleFilename;
+    public String storeSecondModuleFilename;
+    public String storeThirdModuleFilename;
+
     /**
      * All possibilities for the order that the modules could be stored to the database in.
      */
@@ -106,12 +112,6 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
             Tuple(XQUERY_MOD2_FILENAME, MOD2_XQUERY),
             Tuple(XQUERY_MOD3_FILENAME, MOD3_XQUERY)
     );
-
-    private static final int MAX_WAIT_PERIOD = 10 * 1000;  // 10 seconds
-    private static final int WAIT_INTERVAL = 1000;
-    public String storeFirstModuleFilename;
-    public String storeSecondModuleFilename;
-    public String storeThirdModuleFilename;
 
     @BeforeEach
     public void enableRestXq() throws IOException {

@@ -234,6 +234,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system/security/exist
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @Disabled("Not yet supported") @MethodSource("data")
     @ParameterizedTest(name = "{0}")
     public void restoreUserWithGroupsFromExistRealm(String apiName, String baseUri) throws IOException, XMLDBException {
@@ -246,6 +247,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system/security
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @Disabled("Not yet supported") @MethodSource("data")
     @ParameterizedTest(name = "{0}")
     public void restoreUserWithGroupsFromSecurityCollection(String apiName, String baseUri) throws IOException, XMLDBException {
@@ -258,6 +260,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @Disabled("Not yet supported") @MethodSource("data")
     @ParameterizedTest(name = "{0}")
     public void restoreUserWithGroupsFromSystemCollection(String apiName, String baseUri) throws IOException, XMLDBException {
@@ -270,6 +273,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void restoreUserWithGroupsFromDbCollection(String apiName, String baseUri) throws IOException, XMLDBException {
         initXMLDBRestoreTest(apiName, baseUri);

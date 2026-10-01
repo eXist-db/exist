@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class Base64BinaryValueTypeTest {
 
     @Test
-    public void verify_invalidBase64_fails() {
+    public void verifyInvalidBase64Fails() {
         assertThrows(XPathException.class, () -> {
             TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
             base64Type.verifyString("=aaabbcd");
@@ -53,7 +53,7 @@ public class Base64BinaryValueTypeTest {
     }
 
     @Test
-    public void verify_invalidBase64_fails_2() {
+    public void verifyInvalidBase64Fails2() {
         assertThrows(XPathException.class, () -> {
             TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
             base64Type.verifyString("frfhforlksid745323==");

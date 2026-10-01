@@ -81,37 +81,37 @@ public class SubSequenceTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_0(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt0(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(0);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_1(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt1(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(1);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_2(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt2(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(2);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_8(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt8(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(8);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_9(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt9(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(9);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt_10(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void itemAt10(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(10);
     }

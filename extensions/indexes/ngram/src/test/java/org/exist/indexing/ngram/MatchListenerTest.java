@@ -62,7 +62,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.NodeList;
@@ -129,28 +128,28 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
+            assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
                     MATCH_END + "</hi> content.</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'content')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some paragraph with <hi>mixed</hi> " + MATCH_START + "content" +
+            assertEquals("<para>some paragraph with <hi>mixed</hi> " + MATCH_START + "content" +
                     MATCH_END + ".</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'nested')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
+            assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
                     "</hi> inner</note> elements.</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'content') and ngram:contains(., 'mixed')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" + MATCH_END +
+            assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" + MATCH_END +
                     "</hi> " + MATCH_START + "content" + MATCH_END + ".</para>", result);
         }
     }
@@ -168,7 +167,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             final String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<hi>" + MATCH_START + "mixed" + MATCH_END + "</hi>", result);
+            assertEquals("<hi>" + MATCH_START + "mixed" + MATCH_END + "</hi>", result);
         }
     }
 
@@ -185,13 +184,13 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<note><hi>" + MATCH_START + "nested" + MATCH_END + "</hi> inner</note>", result);
+            assertEquals("<note><hi>" + MATCH_START + "nested" + MATCH_END + "</hi> inner</note>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'nested')]//hi", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<hi>" + MATCH_START + "nested" + MATCH_END + "</hi>", result);
+            assertEquals("<hi>" + MATCH_START + "nested" + MATCH_END + "</hi>", result);
         }
     }
 
@@ -208,19 +207,19 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
+            assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
 
             seq = xquery.execute(broker, "//term[ngram:contains(., 'term')]/..", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
+            assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
 
             seq = xquery.execute(broker, "//term[ngram:contains(., 'term')]/ancestor::para", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
+            assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
         }
     }
 
@@ -237,14 +236,14 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
+            assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
                 MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END + ".</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'with mixed content')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some paragraph " + MATCH_START + "with " + MATCH_END + "<hi>" +
+            assertEquals("<para>some paragraph " + MATCH_START + "with " + MATCH_END + "<hi>" +
                 MATCH_START + "mixed" + MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END +
                 ".</para>", result);
 
@@ -252,14 +251,14 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragraph " + MATCH_START + "with " + MATCH_END +
+            assertEquals("<para>another paragraph " + MATCH_START + "with " + MATCH_END +
                 "<note><hi>" + MATCH_START + "nested" + MATCH_END + "</hi> inner</note> elements.</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'with nested inner elements')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragraph " + MATCH_START + "with " + MATCH_END +
+            assertEquals("<para>another paragraph " + MATCH_START + "with " + MATCH_END +
                 "<note><hi>" + MATCH_START + "nested" + MATCH_END + "</hi>" + MATCH_START + " inner" + MATCH_END +
                 "</note>" + MATCH_START + " elements" + MATCH_END + ".</para>", result);
         }
@@ -277,14 +276,14 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
+            assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
                 "</hi>" + MATCH_START + " inner" + MATCH_END + "</note> elements.</para>", result);
 
             seq = xquery.execute(broker, "//note[ngram:contains(., 'nested inner')]/parent::para", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
+            assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
                 "</hi>" + MATCH_START + " inner" + MATCH_END + "</note> elements.</para>", result);
         }
     }
@@ -302,21 +301,21 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "double match" + MATCH_END + " " +
+            assertEquals("<para>" + MATCH_START + "double match" + MATCH_END + " " +
                 MATCH_START + "double match" + MATCH_END + "</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:contains(., 'aaa aaa')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "aaa aaa" + MATCH_END
+            assertEquals("<para>" + MATCH_START + "aaa aaa" + MATCH_END
                 + " aaa</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:ends-with(., 'aaa aaa')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>aaa " + MATCH_START + "aaa aaa" + MATCH_END + "</para>", result);
+            assertEquals("<para>aaa " + MATCH_START + "aaa aaa" + MATCH_END + "</para>", result);
         }
     }
 
@@ -333,14 +332,13 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
-            Assertions
-                .assertEquals("<para>" + MATCH_START + "double match double match" + MATCH_END + "</para>", result);
+            assertEquals("<para>" + MATCH_START + "double match double match" + MATCH_END + "</para>", result);
 
             seq = xquery.execute(broker, "//para[ngram:wildcard-contains(., 'paragraph.*content\\.')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>some " + MATCH_START + "paragraph with " + MATCH_END + "<hi>" + MATCH_START
+            assertEquals("<para>some " + MATCH_START + "paragraph with " + MATCH_END + "<hi>" + MATCH_START
                 + "mixed" + MATCH_END + "</hi>" + MATCH_START + " content." + MATCH_END
                 + "</para>", result);
 
@@ -349,7 +347,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>another paragra" + MATCH_START + "ph with " + MATCH_END + "<note><hi>"
+            assertEquals("<para>another paragra" + MATCH_START + "ph with " + MATCH_END + "<note><hi>"
                 + MATCH_START + "nested" + MATCH_END + "</hi>" + MATCH_START + " inner" + MATCH_END + "</note>"
                 + MATCH_START + " elements." + MATCH_END + "</para>", result);
 
@@ -368,7 +366,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>Where did all the " + MATCH_START + "*s go?" + MATCH_END + "</para>", result);
+            assertEquals("<para>Where did all the " + MATCH_START + "*s go?" + MATCH_END + "</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
             assertMatches(wildcardQuery, match);
@@ -379,7 +377,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " " + MATCH_START + "test[test"
+            assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " " + MATCH_START + "test[test"
                 + MATCH_END + " " + MATCH_START + "test?test" + MATCH_END + "</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
@@ -388,7 +386,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " test[test test?test</para>",
+            assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " test[test test?test</para>",
                 result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
@@ -397,7 +395,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>test]test test[test " + MATCH_START + "test?test" + MATCH_END + "</para>",
+            assertEquals("<para>test]test test[test " + MATCH_START + "test?test" + MATCH_END + "</para>",
                 result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
@@ -407,7 +405,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "aaacaaa" + MATCH_END + "</para>", result);
+            assertEquals("<para>" + MATCH_START + "aaacaaa" + MATCH_END + "</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
             assertMatches(wildcardQuery, match);
@@ -417,7 +415,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "a simple" + MATCH_END + " paragraph</para>", result);
+            assertEquals("<para>" + MATCH_START + "a simple" + MATCH_END + " paragraph</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
             assertMatches(wildcardQuery, match);
@@ -427,7 +425,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
+            assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
             assertMatches(wildcardQuery, match);
@@ -437,7 +435,7 @@ public class MatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
-            Assertions.assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
+            assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
 
             match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
             assertMatches(wildcardQuery, match);

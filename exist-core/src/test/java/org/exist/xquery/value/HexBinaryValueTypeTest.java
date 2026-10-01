@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class HexBinaryValueTypeTest {
     
     @Test
-    public void verify_notMultipleOf2Chars_fails() {
+    public void verifyNotMultipleOf2CharsFails() {
         assertThrows(XPathException.class, () -> {
             TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
             hexType.verifyString("010010101");
@@ -48,7 +48,7 @@ public class HexBinaryValueTypeTest {
     }
 
     @Test
-    public void verify_notValidChars_fails() {
+    public void verifyNotValidCharsFails() {
         assertThrows(XPathException.class, () -> {
             TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
             hexType.verifyString("true");

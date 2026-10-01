@@ -254,7 +254,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the owner of {@link #USER1_DOC1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -277,7 +277,7 @@ public class PermissionsFunctionChownTest {
      * as the collection owner user change the owner of {@link #USER1_COL1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionOwnerAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -300,7 +300,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the document's owner) change the owner of {@link #USER1_DOC1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -326,7 +326,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the collection's owner) change the owner of {@link #USER1_COL1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionOwnerAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -672,7 +672,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the group of {@link #USER1_DOC1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentGroupAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentGroupAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -695,7 +695,7 @@ public class PermissionsFunctionChownTest {
      * as the collection owner user change the group of {@link #USER1_COL1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionGroupAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionGroupAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -718,7 +718,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the document's owner) change the group of {@link #USER1_DOC1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -744,7 +744,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the collection's owner) change the group of {@link #USER1_COL1} from "user1" to "user2".
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -810,7 +810,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the document's owner) change the group of {@link #USER1_DOC1} from "user1" to "otherGroup" (of which user2 is a member).
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentGroupToMemberGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentGroupToMemberGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -837,7 +837,7 @@ public class PermissionsFunctionChownTest {
      * as the user "user2" (not the collection's owner) change the group of {@link #USER1_COL1} from "user1" to "otherGroup" (of which user2 is a member).
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionGroupToMemberGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionGroupToMemberGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1069,7 +1069,7 @@ public class PermissionsFunctionChownTest {
      * as the collection owner user change the owner of {@link #USER1_COL1} from "user1" to "userrm".
      */
     @org.junit.jupiter.api.Test
-    public void changeCollectionOwnerToRemovedUserAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerToRemovedUserAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1087,7 +1087,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeCollectionOwnerToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1105,7 +1105,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeCollectionOwnerToRemovedUserAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerToRemovedUserAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1171,7 +1171,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeCollectionGroupToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionGroupToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1189,7 +1189,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeCollectionGroupToRemovedGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionGroupToRemovedGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1232,7 +1232,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the owner of {@link #USER1_DOC1} from "user1" to "no-such-user".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerToNonExistentAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerToNonExistentAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1251,7 +1251,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the owner of {@link #USER1_DOC1} from "user1" to "no-such-user".
      */
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerToRemovedUserAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerToRemovedUserAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1269,7 +1269,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1287,7 +1287,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeDocumentOwnerToRemovedUserAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerToRemovedUserAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1353,7 +1353,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeDocumentGroupToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentGroupToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1371,7 +1371,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeDocumentGroupToRemovedGroupAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentGroupToRemovedGroupAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1431,7 +1431,7 @@ public class PermissionsFunctionChownTest {
      * as the collection owner user change the owner of {@link #USER1_COL1} from "user1" to "userrm".
      */
     @org.junit.jupiter.api.Test
-    public void ChangeCollectionOwnerAndGroupToRemovedAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAndGroupToRemovedAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1440,7 +1440,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeCollectionOwnerAndGroupToNonExistentAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAndGroupToNonExistentAsNonOwner() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1449,7 +1449,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeCollectionOwnerAndGroupToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAndGroupToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1458,7 +1458,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeCollectionOwnerAndGroupToRemovedAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAndGroupToRemovedAsNonOwner() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1467,7 +1467,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeCollectionOwnerAndGroupToRemovedAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeCollectionOwnerAndGroupToRemovedAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1510,7 +1510,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the owner of {@link #USER1_DOC1} from "user1" to "no-such-user".
      */
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToNonExistentAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToNonExistentAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1529,7 +1529,7 @@ public class PermissionsFunctionChownTest {
      * as the document owner user change the owner of {@link #USER1_DOC1} from "user1" to "no-such-user".
      */
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToRemovedAsNonDBAOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToRemovedAsNonDBAOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
@@ -1538,7 +1538,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToNonExistentAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToNonExistentAsNonOwner() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1547,7 +1547,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToNonExistentAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToNonExistentAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1556,7 +1556,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToRemovedAsNonOwner() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToRemovedAsNonOwner() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -1565,7 +1565,7 @@ public class PermissionsFunctionChownTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void ChangeDocumentOwnerAndGroupToRemovedAsNonOwner_restricted() throws AuthenticationException, XPathException, EXistException {
+    public void changeDocumentOwnerAndGroupToRemovedAsNonOwnerRestricted() throws AuthenticationException, XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);

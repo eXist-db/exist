@@ -79,6 +79,7 @@ public class SortComparatorTest {
 		}
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void badComparatorUnstable(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
@@ -88,6 +89,7 @@ public class SortComparatorTest {
 		}
 	}
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void badComparatorRandom(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);

@@ -93,7 +93,7 @@ public class LockManagerTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getCollectionLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+    public void getCollectionLockIsStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -123,7 +123,7 @@ public class LockManagerTest {
      * root Collection
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionReadLock_root(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionReadLockRoot(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -161,7 +161,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionReadLock_depth2(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionReadLockDepth2(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionPath = "/db/colA";
@@ -218,7 +218,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionReadLock_depth3(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionReadLockDepth3(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionAPath = "/db/colA";
@@ -290,8 +290,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * root Collection
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_root_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockRootWithoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         acquireCollectionWriteLock_root(false);
@@ -302,8 +303,9 @@ public class LockManagerTest {
      * ensure that we only take a single WRITE lock on the
      * root Collection... even when lockParent is set
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_root_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockRootWithLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         acquireCollectionWriteLock_root(true);
@@ -344,7 +346,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_depth2_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockDepth2WithoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionPath = "/db/colA";
@@ -402,7 +404,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_depth2_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockDepth2WithLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionPath = "/db/colA";
@@ -458,7 +460,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_depth3_withoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockDepth3WithoutLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionAPath = "/db/colA";
@@ -535,7 +537,7 @@ public class LockManagerTest {
      * collection hierarchy to get there
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void acquireCollectionWriteLock_depth3_withLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
+    public void acquireCollectionWriteLockDepth3WithLockParent(String apiName, boolean enablePathsMultiWriterState) throws LockException {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final String collectionAPath = "/db/colA";
@@ -605,7 +607,7 @@ public class LockManagerTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getDocumentLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+    public void getDocumentLockIsStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
@@ -706,7 +708,7 @@ public class LockManagerTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getBtreeLock_isStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
+    public void getBtreeLockIsStripedByPath(String apiName, boolean enablePathsMultiWriterState) {
         initLockManagerTest(apiName, enablePathsMultiWriterState);
         enableLockEventsState();
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);

@@ -170,7 +170,7 @@ public class StoredModuleTest {
 //    "};";
 
     @org.junit.jupiter.api.Test
-    public void testModule23_missingRelativeContext() {
+    public void testModule23MissingRelativeContext() {
         assertThrows(XMLDBException.class, () -> {
             String collection2Name = "module2";
             String collection3Name = "module2/module3";
