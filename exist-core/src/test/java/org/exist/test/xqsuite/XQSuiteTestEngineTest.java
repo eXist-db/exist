@@ -59,6 +59,10 @@ class XQSuiteTestEngineTest {
     static class NoTests {
     }
 
+    @XQSuite(FIXTURES + "hyphenated-prefix.xqm")
+    static class HyphenatedPrefix {
+    }
+
     @XQSuite("src/test/resources/does/not/exist.xqm")
     static class MissingFile {
     }
@@ -99,6 +103,37 @@ class XQSuiteTestEngineTest {
         final AssertionFailedError failure = assertInstanceOf(AssertionFailedError.class, failures(run(FailingSerialization.class)).get(0));
         assertEquals("<doc a=\"1\">text</doc>", failure.getActual().getValue(),
                 "a node-valued result should reach the failure message as markup, not XML-escaped");
+    }
+
+    @Test
+    void testsAreReportedUnderTheNamesTheyWereDiscoveredWith() {
+        // if discovery and the XQSuite runtime disagreed on a name, a test would be reported twice:
+        // once as passed under the runtime's name and once as failed because it was never reported
+        run(HyphenatedPrefix.class).testEvents().assertStatistics(stats -> stats.started(2).succeeded(2).failed(0));
+    }
+
+    @Test
+    void assertionFailureLeadsToTheXQueryTestFile() {
+        final Throwable failure = failures(run(FailingBoth.class)).stream()
+                .filter(AssertionFailedError.class::isInstance)
+                .findFirst()
+                .orElseThrow();
+
+        final boolean inStackTrace = java.util.Arrays.stream(failure.getStackTrace())
+                .anyMatch(e -> e.getFileName() != null && e.getFileName().contains("failing-both"));
+        final boolean inMessage = failure.getMessage() != null && failure.getMessage().contains("failing-both");
+        assertTrue(inStackTrace || inMessage, "the failure should name the XQuery test file so an IDE can navigate to it");
+    }
+
+    @Test
+    void unexpectedErrorLeadsToTheJavaCode() {
+        final Throwable failure = failures(run(FailingBoth.class)).stream()
+                .filter(org.exist.xquery.XPathException.class::isInstance)
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(java.util.Arrays.stream(failure.getStackTrace()).anyMatch(e -> e.getClassName().startsWith("org.exist")),
+                "the error should keep its Java stack trace so an IDE can navigate to the code");
     }
 
     @Test

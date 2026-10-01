@@ -24,8 +24,7 @@ package org.exist.test.runner;
 /**
  * Receives the outcome of each test as the XQuery side of an XQSuite or XML test
  * run reports it. Decouples the XQuery callback functions from any particular
- * test framework: the JUnit 4 {@link XSuite} runner and the JUnit Platform engine
- * each provide an implementation.
+ * test framework, such as the JUnit Platform engine for XQSuite tests.
  */
 public interface TestEvents {
 

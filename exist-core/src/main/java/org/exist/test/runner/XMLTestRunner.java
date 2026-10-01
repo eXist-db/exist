@@ -38,9 +38,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.InitializationError;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,27 +77,27 @@ public class XMLTestRunner extends AbstractTestRunner {
     /**
      * @param path The path to the XML file containing the tests.
      * @param parallel whether the tests should be run in parallel.
-     * @throws InitializationError if the test runner could not be constructed.
+     * @throws TestInitializationException if the test runner could not be constructed.
      */
 
-    XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
-        super(path, parallel);
+    XMLTestRunner(final Path path) throws TestInitializationException {
+        super(path);
         try {
             this.doc = parse(path);
         } catch (final ParserConfigurationException | IOException | SAXException e) {
-            throw new InitializationError(e);
+            throw new TestInitializationException(e);
         }
         this.info = extractTestInfo(path, doc);
     }
 
-    private static XMLTestInfo extractTestInfo(final Path path, final Document doc) throws InitializationError {
+    private static XMLTestInfo extractTestInfo(final Path path, final Document doc) throws TestInitializationException {
         String testSetName = null;
         String description = null;
         final List<String> testNames = new ArrayList<>();
 
         final Element docElement = doc.getDocumentElement();
         if(docElement == null) {
-            throw new InitializationError("Invalid XML test document: " + path.toAbsolutePath());
+            throw new TestInitializationException("Invalid XML test document: " + path.toAbsolutePath());
         }
 
         final NodeList children = docElement.getChildNodes();
@@ -121,7 +118,7 @@ public class XMLTestRunner extends AbstractTestRunner {
                             testName = getTaskText(child);
                         }
                         if (testName == null) {
-                            throw new InitializationError("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath());
+                            throw new TestInitializationException("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath());
                         }
                         testNames.add(testName);
                         break;
@@ -134,7 +131,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         }
 
         if (testSetName == null) {
-            throw new InitializationError("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath());
+            throw new TestInitializationException("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath());
         }
 
         return new XMLTestInfo(testSetName, description, testNames);
@@ -169,24 +166,8 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     @Override
-    public Description getDescription() {
-        final String suiteName = checkDescription(info, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName);
-        for (final String childName : info.childNames()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName)));
-        }
-        return description;
-    }
-
-    @Override
     public List<String> getTestNames() {
         return List.copyOf(info.childNames());
-    }
-
-    @Override
-    public void run(final RunNotifier notifier) {
-        // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-        run(new RunNotifierTestEvents(getSuiteName(), notifier), XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool());
     }
 
     @Override
