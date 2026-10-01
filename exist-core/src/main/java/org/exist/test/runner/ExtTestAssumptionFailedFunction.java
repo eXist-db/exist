@@ -29,22 +29,18 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.junit.AssumptionViolatedException;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier;
 
 import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
 
 public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
-    public ExtTestAssumptionFailedFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
+    public ExtTestAssumptionFailedFunction(final XQueryContext context, final String parentName, final TestEvents events) {
         super("ext-test-assumption-failed-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
                         optParam("error", Type.MAP_ITEM, "error detail of the test")
-                ), context, parentName, notifier);
+                ), context, parentName, events);
     }
 
     @Override
@@ -55,25 +51,19 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
         final Sequence arg2 = getCurrentArguments().length == 2 ? getCurrentArguments()[1] : null;
         final MapType assumption = arg2 != null ? (MapType)arg2.itemAt(0) : null;
 
-        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {
-            final AssumptionViolatedException assumptionFailureReason = assumptionMapAsAssumptionViolationException(assumption);
-
-            // NOTE: We remove the StackTrace, because it is not useful to have a Java Stack Trace pointing into the XML XQuery Test Suite code
-            assumptionFailureReason.setStackTrace(new StackTraceElement[0]);
-
-            notifier.fireTestAssumptionFailed(new Failure(description, assumptionFailureReason));
+            events.assumptionFailed(name, assumptionMessage(assumption));
         } catch (final XPathException e) {
             //signal internal failure
-            notifier.fireTestFailure(new Failure(description, e));
+            events.failed(name, e);
         }
 
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    public AssumptionViolatedException assumptionMapAsAssumptionViolationException(final MapType assumptionMap) throws XPathException {
+    String assumptionMessage(final MapType assumptionMap) throws XPathException {
         final Sequence seqName = assumptionMap.get(new StringValue(this, "name"));
         final String name;
         if(seqName != null && !seqName.isEmpty()) {
@@ -90,6 +80,6 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
             value = "";
         }
 
-        return new AssumptionViolatedException("Assumption %" + name + " does not hold for: " + value);
+        return "Assumption %" + name + " does not hold for: " + value;
     }
 }

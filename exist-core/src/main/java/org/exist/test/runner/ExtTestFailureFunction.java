@@ -32,9 +32,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier;
 import org.opentest4j.AssertionFailedError;
 import org.xml.sax.SAXException;
 
@@ -53,17 +50,17 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
     @Nullable
     private final Path sourcePath;
 
-    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
-        this(context, parentName, notifier, null);
+    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final TestEvents events) {
+        this(context, parentName, events, null);
     }
 
-    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier, @Nullable final Path sourcePath) {
+    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final TestEvents events, @Nullable final Path sourcePath) {
         super("ext-test-failure-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
                         param("expected", Type.MAP_ITEM, "expected result of the test"),
                         param("actual", Type.MAP_ITEM, "actual result of the test")
-                ), context, parentName, notifier);
+                ), context, parentName, events);
         this.sourcePath = sourcePath;
     }
 
@@ -78,7 +75,6 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         final Sequence arg3 = getCurrentArguments()[2];
         final MapType actual = (MapType)arg3.itemAt(0);
 
-        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {
@@ -104,10 +100,10 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
                 failureReason.setStackTrace(new StackTraceElement[0]);
             }
 
-            notifier.fireTestFailure(new Failure(description, failureReason));
+            events.failed(name, failureReason);
         } catch (final XPathException | SAXException | IOException | IllegalStateException e) {
             //signal internal failure
-            notifier.fireTestFailure(new Failure(description, e));
+            events.failed(name, e);
         }
 
         return Sequence.EMPTY_SEQUENCE;
