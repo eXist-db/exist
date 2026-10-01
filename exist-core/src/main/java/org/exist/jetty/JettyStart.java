@@ -1057,7 +1057,7 @@ public class JettyStart implements LifeCycle.Listener {
 
     /**
      * When {@link #isWebAppStartedSuccessfully()} is {@code false}, holds the last startup failure
-     * message for test diagnostics (surfaced by {@link org.exist.test.ExistWebServer} in thrown
+     * message for test diagnostics (surfaced by {@code org.exist.test.ExistWebServer} in thrown
      * {@link IllegalStateException}s).
      */
     public synchronized Optional<String> getWebAppStartupFailureDetail() {

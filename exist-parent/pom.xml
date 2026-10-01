@@ -638,7 +638,7 @@
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
                 <!-- scope>test</scope -->
-                <!-- not just test scope, as needed for org.exist.test -->
+                <!-- test support code lives in exist-core's test-jar -->
                 <exclusions>
                     <exclusion>
                         <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
@@ -652,7 +652,7 @@
                 <artifactId>hamcrest</artifactId>
                 <version>${hamcrest.version}</version>
                 <!-- scope>test</scope -->
-                <!-- not just test scope, as needed for org.exist.test -->
+                <!-- test support code lives in exist-core's test-jar -->
             </dependency>
 
             <!-- test dependencies -->
