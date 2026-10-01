@@ -89,7 +89,7 @@ public class JaxpParseTest {
     public void parse_and_fill_defaults() throws XMLDBException, IOException, SAXException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);
-        assertEquals(result, "defaultTest");
+        assertEquals("defaultTest", result);
 
         query = "declare option exist:serialize 'indent=no'; " +
                 "validation:jaxp-parse(xs:anyURI('/db/parse_validate/defaultValue.xml'), true(), ())";

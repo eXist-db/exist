@@ -37,7 +37,7 @@ public class XMLStringTest {
 		try {
 			char ch[] = "Hello".toCharArray();
 			s.append(ch, 0, 5);
-			assertEquals(s.toString(), "Hello");
+            assertEquals("Hello", s.toString());
 		} finally {
 			s.reset();
 		}
@@ -52,7 +52,7 @@ public class XMLStringTest {
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
 			final String r = normalized.toString();
-			assertEquals(r, "Hello World");
+            assertEquals("Hello World", r);
 		} finally {
 			if (normalized != s) {
 				normalized.reset();
@@ -70,7 +70,7 @@ public class XMLStringTest {
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.NORMALIZE);
 			final String r = normalized.toString();
-			assertEquals(r, "Hello World");
+            assertEquals("Hello World", r);
 		} finally {
 			if (normalized != s) {
 				normalized.reset();
@@ -88,7 +88,7 @@ public class XMLStringTest {
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
 			final String r = normalized.substring(6, 5);
-			assertEquals(r, "World");
+            assertEquals("World", r);
 		} finally {
 			if (normalized != s) {
 				normalized.reset();
@@ -105,10 +105,10 @@ public class XMLStringTest {
 			s.append(ch, 0, ch.length);
 			s.insert(5, " happy");
 			String r = s.toString();
-			assertEquals(r, "Hello happy World");
+            assertEquals("Hello happy World", r);
 			s.delete(5, 6);
 			r = s.toString();
-			assertEquals(r, "Hello World");
+            assertEquals("Hello World", r);
 		} finally {
 			s.reset();
 		}

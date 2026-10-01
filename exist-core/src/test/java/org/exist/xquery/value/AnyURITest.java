@@ -40,7 +40,7 @@ public class AnyURITest {
     public void fullyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME;
         AnyURIValue anyUri = new AnyURIValue(escaped);
-        assertEquals(anyUri.toXmldbURI(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AnyURITest {
     public void partiallyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
         AnyURIValue anyUri = new AnyURIValue(escaped);
-        assertEquals(anyUri.toXmldbURI(), TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test

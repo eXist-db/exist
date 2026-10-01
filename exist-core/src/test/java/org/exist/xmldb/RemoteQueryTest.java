@@ -62,7 +62,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 		CompiledExpression compiled = service.compile(query);
 		ResourceSet result = service.execute(compiled);
 
-		assertEquals(result.getSize(), 359);
+        assertEquals(359, result.getSize());
 
 		for (int i = 0; i < result.getSize(); i++) {
 			XMLResource r = (XMLResource) result.getResource(i);
@@ -85,7 +85,7 @@ public class RemoteQueryTest extends RemoteDBTest {
         CompiledExpression compiled = service.compile(query);
         ResourceSet result = service.execute(compiled);
 
-        assertEquals(result.getSize(), 2);
+        assertEquals(2, result.getSize());
 
         for (int i = 0; i < result.getSize(); i++) {
             XMLResource r = (XMLResource) result.getResource(i);

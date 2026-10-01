@@ -747,7 +747,7 @@ public class XQueryFunctionsTest {
         query = "for $a in <test><a xmlns=\"aaa\"><b><c/></b></a></test>//* " +
                 "return namespace-uri($a)";
         result = existEmbeddedServer.executeQuery(query);
-        assertEquals(result.getSize(), 3);
+        assertEquals(3, result.getSize());
         r = (String) result.getResource(0).getContent();
         assertEquals("aaa", r);
         r = (String) result.getResource(1).getContent();

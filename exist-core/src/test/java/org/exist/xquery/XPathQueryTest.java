@@ -2273,7 +2273,7 @@ public class XPathQueryTest {
         try {
             service.compile(invalidQuery);
         } catch (XMLDBException e) {
-            assertEquals(((XPathException)e.getCause()).getLine(), 2);
+            assertEquals(2, ((XPathException) e.getCause()).getLine());
             exceptionOccurred = true;
         }
         assertTrue(exceptionOccurred, "Expected an exception");

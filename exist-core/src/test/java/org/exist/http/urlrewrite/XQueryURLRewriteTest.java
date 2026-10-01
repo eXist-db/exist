@@ -52,7 +52,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "blog/entries/some-entry.xml?edit");
+        assertEquals("blog/entries/some-entry.xml?edit", adjustedPath);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "adamretter.org.uk/blog/entries/some-entry.xml?edit");
+        assertEquals("adamretter.org.uk/blog/entries/some-entry.xml?edit", adjustedPath);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "xquery/functions.xql");
+        assertEquals("xquery/functions.xql", adjustedPath);
     }
 
     @Test

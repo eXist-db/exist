@@ -82,6 +82,7 @@ import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 /**
  * Uses JNDI to provide a StubDataSourceFactory
@@ -221,7 +222,7 @@ public class ImplicitConnectionCloseIT {
 
             final XQueryContext escapedMainQueryContext = escapedContexts._1;
             final ModuleContext escapedLibraryQueryContext = escapedContexts._2;
-            assertTrue(escapedMainQueryContext != escapedLibraryQueryContext);
+            assertNotSame(escapedMainQueryContext, escapedLibraryQueryContext);
 
             // check the connections were closed in the main module
             final int mainConnectionsCount = ModuleUtils.readContextMap(escapedMainQueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);

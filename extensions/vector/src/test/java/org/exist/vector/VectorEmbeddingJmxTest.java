@@ -33,7 +33,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class VectorEmbeddingJmxTest {
 
@@ -55,8 +55,8 @@ class VectorEmbeddingJmxTest {
         final Set<ObjectName> names = server.queryNames(query, null);
         assertFalse(names.isEmpty());
         final ObjectName name = names.iterator().next();
-        assertTrue(server.getAttribute(name, "Available").equals(Boolean.TRUE));
-        assertTrue(server.getAttribute(name, "KnnBackend").equals("lucene"));
+        assertEquals(Boolean.TRUE, server.getAttribute(name, "Available"));
+        assertEquals("lucene", server.getAttribute(name, "KnnBackend"));
     }
 
     @Test

@@ -151,7 +151,7 @@ public class BifurcanMapTest {
           2. Remove the entry in the initial map with key `2`: `let $removed := map:remove(..., 2)`
          */
         IMap<Integer, Boolean> removed = map.linear();  // create a transient map for modifications
-        assertFalse(removed == map);
+        assertNotSame(removed, map);
         removed = removed.remove(2);
         removed = removed.forked();  // make the map immutable
         checkMapIsForked(removed);
@@ -165,7 +165,7 @@ public class BifurcanMapTest {
          4. Remove the entry in the removed map with key `1`: `let $result := map:remove($removed, 1)`
          */
         IMap<Integer, Boolean> result = removed.linear();  // create a transient map for modifications
-        assertFalse(result == removed);
+        assertNotSame(result, removed);
         result = result.remove(1);
         result = result.forked();  // make the map immutable
         checkMapIsForked(result);

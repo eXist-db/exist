@@ -120,7 +120,7 @@ public class BTreeRecoverTest {
             
             final IndexQuery query = new IndexQuery(IndexQuery.GEQ, new NativeBroker.NodeRef(500, idFact.createInstance(1)));
             domDb.query(query, new IndexCallback());
-            assertEquals(count, 800);
+            assertEquals(800, count);
         }
     }
     

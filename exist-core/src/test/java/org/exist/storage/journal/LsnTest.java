@@ -35,8 +35,8 @@ package org.exist.storage.journal;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -75,8 +75,8 @@ public class LsnTest {
         assertTrue(Lsn.LSN_INVALID.equals(new Lsn((short)-1, -1)));
         assertTrue(new Lsn((short)-1, -1).equals(Lsn.LSN_INVALID));
 
-        assertFalse(new Lsn((short)0, 0).equals(Lsn.LSN_INVALID));
-        assertFalse(Lsn.LSN_INVALID.equals(new Lsn((short)0, 0)));
+        assertNotEquals(Lsn.LSN_INVALID, new Lsn((short) 0, 0));
+        assertNotEquals(Lsn.LSN_INVALID, new Lsn((short) 0, 0));
     }
 
 }

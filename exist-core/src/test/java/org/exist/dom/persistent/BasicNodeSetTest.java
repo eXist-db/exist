@@ -169,7 +169,7 @@ public class BasicNodeSetTest {
             NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
             assertEquals(1, result.getLength());
             String value = serialize(broker, result.itemAt(0));
-            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
+            assertEquals("<SPEAKER>HAMLET</SPEAKER>", value);
         }
     }
 

@@ -64,6 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
@@ -152,7 +153,7 @@ public class XQueryContextAttributesTest {
 
             final XQueryContext escapedMainQueryContext = escapedContexts._1;
             final ModuleContext escapedLibraryQueryContext = escapedContexts._2;
-            assertTrue(escapedMainQueryContext != escapedLibraryQueryContext);
+            assertNotSame(escapedMainQueryContext, escapedLibraryQueryContext);
 
             assertNull(escapedMainQueryContext.getAttribute("attr1"));
             assertNull(escapedMainQueryContext.getAttribute("attr2"));

@@ -89,8 +89,8 @@ public class ConfigurableTest {
         assertEquals("a", object.some);
         
         assertEquals(Integer.valueOf(5), object.someInteger);
-        assertTrue(object.simpleInteger == 5);
-        assertTrue(object.defaultInteger == 3);
+        assertEquals(5, object.simpleInteger);
+        assertEquals(3, object.defaultInteger);
 
         assertTrue(object.someboolean);
 
@@ -138,8 +138,8 @@ public class ConfigurableTest {
         assertEquals("a", object.some);
         
         assertEquals(Integer.valueOf(5), object.someInteger);
-        assertTrue(object.simpleInteger == 5);
-        assertTrue(object.defaultInteger == 3);
+        assertEquals(5, object.simpleInteger);
+        assertEquals(3, object.defaultInteger);
 
         assertTrue(object.someboolean);
 

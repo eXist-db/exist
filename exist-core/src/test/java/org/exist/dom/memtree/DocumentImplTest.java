@@ -39,6 +39,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -70,7 +71,7 @@ public class DocumentImplTest {
         assertEquals(Node.ATTRIBUTE_NODE, attr1.getNodeType());
         assertTrue(attr1 instanceof AttrNSImpl);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
-        assertEquals(null, attr1.getPrefix());
+        assertNull(attr1.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getLocalName());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getNodeName());
         assertEquals("http://exist-db.org/xquery/repo", attr1.getValue());
@@ -103,7 +104,7 @@ public class DocumentImplTest {
         final Attr attr1 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr1.getNodeType());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
-        assertEquals(null, attr1.getPrefix());
+        assertNull(attr1.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getLocalName());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getNodeName());
         assertEquals("http://exist-db.org/xquery/repo", attr1.getValue());
@@ -135,7 +136,7 @@ public class DocumentImplTest {
         assertEquals(NodeImpl.NAMESPACE_NODE, attr1.getNodeType());
         assertTrue(attr1 instanceof NamespaceNode);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
-        assertEquals(null, attr1.getPrefix());
+        assertNull(attr1.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getLocalName());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getNodeName());
         assertEquals("http://exist-db.org/xquery/repo", attr1.getValue());

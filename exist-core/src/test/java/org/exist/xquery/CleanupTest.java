@@ -129,8 +129,8 @@ public class CleanupTest {
 
         // execute query and check result
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "Hello world123");
+        assertEquals(1, result.getSize());
+        assertEquals("Hello world123", result.getResource(0).getContent());
 
         Sequence[] args = calledFunc.getCurrentArguments();
         assertNull(args);
@@ -147,7 +147,7 @@ public class CleanupTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             // execute query to get a function item
             final Sequence result = xquery.execute(broker, TEST_INLINE, Sequence.EMPTY_SEQUENCE);
-            assertEquals(result.getItemCount(), 1);
+            assertEquals(1, result.getItemCount());
             final FunctionCall call = ((FunctionReference)result.itemAt(0)).getCall();
             // closure variables are set when function item is created, but should be cleared after query
             final List<ClosureVariable> closure = call.getFunction().getClosureVariables();
@@ -167,8 +167,8 @@ public class CleanupTest {
         module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
 
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 2);
-        assertEquals(result.getResource(1).getContent(), "TEST");
+        assertEquals(2, result.getSize());
+        assertEquals("TEST", result.getResource(1).getContent());
 
         final Variable var = module.resolveVariable(new QName("VAR", MODULE_NS, "t"));
         assertNull(var);
@@ -187,8 +187,8 @@ public class CleanupTest {
         final TestModule.TestFunction func = (TestModule.TestFunction) root.getFunction();
 
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "TEST");
+        assertEquals(1, result.getSize());
+        assertEquals("TEST", result.getResource(0).getContent());
         assertFalse(func.dummyProperty);
     }
 

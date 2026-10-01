@@ -103,11 +103,11 @@ public class MarshallerTest {
             String serialized = writer.toString();
 
             Sequence seq = Marshaller.demarshall(broker, new StringReader(serialized));
-            assertEquals(seq.itemAt(0).getStringValue(), "foo");
-            assertEquals(seq.itemAt(1).getStringValue(), "2000");
-            assertEquals(seq.itemAt(2).getStringValue(), "1000");
-            assertEquals(seq.itemAt(3).getStringValue(), "false");
-            assertEquals(seq.itemAt(4).getStringValue(), "1000.1");
+            assertEquals("foo", seq.itemAt(0).getStringValue());
+            assertEquals("2000", seq.itemAt(1).getStringValue());
+            assertEquals("1000", seq.itemAt(2).getStringValue());
+            assertEquals("false", seq.itemAt(3).getStringValue());
+            assertEquals("1000.1", seq.itemAt(4).getStringValue());
         }
     }
     
