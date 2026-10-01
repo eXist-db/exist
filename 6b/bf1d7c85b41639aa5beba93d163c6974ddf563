@@ -1,0 +1,19 @@
+exist-core/src/test/java/xquery/numericOp/NumericOpTests.java
+  s_f03fe8b0b5549a::t_0e51913fa4eeea 26-30,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6bbf1d7c85b41639aa5beba93d163c6974ddf563",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
