@@ -78,10 +78,19 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- exist-xqts-runner uses exist-core's org.exist.test.ExistEmbeddedServer (which implements
              the JUnit Jupiter extension callbacks) and loads JUnit classes (junit.framework.Test)
              at startup, but it declares neither library. They used to arrive transitively via
-             exist-core, which now only has them at provided scope. -->
+             exist-core's main jar, which no longer has them. The test support classes it uses (such as ExistEmbeddedServer)
+             are in the exist-core test-jar, added below. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

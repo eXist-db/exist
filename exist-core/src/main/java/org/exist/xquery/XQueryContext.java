@@ -444,7 +444,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
 
-    // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
+    // Only used for testing, e.g. {@code org.exist.test.runner.XQueryTestRunner}.
     private Optional<ExistRepository> testRepository = Optional.empty();
 
     /**
@@ -562,7 +562,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     /**
      * Set the EXPath repository used for testing,
-     * only should be called from {@link org.exist.test.runner.XQueryTestRunner}.
+     * only should be called from {@code org.exist.test.runner.XQueryTestRunner}.
      *
      * @param testRepository the EXPath repository to use for test execution.
      */
