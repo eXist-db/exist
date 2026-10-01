@@ -23,8 +23,12 @@ package xquery.numericOp;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+/**
+ * The files of this suite only evaluate expressions on numbers: none reads or writes the database, so they
+ * do not depend on each other and can run concurrently.
+ */
+@XQSuite(value = {
     "src/test/xquery/numericOp"
-})
+}, parallel = true)
 public class NumericOpTests {
 }
