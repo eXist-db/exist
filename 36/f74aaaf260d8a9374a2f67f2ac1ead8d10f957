@@ -1,0 +1,19 @@
+extensions/debuggee/src/test/java/org/exist/debugger/DebuggerTest.java
+  s_f03fe8b0b5549a::t_c9d761671d767a 24,47-50,56,79-80,82,97,107,110,125,219,221,233,250,252,265,286,288,301,328,330,343,364,366
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "36f74aaaf260d8a9374a2f67f2ac1ead8d10f957",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
