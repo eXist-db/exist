@@ -31,15 +31,24 @@ import org.junit.platform.engine.support.descriptor.ClassSource;
 final class SuiteDescriptor extends AbstractTestDescriptor {
     private final Class<?> suiteClass;
     private final Throwable discoveryFailure;
+    private final boolean parallel;
 
-    SuiteDescriptor(final UniqueId id, final Class<?> suiteClass, final Throwable discoveryFailure) {
+    SuiteDescriptor(final UniqueId id, final Class<?> suiteClass, final boolean parallel, final Throwable discoveryFailure) {
         super(id, suiteClass.getSimpleName(), ClassSource.from(suiteClass));
         this.suiteClass = suiteClass;
+        this.parallel = parallel;
         this.discoveryFailure = discoveryFailure;
     }
 
     Class<?> suiteClass() {
         return suiteClass;
+    }
+
+    /**
+     * @return true if the files of the suite run concurrently
+     */
+    boolean parallel() {
+        return parallel;
     }
 
     /**
