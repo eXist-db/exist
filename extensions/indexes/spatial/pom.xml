@@ -127,11 +127,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <repositories>
@@ -196,7 +191,6 @@
                                 <ignoredUnusedDeclaredDependency>java3d:vecmath:jar</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>javax.media:jai_core:jar</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.jdom:jdom:jar</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
