@@ -105,7 +105,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filter_withoutIncrementReferenceCountFails() throws XPathException {
+    public void filterWithoutIncrementReferenceCountFails() throws XPathException {
         assertThrows(IOException.class, () -> {
             final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
@@ -179,7 +179,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void multiFilter_withoutIncrementReferenceCountFails() throws XPathException {
+    public void multiFilterWithoutIncrementReferenceCountFails() throws XPathException {
         assertThrows(IOException.class, () -> {
             final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
@@ -276,7 +276,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filterFilter_withoutIncrementReferenceCountFails() throws XPathException {
+    public void filterFilterWithoutIncrementReferenceCountFails() throws XPathException {
         assertThrows(IOException.class, () -> {
             final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 

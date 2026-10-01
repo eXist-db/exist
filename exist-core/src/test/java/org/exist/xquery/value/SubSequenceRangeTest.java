@@ -134,7 +134,7 @@ public class SubSequenceRangeTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void iterate_loop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void iterateLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
         int count = 0;
@@ -147,7 +147,7 @@ public class SubSequenceRangeTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void iterate_skip_loop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void iterateSkipLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
 
@@ -169,7 +169,7 @@ public class SubSequenceRangeTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void iterate_loop_skip_loop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    public void iterateLoopSkipLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
 

@@ -151,7 +151,7 @@ public class FunUnparsedTextTest {
     }
 
     @Test
-    public void unparsedTextLines_noDataStream() throws EXistException, PermissionDeniedException {
+    public void unparsedTextLinesNoDataStream() throws EXistException, PermissionDeniedException {
         assertThrows(XPathException.class, () -> {
             final BrokerPool pool = BrokerPool.getInstance();
 

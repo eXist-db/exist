@@ -183,7 +183,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupRemoveCollection_canNotWriteParent(String apiName, String baseUri) throws XMLDBException {
+    public void groupRemoveCollectionCanNotWriteParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         assertThrows(XMLDBException.class, () -> {
@@ -193,8 +193,9 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupRemoveCollection_canWriteParent(String apiName, String baseUri) throws XMLDBException {
+    public void groupRemoveCollectionCanWriteParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
@@ -203,7 +204,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupChmodCollection_asNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
+    public void groupChmodCollectionAsNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         assertThrows(XMLDBException.class, () -> {
@@ -217,7 +218,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupChmodCollection_asOwner(String apiName, String baseUri) throws XMLDBException {
+    public void groupChmodCollectionAsOwner(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
@@ -229,7 +230,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupChmodResource_asNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
+    public void groupChmodResourceAsNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         assertThrows(XMLDBException.class, () -> {
@@ -241,8 +242,9 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void groupChmodResource_asOwner(String apiName, String baseUri) throws XMLDBException {
+    public void groupChmodResourceAsOwner(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
@@ -259,6 +261,7 @@ public class XMLDBSecurityTest {
      * ownership uid of /db/securityTest1
      * to 'test2' user
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void dbaChownUidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -278,6 +281,7 @@ public class XMLDBSecurityTest {
      * ownership gid of /db/securityTest1
      * to 'guest' group
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void dbaChownGidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -424,6 +428,7 @@ public class XMLDBSecurityTest {
      * ownership uid of /db/securityTest1/test.xml
      * to 'test2' user
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void dbaChownUidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -444,6 +449,7 @@ public class XMLDBSecurityTest {
      * ownership gid of /db/securityTest1/test1.xml
      * to 'guest' group
      */
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void dbaChownGidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -591,6 +597,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void onlyExecuteRequiredToOpenCollectionContent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -619,6 +626,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void canOpenCollectionWithExecute(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -647,6 +655,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void canOpenRootCollectionWithExecute(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -660,6 +669,7 @@ public class XMLDBSecurityTest {
         DatabaseManager.getCollection(getBaseUri() + "/db", "test1", "test1");
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void onlyReadAndExecuteRequiredToListCollectionResources(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -689,6 +699,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void onlyReadAndExecuteRequiredToListCollectionSubCollections(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -858,6 +869,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void canCreateXmlResourceWithOnlyExecuteAndWritePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -894,6 +906,7 @@ public class XMLDBSecurityTest {
         });
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void canCreateBinaryResourceWithOnlyExecuteAndWritePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -1117,6 +1130,7 @@ public class XMLDBSecurityTest {
             DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test3", "test3"));
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void canOpenCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
@@ -1178,7 +1192,7 @@ public class XMLDBSecurityTest {
      *      -> /db/securityTest3/copy-of-source
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_destExists_destIsWritable(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesDestExistsDestIsWritable(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1230,7 +1244,7 @@ public class XMLDBSecurityTest {
      *      -> /db/securityTest3/copy-of-source
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_destExists_destIsNotWritable(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesDestExistsDestIsNotWritable(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         assertThrows(XMLDBException.class, () -> {
@@ -1288,7 +1302,7 @@ public class XMLDBSecurityTest {
      * permissions on the dest resource must also be writable
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_destResourceExists_destResourceIsNotWritable(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesDestResourceExistsDestResourceIsNotWritable(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         assertThrows(XMLDBException.class, () -> {
@@ -1341,7 +1355,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_withSubCollectionWithResource(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesWithSubCollectionWithResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1383,7 +1397,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyDocument_doesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
+    public void copyDocumentDoesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1408,7 +1422,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyDocument_doesPreservePermissions_whenDestResourceExists(String apiName, String baseUri) throws XMLDBException {
+    public void copyDocumentDoesPreservePermissionsWhenDestResourceExists(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1444,7 +1458,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollection_doesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionDoesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1468,7 +1482,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollection_doesPreservePermissions_whenDestCollectionExists(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionDoesPreservePermissionsWhenDestCollectionExists(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1497,7 +1511,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollection_doesPreservePermissionsOfSubDocuments(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionDoesPreservePermissionsOfSubDocuments(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
@@ -1517,7 +1531,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollection_doesPreservePermissionsOfSubCollections(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionDoesPreservePermissionsOfSubCollections(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
@@ -1549,7 +1563,7 @@ public class XMLDBSecurityTest {
      *      -> /db/securityTest3/copy-of-source
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResource_doesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourceDoesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1603,7 +1617,7 @@ public class XMLDBSecurityTest {
      *      -> /db/securityTest3/copy-of-source
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_withSubCollectionWithResource_doesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesWithSubCollectionWithResourceDoesNotPreservePermissions(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1703,7 +1717,7 @@ public class XMLDBSecurityTest {
      * resource will be preserved
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void copyCollectionWithResources_destResourceExists_destResourceIsWritable_preservePermissions(String apiName, String baseUri) throws XMLDBException {
+    public void copyCollectionWithResourcesDestResourceExistsDestResourceIsWritablePreservePermissions(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
@@ -1918,7 +1932,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void noSetGid_createSubCollection_subCollectionGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
+    public void noSetGidCreateSubCollectionSubCollectionGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -1943,7 +1957,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void setGid_createSubCollection_subCollectionGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
+    public void setGidCreateSubCollectionSubCollectionGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -1968,7 +1982,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void noSetGid_createResource_resourceGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
+    public void noSetGidCreateResourceResourceGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -1994,7 +2008,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void setGid_createResource_resourceGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
+    public void setGidCreateResourceResourceGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -2020,7 +2034,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void noSetGid_copyCollection_collectionGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
+    public void noSetGidCopyCollectionCollectionGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -2052,7 +2066,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void setGid_copyCollection_collectionGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
+    public void setGidCopyCollectionCollectionGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -2087,7 +2101,7 @@ public class XMLDBSecurityTest {
 
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void noSetGid_copyResource_resourceGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
+    public void noSetGidCopyResourceResourceGroupIsUsersPrimaryGroup(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
@@ -2120,7 +2134,7 @@ public class XMLDBSecurityTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void setGid_copyResource_resourceGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
+    public void setGidCopyResourceResourceGroupInheritedFromParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");

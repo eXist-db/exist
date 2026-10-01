@@ -93,18 +93,14 @@ public class SendEmailIT {
         AUTHENTICATED
     }
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
-        });
-    }
     public SmtpImplementation smtpImplementation;
     public AuthenticationOption authenticationOption;
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
+    @RegisterExtension
+    public final GreenMailExtension greenMail = new GreenMailExtension(new ServerSetup(0, "127.0.0.1", "smtp"));
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/mail-module-test");
     private static final XmldbURI XML_DOC1_NAME = XmldbURI.create("doc1.xml");
@@ -115,8 +111,13 @@ public class SendEmailIT {
     private static final String EMAIL_UID = "emailuid";
     private static final String EMAIL_PWD = "emailpwd";
 
-    @RegisterExtension
-    public final GreenMailExtension greenMail = new GreenMailExtension(new ServerSetup(0, "127.0.0.1", "smtp"));
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
+        });
+    }
 
     @BeforeAll
     public static void setup() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {

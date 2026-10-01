@@ -63,7 +63,7 @@ public class RenameCollectionTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void rename_sameName(String apiName, String baseUri) throws XMLDBException {
+    public void renameSameName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
         setUp();
         /*
@@ -98,7 +98,7 @@ public class RenameCollectionTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void rename_differentName(String apiName, String baseUri) throws XMLDBException {
+    public void renameDifferentName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
         setUp();
         /*

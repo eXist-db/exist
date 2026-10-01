@@ -59,6 +59,12 @@ public class BTreeTest {
     private int count = 0;
     private static final int COUNT = 5000;
 
+    @RegisterExtension
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
+    @TempDir
+    public File temporaryFolder;
+
     @org.junit.jupiter.api.Test
     public void simpleUpdates() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -352,12 +358,6 @@ public class BTreeTest {
             }
         }
     }
-
-    @RegisterExtension
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
-
-    @TempDir
-    public File temporaryFolder;
 
     @BeforeEach
     public void initialize() throws IOException {

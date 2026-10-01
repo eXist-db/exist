@@ -84,7 +84,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroup_fails_when_user_is_null() throws ConfigurationException {
+    public void assertCanModifyGroupFailsWhenUserIsNull() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -115,7 +115,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroup_fails_when_user_is_not_dba() throws ConfigurationException {
+    public void assertCanModifyGroupFailsWhenUserIsNotDba() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -159,7 +159,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroup_fails_when_user_is_not_manager() throws ConfigurationException {
+    public void assertCanModifyGroupFailsWhenUserIsNotManager() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);

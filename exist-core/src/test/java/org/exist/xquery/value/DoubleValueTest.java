@@ -59,7 +59,7 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void toJavaObject_int_lowerBound() {
+    public void toJavaObjectIntLowerBound() {
         assertThrows(XPathException.class, () -> {
             final double value = -2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
             final DoubleValue doubleValue = new DoubleValue(value);
@@ -71,7 +71,7 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void toJavaObject_int_upperBound() {
+    public void toJavaObjectIntUpperBound() {
         assertThrows(XPathException.class, () -> {
             final double value = 2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
             final DoubleValue doubleValue = new DoubleValue(value);

@@ -59,7 +59,7 @@ public class PermissionsFunctionModeConversionTest {
     }
     
     @Test
-    public void modeToOctal_invalidMode() {
+    public void modeToOctalInvalidMode() {
         assertThrows(XPathException.class, () -> {
             final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 

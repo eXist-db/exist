@@ -49,6 +49,9 @@ public class MultiDBTest {
 
     private final static int INSTANCE_COUNT = 5;
 
+    @TempDir
+    public static File TEMP_FOLDER;
+
     private final static String CONFIG =
             "<exist>" +
             "   <db-connection database=\"native\" files=\".\" cacheSize=\"32M\">" +
@@ -92,9 +95,6 @@ public class MultiDBTest {
             String content = i.nextResource().getContent().toString();
         }
     }
-
-    @TempDir
-    public static File TEMP_FOLDER;
 
     @BeforeEach
     public void setUp() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException, XMLDBException {

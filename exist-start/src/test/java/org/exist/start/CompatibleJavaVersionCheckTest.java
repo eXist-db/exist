@@ -179,7 +179,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void checkJava12_BellSoft() {
+    public void checkJava12BellSoft() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.2-BellSoft")));
     }
@@ -197,13 +197,13 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void checkJava15_0_0() {
+    public void checkJava1500() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.0")));
     }
 
     @Test
-    public void checkJava15_0_1() {
+    public void checkJava1501() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.1")));
     }

@@ -64,6 +64,7 @@ public class SortTest {
     public String sortTestName;
     public SortMethodChecker checker;
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
     public void singleElement(String sortTestName, SortMethodChecker checker) throws Exception {
         initSortTest(sortTestName, checker);

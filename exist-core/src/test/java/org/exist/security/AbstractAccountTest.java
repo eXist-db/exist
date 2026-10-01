@@ -107,7 +107,7 @@ public class AbstractAccountTest {
     }
 
     @Test
-    public void assertCanModifyAccount_fails_when_user_is_null() throws ConfigurationException {
+    public void assertCanModifyAccountFailsWhenUserIsNull() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -138,7 +138,7 @@ public class AbstractAccountTest {
     }
 
     @Test
-    public void assertCanModifyAccount_fails_when_user_is_not_dba() throws ConfigurationException {
+    public void assertCanModifyAccountFailsWhenUserIsNotDba() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -179,7 +179,7 @@ public class AbstractAccountTest {
     }
 
     @Test
-    public void assertCanModifyAccount_fails_when_user_is_not_same() throws ConfigurationException {
+    public void assertCanModifyAccountFailsWhenUserIsNotSame() throws ConfigurationException {
         assertThrows(PermissionDeniedException.class, () -> {
             DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
             AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
