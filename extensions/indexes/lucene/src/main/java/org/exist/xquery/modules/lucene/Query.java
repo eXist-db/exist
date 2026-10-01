@@ -415,7 +415,18 @@ public class Query extends Function implements Optimizable {
             return new QueryOptions();
         }
 
-        final Sequence optSeq = funct.getArgument(position - 1).eval(contextSequence, contextItem);
+        return toQueryOptions(funct, funct.getArgument(position - 1).eval(contextSequence, contextItem));
+    }
+
+    /**
+     * Query options from an evaluated options argument: an XML element or a map.
+     *
+     * @param funct the function reporting any error
+     * @param optSeq the evaluated options argument
+     * @return the query options
+     * @throws XPathException EXXQDYFT0004 if the argument is neither a map nor an element
+     */
+    static QueryOptions toQueryOptions(final Function funct, final Sequence optSeq) throws XPathException {
         if (Type.subTypeOf(optSeq.getItemType(), Type.ELEMENT)) {
             return new QueryOptions(funct.getContext(), (NodeValue) optSeq.itemAt(0));
         } else if (Type.subTypeOf(optSeq.getItemType(), Type.MAP_ITEM)) {
