@@ -77,7 +77,7 @@ final class WebDavHttpClient {
         return URI.create(collectionUri + name);
     }
 
-    private static String basicAuthorization(final String username, final String password) {
+    static String basicAuthorization(final String username, final String password) {
         final String credentials = username + ":" + password;
         final String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
         return "Basic " + encoded;
