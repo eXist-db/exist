@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/test/runner/AbstractTestRunner.java
+  s_f03fe8b0b5549a::t_47dbf38a710560 52
+exist-core/src/main/java/org/exist/test/runner/TestEvents.java
+  s_f03fe8b0b5549a::t_47dbf38a710560 27
+exist-core/src/main/java/org/exist/test/runner/XQueryTestRunner.java
+  s_f03fe8b0b5549a::t_a95b030cce5a24 60-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b6eb9ea18e1eae5a7db9a913a5e6b86f74b84d9a",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
