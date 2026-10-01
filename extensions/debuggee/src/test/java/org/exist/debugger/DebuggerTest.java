@@ -21,7 +21,7 @@
  */
 package org.exist.debugger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,13 +44,16 @@ import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@Ignore("Requires running debugger infrastructure")
+@Disabled("Requires running debugger infrastructure")
 public class DebuggerTest implements ResponseListener {
 
 	private static final String script = "xquery version '1.0';\n" +
@@ -73,10 +76,10 @@ public class DebuggerTest implements ResponseListener {
 			"			<td>{f:fibo($n)}</td>\n" +
 			"		</tr>";
 
-	@ClassRule
-	public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+	@RegisterExtension
+	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-	@BeforeClass
+	@BeforeAll
 	public static void setup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
 		store("fibo.xql", script);
 	}
@@ -91,7 +94,7 @@ public class DebuggerTest implements ResponseListener {
 		try {
 		    // jetty.port.jetty
 			debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/xquery/fibo.xql");
-			assertNotNull("The resource don't exist, but debugger don't throw exception.", null);
+			fail("The resource don't exist, but debugger don't throw exception.");
 		} catch (Exception e) {
 			exception = e;
 		}
@@ -101,10 +104,10 @@ public class DebuggerTest implements ResponseListener {
 		try {
 		    // jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
             source.stop();
 		} catch (Exception e) {
-			assertNotNull("exception: "+e.getMessage(), null);
+			fail("exception: "+e.getMessage());
 		}
 	}
 
@@ -119,7 +122,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
 			
 			//get stack frames
 			List<Location> stack = source.getStackFrames();
@@ -213,9 +216,9 @@ public class DebuggerTest implements ResponseListener {
 			source.run(this);
 
 		} catch (IOException e) {
-			assertNotNull("IO exception: "+e.getMessage(), null);
+			fail("IO exception: "+e.getMessage());
 		} catch (ExceptionTimeout e) {
-			assertNotNull("Timeout exception: "+e.getMessage(), null);
+			fail("Timeout exception: "+e.getMessage());
 		}
 	}
 
@@ -227,7 +230,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
 			
 			Breakpoint breakpoint = source.newBreakpoint();
 			breakpoint.setLineno(24);
@@ -244,9 +247,9 @@ public class DebuggerTest implements ResponseListener {
 			source.run();
 			
 		} catch (IOException e) {
-			assertNotNull("IO exception: "+e.getMessage(), null);
+			fail("IO exception: "+e.getMessage());
 		} catch (ExceptionTimeout e) {
-			assertNotNull("Timeout exception: "+e.getMessage(), null);
+			fail("Timeout exception: "+e.getMessage());
 		}
 	}
 
@@ -259,7 +262,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
 			
 			Breakpoint breakpoint = source.newBreakpoint();
 			breakpoint.setLineno(24);
@@ -280,9 +283,9 @@ public class DebuggerTest implements ResponseListener {
 			source.stop();
 			
 		} catch (IOException e) {
-			assertNotNull("IO exception: "+e.getMessage(), null);
+			fail("IO exception: "+e.getMessage());
 		} catch (ExceptionTimeout e) {
-			assertNotNull("Timeout exception: "+e.getMessage(), null);
+			fail("Timeout exception: "+e.getMessage());
 		}
 	}
 
@@ -295,7 +298,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
 			
 			Breakpoint breakpoint = source.newBreakpoint();
 			breakpoint.setLineno(24);
@@ -322,9 +325,9 @@ public class DebuggerTest implements ResponseListener {
 			source.stop();
 			
 		} catch (IOException e) {
-			assertNotNull("IO exception: "+e.getMessage(), null);
+			fail("IO exception: "+e.getMessage());
 		} catch (ExceptionTimeout e) {
-			assertNotNull("Timeout exception: "+e.getMessage(), null);
+			fail("Timeout exception: "+e.getMessage());
 		}
 	}
 
@@ -337,7 +340,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/debug-test.xql");
 
-			assertNotNull("Debugging source can't be NULL.", source);
+			assertNotNull(source, "Debugging source can't be NULL.");
 
 			Breakpoint breakpoint = source.newBreakpoint();
 			breakpoint.setLineno(19);
@@ -358,9 +361,9 @@ public class DebuggerTest implements ResponseListener {
 			source.stop();
 
 		} catch (IOException e) {
-			assertNotNull("IO exception: "+e.getMessage(), null);
+			fail("IO exception: "+e.getMessage());
 		} catch (ExceptionTimeout e) {
-			assertNotNull("Timeout exception: "+e.getMessage(), null);
+			fail("Timeout exception: "+e.getMessage());
 		}
 	}
 
