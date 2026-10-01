@@ -78,8 +78,19 @@ public class XQueryTestRunner extends AbstractTestRunner {
      * @throws InitializationError if the test runner could not be constructed.
      */
     public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
+        this(path, parallel, XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null ? XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool() : null);
+    }
+
+    /**
+     * @param path The path to the XQuery file containing the XQSuite tests
+     * @param parallel whether the tests should be run in parallel.
+     * @param discoveryPool a running database to discover the tests with, or null to discover by compiling the module
+     *
+     * @throws InitializationError if the test runner could not be constructed.
+     */
+    public XQueryTestRunner(final Path path, final boolean parallel, @Nullable final BrokerPool discoveryPool) throws InitializationError {
         super(path, parallel);
-        this.info = discoverOrExtractTestInfo(path);
+        this.info = discoverOrExtractTestInfo(path, discoveryPool);
     }
 
     /**
@@ -93,17 +104,38 @@ public class XQueryTestRunner extends AbstractTestRunner {
      * @return test info (from discovery or from compiling the module)
      * @throws InitializationError if the runner could not be constructed
      */
-    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path) throws InitializationError {
-        if (XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
-            final BrokerPool pool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
-            if (pool != null) {
-                final XQueryTestInfo discovered = runDiscovery(pool, path);
-                if (discovered != null) {
-                    return discovered;
-                }
+    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path, @Nullable final BrokerPool pool) throws InitializationError {
+        if (pool != null) {
+            final XQueryTestInfo discovered = runDiscovery(pool, path);
+            if (discovered != null) {
+                return discovered;
             }
         }
         return extractTestInfo(path);
+    }
+
+    /**
+     * The name under which the XQSuite runtime reports a test that has no explicit {@code %test:name}
+     * (see {@code test:get-test-name} in xqsuite.xql): the lexical name of the function, with a prefix
+     * dropped only if it consists solely of word characters. XPath's {@code \w} excludes punctuation,
+     * so a prefix such as {@code my-tests} is kept.
+     */
+    static String runtimeTestName(final String prefix, final String localName) {
+        if (prefix == null || prefix.isEmpty() || prefix.codePoints().allMatch(XQueryTestRunner::isXPathWordChar)) {
+            return localName;
+        }
+        return prefix + ":" + localName;
+    }
+
+    private static boolean isXPathWordChar(final int codePoint) {
+        return switch (Character.getType(codePoint)) {
+            case Character.CONNECTOR_PUNCTUATION, Character.DASH_PUNCTUATION, Character.START_PUNCTUATION,
+                 Character.END_PUNCTUATION, Character.INITIAL_QUOTE_PUNCTUATION, Character.FINAL_QUOTE_PUNCTUATION,
+                 Character.OTHER_PUNCTUATION, Character.SPACE_SEPARATOR, Character.LINE_SEPARATOR,
+                 Character.PARAGRAPH_SEPARATOR, Character.CONTROL, Character.FORMAT, Character.SURROGATE,
+                 Character.PRIVATE_USE, Character.UNASSIGNED -> false;
+            default -> true;
+        };
     }
 
     private static Configuration getConfiguration() throws DatabaseConfigurationException {
@@ -176,7 +208,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
                     if (isTest) {
                         if (testName == null) {
-                            testName = localFunctionSignature.getName().getLocalPart();
+                            testName = runtimeTestName(localFunctionSignature.getName().getPrefix(), localFunctionSignature.getName().getLocalPart());
                             testArity = localFunctionSignature.getArgumentCount();
                         }
 

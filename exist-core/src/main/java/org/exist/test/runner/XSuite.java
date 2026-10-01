@@ -301,13 +301,35 @@ public class XSuite extends ParentRunner<Runner> {
      * @throws InitializationError if the file cannot be read as a test file
      */
     public static @Nullable AbstractTestRunner newTestRunner(final Path path, final boolean parallel) throws InitializationError {
+        return newTestRunner(path, parallel, null);
+    }
+
+    /**
+     * Creates the test runner for a file of tests, discovering the tests with a running database if one is given.
+     *
+     * @param path the XQuery or XML test file
+     * @param parallel true if the tests will be run in parallel
+     * @param discoveryPool a running database to discover XQuery tests with, or null to compile the module instead
+     *
+     * @return the runner, or null if the file is not a test file
+     *
+     * @throws InitializationError if the file cannot be read as a test file
+     */
+    public static @Nullable AbstractTestRunner newTestRunner(final Path path, final boolean parallel, @Nullable final org.exist.storage.BrokerPool discoveryPool) throws InitializationError {
         if(XMLFilenameFilter.asPredicate().test(path)) {
             return new XMLTestRunner(path, parallel);
         } else if(XQueryFilenameFilter.asPredicate().test(path) && !"runTests.xql".equals(path.getFileName().toString())) {
-            return new XQueryTestRunner(path, parallel);
+            return new XQueryTestRunner(path, parallel, discoveryPool);
         } else {
             return null;
         }
+    }
+
+    /**
+     * @return true if the file is an XQuery file of tests, which is discovered by running or compiling it
+     */
+    public static boolean isXQueryTestFile(final Path path) {
+        return XQueryFilenameFilter.asPredicate().test(path) && !"runTests.xql".equals(path.getFileName().toString());
     }
 
     private static @Nullable Runner getRunner(final Path path, final boolean parallel) throws InitializationError {

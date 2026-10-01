@@ -21,11 +21,9 @@
  */
 package xquery.numbers;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery/numbers"
 })
 public class NumberTests {

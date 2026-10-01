@@ -21,11 +21,9 @@
  */
 package xquery.lucene;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery/lucene"
 })
 public class LuceneTests {

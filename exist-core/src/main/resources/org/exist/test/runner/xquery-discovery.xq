@@ -43,8 +43,16 @@ return
                     attribute namespace { namespace-uri-from-QName($name) },
                     attribute prefix { prefix-from-QName($name) },
                     for $f in $test-functions
+                    let $meta := util:inspect-function($f)
+                    let $name-annotation := $meta/annotation[matches(@name, ":name")]
                     return element f {
-                        attribute name { local-name-from-QName(function-name($f)) },
+                        (: must match test:get-test-name in xqsuite.xql, which names the test in the reports :)
+                        attribute name {
+                            if ($name-annotation) then
+                                string(($name-annotation/value)[1])
+                            else
+                                replace($meta/@name, "^\w+:([^:]+)$", "$1")
+                        },
                         attribute arity { function-arity($f) }
                     }
                 )

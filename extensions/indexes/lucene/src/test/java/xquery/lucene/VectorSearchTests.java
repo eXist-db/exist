@@ -21,8 +21,7 @@
  */
 package xquery.lucene;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
 /**
  * Runs only the vector search XQSuite tests.
@@ -30,8 +29,7 @@ import org.junit.runner.RunWith;
  *
  * mvn -q test -Dtest=VectorSearchTests -pl extensions/indexes/lucene -DfailIfNoTests=false -Denforcer.skip=true ...
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery/lucene/vector-search.xqm",
     "src/test/xquery/lucene/vector-embed.xqm",
     "src/test/xquery/lucene/query-vector-k.xqm"

@@ -141,8 +141,9 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     private static @Nullable String getIdValue(final Node test) {
+        // as the runtime does: ($test/@id[. ne ""], $test/task)[1]
         final String id = ((Element)test).getAttribute("id");
-        return id.isBlank() ? null : id;
+        return id.isEmpty() ? null : id;
     }
 
     private static @Nullable String getTaskText(final Node test) {
@@ -150,12 +151,11 @@ public class XMLTestRunner extends AbstractTestRunner {
         for (int j = 0; j < testChildren.getLength(); j++) {
             final Node testChild = testChildren.item(j);
             if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null && "task".equals(testChild.getLocalName())) {
-                String textContent = testChild.getTextContent();
-                if (textContent != null) {
-                    textContent = textContent.trim();
-                    if (!textContent.isEmpty()) {
-                        return textContent;
-                    }
+                // the runtime reports the raw text of <task>, including any surrounding whitespace,
+                // so the name must not be trimmed or it would not match the reported test
+                final String textContent = testChild.getTextContent();
+                if (textContent != null && !textContent.isBlank()) {
+                    return textContent;
                 }
                 return null;
             }
