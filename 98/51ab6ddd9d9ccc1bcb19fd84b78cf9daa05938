@@ -1,0 +1,130 @@
+extensions/modules/image/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_4a07a2e470d6e0 61
+exist-core/src/main/resources/org/exist/test/runner/xquery-discovery.xq
+  s_f03fe8b0b5549a::t_e5a54e8bbe80ee 46-47,49-55
+extensions/indexes/ngram/src/test/java/xquery/ngram/NgramTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,32
+exist-core/src/test/java/xquery/arrays/ArrayTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneIndexingTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,32
+extensions/indexes/sort/src/test/java/xquery/sort/SortTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/expathrepo/src/test/java/xquery/modules/expathrepo/ExpathRepoTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/xqdoc/src/test/java/xquery/xqdoc/XQDocTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/lucene/src/test/java/xquery/lucene/FtAttrContextTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,32
+exist-core/src/test/java/xquery/logicalOp/LogicalOpTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/securitymanager/SecurityManagerTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/xmldb/XMLDBTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/util/UtilTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/indexes-integration-tests/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 63-70
+extensions/modules/compression/src/test/java/xquery/modules/compression/CompressionTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 45,47
+extensions/indexes/sort/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 60-67
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneAnalyzersTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,33
+extensions/xqdoc/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_0aa65eab17ae5b 61
+extensions/indexes/indexes-integration-tests/src/test/java/xquery/indexing/tests/IndexingTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_f03fe8b0b5549a::t_e7e972c1e69322 24,53,55,88-93,99-130,144,148,166-174
+exist-core/src/test/java/xquery/CoreTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/numbers/NumberTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/optimizer/OptimizerTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,29
+exist-core/src/test/java/xquery/validation/ValidationTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 25,27
+extensions/indexes/range/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 60-67
+extensions/modules/xmldiff/src/test/java/xquery/modules/xmldiff/XmlDiffTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 35,37
+exist-core/src/test/java/xquery/xinclude/XIncludeTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/lucene/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 60-67
+extensions/modules/cache/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_f2bba67be7e239 61
+exist-core/src/test/java/xquery/maps/MapTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/compression/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_f17dd186786e63 61
+exist-core/src/test/java/xquery/xquery3/XQuery3Tests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/cache/src/test/java/xquery/modules/cache/CacheTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/image/src/test/java/xquery/modules/image/ImageTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/expathrepo/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 68-75
+exist-core/src/test/java/xquery/numericOp/NumericOpTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/system/SystemTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/xmldiff/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_ee6f3a45e676af 61
+exist-core/src/test/java/xquery/indexing/IndexingTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/main/java/org/exist/test/runner/XQueryTestRunner.java
+  s_f03fe8b0b5549a::t_e5a54e8bbe80ee 81-91,93,107-111,117-140,211
+extensions/exquery/restxq/src/test/java/xquery/restxq/RestXqTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 29,31
+extensions/indexes/ngram/pom.xml
+  s_f03fe8b0b5549a::t_6ac19dba8aca12 62-68
+  s_f03fe8b0b5549a::t_45e329af01364c 61
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/http-client/src/test/java/org/exist/xquery/modules/httpclient/xquery/HttpClientXqueryTests.java
+  s_f03fe8b0b5549a::t_36eb0ee24b639d 24-27,32,37,39,41-43,45,51,57,63,69,77,80,83
+exist-core/src/main/java/org/exist/test/runner/XSuite.java
+  s_f03fe8b0b5549a::t_e5a54e8bbe80ee 304-318,322
+  s_f03fe8b0b5549a::t_e7e972c1e69322 328-334
+extensions/indexes/lucene/src/test/java/xquery/lucene/FtMatchTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,32
+exist-core/src/test/java/xquery/dates/DateTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 25,27
+extensions/indexes/lucene/src/test/java/xquery/lucene/ReindexSecondStoreTest.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+extensions/modules/file/src/test/java/xquery/modules/file/FileTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 24,26
+exist-core/src/test/java/xquery/inspect/InspectTests.java
+  s_f03fe8b0b5549a::t_c18b9b83405cec 25,27
+exist-core/src/main/java/org/exist/test/runner/XMLTestRunner.java
+  s_f03fe8b0b5549a::t_d8a91eef1953ec 144,146,154-158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9851ab6ddd9d9ccc1bcb19fd84b78cf9daa05938",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
