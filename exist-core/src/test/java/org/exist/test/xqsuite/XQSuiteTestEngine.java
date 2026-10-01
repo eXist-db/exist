@@ -71,6 +71,12 @@ public final class XQSuiteTestEngine implements TestEngine {
      */
     private static volatile String unusableBecause = null;
 
+    /**
+     * Test files are discovered once per file for the life of the JVM: the launcher discovers each
+     * class several times (for example once to decide whether to run it and once to run it).
+     */
+    private static final Map<Path, AbstractTestRunner> RUNNERS = new ConcurrentHashMap<>();
+
     @Override
     public String getId() {
         return ENGINE_ID;
@@ -101,12 +107,6 @@ public final class XQSuiteTestEngine implements TestEngine {
         }
         return engine;
     }
-
-    /**
-     * Test files are discovered once per file for the life of the JVM: the launcher discovers each
-     * class several times (for example once to decide whether to run it and once to run it).
-     */
-    private static final Map<Path, AbstractTestRunner> RUNNERS = new ConcurrentHashMap<>();
 
     /**
      * An embedded database that is only started if some file needs it for discovery.

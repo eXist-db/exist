@@ -74,7 +74,7 @@ final class XQSuiteSettings {
     Duration hangThreshold() {
         final Double minutes = parse(HANG_THRESHOLD_MINUTES, Double::parseDouble);
         final double value = minutes != null ? minutes : DEFAULT_HANG_THRESHOLD_MINUTES;
-        if (!(value > 0)) {
+        if (Double.isNaN(value) || value <= 0) {
             throw invalid(HANG_THRESHOLD_MINUTES, String.valueOf(value), "must be greater than 0");
         }
         return Duration.ofMillis((long) (value * 60_000));

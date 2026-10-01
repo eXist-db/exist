@@ -77,6 +77,7 @@ class XQSuiteTestEngineTest {
                 .toList();
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
     @Test
     void passingTestIsReportedAsSucceeded() {
         run(SingleTest.class).testEvents().assertStatistics(stats -> stats.started(1).succeeded(1).failed(0).skipped(0));
@@ -93,6 +94,7 @@ class XQSuiteTestEngineTest {
         assertEquals("actual", assertionFailure.getActual().getValue());
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
     @Test
     void assertionFailureAndUnexpectedErrorAreBothReported() {
         run(FailingBoth.class).testEvents().assertStatistics(stats -> stats.started(2).failed(2));
@@ -105,6 +107,7 @@ class XQSuiteTestEngineTest {
                 "a node-valued result should reach the failure message as markup, not XML-escaped");
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
     @Test
     void testsAreReportedUnderTheNamesTheyWereDiscoveredWith() {
         // if discovery and the XQSuite runtime disagreed on a name, a test would be reported twice:
@@ -136,6 +139,7 @@ class XQSuiteTestEngineTest {
                 "the error should keep its Java stack trace so an IDE can navigate to the code");
     }
 
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
     @Test
     void fileWithoutTestsRunsNothing() {
         run(NoTests.class).testEvents().assertStatistics(stats -> stats.started(0));

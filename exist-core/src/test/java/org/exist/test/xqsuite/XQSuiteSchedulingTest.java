@@ -197,7 +197,7 @@ class XQSuiteSchedulingTest {
     @Test
     void stopThatFailsIsReportedAsAFailure() {
         final IllegalStateException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
-                () -> XQSuiteTestEngine.stopWithin(() -> { throw new RuntimeException("boom"); }, Duration.ofSeconds(5)));
+                () -> XQSuiteTestEngine.stopWithin(() -> { throw new IllegalStateException("boom"); }, Duration.ofSeconds(5)));
         assertEquals("boom", e.getCause().getMessage());
     }
 }
