@@ -106,6 +106,28 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-junit4</id>
+                        <configuration>
+                            <rules combine.self="override">
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- junit:junit is allowed here: the external exist-xqts-runner brings it (via ant-junit) and needs it at runtime -->
+                                        <exclude>org.junit.vintage</exclude>
+                                        <exclude>com.googlecode.junit-toolbox</exclude>
+                                    </excludes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>The Vintage engine and junit-toolbox must not be used; write tests with JUnit Jupiter.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>${appassembler.version}</version>

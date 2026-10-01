@@ -1148,7 +1148,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <!-- NOTE: version 3.5.3 fails to run XSuite tests -->
                     <version>3.6.0</version>
                     <dependencies>
                         <dependency>
@@ -1159,11 +1158,6 @@
                         <dependency>
                             <groupId>org.junit.jupiter</groupId>
                             <artifactId>junit-jupiter-engine</artifactId>
-                            <version>${junit.jupiter.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.junit.vintage</groupId>
-                            <artifactId>junit-vintage-engine</artifactId>
                             <version>${junit.jupiter.version}</version>
                         </dependency>
                         <dependency>
@@ -1347,6 +1341,29 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.6.3</version>
                 <executions>
+                    <execution>
+                        <id>ban-junit4</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- JUnit 4 and its runners are gone: tests use JUnit Jupiter. Runtime scope is
+                                             not banned because the external exist-xqts-runner needs junit:junit when it runs. -->
+                                        <exclude>junit:junit:*:*:compile</exclude>
+                                        <exclude>junit:junit:*:*:provided</exclude>
+                                        <exclude>junit:junit:*:*:test</exclude>
+                                        <exclude>org.junit.vintage</exclude>
+                                        <exclude>com.googlecode.junit-toolbox</exclude>
+                                    </excludes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>JUnit 4 (junit:junit, the Vintage engine, junit-toolbox) must not be used; write tests with JUnit Jupiter.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>enforce-java</id>
                         <goals>
