@@ -1,0 +1,20 @@
+exist-xqts/pom.xml
+  s_f03fe8b0b5549a::t_d2e0d8b213db67 81-90,93-94
+  s_f03fe8b0b5549a::t_02c233a688e040 91-92,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "96860e73fa72614ed3aa49902eb1914a5ad1cefe",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
