@@ -19,13 +19,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+package org.exist.test.xqsuite;
 
-package xquery.xqsuite;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 
-import org.exist.test.xqsuite.XQSuite;
+/**
+ * A single XQSuite test function or XML test.
+ */
+final class XQTestDescriptor extends AbstractTestDescriptor {
 
-@XQSuite({
-        "src/test/xquery/xqsuite"
-})
-public class XQSuiteTests {
+    XQTestDescriptor(final UniqueId id, final String name, final TestSource source) {
+        super(id, name, source);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.TEST;
+    }
 }

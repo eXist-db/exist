@@ -73,6 +73,24 @@ public abstract class AbstractTestRunner extends Runner {
         return path;
     }
 
+    /**
+     * @return the name that groups the tests of this file
+     */
+    public abstract String getSuiteName();
+
+    /**
+     * @return the names of the tests that are expected to be reported when this file is run
+     */
+    public abstract List<String> getTestNames();
+
+    /**
+     * Runs the tests of this file, reporting each outcome to {@code events}.
+     *
+     * @param events receives the outcome of each test
+     * @param brokerPool the running database to execute the tests against
+     */
+    public abstract void run(TestEvents events, BrokerPool brokerPool);
+
     protected static Sequence executeQuery(final BrokerPool brokerPool, final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
         return executeQuery(brokerPool, query, externalVariableBindings, null);
     }

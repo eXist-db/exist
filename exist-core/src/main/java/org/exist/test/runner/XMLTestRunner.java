@@ -163,7 +163,8 @@ public class XMLTestRunner extends AbstractTestRunner {
         return null;
     }
 
-    private String getSuiteName() {
+    @Override
+    public String getSuiteName() {
         return "xmlts." + info.name();
     }
 
@@ -178,11 +179,21 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     @Override
+    public List<String> getTestNames() {
+        return List.copyOf(info.childNames());
+    }
+
+    @Override
     public void run(final RunNotifier notifier) {
+        // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
+        run(new RunNotifierTestEvents(getSuiteName(), notifier), XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool());
+    }
+
+    @Override
+    public void run(final TestEvents events, final BrokerPool brokerPool) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xml-test-runner.xq");
-            final TestEvents events = new RunNotifierTestEvents(getSuiteName(), notifier);
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
                 context -> new Tuple2<>("doc", doc),
@@ -197,11 +208,7 @@ public class XMLTestRunner extends AbstractTestRunner {
                 context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), events))))
             );
 
-            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
             executeQuery(brokerPool, query, externalVariableDeclarations);
-
-
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);

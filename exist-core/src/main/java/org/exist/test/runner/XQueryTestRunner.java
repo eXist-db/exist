@@ -247,7 +247,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private String getSuiteName() {
+    @Override
+    public String getSuiteName() {
         if (info.namespace() == null) {
             return path.getFileName().toString();
         }
@@ -302,31 +303,36 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     @Override
+    public List<String> getTestNames() {
+        return info.testFunctions().stream().map(XQueryTestInfo.TestFunctionDef::localName).toList();
+    }
+
+    @Override
     public void run(final RunNotifier notifier) {
+        // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
+        run(new RunNotifierTestEvents(getSuiteName(), notifier), XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool());
+    }
+
+    @Override
+    public void run(final TestEvents events, final BrokerPool brokerPool) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xquery-test-runner.xq");
             final URI testModuleUri = path.toAbsolutePath().toUri();
 
-            final String suiteName = getSuiteName();
-            final TestEvents events = new RunNotifierTestEvents(suiteName, notifier);
-
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
                     context -> new Tuple2<>("test-module-uri", new AnyURIValue(testModuleUri)),
 
-                    // set callback functions for notifying junit!
-                    context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, suiteName, events)))),
-                    context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, suiteName, events)))),
-                    context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, suiteName, events, path)))),
-                    context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, suiteName, events)))),
-                    context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, suiteName, events)))),
-                    context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, suiteName, events))))
+                    // set callback functions for reporting test outcomes!
+                    context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), events, path)))),
+                    context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), events))))
             );
 
-            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
             executeQuery(brokerPool, query, externalVariableDeclarations);
-
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);
