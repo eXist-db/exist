@@ -27,6 +27,17 @@ Each class has the same four `@Benchmark` methods:
 
 Shape A reads should be flat (literal vs. let-bound shouldn't differ measurably). The interesting comparison is **`shapeBForVarPredicate` vs. `shapeBForVarWhere`**: any optimizer rewrite that turns the latter into the former is the win Juri's PR is angling toward.
 
+### `LetBoundSourceLuceneBenchmark` -- [GH-873](https://github.com/eXist-db/exist/issues/873)
+
+A separate regression from the four classes above: there, the let/for-bound variable is the `ft:query`/`ngram:contains`/`range:eq` **argument** (a search term). Here, the let-bound variable is the FilteredExpression's **source** -- `let $a := //SPEECH return $a[ft:query(., ...)]` vs. the direct `//SPEECH[ft:query(., ...)]` -- and the regression scales with corpus size (`corpusCopies` parameterises the corpus: hamlet.xml stored repeatedly under distinct names), not FLWOR iteration count.
+
+| Shape | Form | Status |
+|---|---|---|
+| `shapeDirect` | `//SPEECH[ft:query(LINE, 'Denmark')]` | baseline |
+| `shapeLetBoundSource` | `let $a := X return $a[ft:query(LINE, 'Denmark')]` | fixed -- should track `shapeDirect` |
+| `shapeLetBoundSourceAbbreviated` | `outer//$a[ft:query(LINE, 'Denmark')]` (abbreviated FilteredExpression, see DSLASH rule in XQueryTree.g) | fixed -- should track `shapeDirect` |
+| `shapeLetBoundSourceExtraPredicate` | `let $a := X return $a[ft:query(...)][SPEAKER = 'HAMLET']` | **still broken** -- see class Javadoc; two bracket groups on a non-`LocationStep` source parse as nested `FilteredExpression`s, which isn't `RewritableExpression`, so the inner (Optimizable-bearing) one can never get its own pragma. Pre-existing, independent of the GH-873 fix. |
+
 ## Running
 
 Build the module. The `package` phase runs `maven-shade-plugin` to produce a fat uber-jar (`target/exist-indexes-jmh-${version}-benchmarks.jar`) with `org.openjdk.jmh.Main` as its entry point and `META-INF/services` entries merged via `ServicesResourceTransformer`. The `install` step also puts a fresh `exist-core` into the local Maven repo so the benchmark picks up your branch's code:
