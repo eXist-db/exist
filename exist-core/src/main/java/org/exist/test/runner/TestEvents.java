@@ -19,31 +19,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.test.runner;
 
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+/**
+ * Receives the outcome of each test as the XQuery side of an XQSuite or XML test
+ * run reports it. Decouples the XQuery callback functions from any particular
+ * test framework: the JUnit 4 {@link XSuite} runner and the JUnit Platform engine
+ * each provide an implementation.
+ */
+public interface TestEvents {
 
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.params;
+    void started(String testName);
 
-public class ExtTestStartedFunction extends JUnitIntegrationFunction {
+    void finished(String testName);
 
-    public ExtTestStartedFunction(final XQueryContext context, final String parentName, final TestEvents events) {
-        super("ext-test-started-function", params(param("name", Type.STRING, "name of the test")), context, parentName, events);
-    }
+    void ignored(String testName);
 
-    @Override
-    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        final Sequence arg1 = getCurrentArguments()[0];
-        final String name = arg1.itemAt(0).getStringValue();
+    /**
+     * An assertion failure or an error raised while running the test.
+     */
+    void failed(String testName, Throwable reason);
 
-        events.started(name);
-
-        return Sequence.EMPTY_SEQUENCE;
-    }
+    /**
+     * The test's assumptions did not hold, so it is aborted rather than failed.
+     */
+    void assumptionFailed(String testName, String message);
 }

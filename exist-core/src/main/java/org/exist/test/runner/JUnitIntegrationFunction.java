@@ -27,8 +27,6 @@ import org.exist.xquery.ExpressionVisitor;
 import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
 
 import javax.xml.XMLConstants;
 
@@ -36,25 +34,25 @@ import static org.exist.xquery.FunctionDSL.functionSignature;
 import static org.exist.xquery.FunctionDSL.returnsNothing;
 
 /**
- * Base class for XQuery functions that integrate with JUnit.
+ * Base class for XQuery functions that report test outcomes to a {@link TestEvents} sink.
  *
  * @author Adam Retter
  */
 public abstract class JUnitIntegrationFunction extends UserDefinedFunction {
 
     protected final String suiteName;
-    protected final RunNotifier notifier;
+    protected final TestEvents events;
 
-    public JUnitIntegrationFunction(final String functionName, final FunctionParameterSequenceType[] paramTypes, final XQueryContext context, final String suiteName, final RunNotifier notifier) {
+    public JUnitIntegrationFunction(final String functionName, final FunctionParameterSequenceType[] paramTypes, final XQueryContext context, final String suiteName, final TestEvents events) {
         super(context,
                 functionSignature(
                         new QName(functionName,  XMLConstants.NULL_NS_URI),
-                        "External JUnit integration function",
+                        "External test integration function",
                         returnsNothing(),
                         paramTypes
                 ));
         this.suiteName = suiteName;
-        this.notifier = notifier;
+        this.events = events;
     }
 
     @Override
@@ -65,14 +63,4 @@ public abstract class JUnitIntegrationFunction extends UserDefinedFunction {
         visited = true;
     }
 
-    /**
-     * Create a JUnit description of the test.
-     *
-     * @param name the name of the test.
-     *
-     * @return the test description.
-     */
-    protected Description createTestDescription(final String name) {
-        return Description.createTestDescription(suiteName, name);
-    }
 }
