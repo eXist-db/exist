@@ -1167,6 +1167,7 @@ public class PendingUpdateList {
      * Follows locking and transaction patterns from existing Modification class.
      */
     private void applyPersistent(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
+        rejectDocumentLevelUpdates(prims);
         final DBBroker broker = context.getBroker();
         final MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
         final Int2ObjectMap<DocumentTrigger> triggers = new Int2ObjectOpenHashMap<>();
@@ -1220,6 +1221,39 @@ public class PendingUpdateList {
         }
     }
 
+
+    /**
+     * Updating the children of a stored document node (the document element, and the comments and
+     * processing instructions around it) is not supported yet, other than renaming the document element
+     * and changing its content. Raise an error for the other updates before applying any of the list, so
+     * that a stored document is not changed in the wrong place.
+     */
+    private static void rejectDocumentLevelUpdates(final List<UpdatePrimitive> prims) throws XPathException {
+        for (final UpdatePrimitive p : prims) {
+            if (p.getType() == UpdatePrimitive.Type.PUT) {
+                continue;
+            }
+            final DocumentImpl doc;
+            if (p.getTargetNode() instanceof final DocumentImpl targetDocument) {
+                doc = targetDocument;
+            } else if (p.getTargetNode() instanceof final StoredNode<?> target && target.getNodeId().getTreeLevel() == 1
+                    && (target.getNodeType() != Node.ELEMENT_NODE || changesDocumentChildren(p.getType()))) {
+                doc = target.getOwnerDocument();
+            } else {
+                continue;
+            }
+            throw new XPathException(p.getSourceExpression(), ErrorCodes.ERROR,
+                    "Updating the children of a stored document is not supported yet, other than renaming the document element or changing its content: "
+                            + p.getType() + " in " + doc.getURI());
+        }
+    }
+
+    private static boolean changesDocumentChildren(final UpdatePrimitive.Type type) {
+        return switch (type) {
+            case INSERT_BEFORE, INSERT_AFTER, REPLACE_NODE, DELETE -> true;
+            default -> false;
+        };
+    }
 
     /**
      * Partition the primitives by type and apply them in W3C application
@@ -1837,7 +1871,23 @@ public class PendingUpdateList {
     }
 
     private static boolean isPersistentNode(final Node node) {
-        return node instanceof StoredNode;
+        return node instanceof StoredNode || node instanceof DocumentImpl;
+    }
+
+    /**
+     * Updating the comments and processing instructions around the document element of a stored document
+     * is not supported yet. Raise an error for them as soon as they are the target of an update, since a
+     * reference to such a node resolves to the document element.
+     */
+    static void checkSupportedTarget(final NodeValue target, final Expression expr) throws XPathException {
+        if (target instanceof final NodeProxy proxy && proxy.getNodeId().getTreeLevel() == 1
+                && !NodeId.DOCUMENT_NODE.equals(proxy.getNodeId())
+                && !(proxy.getOwnerDocument().getDocumentElement() instanceof final StoredNode<?> documentElement
+                    && documentElement.getNodeId().equals(proxy.getNodeId()))) {
+            throw new XPathException(expr, ErrorCodes.ERROR,
+                    "Updating a comment or processing instruction outside the document element of a stored document is not supported yet: "
+                            + proxy.getOwnerDocument().getURI());
+        }
     }
 
     private static void checkWritePermission(final XQueryContext context, final DocumentImpl doc,

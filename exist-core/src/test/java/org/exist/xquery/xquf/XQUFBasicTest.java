@@ -57,6 +57,9 @@ public class XQUFBasicTest {
             };
             """;
 
+    /** A stored document with a comment before its document element. */
+    private static final String DOCUMENT_CONTENT = "<!-- to be replaced --><document><p>Contains stuff.</p></document>";
+
     private Collection testCollection;
 
     @Before
@@ -2697,6 +2700,79 @@ public class XQUFBasicTest {
             fail("expected FOUP0001");
         } catch (final XMLDBException e) {
             assertTrue(e.getMessage(), e.getMessage().contains("FOUP0001"));
+        }
+    }
+
+    // === Children of a document node (comments and processing instructions around the document element) ===
+    // expected results are BaseX 12.4's
+
+    private String updateCopiedDocument(final String update) throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        return queryAndGetString(service, """
+                serialize(
+                  copy $c := document { comment { ' to be replaced ' }, <document><p>Contains stuff.</p></document> }
+                  modify (%s)
+                  return $c
+                )""".formatted(update));
+    }
+
+    @Test
+    public void replaceNodeOfACommentOfACopiedDocument() throws XMLDBException {
+        assertEquals("<!--replaced--><document><p>Contains stuff.</p></document>",
+                updateCopiedDocument("replace node $c/comment() with comment { 'replaced' }"));
+    }
+
+    @Test
+    public void replaceValueOfACommentOfACopiedDocument() throws XMLDBException {
+        assertEquals("<!--replaced--><document><p>Contains stuff.</p></document>",
+                updateCopiedDocument("replace value of node $c/comment() with 'replaced'"));
+    }
+
+    @Test
+    public void insertNodeBeforeTheDocumentElementOfACopiedDocument() throws XMLDBException {
+        assertEquals("<!-- to be replaced --><!--new--><document><p>Contains stuff.</p></document>",
+                updateCopiedDocument("insert node comment { 'new' } before $c/document"));
+    }
+
+    @Test
+    public void insertNodeAfterTheDocumentElementOfACopiedDocument() throws XMLDBException {
+        assertEquals("<!-- to be replaced --><document><p>Contains stuff.</p></document><!--new-->",
+                updateCopiedDocument("insert node comment { 'new' } after $c/document"));
+    }
+
+    @Test
+    public void insertNodeAsFirstIntoACopiedDocument() throws XMLDBException {
+        assertEquals("<!--new--><!-- to be replaced --><document><p>Contains stuff.</p></document>",
+                updateCopiedDocument("insert node comment { 'new' } as first into $c"));
+    }
+
+    @Test
+    public void deleteACommentOfACopiedDocument() throws XMLDBException {
+        assertEquals("<document><p>Contains stuff.</p></document>",
+                updateCopiedDocument("delete node $c/comment()"));
+    }
+
+    /**
+     * Not supported yet for stored documents: each is rejected, and leaves the document as it was,
+     * rather than being applied to the document element.
+     */
+    @Test
+    public void updatingTheChildrenOfAStoredDocumentIsRejected() throws XMLDBException {
+        final String docName = "document-children.xml";
+        final XQueryService service = storeXMLStringAndGetQueryService(docName, DOCUMENT_CONTENT);
+        final String doc = "doc('" + testCollection.getName() + "/" + docName + "')";
+        final String[] updates = {
+                "replace node " + doc + "/comment() with comment { 'replaced' }",
+                "replace value of node " + doc + "/comment() with 'replaced'",
+                "insert node comment { 'new' } before " + doc + "/document",
+                "insert node comment { 'new' } after " + doc + "/document",
+                "insert node comment { 'new' } as first into " + doc,
+                "delete node " + doc + "/comment()"
+        };
+        for (final String update : updates) {
+            final XMLDBException e = assertThrows(update, XMLDBException.class, () -> service.query(update));
+            assertTrue(e.getMessage(), e.getMessage().contains("not supported yet"));
+            assertEquals(update, DOCUMENT_CONTENT, queryAndGetString(service, "serialize(" + doc + ")"));
         }
     }
 }

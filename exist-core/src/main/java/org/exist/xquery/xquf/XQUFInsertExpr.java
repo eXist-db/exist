@@ -82,8 +82,10 @@ public class XQUFInsertExpr extends AbstractExpression {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        final Node domTarget = resolveTarget(target.eval(ctxSeq, null));
+        final NodeValue targetNode = resolveTarget(target.eval(ctxSeq, null));
+        final Node domTarget = targetNode.getNode();
         validateForMode(domTarget, sourceSeq);
+        PendingUpdateList.checkSupportedTarget(targetNode, this);
         emitPrimitives(domTarget, sourceSeq);
 
         if (context.getProfiler().isEnabled()) {
@@ -102,7 +104,7 @@ public class XQUFInsertExpr extends AbstractExpression {
                 && ((NodeValue) item).getNode().getNodeType() == Node.ATTRIBUTE_NODE;
     }
 
-    private Node resolveTarget(final Sequence targetSeq) throws XPathException {
+    private NodeValue resolveTarget(final Sequence targetSeq) throws XPathException {
         if (targetSeq.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XUDY0027,
                     "Target of insert expression must not be an empty sequence.");
@@ -115,7 +117,7 @@ public class XQUFInsertExpr extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.XUTY0006,
                     "Target of insert before/after expression must be a single element, text, comment, or processing instruction node.");
         }
-        return ((NodeValue) targetSeq.itemAt(0)).getNode();
+        return (NodeValue) targetSeq.itemAt(0);
     }
 
     private void validateForMode(final Node domTarget, final Sequence sourceSeq) throws XPathException {
@@ -153,10 +155,6 @@ public class XQUFInsertExpr extends AbstractExpression {
         if (parent.getNodeType() == Node.DOCUMENT_NODE) {
             rejectAttributesInSource(sourceSeq, ErrorCodes.XUDY0030,
                     "Cannot insert attribute node before/after a node whose parent is a document node.");
-            if (targetType == Node.ELEMENT_NODE || targetType == Node.TEXT_NODE) {
-                throw new XPathException(this, ErrorCodes.XUDY0027,
-                        "Target of insert before/after is a root element or root text node of a document.");
-            }
         }
     }
 

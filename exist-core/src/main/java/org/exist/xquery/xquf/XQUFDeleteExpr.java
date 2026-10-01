@@ -73,6 +73,7 @@ public class XQUFDeleteExpr extends AbstractExpression {
                             "Target of delete expression must be a node.");
                 }
                 final NodeValue nv = (NodeValue) item;
+                PendingUpdateList.checkSupportedTarget(nv, this);
                 pul.addPrimitive(UpdatePrimitive.delete(nv.getNode(), this));
             }
         }

@@ -72,6 +72,7 @@ public class XQUFRenameExpr extends AbstractExpression {
 
         final NodeValue targetNode = resolveTargetNode(ctxSeq);
         final QName qname = resolveNewName(ctxSeq, targetNode.getNode().getNodeType());
+        PendingUpdateList.checkSupportedTarget(targetNode, this);
 
         final PendingUpdateList pul = context.getPendingUpdateList();
         pul.addPrimitive(UpdatePrimitive.rename(targetNode.getNode(), qname, this));

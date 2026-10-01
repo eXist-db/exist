@@ -76,6 +76,7 @@ public class XQUFReplaceValueExpr extends AbstractExpression {
         // We materialize this now (at snapshot time) rather than deferring to PUL application,
         // to ensure we capture the original value before any other PUL primitives modify the tree.
         final String stringValue = PendingUpdateList.atomizeAndJoin(valueSeq);
+        PendingUpdateList.checkSupportedTarget(targetNode, this);
 
         final PendingUpdateList pul = context.getPendingUpdateList();
         pul.addPrimitive(UpdatePrimitive.replaceValue(targetNode.getNode(),

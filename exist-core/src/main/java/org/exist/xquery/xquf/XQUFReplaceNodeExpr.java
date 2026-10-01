@@ -74,6 +74,7 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
 
         final Sequence replacementSeq = InsertionContent.of(this, replacement.eval(ctxSeq, null));
         checkReplacementTypes(replacementSeq, nodeType);
+        PendingUpdateList.checkSupportedTarget(targetNode, this);
 
         final PendingUpdateList pul = context.getPendingUpdateList();
         pul.addPrimitive(UpdatePrimitive.replaceNode(targetNode.getNode(), replacementSeq, this));

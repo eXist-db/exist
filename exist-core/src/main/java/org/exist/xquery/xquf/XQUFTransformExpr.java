@@ -195,7 +195,8 @@ public class XQUFTransformExpr extends AbstractExpression {
      */
     private Sequence deepCopyNode(final Sequence inSeq) throws XPathException {
         context.pushDocumentContext();
-        final MemTreeBuilder builder = context.getDocumentBuilder();
+        // the copy of a document node is a document node too, which its children have as their parent
+        final MemTreeBuilder builder = context.getDocumentBuilder(containsDocument(inSeq));
         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
         final Serializer serializer = context.getBroker().borrowSerializer();
         serializer.setReceiver(receiver);
@@ -218,6 +219,15 @@ public class XQUFTransformExpr extends AbstractExpression {
             context.getBroker().returnSerializer(serializer);
             context.popDocumentContext();
         }
+    }
+
+    private static boolean containsDocument(final Sequence seq) throws XPathException {
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            if (i.nextItem().getType() == Type.DOCUMENT) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
