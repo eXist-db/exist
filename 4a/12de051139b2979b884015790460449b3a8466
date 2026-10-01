@@ -1,0 +1,67 @@
+extensions/modules/persistentlogin/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 56-62
+  s_f03fe8b0b5549a::t_923fe8cec0defa 55
+extensions/vector/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 62-66
+  s_f03fe8b0b5549a::t_2b1d6f15be2537 59-61
+extensions/modules/counter/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 56-62
+  s_f03fe8b0b5549a::t_ccf1663e0b8c3d 55
+exist-ant/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 54-61
+extensions/modules/expathrepo/expathrepo-trigger-test/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 65-71
+  s_f03fe8b0b5549a::t_bd7548ee615c8e 64
+extensions/modules/sql/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 56-62
+  s_f03fe8b0b5549a::t_2f305548f0f238 55
+extensions/indexes/spatial/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 58-65
+exist-parent/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 641,655
+extensions/modules/xslfo/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 61-67
+  s_f03fe8b0b5549a::t_4347e0f1f54d8c 60
+exist-core/pom.xml
+  s_f03fe8b0b5549a::t_9c5fe80ed249f3 525,549,554,594,818,985
+exist-core-jmh/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 59-65
+extensions/webdav/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 55-62
+extensions/modules/mail/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 63-69
+  s_f03fe8b0b5549a::t_579c14d14b771d 62
+exist-indexes-jmh/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 59-65
+exist-xqts/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 81-88
+  s_f03fe8b0b5549a::t_ef070bea9bde84 92-93
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_f03fe8b0b5549a::t_9c5fe80ed249f3 447,565
+extensions/indexes/vector-it/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 56-63
+extensions/contentextraction/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 60-66
+  s_f03fe8b0b5549a::t_80e8dc67388ce1 59
+extensions/debuggee/pom.xml
+  s_f03fe8b0b5549a::t_f8d8c7331a98fc 56-62
+  s_f03fe8b0b5549a::t_71aa2aa979cca6 55
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_f03fe8b0b5549a::t_9c5fe80ed249f3 1060
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4a12de051139b2979b884015790460449b3a8466",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
