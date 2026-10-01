@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/test/ExistEmbeddedServer.java
+  s_3e30a8da43b49c::t_b9f420bdf99295 131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "91280b629749fcf07641869867fe3d4dfb66e24b",
+  "prompts": {},
+  "sessions": {
+    "s_3e30a8da43b49c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f0757b4e1ffeCuw281t3TMddov",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
