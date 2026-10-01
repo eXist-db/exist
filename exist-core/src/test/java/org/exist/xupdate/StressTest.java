@@ -95,13 +95,13 @@ public class StressTest {
                             "</xupdate:modifications>";
 
             final long mods = service.updateResource("test.xml", xupdate);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
 
             tagsWritten[i] = tag;
 
             final String query = "//" + tagsWritten[rand.nextInt(i + 1)];
             final ResourceSet result = xquery.query(query);
-            assertEquals(result.getSize(), 1);
+            assertEquals(1, result.getSize());
         }
 
         final XMLResource res = (XMLResource) testCol.getResource("test.xml");
@@ -133,7 +133,7 @@ public class StressTest {
             final String tag = r.getContent().toString();
 
             final ResourceSet result2 = xquery.query("//" + tag);
-            assertEquals(result2.getSize(), 1);
+            assertEquals(1, result2.getSize());
         }
     }
 

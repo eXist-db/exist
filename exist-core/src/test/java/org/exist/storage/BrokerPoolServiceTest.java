@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -94,7 +95,7 @@ public class BrokerPoolServiceTest {
                 final List<BackgroundJobsBrokerPoolService.TimestampAndId> backgroundJobResult = future.get();
 
                 // should contain at least 1 result
-                assertTrue(!backgroundJobResult.isEmpty());
+                assertFalse(backgroundJobResult.isEmpty());
 
                 totalBackgroundJobResults += backgroundJobResult.size();
 

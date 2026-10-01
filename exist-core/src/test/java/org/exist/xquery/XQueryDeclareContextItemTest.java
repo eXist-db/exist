@@ -57,6 +57,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for XQuery 3.0's declare context item
@@ -138,7 +139,7 @@ public class XQueryDeclareContextItemTest {
         try(final DBBroker broker = pool.getBroker()) {
             final Sequence result = xquery.execute(broker, query, null);
             assertEquals(1, result.getItemCount());
-            assertEquals(true, result.effectiveBooleanValue());
+            assertTrue(result.effectiveBooleanValue());
         }
     }
 

@@ -81,7 +81,7 @@ public class RemoveAppendTest {
             remove(service, which);
             
             ResourceSet result = query.query("/test/item[@id='" + which + "']");
-            assertEquals(result.getSize(), 1);
+            assertEquals(1, result.getSize());
             result.getResource(0).getContent();
         }
     }
@@ -94,7 +94,7 @@ public class RemoveAppendTest {
             append(service, i);
             
             ResourceSet result = query.query("/test/item[@id='" + i + "']");
-            assertEquals(result.getSize(), 1);
+            assertEquals(1, result.getSize());
         }
         
         for (int i = 100; i > 10; i--) {
@@ -103,7 +103,7 @@ public class RemoveAppendTest {
                 "   <xu:remove select=\"/test/item[@id='" + i + "']\"/>" +
                 "</xu:modifications>";
             long mods = service.update(xu);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             
             ResourceSet result = query.query("/test/item/e0");
         }
@@ -117,7 +117,7 @@ public class RemoveAppendTest {
         out.write("</xu:append>");
         out.write("</xu:modifications>");
         final long mods = service.update(out.toString());
-        assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
     protected void insert(final XUpdateQueryService service, final int id) throws IOException, XMLDBException {
@@ -130,7 +130,7 @@ public class RemoveAppendTest {
         out.write("</xu:insert-before>");
         out.write("</xu:modifications>");
          long mods = service.update(out.toString());
-         assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
     protected void remove(final XUpdateQueryService service, final int id) throws XMLDBException {
@@ -141,7 +141,7 @@ public class RemoveAppendTest {
             "</xu:modifications>";
 
         long mods = service.update(XU_REMOVE);
-        assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
     @BeforeEach

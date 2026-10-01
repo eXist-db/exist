@@ -148,7 +148,7 @@ public class NodeTest {
             assertEquals(secondNode, docElement);
             final Element child = (Element) docElement.getFirstChild();
             assertNotNull(child);
-            assertEquals(child.getNodeName(), "a", "a");
+            assertEquals("a", child.getNodeName(), "a");
             Node sibling = child.getNextSibling();
             assertNotNull(sibling);
             assertEquals("b", sibling.getNodeName());

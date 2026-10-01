@@ -67,7 +67,7 @@ public class DocumentUpdateTest {
             "let $remove := xdb:remove('/db/testup', 'test1.xml')\n" +
             "return string-join((string(count(local:get-doc($path))), string(doc-available($path))), ' ')";
         String result = execQuery(query);
-        assertEquals(result, "0 false");
+        assertEquals("0 false", result);
 
         //TEST 2: doc()
         query = imports +
@@ -80,7 +80,7 @@ public class DocumentUpdateTest {
             "let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" +
             "return string-join((string(count(local:get-doc($path))), string(doc-available($path))), ' ')";
         result = execQuery(query);
-        assertEquals(result, "1 true");
+        assertEquals("1 true", result);
 
         //TEST 3: collection()
         query = imports +
@@ -93,7 +93,7 @@ public class DocumentUpdateTest {
             "let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" +
             "return local:xpath($path)/text()";
         result = execQuery(query);
-        assertEquals(result, "1");
+        assertEquals("1", result);
 
         //TEST 4: 'update insert' statement
         query = imports +
@@ -109,7 +109,7 @@ public class DocumentUpdateTest {
             "	count(local:xpath($path)//n)\n" +
             ")";
         result = execQuery(query);
-        assertEquals(result, "2");
+        assertEquals("2", result);
 
         //TEST 5: 'update replace' statement
         query = imports + "let $doc := xdb:store('/db', 'test1.xml', " +
@@ -128,9 +128,9 @@ public class DocumentUpdateTest {
             ")";
         XQueryService service = testCollection.getService(XQueryService.class);
         ResourceSet r = service.query(query);
-        assertEquals(r.getSize(), 2);
-        assertEquals(r.getResource(0).getContent().toString(), "123");
-        assertEquals(r.getResource(1).getContent().toString(), "123");
+        assertEquals(2, r.getSize());
+        assertEquals("123", r.getResource(0).getContent().toString());
+        assertEquals("123", r.getResource(1).getContent().toString());
     }
 
     @Test
@@ -155,7 +155,7 @@ public class DocumentUpdateTest {
     private String execQuery(String query) throws XMLDBException {
     	XQueryService service = testCollection.getService(XQueryService.class);
     	ResourceSet result = service.query(query);
-    	assertEquals(result.getSize(), 1);
+        assertEquals(1, result.getSize());
     	return result.getResource(0).getContent().toString();
     }
 

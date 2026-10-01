@@ -169,7 +169,7 @@ public class DLNTest {
 
     	assertTrue(descendant.isChildOf(root));
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.2.5.6");
     	assertTrue(descendant.isDescendantOf(root));
@@ -192,7 +192,7 @@ public class DLNTest {
 
     	assertTrue(descendant.isChildOf(root));
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.2.5.6.7777.1");
     	assertTrue(descendant.isDescendantOf(root));
@@ -219,7 +219,7 @@ public class DLNTest {
     	descendant.incrementLevelId();
     	assertEquals("1.3.1/1.2", descendant.toString());
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.1/1.2.2");
     	assertFalse(descendant.isChildOf(root));

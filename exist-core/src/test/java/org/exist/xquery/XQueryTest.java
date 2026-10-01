@@ -337,7 +337,7 @@ public class XQueryTest {
         XPathQueryService service =
                 getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(q1);
-        assertEquals(result.getSize(), 5000);
+        assertEquals(5000, result.getSize());
     }
 
     @org.junit.jupiter.api.Test
@@ -1424,12 +1424,12 @@ public class XQueryTest {
                 $foo:bar
                 """.formatted(LOCAL_DB_URI, MODULE5_NAME);
         ResourceSet result = service.query(query);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "bar");
+        assertEquals(1, result.getSize());
+        assertEquals("bar", result.getResource(0).getContent());
         query = "xquery version \"1.0\";\n" + "declare variable $local:a := 'abc';" + "$local:a";
         result = service.query(query);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "abc");
+        assertEquals(1, result.getSize());
+        assertEquals("abc", result.getResource(0).getContent());
         boolean gotException = false;
         try {
             query = """
@@ -3072,8 +3072,8 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertEquals(result.getResource(0).getContent().toString(),
-                "<Result>6</Result>", query);
+        assertEquals(
+                "<Result>6</Result>", result.getResource(0).getContent().toString(), query);
     }
 
     /**
@@ -3098,10 +3098,10 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(result.getResource(0).getContent().toString(),
-                "<category uid=\"1\">Fruit</category>", query);
-        assertEquals(result.getResource(1).getContent().toString(),
-                "<category uid=\"1\">Fruit</category>", query);
+        assertEquals(
+                "<category uid=\"1\">Fruit</category>", result.getResource(0).getContent().toString(), query);
+        assertEquals(
+                "<category uid=\"1\">Fruit</category>", result.getResource(1).getContent().toString(), query);
     }
 
     /**
@@ -3123,10 +3123,10 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(2, result.getSize());
-        assertEquals(result.getResource(0).getContent().toString(),
-                "<one><z> zzz </z></one>", query);
-        assertEquals(result.getResource(1).getContent().toString(),
-                "<two><z> zzz </z></two>", query);
+        assertEquals(
+                "<one><z> zzz </z></one>", result.getResource(0).getContent().toString(), query);
+        assertEquals(
+                "<two><z> zzz </z></two>", result.getResource(1).getContent().toString(), query);
     }
 
     @org.junit.jupiter.api.Test

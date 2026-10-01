@@ -46,7 +46,6 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author wolf
@@ -155,19 +154,19 @@ public class DOMTest {
         DocumentImpl doc = builder.getDocument();
 
         Node nXQuery = doc.getFirstChild();
-        assertTrue(nXQuery.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue("xquery".equals(nXQuery.getLocalName()));
+        assertEquals(Node.ELEMENT_NODE, nXQuery.getNodeType());
+        assertEquals("xquery", nXQuery.getLocalName());
 
         Node nBuiltinModules = nXQuery.getFirstChild();
-        assertTrue(nBuiltinModules.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue("builtin-modules".equals(nBuiltinModules.getLocalName()));
+        assertEquals(Node.ELEMENT_NODE, nBuiltinModules.getNodeType());
+        assertEquals("builtin-modules", nBuiltinModules.getLocalName());
 
         NodeList nlModules = nBuiltinModules.getChildNodes();
         for (int i = 0; i < nlModules.getLength(); i++) {
             Node nModule = nlModules.item(i);
 
-            assertTrue(nModule.getNodeType() == Node.ELEMENT_NODE);
-            assertTrue("module".equals(nModule.getLocalName()));
+            assertEquals(Node.ELEMENT_NODE, nModule.getNodeType());
+            assertEquals("module", nModule.getLocalName());
 
             Element eModule = (Element) nModule;
             NodeList nlParameter = eModule.getElementsByTagName("parameter");

@@ -74,7 +74,7 @@ public class TransformTest {
     	XQueryService service = testCollection.getService(XQueryService.class);
         service.setProperty("indent", "no");
     	ResourceSet result = service.query(query);
-    	assertEquals(result.getSize(), 1);
+        assertEquals(1, result.getSize());
     	return result.getResource(0).getContent().toString();
     }
     

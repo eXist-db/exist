@@ -359,11 +359,11 @@ public class ValueIndexTest {
             XPathQueryService query = testCollection.getService(XPathQueryService.class);
             XUpdateQueryService update = testCollection.getService(XUpdateQueryService.class);
             long mods = update.updateResource(ITEMS_FILENAME, append);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             queryResource(query, ITEMS_FILENAME, "//item[price = 55.50]", 1);
             queryResource(query, ITEMS_FILENAME, "//item[@id = 'i" + i + "']",1);
             mods = update.updateResource(ITEMS_FILENAME, remove);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             queryResource(query, ITEMS_FILENAME, "//item[itemno = " + i + "]", 0);
         }
     }
@@ -391,12 +391,12 @@ public class ValueIndexTest {
             XPathQueryService query = testCollection.getService(XPathQueryService.class);
             XUpdateQueryService update = testCollection.getService(XUpdateQueryService.class);
             long mods = update.updateResource(ITEMS_FILENAME, append);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             queryResource(query, ITEMS_FILENAME, "//((#exist:optimize#) { item[price = 55.50] })", 1);
             queryResource(query, ITEMS_FILENAME, "//((#exist:optimize#) { item[@id = 'i" + i + "']})",1);
             queryResource(query, ITEMS_FILENAME, "//((#exist:optimize#) { item[itemno = " + i + "] })", 1);
             mods = update.updateResource(ITEMS_FILENAME, remove);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             queryResource(query, ITEMS_FILENAME, "//((#exist:optimize#) { item[itemno = " + i + "] })", 0);
         }
     }

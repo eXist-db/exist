@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Guards the Object.equals/hashCode contract across {@link AtomicValue} subclasses
@@ -48,7 +47,7 @@ public class HashCodeContractTest {
     public void integerEqualsDecimalSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue d = new DecimalValue(new BigDecimal("1"));
-        assertTrue(i.equals(d));
+        assertEquals(i, d);
         assertEquals(i.hashCode(), d.hashCode());
     }
 
@@ -56,7 +55,7 @@ public class HashCodeContractTest {
     public void integerEqualsDecimalWithTrailingZerosSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue d = new DecimalValue(new BigDecimal("1.0"));
-        assertTrue(i.equals(d));
+        assertEquals(i, d);
         assertEquals(i.hashCode(), d.hashCode());
     }
 
@@ -64,7 +63,7 @@ public class HashCodeContractTest {
     public void integerEqualsDoubleSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue dbl = new DoubleValue(1.0);
-        assertTrue(i.equals(dbl));
+        assertEquals(i, dbl);
         assertEquals(i.hashCode(), dbl.hashCode());
     }
 
@@ -72,7 +71,7 @@ public class HashCodeContractTest {
     public void decimalEqualsDoubleSharesHashCode() {
         final AtomicValue d = new DecimalValue(new BigDecimal("1.0"));
         final AtomicValue dbl = new DoubleValue(1.0);
-        assertTrue(d.equals(dbl));
+        assertEquals(d, dbl);
         assertEquals(d.hashCode(), dbl.hashCode());
     }
 
@@ -80,7 +79,7 @@ public class HashCodeContractTest {
     public void doubleEqualsFloatSharesHashCode() {
         final AtomicValue dbl = new DoubleValue(1.0);
         final AtomicValue f = new FloatValue(1.0f);
-        assertTrue(dbl.equals(f));
+        assertEquals(dbl, f);
         assertEquals(dbl.hashCode(), f.hashCode());
     }
 
@@ -88,7 +87,7 @@ public class HashCodeContractTest {
     public void positiveInfinitySharesHashCodeAcrossDoubleAndFloat() {
         final AtomicValue dbl = new DoubleValue(Double.POSITIVE_INFINITY);
         final AtomicValue f = new FloatValue(Float.POSITIVE_INFINITY);
-        assertTrue(dbl.equals(f));
+        assertEquals(dbl, f);
         assertEquals(dbl.hashCode(), f.hashCode());
     }
 
@@ -96,7 +95,7 @@ public class HashCodeContractTest {
     public void negativeInfinitySharesHashCodeAcrossDoubleAndFloat() {
         final AtomicValue dbl = new DoubleValue(Double.NEGATIVE_INFINITY);
         final AtomicValue f = new FloatValue(Float.NEGATIVE_INFINITY);
-        assertTrue(dbl.equals(f));
+        assertEquals(dbl, f);
         assertEquals(dbl.hashCode(), f.hashCode());
     }
 
@@ -131,7 +130,7 @@ public class HashCodeContractTest {
     public void newBooleanInstancesShareHashCode() {
         final AtomicValue a = new BooleanValue(true);
         final AtomicValue b = new BooleanValue(true);
-        assertTrue(a.equals(b));
+        assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
 
@@ -139,7 +138,7 @@ public class HashCodeContractTest {
     public void booleanSingletonAndNewInstanceShareHashCode() {
         final AtomicValue a = BooleanValue.TRUE;
         final AtomicValue b = new BooleanValue(true);
-        assertTrue(a.equals(b));
+        assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
 
@@ -154,7 +153,7 @@ public class HashCodeContractTest {
     public void stringEqualsStringSharesHashCode() {
         final AtomicValue a = new StringValue("foo");
         final AtomicValue b = new StringValue("foo");
-        assertTrue(a.equals(b));
+        assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
 }

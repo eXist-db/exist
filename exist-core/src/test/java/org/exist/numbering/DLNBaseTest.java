@@ -23,7 +23,8 @@ package org.exist.numbering;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -48,7 +49,7 @@ public class DLNBaseTest {
 
             final DLN reconstructedDln = new DLN(dlnBase.units(), data, 0);
 
-            assertTrue(dlnBase.equals(reconstructedDln));
+            assertEquals(dlnBase, reconstructedDln);
         }
     }
 }

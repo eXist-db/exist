@@ -85,7 +85,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -123,7 +123,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -188,7 +188,7 @@ public class XQueryUpdateTest {
             }
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -242,7 +242,7 @@ public class XQueryUpdateTest {
             }
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -327,7 +327,7 @@ public class XQueryUpdateTest {
         	Sequence seq = xquery.execute(broker, query, null);
 
         	seq = xquery.execute(broker, "//product", null);
-        	assertEquals(seq.getItemCount(), 0);
+            assertEquals(0, seq.getItemCount());
         });
     }
 
@@ -347,7 +347,7 @@ public class XQueryUpdateTest {
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -357,7 +357,7 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@count", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         });
     }
 
@@ -377,7 +377,7 @@ public class XQueryUpdateTest {
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -387,7 +387,7 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@num", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -397,7 +397,7 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         });
     }
 
@@ -439,7 +439,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {

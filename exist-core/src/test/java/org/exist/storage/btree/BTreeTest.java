@@ -146,7 +146,7 @@ public class BTreeTest {
             //Testing IndexQuery.LT
             query = new IndexQuery(IndexQuery.LT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
-            assertEquals(count, 0);
+            assertEquals(0, count);
         }
     }
 

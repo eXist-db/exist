@@ -229,7 +229,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
 
             final U item = item(results, 0);
             assertTrue(isBooleanType(item));
-            assertEquals(true, getBoolean(item));
+            assertTrue(getBoolean(item));
         });
 
         assertArrayEquals(Files.readAllBytes(tmpInFile), Files.readAllBytes(tmpOutFile));

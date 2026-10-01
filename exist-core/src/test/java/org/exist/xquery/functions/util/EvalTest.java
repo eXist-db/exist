@@ -92,7 +92,7 @@ public class EvalTest {
 
         final LocalXMLResource res = (LocalXMLResource)result.getResource(0);
         final Node n = res.getContentAsDOM();
-        assertEquals(n.getLocalName(), "hello");
+        assertEquals("hello", n.getLocalName());
         assertEquals("world", n.getFirstChild().getNodeValue());
     }
 

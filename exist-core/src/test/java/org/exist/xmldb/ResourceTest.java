@@ -174,7 +174,7 @@ public class ResourceTest {
             elem = document.getDocumentElement();
         }
         assertNotNull(elem);
-        assertEquals(elem.getNodeName(), "PLAY");
+        assertEquals("PLAY", elem.getNodeName());
         NodeList children = elem.getChildNodes();
         Node node;
         for(int i = 0; i < children.getLength(); i++) {
