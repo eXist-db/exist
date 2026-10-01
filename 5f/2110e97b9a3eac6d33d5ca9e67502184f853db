@@ -1,0 +1,50 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSettings.java
+  s_f03fe8b0b5549a::t_967a05037dc3e7 1-119
+exist-core/src/test/resources/org/exist/test/xqsuite/wait-a.xqm
+  s_f03fe8b0b5549a::t_b3cc93f3ec0e14 1-34
+exist-core/src/test/resources/org/exist/test/xqsuite/hang.xqm
+  s_f03fe8b0b5549a::t_b3cc93f3ec0e14 1-34
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_f03fe8b0b5549a::t_3c80ff529827a7 161,191,193,198,214
+  s_f03fe8b0b5549a::t_7f782dd05b5bd8 68-73,199-203,226-231,247-270
+  s_f03fe8b0b5549a::t_1d4349a63208f9 271-272
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteDescriptor.java
+  s_f03fe8b0b5549a::t_967a05037dc3e7 34,36,39,47-51
+  s_f03fe8b0b5549a::t_b25275ffbba9b0 52-53
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSettingsTest.java
+  s_f03fe8b0b5549a::t_2ef1312f4d629c 1-102
+exist-core/src/test/resources/org/exist/test/xqsuite/wait-b.xqm
+  s_f03fe8b0b5549a::t_b3cc93f3ec0e14 1-34
+exist-core/src/test/resources/org/exist/test/xqsuite/wait-c.xqm
+  s_f03fe8b0b5549a::t_b3cc93f3ec0e14 1-34
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSchedulingTest.java
+  s_f03fe8b0b5549a::t_2ef1312f4d629c 1-79,81-169,195-197,202-203
+  s_f03fe8b0b5549a::t_634224c4ddcb9a 170-194,198-201
+  s_f03fe8b0b5549a::t_97772a02ad4df7 80
+exist-core/src/test/java/org/exist/test/xqsuite/EngineTestEvents.java
+  s_f03fe8b0b5549a::t_679a3aaabf9f93 45-48,57,60-67,100-103,109-112,121-124,138-141,153-156,170-173
+  s_f03fe8b0b5549a::t_7f782dd05b5bd8 165-168,182,187
+exist-core/src/test/resources/org/exist/test/xqsuite/wait-d.xqm
+  s_f03fe8b0b5549a::t_b3cc93f3ec0e14 1-34
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_f03fe8b0b5549a::t_967a05037dc3e7 41-44,55-63
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_f03fe8b0b5549a::t_3c80ff529827a7 1-53,60-218
+  s_f03fe8b0b5549a::t_634224c4ddcb9a 54-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5f2110e97b9a3eac6d33d5ca9e67502184f853db",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

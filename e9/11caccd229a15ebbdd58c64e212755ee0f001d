@@ -1,0 +1,60 @@
+exist-core/src/main/java/org/exist/test/runner/AbstractTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 56,60
+exist-core/src/test/resources/org/exist/test/runner/hyphenated-prefix.xqm
+  s_f03fe8b0b5549a::t_56faa6d7d16fe5 1-21,23-41
+  s_f03fe8b0b5549a::t_73d488c01095ac 22
+exist-core/src/test/java/org/exist/test/runner/TestDiscoveryTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 1-72
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_f03fe8b0b5549a::t_b6dca8aa3328fe 62-65,108-137
+  s_f03fe8b0b5549a::t_c3e73d760b59d8 138
+exist-core/src/main/java/org/exist/test/runner/TestRunners.java
+  s_f03fe8b0b5549a::t_976c6ca8aeff50 1-67
+exist-core/src/test/java/org/exist/test/runner/XMLTestRunnerTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 39,43,45-46,50-62,65-73
+exist-core/src/main/java/org/exist/test/runner/TestInitializationException.java
+  s_f03fe8b0b5549a::t_976c6ca8aeff50 1-36
+exist-core/src/main/java/org/exist/test/runner/XMLTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 80,83-84,88,93,100,121,134
+exist-core/src/main/java/org/exist/test/runner/XQueryTestRunner.java
+  s_f03fe8b0b5549a::t_ac1a6c8e4b7e57 75,77-78,84,91,93,138,147,219
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_f03fe8b0b5549a::t_eca89133a67a48 27,59,170
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunnerTest.java
+  s_f03fe8b0b5549a::t_73d488c01095ac 29,38-57,59-61,65-71
+exist-ant/src/test/java/org/exist/ant/AntBuildFileExtension.java
+  s_f03fe8b0b5549a::t_f5df4b409511eb 24-25,29-30,32-36,38-55,59-61
+extensions/indexes/ngram/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 82-84
+  s_f03fe8b0b5549a::t_2164b61703c229 86,107-147
+exist-parent/pom.xml
+  s_f03fe8b0b5549a::t_f5df4b409511eb 1344-1366
+exist-core/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 572,575-576,612-619
+  s_f03fe8b0b5549a::t_27ff109c1b98c5 334
+  s_f03fe8b0b5549a::t_22e119dd47ed2d 573-574
+  s_f03fe8b0b5549a::t_69adad170d0cbd 722-745,1078-1079
+extensions/indexes/lucene/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 155-162
+  s_f03fe8b0b5549a::t_643477a46c8325 201-224,254-257
+extensions/modules/mail/pom.xml
+  s_f03fe8b0b5549a::t_27ff109c1b98c5 140-143
+exist-xqts/pom.xml
+  s_f03fe8b0b5549a::t_cda09c7783d03a 108-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e911caccd229a15ebbdd58c64e212755ee0f001d",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
