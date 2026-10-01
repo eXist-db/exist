@@ -1,0 +1,26 @@
+exist-core/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_cfdefbb0c24ca2 1-21
+  s_f03fe8b0b5549a::t_50cd3bb95d85c0 22
+extensions/indexes/lucene/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_cfdefbb0c24ca2 1-21
+  s_f03fe8b0b5549a::t_50cd3bb95d85c0 22
+extensions/exquery/restxq/src/test/resources/junit-platform.properties
+  s_f03fe8b0b5549a::t_cfdefbb0c24ca2 1
+  s_f03fe8b0b5549a::t_50cd3bb95d85c0 2-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2a3ca39eade84e98a1d0b9823a0d5c61aa7b5ab6",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
