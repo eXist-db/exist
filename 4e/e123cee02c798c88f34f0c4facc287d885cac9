@@ -1,0 +1,36 @@
+exist-ant/src/test/java/org/exist/ant/AntBuildFileExtension.java
+  s_f03fe8b0b5549a::t_f5df4b409511eb 24-25,29-30,32-36,38-55,59-61
+extensions/indexes/ngram/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 82-84
+  s_f03fe8b0b5549a::t_2164b61703c229 86,107-147
+exist-parent/pom.xml
+  s_f03fe8b0b5549a::t_f5df4b409511eb 1344-1366
+exist-core/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 572,575-576,612-619
+  s_f03fe8b0b5549a::t_27ff109c1b98c5 334
+  s_f03fe8b0b5549a::t_22e119dd47ed2d 573-574
+  s_f03fe8b0b5549a::t_69adad170d0cbd 722-745,1078-1079
+extensions/indexes/lucene/pom.xml
+  s_f03fe8b0b5549a::t_abd06979a7f1b5 155-162
+  s_f03fe8b0b5549a::t_643477a46c8325 201-224,254-257
+extensions/modules/mail/pom.xml
+  s_f03fe8b0b5549a::t_27ff109c1b98c5 140-143
+exist-xqts/pom.xml
+  s_f03fe8b0b5549a::t_cda09c7783d03a 108-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4ee123cee02c798c88f34f0c4facc287d885cac9",
+  "prompts": {},
+  "sessions": {
+    "s_f03fe8b0b5549a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d08888a7-91f0-4f66-adcb-0a91eaef1de5",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
