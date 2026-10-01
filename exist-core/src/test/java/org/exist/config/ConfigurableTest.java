@@ -21,17 +21,17 @@
  */
 package org.exist.config;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.InputStream;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ExistSAXParserFactory;
 import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class ConfigurableTest {
 
 	String config1 = "<instance xmlns='http://exist-db.org/Configuration' " +

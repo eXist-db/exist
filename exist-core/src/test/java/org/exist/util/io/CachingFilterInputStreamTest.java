@@ -21,14 +21,14 @@
  */
 package org.exist.util.io;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.Collection;
 import java.util.Arrays;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(value = ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class CachingFilterInputStreamTest {
 
     public static Collection<Object[]> data() {

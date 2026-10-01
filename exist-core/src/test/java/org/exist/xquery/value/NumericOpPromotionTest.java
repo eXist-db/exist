@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.value;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.Arrays;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class NumericOpPromotionTest {
 
     public static java.util.Collection<Object[]> data() {

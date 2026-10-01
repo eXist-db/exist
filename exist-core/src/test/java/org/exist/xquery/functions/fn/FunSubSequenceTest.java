@@ -22,13 +22,13 @@
 
 package org.exist.xquery.functions.fn;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -38,7 +38,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class FunSubSequenceTest {
 
     @RegisterExtension

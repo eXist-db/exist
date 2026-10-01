@@ -22,10 +22,10 @@
 
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.collections.Collection;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import java.util.Iterator;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,7 +38,7 @@ import static org.easymock.EasyMock.verify;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DefaultDocumentSetTest {
 
     @Test

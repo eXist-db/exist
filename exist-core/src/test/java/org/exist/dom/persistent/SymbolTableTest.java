@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.io.VariableByteInput;
@@ -34,7 +35,6 @@ import java.nio.file.Path;
 
 import org.exist.util.Configuration;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SymbolTableTest {
 
     private final SymbolTable createSymbolTable(final Path dir) throws BrokerPoolServiceException {

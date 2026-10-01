@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -39,7 +40,6 @@ import org.junit.jupiter.api.Test;
 import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class IdFunctionTest {
 
     /**

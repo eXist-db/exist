@@ -21,9 +21,9 @@
  */
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MemtreeInXQueryTest {
 
     @RegisterExtension

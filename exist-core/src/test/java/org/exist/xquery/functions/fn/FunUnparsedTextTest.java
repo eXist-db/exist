@@ -22,7 +22,8 @@
 
 package org.exist.xquery.functions.fn;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -36,7 +37,6 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class FunUnparsedTextTest {
 
     @RegisterExtension

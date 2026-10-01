@@ -21,12 +21,12 @@
  */
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MemtreeTest {
 
     private final static String XML =

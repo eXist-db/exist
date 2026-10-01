@@ -22,12 +22,12 @@
 
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -46,7 +46,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
 
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MemtreeBuilderTest {
 
     public static java.util.Collection<Object[]> data() {

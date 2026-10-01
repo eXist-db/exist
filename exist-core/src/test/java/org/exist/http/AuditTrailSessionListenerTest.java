@@ -22,7 +22,8 @@
 
 package org.exist.http;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -40,7 +41,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
 import jakarta.servlet.http.HttpSession;
@@ -53,7 +53,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class AuditTrailSessionListenerTest {
 
     @RegisterExtension

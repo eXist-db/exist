@@ -21,12 +21,12 @@
  */
 package org.exist.xquery;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import javax.xml.transform.OutputKeys;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author ljo
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class ConstructedNodesTest {
 
 	@RegisterExtension

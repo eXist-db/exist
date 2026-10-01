@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.functions.xquery3;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 
@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @author wessels
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class TryCatchTest {
 
     @RegisterExtension

@@ -22,8 +22,9 @@
 
 package org.exist.stax;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -44,7 +45,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -60,7 +60,7 @@ import static org.exist.stax.ExtendedXMLStreamReader.PROPERTY_NODE_ID;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*;
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class EmbeddedXMLStreamReaderTest {
 
     @RegisterExtension

@@ -22,14 +22,14 @@
 package org.exist.util.sorters;
 
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 
 /**
  * Test case - given a sort() method and an algorithm via a checker, do a variety
@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
  * @author http://www.users.bigpond.com/pmurray
  * 
  */
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SortTest {
 
     public static java.util.Collection<Object[]> data() {

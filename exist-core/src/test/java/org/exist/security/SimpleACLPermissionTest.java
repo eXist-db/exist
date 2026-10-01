@@ -21,7 +21,8 @@
  */
 package org.exist.security;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInputStream;
 
@@ -35,7 +36,6 @@ import org.exist.security.internal.SecurityManagerImpl;
 import java.util.Random;
 import org.easymock.EasyMock;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SimpleACLPermissionTest {
 
     private final static int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;

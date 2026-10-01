@@ -22,11 +22,11 @@
 
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -48,7 +48,7 @@ import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 /**
  * https://github.com/eXist-db/exist/issues/1682#issuecomment-402108184
  */
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DocumentBuilderReceiverIntegrationTest {
 
     @RegisterExtension

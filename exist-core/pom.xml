@@ -604,11 +604,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.googlecode.junit-toolbox</groupId>
-            <artifactId>junit-toolbox</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!-- needed for starting up a jetty server -->
         <dependency>

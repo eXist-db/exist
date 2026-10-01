@@ -21,12 +21,13 @@
  */
 package org.exist.security;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.IOException;
 import java.util.Random;
 
 import static org.easymock.EasyMock.expect;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -41,14 +42,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.runner.RunWith;
 
 /**
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
+@Execution(ExecutionMode.CONCURRENT)
 @SuppressWarnings("OctalInteger")
-@RunWith(ParallelRunner.class)
 public class UnixStylePermissionTest {
 
     @Test

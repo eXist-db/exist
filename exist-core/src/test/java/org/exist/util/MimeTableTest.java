@@ -21,12 +21,12 @@
  */
 package org.exist.util;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * 
  * @author Peter Ciuffetti
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MimeTableTest  {
 
 	/**
