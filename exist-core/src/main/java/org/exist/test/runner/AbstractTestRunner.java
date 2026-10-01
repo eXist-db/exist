@@ -38,7 +38,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.runner.Runner;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,18 +49,16 @@ import java.util.function.Function;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Base class for XSuite test runners.
+ * Base class for the runners of a file of XQSuite or XML tests.
  *
  * @author Adam Retter
  */
-public abstract class AbstractTestRunner extends Runner {
+public abstract class AbstractTestRunner {
 
     protected final Path path;
-    protected final boolean parallel;
 
-    protected AbstractTestRunner(final Path path, final boolean parallel) {
+    protected AbstractTestRunner(final Path path) {
         this.path = path;
-        this.parallel = parallel;
     }
 
     /**
@@ -149,18 +146,5 @@ public abstract class AbstractTestRunner extends Runner {
                 queryPool.returnCompiledXQuery(query, compiledQuery);
             }
         }
-    }
-
-    protected static String checkDescription(final Object source, final String description) {
-        if (description == null) {
-            throw new IllegalArgumentException(source + " description is null");
-        }
-        if (description.isEmpty()) {
-            throw new IllegalArgumentException(source + " description is empty");
-        }
-        if (description.startsWith("(")) {
-            throw new IllegalArgumentException(source + " description '" + description + "' starts with '('");
-        }
-        return description;
     }
 }

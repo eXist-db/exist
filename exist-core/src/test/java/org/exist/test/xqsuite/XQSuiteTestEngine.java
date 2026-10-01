@@ -24,7 +24,7 @@ package org.exist.test.xqsuite;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.runner.AbstractTestRunner;
-import org.exist.test.runner.XSuite;
+import org.exist.test.runner.TestRunners;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
- * A JUnit Platform engine for XQSuite and XML tests, replacing the JUnit 4 {@link XSuite} runner.
+ * A JUnit Platform engine for XQSuite and XML tests.
  * <p>
  * Classes annotated with {@link XQSuite} are discovered; each is a container whose children are
  * the test files (containers) and the tests within them. The tests themselves are run by the
@@ -167,7 +167,7 @@ public final class XQSuiteTestEngine implements TestEngine {
         final Path key = path.toAbsolutePath().normalize();
         AbstractTestRunner runner = RUNNERS.get(key);
         if (runner == null) {
-            runner = XSuite.newTestRunner(path, false, XSuite.isXQueryTestFile(path) ? discoveryDb.pool() : null);
+            runner = TestRunners.newTestRunner(path, TestRunners.isXQueryTestFile(path) ? discoveryDb.pool() : null);
             if (runner != null) {
                 RUNNERS.put(key, runner);
             }

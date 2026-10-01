@@ -21,19 +21,21 @@
  :)
 xquery version "3.1";
 
-module namespace hang = "http://exist-db.org/xquery/hang";
+(: A prefix containing a hyphen is not made only of word characters, so the XQSuite runtime
+ : reports the unannotated test as "my-tests:f1" rather than "f1". :)
+module namespace my-tests = "http://exist-db.org/xquery/hyphenated-prefix-module";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 
-declare function hang:loop() {
-    hang:loop()
+declare
+    %test:assertEquals("hello")
+function my-tests:f1() {
+    "hello"
 };
 
 declare
-    %test:assertEquals(1)
-function hang:neverReached() {
-    1
+    %test:name("explicitly named")
+    %test:assertEquals("hello")
+function my-tests:f2() {
+    "hello"
 };
-
-(: Evaluated when module is used; never returns so no ext: callback is ever fired :)
-declare variable $hang:blocker := hang:loop();

@@ -42,12 +42,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.runner.Description;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.InitializationError;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -60,8 +57,8 @@ import java.util.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * A JUnit test runner which can run the XQuery tests (XQSuite)
- * of eXist-db using $EXIST_HOME/src/org/exist/xquery/lib/xqsuite/xqsuite.xql.
+ * Runs the XQuery tests (XQSuite) of a file using $EXIST_HOME/src/org/exist/xquery/lib/xqsuite/xqsuite.xql,
+ * reporting each outcome to a {@link TestEvents}.
  *
  * @author Adam Retter
  */
@@ -73,38 +70,27 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     /**
      * @param path The path to the XQuery file containing the XQSuite tests
-     * @param parallel whether the tests should be run in parallel.
-     *
-     * @throws InitializationError if the test runner could not be constructed.
-     */
-    public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
-        this(path, parallel, XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null ? XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool() : null);
-    }
-
-    /**
-     * @param path The path to the XQuery file containing the XQSuite tests
-     * @param parallel whether the tests should be run in parallel.
      * @param discoveryPool a running database to discover the tests with, or null to discover by compiling the module
      *
-     * @throws InitializationError if the test runner could not be constructed.
+     * @throws TestInitializationException if the test runner could not be constructed.
      */
-    public XQueryTestRunner(final Path path, final boolean parallel, @Nullable final BrokerPool discoveryPool) throws InitializationError {
-        super(path, parallel);
+    public XQueryTestRunner(final Path path, @Nullable final BrokerPool discoveryPool) throws TestInitializationException {
+        super(path);
         this.info = discoverOrExtractTestInfo(path, discoveryPool);
     }
 
     /**
      * Obtain test metadata by discovery when possible, otherwise by compiling the module.
-     * When the DB is already started (e.g. by XSuite), try runDiscovery first so we run a single
+     * When a database is available, try runDiscovery first so we run a single
      * discovery XQuery instead of compiling the module twice. Fall back to extractTestInfo in two
      * cases: (1) the DB is not started, or (2) the DB is started but runDiscovery returns null
      * (e.g. discovery failed, empty result, or wrong XML shape).
      *
      * @param path the path to the XQuery file containing the XQSuite tests
      * @return test info (from discovery or from compiling the module)
-     * @throws InitializationError if the runner could not be constructed
+     * @throws TestInitializationException if the runner could not be constructed
      */
-    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path, @Nullable final BrokerPool pool) throws InitializationError {
+    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path, @Nullable final BrokerPool pool) throws TestInitializationException {
         if (pool != null) {
             final XQueryTestInfo discovered = runDiscovery(pool, path);
             if (discovered != null) {
@@ -149,7 +135,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
+    private static XQueryTestInfo extractTestInfo(final Path path) throws TestInitializationException {
         try {
             final Configuration config = getConfiguration();
 
@@ -158,7 +144,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                 expathRepo.configure(config);
                 expathRepo.prepare(null);
             } catch (final BrokerPoolServiceException e) {
-                throw new InitializationError(e);
+                throw new TestInitializationException(e);
             }
 
             final XQueryContext xqueryContext = new XQueryContext(config);
@@ -230,7 +216,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
             }
 
         } catch (final DatabaseConfigurationException | IOException | PermissionDeniedException | XPathException e) {
-            throw new InitializationError(e);
+            throw new TestInitializationException(e);
         }
     }
 
@@ -325,24 +311,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     @Override
-    public Description getDescription() {
-        final String suiteName = checkDescription(this, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName);
-        for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.testFunctions()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.localName())));
-        }
-        return description;
-    }
-
-    @Override
     public List<String> getTestNames() {
         return info.testFunctions().stream().map(XQueryTestInfo.TestFunctionDef::localName).toList();
-    }
-
-    @Override
-    public void run(final RunNotifier notifier) {
-        // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-        run(new RunNotifierTestEvents(getSuiteName(), notifier), XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool());
     }
 
     @Override
