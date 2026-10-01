@@ -42,6 +42,10 @@ import java.util.Set;
 final class EngineTestEvents implements TestEvents {
     private final FileDescriptor file;
     private final EngineExecutionListener listener;
+    /** called whenever the XQuery side reports something, to show that the file is still making progress */
+    private final Runnable activity;
+    /** once the file is complete or abandoned, nothing more is reported, even if its thread is still running */
+    private boolean closed = false;
     /** how many tests of each name have been started, to match repeated names to occurrences in order */
     private final Map<String, Integer> startedCount = new HashMap<>();
     /** the test of each name that is currently running */
@@ -50,9 +54,17 @@ final class EngineTestEvents implements TestEvents {
     private final Set<XQTestDescriptor> started = new HashSet<>();
     private final Set<XQTestDescriptor> done = new HashSet<>();
 
-    EngineTestEvents(final FileDescriptor file, final EngineExecutionListener listener) {
+    EngineTestEvents(final FileDescriptor file, final EngineExecutionListener listener, final Runnable activity) {
         this.file = file;
         this.listener = listener;
+        this.activity = activity;
+    }
+
+    /**
+     * @return the names of the tests that have started but not finished
+     */
+    synchronized List<String> runningTests() {
+        return started.stream().filter(t -> !done.contains(t)).map(XQTestDescriptor::getDisplayName).sorted().toList();
     }
 
     /**
@@ -85,11 +97,19 @@ final class EngineTestEvents implements TestEvents {
 
     @Override
     public synchronized void started(final String testName) {
+        if (closed) {
+            return;
+        }
+        activity.run();
         start(testName);
     }
 
     @Override
     public synchronized void finished(final String testName) {
+        if (closed) {
+            return;
+        }
+        activity.run();
         final XQTestDescriptor test = running(testName);
         done.add(test);
         final TestExecutionResult result = pending.remove(test);
@@ -98,6 +118,10 @@ final class EngineTestEvents implements TestEvents {
 
     @Override
     public synchronized void ignored(final String testName) {
+        if (closed) {
+            return;
+        }
+        activity.run();
         final int index = startedCount.merge(testName, 1, Integer::sum) - 1;
         final List<XQTestDescriptor> occurrences = file.findTests(testName);
         final XQTestDescriptor test = index < occurrences.size() ? occurrences.get(index) : file.addTest(testName);
@@ -111,6 +135,10 @@ final class EngineTestEvents implements TestEvents {
 
     @Override
     public synchronized void failed(final String testName, final Throwable reason) {
+        if (closed) {
+            return;
+        }
+        activity.run();
         final XQTestDescriptor test = running(testName);
         final TestExecutionResult previous = pending.get(test);
         if (previous != null && previous.getStatus() == TestExecutionResult.Status.FAILED && previous.getThrowable().isPresent()) {
@@ -122,6 +150,10 @@ final class EngineTestEvents implements TestEvents {
 
     @Override
     public synchronized void assumptionFailed(final String testName, final String message) {
+        if (closed) {
+            return;
+        }
+        activity.run();
         pending.putIfAbsent(running(testName), TestExecutionResult.aborted(new TestAbortedException(message)));
     }
 
@@ -130,7 +162,15 @@ final class EngineTestEvents implements TestEvents {
      *
      * @param fileFailure the reason the whole file failed to run, or null
      */
+    private static String reasonSuffix(final Throwable fileFailure) {
+        return fileFailure != null && fileFailure.getMessage() != null ? ": " + fileFailure.getMessage() : "";
+    }
+
     synchronized void completeOutstanding(final Throwable fileFailure) {
+        if (closed) {
+            return;
+        }
+        closed = true;
         for (final XQTestDescriptor test : file.tests()) {
             if (done.contains(test)) {
                 continue;
@@ -139,12 +179,12 @@ final class EngineTestEvents implements TestEvents {
             if (started.contains(test)) {
                 final TestExecutionResult result = pending.remove(test);
                 listener.executionFinished(test, result != null ? result : TestExecutionResult.failed(
-                        new AssertionError("Test started but did not finish", fileFailure)));
+                        new AssertionError("Test started but did not finish" + reasonSuffix(fileFailure), fileFailure)));
             } else {
                 started.add(test);
                 listener.executionStarted(test);
                 listener.executionFinished(test, TestExecutionResult.failed(new AssertionError(
-                        "Test was discovered but never reported by the XQuery test runner", fileFailure)));
+                        "Test was discovered but never reported by the XQuery test runner" + reasonSuffix(fileFailure), fileFailure)));
             }
         }
     }

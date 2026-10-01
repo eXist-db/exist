@@ -65,6 +65,12 @@ import java.util.stream.Stream;
 public final class XQSuiteTestEngine implements TestEngine {
     public static final String ENGINE_ID = "exist-xqsuite";
 
+    /**
+     * Set when a database could not be stopped: a test file that was given up on as hung is still running
+     * and keeps the database alive, so no further suite can be run safely in this JVM.
+     */
+    private static volatile String unusableBecause = null;
+
     @Override
     public String getId() {
         return ENGINE_ID;
@@ -152,7 +158,7 @@ public final class XQSuiteTestEngine implements TestEngine {
             failure = t;
         }
 
-        final SuiteDescriptor suite = new SuiteDescriptor(suiteId, clazz, failure);
+        final SuiteDescriptor suite = new SuiteDescriptor(suiteId, clazz, annotation.parallel(), failure);
         for (final AbstractTestRunner runner : runners) {
             final FileDescriptor file = new FileDescriptor(suiteId.append("file", runner.getSourcePath().toString()), runner);
             for (final String testName : runner.getTestNames()) {
@@ -182,13 +188,19 @@ public final class XQSuiteTestEngine implements TestEngine {
         final EngineExecutionListener listener = request.getEngineExecutionListener();
         final TestDescriptor root = request.getRootTestDescriptor();
         listener.executionStarted(root);
+        final XQSuiteSettings settings = new XQSuiteSettings(request.getConfigurationParameters());
         for (final TestDescriptor suite : new ArrayList<>(root.getChildren())) {
-            runSuite((SuiteDescriptor) suite, listener);
+            runSuite((SuiteDescriptor) suite, listener, settings);
         }
         listener.executionFinished(root, TestExecutionResult.successful());
     }
 
-    private static void runSuite(final SuiteDescriptor suite, final EngineExecutionListener listener) {
+    private static void runSuite(final SuiteDescriptor suite, final EngineExecutionListener listener, final XQSuiteSettings settings) {
+        final String unusable = unusableBecause;
+        if (unusable != null) {
+            listener.executionSkipped(suite, "Not run: " + unusable);
+            return;
+        }
         listener.executionStarted(suite);
         Throwable failure = suite.discoveryFailure();
         ExistEmbeddedServer server = null;
@@ -199,9 +211,7 @@ public final class XQSuiteTestEngine implements TestEngine {
                 server.startDb();
                 started = true;
                 invokeStatic(suite.suiteClass(), BeforeAll.class);
-                for (final TestDescriptor child : new ArrayList<>(suite.getChildren())) {
-                    runFile((FileDescriptor) child, server, listener);
-                }
+                new SuiteRun(suite, listener, server.getBrokerPool(), settings).run();
             }
         } catch (final Throwable t) {
             failure = t;
@@ -213,7 +223,12 @@ public final class XQSuiteTestEngine implements TestEngine {
                     failure = add(failure, t);
                 }
                 try {
-                    server.stopDb();
+                    if (!stopWithin(server::stopDb, settings.hangGrace())) {
+                        final String reason = "the embedded database of " + suite.suiteClass().getName() + " could not be stopped within "
+                                + settings.hangGrace().toSeconds() + " seconds; a test file that was given up on as hung is probably still running";
+                        unusableBecause = reason;
+                        failure = add(failure, new IllegalStateException(reason));
+                    }
                 } catch (final Throwable t) {
                     failure = add(failure, t);
                 }
@@ -222,24 +237,37 @@ public final class XQSuiteTestEngine implements TestEngine {
         listener.executionFinished(suite, failure == null ? TestExecutionResult.successful() : TestExecutionResult.failed(failure));
     }
 
-    private static void runFile(final FileDescriptor file, final ExistEmbeddedServer server, final EngineExecutionListener listener) {
-        listener.executionStarted(file);
-        final EngineTestEvents events = new EngineTestEvents(file, listener);
-        Throwable failure = null;
-        try {
-            file.runner().run(events, server.getBrokerPool());
-        } catch (final Throwable t) {
-            failure = t;
-        }
-        events.completeOutstanding(failure);
-        listener.executionFinished(file, failure == null ? TestExecutionResult.successful() : TestExecutionResult.failed(failure));
-    }
-
     private static void invokeStatic(final Class<?> clazz, final Class<? extends java.lang.annotation.Annotation> annotation) {
         for (final Method method : ReflectionSupport.findMethods(clazz,
                 m -> Modifier.isStatic(m.getModifiers()) && m.isAnnotationPresent(annotation), HierarchyTraversalMode.TOP_DOWN)) {
             ReflectionSupport.invokeMethod(method, null);
         }
+    }
+
+    /**
+     * Runs {@code stop} on a thread of its own and waits for it for at most {@code timeout}.
+     *
+     * @return false if it was still running when the time was up
+     */
+    static boolean stopWithin(final Runnable stop, final java.time.Duration timeout) throws InterruptedException {
+        final java.util.concurrent.atomic.AtomicReference<Throwable> thrown = new java.util.concurrent.atomic.AtomicReference<>();
+        final Thread thread = new Thread(() -> {
+            try {
+                stop.run();
+            } catch (final Throwable t) {
+                thrown.set(t);
+            }
+        }, "xqsuite-stop");
+        thread.setDaemon(true);
+        thread.start();
+        thread.join(timeout.toMillis());
+        if (thread.isAlive()) {
+            return false;
+        }
+        if (thrown.get() != null) {
+            throw new IllegalStateException("The embedded database failed to stop", thrown.get());
+        }
+        return true;
     }
 
     private static Throwable add(final Throwable existing, final Throwable additional) {

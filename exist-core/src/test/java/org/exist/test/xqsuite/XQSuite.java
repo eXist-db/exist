@@ -38,6 +38,10 @@ import java.lang.annotation.Target;
  * }</pre>
  * Static methods of the class annotated with {@code @BeforeAll} and {@code @AfterAll}
  * run around the whole suite, after the embedded database has started and before it stops.
+ * <p>
+ * The test files of a suite run one after the other unless {@link #parallel()} is set. In either
+ * case a test file that stops reporting for too long is failed instead of hanging the build, see
+ * {@link XQSuiteSettings#HANG_THRESHOLD_MINUTES}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -48,4 +52,13 @@ public @interface XQSuite {
      * @return the directories or files containing the tests, relative to the working directory
      */
     String[] value();
+
+    /**
+     * Run the test files of the suite concurrently, against the one embedded database, with at most
+     * {@link XQSuiteSettings#PARALLELISM} files at a time. The tests within a file always run one
+     * after the other. Only set this if the files do not depend on or disturb each other's data.
+     *
+     * @return true to run the files of the suite concurrently
+     */
+    boolean parallel() default false;
 }
