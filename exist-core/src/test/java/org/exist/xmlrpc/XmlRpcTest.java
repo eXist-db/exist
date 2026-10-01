@@ -31,6 +31,7 @@ import org.exist.security.MessageDigester;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
+import org.exist.xquery.util.URIUtils;
 import org.exist.util.Compressor;
 import org.exist.util.MimeType;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
@@ -651,7 +652,9 @@ public class XmlRpcTest {
         HashMap collection = (HashMap) xmlrpc.execute("describeCollection", params);
         Object[] collections = (Object[]) collection.get("collections");
         boolean foundMatch = false;
-        String targetCollectionName = SPECIAL_COLLECTION.lastSegment().toString();
+        // Resource-naming contract (eXist-db/exist#6463, decision 1): XML-RPC now returns names in
+        // decoded display form, so compare against the decoded last segment, not the stored form.
+        String targetCollectionName = URIUtils.decodeForURI(SPECIAL_COLLECTION.lastSegment().toString());
         for (Object o : collections) {
             String childName = (String) o;
             if (childName.equals(targetCollectionName)) {

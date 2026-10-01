@@ -96,7 +96,13 @@ public class FunDocAvailable extends Function {
             try {
                 new URI(path);
             } catch (final URISyntaxException e) {
-                throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg, e);
+                // A bare db-path may contain a character (e.g. a raw space) that is a valid resource
+                // name under the resource-naming contract (eXist-db/exist#6463, decision 3) but not a
+                // valid java.net.URI; defer to DocUtils, which normalizes and resolves it. Any other
+                // malformed URI keeps the spec-mandated FODC0005.
+                if (!DocUtils.isDbPath(path)) {
+                    throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg, e);
+                }
             }
 
             try {
