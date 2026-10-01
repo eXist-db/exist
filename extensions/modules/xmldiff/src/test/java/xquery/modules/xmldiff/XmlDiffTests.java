@@ -32,11 +32,9 @@
  */
 package xquery.modules.xmldiff;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
         "src/test/xquery/modules/xmldiff"
 })
 public class XmlDiffTests {

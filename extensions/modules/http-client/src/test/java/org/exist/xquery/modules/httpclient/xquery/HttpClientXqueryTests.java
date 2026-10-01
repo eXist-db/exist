@@ -21,53 +21,52 @@
  */
 package org.exist.xquery.modules.httpclient.xquery;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.exist.test.runner.XSuite;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import org.exist.test.xqsuite.XQSuite;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery"
 })
 public class HttpClientXqueryTests {
 
-    @ClassRule
-    public static final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+    private static WireMockServer wireMock;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
+        wireMock = new WireMockServer(wireMockConfig().dynamicPort());
+        wireMock.start();
+
         // Configure some default endpoints
-        wireMockRule.stubFor(get(urlEqualTo("/hello"))
+        wireMock.stubFor(get(urlEqualTo("/hello"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "text/plain")
                         .withBody("Hello world!")));
 
-        wireMockRule.stubFor(get(urlEqualTo("/json"))
+        wireMock.stubFor(get(urlEqualTo("/json"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"message\": \"Hello JSON\"}")));
 
-        wireMockRule.stubFor(get(urlEqualTo("/xml"))
+        wireMock.stubFor(get(urlEqualTo("/xml"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
                         .withBody("<root><item>Hello XML</item></root>")));
 
-        wireMockRule.stubFor(post(urlEqualTo("/post"))
+        wireMock.stubFor(post(urlEqualTo("/post"))
                 .willReturn(aResponse()
                         .withStatus(201)
                         .withHeader("Content-Type", "text/plain")
                         .withBody("ACK")));
 
-        wireMockRule.stubFor(get(urlEqualTo("/headers"))
+        wireMock.stubFor(get(urlEqualTo("/headers"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("X-Custom-Header", "X-Value")
@@ -75,11 +74,12 @@ public class HttpClientXqueryTests {
                         .withBody("Check headers")));
 
         // Expose port to XQuery via system property
-        System.setProperty("wiremock.port", String.valueOf(wireMockRule.port()));
+        System.setProperty("wiremock.port", String.valueOf(wireMock.port()));
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() {
         System.clearProperty("wiremock.port");
+        wireMock.stop();
     }
 }

@@ -21,6 +21,7 @@
  */
 package org.exist.test.xqsuite;
 
+import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.runner.AbstractTestRunner;
 import org.exist.test.runner.XSuite;
@@ -49,7 +50,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -82,16 +85,49 @@ public final class XQSuiteTestEngine implements TestEngine {
             classes.addAll(ReflectionSupport.findAllClassesInPackage(selector.getPackageName(), c -> true, n -> true));
         }
 
-        for (final Class<?> clazz : classes) {
-            final XQSuite annotation = clazz.getAnnotation(XQSuite.class);
-            if (annotation != null) {
-                engine.addChild(discoverSuite(engine.getUniqueId(), clazz, annotation));
+        try (final DiscoveryDatabase discoveryDb = new DiscoveryDatabase()) {
+            for (final Class<?> clazz : classes) {
+                final XQSuite annotation = clazz.getAnnotation(XQSuite.class);
+                if (annotation != null) {
+                    engine.addChild(discoverSuite(engine.getUniqueId(), clazz, annotation, discoveryDb));
+                }
             }
         }
         return engine;
     }
 
-    private static SuiteDescriptor discoverSuite(final UniqueId engineId, final Class<?> clazz, final XQSuite annotation) {
+    /**
+     * Test files are discovered once per file for the life of the JVM: the launcher discovers each
+     * class several times (for example once to decide whether to run it and once to run it).
+     */
+    private static final Map<Path, AbstractTestRunner> RUNNERS = new ConcurrentHashMap<>();
+
+    /**
+     * An embedded database that is only started if some file needs it for discovery.
+     * XQuery modules may import modules that need the database to compile, and the database is
+     * how tests have always been discovered, so it is used rather than compiling on its own.
+     */
+    private static final class DiscoveryDatabase implements AutoCloseable {
+        private ExistEmbeddedServer server;
+
+        BrokerPool pool() throws Exception {
+            if (server == null) {
+                server = new ExistEmbeddedServer(true, true);
+                server.startDb();
+            }
+            return server.getBrokerPool();
+        }
+
+        @Override
+        public void close() {
+            if (server != null) {
+                server.stopDb();
+                server = null;
+            }
+        }
+    }
+
+    private static SuiteDescriptor discoverSuite(final UniqueId engineId, final Class<?> clazz, final XQSuite annotation, final DiscoveryDatabase discoveryDb) {
         final UniqueId suiteId = engineId.append("suite", clazz.getName());
         final List<AbstractTestRunner> runners = new ArrayList<>();
         Throwable failure = null;
@@ -105,11 +141,11 @@ public final class XQSuiteTestEngine implements TestEngine {
                     try (final Stream<Path> children = Files.list(path)) {
                         final List<Path> sorted = children.filter(p -> !Files.isDirectory(p)).sorted(Comparator.comparing(Path::toString)).toList();
                         for (final Path child : sorted) {
-                            addRunner(runners, child);
+                            addRunner(runners, child, discoveryDb);
                         }
                     }
                 } else {
-                    addRunner(runners, path);
+                    addRunner(runners, path, discoveryDb);
                 }
             }
         } catch (final Throwable t) {
@@ -127,8 +163,15 @@ public final class XQSuiteTestEngine implements TestEngine {
         return suite;
     }
 
-    private static void addRunner(final List<AbstractTestRunner> runners, final Path path) throws Exception {
-        final AbstractTestRunner runner = XSuite.newTestRunner(path, false);
+    private static void addRunner(final List<AbstractTestRunner> runners, final Path path, final DiscoveryDatabase discoveryDb) throws Exception {
+        final Path key = path.toAbsolutePath().normalize();
+        AbstractTestRunner runner = RUNNERS.get(key);
+        if (runner == null) {
+            runner = XSuite.newTestRunner(path, false, XSuite.isXQueryTestFile(path) ? discoveryDb.pool() : null);
+            if (runner != null) {
+                RUNNERS.put(key, runner);
+            }
+        }
         if (runner != null) {
             runners.add(runner);
         }

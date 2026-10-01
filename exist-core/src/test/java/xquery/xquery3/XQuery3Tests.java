@@ -21,11 +21,9 @@
  */
 package xquery.xquery3;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
         "src/test/xquery/xquery3",
         "src/test/xquery/xquery3/transform",
         "src/test/xquery/transform",
