@@ -28,8 +28,7 @@ import org.exist.source.StringSource;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.LocalXMLResource;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -40,9 +39,10 @@ import org.xmlunit.diff.Diff;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -51,7 +51,7 @@ public class InternalModuleTest {
 
     private static final AtomicLong COUNTER = new AtomicLong();
 
-    @Rule
+    @RegisterExtension
     public final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(true, true, true);
 
     private static final String EOL = System.getProperty("line.separator");
@@ -127,7 +127,7 @@ public class InternalModuleTest {
                 .checkForSimilar()
                 .build();
 
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     private static String getModuleVariableQuery(final String javaClass) {
@@ -160,7 +160,7 @@ public class InternalModuleTest {
                 .checkForSimilar()
                 .build();
 
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
     }
 
     public static class TestModuleWithVariables extends AbstractInternalModule {

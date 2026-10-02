@@ -26,13 +26,13 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Verifies that {@link AbstractInternalModule} always sorts its function table by
@@ -75,14 +75,14 @@ public class AbstractInternalModuleSortTest {
         };
         final TestModule module = new TestModule(declarationOrder);
 
-        assertNotNull("close#1 must be discoverable",
-                module.getFunctionDef(new QName("close", NS, PREFIX), 1));
-        assertNotNull("eval#1 must be discoverable",
-                module.getFunctionDef(new QName("eval", NS, PREFIX), 1));
-        assertNotNull("fetch#2 must be discoverable",
-                module.getFunctionDef(new QName("fetch", NS, PREFIX), 2));
-        assertNull("unknown function still returns null",
-                module.getFunctionDef(new QName("close", NS, PREFIX), 99));
+        assertNotNull(module.getFunctionDef(new QName("close", NS, PREFIX), 1),
+                "close#1 must be discoverable");
+        assertNotNull(module.getFunctionDef(new QName("eval", NS, PREFIX), 1),
+                "eval#1 must be discoverable");
+        assertNotNull(module.getFunctionDef(new QName("fetch", NS, PREFIX), 2),
+                "fetch#2 must be discoverable");
+        assertNull(module.getFunctionDef(new QName("close", NS, PREFIX), 99),
+                "unknown function still returns null");
     }
 
     /**
@@ -97,8 +97,8 @@ public class AbstractInternalModuleSortTest {
         };
         final String beforeFirst = callerArray[0].getSignature().getName().getLocalPart();
         new TestModule(callerArray);
-        assertEquals("caller's array must remain in declaration order",
-                beforeFirst, callerArray[0].getSignature().getName().getLocalPart());
+        assertEquals(beforeFirst,
+                callerArray[0].getSignature().getName().getLocalPart(), "caller's array must remain in declaration order");
     }
 
     /**
@@ -151,12 +151,12 @@ public class AbstractInternalModuleSortTest {
         final LegacyTestModule withFalse = new LegacyTestModule(unsorted, false);
 
         for (final LegacyTestModule m : new LegacyTestModule[]{withTrue, withFalse}) {
-            assertNotNull("close#1 must be found via the legacy 3-arg ctor",
-                    m.getFunctionDef(new QName("close", NS, PREFIX), 1));
-            assertNotNull("eval#1 must be found via the legacy 3-arg ctor",
-                    m.getFunctionDef(new QName("eval", NS, PREFIX), 1));
-            assertNotNull("fetch#2 must be found via the legacy 3-arg ctor",
-                    m.getFunctionDef(new QName("fetch", NS, PREFIX), 2));
+            assertNotNull(m.getFunctionDef(new QName("close", NS, PREFIX), 1),
+                    "close#1 must be found via the legacy 3-arg ctor");
+            assertNotNull(m.getFunctionDef(new QName("eval", NS, PREFIX), 1),
+                    "eval#1 must be found via the legacy 3-arg ctor");
+            assertNotNull(m.getFunctionDef(new QName("fetch", NS, PREFIX), 2),
+                    "fetch#2 must be found via the legacy 3-arg ctor");
         }
     }
 

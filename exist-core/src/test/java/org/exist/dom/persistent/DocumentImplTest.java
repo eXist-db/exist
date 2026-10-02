@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.Database;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
@@ -30,21 +31,22 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.junit.jupiter.api.Test;
 import org.easymock.EasyMock;
 
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  *
  * @author aretter
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DocumentImplTest {
 
     @Test

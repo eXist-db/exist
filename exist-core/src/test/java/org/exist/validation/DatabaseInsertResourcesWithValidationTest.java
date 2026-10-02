@@ -31,15 +31,15 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.*;
@@ -53,7 +53,7 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
  */
 public class DatabaseInsertResourcesWithValidationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
             propertiesBuilder()
                     .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
@@ -63,12 +63,12 @@ public class DatabaseInsertResourcesWithValidationTest {
     private final static String TEST_COLLECTION = "testValidationInsert";
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
 
-    @BeforeClass
+    @BeforeAll
     public static void startup() throws Exception {
         createTestCollections();
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutdown() throws Exception {
         removeTestCollections();
     }

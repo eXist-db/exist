@@ -36,7 +36,7 @@ import com.evolvedbinary.j8fu.function.SupplierE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,8 +46,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for Collection Locks

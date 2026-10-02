@@ -23,14 +23,13 @@
 package org.exist.config;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 public class SaxonConfigTest {
 
-  @ClassRule
+  @RegisterExtension
   public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
   @Test

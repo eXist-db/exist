@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -39,16 +40,14 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.junit.rules.TemporaryFolder;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Add a larger number of documents into a collection,
@@ -62,14 +61,14 @@ public class Recovery3Test {
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public File tempFolder;
 
     private final static int RESOURCE_COUNT = 150;
 
     @Test
     public void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final Path dir = tempFolder.newFolder("recovery3-data").toPath();
+        final Path dir = newFolder(tempFolder, "recovery3-data").toPath();
         for (int i = 0; i < RESOURCE_COUNT; i++) {
             Files.write(dir.resolve("doc" + i + ".xml"),
                     ("<?xml version=\"1.0\"?><movie id=\"" + i + "\"><title>Movie " + i + "</title></movie>").getBytes(StandardCharsets.UTF_8));
@@ -120,7 +119,7 @@ public class Recovery3Test {
 
             try (final Txn transaction = transact.beginTransaction();
                     final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
-                assertNotNull("Collection should exist after recovery", root);
+                assertNotNull(root, "Collection should exist after recovery");
                 transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
                 broker.removeCollection(transaction, root);
 
@@ -169,9 +168,26 @@ public class Recovery3Test {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb(true);
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 
 }

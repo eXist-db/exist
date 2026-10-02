@@ -25,13 +25,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Random;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -156,58 +157,64 @@ public class ByteBufferInputStreamTest {
         assertArrayEquals(new byte[]{0,0}, subArray(readData, testData.length, 2));
     }
 
-    @Test(expected=IOException.class)
-    public void readSingleByteAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
-        final ByteBuffer buf = ByteBuffer.wrap(testData);
+    @Test
+    public void readSingleByteAfterCloseThrowsException() {
+        assertThrows(IOException.class, () -> {
+            final byte testData[] = "test data".getBytes();
+            final ByteBuffer buf = ByteBuffer.wrap(testData);
 
-        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        try {
-            is.close();
-        } catch(IOException ioe) {
-            fail(ioe.getMessage());
-        }
+            try {
+                is.close();
+            } catch (IOException ioe) {
+                fail(ioe.getMessage());
+            }
 
-        //should throw IOException
-        is.read();
+            //should throw IOException
+            is.read();
+        });
     }
 
-    @Test(expected=IOException.class)
-    public void readMultipleBytesAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
-        final ByteBuffer buf = ByteBuffer.wrap(testData);
+    @Test
+    public void readMultipleBytesAfterCloseThrowsException() {
+        assertThrows(IOException.class, () -> {
+            final byte testData[] = "test data".getBytes();
+            final ByteBuffer buf = ByteBuffer.wrap(testData);
 
-        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        try {
-            is.close();
-        } catch(IOException ioe) {
-            fail(ioe.getMessage());
-        }
+            try {
+                is.close();
+            } catch (IOException ioe) {
+                fail(ioe.getMessage());
+            }
 
-        byte readBuf[] = new byte[2];
-        //should throw IOException
-        is.read(readBuf);
+            byte readBuf[] = new byte[2];
+            //should throw IOException
+            is.read(readBuf);
+        });
     }
 
-    @Test(expected=IOException.class)
-    public void readMultipleBytesSpecificAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
-        final ByteBuffer buf = ByteBuffer.wrap(testData);
+    @Test
+    public void readMultipleBytesSpecificAfterCloseThrowsException() {
+        assertThrows(IOException.class, () -> {
+            final byte testData[] = "test data".getBytes();
+            final ByteBuffer buf = ByteBuffer.wrap(testData);
 
-        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        try {
-            is.close();
-        } catch(IOException ioe) {
-            fail(ioe.getMessage());
-        }
+            try {
+                is.close();
+            } catch (IOException ioe) {
+                fail(ioe.getMessage());
+            }
 
-        byte readBuf[] = new byte[2];
+            byte readBuf[] = new byte[2];
 
-        //should throw IOException
-        is.read(readBuf, 0, 2);
+            //should throw IOException
+            is.read(readBuf, 0, 2);
+        });
     }
 
     @Test

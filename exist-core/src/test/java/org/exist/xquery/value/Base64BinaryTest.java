@@ -22,12 +22,13 @@
 package org.exist.xquery.value;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -35,7 +36,7 @@ import org.xmldb.api.modules.XQueryService;
  */
 public class Base64BinaryTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test

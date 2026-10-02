@@ -42,11 +42,13 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author alex
@@ -56,7 +58,7 @@ public class TwoDatabasesTest {
     private static Path config1File;
     private static Path config2File;
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws URISyntaxException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
@@ -74,16 +76,16 @@ public class TwoDatabasesTest {
         config2File = Path.of(loader.getResource(packagePath + separator + "conf2.xml").toURI());
     }
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer1 = new ExistEmbeddedServer("db1", config1File, null, true);
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer2 = new ExistEmbeddedServer("db2", config2File, null, true);
 
     private Subject user1;
     private Subject user2;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         user1 = pool1.getSecurityManager().getSystemSubject();
@@ -100,7 +102,7 @@ public class TwoDatabasesTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         put();
         get();

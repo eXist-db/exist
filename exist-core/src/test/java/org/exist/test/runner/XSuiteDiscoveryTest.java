@@ -24,17 +24,17 @@ package org.exist.test.runner;
 
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests discovery via a single XQuery per file.
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class XSuiteDiscoveryTest {
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -51,11 +51,11 @@ public class XSuiteDiscoveryTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Path path = Path.of("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final XQueryTestRunner.XQueryTestInfo info = XQueryTestRunner.runDiscovery(pool, path);
-        assertNotNull("discovery XQuery should return test info", info);
-        assertEquals("namespace", "http://exist-db.org/xquery/single-test-module", info.namespace());
-        assertEquals("one test function", 1, info.testFunctions().size());
-        assertEquals("test name", "f1", info.testFunctions().getFirst().localName());
-        assertEquals("test arity", 0, info.testFunctions().getFirst().arity());
+        assertNotNull(info, "discovery XQuery should return test info");
+        assertEquals("http://exist-db.org/xquery/single-test-module", info.namespace(), "namespace");
+        assertEquals(1, info.testFunctions().size(), "one test function");
+        assertEquals("f1", info.testFunctions().getFirst().localName(), "test name");
+        assertEquals(0, info.testFunctions().getFirst().arity(), "test arity");
     }
 
     /**
@@ -67,7 +67,7 @@ public class XSuiteDiscoveryTest {
         final Path path = Path.of("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQueryTestRunner.XQueryTestInfo discoveryInfo = XQueryTestRunner.runDiscovery(pool, path);
-        assertNotNull("discovery must succeed in this test", discoveryInfo);
+        assertNotNull(discoveryInfo, "discovery must succeed in this test");
 
         final ExistEmbeddedServer previous = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE;
         try {
@@ -75,13 +75,13 @@ public class XSuiteDiscoveryTest {
             final XQueryTestRunner runner = new XQueryTestRunner(path, false);
             final Description description = runner.getDescription();
             final List<Description> children = description.getChildren();
-            assertEquals("runner should have same number of tests as discovery", discoveryInfo.testFunctions().size(), children.size());
+            assertEquals(discoveryInfo.testFunctions().size(), children.size(), "runner should have same number of tests as discovery");
             final List<String> childNames = new ArrayList<>();
             for (final Description d : children) {
                 childNames.add(d.getMethodName());
             }
             for (int i = 0; i < discoveryInfo.testFunctions().size(); i++) {
-                assertEquals("test name from runner should match discovery", discoveryInfo.testFunctions().get(i).localName(), childNames.get(i));
+                assertEquals(discoveryInfo.testFunctions().get(i).localName(), childNames.get(i), "test name from runner should match discovery");
             }
         } finally {
             XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = previous;

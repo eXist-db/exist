@@ -32,16 +32,17 @@ import java.net.http.HttpResponse;
 
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_VERSION;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -63,7 +64,7 @@ public class GetDataTest extends RESTTest {
         return value == null || value.isEmpty() ? "<" + CONTAINER_ELEMENT_NAME + "/>" : "<" + CONTAINER_ELEMENT_NAME + ">" + value + "</" + CONTAINER_ELEMENT_NAME + ">";
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
@@ -74,7 +75,7 @@ public class GetDataTest extends RESTTest {
         ums.chmod(res, 0777);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws XMLDBException {
         BinaryResource res = (BinaryResource)root.getResource(XQUERY_FILENAME);
         root.removeResource(res);
@@ -90,7 +91,7 @@ public class GetDataTest extends RESTTest {
         testRequest(post, wrapInElement("").getBytes());
     }
 
-    @Ignore("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
+    @Disabled("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
     @Test
     public void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
@@ -104,7 +105,7 @@ public class GetDataTest extends RESTTest {
         assertEquals(HTTP_VERSION, executeForStatus(newHttpClient(), post));
     }
 
-    @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
+    @Disabled("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
     @Test
     public void retrieveBinaryHttp10() throws IOException {
         final String testData = "12345";
@@ -146,7 +147,7 @@ public class GetDataTest extends RESTTest {
         }
     }
 
-    @Ignore("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
+    @Disabled("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
     @Test
     public void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
@@ -160,7 +161,7 @@ public class GetDataTest extends RESTTest {
         assertEquals(HTTP_VERSION, executeForStatus(newHttpClient(), post));
     }
 
-    @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
+    @Disabled("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
     @Test
     public void retrieveXmlHttp10() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";

@@ -42,17 +42,16 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Occurrences;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 public class IndexManagerTest {
 
-  @ClassRule
+  @RegisterExtension
   public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
   @Test

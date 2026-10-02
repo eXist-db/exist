@@ -29,11 +29,11 @@ import org.exist.util.FileUtils;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.RemoveAppendAction;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.XMLDBException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -74,7 +74,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
         final IndexQueryService idxConf = getTestCollection().getService(IndexQueryService.class);
         assertNotNull(idxConf);
@@ -85,7 +85,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws XMLDBException {
 		FileUtils.deleteQuietly(tempFile);
 	}

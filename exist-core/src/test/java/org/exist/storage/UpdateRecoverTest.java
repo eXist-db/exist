@@ -44,9 +44,8 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -57,6 +56,8 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
@@ -289,7 +290,7 @@ public class UpdateRecoverTest {
             final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
-                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", lockedDoc);
+                assertNotNull(lockedDoc, "Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null");
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             } finally {
@@ -426,7 +427,7 @@ public class UpdateRecoverTest {
         final org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI2, "admin", "");
         assertNotNull(test2);
         final Resource res = test2.getResource("test_xmldb.xml");
-        assertNotNull("Document should not be null", res);
+        assertNotNull(res, "Document should not be null");
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
@@ -450,7 +451,7 @@ public class UpdateRecoverTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }

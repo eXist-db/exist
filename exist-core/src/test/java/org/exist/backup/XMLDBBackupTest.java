@@ -26,12 +26,9 @@ import org.exist.test.ExistWebServer;
 import org.exist.xmldb.AbstractRestoreServiceTaskListener;
 import org.exist.xmldb.EXistRestoreService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -47,6 +44,8 @@ import org.xmlunit.diff.Diff;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -56,23 +55,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class XMLDBBackupTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     private static final String COLLECTION_NAME = "test-xmldb-backup-restore";
 
-    @ClassRule
-    public static final TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public static File tempFolder;
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "local (classic)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false },
@@ -81,14 +81,8 @@ public class XMLDBBackupTest {
                 { "remote (dedup)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", true },
         });
     }
-
-    @Parameterized.Parameter
     public String apiName;
-
-    @Parameterized.Parameter(value = 1)
     public String baseUri;
-
-    @Parameterized.Parameter(value = 2)
     public boolean deduplicateBlobs;
 
     private static final String DOC1_NAME = "doc1.xml";
@@ -103,8 +97,10 @@ public class XMLDBBackupTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @Test
-    public void backupRestore() throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void backupRestore(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+        initXMLDBBackupTest(apiName, baseUri, deduplicateBlobs);
+        setUpTestCollection();
         final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);
         final String backupFilename = "test-xmldb-backup-" + System.currentTimeMillis() + ".zip";
 
@@ -135,7 +131,7 @@ public class XMLDBBackupTest {
                 .withTest(actual)
                 .checkForIdentical()
                 .build();
-        assertFalse(diff.toString(), diff.hasDifferences());
+        assertFalse(diff.hasDifferences(), diff.toString());
 
         final Resource binDoc1 = testCollection.getResource(BIN_DOC1_NAME);
         assertEquals(binDoc1Content, new String((byte[])binDoc1.getContent(), UTF_8));
@@ -144,8 +140,10 @@ public class XMLDBBackupTest {
         assertEquals(binDoc2Content, new String((byte[])binDoc2.getContent(), UTF_8));
     }
 
-    @Test
-    public void backupRestoreWithXmlDecl() throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void backupRestoreWithXmlDecl(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+        initXMLDBBackupTest(apiName, baseUri, deduplicateBlobs);
+        setUpTestCollection();
         final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);
         final String docWithDeclName = "docWithDecl.xml";
         final String xmlDecl = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -194,7 +192,7 @@ public class XMLDBBackupTest {
     }
 
     private Path backup(final String filename, final XmldbURI collectionUri) throws IOException, XMLDBException, SAXException {
-        final Path backupFile = tempFolder.newFile(filename).toPath();
+        final Path backupFile = newFile(tempFolder, filename).toPath();
         final Backup backup = new Backup(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD,
                 backupFile,
                 collectionUri,
@@ -217,8 +215,7 @@ public class XMLDBBackupTest {
         colService.removeCollection(collectionUri.lastSegment().toString());
     }
 
-    @Before
-    public void before() throws XMLDBException {
+    private void setUpTestCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService colService = root.getService(CollectionManagementService.class);
         final Collection testCollection = colService.createCollection(COLLECTION_NAME);
@@ -261,5 +258,17 @@ public class XMLDBBackupTest {
         @Override
         public void error(final String message) {
         }
+    }
+
+    private static File newFile(File parent, String child) throws IOException {
+        File result = new File(parent, child);
+        result.createNewFile();
+        return result;
+    }
+
+    public void initXMLDBBackupTest(String apiName, String baseUri, boolean deduplicateBlobs) {
+        this.apiName = apiName;
+        this.baseUri = baseUri;
+        this.deduplicateBlobs = deduplicateBlobs;
     }
 }

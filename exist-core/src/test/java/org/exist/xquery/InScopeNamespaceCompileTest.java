@@ -32,9 +32,8 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 
 import antlr.collections.AST;
-
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Verifies that namespaces registered on the static context via
@@ -48,7 +47,7 @@ import org.junit.Test;
  */
 public class InScopeNamespaceCompileTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     private static final String ATOMIC_NS = "http://www.w3.org/XQueryTest";

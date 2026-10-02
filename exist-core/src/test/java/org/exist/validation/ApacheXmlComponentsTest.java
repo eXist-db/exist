@@ -22,9 +22,9 @@
 
 package org.exist.validation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Class for testing XML Parser and XML Transformer configuration.
@@ -40,7 +40,7 @@ public class ApacheXmlComponentsTest {
 
         final boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
 
-        assertTrue(xmlLibMessage.toString(), validParser);
+        assertTrue(validParser, xmlLibMessage.toString());
     }
 
     @Test
@@ -49,6 +49,6 @@ public class ApacheXmlComponentsTest {
 
         final boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
 
-        assertTrue(xmlLibMessage.toString(), validTransformer);
+        assertTrue(validTransformer, xmlLibMessage.toString());
     }
 }

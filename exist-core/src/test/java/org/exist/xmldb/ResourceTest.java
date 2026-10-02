@@ -42,11 +42,18 @@ import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,28 +70,27 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.Assert.*;
-
 public class ResourceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testResource";
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareXmldbJoinTransactions() {
         System.setProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true");
     }
 
-    @AfterClass
+    @AfterAll
     public static void releaseXmldbJoinTransactions() {
         System.clearProperty(PROP_JOIN_TRANSACTION_IF_PRESENT);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void readNonExistingResource() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -92,7 +98,7 @@ public class ResourceTest {
         assertNull(nonExistent);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void readResource() throws XMLDBException, IOException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -114,7 +120,7 @@ public class ResourceTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testRecursiveSerailization() throws XMLDBException, IOException {
         final String xmlDoc1 = "<test><title>Title</title>"
                 + "<import href=\"recurseSer2.xml\"></import>"
@@ -153,7 +159,7 @@ public class ResourceTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void readDOM() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -168,7 +174,7 @@ public class ResourceTest {
             elem = document.getDocumentElement();
         }
         assertNotNull(elem);
-        assertEquals(elem.getNodeName(), "PLAY");
+        assertEquals("PLAY", elem.getNodeName());
         NodeList children = elem.getChildNodes();
         Node node;
         for(int i = 0; i < children.getLength(); i++) {
@@ -181,7 +187,7 @@ public class ResourceTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void setContentAsSAX() throws SAXException, ParserConfigurationException, XMLDBException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -203,7 +209,7 @@ public class ResourceTest {
         testCollection.storeResource(doc);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void setContentAsDOM() throws XMLDBException, ParserConfigurationException, SAXException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -221,7 +227,7 @@ public class ResourceTest {
         testCollection.storeResource(doc);
     }
     
-    @Test
+    @org.junit.jupiter.api.Test
     public void setContentAsSourceXml() throws XMLDBException, SAXException, IOException, XpathException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -246,7 +252,7 @@ public class ResourceTest {
         assertXpathEvaluatesTo("Paragraph4", "/test/para[2]/text()", newDocXml);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void setContentAsSourceBinary() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -263,7 +269,7 @@ public class ResourceTest {
         assertArrayEquals(bin, newDocBin);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void queryRemoveResource() throws XMLDBException {
         Resource resource = null;
         
@@ -286,7 +292,7 @@ public class ResourceTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void addRemove() throws XMLDBException {
 
         final String resourceID = "addremove.xml";
@@ -304,7 +310,7 @@ public class ResourceTest {
         assertNull(locatedAfterRemove);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void addRemoveAddWithIds() throws XMLDBException {
 
         final String resourceID = "removeWithIds;1.xml";
@@ -372,7 +378,7 @@ public class ResourceTest {
                     + "</test>";
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws XMLDBException, IOException {
         //create a test collection
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
@@ -394,7 +400,7 @@ public class ResourceTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         //delete the test collection
         CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);

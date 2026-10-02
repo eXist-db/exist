@@ -32,37 +32,35 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
-
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test proper configuration of triggers in collection.xconf, in particular if there's
  * only a configuration for the parent collection, but not the child. The trigger should
  * be created with the correct base collection.
  */
-@RunWith(Parameterized.class)
 public class TriggerConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(TriggerConfigTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "/db/triggers" },
@@ -91,12 +89,11 @@ public class TriggerConfigTest {
 		+ "</test>";
 
     private final static String BASE_URI = "xmldb:exist://";
-
-    @Parameter
     public String testCollection;
 
-    @Test
-    public void storeDocument() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void storeDocument(String testCollection) {
+        initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = root.getService(IndexQueryService.class);
@@ -115,8 +112,9 @@ public class TriggerConfigTest {
         }
     }
 
-    @Test
-    public void removeDocument() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void removeDocument(String testCollection) {
+        initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = root.getService(IndexQueryService.class);
@@ -138,8 +136,9 @@ public class TriggerConfigTest {
         }
     }
 
-    @Test
-    public void removeTriggers() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void removeTriggers(String testCollection) {
+        initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = root.getService(IndexQueryService.class);
@@ -151,15 +150,16 @@ public class TriggerConfigTest {
 
             XQueryService qs = root.getService(XQueryService.class);
             ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT'] else ()");
-            assertEquals("No trigger should have fired. Configuration was removed", 0, result.getSize());
+            assertEquals(0, result.getSize(), "No trigger should have fired. Configuration was removed");
         } catch (XMLDBException e) {
             LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
 
-    @Test
-    public void updateTriggers() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void updateTriggers(String testCollection) {
+        initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = root.getService(IndexQueryService.class);
@@ -184,7 +184,7 @@ public class TriggerConfigTest {
         }
     }
 
-    @After
+    @AfterEach
     public void cleanDB() {
         try {
             Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
@@ -207,7 +207,7 @@ public class TriggerConfigTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void initDB() throws XMLDBException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
@@ -218,8 +218,12 @@ public class TriggerConfigTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
+    }
+
+    public void initTriggerConfigTest(String testCollection) {
+        this.testCollection = testCollection;
     }
 }

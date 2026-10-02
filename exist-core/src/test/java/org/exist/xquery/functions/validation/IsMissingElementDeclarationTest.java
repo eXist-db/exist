@@ -23,7 +23,7 @@ package org.exist.xquery.functions.validation;
 
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.ValidationReport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.XMLReader;
@@ -34,8 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pins {@link Jaxp#isMissingElementDeclaration(ValidationReport)}'s match against the bundled
@@ -106,12 +106,12 @@ public class IsMissingElementDeclarationTest {
                 xmlReader.parse(instanceSource);
             }
 
-            assertFalse("a conforming XSD-1.1-only instance must fail under the XSD-1.0-only " +
+            assertFalse(report.isValid(), "a conforming XSD-1.1-only instance must fail under the XSD-1.0-only " +
                     "dynamic-discovery pipeline (that's the whole reason the retry/up-front XSD " +
-                    "1.1 pipeline exists)", report.isValid());
-            assertTrue("Jaxp.isMissingElementDeclaration() must recognize the real cvc-elt.1.a " +
-                    "message this Xerces version actually produces for an XSD-1.1-only schema",
-                    Jaxp.isMissingElementDeclaration(report));
+                    "1.1 pipeline exists)");
+            assertTrue(Jaxp.isMissingElementDeclaration(report),
+                    "Jaxp.isMissingElementDeclaration() must recognize the real cvc-elt.1.a " +
+                    "message this Xerces version actually produces for an XSD-1.1-only schema");
         } finally {
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));
             Files.deleteIfExists(tempDir.resolve("instance.xml"));

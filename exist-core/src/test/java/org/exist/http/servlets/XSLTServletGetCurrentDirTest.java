@@ -25,13 +25,13 @@ import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * {@code XSLTServlet#getCurrentDir(HttpServletRequest)} had the same defect shape as
@@ -64,6 +64,6 @@ public class XSLTServletGetCurrentDirTest {
 
         // Before the fix: Path.of(null) throws NullPointerException.
         final Object currentDir = servlet.getCurrentDir(request);
-        assertNull("no directory can be resolved when the container has no real path", currentDir);
+        assertNull(currentDir, "no directory can be resolved when the container has no real path");
     }
 }

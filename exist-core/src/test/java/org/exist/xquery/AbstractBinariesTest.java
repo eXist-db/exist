@@ -24,9 +24,11 @@ package org.exist.xquery;
 
 import com.evolvedbinary.j8fu.function.Consumer2E;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,9 +36,9 @@ import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for accessing binaries using XQuery via various APIs.
@@ -51,15 +53,15 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     protected static final String BIN1_FILENAME = "1.bin";
     protected static final byte[] BIN1_CONTENT = "1234567890".getBytes(UTF_8);
 
-    @ClassRule
-    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public static File temporaryFolder;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         storeBinaryFile(TEST_COLLECTION.append(BIN1_FILENAME), BIN1_CONTENT);
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws Exception {
         removeCollection(TEST_COLLECTION);
     }
@@ -67,7 +69,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-1}
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void serializeBinary() throws Exception {
         final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
                 "util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')";
@@ -90,7 +92,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     protected Path createTemporaryFile(final byte[] data) throws IOException {
-        final Path f = temporaryFolder.newFile().toPath();
+        final Path f = File.createTempFile("junit", null, temporaryFolder).toPath();
         Files.write(f, data);
         return f;
     }

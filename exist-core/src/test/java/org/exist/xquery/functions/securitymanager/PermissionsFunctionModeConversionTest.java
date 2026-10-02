@@ -21,21 +21,23 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.easymock.EasyMock;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class PermissionsFunctionModeConversionTest {
 
     /**
@@ -56,16 +58,18 @@ public class PermissionsFunctionModeConversionTest {
        assertEquals("0750", result.itemAt(0).toString());
     }
     
-    @Test(expected=XPathException.class)
-    public void modeToOctal_invalidMode() throws XPathException {
-       final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
+    @Test
+    public void modeToOctalInvalidMode() {
+        assertThrows(XPathException.class, () -> {
+            final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
-       final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
-       Sequence args[] = {
-           new StringValue("invalid")
-       };
-       
-       permissionsFunctions.eval(args, null);
+            final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
+            Sequence args[] = {
+                    new StringValue("invalid")
+            };
+
+            permissionsFunctions.eval(args, null);
+        });
     }
     
     @Test

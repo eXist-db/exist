@@ -27,15 +27,15 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.Constants.ArithmeticOperator;
 import org.exist.xquery.value.*;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class OpNumericTest {
 
     private static DBBroker broker;
@@ -48,10 +48,10 @@ public class OpNumericTest {
 	private static IntegerValue integer;
 	private static DecimalValue decimal;
 
-	@ClassRule
+	@RegisterExtension
 	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
@@ -67,7 +67,7 @@ public class OpNumericTest {
 		decimal = new DecimalValue("1.5");
 	}
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws EXistException {
         if(broker != null) {
 			broker.close();
@@ -89,202 +89,202 @@ public class OpNumericTest {
         assertEquals(result, r.itemAt(0).getStringValue());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idiv1() throws XPathException {
         assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(3), new DecimalValue("1.5"));
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idiv2() throws XPathException {
 		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(4), new IntegerValue(2));
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idiv3() throws XPathException {
 		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(5), new IntegerValue(2));
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idivReturnType1() {
 		assertEquals(Type.INTEGER, buildOp(ArithmeticOperator.DIVISION_INTEGER, integer, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idivReturnType2() {
 		assertEquals(Type.INTEGER, buildOp(ArithmeticOperator.DIVISION_INTEGER, integer, decimal).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void idivReturnType3() {
 		assertEquals(Type.INTEGER, buildOp(ArithmeticOperator.DIVISION_INTEGER, decimal, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType1() {
 		assertEquals(Type.DECIMAL, buildOp(ArithmeticOperator.DIVISION, integer, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType2() {
 		assertEquals(Type.DECIMAL, buildOp(ArithmeticOperator.DIVISION, integer, decimal).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType3() {
 		assertEquals(Type.DECIMAL, buildOp(ArithmeticOperator.DIVISION, decimal, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType4() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.DIVISION, dtDuration, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType5() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(ArithmeticOperator.DIVISION, ymDuration, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType6() {
 		assertEquals(Type.DECIMAL, buildOp(ArithmeticOperator.DIVISION, dtDuration, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void divReturnType7() {
 		assertEquals(Type.DECIMAL, buildOp(ArithmeticOperator.DIVISION, ymDuration, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void multReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.MULTIPLICATION, dtDuration, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void multReturnType2() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.MULTIPLICATION, integer, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void multReturnType3() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(ArithmeticOperator.MULTIPLICATION, ymDuration, integer).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void multReturnType4() {
         assertEquals(Type.YEAR_MONTH_DURATION, buildOp(ArithmeticOperator.MULTIPLICATION, integer, ymDuration).returnsType());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.ADDITION, dtDuration, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType2() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(ArithmeticOperator.ADDITION, ymDuration, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType3() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.ADDITION, date, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType4() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.ADDITION, dateTime, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType5() {
 		assertEquals(Type.TIME, buildOp(ArithmeticOperator.ADDITION, time, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType6() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.ADDITION, dtDuration, date).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType7() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.ADDITION, dtDuration, dateTime).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType8() {
 		assertEquals(Type.TIME, buildOp(ArithmeticOperator.ADDITION, dtDuration, time).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType9() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.ADDITION, date, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType10() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.ADDITION, dateTime, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType11() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.ADDITION, ymDuration, date).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void plusReturnType12() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.ADDITION, ymDuration, dateTime).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.SUBTRACTION, dtDuration, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType2() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(ArithmeticOperator.SUBTRACTION, ymDuration, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType3() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.SUBTRACTION, dateTime, dateTime).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType4() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.SUBTRACTION, date, date).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType5() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(ArithmeticOperator.SUBTRACTION, time, time).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType6() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.SUBTRACTION, dateTime, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType7() {
 		assertEquals(Type.DATE_TIME, buildOp(ArithmeticOperator.SUBTRACTION, dateTime, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType8() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.SUBTRACTION, date, ymDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType9() {
 		assertEquals(Type.DATE, buildOp(ArithmeticOperator.SUBTRACTION, date, dtDuration).returnsType());
 	}
 
-    @Test
+    @org.junit.jupiter.api.Test
 	public void minusReturnType10() {
 		assertEquals(Type.TIME, buildOp(ArithmeticOperator.SUBTRACTION, time, dtDuration).returnsType());
 	}
 
-	@Test
+	@org.junit.jupiter.api.Test
 	public void derivesFrom() {
 		// AT is ET
 		assertTrue(OpNumeric.derivesFrom(Type.DECIMAL, Type.DECIMAL));

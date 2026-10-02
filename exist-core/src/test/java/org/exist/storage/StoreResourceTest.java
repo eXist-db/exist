@@ -43,7 +43,10 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.hamcrest.Matcher;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -52,13 +55,14 @@ import org.xmlunit.diff.Diff;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.storage.DBBroker.PreserveType.NO_PRESERVE;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 public class StoreResourceTest {
 
     private static final String USER1_NAME = "user1";
@@ -73,13 +77,13 @@ public class StoreResourceTest {
     private static final int USER1_DOC1_MODE = 0664;  // rw-rw--r--
     private static final int USER1_BIN_DOC1_MODE = 0664;  // rw-rw--r--
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
     /**
      * As group member replace {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void replaceXmlAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_DOC1);
@@ -91,7 +95,7 @@ public class StoreResourceTest {
     /**
      * As group member replace {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
@@ -127,7 +131,7 @@ public class StoreResourceTest {
                         .withTest(Input.fromString(docXml))
                         .build();
 
-                assertFalse(diff.toString(), diff.hasDifferences());
+                assertFalse(diff.hasDifferences(), diff.toString());
             } finally {
                 broker.returnSerializer(serializer);
             }
@@ -184,16 +188,16 @@ public class StoreResourceTest {
 
             final DocumentImpl doc = lockedDoc.getDocument();
             final Permission permission = doc.getPermissions();
-            assertEquals("Owner value was not expected", expectedOwner, permission.getOwner().getName());
-            assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
-            assertEquals("Mode value was not expected", expectedMode, permission.getMode());
+            assertEquals(expectedOwner, permission.getOwner().getName(), "Owner value was not expected");
+            assertEquals(expectedGroup, permission.getGroup().getName(), "Group value was not expected");
+            assertEquals(expectedMode, permission.getMode(), "Mode value was not expected");
 
             assertThat("Created value is not correct", doc.getCreated(), expectedCreated);
             assertThat("LastModified value is not correct", doc.getLastModified(), expectedLastModified);
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
@@ -211,7 +215,7 @@ public class StoreResourceTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
 
@@ -235,7 +239,7 @@ public class StoreResourceTest {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -248,7 +252,7 @@ public class StoreResourceTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();

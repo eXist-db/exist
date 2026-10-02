@@ -23,14 +23,15 @@ package org.exist.xquery;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.junit.jupiter.api.Test;
 import org.easymock.EasyMock;
-import org.junit.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link XQueryWatchDog}.
@@ -84,16 +85,20 @@ public class XQueryWatchDogTest {
         assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
     }
 
-    @Test(expected = XPathException.class)
+    @Test
     public void setTimeoutFromOptionNonNumericThrowsException() throws Exception {
-        final XQueryWatchDog watchDog = createWatchDog();
-        watchDog.setTimeoutFromOption(timeoutOption("abc"));
+        assertThrows(XPathException.class, () -> {
+            final XQueryWatchDog watchDog = createWatchDog();
+            watchDog.setTimeoutFromOption(timeoutOption("abc"));
+        });
     }
 
-    @Test(expected = XPathException.class)
+    @Test
     public void setTimeoutFromOptionMultipleValuesThrowsException() throws Exception {
-        final XQueryWatchDog watchDog = createWatchDog();
-        watchDog.setTimeoutFromOption(timeoutOption("100 200"));
+        assertThrows(XPathException.class, () -> {
+            final XQueryWatchDog watchDog = createWatchDog();
+            watchDog.setTimeoutFromOption(timeoutOption("100 200"));
+        });
     }
 
     @Test

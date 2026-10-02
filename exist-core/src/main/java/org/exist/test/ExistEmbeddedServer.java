@@ -32,7 +32,11 @@ import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -45,9 +49,13 @@ import java.util.Properties;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
 /**
- * Exist embedded Server Rule for JUnit.
+ * Exist embedded Server JUnit 5 extension.
+ * <p>
+ * Use with {@code @RegisterExtension static final} for class-level (once per test
+ * class) lifecycle, or {@code @RegisterExtension final} (non-static) for per-test
+ * lifecycle.
  */
-public class ExistEmbeddedServer extends ExternalResource {
+public class ExistEmbeddedServer implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private static final Logger LOG =  LogManager.getLogger(ExistEmbeddedServer.class);
 
@@ -60,6 +68,7 @@ public class ExistEmbeddedServer extends ExternalResource {
 
     private String prevAutoDeploy = "off";
     private BrokerPool pool = null;
+    private boolean startedByBeforeAll = false;
 
     public ExistEmbeddedServer() {
         this(null, null, null, false, false);
@@ -106,10 +115,25 @@ public class ExistEmbeddedServer extends ExternalResource {
         Thread.currentThread().setContextClassLoader(cl);
     }
 
-    @Override
-    protected void before() throws Throwable {
+    protected void before() throws DatabaseConfigurationException, EXistException, IOException {
         startDb();
-        super.before();
+    }
+
+    @Override
+    public void beforeAll(final ExtensionContext context) throws Exception {
+        before();
+        this.startedByBeforeAll = true;
+    }
+
+    @Override
+    public void beforeEach(final ExtensionContext context) throws Exception {
+        // a static @RegisterExtension field gets beforeEach/afterEach invoked per-test in
+        // addition to beforeAll/afterAll once per class (JUnit5 does not distinguish by the
+        // field's static/instance modifier, only by which callback interfaces are implemented),
+        // so skip here if the class-level lifecycle already started the server.
+        if (!startedByBeforeAll) {
+            before();
+        }
     }
 
     public void startDb() throws DatabaseConfigurationException, EXistException, IOException {
@@ -177,11 +201,21 @@ public class ExistEmbeddedServer extends ExternalResource {
         }
     }
 
-    @Override
     protected void after() {
         stopDb();
+    }
 
-        super.after();
+    @Override
+    public void afterAll(final ExtensionContext context) {
+        after();
+        this.startedByBeforeAll = false;
+    }
+
+    @Override
+    public void afterEach(final ExtensionContext context) {
+        if (!startedByBeforeAll) {
+            after();
+        }
     }
 
     public void stopDb() {

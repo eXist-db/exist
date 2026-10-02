@@ -45,11 +45,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
-
+import org.junit.jupiter.api.Disabled;
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests the indexer.
@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
  */
 public class Indexer3Test {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML1 =
@@ -395,157 +395,157 @@ public class Indexer3Test {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML1, store_and_retrieve_suppress_type("none", XML1, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML2, store_and_retrieve_suppress_type("none", XML2, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML3, store_and_retrieve_suppress_type("none", XML3, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML4, store_and_retrieve_suppress_type("none", XML4, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML5, store_and_retrieve_suppress_type("none", XML5, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none6() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML6, store_and_retrieve_suppress_type("none", XML6, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_none7() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML7, store_and_retrieve_suppress_type("none", XML7, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML1, store_and_retrieve_suppress_type("leading", XML1, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML2, store_and_retrieve_suppress_type("leading", XML2, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML3, store_and_retrieve_suppress_type("leading", XML3, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML4, store_and_retrieve_suppress_type("leading", XML4, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML5, store_and_retrieve_suppress_type("leading", XML5, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading6() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML6, store_and_retrieve_suppress_type("leading", XML6, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_leading7() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML7, store_and_retrieve_suppress_type("leading", XML7, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML1, store_and_retrieve_suppress_type("trailing", XML1, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML2, store_and_retrieve_suppress_type("trailing", XML2, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML3, store_and_retrieve_suppress_type("trailing", XML3, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML4, store_and_retrieve_suppress_type("trailing", XML4, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML5, store_and_retrieve_suppress_type("trailing", XML5, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing6() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML6, store_and_retrieve_suppress_type("trailing", XML6, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_trailing7() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML7, store_and_retrieve_suppress_type("trailing", XML7, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML1, store_and_retrieve_suppress_type("both", XML1, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML2, store_and_retrieve_suppress_type("both", XML2, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML3, store_and_retrieve_suppress_type("both", XML3, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML4, store_and_retrieve_suppress_type("both", XML4, XQUERY));
     }
 
-    @Ignore("Whitespace suppress-type not implemented, see #6156")
-    @Test
+    @Disabled("Whitespace suppress-type not implemented, see #6156")
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML5, store_and_retrieve_suppress_type("both", XML5, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both6() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML6, store_and_retrieve_suppress_type("both", XML6, XQUERY));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void retrieve_suppress_ws_both7() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML7, store_and_retrieve_suppress_type("both", XML7, XQUERY));
     }

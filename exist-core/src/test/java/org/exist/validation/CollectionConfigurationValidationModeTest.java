@@ -24,17 +24,20 @@ package org.exist.validation;
 
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Switch validation mode yes/no/auto per collection and validate.
@@ -43,7 +46,7 @@ import static org.junit.Assert.*;
  */
 public class CollectionConfigurationValidationModeTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String VALID_XSD =
@@ -144,12 +147,12 @@ public class CollectionConfigurationValidationModeTest {
             </collection>
             """;
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
         existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
@@ -166,13 +169,13 @@ public class CollectionConfigurationValidationModeTest {
     private void storeCollectionXconf(final String collection, final String document) throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + DEFAULT_COLLECTION_CONFIG_FILE + "\", " + document + ")");
         final String r = (String) result.getResource(0).getContent();
-        assertEquals("Store xconf", collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r);
+        assertEquals(collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r, "Store xconf");
     }
 
     private void storeDocument(final String collection, final String name, final String document) throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
         final String r = (String) result.getResource(0).getContent();
-        assertEquals("Store doc", collection + "/" + name, r);
+        assertEquals(collection + "/" + name, r, "Store doc");
     }
 
     @Test

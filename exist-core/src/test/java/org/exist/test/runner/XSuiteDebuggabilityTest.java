@@ -27,6 +27,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
+import org.opentest4j.AssertionFailedError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ class XSuiteDebuggabilityTest {
     void failureFromAssertionIncludesTestFileInStackTraceOrMessage() {
         final List<Failure> failures = runSuiteAndCollectFailures();
         final Failure assertionFailure = failures.stream()
-            .filter(f -> f.getException() instanceof org.junit.ComparisonFailure)
+            .filter(f -> f.getException() instanceof AssertionFailedError)
             .findFirst()
             .orElse(null);
         assertNotNull(assertionFailure, "expected one assertion failure (ComparisonFailure) from failing-both.xqm; collected failures: " + failures.size()

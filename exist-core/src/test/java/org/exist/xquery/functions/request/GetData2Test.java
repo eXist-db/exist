@@ -31,7 +31,7 @@ import org.exist.util.XMLReaderPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -40,7 +40,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unlike {@link GetDataTest} this test tries to test the code of

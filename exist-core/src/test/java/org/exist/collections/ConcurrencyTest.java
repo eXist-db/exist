@@ -25,12 +25,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXPathQueryService;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -43,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test concurrent access to collections.
@@ -51,7 +51,7 @@ public class ConcurrencyTest {
 
     private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
@@ -145,7 +145,7 @@ public class ConcurrencyTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void initDB() throws XMLDBException {
         final CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         try (final Collection test = mgmt.createCollection("test")) {
@@ -163,7 +163,7 @@ public class ConcurrencyTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final CollectionManagementService cmgr = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cmgr.removeCollection("test");

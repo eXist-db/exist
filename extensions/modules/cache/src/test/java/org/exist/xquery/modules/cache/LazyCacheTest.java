@@ -29,14 +29,15 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.file.Path;
-
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class LazyCacheTest {
 
     private static Path getLazyConfig() {
@@ -47,7 +48,7 @@ public class LazyCacheTest {
         }
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test

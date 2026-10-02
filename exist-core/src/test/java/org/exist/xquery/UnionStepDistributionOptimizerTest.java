@@ -25,10 +25,9 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.util.ExpressionDumper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceSet;
@@ -37,11 +36,11 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the union-step distribution rewrite in
@@ -87,11 +86,11 @@ public class UnionStepDistributionOptimizerTest {
             </library>
             """;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
@@ -101,7 +100,7 @@ public class UnionStepDistributionOptimizerTest {
         coll.storeResource(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
@@ -117,8 +116,8 @@ public class UnionStepDistributionOptimizerTest {
         final String docPrefix = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') return ";
         final ResourceSet baseline = svc.query(NO_OPTIMIZE + docPrefix + body);
         final ResourceSet optimized = svc.query(OPTIMIZE + docPrefix + body);
-        assertEquals("Optimized result should match baseline for: " + body,
-                baseline.getSize(), optimized.getSize());
+        assertEquals(baseline.getSize(),
+                optimized.getSize(), "Optimized result should match baseline for: " + body);
     }
 
     /** Shorthand: assert both forms return the given count. */
@@ -127,8 +126,8 @@ public class UnionStepDistributionOptimizerTest {
         final String docPrefix = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') return ";
         final ResourceSet baseline = svc.query(NO_OPTIMIZE + docPrefix + body);
         final ResourceSet optimized = svc.query(OPTIMIZE + docPrefix + body);
-        assertEquals("Baseline (no opt) size: " + body, expected, baseline.getSize());
-        assertEquals("Optimized size: " + body, expected, optimized.getSize());
+        assertEquals(expected, baseline.getSize(), "Baseline (no opt) size: " + body);
+        assertEquals(expected, optimized.getSize(), "Optimized size: " + body);
     }
 
     /** {@code //(book | journal)} should match all books and journals. */
@@ -314,7 +313,7 @@ public class UnionStepDistributionOptimizerTest {
         final XQueryService svc = server.getRoot().getService(XQueryService.class);
         final ResourceSet baseline = svc.query(NO_OPTIMIZE + body);
         final ResourceSet optimized = svc.query(OPTIMIZE + body);
-        assertEquals("Optimized must match baseline", baseline.getSize(), optimized.getSize());
+        assertEquals(baseline.getSize(), optimized.getSize(), "Optimized must match baseline");
     }
 
     /**
@@ -368,14 +367,14 @@ public class UnionStepDistributionOptimizerTest {
         final PathExpr root = (PathExpr) compiled;
 
         final Union union = findUnion(root);
-        assertNotNull("After optimization, the parens form must contain a Union -- "
-                + "distribution did not fire. AST: " + ExpressionDumperHelper.dump(root), union);
+        assertNotNull(union, "After optimization, the parens form must contain a Union -- "
+                + "distribution did not fire. AST: " + ExpressionDumperHelper.dump(root));
 
         // Distribution must produce one branch per original union arm
         // (binary case here: 2 branches).
         final java.util.List<PathExpr> branches = flattenUnionBranches(union);
-        assertEquals("Distributed Union should have 2 branches (one per original union arm). AST: "
-                + ExpressionDumperHelper.dump(union), 2, branches.size());
+        assertEquals(2, branches.size(), "Distributed Union should have 2 branches (one per original union arm). AST: "
+                + ExpressionDumperHelper.dump(union));
 
         // Each branch must contain the original element name (book or journal).
         // The branch's last LocationStep is whichever was the original union
@@ -399,12 +398,12 @@ public class UnionStepDistributionOptimizerTest {
                 }
             }
         }
-        assertTrue("Distributed branch must reference 'book': " + branchNames
-                        + " | AST: " + ExpressionDumperHelper.dump(union),
-                branchNames.contains("book"));
-        assertTrue("Distributed branch must reference 'journal': " + branchNames
-                        + " | AST: " + ExpressionDumperHelper.dump(union),
-                branchNames.contains("journal"));
+        assertTrue(branchNames.contains("book"),
+                "Distributed branch must reference 'book': " + branchNames
+                        + " | AST: " + ExpressionDumperHelper.dump(union));
+        assertTrue(branchNames.contains("journal"),
+                "Distributed branch must reference 'journal': " + branchNames
+                        + " | AST: " + ExpressionDumperHelper.dump(union));
 
         // Each distributed branch must include the outer prefix steps (the
         // VarRef $d and the descendant-or-self step from `//`). A regression
@@ -412,16 +411,16 @@ public class UnionStepDistributionOptimizerTest {
         // Union but the branches would only have the original union arm,
         // and the result set would change.
         for (final PathExpr branch : branches) {
-            assertTrue("Distributed branch is missing outer prefix steps "
+            assertTrue(branch.getLength() >= 2,
+                    "Distributed branch is missing outer prefix steps "
                             + "(expected at least 2 steps: VarRef + LocationStep + the branch arm). "
                             + "Branch length=" + branch.getLength()
-                            + " | AST: " + ExpressionDumperHelper.dump(branch),
-                    branch.getLength() >= 2);
-            assertTrue("First step of distributed branch must be the outer VarRef $d "
+                            + " | AST: " + ExpressionDumperHelper.dump(branch));
+            assertTrue(branch.getExpression(0) instanceof VariableReference
+                            || branch.getExpression(0) instanceof LocationStep,
+                    "First step of distributed branch must be the outer VarRef $d "
                             + "or a fused descendant LocationStep -- not the inner union arm directly. "
-                            + "Branch AST: " + ExpressionDumperHelper.dump(branch),
-                    branch.getExpression(0) instanceof VariableReference
-                            || branch.getExpression(0) instanceof LocationStep);
+                            + "Branch AST: " + ExpressionDumperHelper.dump(branch));
         }
     }
 
@@ -537,7 +536,7 @@ public class UnionStepDistributionOptimizerTest {
                     + "at \"xmldb:exist:///db/" + moduleCollName + "/cb.xqm\";"
                     + "cb:filter()";
             final ResourceSet result = svc.query(caller);
-            assertEquals("cb:filter() should return one <nsx:name> element", 1, result.getSize());
+            assertEquals(1, result.getSize(), "cb:filter() should return one <nsx:name> element");
         } finally {
             if (modColl != null) {
                 modColl.close();

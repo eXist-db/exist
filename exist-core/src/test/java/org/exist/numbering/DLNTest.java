@@ -21,16 +21,18 @@
  */
 package org.exist.numbering;
 
-import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Random;
 
-import static org.junit.Assert.*;
-
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DLNTest {
 
     private class TestItem implements Comparable<TestItem> {
@@ -71,7 +73,7 @@ public class DLNTest {
         Arrays.sort(items);
 
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
-            assertEquals("Item: " + i, items[i].id, ((DLN)items[i].dln).getLevelId(0));
+            assertEquals(items[i].id, ((DLN)items[i].dln).getLevelId(0), "Item: " + i);
             if (i + 1 < ITEMS_TO_TEST)
                 assertTrue(items[i].id <= items[i + 1].id);
             if (i > 0)
@@ -167,7 +169,7 @@ public class DLNTest {
 
     	assertTrue(descendant.isChildOf(root));
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.2.5.6");
     	assertTrue(descendant.isDescendantOf(root));
@@ -190,7 +192,7 @@ public class DLNTest {
 
     	assertTrue(descendant.isChildOf(root));
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.2.5.6.7777.1");
     	assertTrue(descendant.isDescendantOf(root));
@@ -217,7 +219,7 @@ public class DLNTest {
     	descendant.incrementLevelId();
     	assertEquals("1.3.1/1.2", descendant.toString());
 
-    	assertTrue(root.equals(descendant.getParentId()));
+        assertEquals(root, descendant.getParentId());
     	
     	descendant = new DLN("1.3.1/1.2.2");
     	assertFalse(descendant.isChildOf(root));

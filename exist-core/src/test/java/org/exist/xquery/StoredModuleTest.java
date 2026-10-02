@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.rules.TemporaryFolder;
 import org.xmldb.api.base.Resource;
 
 import java.io.*;
@@ -31,7 +30,7 @@ import java.nio.file.Path;
 
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
-
+import org.junit.jupiter.api.io.TempDir;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -40,9 +39,11 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.junit.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author wolf
@@ -50,11 +51,11 @@ import static org.junit.Assert.*;
  */
 public class StoredModuleTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @ClassRule
-    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public static File temporaryFolder;
 
     private final static String MODULE =
             """
@@ -89,7 +90,7 @@ public class StoredModuleTest {
         collection.close();
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testQuery() throws Exception {
 
         Collection c = createCollection("test");
@@ -112,7 +113,7 @@ public class StoredModuleTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testModule1() throws Exception {
         String collectionName = "module1";
         String module = "module namespace mod1 = 'urn:module1';" +
@@ -168,27 +169,29 @@ public class StoredModuleTest {
 //    "concat('hi from module 5: ',$mod5:testvar)" +
 //    "};";
 
-    @Test(expected=XMLDBException.class)
-    public void testModule23_missingRelativeContext() throws XMLDBException {
-        String collection2Name = "module2";
-        String collection3Name = "module2/module3";
+    @org.junit.jupiter.api.Test
+    public void testModule23MissingRelativeContext() {
+        assertThrows(XMLDBException.class, () -> {
+            String collection2Name = "module2";
+            String collection3Name = "module2/module3";
 
-        String query = "import module namespace mod2 = 'urn:module2' " +
-                "at  'module2/module2.xqm'; " +
-                "mod2:showMe()";
+            String query = "import module namespace mod2 = 'urn:module2' " +
+                    "at  'module2/module2.xqm'; " +
+                    "mod2:showMe()";
 
-        Collection c2 = createCollection(collection2Name);
-        writeModule(c2, "module2.xqm", module2);
+            Collection c2 = createCollection(collection2Name);
+            writeModule(c2, "module2.xqm", module2);
 
-        Collection c3 = createCollection(collection3Name);
-        writeModule(c3, "module3.xqm", module3a);
+            Collection c3 = createCollection(collection3Name);
+            writeModule(c3, "module3.xqm", module3a);
 
-        ResourceSet rs = existEmbeddedServer.executeQuery(query);
-        String r = (String) rs.getResource(0).getContent();
-        assertEquals("hi from module 3a", r);
+            ResourceSet rs = existEmbeddedServer.executeQuery(query);
+            String r = (String) rs.getResource(0).getContent();
+            assertEquals("hi from module 3a", r);
+        });
     }
 
-    @Test 
+    @org.junit.jupiter.api.Test 
     public void testRelativeImportDb() throws Exception {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
@@ -220,12 +223,12 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @Test 
+    @org.junit.jupiter.api.Test 
     public void testRelativeImportFile() throws Exception {
         final String collection2Name = "module2";
         final String collection3Name = "module3";
 
-        final Path tempDir = temporaryFolder.newFolder("testRelativeImportFile").toPath();
+        final Path tempDir = newFolder(temporaryFolder, "testRelativeImportFile").toPath();
         final Path c2 = tempDir.resolve(collection2Name);
         Files.createDirectories(c2);
         // note c3 is a sub-directory of c2, i.e. module2/module3
@@ -256,7 +259,7 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testCircularImports() throws XMLDBException {
         
         final String index_module = 
@@ -308,7 +311,7 @@ public class StoredModuleTest {
         existEmbeddedServer.executeQuery(index_module);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testLocalVariableDeclarationCallsLocalFunction() throws XMLDBException {
         final String index_module =
             "xquery version \"1.0\";" +
@@ -332,7 +335,7 @@ public class StoredModuleTest {
         existEmbeddedServer.executeQuery(index_module);
     }
     
-    @Test
+    @org.junit.jupiter.api.Test
     public void dyanmicModuleImport_for_same_namespace() throws XMLDBException {
         
         Collection testHome = createCollection("testDynamicModuleImport");
@@ -403,5 +406,22 @@ public class StoredModuleTest {
         try (final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path))) {
             writer.print(module);
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

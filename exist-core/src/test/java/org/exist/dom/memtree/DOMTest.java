@@ -21,6 +21,8 @@
  */
 package org.exist.dom.memtree;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -29,12 +31,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.serializer.DOMSerializer;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,14 +44,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author wolf
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DOMTest {
 
     private final static String XML =
@@ -155,19 +154,19 @@ public class DOMTest {
         DocumentImpl doc = builder.getDocument();
 
         Node nXQuery = doc.getFirstChild();
-        assertTrue(nXQuery.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue("xquery".equals(nXQuery.getLocalName()));
+        assertEquals(Node.ELEMENT_NODE, nXQuery.getNodeType());
+        assertEquals("xquery", nXQuery.getLocalName());
 
         Node nBuiltinModules = nXQuery.getFirstChild();
-        assertTrue(nBuiltinModules.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue("builtin-modules".equals(nBuiltinModules.getLocalName()));
+        assertEquals(Node.ELEMENT_NODE, nBuiltinModules.getNodeType());
+        assertEquals("builtin-modules", nBuiltinModules.getLocalName());
 
         NodeList nlModules = nBuiltinModules.getChildNodes();
         for (int i = 0; i < nlModules.getLength(); i++) {
             Node nModule = nlModules.item(i);
 
-            assertTrue(nModule.getNodeType() == Node.ELEMENT_NODE);
-            assertTrue("module".equals(nModule.getLocalName()));
+            assertEquals(Node.ELEMENT_NODE, nModule.getNodeType());
+            assertEquals("module", nModule.getLocalName());
 
             Element eModule = (Element) nModule;
             NodeList nlParameter = eModule.getElementsByTagName("parameter");

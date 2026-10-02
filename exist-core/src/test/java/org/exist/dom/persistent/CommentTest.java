@@ -34,21 +34,20 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Diff;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.Optional;
-
-import static org.junit.Assert.assertFalse;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class CommentTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -78,7 +77,7 @@ public class CommentTest {
                         .checkForSimilar()
                         .build();
 
-                assertFalse(diff.toString(), diff.hasDifferences());
+                assertFalse(diff.hasDifferences(), diff.toString());
             }
 
             transaction.commit();

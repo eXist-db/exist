@@ -22,28 +22,27 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class SpecialNamesTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private Collection testCollection;
     @SuppressWarnings("unused")
 	private String query;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
@@ -52,7 +51,7 @@ public class SpecialNamesTest {
         assertNotNull(testCollection);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
@@ -83,9 +82,9 @@ public class SpecialNamesTest {
             String query, int expected, String message) throws XMLDBException {
         ResourceSet result = service.queryResource(resource, query);
         if(message == null) {
-            assertEquals(query, expected, result.getSize());
+            assertEquals(expected, result.getSize(), query);
         } else {
-            assertEquals(message, expected, result.getSize());
+            assertEquals(expected, result.getSize(), message);
         }
         return result;
     }
@@ -97,7 +96,7 @@ public class SpecialNamesTest {
         if (message == null) {
             assertEquals(expected, result.getSize());
         } else {
-            assertEquals(message, expected, result.getSize());
+            assertEquals(expected, result.getSize(), message);
         }
         return result;
     }

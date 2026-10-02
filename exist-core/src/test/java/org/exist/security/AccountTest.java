@@ -29,8 +29,8 @@ import static org.easymock.EasyMock.verify;
 import org.exist.Database;
 import org.exist.config.Configuration;
 import org.exist.security.internal.SecurityManagerImpl;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -38,7 +38,7 @@ import org.junit.Test;
  */
 public class AccountTest {
 
-    @Ignore("Mock API changed — EasyMock constructor mismatch")
+    @Disabled("Mock API changed — EasyMock constructor mismatch")
     @Test
     public void testGroupFallback() throws NoSuchMethodException, PermissionDeniedException {
 

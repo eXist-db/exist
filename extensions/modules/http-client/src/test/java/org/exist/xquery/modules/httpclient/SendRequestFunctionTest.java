@@ -26,10 +26,9 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.exist.xmldb.EXistResource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -46,9 +45,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Comprehensive tests for the EXPath HTTP Client {@code http:send-request} function.
@@ -58,7 +61,7 @@ import static org.junit.Assert.*;
  */
 public class SendRequestFunctionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -68,63 +71,54 @@ public class SendRequestFunctionTest {
     private static HttpServer httpServer;
     private static int port;
 
-    @BeforeClass
+    @BeforeAll
     public static void startHttpServer() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress(0), 0);
         port = httpServer.getAddress().getPort();
 
         // Plain text endpoint
-        httpServer.createContext("/text", exchange -> {
-            sendResponse(exchange, 200, "text/plain", "Hello, World!");
-        });
+        httpServer.createContext("/text", exchange ->
+            sendResponse(exchange, 200, "text/plain", "Hello, World!"));
 
         // JSON endpoint — THE KEY TEST: must return xs:string, not base64Binary
-        httpServer.createContext("/json", exchange -> {
+        httpServer.createContext("/json", exchange ->
             sendResponse(exchange, 200, "application/json",
-                    "{\"name\":\"eXist\",\"version\":7}");
-        });
+                    "{\"name\":\"eXist\",\"version\":7}"));
 
         // JSON with charset
-        httpServer.createContext("/json-charset", exchange -> {
+        httpServer.createContext("/json-charset", exchange ->
             sendResponse(exchange, 200, "application/json; charset=utf-8",
-                    "{\"key\":\"value\"}");
-        });
+                    "{\"key\":\"value\"}"));
 
         // JSON subtype (application/vnd.api+json)
-        httpServer.createContext("/json-subtype", exchange -> {
+        httpServer.createContext("/json-subtype", exchange ->
             sendResponse(exchange, 200, "application/vnd.api+json",
-                    "{\"data\":[]}");
-        });
+                    "{\"data\":[]}"));
 
         // XML endpoint
-        httpServer.createContext("/xml", exchange -> {
+        httpServer.createContext("/xml", exchange ->
             sendResponse(exchange, 200, "application/xml",
-                    "<?xml version=\"1.0\"?><root><item>test</item></root>");
-        });
+                    "<?xml version=\"1.0\"?><root><item>test</item></root>"));
 
         // text/xml endpoint
-        httpServer.createContext("/text-xml", exchange -> {
+        httpServer.createContext("/text-xml", exchange ->
             sendResponse(exchange, 200, "text/xml",
-                    "<doc><p>paragraph</p></doc>");
-        });
+                    "<doc><p>paragraph</p></doc>"));
 
         // XML subtype (application/atom+xml)
-        httpServer.createContext("/xml-subtype", exchange -> {
+        httpServer.createContext("/xml-subtype", exchange ->
             sendResponse(exchange, 200, "application/atom+xml",
-                    "<feed xmlns=\"http://www.w3.org/2005/Atom\"><title>Test</title></feed>");
-        });
+                    "<feed xmlns=\"http://www.w3.org/2005/Atom\"><title>Test</title></feed>"));
 
         // HTML endpoint
         // Non-well-formed HTML (unclosed <p>, void <br>, unclosed <li>) — not valid XML
-        httpServer.createContext("/malformed-html", exchange -> {
+        httpServer.createContext("/malformed-html", exchange ->
             sendResponse(exchange, 200, "text/html",
-                    "<html><body><p>Hello<br>World<ul><li>a<li>b</ul></body></html>");
-        });
+                    "<html><body><p>Hello<br>World<ul><li>a<li>b</ul></body></html>"));
 
-        httpServer.createContext("/html", exchange -> {
+        httpServer.createContext("/html", exchange ->
             sendResponse(exchange, 200, "text/html",
-                    "<html><head><title>Test</title></head><body><p>Hello</p></body></html>");
-        });
+                    "<html><head><title>Test</title></head><body><p>Hello</p></body></html>"));
 
         // Binary endpoint (image/png — 1x1 transparent pixel)
         httpServer.createContext("/binary", exchange -> {
@@ -138,14 +132,12 @@ public class SendRequestFunctionTest {
         });
 
         // CSS endpoint (text/css — should return string)
-        httpServer.createContext("/css", exchange -> {
-            sendResponse(exchange, 200, "text/css", "body { color: red; }");
-        });
+        httpServer.createContext("/css", exchange ->
+            sendResponse(exchange, 200, "text/css", "body { color: red; }"));
 
         // JavaScript endpoint (application/javascript — should return string)
-        httpServer.createContext("/js", exchange -> {
-            sendResponse(exchange, 200, "application/javascript", "console.log('hi');");
-        });
+        httpServer.createContext("/js", exchange ->
+            sendResponse(exchange, 200, "application/javascript", "console.log('hi');"));
 
         // Echo endpoint — returns the request method, headers, and body
         httpServer.createContext("/echo", exchange -> {
@@ -192,14 +184,12 @@ public class SendRequestFunctionTest {
         });
 
         // 404 endpoint
-        httpServer.createContext("/not-found", exchange -> {
-            sendResponse(exchange, 404, "text/plain", "Not Found");
-        });
+        httpServer.createContext("/not-found", exchange ->
+            sendResponse(exchange, 404, "text/plain", "Not Found"));
 
         // 500 endpoint
-        httpServer.createContext("/server-error", exchange -> {
-            sendResponse(exchange, 500, "text/plain", "Internal Server Error");
-        });
+        httpServer.createContext("/server-error", exchange ->
+            sendResponse(exchange, 500, "text/plain", "Internal Server Error"));
 
         registerAuthEndpoints();
 
@@ -235,10 +225,9 @@ public class SendRequestFunctionTest {
         });
 
         // UTF-8 text response
-        httpServer.createContext("/utf8", exchange -> {
+        httpServer.createContext("/utf8", exchange ->
             sendResponse(exchange, 200, "text/plain; charset=utf-8",
-                    "Héllo Wörld! 日本語テスト");
-        });
+                    "Héllo Wörld! 日本語テスト"));
 
         // gzip endpoint
         httpServer.createContext("/gzip", exchange -> {
@@ -307,7 +296,7 @@ public class SendRequestFunctionTest {
         httpServer.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopHttpServer() {
         if (httpServer != null) {
             httpServer.stop(0);
@@ -456,8 +445,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return count($response)");
-        assertEquals("GET text should return 2 items (response element + body)",
-                "2", result.getResource(0).getContent().toString());
+        assertEquals("2",
+                result.getResource(0).getContent().toString(), "GET text should return 2 items (response element + body)");
     }
 
     @Test
@@ -468,8 +457,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("Response status should be 200",
-                "200", result.getResource(0).getContent().toString());
+        assertEquals("200",
+                result.getResource(0).getContent().toString(), "Response status should be 200");
     }
 
     @Test
@@ -480,8 +469,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return string-length($response[1]/@message) > 0");
-        assertEquals("Response should have a non-empty message attribute",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Response should have a non-empty message attribute");
     }
 
     @Test
@@ -492,9 +481,9 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return namespace-uri($response[1])");
-        assertEquals("Response element should be in EXPath HTTP namespace",
-                "http://expath.org/ns/http-client",
-                result.getResource(0).getContent().toString());
+        assertEquals("http://expath.org/ns/http-client",
+                result.getResource(0).getContent().toString(),
+                "Response element should be in EXPath HTTP namespace");
     }
 
     @Test
@@ -505,8 +494,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return local-name($response[1])");
-        assertEquals("First item should be 'response' element",
-                "response", result.getResource(0).getContent().toString());
+        assertEquals("response",
+                result.getResource(0).getContent().toString(), "First item should be 'response' element");
     }
 
     @Test
@@ -517,8 +506,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return count($response[1]/http:header) > 0");
-        assertEquals("Response should contain header elements",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Response should contain header elements");
     }
 
     @Test
@@ -530,8 +519,8 @@ public class SendRequestFunctionTest {
                 ")\n" +
                 "let $h := $response[1]/http:header[1]\n" +
                 "return exists($h/@name) and exists($h/@value)");
-        assertEquals("Headers should have name and value attributes",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Headers should have name and value attributes");
     }
 
     @Test
@@ -542,8 +531,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return $response[1]/http:header[lower-case(@name) = 'content-type']/@value/string()");
-        assertTrue("Content-Type header should contain text/plain",
-                result.getResource(0).getContent().toString().contains("text/plain"));
+        assertTrue(result.getResource(0).getContent().toString().contains("text/plain"),
+                "Content-Type header should contain text/plain");
     }
 
     @Test
@@ -554,8 +543,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return count($response[1]/http:body)");
-        assertEquals("Response element should contain a body descriptor",
-                "1", result.getResource(0).getContent().toString());
+        assertEquals("1",
+                result.getResource(0).getContent().toString(), "Response element should contain a body descriptor");
     }
 
     @Test
@@ -566,8 +555,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return $response[1]/http:body/@media-type/string()");
-        assertTrue("Body descriptor should have media-type",
-                result.getResource(0).getContent().toString().contains("text/plain"));
+        assertTrue(result.getResource(0).getContent().toString().contains("text/plain"),
+                "Body descriptor should have media-type");
     }
 
     // ========================================================================
@@ -582,8 +571,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("Plain text response body should be the string content",
-                "Hello, World!", result.getResource(0).getContent().toString());
+        assertEquals("Hello, World!",
+                result.getResource(0).getContent().toString(), "Plain text response body should be the string content");
     }
 
     @Test
@@ -594,8 +583,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("text/plain response should be xs:string",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "text/plain response should be xs:string");
     }
 
     @Test
@@ -606,9 +595,9 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/json'/>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("JSON response body should be the string content",
-                "{\"name\":\"eXist\",\"version\":7}",
-                result.getResource(0).getContent().toString());
+        assertEquals("{\"name\":\"eXist\",\"version\":7}",
+                result.getResource(0).getContent().toString(),
+                "JSON response body should be the string content");
     }
 
     @Test
@@ -619,8 +608,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/json'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("application/json response should be xs:string, NOT base64Binary",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "application/json response should be xs:string, NOT base64Binary");
     }
 
     @Test
@@ -631,8 +620,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/json-charset'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("JSON with charset should still be xs:string",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "JSON with charset should still be xs:string");
     }
 
     @Test
@@ -643,8 +632,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/json-subtype'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("application/vnd.api+json should be xs:string",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "application/vnd.api+json should be xs:string");
     }
 
     @Test
@@ -655,8 +644,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/json'/>" +
                 ")\n" +
                 "return parse-json($response[2])?name");
-        assertEquals("JSON response should be directly parseable without binary-to-string",
-                "eXist", result.getResource(0).getContent().toString());
+        assertEquals("eXist",
+                result.getResource(0).getContent().toString(), "JSON response should be directly parseable without binary-to-string");
     }
 
     @Test
@@ -667,8 +656,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/xml'/>" +
                 ")\n" +
                 "return $response[2]//item/string()");
-        assertEquals("XML response should be parsed as document node",
-                "test", result.getResource(0).getContent().toString());
+        assertEquals("test",
+                result.getResource(0).getContent().toString(), "XML response should be parsed as document node");
     }
 
     @Test
@@ -679,8 +668,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/xml'/>" +
                 ")\n" +
                 "return $response[2] instance of document-node()");
-        assertEquals("application/xml response should be document-node()",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "application/xml response should be document-node()");
     }
 
     @Test
@@ -691,8 +680,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/text-xml'/>" +
                 ")\n" +
                 "return $response[2]//p/string()");
-        assertEquals("text/xml response should be parsed as XML",
-                "paragraph", result.getResource(0).getContent().toString());
+        assertEquals("paragraph",
+                result.getResource(0).getContent().toString(), "text/xml response should be parsed as XML");
     }
 
     @Test
@@ -703,8 +692,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/xml-subtype'/>" +
                 ")\n" +
                 "return $response[2] instance of document-node()");
-        assertEquals("application/atom+xml should be parsed as XML",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "application/atom+xml should be parsed as XML");
     }
 
     @Test
@@ -715,8 +704,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/html'/>" +
                 ")\n" +
                 "return $response[2] instance of document-node()");
-        assertEquals("text/html response should be parsed as document",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "text/html response should be parsed as document");
     }
 
     /**
@@ -731,8 +720,8 @@ public class SendRequestFunctionTest {
                 return $doc instance of document-node()
                   and exists($doc//*[local-name() = 'body'])
                   and count($doc//*[local-name() = 'li']) = 2""".formatted(baseUrl()));
-        assertEquals("non-well-formed text/html should be parsed to a navigable document",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "non-well-formed text/html should be parsed to a navigable document");
     }
 
     @Test
@@ -743,8 +732,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/binary'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:base64Binary");
-        assertEquals("image/png response should be xs:base64Binary",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "image/png response should be xs:base64Binary");
     }
 
     @Test
@@ -755,8 +744,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/css'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("text/css response should be xs:string",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "text/css response should be xs:string");
     }
 
     @Test
@@ -767,8 +756,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/js'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("application/javascript response should be xs:string",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "application/javascript response should be xs:string");
     }
 
     // ========================================================================
@@ -783,8 +772,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/echo'/>" +
                 ")\n" +
                 "return parse-json($response[2])?method");
-        assertEquals("GET method should be sent",
-                "GET", result.getResource(0).getContent().toString());
+        assertEquals("GET",
+                result.getResource(0).getContent().toString(), "GET method should be sent");
     }
 
     @Test
@@ -797,8 +786,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return parse-json($response[2])?method");
-        assertEquals("POST method should be sent",
-                "POST", result.getResource(0).getContent().toString());
+        assertEquals("POST",
+                result.getResource(0).getContent().toString(), "POST method should be sent");
     }
 
     @Test
@@ -811,8 +800,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return contains(parse-json($response[2])?body, 'hello server')");
-        assertEquals("POST body should be transmitted",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "POST body should be transmitted");
     }
 
     /**
@@ -830,8 +819,8 @@ public class SendRequestFunctionTest {
                         <http:body media-type='text/plain' src='/db/http-src-body.txt'/>
                       </http:request>)
                     return parse-json($response[2])?body""".formatted(baseUrl()));
-            assertEquals("http:body/@src content should be sent as the request body",
-                    "abracadabra", result.getResource(0).getContent().toString());
+            assertEquals("abracadabra",
+                    result.getResource(0).getContent().toString(), "http:body/@src content should be sent as the request body");
         } finally {
             removeResource("http-src-body.txt");
         }
@@ -893,8 +882,8 @@ public class SendRequestFunctionTest {
                     <http:body media-type='application/octet-stream' method='binary'>aGVsbG8=</http:body>
                   </http:request>)
                 return parse-json($response[2])?body""".formatted(baseUrl()));
-        assertEquals("method='binary' should base64-decode the body to raw bytes",
-                "hello", result.getResource(0).getContent().toString());
+        assertEquals("hello",
+                result.getResource(0).getContent().toString(), "method='binary' should base64-decode the body to raw bytes");
     }
 
     /**
@@ -908,8 +897,8 @@ public class SendRequestFunctionTest {
                     <http:body media-type='application/octet-stream' method='hex'>6869</http:body>
                   </http:request>)
                 return parse-json($response[2])?body""".formatted(baseUrl()));
-        assertEquals("method='hex' should hex-decode the body to raw bytes",
-                "hi", result.getResource(0).getContent().toString());
+        assertEquals("hi",
+                result.getResource(0).getContent().toString(), "method='hex' should hex-decode the body to raw bytes");
     }
 
     /**
@@ -924,8 +913,8 @@ public class SendRequestFunctionTest {
                     <http:body media-type='text/plain' method='text'><a>x</a></http:body>
                   </http:request>)
                 return parse-json($response[2])?body""".formatted(baseUrl()));
-        assertEquals("method='text' should send the element's string value, not its markup",
-                "x", result.getResource(0).getContent().toString());
+        assertEquals("x",
+                result.getResource(0).getContent().toString(), "method='text' should send the element's string value, not its markup");
     }
 
     @Test
@@ -938,8 +927,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return parse-json($response[2])?method");
-        assertEquals("PUT method should be sent",
-                "PUT", result.getResource(0).getContent().toString());
+        assertEquals("PUT",
+                result.getResource(0).getContent().toString(), "PUT method should be sent");
     }
 
     @Test
@@ -950,8 +939,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='DELETE' href='" + baseUrl() + "/echo'/>" +
                 ")\n" +
                 "return parse-json($response[2])?method");
-        assertEquals("DELETE method should be sent",
-                "DELETE", result.getResource(0).getContent().toString());
+        assertEquals("DELETE",
+                result.getResource(0).getContent().toString(), "DELETE method should be sent");
     }
 
     @Test
@@ -964,7 +953,7 @@ public class SendRequestFunctionTest {
                 "return ($response[1]/@status/string(), count($response))");
         // HEAD returns status but no body — sequence should have 1 item (response only)
         final String status = result.getResource(0).getContent().toString();
-        assertEquals("HEAD should return 200 status", "200", status);
+        assertEquals("200", status, "HEAD should return 200 status");
     }
 
     @Test
@@ -975,8 +964,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='HEAD' href='" + baseUrl() + "/head-test'/>" +
                 ")\n" +
                 "return count($response)");
-        assertEquals("HEAD should return only response element, no body",
-                "1", result.getResource(0).getContent().toString());
+        assertEquals("1",
+                result.getResource(0).getContent().toString(), "HEAD should return only response element, no body");
     }
 
     @Test
@@ -987,8 +976,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='OPTIONS' href='" + baseUrl() + "/options'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("OPTIONS should return 200",
-                "200", result.getResource(0).getContent().toString());
+        assertEquals("200",
+                result.getResource(0).getContent().toString(), "OPTIONS should return 200");
     }
 
     @Test
@@ -1001,8 +990,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return parse-json($response[2])?patched");
-        assertEquals("PATCH method should work",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "PATCH method should work");
     }
 
     // ========================================================================
@@ -1019,8 +1008,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return parse-json($response[2])?custom");
-        assertEquals("Custom header should be sent",
-                "test-value", result.getResource(0).getContent().toString());
+        assertEquals("test-value",
+                result.getResource(0).getContent().toString(), "Custom header should be sent");
     }
 
     @Test
@@ -1033,8 +1022,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return parse-json($response[2])?accept");
-        assertEquals("Accept header should be sent",
-                "application/json", result.getResource(0).getContent().toString());
+        assertEquals("application/json",
+                result.getResource(0).getContent().toString(), "Accept header should be sent");
     }
 
     @Test
@@ -1047,8 +1036,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return contains(parse-json($response[2])?contentType, 'application/json')");
-        assertEquals("Content-Type should be set from body media-type",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Content-Type should be set from body media-type");
     }
 
     // ========================================================================
@@ -1063,8 +1052,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET'/>, '" + baseUrl() + "/text'" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("2-arg form with href should work",
-                "Hello, World!", result.getResource(0).getContent().toString());
+        assertEquals("Hello, World!",
+                result.getResource(0).getContent().toString(), "2-arg form with href should work");
     }
 
     @Test
@@ -1076,8 +1065,8 @@ public class SendRequestFunctionTest {
                 "  '" + baseUrl() + "/text'" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("href parameter should override href attribute",
-                "Hello, World!", result.getResource(0).getContent().toString());
+        assertEquals("Hello, World!",
+                result.getResource(0).getContent().toString(), "href parameter should override href attribute");
     }
 
     @Test
@@ -1092,8 +1081,8 @@ public class SendRequestFunctionTest {
                 "  'external body content'" +
                 ")\n" +
                 "return contains(parse-json($response[2])?body, 'external body content')");
-        assertEquals("3-arg form with external body should work",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "3-arg form with external body should work");
     }
 
     // ========================================================================
@@ -1108,8 +1097,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/not-found'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("404 status should be reported",
-                "404", result.getResource(0).getContent().toString());
+        assertEquals("404",
+                result.getResource(0).getContent().toString(), "404 status should be reported");
     }
 
     @Test
@@ -1120,8 +1109,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/server-error'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("500 status should be reported",
-                "500", result.getResource(0).getContent().toString());
+        assertEquals("500",
+                result.getResource(0).getContent().toString(), "500 status should be reported");
     }
 
     @Test
@@ -1132,8 +1121,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/empty'/>" +
                 ")\n" +
                 "return ($response[1]/@status/string(), count($response))");
-        assertEquals("204 No Content status should be reported",
-                "204", result.getResource(0).getContent().toString());
+        assertEquals("204",
+                result.getResource(0).getContent().toString(), "204 No Content status should be reported");
     }
 
     @Test
@@ -1144,8 +1133,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/empty'/>" +
                 ")\n" +
                 "return count($response)");
-        assertEquals("204 response should have no body",
-                "1", result.getResource(0).getContent().toString());
+        assertEquals("1",
+                result.getResource(0).getContent().toString(), "204 response should have no body");
     }
 
     @Test
@@ -1156,8 +1145,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/not-found'/>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("Error responses should still return body content",
-                "Not Found", result.getResource(0).getContent().toString());
+        assertEquals("Not Found",
+                result.getResource(0).getContent().toString(), "Error responses should still return body content");
     }
 
     // ========================================================================
@@ -1173,8 +1162,8 @@ public class SendRequestFunctionTest {
                 "    follow-redirect='true'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("Following redirect should give final 200 status",
-                "200", result.getResource(0).getContent().toString());
+        assertEquals("200",
+                result.getResource(0).getContent().toString(), "Following redirect should give final 200 status");
     }
 
     @Test
@@ -1186,8 +1175,8 @@ public class SendRequestFunctionTest {
                 "    follow-redirect='true'/>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("Following redirect should return final response body",
-                "Hello, World!", result.getResource(0).getContent().toString());
+        assertEquals("Hello, World!",
+                result.getResource(0).getContent().toString(), "Following redirect should return final response body");
     }
 
     @Test
@@ -1199,8 +1188,8 @@ public class SendRequestFunctionTest {
                 "    follow-redirect='false'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("Not following redirect should return 302",
-                "302", result.getResource(0).getContent().toString());
+        assertEquals("302",
+                result.getResource(0).getContent().toString(), "Not following redirect should return 302");
     }
 
     @Test
@@ -1212,8 +1201,8 @@ public class SendRequestFunctionTest {
                 "    follow-redirect='true'/>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("Chain of redirects should be followed",
-                "Hello, World!", result.getResource(0).getContent().toString());
+        assertEquals("Hello, World!",
+                result.getResource(0).getContent().toString(), "Chain of redirects should be followed");
     }
 
     @Test
@@ -1224,8 +1213,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/redirect'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("Default follow-redirect should be true (follow redirects)",
-                "200", result.getResource(0).getContent().toString());
+        assertEquals("200",
+                result.getResource(0).getContent().toString(), "Default follow-redirect should be true (follow redirects)");
     }
 
     // ========================================================================
@@ -1243,8 +1232,8 @@ public class SendRequestFunctionTest {
                     ")");
             fail("Timeout should raise an error");
         } catch (XMLDBException e) {
-            assertTrue("Timeout error should mention HC006 or timeout: " + e.getMessage(),
-                    e.getMessage().contains("HC006") || e.getMessage().toLowerCase().contains("timeout"));
+            assertTrue(e.getMessage().contains("HC006") || e.getMessage().toLowerCase().contains("timeout"),
+                    "Timeout error should mention HC006 or timeout: " + e.getMessage());
         }
     }
 
@@ -1262,8 +1251,8 @@ public class SendRequestFunctionTest {
                 "    send-authorization='true'/>" +
                 ")\n" +
                 "return parse-json($response[2])?authenticated");
-        assertEquals("Basic auth should authenticate successfully",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Basic auth should authenticate successfully");
     }
 
     @Test
@@ -1276,8 +1265,8 @@ public class SendRequestFunctionTest {
                 "    send-authorization='true'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("Wrong credentials should get 401",
-                "401", result.getResource(0).getContent().toString());
+        assertEquals("401",
+                result.getResource(0).getContent().toString(), "Wrong credentials should get 401");
     }
 
     @Test
@@ -1288,8 +1277,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/auth/basic'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("No auth should get 401",
-                "401", result.getResource(0).getContent().toString());
+        assertEquals("401",
+                result.getResource(0).getContent().toString(), "No auth should get 401");
     }
 
     @Test
@@ -1303,8 +1292,8 @@ public class SendRequestFunctionTest {
                 "    username='testuser' password='testpass' auth-method='basic'/>" +
                 ")\n" +
                 "return parse-json($response[2])?authenticated");
-        assertEquals("Basic challenge-response should authenticate without send-authorization",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Basic challenge-response should authenticate without send-authorization");
     }
 
     @Test
@@ -1318,8 +1307,8 @@ public class SendRequestFunctionTest {
                 "    username='testuser' password='testpass' auth-method='digest'/>" +
                 ")\n" +
                 "return parse-json($response[2])?authenticated");
-        assertEquals("Digest challenge-response should authenticate",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Digest challenge-response should authenticate");
     }
 
     // ========================================================================
@@ -1335,8 +1324,8 @@ public class SendRequestFunctionTest {
                 "    status-only='true'/>" +
                 ")\n" +
                 "return count($response)");
-        assertEquals("status-only should return only response element",
-                "1", result.getResource(0).getContent().toString());
+        assertEquals("1",
+                result.getResource(0).getContent().toString(), "status-only should return only response element");
     }
 
     @Test
@@ -1348,8 +1337,8 @@ public class SendRequestFunctionTest {
                 "    status-only='true'/>" +
                 ")\n" +
                 "return $response[1]/@status/string()");
-        assertEquals("status-only should still report status",
-                "200", result.getResource(0).getContent().toString());
+        assertEquals("200",
+                result.getResource(0).getContent().toString(), "status-only should still report status");
     }
 
     @Test
@@ -1362,8 +1351,8 @@ public class SendRequestFunctionTest {
                 "    override-media-type='application/json'/>" +
                 ")\n" +
                 "return $response[2] instance of xs:string");
-        assertEquals("override-media-type should control response type classification",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "override-media-type should control response type classification");
     }
 
     // ========================================================================
@@ -1380,8 +1369,8 @@ public class SendRequestFunctionTest {
                 "return count($response[1]/http:header[lower-case(@name) = 'set-cookie'])");
         // Multiple Set-Cookie headers should be preserved
         final int count = Integer.parseInt(result.getResource(0).getContent().toString());
-        assertTrue("Multiple headers with same name should be preserved, got: " + count,
-                count >= 2);
+        assertTrue(count >= 2,
+                "Multiple headers with same name should be preserved, got: " + count);
     }
 
     // ========================================================================
@@ -1396,8 +1385,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/utf8'/>" +
                 ")\n" +
                 "return contains($response[2], 'Héllo')");
-        assertEquals("UTF-8 response should preserve characters",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "UTF-8 response should preserve characters");
     }
 
     @Test
@@ -1408,8 +1397,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/utf8'/>" +
                 ")\n" +
                 "return contains($response[2], '日本語')");
-        assertEquals("UTF-8 response should preserve Japanese characters",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "UTF-8 response should preserve Japanese characters");
     }
 
     // ========================================================================
@@ -1426,8 +1415,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return $response[2]");
-        assertEquals("gzip response should be transparently decompressed",
-                "gzipped content", result.getResource(0).getContent().toString());
+        assertEquals("gzipped content",
+                result.getResource(0).getContent().toString(), "gzip response should be transparently decompressed");
     }
 
     // ========================================================================
@@ -1444,8 +1433,8 @@ public class SendRequestFunctionTest {
                 "  </http:request>" +
                 ")\n" +
                 "return contains(parse-json($response[2])?body, '<item>1</item>')");
-        assertEquals("XML body should be serialized and sent",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "XML body should be serialized and sent");
     }
 
     // ========================================================================
@@ -1463,7 +1452,7 @@ public class SendRequestFunctionTest {
             fail("Invalid URI should raise an error");
         } catch (XMLDBException e) {
             // Expected — should get HC001 or similar error
-            assertNotNull("Error should have a message", e.getMessage());
+            assertNotNull(e.getMessage(), "Error should have a message");
         }
     }
 
@@ -1478,10 +1467,10 @@ public class SendRequestFunctionTest {
                     ")");
             fail("Connection refused should raise an error");
         } catch (XMLDBException e) {
-            assertTrue("Error should mention HC001 or connection: " + e.getMessage(),
-                    e.getMessage().contains("HC001") ||
+            assertTrue(e.getMessage().contains("HC001") ||
                     e.getMessage().toLowerCase().contains("connect") ||
-                    e.getMessage().toLowerCase().contains("refused"));
+                    e.getMessage().toLowerCase().contains("refused"),
+                    "Error should mention HC001 or connection: " + e.getMessage());
         }
     }
 
@@ -1498,8 +1487,8 @@ public class SendRequestFunctionTest {
                 "} catch expath-err:HC001 {\n" +
                 "  'caught-HC001'\n" +
                 "}");
-        assertEquals("Connection error must be catchable as expath-err:HC001 (#4256)",
-                "caught-HC001", result.getResource(0).getContent().toString());
+        assertEquals("caught-HC001",
+                result.getResource(0).getContent().toString(), "Connection error must be catchable as expath-err:HC001 (#4256)");
     }
 
     @Test
@@ -1512,7 +1501,7 @@ public class SendRequestFunctionTest {
                     ")");
             fail("Missing href should raise an error");
         } catch (XMLDBException e) {
-            assertNotNull("Missing href should produce an error", e.getMessage());
+            assertNotNull(e.getMessage(), "Missing href should produce an error");
         }
     }
 
@@ -1526,7 +1515,7 @@ public class SendRequestFunctionTest {
                     ")");
             fail("Missing method should raise an error");
         } catch (XMLDBException e) {
-            assertNotNull("Missing method should produce an error", e.getMessage());
+            assertNotNull(e.getMessage(), "Missing method should produce an error");
         }
     }
 
@@ -1542,8 +1531,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/large'/>" +
                 ")\n" +
                 "return string-length($response[2]) > 10000");
-        assertEquals("Large response should be fully returned",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Large response should be fully returned");
     }
 
     // ========================================================================
@@ -1561,8 +1550,8 @@ public class SendRequestFunctionTest {
                 ")\n" +
                 "return $response[2]");
         // Just verify we get the content — the key is no error is thrown
-        assertTrue("Response should contain JSON content",
-                result.getResource(0).getContent().toString().contains("eXist"));
+        assertTrue(result.getResource(0).getContent().toString().contains("eXist"),
+                "Response should contain JSON content");
     }
 
     // ========================================================================
@@ -1578,8 +1567,8 @@ public class SendRequestFunctionTest {
                 ")\n" +
                 "return count($response)");
         final int count = Integer.parseInt(result.getResource(0).getContent().toString());
-        assertTrue("Multipart response should return 3+ items (response + 2 parts), got: " + count,
-                count >= 3);
+        assertTrue(count >= 3,
+                "Multipart response should return 3+ items (response + 2 parts), got: " + count);
     }
 
     @Test
@@ -1590,8 +1579,8 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/multipart'/>" +
                 ")\n" +
                 "return exists($response[1]/http:multipart)");
-        assertEquals("Multipart response element should contain http:multipart",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "Multipart response element should contain http:multipart");
     }
 
     /**
@@ -1607,8 +1596,8 @@ public class SendRequestFunctionTest {
                 "return $r[2] instance of xs:base64Binary\n" +
                 "  and string($r[2]) = '//4='\n" +
                 "  and $r[3] = 'hello'");
-        assertEquals("binary multipart part should round-trip byte-for-byte",
-                "true", result.getResource(0).getContent().toString());
+        assertEquals("true",
+                result.getResource(0).getContent().toString(), "binary multipart part should round-trip byte-for-byte");
     }
 
     /**
@@ -1623,7 +1612,7 @@ public class SendRequestFunctionTest {
                 "  <http:request method='GET' href='" + baseUrl() + "/multipart-nested'/>)\n" +
                 "let $bodies := $r[position() gt 1]\n" +
                 "return string-join($bodies, ',')");
-        assertEquals("nested multipart should yield the leaf parts A,B,C",
-                "A,B,C", result.getResource(0).getContent().toString());
+        assertEquals("A,B,C",
+                result.getResource(0).getContent().toString(), "nested multipart should yield the leaf parts A,B,C");
     }
 }

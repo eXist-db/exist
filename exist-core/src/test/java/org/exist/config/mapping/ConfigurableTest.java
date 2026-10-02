@@ -21,16 +21,16 @@
  */
 package org.exist.config.mapping;
 
-import static org.junit.Assert.*;
-
 import java.io.InputStream;
 
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

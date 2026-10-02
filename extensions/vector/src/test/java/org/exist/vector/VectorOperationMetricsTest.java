@@ -24,18 +24,18 @@ package org.exist.vector;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.vector.VectorOperationMetrics;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VectorOperationMetricsTest {
+class VectorOperationMetricsTest {
 
-    @ClassRule
-    public static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
+    @RegisterExtension
+    static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
-    @After
+    @AfterEach
     public void resetMetrics() {
         final String instanceId = SERVER.getBrokerPool().getId();
         VectorMetrics.forInstance(instanceId).reset();

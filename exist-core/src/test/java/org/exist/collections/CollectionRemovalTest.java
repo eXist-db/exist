@@ -43,10 +43,14 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -59,6 +63,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
@@ -79,10 +84,10 @@ public class CollectionRemovalTest {
     private final static String QUERY1 = "/document/chapter";
     private final static String QUERY2 = "//chapter[title = 'Chapter 1']";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void failingRemoveCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
@@ -107,7 +112,7 @@ public class CollectionRemovalTest {
         doQuery(3);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void removeCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
@@ -169,7 +174,7 @@ public class CollectionRemovalTest {
         assertEquals(expected, result.getSize());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         // initialize XML:DB driver
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -177,7 +182,7 @@ public class CollectionRemovalTest {
         DatabaseManager.registerDatabase(database);
     }
 
-    @Before
+    @BeforeEach
     public void initDB() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -219,7 +224,7 @@ public class CollectionRemovalTest {
         }
     }
 
-    @After
+    @AfterEach
     public void clearDB() throws XMLDBException {
         final org.xmldb.api.base.Collection root =
                 DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);

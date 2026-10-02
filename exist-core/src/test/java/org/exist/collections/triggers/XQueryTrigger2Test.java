@@ -28,10 +28,9 @@ import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -40,9 +39,10 @@ import org.xmldb.api.modules.*;
 
 import javax.xml.transform.OutputKeys;
 import java.net.URISyntaxException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * This is a variant of XQueryTrigger test
@@ -54,7 +54,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class XQueryTrigger2Test {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
@@ -239,7 +239,7 @@ public class XQueryTrigger2Test {
 
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
-    @Before
+    @BeforeEach
     public void setup() throws XMLDBException {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION);
@@ -261,7 +261,7 @@ public class XQueryTrigger2Test {
         testCollection.storeResource(module);
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);

@@ -25,10 +25,10 @@ import java.net.URI;
 
 import org.exist.test.TestConstants;
 import org.exist.xquery.XPathException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -40,7 +40,7 @@ public class AnyURITest {
     public void fullyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME;
         AnyURIValue anyUri = new AnyURIValue(escaped);
-        assertEquals(anyUri.toXmldbURI(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test
@@ -54,12 +54,12 @@ public class AnyURITest {
     /**
      * TODO: change AnyURIValue to directly store the escaped value?
      */
-    @Ignore
+    @Disabled
     @Test
     public void partiallyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
         AnyURIValue anyUri = new AnyURIValue(escaped);
-        assertEquals(anyUri.toXmldbURI(), TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test

@@ -22,16 +22,17 @@
 package org.exist.xquery.functions.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Casey Jordan
@@ -44,10 +45,10 @@ public class ExpandTest {
     private static final String DOC3_CONTENT = "<doc3 foo=\"bar\">doc3</doc3>";
     private static final String DOC4_CONTENT = "<doc4 xmlns:x=\"http://x\" x:foo=\"bar\">doc4</doc4>";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws XMLDBException {
         final Collection expandTestCol = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "expand-test");
         ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc1.xml", DOC1_CONTENT.getBytes(UTF_8));

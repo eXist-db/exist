@@ -63,20 +63,23 @@ import org.exist.xquery.value.Sequence;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import org.locationtech.jts.geom.Geometry;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class GMLIndexTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     private static final String[] FILES = { "15385-SS7886-5i1.gml" };
@@ -109,7 +112,7 @@ public class GMLIndexTest {
 
     private Geometry currentGeometry;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, URISyntaxException, LockException {
         final BrokerPool pool = server.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -128,7 +131,7 @@ public class GMLIndexTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = server.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -143,7 +146,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void indexDocument() throws EXistException, CollectionConfigurationException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException, SQLException {
         final BrokerPool pool = server.getBrokerPool();
 
@@ -201,7 +204,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void checkIndex() throws EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -213,7 +216,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void scanIndex() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -237,7 +240,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void lowLevelSearch() throws EXistException, SAXException, ParserConfigurationException, SpatialIndexException, IOException {
     	final GMLHandlerJTS geometryHandler = new GeometryHandler();
         final GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler);
@@ -281,7 +284,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void highLevelSearch() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -371,7 +374,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void geometricProperties() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -719,7 +722,7 @@ public class GMLIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void gmlProducers() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -977,8 +980,8 @@ public class GMLIndexTest {
         }
     }    
 
-    @Ignore("Spatial Index does not currently work with XQuery Update / XUpdate")
-    @Test
+    @Disabled("Spatial Index does not currently work with XQuery Update / XUpdate")
+    @org.junit.jupiter.api.Test
     public void update() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

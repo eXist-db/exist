@@ -21,30 +21,31 @@
  */
 package org.exist.config;
 
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.InputStream;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ExistSAXParserFactory;
+import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class ConfigurableTest {
 
 	String config1 = "<instance xmlns='http://exist-db.org/Configuration' " +
@@ -88,8 +89,8 @@ public class ConfigurableTest {
         assertEquals("a", object.some);
         
         assertEquals(Integer.valueOf(5), object.someInteger);
-        assertTrue(object.simpleInteger == 5);
-        assertTrue(object.defaultInteger == 3);
+        assertEquals(5, object.simpleInteger);
+        assertEquals(3, object.defaultInteger);
 
         assertTrue(object.someboolean);
 
@@ -137,8 +138,8 @@ public class ConfigurableTest {
         assertEquals("a", object.some);
         
         assertEquals(Integer.valueOf(5), object.someInteger);
-        assertTrue(object.simpleInteger == 5);
-        assertTrue(object.defaultInteger == 3);
+        assertEquals(5, object.simpleInteger);
+        assertEquals(3, object.defaultInteger);
 
         assertTrue(object.someboolean);
 

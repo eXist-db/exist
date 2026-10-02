@@ -49,14 +49,15 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test recovery after a forced database corruption.
@@ -73,16 +74,16 @@ public class RecoveryTest {
         "  <para>Hello World!</para>" +
         "</test>";
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @After
+    @AfterEach
     public void cleanup() {
         // restore the flag in-case of a test failure
         BrokerPool.FORCE_CORRUPTION = false;
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
 
         // store, commit, and then remove without committing (remove should be undone during next recovery!)
@@ -164,20 +165,20 @@ public class RecoveryTest {
             try {
                 try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), LockMode.READ_LOCK)) {
 
-                    assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", lockedDoc);
+                    assertNotNull(lockedDoc, "Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null");
                     final String data = serializer.serialize(lockedDoc.getDocument());
                     assertNotNull(data);
                 }
 
                 try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), LockMode.READ_LOCK)) {
-                    assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", lockedDoc);
+                    assertNotNull(lockedDoc, "Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null");
                     final String data = serializer.serialize(lockedDoc.getDocument());
                     assertNotNull(data);
                 }
 
                 final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
                 try (final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(lastSampleName), LockMode.READ_LOCK)) {
-                    assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore", lockedDoc);
+                    assertNull(lockedDoc, "Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore");
                 }
 
                 final XQuery xquery = pool.getXQueryService();
@@ -194,7 +195,7 @@ public class RecoveryTest {
             }
             
             try(final LockedDocument lockedBinDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK)) {
-                assertNotNull("Binary document is null", lockedBinDoc);
+                assertNotNull(lockedBinDoc, "Binary document is null");
 
                 final BinaryDocument binDoc = (BinaryDocument)lockedBinDoc.getDocument();
                 try (final InputStream is = broker.getBinaryResource(binDoc)) {

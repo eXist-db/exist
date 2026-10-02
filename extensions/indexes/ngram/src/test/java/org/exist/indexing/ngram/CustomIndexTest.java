@@ -48,7 +48,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -60,9 +61,10 @@ import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * 
@@ -103,7 +105,7 @@ public class CustomIndexTest {
      * Remove nodes from different levels of the tree and check if the index is
      * correctly updated.
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateRemove() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -184,7 +186,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateInsert() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -301,7 +303,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateUpdate() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -362,7 +364,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateReplace() throws LockException, XPathException, PermissionDeniedException, SAXException, EXistException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -415,7 +417,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xupdateRename() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -450,7 +452,7 @@ public class CustomIndexTest {
         }
     }
  
-    @Test
+    @org.junit.jupiter.api.Test
     public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -481,7 +483,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -512,7 +514,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void query() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -542,7 +544,7 @@ public class CustomIndexTest {
      * ngram:contains() with a for-bound variable as the query string argument
      * must not raise XPTY0004.
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void ngramContainsWithForVariable() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -571,7 +573,7 @@ public class CustomIndexTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -644,10 +646,10 @@ public class CustomIndexTest {
         assertEquals(count, found);        
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
+    @BeforeEach
     public void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -673,7 +675,7 @@ public class CustomIndexTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = BrokerPool.getInstance();
 

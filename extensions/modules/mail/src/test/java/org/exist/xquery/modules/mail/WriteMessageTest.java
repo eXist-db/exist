@@ -35,7 +35,7 @@ package org.exist.xquery.modules.mail;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.commons.codec.binary.Base64;
 import org.exist.util.UUIDGenerator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,8 +47,8 @@ import java.util.List;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Write Message Tests.

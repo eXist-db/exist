@@ -39,14 +39,14 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *  0 byte binary files cannot be retrieved from database. This test
@@ -62,7 +62,7 @@ public class ResourceTest {
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @After
+    @AfterEach
     public void tearDown() {
         BrokerPool.stopAll(false);
     }
@@ -191,12 +191,12 @@ public class ResourceTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }

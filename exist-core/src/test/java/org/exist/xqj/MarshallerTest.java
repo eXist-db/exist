@@ -21,7 +21,8 @@
  */
 package org.exist.xqj;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -41,15 +42,13 @@ import org.exist.collections.Collection;
 import org.exist.xmldb.XmldbURI;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -59,6 +58,7 @@ import java.io.StringWriter;
 import java.io.StringReader;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Wolfgang Meier
@@ -71,7 +71,7 @@ import java.util.Properties;
  * @author Cherif YAYA
  *
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MarshallerTest {
 
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("xqjmarhallertest");
@@ -103,11 +103,11 @@ public class MarshallerTest {
             String serialized = writer.toString();
 
             Sequence seq = Marshaller.demarshall(broker, new StringReader(serialized));
-            assertEquals(seq.itemAt(0).getStringValue(), "foo");
-            assertEquals(seq.itemAt(1).getStringValue(), "2000");
-            assertEquals(seq.itemAt(2).getStringValue(), "1000");
-            assertEquals(seq.itemAt(3).getStringValue(), "false");
-            assertEquals(seq.itemAt(4).getStringValue(), "1000.1");
+            assertEquals("foo", seq.itemAt(0).getStringValue());
+            assertEquals("2000", seq.itemAt(1).getStringValue());
+            assertEquals("1000", seq.itemAt(2).getStringValue());
+            assertEquals("false", seq.itemAt(3).getStringValue());
+            assertEquals("1000.1", seq.itemAt(4).getStringValue());
         }
     }
     
@@ -147,10 +147,10 @@ public class MarshallerTest {
         assertEquals("test",n.getLocalName());
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -166,7 +166,7 @@ public class MarshallerTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();

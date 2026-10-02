@@ -21,38 +21,47 @@
  */
 package org.exist.xquery.value;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 
-	@Test(expected = XPathException.class)
-	public void create1() throws XPathException {
-		new YearMonthDurationValue("P1D");
-	}
+	@Test
+	public void create1() {
+        assertThrows(XPathException.class, () -> {
+            new YearMonthDurationValue("P1D");
+        });
+    }
 
-	@Test(expected = XPathException.class)
-	public void create2() throws XPathException {
-		new YearMonthDurationValue("PT1H");
-	}
+	@Test
+	public void create2() {
+        assertThrows(XPathException.class, () -> {
+            new YearMonthDurationValue("PT1H");
+        });
+    }
 
-	@Test(expected = XPathException.class)
-	public void create3() throws XPathException {
-		new YearMonthDurationValue("PT1M");
-	}
+	@Test
+	public void create3() {
+        assertThrows(XPathException.class, () -> {
+            new YearMonthDurationValue("PT1M");
+        });
+    }
 
-	@Test(expected = XPathException.class)
-	public void create4() throws XPathException {
-		new YearMonthDurationValue("PT1S");
-	}
+	@Test
+	public void create4() {
+        assertThrows(XPathException.class, () -> {
+            new YearMonthDurationValue("PT1S");
+        });
+    }
 
 	@Test
 	public void stringFormat1() throws XPathException {

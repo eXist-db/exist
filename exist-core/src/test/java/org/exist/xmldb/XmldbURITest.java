@@ -25,12 +25,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.exist.test.TestConstants;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class XmldbURITest {
 
@@ -509,35 +510,35 @@ public class XmldbURITest {
     public void xmldbURIEquals1() throws URISyntaxException {
         XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
         XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
-        assertTrue(xmldbURI1.equals(xmldbURI2));
+        assertEquals(xmldbURI1, xmldbURI2);
     }
 
     @Test
     public void xmldbURIEquals2() throws URISyntaxException {
         XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
         XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
-        assertTrue(xmldbURI1.equals(xmldbURI2));
+        assertEquals(xmldbURI1, xmldbURI2);
     }
 
     @Test
     public void xmldbURIEquals3() throws URISyntaxException {
         XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
         XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
-        assertTrue(xmldbURI1.equals(xmldbURI2));
+        assertEquals(xmldbURI1, xmldbURI2);
     }
 
     @Test
     public void xmldbURIEquals4() throws URISyntaxException {
         XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
         XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
-        assertTrue(xmldbURI1.equals(xmldbURI2));
+        assertEquals(xmldbURI1, xmldbURI2);
     }
 
     @Test
     public void xmldbURIEquals5() throws URISyntaxException {
         XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8080/db");
         XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8080/db");
-        assertTrue(xmldbURI1.equals(xmldbURI2));
+        assertEquals(xmldbURI1, xmldbURI2);
     }
 
     @Test
@@ -761,26 +762,26 @@ public class XmldbURITest {
     public void xmldbURILastSegment() throws URISyntaxException {
         //Should return encoded path
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test/"+TestConstants.SPECIAL_NAME);
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
         xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME);
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
         xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME);
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
         xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME+"/");
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
         xmldbURI = XmldbURI.xmldbUriFor("/test/"+TestConstants.SPECIAL_NAME+"/");
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
         xmldbURI = XmldbURI.xmldbUriFor(TestConstants.SPECIAL_NAME+"/");
-        assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+        assertEquals(TestConstants.SPECIAL_URI, xmldbURI.lastSegment());
 
-        assertEquals(TestConstants.SPECIAL_URI.lastSegment(),TestConstants.SPECIAL_URI);
-        assertEquals(XmldbURI.EMPTY_URI.lastSegment(),XmldbURI.EMPTY_URI);
-        assertEquals(XmldbURI.create("/").lastSegment(),XmldbURI.EMPTY_URI);
+        assertEquals(TestConstants.SPECIAL_URI, TestConstants.SPECIAL_URI.lastSegment());
+        assertEquals(XmldbURI.EMPTY_URI, XmldbURI.EMPTY_URI.lastSegment());
+        assertEquals(XmldbURI.EMPTY_URI, XmldbURI.create("/").lastSegment());
     }
 
     @Test
@@ -811,7 +812,7 @@ public class XmldbURITest {
         assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("/test"));
 
         xmldbURI = XmldbURI.xmldbUriFor(TestConstants.SPECIAL_NAME+"/");
-        assertEquals(xmldbURI.removeLastSegment(),XmldbURI.EMPTY_URI);
+        assertEquals(XmldbURI.EMPTY_URI, xmldbURI.removeLastSegment());
 
         assertEquals(TestConstants.SPECIAL_URI.removeLastSegment(),XmldbURI.xmldbUriFor(""));
     }

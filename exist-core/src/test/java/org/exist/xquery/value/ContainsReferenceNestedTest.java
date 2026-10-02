@@ -26,13 +26,13 @@ import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@code Sequence.containsReference} must detect an item that is nested inside a map (or array) held by
@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ContainsReferenceNestedTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     @Test

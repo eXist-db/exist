@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.util.pool;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.exist.dom.persistent.NodeImpl;
-import static junit.framework.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NodePoolTest {
 

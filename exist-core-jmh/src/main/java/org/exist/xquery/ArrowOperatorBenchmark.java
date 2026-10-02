@@ -110,9 +110,9 @@ public class ArrowOperatorBenchmark {
     }
 
     /**
-     * Widens {@link ExistXmldbEmbeddedServer#before()} / {@code after()} from protected to public so
-     * JMH's {@code @Setup} / {@code @TearDown} can drive the lifecycle directly (same pattern as
-     * {@code AxisBenchmark}).
+     * Widens {@link ExistXmldbEmbeddedServer#before()} / {@code after()} from
+     * protected to public so JMH's {@code @Setup} / {@code @TearDown} can drive
+     * the lifecycle directly (same pattern as {@code AxisBenchmark}).
      */
     private static final class LifecycleEmbeddedServer extends ExistXmldbEmbeddedServer {
         LifecycleEmbeddedServer() {
@@ -120,7 +120,7 @@ public class ArrowOperatorBenchmark {
         }
 
         @Override
-        public void before() throws Throwable {
+        public void before() throws ReflectiveOperationException, XMLDBException {
             super.before();
         }
 

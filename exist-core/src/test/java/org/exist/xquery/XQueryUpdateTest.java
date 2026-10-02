@@ -42,11 +42,14 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class XQueryUpdateTest {
 
     protected static XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
@@ -60,7 +63,7 @@ public class XQueryUpdateTest {
 
     protected final static int ITEMS_TO_APPEND = 500;
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void append() throws Exception {
         withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
@@ -82,7 +85,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -99,7 +102,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void appendAttributes() throws Exception {
 
         append();
@@ -120,7 +123,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -148,7 +151,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void insertBefore() throws Exception {
         withBroker((pool, broker) -> {
             String query =
@@ -185,7 +188,7 @@ public class XQueryUpdateTest {
             }
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -202,7 +205,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void insertAfter() throws Exception {
         withBroker((pool, broker) -> {
             String query =
@@ -239,7 +242,7 @@ public class XQueryUpdateTest {
             }
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -256,7 +259,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void update() throws Exception {
 
         append();
@@ -308,7 +311,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void remove() throws Exception {
 
         append();
@@ -324,11 +327,11 @@ public class XQueryUpdateTest {
         	Sequence seq = xquery.execute(broker, query, null);
 
         	seq = xquery.execute(broker, "//product", null);
-        	assertEquals(seq.getItemCount(), 0);
+            assertEquals(0, seq.getItemCount());
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void rename() throws Exception {
 
         append();
@@ -344,7 +347,7 @@ public class XQueryUpdateTest {
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -354,11 +357,11 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@count", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void replace() throws Exception {
 
         append();
@@ -374,7 +377,7 @@ public class XQueryUpdateTest {
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -384,7 +387,7 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@num", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             query =
             	"""
@@ -394,11 +397,11 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void attrUpdate() throws Exception {
         withBroker((pool, broker) -> {
             store(broker, "test.xml", UPDATE_XML);
@@ -418,7 +421,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void appendCDATA() throws Exception {
         withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
@@ -436,7 +439,7 @@ public class XQueryUpdateTest {
             }
 
             Sequence seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             final Serializer serializer = broker.borrowSerializer();
             try {
@@ -450,7 +453,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void insertAttrib() throws Exception {
         withBroker((pool, broker) -> {
             String query =
@@ -470,7 +473,7 @@ public class XQueryUpdateTest {
         });
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @FunctionalInterface
@@ -485,12 +488,12 @@ public class XQueryUpdateTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void loadTestData() throws Exception {
         withBroker((pool, broker) -> store(broker, "test.xml", TEST_XML));
     }
 
-    @After
+    @AfterEach
     public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         if (pool.isShuttingDownOrDown()) {

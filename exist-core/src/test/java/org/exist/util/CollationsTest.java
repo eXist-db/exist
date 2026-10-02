@@ -25,12 +25,12 @@ package org.exist.util;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.exist.util.Collations.HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CollationsTest {
 

@@ -32,19 +32,21 @@ import org.exist.test.ExistEmbeddedServer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class ModificationTimeTest {
 
     private static final String XML_FILENAME = "test.xml";
@@ -143,7 +145,7 @@ public class ModificationTimeTest {
         }
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private BinaryDocument storeBinary(final DBBroker broker, final Txn transaction, final String name,  final String data, final String mimeType) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {

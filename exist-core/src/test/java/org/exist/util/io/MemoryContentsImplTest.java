@@ -22,15 +22,15 @@
 
 package org.exist.util.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -39,7 +39,7 @@ public class MemoryContentsImplTest {
     private byte[] buf;
     private MemoryContents contents;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         buf = new byte[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         contents = MemoryContentsImpl.createWithInitialBlocks(2);

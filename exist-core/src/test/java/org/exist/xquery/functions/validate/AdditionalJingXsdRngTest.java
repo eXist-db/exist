@@ -22,13 +22,13 @@
 package org.exist.xquery.functions.validate;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-import static org.junit.Assert.*;
-
 import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Additional tests for the validation:jing() function with RNGs and XSDs
@@ -38,10 +38,10 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class AdditionalJingXsdRngTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testValidateXSDwithJing() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -70,7 +70,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("true", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testValidateXSDwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -99,7 +99,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("false", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testValidateRNGwithJing() throws XPathException, XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -140,7 +140,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("true", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testValidateRNGwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -181,7 +181,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("false", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void repeatTests() throws XMLDBException, XPathException {
         for (int i = 0; i < 1000; i++) {
             testValidateRNGwithJing();

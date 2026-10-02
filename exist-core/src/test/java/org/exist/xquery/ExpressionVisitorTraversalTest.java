@@ -27,16 +27,15 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.junit.ClassRule;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import antlr.collections.AST;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests that {@link DefaultExpressionVisitor} traverses into all
@@ -48,7 +47,7 @@ import static org.junit.Assert.*;
  */
 public class ExpressionVisitorTraversalTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 
@@ -89,7 +88,7 @@ public class ExpressionVisitorTraversalTest {
                 final XQueryLexer lexer = new XQueryLexer(context, new StringReader(xquery));
                 final XQueryParser parser = new XQueryParser(lexer);
                 parser.xpath();
-                assertFalse("Parse error: " + xquery, parser.foundErrors());
+                assertFalse(parser.foundErrors(), "Parse error: " + xquery);
 
                 final AST ast = parser.getAST();
                 final PathExpr path = new PathExpr(context);
@@ -102,9 +101,9 @@ public class ExpressionVisitorTraversalTest {
                 path.accept(collector);
 
                 assertTrue(
+                        collector.names.contains(expectedFunction),
                         "Expected '" + expectedFunction + "' in: " + xquery +
-                                " — found: " + collector.names,
-                        collector.names.contains(expectedFunction));
+                                " — found: " + collector.names);
             } finally {
                 context.runCleanupTasks();
                 context.reset(false);

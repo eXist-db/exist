@@ -22,16 +22,16 @@
 package org.exist.http.urlrewrite;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Direct unit tests for {@link ControllerRequestWrapper}, closing gaps left after
@@ -289,10 +289,10 @@ public class ControllerRequestWrapperTest {
         final ControllerRequestWrapper wrapper = new ControllerRequestWrapper(underlying);
         wrapper.allowCaching(false);
 
-        assertEquals("If-Modified-Since must be suppressed for the conditional-GET check",
-                -1L, wrapper.getDateHeader("If-Modified-Since"));
-        assertEquals("Other date headers must be unaffected",
-                67890L, wrapper.getDateHeader("Last-Modified"));
+        assertEquals(-1L,
+                wrapper.getDateHeader("If-Modified-Since"), "If-Modified-Since must be suppressed for the conditional-GET check");
+        assertEquals(67890L,
+                wrapper.getDateHeader("Last-Modified"), "Other date headers must be unaffected");
     }
 
     @Test

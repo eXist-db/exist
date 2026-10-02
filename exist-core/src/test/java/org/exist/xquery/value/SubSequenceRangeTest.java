@@ -32,31 +32,29 @@
  */
 package org.exist.xquery.value;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.RangeSequence;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(ParallelParameterized.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SubSequenceRangeTest {
 
     private static final long RANGE_START = 1;
     private static final long RANGE_END = 99;
 
-    @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"0 until 1",       0,      1,  0},
@@ -74,17 +72,9 @@ public class SubSequenceRangeTest {
                 {"100 until 101",  100,   101,  0}
         });
     }
-
-    @Parameter
     public String subSequenceStartEndName;
-
-    @Parameter(value = 1)
     public long fromInclusive;
-
-    @Parameter(value = 2)
     public int toExclusive;
-
-    @Parameter(value = 3)
     public int expectedSubsequenceLength;
 
     private static final RangeSequence range = new RangeSequence(new IntegerValue(RANGE_START), new IntegerValue(RANGE_END));
@@ -93,13 +83,15 @@ public class SubSequenceRangeTest {
         return new SubSequence(fromInclusive, toExclusive, range);
     }
 
-    @Test
-    public void getItemCount() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getItemCount(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertEquals(expectedSubsequenceLength, getSubsequence().getItemCount());
     }
 
-    @Test
-    public void isEmpty() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void isEmpty(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         if (expectedSubsequenceLength == 0) {
             assertTrue(getSubsequence().isEmpty());
         } else {
@@ -107,8 +99,9 @@ public class SubSequenceRangeTest {
         }
     }
 
-    @Test
-    public void hasOne() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void hasOne(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         if (expectedSubsequenceLength == 1) {
             assertTrue(getSubsequence().hasOne());
         } else {
@@ -116,8 +109,9 @@ public class SubSequenceRangeTest {
         }
     }
 
-    @Test
-    public void hasMany() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void hasMany(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         if (expectedSubsequenceLength > 1) {
             assertTrue(getSubsequence().hasMany());
         } else {
@@ -125,8 +119,9 @@ public class SubSequenceRangeTest {
         }
     }
 
-    @Test
-    public void getCardinality() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void getCardinality(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final Cardinality expectedCardinality;
         if (expectedSubsequenceLength == 0) {
             expectedCardinality = Cardinality.EMPTY_SEQUENCE;
@@ -138,8 +133,9 @@ public class SubSequenceRangeTest {
         assertEquals(expectedCardinality, getSubsequence().getCardinality());
     }
 
-    @Test
-    public void iterate_loop() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void iterateLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
         int count = 0;
         while (it.hasNext()) {
@@ -150,8 +146,9 @@ public class SubSequenceRangeTest {
         assertEquals(expectedSubsequenceLength, count);
     }
 
-    @Test
-    public void iterate_skip_loop() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void iterateSkipLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
 
         assertEquals(expectedSubsequenceLength, it.skippable());
@@ -171,8 +168,9 @@ public class SubSequenceRangeTest {
         assertEquals(remaining, count);
     }
 
-    @Test
-    public void iterate_loop_skip_loop() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void iterateLoopSkipLoop(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+        initSubSequenceRangeTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         final SequenceIterator it = getSubsequence().iterate();
 
         final int loopOneMax = 5;
@@ -202,5 +200,12 @@ public class SubSequenceRangeTest {
         }
 
         assertEquals(remaining, count);
+    }
+
+    public void initSubSequenceRangeTest(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) {
+        this.subSequenceStartEndName = subSequenceStartEndName;
+        this.fromInclusive = fromInclusive;
+        this.toExclusive = toExclusive;
+        this.expectedSubsequenceLength = expectedSubsequenceLength;
     }
 }

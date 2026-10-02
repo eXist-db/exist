@@ -36,17 +36,17 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests around the ordering of Collections and Documents
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class CollectionOrderTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollectionOrder");
@@ -285,7 +285,7 @@ public class CollectionOrderTest {
 
                     final String subCollectionName = subCollectionNames.get(idx++);
 
-                    assertEquals("sub-Collection names are not equal at index: " + idx, subCollectionName, subCollection.lastSegment().toString());
+                    assertEquals(subCollectionName, subCollection.lastSegment().toString(), "sub-Collection names are not equal at index: " + idx);
                 }
             }
 
@@ -337,7 +337,7 @@ public class CollectionOrderTest {
 
                     final String documentName = documentNames.get(idx++);
 
-                    assertEquals("Document names are not equal at index: " + idx, documentName, document.getFileURI().lastSegment().toString());
+                    assertEquals(documentName, document.getFileURI().lastSegment().toString(), "Document names are not equal at index: " + idx);
                 }
             }
 
@@ -368,7 +368,7 @@ public class CollectionOrderTest {
         return random.nextInt((maxInc - minInc) + 1) + minInc;
     }
 
-    @Before
+    @BeforeEach
     public void createTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -378,7 +378,7 @@ public class CollectionOrderTest {
         }
     }
 
-    @After
+    @AfterEach
     public void removeTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

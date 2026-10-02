@@ -23,11 +23,10 @@ package org.exist.http;
 
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public abstract class RESTTest extends AbstractHttpTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     protected static String getRestUrl() {

@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
@@ -32,8 +33,6 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -55,8 +54,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -64,12 +64,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Optional;
-
-import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -79,7 +78,7 @@ import static org.exist.samples.Samples.SAMPLES;
  * @author <a href="mailto:adam@exist-db.org">wolf
  * @author Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class BasicNodeSetTest {
 
     private final static String NESTED_XML =
@@ -170,7 +169,7 @@ public class BasicNodeSetTest {
             NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
             assertEquals(1, result.getLength());
             String value = serialize(broker, result.itemAt(0));
-            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
+            assertEquals("<SPEAKER>HAMLET</SPEAKER>", value);
         }
     }
 
@@ -528,10 +527,10 @@ public class BasicNodeSetTest {
         }
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, URISyntaxException, LockException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -559,7 +558,7 @@ public class BasicNodeSetTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();

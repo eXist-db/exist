@@ -21,18 +21,18 @@
  */
 package org.exist.validation;
 
-import org.junit.Test;
-
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.nio.file.Files;
+
+import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test for GitHub #6000: range index field @type should be optional in XSD.
@@ -69,8 +69,8 @@ public class CollectionConfigSchema6000Test {
     @Test
     public void xsdAcceptsFieldWithoutType() throws Exception {
         final Path schemaPath = resolveSchemaPath();
-        assertTrue("Schema not found at " + schemaPath + " (run from repo root: mvn test -pl exist-core)",
-            Files.exists(schemaPath));
+        assertTrue(Files.exists(schemaPath),
+            "Schema not found at " + schemaPath + " (run from repo root: mvn test -pl exist-core)");
 
         /* Schema uses vc:minVersion="1.1"; Xerces XSD 1.1 required */
         final SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/XML/XMLSchema/v1.1");

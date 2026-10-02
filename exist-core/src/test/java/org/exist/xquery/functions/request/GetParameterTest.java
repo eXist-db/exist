@@ -38,9 +38,9 @@ import com.github.mizosoft.methanol.MultipartBodyPublisher;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -65,7 +65,7 @@ public class GetParameterTest extends RESTTest {
     private static Collection root;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
@@ -76,7 +76,7 @@ public class GetParameterTest extends RESTTest {
         ums.chmod(res, 0777);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws XMLDBException {
         BinaryResource res = (BinaryResource)root.getResource(XQUERY_FILENAME);
         root.removeResource(res);

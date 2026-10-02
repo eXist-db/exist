@@ -24,49 +24,50 @@ package org.exist.storage;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Type;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(Parameterized.class)
 public class NativeValueIndexTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "xs:string", Type.STRING },
                 { "xs:int", Type.INT }
         });
     }
-
-    @Parameterized.Parameter
     public String typeName;
-
-    @Parameterized.Parameter(value = 1)
     public int type;
 
-    @Test
-    public void convertToAtomicNull() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void convertToAtomicNull(String typeName, int type) {
+        initNativeValueIndexTest(typeName, type);
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, null);
         assertNull(result);
     }
 
-    @Test
-    public void convertToAtomicEmptyString() {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void convertToAtomicEmptyString(String typeName, int type) {
+        initNativeValueIndexTest(typeName, type);
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, "");
         assertNull(result);
     }
 
-    @Test
-    public void convertToAtomic() throws XPathException {
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    public void convertToAtomic(String typeName, int type) throws XPathException {
+        initNativeValueIndexTest(typeName, type);
         final String mockValue = "1234567890";
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, mockValue);
         assertEquals(type, result.getType());
         assertEquals(mockValue, result.getStringValue());
+    }
+
+    public void initNativeValueIndexTest(String typeName, int type) {
+        this.typeName = typeName;
+        this.type = type;
     }
 }

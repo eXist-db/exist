@@ -37,10 +37,10 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.TerminatedException;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests transaction management and basic recovery for the BTree base class.
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BTreeRecoverTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
     private int count = 0;
 
@@ -120,7 +120,7 @@ public class BTreeRecoverTest {
             
             final IndexQuery query = new IndexQuery(IndexQuery.GEQ, new NativeBroker.NodeRef(500, idFact.createInstance(1)));
             domDb.query(query, new IndexCallback());
-            assertEquals(count, 800);
+            assertEquals(800, count);
         }
     }
     

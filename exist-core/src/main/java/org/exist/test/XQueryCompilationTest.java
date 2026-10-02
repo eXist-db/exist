@@ -31,7 +31,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
@@ -42,7 +42,7 @@ import static com.evolvedbinary.j8fu.Either.Right;
  */
 public abstract class XQueryCompilationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
     protected static Either<XPathException, CompiledXQuery> compileQuery(final String string) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = server.getBrokerPool();

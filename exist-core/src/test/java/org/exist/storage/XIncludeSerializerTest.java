@@ -28,13 +28,14 @@ import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -42,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author jim fuller at webcomposite.com
@@ -50,7 +52,7 @@ import java.util.List;
  */
 public class XIncludeSerializerTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
 
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
@@ -175,8 +177,8 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -197,8 +199,8 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -220,8 +222,8 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -242,8 +244,8 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -264,8 +266,8 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -286,8 +288,8 @@ public class XIncludeSerializerTest {
         String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT_FALLBACK1, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
     @Test
@@ -309,26 +311,28 @@ public class XIncludeSerializerTest {
         final String responseXML = out.toString();
 
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
-        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
+        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
     }
 
-    @Test(expected = IOException.class)
-    public void fallback2() throws IOException {
-        final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
+    @Test
+    public void fallback2() {
+        assertThrows(IOException.class, () -> {
+            final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
 
-        final HttpURLConnection connect = getConnection(uri);
-        connect.setRequestMethod("GET");
-        connect.connect();
+            final HttpURLConnection connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
-        String line;
-        final StringBuilder out = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            out.append(line);
-            out.append("\r\n");
-        }
-        final String responseXML = out.toString();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+            String line;
+            final StringBuilder out = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            final String responseXML = out.toString();
+        });
     }
 
     //TODO add full url test e.g. http://www.example.org/test.xml for xinclude
@@ -380,7 +384,7 @@ public class XIncludeSerializerTest {
      * SetUp / TearDown functions
      *
      */
-    @BeforeClass
+    @BeforeAll
     public static void startDB() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = getClient();
         final List<Object> params = new ArrayList<>();

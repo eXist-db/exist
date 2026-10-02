@@ -22,11 +22,13 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -34,8 +36,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-    
 
 /**
  *
@@ -43,7 +45,7 @@ import org.xmldb.api.modules.XQueryService;
  */
 public class UnionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION_NAME = "test-pubmed";
@@ -88,7 +90,7 @@ public class UnionTest {
 
     private static Collection testCollection;    
     
-    @Test
+    @org.junit.jupiter.api.Test
     public void unionInPredicate_withoutIndex() throws XMLDBException {
          final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
          final ResourceSet result = service.queryResource(PUBMED_DOC_NAME, XQUERY);
@@ -96,7 +98,7 @@ public class UnionTest {
          assertEquals(1, result.getSize());
     }
     
-    @Test
+    @org.junit.jupiter.api.Test
     public void unionInPredicate_withIndex() throws XMLDBException {
         storeCollectionConfig();
         
@@ -106,7 +108,7 @@ public class UnionTest {
         assertEquals(1, result.getSize());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void unionPersistentAndConstructedNodes() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
         final String xquery = "doc('" + testCollection.getName() + "/" + PUBMED_DOC_NAME + "')//Language | <a/> | <b/>";
@@ -158,7 +160,7 @@ public class UnionTest {
        return service;
     }
     
-    @Before
+    @BeforeEach
     public void clearCollectionConfig() throws XMLDBException {
         final Collection colDb = testCollection.getParentCollection();
         
@@ -191,14 +193,14 @@ public class UnionTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void createTestCollection() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(

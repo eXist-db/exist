@@ -37,8 +37,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -47,14 +46,15 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.storage.ElementValue.ELEMENT;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MoveOverwriteResourceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML1 =

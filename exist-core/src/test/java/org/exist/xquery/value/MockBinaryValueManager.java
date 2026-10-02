@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *

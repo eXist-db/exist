@@ -331,6 +331,10 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -515,11 +519,14 @@
             <artifactId>jgrapht-opt</artifactId>
             <version>1.5.3</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test:
+                 both for org.exist.test.runner's JUnit4 Runner-API-based custom test runner
+                 (XSuite et al.), and org.exist.test.ExistEmbeddedServer/ExistXmldbEmbeddedServer/
+                 ExistWebServer extending org.junit.rules.ExternalResource for JUnit 4 backward
+                 compatibility alongside their JUnit 5 BeforeAllCallback/AfterAllCallback support. -->
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -548,7 +555,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <!-- not just test scope, as needed for org.exist.test.ExistEmbeddedServer's
+                 BeforeAllCallback/AfterAllCallback support, used by downstream modules' tests -->
+        </dependency>
+        <dependency>
+            <groupId>org.opentest4j</groupId>
+            <artifactId>opentest4j</artifactId>
+            <!-- not test scope: org.exist.test.runner.ExtTestFailureFunction (main source) throws
+                 AssertionFailedError for rich IDE diff rendering of XQSuite test failures -->
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -583,11 +597,12 @@
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-legacy</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.junit-toolbox</groupId>
-            <artifactId>junit-toolbox</artifactId>
-            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- needed for starting up a jetty server -->

@@ -34,8 +34,7 @@ package org.exist.xquery.functions.session;
 
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public abstract class AbstractSessionTest {
 
     /**
@@ -43,7 +42,7 @@ public abstract class AbstractSessionTest {
      * we restart the server for each test
      * which ensures a clean http session.
      */
-    @Rule
+    @RegisterExtension
     public final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     protected String getRestUrl() {

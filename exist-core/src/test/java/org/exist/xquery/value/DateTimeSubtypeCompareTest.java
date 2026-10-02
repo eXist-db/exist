@@ -22,14 +22,14 @@
 package org.exist.xquery.value;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test for the date/time-family subtype comparison fix.
@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
  */
 public class DateTimeSubtypeCompareTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer embedded =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -85,8 +85,8 @@ public class DateTimeSubtypeCompareTest {
             fail("Expected XPTY0004 for cross-sister-type comparison, got: "
                     + (rs.getSize() > 0 ? rs.getResource(0).getContent() : "<empty>"));
         } catch (final XMLDBException e) {
-            assertTrue("Expected XPTY0004 in: " + e.getMessage(),
-                    e.getMessage().contains("XPTY0004"));
+            assertTrue(e.getMessage().contains("XPTY0004"),
+                    "Expected XPTY0004 in: " + e.getMessage());
         }
     }
 }

@@ -22,9 +22,9 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
@@ -33,15 +33,14 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URL;
 import java.nio.file.Path;
-
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-
+import org.junit.jupiter.api.extension.RegisterExtension;
 public class BinaryResourceUpdateTest  {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testBinaryResource";
@@ -73,7 +72,7 @@ public class BinaryResourceUpdateTest  {
         
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION);
@@ -84,7 +83,7 @@ public class BinaryResourceUpdateTest  {
         assertNotNull(xmlFile);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);

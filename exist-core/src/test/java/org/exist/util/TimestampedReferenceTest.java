@@ -22,9 +22,10 @@
 
 package org.exist.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -74,7 +75,7 @@ public class TimestampedReferenceTest {
     @Test
     public void setIfExpiredOrNull_expiredAndNull() {
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true);
-        assertEquals(null, timestampedReference.get());
+        assertNull(timestampedReference.get());
 
         timestampedReference.setIfExpiredOrNull(System.nanoTime(), () -> "Updated");
         assertEquals("Updated", timestampedReference.get());
@@ -85,7 +86,7 @@ public class TimestampedReferenceTest {
         final long firstTimestamp = System.nanoTime();
 
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, null);
-        assertEquals(null, timestampedReference.get());
+        assertNull(timestampedReference.get());
 
         timestampedReference.setIfExpiredOrNull(firstTimestamp, () -> "Updated");
         assertEquals("Updated", timestampedReference.get());

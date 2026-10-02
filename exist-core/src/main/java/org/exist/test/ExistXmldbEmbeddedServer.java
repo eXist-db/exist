@@ -30,7 +30,11 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -49,13 +53,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Exist embedded XML:DB Server Rule for JUnit.
+ * Exist embedded XML:DB Server JUnit 5 extension.
+ * <p>
+ * Use with {@code @RegisterExtension static final} for class-level (once per test
+ * class) lifecycle, or {@code @RegisterExtension final} (non-static) for per-test
+ * lifecycle.
  */
-public class ExistXmldbEmbeddedServer extends ExternalResource {
+public class ExistXmldbEmbeddedServer implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private final boolean asGuest;
     private final ExistEmbeddedServer existEmbeddedServer;
@@ -63,6 +71,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     private Database database = null;
     private Collection root = null;
     private EXistXQueryService xpathQueryService = null;
+    private boolean startedByBeforeAll = false;
 
     public ExistXmldbEmbeddedServer() {
         this(false, false);
@@ -104,10 +113,25 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         this.asGuest = asGuest;
     }
 
-    @Override
-    protected void before() throws Throwable {
+    protected void before() throws ReflectiveOperationException, XMLDBException {
         startDb();
-        super.before();
+    }
+
+    @Override
+    public void beforeAll(final ExtensionContext context) throws Exception {
+        before();
+        this.startedByBeforeAll = true;
+    }
+
+    @Override
+    public void beforeEach(final ExtensionContext context) throws Exception {
+        // a static @RegisterExtension field gets beforeEach/afterEach invoked per-test in
+        // addition to beforeAll/afterAll once per class (JUnit5 does not distinguish by the
+        // field's static/instance modifier, only by which callback interfaces are implemented),
+        // so skip here if the class-level lifecycle already started the server.
+        if (!startedByBeforeAll) {
+            before();
+        }
     }
 
     private void startDb() throws ReflectiveOperationException, XMLDBException {
@@ -146,10 +170,21 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         startDb();
     }
 
-    @Override
     protected void after() {
         stopDb(true);
-        super.after();
+    }
+
+    @Override
+    public void afterAll(final ExtensionContext context) {
+        after();
+        this.startedByBeforeAll = false;
+    }
+
+    @Override
+    public void afterEach(final ExtensionContext context) {
+        if (!startedByBeforeAll) {
+            after();
+        }
     }
 
     private void stopDb(final boolean clearTemporaryStorage) {

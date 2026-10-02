@@ -21,20 +21,21 @@
  */
 package org.exist.xquery.value;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DurationTest extends AbstractTimeRelatedTestCase {
 
     @Test
@@ -161,10 +162,12 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
         assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
     }
 
-    @Test(expected = XPathException.class)
-    public void compareFail1() throws XPathException {
-        final DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
-        dv.compareTo(null, Comparison.LT, dv);
+    @Test
+    public void compareFail1() {
+        assertThrows(XPathException.class, () -> {
+            final DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
+            dv.compareTo(null, Comparison.LT, dv);
+        });
     }
 
     @Test
@@ -240,8 +243,8 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
         for (int i = 0; i < 100; i++) {
             final DurationValue d = new DurationValue("P1Y");
             final YearMonthDurationValue ymd = new YearMonthDurationValue("P12M");
-            assertEquals("iter " + i + ": DurationValue", expected, d.hashCode());
-            assertEquals("iter " + i + ": YearMonthDurationValue", expected, ymd.hashCode());
+            assertEquals(expected, d.hashCode(), "iter " + i + ": DurationValue");
+            assertEquals(expected, ymd.hashCode(), "iter " + i + ": YearMonthDurationValue");
         }
     }
 }

@@ -35,7 +35,9 @@ package org.exist.xquery.modules.sql;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.tools.Server;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -44,11 +46,13 @@ import java.sql.Statement;
 import java.util.Optional;
 
 /**
- * Embedded H2 Database JUnit Test Resource.
+ * Embedded H2 Database JUnit 5 extension.
+ * <p>
+ * Use with {@code @RegisterExtension final} (non-static) for per-test lifecycle.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class H2DatabaseResource extends ExternalResource {
+public class H2DatabaseResource implements BeforeEachCallback, AfterEachCallback {
 
     private static final Logger LOG =  LogManager.getLogger(H2DatabaseResource.class);
 
@@ -82,7 +86,7 @@ public class H2DatabaseResource extends ExternalResource {
     }
 
     @Override
-    protected void before() throws SQLException {
+    public void beforeEach(final ExtensionContext context) throws SQLException {
         if (rootConnection == null) {
             org.h2.Driver.load();
 
@@ -103,7 +107,7 @@ public class H2DatabaseResource extends ExternalResource {
     }
 
     @Override
-    protected void after() {
+    public void afterEach(final ExtensionContext context) {
         if (rootConnection != null) {
             try {
                 final Statement stat = rootConnection.createStatement();

@@ -22,8 +22,10 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -31,10 +33,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class HexBinaryValueTypeTest {
     
-    @Test(expected=XPathException.class)
-    public void verify_notMultipleOf2Chars_fails() throws XPathException {
-        TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-        hexType.verifyString("010010101");
+    @Test
+    public void verifyNotMultipleOf2CharsFails() {
+        assertThrows(XPathException.class, () -> {
+            TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
+            hexType.verifyString("010010101");
+        });
     }
 
     @Test
@@ -43,10 +47,12 @@ public class HexBinaryValueTypeTest {
         hexType.verifyString("01001010");
     }
 
-    @Test(expected=XPathException.class)
-    public void verify_notValidChars_fails() throws XPathException {
-        TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-        hexType.verifyString("true");
+    @Test
+    public void verifyNotValidCharsFails() {
+        assertThrows(XPathException.class, () -> {
+            TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
+            hexType.verifyString("true");
+        });
     }
 
     @Test
