@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -38,9 +40,21 @@ import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.exist.xquery.util.DocUtils;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -48,6 +62,8 @@ import static org.exist.xquery.FunctionDSL.*;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ExtCollection extends BasicFunction {
+
+    private static final Logger LOG = LogManager.getLogger(ExtCollection.class);
 
     private static final String FS_COLLECTION_NAME = "collection";
     static final FunctionSignature[] FS_COLLECTION = functionSignatures(
@@ -78,13 +94,35 @@ public class ExtCollection extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final URI collectionUri;
+        final String rawQueryString;
         if (args.length == 0 || args[0].isEmpty()) {
             collectionUri = null;
+            rawQueryString = null;
         } else {
-            collectionUri = asUri(args[0].itemAt(0).getStringValue());
+            // Split off any Saxon-style query string before parsing the URI.
+            // The query may contain regex characters (^, [, ], +, etc.) that
+            // Java's URI class rejects, so we strip and pass it separately.
+            final String input = args[0].itemAt(0).getStringValue();
+            final int q = input.indexOf('?');
+            if (q >= 0) {
+                collectionUri = asUri(input.substring(0, q));
+                rawQueryString = input.substring(q + 1);
+            } else {
+                collectionUri = asUri(input);
+                rawQueryString = null;
+            }
         }
 
-        return getCollectionItems(new URI[] { collectionUri });
+        return getCollectionItems(collectionUri, rawQueryString);
+    }
+
+    private Sequence getCollectionItems(final URI collectionUri, final String rawQueryString) throws XPathException {
+        if (collectionUri == null) {
+            return getDefaultCollectionItems();
+        }
+        final Sequence result = new ValueSequence();
+        getCollectionItems(collectionUri, rawQueryString, result);
+        return result;
     }
 
     protected Sequence getCollectionItems(final URI[] collectionUris) throws XPathException {
@@ -95,7 +133,9 @@ public class ExtCollection extends BasicFunction {
 
         final Sequence result = new ValueSequence();
         for (final URI collectionUri : collectionUris) {
-            getCollectionItems(collectionUri, result);
+            // No raw query string from this code path; subclasses (e.g. FunXCollection)
+            // do not split off the query string before calling
+            getCollectionItems(collectionUri, null, result);
         }
         return result;
     }
@@ -115,10 +155,14 @@ public class ExtCollection extends BasicFunction {
         }
     }
 
-    private void getCollectionItems(final URI collectionUri, final Sequence items) throws XPathException {
+    private void getCollectionItems(final URI collectionUri, final String rawQueryString, final Sequence items) throws XPathException {
         final Sequence dynamicCollection = context.getDynamicallyAvailableCollection(collectionUri.toString());
         if (dynamicCollection != null) {
             items.addAll(dynamicCollection);
+
+        } else if ("file".equals(collectionUri.getScheme())) {
+            // file: URI — scan directory for XML files
+            getFileCollectionItems(collectionUri, rawQueryString, items);
 
         } else {
             final MutableDocumentSet ndocs = new DefaultDocumentSet();
@@ -144,6 +188,134 @@ public class ExtCollection extends BasicFunction {
 
             // add the docs to the items
             addAll(ndocs, items);
+        }
+    }
+
+    /**
+     * Scan a file: URI directory for documents and parse XML files into in-memory documents.
+     * <p>
+     * Supports Saxon-style query string parameters (aligned with fn:uri-collection):
+     * </p>
+     * <ul>
+     *   <li>{@code select=*.xml} — glob pattern for filename matching (default: {@code *.xml})</li>
+     *   <li>{@code match=regex} — additional regex filter on filenames</li>
+     *   <li>{@code content-type=...} — MIME filter; for file: URIs:
+     *     {@code application/vnd.existdb.document+xml} or {@code application/vnd.existdb.document}
+     *     selects XML files (the only kind fn:collection returns)</li>
+     *   <li>{@code stable=yes|no} — when {@code yes} (default), files are returned in alphabetical order</li>
+     * </ul>
+     * <p>
+     * Only DBA users can access the file system directly.
+     * </p>
+     */
+    private void getFileCollectionItems(final URI collectionUri, final String rawQueryString, final Sequence items) throws XPathException {
+        requireDbaAccessForFileUris();
+
+        // Parse Saxon-style query parameters from the raw query string.
+        // We use rawQueryString (passed separately from the URI) because the query
+        // may contain regex characters like ^, [, ], +, $ that Java's URI class rejects.
+        final CollectionQueryParameters params = CollectionQueryParameters.parse(
+                rawQueryString != null ? "?" + rawQueryString : null,
+                CollectionQueryParameters.FILE_COLLECTION_KEYS,
+                this);
+
+        // fn:collection() returns documents (XML), so a content-type that excludes XML
+        // would yield an empty result. Detect that early.
+        if (params.hasContentType() && !params.includesXmlDocuments()) {
+            return;
+        }
+
+        final List<Path> candidates = collectCandidateFiles(Paths.get(collectionUri.getPath()), params);
+
+        // Apply stable ordering (alphabetical by filename) when stable=yes (the default)
+        if (params.isStable()) {
+            candidates.sort(Comparator.comparing(p -> p.getFileName().toString()));
+        }
+
+        addParsedDocuments(candidates, items);
+    }
+
+    /**
+     * Direct file system access through {@code file:} URIs is restricted to DBA users.
+     *
+     * @throws XPathException FODC0002 if the calling user does not have the DBA role
+     */
+    private void requireDbaAccessForFileUris() throws XPathException {
+        if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Permission denied: only DBA users can access file: URIs in fn:collection()");
+        }
+    }
+
+    /**
+     * Lists the files in {@code dir} that pass the {@code select} glob and the optional
+     * {@code match} regex, in directory order.
+     *
+     * @param dir    the directory to scan
+     * @param params the parsed query string parameters
+     * @return the matching files, in the order the directory stream yielded them
+     * @throws XPathException FODC0002 if the directory does not exist or cannot be read
+     */
+    private List<Path> collectCandidateFiles(final Path dir, final CollectionQueryParameters params) throws XPathException {
+        // Default glob pattern is *.xml (XML files only). User-supplied select overrides.
+        final String globPattern = params.getSelect() != null ? params.getSelect() : "*.xml";
+
+        // Compile match regex if present
+        final Pattern matchPattern = (params.getMatch() != null && !params.getMatch().isEmpty())
+                ? Pattern.compile(params.getMatch())
+                : null;
+
+        if (!Files.isDirectory(dir)) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Directory does not exist: " + dir);
+        }
+
+        final List<Path> candidates = new ArrayList<>();
+        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(dir, globPattern)) {
+            for (final Path file : stream) {
+                if (isSelectableFile(file, matchPattern)) {
+                    candidates.add(file);
+                }
+            }
+        } catch (final IOException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Error reading directory: " + e.getMessage());
+        }
+        return candidates;
+    }
+
+    /**
+     * @param file         a candidate yielded by the directory stream
+     * @param matchPattern the compiled {@code match} regex, or null when none was supplied
+     * @return true if the file is a readable regular file whose name satisfies {@code matchPattern}
+     */
+    private boolean isSelectableFile(final Path file, final Pattern matchPattern) {
+        if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
+            return false;
+        }
+        return matchPattern == null || matchPattern.matcher(file.getFileName().toString()).find();
+    }
+
+    /**
+     * Parses each candidate as XML and appends it to {@code items}. Files that are not
+     * well-formed XML are skipped rather than failing the whole collection.
+     *
+     * @param candidates the files to parse
+     * @param items      the sequence to append the parsed in-memory documents to
+     */
+    private void addParsedDocuments(final List<Path> candidates, final Sequence items) {
+        for (final Path file : candidates) {
+            try (final InputStream is = Files.newInputStream(file)) {
+                final org.exist.dom.memtree.DocumentImpl doc =
+                        DocUtils.parse(context, is, this);
+                doc.setDocumentURI(file.toUri().toString());
+                items.add(doc);
+            } catch (final XPathException | IOException e) {
+                // Skip non-parseable files (they may not be well-formed XML)
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Skipping non-parseable file in collection: {}", file, e);
+                }
+            }
         }
     }
 
