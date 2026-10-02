@@ -42,7 +42,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.fail;
 public class FilterInputStreamCacheMonitorTest {
 
     @RegisterExtension
@@ -95,8 +98,8 @@ public class FilterInputStreamCacheMonitorTest {
             assertEquals(1, resourceSet.getSize());
 
             try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
-                assertTrue(resource instanceof LocalBinaryResource);
-                assertTrue(((ExtendedResource)resource).getExtendedContent() instanceof BinaryValue);
+                assertInstanceOf(LocalBinaryResource.class, resource);
+                assertInstanceOf(BinaryValue.class, ((ExtendedResource) resource).getExtendedContent());
 
                 // one active binary (as it is in the result set)
                 assertEquals(1, monitor.getActive().size());

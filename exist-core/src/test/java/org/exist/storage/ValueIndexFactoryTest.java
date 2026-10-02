@@ -26,7 +26,9 @@ import java.math.BigDecimal;
 import org.exist.EXistException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import org.exist.storage.btree.Value;
 import org.exist.xquery.value.DecimalValue;
@@ -82,7 +84,7 @@ public class ValueIndexFactoryTest {
         byte data[] = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
 
         Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
-        assertTrue(value instanceof DecimalValue);
+        assertInstanceOf(DecimalValue.class, value);
 
         assertEquals(dec, ((DecimalValue)value).getValue());
     }
@@ -93,7 +95,7 @@ public class ValueIndexFactoryTest {
         for (final double d : values) {
             final byte[] data = ValueIndexFactory.serialize(new DoubleValue(d), 0);
             final Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
-            assertTrue(value instanceof DoubleValue);
+            assertInstanceOf(DoubleValue.class, value);
             assertEquals(d, ((DoubleValue) value).getValue(), 0.0);
         }
     }

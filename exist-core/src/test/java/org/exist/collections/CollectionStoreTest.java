@@ -56,8 +56,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CollectionStoreTest {
 
     @RegisterExtension
@@ -133,7 +133,7 @@ public class CollectionStoreTest {
                     col.close();
 
                     if (lockedDoc != null) {
-                        assertTrue(lockedDoc.getDocument() instanceof BinaryDocument);
+                        assertInstanceOf(BinaryDocument.class, lockedDoc.getDocument());
 
                         final BinaryDocument doc = (BinaryDocument)lockedDoc.getDocument();
                         final Try<String, IOException> docContent = broker.withBinaryFile(transaction, doc, is ->

@@ -56,7 +56,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 public class CollectionTest {
 
     @RegisterExtension
@@ -85,7 +86,7 @@ public class CollectionTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
@@ -119,7 +120,7 @@ public class CollectionTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();

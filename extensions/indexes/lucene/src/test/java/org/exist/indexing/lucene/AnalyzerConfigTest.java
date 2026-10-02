@@ -40,9 +40,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -133,7 +133,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -162,7 +162,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -191,7 +191,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -220,7 +220,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 

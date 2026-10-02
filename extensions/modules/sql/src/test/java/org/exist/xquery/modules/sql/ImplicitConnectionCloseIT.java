@@ -79,10 +79,11 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Uses JNDI to provide a StubDataSourceFactory
@@ -146,7 +147,7 @@ public class ImplicitConnectionCloseIT {
 
                 // check that the handle for the sql connection that was created was valid
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertInstanceOf(IntegerValue.class, result.itemAt(0));
                 assertEquals(Type.LONG, result.itemAt(0).getType());
                 final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
                 assertFalse(connectionHandle == 0);
@@ -201,17 +202,17 @@ public class ImplicitConnectionCloseIT {
                 // get the context of the library module
                 final org.exist.xquery.Module[] libraryModules = mainQueryContext.getModules("http://mymodule.com");
                 assertEquals(1, libraryModules.length);
-                assertTrue(libraryModules[0] instanceof ExternalModule);
+                assertInstanceOf(ExternalModule.class, libraryModules[0]);
                 final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
                 final XQueryContext libraryQueryContext = libraryModule.getContext();
-                assertTrue(libraryQueryContext instanceof ModuleContext);
+                assertInstanceOf(ModuleContext.class, libraryQueryContext);
 
                 // execute the query
                 final Sequence result = executeQuery(broker, mainCompiledQuery);
 
                 // check that the handle for the sql connection that was created was valid
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertInstanceOf(IntegerValue.class, result.itemAt(0));
                 assertEquals(Type.LONG, result.itemAt(0).getType());
                 final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
                 assertFalse(connectionHandle == 0);

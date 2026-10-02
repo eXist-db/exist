@@ -39,10 +39,13 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+
+
 
 /**
  *
@@ -164,7 +167,7 @@ public class EvalTest {
         final String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
     }
-    
+
     @org.junit.jupiter.api.Test
     public void testEvalSupplyingContextItem() throws XPathException, XMLDBException {
         final String query = """
@@ -176,7 +179,7 @@ public class EvalTest {
         final String r = (String) result.getResource(0).getContent();
         assertEquals("London", r);
     }
-    
+
     @org.junit.jupiter.api.Test
     public void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
@@ -188,7 +191,7 @@ public class EvalTest {
             "util:eval($q)";
         existEmbeddedServer.executeQuery(query);
     }
-    
+
     @org.junit.jupiter.api.Test
     public void evalInContextWithPreDeclaredNamespaceAcrossLocalFunctionBoundary() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
@@ -203,7 +206,7 @@ public class EvalTest {
             "local:process($q)";
         existEmbeddedServer.executeQuery(query);
     }
-    
+
     //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
     @org.junit.jupiter.api.Test
     public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() {
@@ -267,7 +270,7 @@ public class EvalTest {
             executeModule(testHome, testModuleName);
         } catch(final XMLDBException e) {
             final Throwable cause = e.getCause();
-            assertTrue(cause instanceof XPathException);
+            assertInstanceOf(XPathException.class, cause);
             assertEquals(ErrorCodes.XPDY0002, ((XPathException) cause).getErrorCode());
         }
 
@@ -276,11 +279,11 @@ public class EvalTest {
             executeModule(testHome, testModuleName);
         } catch(final XMLDBException e) {
             final Throwable cause = e.getCause();
-            assertTrue(cause instanceof XPathException);
+            assertInstanceOf(XPathException.class, cause);
             assertEquals(ErrorCodes.XPDY0002, ((XPathException)cause).getErrorCode());
         }
     }
-    
+
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
         if (collection == null) {
@@ -399,7 +402,7 @@ public class EvalTest {
             assertTrue(e.getMessage().contains("column 5"));
         }
     }
-    
+
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
         BinaryResource res = collection.createResource(modulename, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
