@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * ONNX-based vector embedding provider. Uses HuggingFace tokenizer and ONNX Runtime.
@@ -64,6 +65,15 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   private final String outputName;
   private final String tokenTypeIdsInputName;
 
+  // Guards session/tokenizer against a concurrent close(): VectorEmbeddingService caches
+  // providers and can evict (and close) one from a different thread than whichever is
+  // mid-embed() on it (VectorEmbeddingService#evict, VectorEmbeddingProvider#close). embed()
+  // holds the read lock for its duration; close() takes the write lock, so it can't run
+  // until every in-flight embed() has finished, and any embed() that starts afterward sees
+  // `closed` and returns null instead of touching a freed session/tokenizer.
+  private final ReentrantReadWriteLock lifecycleLock = new ReentrantReadWriteLock();
+  private volatile boolean closed = false;
+
   private OnnxVectorProvider(final OrtEnvironment env, final OrtSession session,
       final HuggingFaceTokenizer tokenizer, final int dimension, final String outputName,
       final String tokenTypeIdsInputName) {
@@ -80,13 +90,58 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
     return dimension;
   }
 
+  /**
+   * Closes the ONNX session and tokenizer, blocking until any in-flight {@link #embed}
+   * call finishes. Does not close {@link #env}: it is a process-wide singleton
+   * ({@link OrtEnvironment#getEnvironment()}) shared with any other session in the JVM,
+   * not owned by this provider.
+   */
+  @Override
+  public void close() {
+    lifecycleLock.writeLock().lock();
+    try {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      closeQuietly(session, tokenizer);
+    } finally {
+      lifecycleLock.writeLock().unlock();
+    }
+  }
+
+  /**
+   * Closes whichever of session/tokenizer is non-null, logging rather than throwing on
+   * failure. Shared by {@link #close()} and {@link #create}'s cleanup-on-failure path.
+   */
+  private static void closeQuietly(@Nullable final OrtSession session, @Nullable final HuggingFaceTokenizer tokenizer) {
+    if (session != null) {
+      try {
+        session.close();
+      } catch (final Exception e) {
+        LOG.warn("Failed to close ONNX session: {}", e.getMessage());
+      }
+    }
+    if (tokenizer != null) {
+      try {
+        tokenizer.close();
+      } catch (final Exception e) {
+        LOG.warn("Failed to close tokenizer: {}", e.getMessage());
+      }
+    }
+  }
+
   @Override
   @Nullable
   public float[] embed(final String text) {
     if (text == null || text.isBlank()) {
       return null;
     }
+    lifecycleLock.readLock().lock();
     try {
+      if (closed) {
+        return null;
+      }
       final Encoding encoding = tokenizer.encode(text);
       if (encoding == null) {
         return null;
@@ -110,6 +165,8 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
     } catch (final Exception e) {
       LOG.debug("Embedding failed: {}", e.getMessage());
       return null;
+    } finally {
+      lifecycleLock.readLock().unlock();
     }
   }
 
@@ -209,29 +266,36 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       return null;
     }
 
+    // tokenizer/session are closed here on any failure after they're acquired -- once
+    // construction succeeds, close() (called via VectorEmbeddingService#evict) takes over.
+    // env is a process-wide singleton (OrtEnvironment#getEnvironment()) and is never closed.
+    HuggingFaceTokenizer tokenizer = null;
+    OrtSession session = null;
     try {
-      final HuggingFaceTokenizer tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
+      tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
       final OrtEnvironment env = OrtEnvironment.getEnvironment();
-      final OrtSession session = createSession(env, modelFile);
+      session = createSession(env, modelFile);
       final String tokenTypeIdsInputName = resolveTokenTypeIdsInput(session);
       final String outputName = resolveOutputName(session);
 
       return new OnnxVectorProvider(env, session, tokenizer, dimension, outputName, tokenTypeIdsInputName);
     } catch (final Exception e) {
       LOG.warn("Failed to create OnnxVectorProvider: {}", e.getMessage());
+      closeQuietly(session, tokenizer);
       return null;
     }
   }
 
   private static OrtSession createSession(final OrtEnvironment env, final Path modelFile) throws Exception {
-    final OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
-    try {
-      opts.addCUDA(0);
-      LOG.info("Using CUDA execution provider for embedding (device 0)");
-    } catch (final Throwable t) {
-      LOG.debug("CUDA not available, using CPU: {}", t.getMessage());
+    try (final OrtSession.SessionOptions opts = new OrtSession.SessionOptions()) {
+      try {
+        opts.addCUDA(0);
+        LOG.info("Using CUDA execution provider for embedding (device 0)");
+      } catch (final Throwable t) {
+        LOG.debug("CUDA not available, using CPU: {}", t.getMessage());
+      }
+      return env.createSession(modelFile.toString(), opts);
     }
-    return env.createSession(modelFile.toString(), opts);
   }
 
   @Nullable

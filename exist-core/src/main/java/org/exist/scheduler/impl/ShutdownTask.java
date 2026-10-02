@@ -31,6 +31,7 @@ import org.exist.util.NamedThreadFactory;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -54,7 +55,9 @@ public class ShutdownTask implements SystemTask {
 
         //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
         final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());
-        Executors.newSingleThreadExecutor(new NamedThreadFactory(broker.getBrokerPool(), "shutdown-task-async-shutdown")).submit(shutdownCallable);
+        final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory(broker.getBrokerPool(), "shutdown-task-async-shutdown"));
+        executor.submit(shutdownCallable);
+        executor.shutdown();
     }
 
     @Override

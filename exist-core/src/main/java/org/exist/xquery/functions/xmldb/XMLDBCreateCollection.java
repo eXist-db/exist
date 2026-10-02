@@ -77,11 +77,14 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	try {
 	    final Collection newCollection = createCollectionPath(collection, collectionName);
 
-	    if (newCollection == null)
-		{return Sequence.EMPTY_SEQUENCE;}
-	    else
-		{return new StringValue(this, newCollection.getName());}
-
+	    if (newCollection == null) {
+		return Sequence.EMPTY_SEQUENCE;
+	    }
+	    try {
+		return new StringValue(this, newCollection.getName());
+	    } finally {
+		closeIfOwn(collection, newCollection);
+	    }
 	} catch (final XMLDBException e) {
         logger.error("Unable to create new collection {}", collectionName, e);
 	    throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);

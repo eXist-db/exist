@@ -415,6 +415,7 @@ public class Main {
 
         final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory(null, null, "backup.restore-with-gui"));
         final Future<Void> future = executor.submit(callable);
+        executor.shutdown();
 
         while (!future.isDone() && !future.isCancelled()) {
             try {
