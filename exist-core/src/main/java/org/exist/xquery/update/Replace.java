@@ -23,6 +23,7 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
@@ -46,9 +47,11 @@ import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
@@ -127,10 +130,6 @@ public class Replace extends Modification {
         try (final Txn transaction = getTransaction()) {
             final StoredNode ql[] = selectAndLock(transaction, inSeq);
             final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            Item temp;
-            TextImpl text;
-            AttrImpl attribute;
-            ElementImpl parent;
             for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
@@ -138,34 +137,11 @@ public class Replace extends Modification {
                 }
 
                 //update the document
-                parent = (ElementImpl) node.getParentStoredNode();
+                final StoredNode parent = node.getParentStoredNode();
                 if (parent == null) {
-                    throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
-                        "Please consider removing the document or use 'update value' to just replace the children of the root.");
-                }
-                switch (node.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        temp = contentSeq.itemAt(0);
-                        if (!Type.subTypeOf(temp.getType(), Type.NODE)) {
-                            throw new XPathException(this,
-                                Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
-                                    Type.getTypeName(temp.getType())));
-                        }
-                        parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
-                        break;
-                    case Node.TEXT_NODE:
-                        text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
-                        text.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, text);
-                        break;
-                    case Node.ATTRIBUTE_NODE:
-                        final AttrImpl attr = (AttrImpl) node;
-                        attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
-                        attribute.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, attribute);
-                        break;
-                    default:
-                        throw new EXistException("unsupported node-type");
+                    replaceDocumentChild(transaction, doc, node, contentSeq);
+                } else {
+                    replaceChild(transaction, doc, (ElementImpl) parent, node, contentSeq);
                 }
                 doc.setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
@@ -175,7 +151,7 @@ public class Replace extends Modification {
             finishTriggers(transaction);
             //commit the transaction
             transaction.commit();
-        } catch (final LockException | PermissionDeniedException | EXistException | TriggerException e) {
+        } catch (final LockException | PermissionDeniedException | EXistException | TriggerException | DOMException e) {
             throw new XPathException(this, e.getMessage(), e);
         } finally {
             unlockDocuments();
@@ -187,6 +163,56 @@ public class Replace extends Modification {
         }
         
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private void replaceChild(final Txn transaction, final DocumentImpl doc, final ElementImpl parent, final StoredNode node,
+            final Sequence contentSeq) throws XPathException, EXistException {
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE, Node.COMMENT_NODE, Node.PROCESSING_INSTRUCTION_NODE -> {
+                final Item temp = contentSeq.itemAt(0);
+                if (!Type.subTypeOf(temp.getType(), Type.NODE)) {
+                    throw new XPathException(this,
+                        Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
+                            Type.getTypeName(temp.getType())));
+                }
+                parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
+            }
+            case Node.TEXT_NODE -> {
+                final TextImpl text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
+                text.setOwnerDocument(doc);
+                parent.updateChild(transaction, node, text);
+            }
+            case Node.ATTRIBUTE_NODE -> {
+                final AttrImpl attr = (AttrImpl) node;
+                final AttrImpl attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
+                attribute.setOwnerDocument(doc);
+                parent.updateChild(transaction, node, attribute);
+            }
+            default -> throw new EXistException("unsupported node-type");
+        }
+    }
+
+    /**
+     * Replace a comment or processing instruction around the document element, with comments and
+     * processing instructions.
+     */
+    private void replaceDocumentChild(final Txn transaction, final DocumentImpl doc, final StoredNode node,
+            final Sequence contentSeq) throws XPathException {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
+                "Please consider removing the document or use 'update value' to just replace the children of the root.");
+        }
+        final NodeListImpl replacement = new NodeListImpl(contentSeq.getItemCount());
+        for (final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this,
+                    Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE, Type.getTypeName(item.getType())));
+            }
+            replacement.add(((NodeValue) item).getNode());
+        }
+        doc.insertAfter(transaction, replacement, node);
+        doc.removeChild(transaction, node);
     }
 
     /* (non-Javadoc)

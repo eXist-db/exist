@@ -30,6 +30,8 @@ import org.exist.collections.LockedCollection;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.dom.memtree.DocumentFragmentImpl;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.security.SecurityManager;
 import org.exist.security.*;
@@ -39,6 +41,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.EnsureContainerLocked;
 import org.exist.storage.lock.EnsureLocked;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.MimeType;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
@@ -51,6 +54,7 @@ import org.w3c.dom.*;
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -782,7 +786,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @return a <code>Node</code> value
      */
     public Node getNode(final NodeProxy p) {
-        if(p.getNodeId().getTreeLevel() == 1) {
+        if(NodeId.DOCUMENT_NODE.equals(p.getNodeId())) {
+            // callers such as the XML:DB API ask for the document's content through the document node
             return getDocumentElement();
         }
         try(final DBBroker broker = pool.getBroker()) {
@@ -946,44 +951,269 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         }
     }
 
+    /**
+     * Update a child of the document: the document element, or a comment or processing instruction
+     * around it. Only the child itself is updated, not its descendants.
+     *
+     * The new node is written directly after the old one, which is then removed, so a child with no
+     * previous sibling can be updated too.
+     */
     @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
     public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
+        if(!(oldChild instanceof IStoredNode<?> oldNode) || !(newChild instanceof IStoredNode<?> newNode)) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        checkOneDocumentElement(oldChild, newChild);
+        final int index = childIndex(oldNode);
+        try(final DBBroker broker = pool.getBroker()) {
+            final NodePath oldPath = oldNode.getPath();
+            if(oldNode.getNodeType() == ELEMENT_NODE) {
+                replaceDocumentElement(transaction, broker, oldNode, oldPath, newNode, oldNode, index);
+            } else {
+                replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, oldNode, index);
+            }
+            broker.flush();
+        } catch(final EXistException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+        return newNode;
+    }
+
+    /**
+     * A document has exactly one document element: it can only be replaced by an element, and
+     * nothing else can be replaced by one.
+     */
+    private static void checkOneDocumentElement(final Node oldChild, final Node newChild) throws DOMException {
+        if(oldChild.getNodeType() == ELEMENT_NODE && newChild.getNodeType() != ELEMENT_NODE) {
+            throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+                    "A node replacing the document root needs to be an element");
+        }
+        if(oldChild.getNodeType() != ELEMENT_NODE && newChild.getNodeType() == ELEMENT_NODE) {
+            throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+                    "A document can have only one document element");
+        }
+    }
+
+    /**
+     * Replace the document element. Its descendants are indexed under its name: remove them from the
+     * indexes, and index them again under the new element, as {@link ElementImpl#updateChild} does.
+     */
+    private void replaceDocumentElement(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
+            final NodePath oldPath, final IStoredNode<?> newNode, final IStoredNode<?> after, final int index) {
+        final IndexController indexes = broker.getIndexController();
+        final NativeValueIndex valueIndex = broker.getValueIndex();
+        indexes.setDocument(this);
+        indexes.setMode(ReindexMode.REMOVE_SOME_NODES);
+        indexes.reindex(transaction, oldNode, ReindexMode.REMOVE_SOME_NODES);
+        final IStoredNode<?> valueReindexRoot = valueIndex.getReindexRoot(oldNode, oldPath);
+        valueIndex.reindex(valueReindexRoot);
+
+        final NodePath path = replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, after, index);
+        broker.endElement(newNode, path, null);
+
+        indexes.reindex(transaction, newNode, ReindexMode.STORE);
+        // at the top level, the value index's reindex root can only be the document element itself
+        valueIndex.reindex(valueReindexRoot == null ? null : newNode);
+    }
+
+    /**
+     * Write the new child after {@code after}, which is the old child itself or a node stored after it, then
+     * remove the old child, so that a child with no previous sibling can be replaced too.
+     *
+     * @return the path of the new child
+     */
+    private NodePath replaceStoredChild(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
+            final NodePath oldPath, final IStoredNode<?> newNode, final IStoredNode<?> after, final int index) {
+        final long oldAddress = oldNode.getInternalAddress();
+        newNode.setNodeId(oldNode.getNodeId());
+        broker.insertNodeAfter(transaction, after, newNode);
+        oldNode.setInternalAddress(oldAddress);
+        broker.removeNode(transaction, oldNode, oldPath, null);
+        broker.endRemove(transaction);
+        final NodePath path = newNode.getPath();
+        broker.indexNode(transaction, newNode, path);
+        childAddress[index] = newNode.getInternalAddress();
+        return path;
+    }
+
+    /**
+     * Insert comments and processing instructions before a child of the document.
+     */
+    @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void insertBefore(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
+        insertChildren(transaction, nodes, childIndex(storedChild(refChild)));
+    }
+
+    /**
+     * Insert comments and processing instructions after a child of the document.
+     */
+    @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void insertAfter(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
+        insertChildren(transaction, nodes, childIndex(storedChild(refChild)) + 1);
+    }
+
+    private static IStoredNode<?> storedChild(final Node child) throws DOMException {
+        if(!(child instanceof final IStoredNode<?> storedChild)) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        return storedChild;
+    }
+
+    /**
+     * Insert comments and processing instructions as children of the document, from position {@code index}.
+     *
+     * The nodes are stored in document order, after the last descendant of the child before them. The first
+     * child of a document is also the first node stored for it, which is where, for example,
+     * {@link org.exist.storage.NativeBroker#defragXMLResource} starts to free the document's pages. So to
+     * insert before the first child, the nodes are stored after it, and its own record is then moved after
+     * them: for the document element, that is the element itself, not its descendants.
+     */
+    private void insertChildren(final Txn transaction, final NodeList nodes, final int index) throws DOMException {
+        checkInsertableChildren(nodes);
+        final int count = nodes.getLength();
+        if(count == 0) {
+            return;
+        }
+        try(final DBBroker broker = pool.getBroker()) {
+            final IStoredNode<?> previous = index > 0 ? storedChildAt(broker, index - 1) : null;
+            final IStoredNode<?> following = index < children ? storedChildAt(broker, index) : null;
+            final NodeId followingId = following == null ? null : following.getNodeId();
+            final NodeId firstId = previous == null ? followingId.insertBefore() : previous.getNodeId().insertNode(followingId);
+            final IStoredNode<?> after = previous instanceof final StoredNode<?> storedPrevious ? storedPrevious.getLastNode(previous) : following;
+            final IStoredNode<?> last = storeNewChildren(transaction, broker, nodes, firstId, followingId, after, index);
+
+            if(previous == null) {
+                // the old first child is still stored before the new nodes: move its own record after them
+                moveRecordAfter(transaction, broker, following, last, index + count);
+            }
+            broker.flush();
+        } catch(final EXistException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+    }
+
+    /**
+     * Store new children of the document after {@code after}, and record them as its children from
+     * position {@code index}.
+     *
+     * @return the last of the new children
+     */
+    private IStoredNode<?> storeNewChildren(final Txn transaction, final DBBroker broker, final NodeList nodes,
+            final NodeId firstId, @Nullable final NodeId followingId, final IStoredNode<?> after, final int index) {
+        final int count = nodes.getLength();
+        final long[] newChildAddress = new long[children + count];
+        System.arraycopy(childAddress, 0, newChildAddress, 0, index);
+        System.arraycopy(childAddress, index, newChildAddress, index + count, children - index);
+
+        IStoredNode<?> last = after;
+        NodeId nodeId = firstId;
+        for(int i = 0; i < count; i++) {
+            final IStoredNode<?> node = newDocumentChild(nodes.item(i), nodeId);
+            broker.insertNodeAfter(transaction, last, node);
+            broker.indexNode(transaction, node, node.getPath());
+            newChildAddress[index + i] = node.getInternalAddress();
+            last = node;
+            nodeId = nextSiblingId(nodeId, followingId);
+        }
+        childAddress = newChildAddress;
+        children += count;
+        return last;
+    }
+
+    /**
+     * A document can have only one document element, and a stored document has no text at its top level.
+     */
+    private static void checkInsertableChildren(final NodeList nodes) throws DOMException {
+        for(int i = 0; i < nodes.getLength(); i++) {
+            switch(nodes.item(i).getNodeType()) {
+                case COMMENT_NODE, PROCESSING_INSTRUCTION_NODE -> { }
+                case ELEMENT_NODE -> throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "A document can have only one document element");
+                default -> throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "Only comments and processing instructions can be inserted around the document element");
+            }
+        }
+    }
+
+    private IStoredNode<?> storedChildAt(final DBBroker broker, final int index) {
+        return broker.objectWith(new NodeProxy(getExpression(), this, NodeId.DOCUMENT_NODE, childAddress[index]));
+    }
+
+    private IStoredNode<?> newDocumentChild(final Node node, final NodeId nodeId) {
+        final IStoredNode<?> child;
+        if(node.getNodeType() == COMMENT_NODE) {
+            final CommentImpl comment = new CommentImpl(getExpression(), ((Comment) node).getData());
+            comment.setNodeId(nodeId);
+            child = comment;
+        } else {
+            final ProcessingInstruction pi = (ProcessingInstruction) node;
+            child = new ProcessingInstructionImpl(getExpression(), nodeId, pi.getTarget(), pi.getData());
+        }
+        child.setOwnerDocument(this);
+        return child;
+    }
+
+    /**
+     * The id of the next sibling, which must stay before the following node's.
+     */
+    private static NodeId nextSiblingId(final NodeId nodeId, @Nullable final NodeId followingId) {
+        final NodeId next = nodeId.nextSibling();
+        return followingId != null && next.equals(followingId) ? nodeId.insertNode(followingId) : next;
+    }
+
+    /**
+     * Move the record of a child of the document after {@code after}, keeping its node id.
+     */
+    private void moveRecordAfter(final Txn transaction, final DBBroker broker, final IStoredNode<?> child,
+            final IStoredNode<?> after, final int index) {
+        final byte[] data = child.serialize();
+        final IStoredNode<?> copy = StoredNode.deserialize(data, 0, data.length, this);
+        ByteArrayPool.releaseByteArray(data);
+        copy.setOwnerDocument(this);
+        final NodePath path = child.getPath();
+        if(child.getNodeType() == ELEMENT_NODE) {
+            replaceDocumentElement(transaction, broker, child, path, copy, after, index);
+        } else {
+            replaceStoredChild(transaction, broker, child, path, copy, after, index);
+        }
+    }
+
+    /**
+     * Remove a child of the document, with its descendants.
+     */
+    @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public Node removeChild(final Txn transaction, final Node oldChild) throws DOMException {
         if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         }
-        final IStoredNode<?> newNode = (IStoredNode<?>) newChild;
-        final IStoredNode<?> previousNode = (IStoredNode<?>) oldNode.getPreviousSibling();
-        if(previousNode == null) {
-            throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
-        }
+        final int index = childIndex(oldNode);
         try(final DBBroker broker = pool.getBroker()) {
-            if(oldChild.getNodeType() == Node.ELEMENT_NODE) {
-                // replace the document-element
-                //TODO : be more precise in the type test -pb
-                if(newChild.getNodeType() != Node.ELEMENT_NODE) {
-                    throw new DOMException(
-                        DOMException.INVALID_MODIFICATION_ERR,
-                        "A node replacing the document root needs to be an element");
-                }
-                broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
-                broker.endRemove(transaction);
-                newNode.setNodeId(oldNode.getNodeId());
-                broker.insertNodeAfter(null, previousNode, newNode);
-                final NodePath path = newNode.getPath();
-                broker.indexNode(transaction, newNode, path);
-                broker.endElement(newNode, path, null);
-                broker.flush();
-            } else {
-                broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
-                broker.endRemove(transaction);
-                newNode.setNodeId(oldNode.getNodeId());
-                broker.insertNodeAfter(transaction, previousNode, newNode);
-            }
+            final IndexController indexes = broker.getIndexController();
+            indexes.setDocument(this);
+            indexes.setMode(ReindexMode.REMOVE_SOME_NODES);
+            broker.removeAllNodes(transaction, oldNode, oldNode.getPath(), indexes.getStreamListener());
+            broker.endRemove(transaction);
+            broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while updating child node: {}", e.getMessage(), e);
-            //TODO : thow exception ?
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         }
-        return newNode;
+        System.arraycopy(childAddress, index + 1, childAddress, index, children - index - 1);
+        children--;
+        childAddress = Arrays.copyOf(childAddress, children);
+        return oldChild;
+    }
+
+    private int childIndex(final IStoredNode<?> child) {
+        for(int i = 0; i < children; i++) {
+            if(StorageAddress.equals(childAddress[i], child.getInternalAddress())) {
+                return i;
+            }
+        }
+        throw new DOMException(DOMException.NOT_FOUND_ERR, "Node is not a child of this document");
     }
 
     @Override
