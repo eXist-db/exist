@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 public class VectorStoreImplTest {
@@ -45,7 +46,7 @@ public class VectorStoreImplTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final VectorStore vectorStore = pool.getVectorStore();
         assertNotNull(vectorStore);
-        assertTrue(vectorStore instanceof VectorStoreImpl);
+        assertInstanceOf(VectorStoreImpl.class, vectorStore);
         store = (VectorStoreImpl) vectorStore;
         store.resetEntryCountCache();
     }

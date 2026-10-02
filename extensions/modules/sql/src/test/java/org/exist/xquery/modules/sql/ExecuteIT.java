@@ -45,7 +45,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
  * SQL Execute Integration Tests.
@@ -90,7 +90,7 @@ public class ExecuteIT {
 
                 // check that the namespace of the result element is in the 'sql' namespace
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof Element);
+                assertInstanceOf(Element.class, result.itemAt(0));
                 assertEquals(Type.ELEMENT, result.itemAt(0).getType());
                 final Element element = (ElementImpl) result.itemAt(0);
 

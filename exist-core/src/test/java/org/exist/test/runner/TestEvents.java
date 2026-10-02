@@ -19,20 +19,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.test.runner;
 
-import org.junit.runner.RunWith;
-
 /**
- * XSuite that runs one passing file and one file that never emits activity (hanging.xqm).
- * Used by XSuiteParallelTest to verify progress-based hang detection reports the hung file.
+ * Receives the outcome of each test as the XQuery side of an XQSuite or XML test
+ * run reports it. Decouples the XQuery callback functions from any particular
+ * test framework, such as the JUnit Platform engine for XQSuite tests.
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteParallel
-@XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/single-test.xqm",
-    "src/test/resources/org/exist/test/runner/hanging.xqm"
-})
-public class ParallelWithHungSuite {
+public interface TestEvents {
+
+    void started(String testName);
+
+    void finished(String testName);
+
+    void ignored(String testName);
+
+    /**
+     * An assertion failure or an error raised while running the test.
+     */
+    void failed(String testName, Throwable reason);
+
+    /**
+     * The test's assumptions did not hold, so it is aborted rather than failed.
+     */
+    void assumptionFailed(String testName, String message);
 }

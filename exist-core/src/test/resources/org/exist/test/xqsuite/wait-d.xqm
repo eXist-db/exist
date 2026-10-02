@@ -21,19 +21,14 @@
  :)
 xquery version "3.1";
 
-module namespace hang = "http://exist-db.org/xquery/hang";
+module namespace wd = "http://exist-db.org/xquery/xqsuite-fixture/wait-d";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 
-declare function hang:loop() {
-    hang:loop()
-};
-
 declare
-    %test:assertEquals(1)
-function hang:neverReached() {
-    1
+    %test:assertEquals("done")
+function wd:waits() {
+    (: long enough that files run side by side if, and only if, they are run concurrently :)
+    util:wait(2500),
+    "done"
 };
-
-(: Evaluated when module is used; never returns so no ext: callback is ever fired :)
-declare variable $hang:blocker := hang:loop();

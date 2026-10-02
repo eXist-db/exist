@@ -27,16 +27,14 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
 
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
 
 public class ExtTestStartedFunction extends JUnitIntegrationFunction {
 
-    public ExtTestStartedFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
-        super("ext-test-started-function", params(param("name", Type.STRING, "name of the test")), context, parentName, notifier);
+    public ExtTestStartedFunction(final XQueryContext context, final String parentName, final TestEvents events) {
+        super("ext-test-started-function", params(param("name", Type.STRING, "name of the test")), context, parentName, events);
     }
 
     @Override
@@ -44,9 +42,7 @@ public class ExtTestStartedFunction extends JUnitIntegrationFunction {
         final Sequence arg1 = getCurrentArguments()[0];
         final String name = arg1.itemAt(0).getStringValue();
 
-        // notify JUnit
-        final Description description = createTestDescription(name);
-        notifier.fireTestStarted(description);
+        events.started(name);
 
         return Sequence.EMPTY_SEQUENCE;
     }

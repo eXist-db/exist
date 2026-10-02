@@ -27,9 +27,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -40,12 +37,12 @@ import static org.exist.xquery.FunctionDSL.*;
 
 public class ExtTestErrorFunction extends JUnitIntegrationFunction {
 
-    public ExtTestErrorFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
+    public ExtTestErrorFunction(final XQueryContext context, final String parentName, final TestEvents events) {
         super("ext-test-error-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
                         optParam("error", Type.MAP_ITEM, "error detail of the test. e.g. map { \"code\": $err:code, \"description\": $err:description, \"value\": $err:value, \"module\": $err:module, \"line-number\": $err:line-number, \"column-number\": $err:column-number, \"additional\": $err:additional, \"xquery-stack-trace\": $exerr:xquery-stack-trace, \"java-stack-trace\": $exerr:java-stack-trace}")
-                ), context, parentName, notifier);
+                ), context, parentName, events);
     }
 
     @Override
@@ -56,16 +53,15 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         final Sequence arg2 = getCurrentArguments().length == 2 ? getCurrentArguments()[1] : null;
         final MapType error = arg2 != null ? (MapType)arg2.itemAt(0) : null;
 
-        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {
             final XPathException errorReason = errorMapAsXPathException(name, error);
             logOneLineIfXQueryError(name, error);
-            notifier.fireTestFailure(new Failure(description, errorReason));
+            events.failed(name, errorReason);
         } catch (final XPathException e) {
             //signal internal failure
-            notifier.fireTestFailure(new Failure(description, e));
+            events.failed(name, e);
         }
 
         return Sequence.EMPTY_SEQUENCE;

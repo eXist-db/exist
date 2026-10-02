@@ -60,8 +60,9 @@ import java.nio.file.Files;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -79,7 +80,7 @@ public class SystemExportFiltersTest {
     private static final XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
     private static final XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
     private static final XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
-    
+
     private static final String XML1 = "<test attr=\"test\"/>";
     private static final String XML1_BACKUP = "<test attr=\"test\">test</test>";
     private static final String XML2 =
@@ -172,7 +173,7 @@ public class SystemExportFiltersTest {
             assertEquals(XML3_PROPER, serializer(broker, doc));
 
             doc = getDoc(broker, test, doc11uri.lastSegment());
-            assertTrue(doc instanceof BinaryDocument);
+            assertInstanceOf(BinaryDocument.class, doc);
             try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
                 assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
             }

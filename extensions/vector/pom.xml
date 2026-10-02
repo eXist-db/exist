@@ -56,10 +56,14 @@
             <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
             <version>${project.version}</version>
-            <!-- Not excluding junit:junit: org.exist.test.ExistEmbeddedServer still extends
-                 org.junit.rules.ExternalResource for JUnit 4 backward compatibility, so its
-                 class file must stay resolvable even though this module's own tests are
-                 fully migrated to JUnit 5 and never reference JUnit 4 directly. -->
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -122,7 +126,6 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.exist-db:exist-core</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

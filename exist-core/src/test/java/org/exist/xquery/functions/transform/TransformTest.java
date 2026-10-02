@@ -61,8 +61,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -105,18 +107,18 @@ public class TransformTest {
                 <xsl:output method="xml" indent="no" encoding="UTF-8"/>
                 <!-- -->
                 <xsl:param name="listOpsFileUri" required="yes"/>
-            
+
                 <!-- -->
                 <xsl:variable name="ts:listOps" select="doc($listOpsFileUri)"/>
-            
+
                 <xsl:key name="ts:listOpsById" match="//ops" use="@id"/>
-            
+
                 <!-- -->
                 <xsl:template match="/">
                     <xsl:if test="empty($ts:listOps)">
                         <xsl:message terminate="yes">Could not find listOpsFileUri document</xsl:message>
                     </xsl:if>
-            
+
                     <DSN_FLAT>
                         <xsl:for-each select="//ops">
                             <xsl:variable name="keyId" select="@id"/>
@@ -231,7 +233,7 @@ public class TransformTest {
 
             assertEquals(1, sequence.getItemCount());
             final Item item = sequence.itemAt(0);
-            assertTrue(item instanceof Element);
+            assertInstanceOf(Element.class, item);
             final Element dsn_flat = ((Element)item);
             assertEquals("DSN_FLAT", dsn_flat.getNodeName());
 

@@ -35,10 +35,11 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
@@ -74,7 +75,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
     }
 
     @Test
@@ -104,7 +105,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
     }
 
     @Test
@@ -133,7 +134,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
     }
 
     @Test
@@ -164,7 +165,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals(WindowExpr.WindowType.SLIDING_WINDOW, ((WindowExpr) expr.getFirst()).getWindowType());
     }
 
@@ -198,7 +199,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals(new QName("first"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
         assertEquals(new QName("start-previous"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPreviousItem());
@@ -240,7 +241,7 @@ public class WindowClauseTest {
                 fail(treeParser.getErrorMessage());
             }
 
-            assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
             assertEquals(WindowExpr.WindowType.TUMBLING_WINDOW, ((WindowExpr) expr.getFirst()).getWindowType());
             assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
             assertEquals(new QName("spos"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
@@ -281,7 +282,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getPreviousItem());
@@ -319,7 +320,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getPreviousItem());
@@ -353,7 +354,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals("first", ((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem().getStringValue());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getPreviousItem());
@@ -389,7 +390,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals(WindowExpr.WindowType.SLIDING_WINDOW, ((WindowExpr) expr.getFirst()).getWindowType());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
@@ -429,7 +430,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals(WindowExpr.WindowType.SLIDING_WINDOW, ((WindowExpr) expr.getFirst()).getWindowType());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertEquals(new QName("s"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());
@@ -475,7 +476,7 @@ public class WindowClauseTest {
             fail(treeParser.getErrorMessage());
         }
 
-        assertTrue(expr.getFirst() instanceof WindowExpr, "Expression should be of type WindowExpr");
+        assertInstanceOf(WindowExpr.class, expr.getFirst(), "Expression should be of type WindowExpr");
         assertEquals(WindowExpr.WindowType.TUMBLING_WINDOW, ((WindowExpr) expr.getFirst()).getWindowType());
         assertEquals(new QName("first"), ((WindowExpr) expr.getFirst()).getWindowStartCondition().getCurrentItem());
         assertNull(((WindowExpr) expr.getFirst()).getWindowStartCondition().getPosVar());

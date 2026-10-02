@@ -21,8 +21,7 @@
  */
 package xquery.lucene;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
 /**
  * Runs only the analyzers XQSuite tests in isolation.
@@ -31,8 +30,7 @@ import org.junit.runner.RunWith;
  *
  * mvn test -Dtest=LuceneAnalyzersTests -pl extensions/indexes/lucene -DfailIfNoTests=false
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery/lucene/analyzers-diacritics.xql"
 })
 public class LuceneAnalyzersTests {

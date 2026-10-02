@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LuceneIndexWorkerBatchSizeTest {
@@ -62,7 +63,7 @@ public class LuceneIndexWorkerBatchSizeTest {
     @Test
     public void reindexDeleteQueryUsesKeywordDocIdAndNodeScopedCanary() {
         final Query query = LuceneIndexWorker.reindexNodeDeleteQueryForDocIds(List.of(new BytesRef("7")));
-        assertTrue(query instanceof BooleanQuery, "Expected BooleanQuery composition");
+        assertInstanceOf(BooleanQuery.class, query, "Expected BooleanQuery composition");
         final BooleanQuery bq = (BooleanQuery) query;
         assertEquals(2, bq.clauses().size());
         assertEquals(BooleanClause.Occur.MUST, bq.clauses().getFirst().occur());

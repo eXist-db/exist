@@ -38,8 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -69,7 +70,7 @@ public class DocumentImplTest {
 
         final Attr attr1 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr1.getNodeType());
-        assertTrue(attr1 instanceof AttrNSImpl);
+        assertInstanceOf(AttrNSImpl.class, attr1);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
         assertNull(attr1.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getLocalName());
@@ -78,7 +79,7 @@ public class DocumentImplTest {
 
         final Attr attr2 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr2.getNodeType());
-        assertTrue(attr2 instanceof AttrNSImpl);
+        assertInstanceOf(AttrNSImpl.class, attr2);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr2.getNamespaceURI());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr2.getPrefix());
         assertEquals("repo", attr2.getLocalName());
@@ -134,7 +135,7 @@ public class DocumentImplTest {
 
         final Attr attr1 = (Attr)attrs.item(index++);
         assertEquals(NodeImpl.NAMESPACE_NODE, attr1.getNodeType());
-        assertTrue(attr1 instanceof NamespaceNode);
+        assertInstanceOf(NamespaceNode.class, attr1);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
         assertNull(attr1.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getLocalName());

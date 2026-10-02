@@ -19,18 +19,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+package org.exist.test.xqsuite;
 
-package org.exist.test.runner;
-
-import org.junit.runner.RunWith;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 
 /**
- * XSuite that runs the debuggability test resource (failing-both.xqm: one assertion failure,
- * one unexpected error) so we can assert on failure stack traces (navigate to XQuery / navigate to Java).
+ * A single XQSuite test function or XML test.
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/failing-both.xqm"
-})
-public class DebuggabilityNavigabilitySuite {
+final class XQTestDescriptor extends AbstractTestDescriptor {
+
+    XQTestDescriptor(final UniqueId id, final String name, final TestSource source) {
+        super(id, name, source);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.TEST;
+    }
 }

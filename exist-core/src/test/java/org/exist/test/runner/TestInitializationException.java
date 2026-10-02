@@ -19,20 +19,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.test.runner;
 
-import org.junit.runner.RunWith;
-
 /**
- * XSuite that runs passing XQuery tests in parallel.
- * Used by XSuiteParallelTest to verify dynamic pool and parallel execution.
+ * A file of tests could not be read or compiled, so its tests cannot be discovered.
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteParallel
-@XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/single-test.xqm",
-    "src/test/resources/org/exist/test/runner/no-tests.xqm"
-})
-public class ParallelPassingSuite {
+public class TestInitializationException extends Exception {
+
+    public TestInitializationException(final String message) {
+        super(message);
+    }
+
+    public TestInitializationException(final Throwable cause) {
+        super(cause);
+    }
 }

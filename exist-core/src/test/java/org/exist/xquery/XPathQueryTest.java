@@ -57,6 +57,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 public class XPathQueryTest {
@@ -84,7 +85,7 @@ public class XPathQueryTest {
     private final static String nested =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<test><c></c><b><c><b></b></c></b><b></b><c></c></test>";
-    
+
     private final static String numbers =
             "<test>"
             + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
@@ -92,7 +93,7 @@ public class XPathQueryTest {
             + "<item id='3'><price>18.4</price><stock>5</stock></item>"
             + "<item id='4'><price>65.54</price><stock>16</stock></item>"
             + "</test>";
-    
+
     private final static String numbers2 =
             "<test xmlns=\"http://numbers.org\">"
             + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
@@ -100,7 +101,7 @@ public class XPathQueryTest {
             + "<item id='3'><price>18.4</price><stock>5</stock></item>"
             + "<item id='4'><price>65.54</price><stock>16</stock></item>"
             + "</test>";
-    
+
     private final static String namespaces =
             "<test xmlns='http://www.foo.com'>"
             + "  <section>"
@@ -108,21 +109,21 @@ public class XPathQueryTest {
             + "      <c:comment xmlns:c='http://www.other.com'>This is my comment</c:comment>"
             + "  </section>"
             + "</test>";
-    
+
     private final static String strings =
             "<test>"
             + "<string>Hello World!</string>"
             + "<string value='Hello World!'/>"
             + "<string>Hello</string>"
             + "</test>";
-    
+
     private final static String nested2 =
             "<RootElement>" +
             "<ChildA>" +
             "<ChildB id=\"2\"/>" +
             "</ChildA>" +
             "</RootElement>";
-    
+
     private final static String nested3 =
             "<test>" +
             "   <a>" +
@@ -135,7 +136,7 @@ public class XPathQueryTest {
             "       </a>" +
             "   </a>" +
             "</test>";
-    
+
     private final static String siblings =
             "<!-- 1 --><!-- 2 -->" +
             "<test>" +
@@ -189,16 +190,16 @@ public class XPathQueryTest {
             "<!ATTLIST b id ID #IMPLIED>" +
             "<!ATTLIST c xml:id ID #IMPLIED>]>" +
             ids_content;
-    
+
     private final static String date =
             "<timestamp date=\"2006-04-29+02:00\"/>";
-    
+
     private final static String quotes =
             "<test><title>&quot;Hello&quot;</title></test>";
-    
+
     private final static String ws =
             "<test><parent xml:space=\"preserve\"><text> </text><text xml:space=\"default\"> </text></parent></test>";
-    
+
     private final static String self =
             "<test-self><a>Hello</a><b>World!</b></test-self>";
 
@@ -215,16 +216,16 @@ public class XPathQueryTest {
             <elem3>val2</elem3>
          </elem2>
         </elem1>""";
-    
+
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
 
     private final static String cdata_content = "Hello there \"Bob?\"";
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
-    
+
     private Collection testCollection;
-    
+
     private void setUp() throws ReflectiveOperationException, XMLDBException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -740,7 +741,7 @@ public class XPathQueryTest {
         result = queryResource(service, "siblings.xml", "/node()[1]/following-sibling::node()", 3);
         assertEquals("<!-- 2 -->", result.getResource(0).getContent().toString());
         final Node testElem = ((XMLResource)result.getResource(1)).getContentAsDOM();
-        assertTrue(testElem instanceof Element);
+        assertInstanceOf(Element.class, testElem);
         assertEquals("test", testElem.getNodeName());
         assertEquals("<!-- 3 -->", result.getResource(2).getContent().toString());
 
@@ -1271,10 +1272,10 @@ public class XPathQueryTest {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String xQuery = "(1, 2, 3)[ . lt 3]";
-        
+
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-        
+
         assertEquals(2, rs.getSize(), "SFBUG 1460610 nr of results");
         assertEquals("1", rs.getResource(0).getContent().toString(),
                 "SFBUG 1460610 1st result");
@@ -1290,10 +1291,10 @@ public class XPathQueryTest {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String xQuery = "let $one := 1 return (1, 2, 3)[$one + 1]";
-        
+
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-        
+
         assertEquals(1, rs.getSize(), "SFBUG 1537355 nr of results");
         assertEquals("2", rs.getResource(0).getContent().toString(),
                 "SFBUG 1537355 result");
@@ -1312,10 +1313,10 @@ public class XPathQueryTest {
     	    "</objects> " +
     	    "let $matches := $doc/detail[source[dynamic='false'] or class] " +
     	    "return count($matches) eq 2";
-    
+
 	    XQueryService service = getQueryService();
 	    ResourceSet rs = service.query(xQuery);
-	    
+
 	    assertEquals(1, rs.getSize());
 	    assertEquals("true", rs.getResource(0).getContent().toString());
 
@@ -1326,11 +1327,11 @@ public class XPathQueryTest {
 
 	    service = getQueryService();
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        service.setProperty(OutputKeys.INDENT, "no");	    
+        service.setProperty(OutputKeys.INDENT, "no");
 	    rs = service.query(xQuery);
 
 	    assertEquals(1, rs.getSize());
-	    assertXMLEqual("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>", 
+	    assertXMLEqual("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>",
 	    		rs.getResource(0).getContent().toString());
 
     }
@@ -1345,21 +1346,21 @@ public class XPathQueryTest {
         setUp();
         XQueryService service = getQueryService();
         ResourceSet rs=null;
-        
+
         // test one
         final String xQuery1 = "let $q := <q><t>eXist</t></q> return $q//t";
         rs = service.query(xQuery1);
         assertEquals(1, rs.getSize(), "nr of results");
         assertEquals("<t>eXist</t>", rs.getResource(0).getContent().toString(),
                 "result");
-        
+
         // test two
         final String xQuery2 = "let $q := <q><t>eXist</t></q> return ($q//t)[1]";
         rs = service.query(xQuery2);
         assertEquals(1, rs.getSize(), "nr of results");
         assertEquals("<t>eXist</t>", rs.getResource(0).getContent().toString(),
                 "result");
-        
+
         // This one fails http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
         final String xQuery3 = "let $q := <q><t>eXist</t></q> return $q//t[1]";
         rs = service.query(xQuery3);
@@ -1378,18 +1379,18 @@ public class XPathQueryTest {
         setUp();
         final String xQuery = "declare option exist:serialize \"method=xml indent=no\"; let $test:=<z><a>aaa</a><z>zzz</z></z> "
                 +"return ( <one>{$test//z}</one>, <two>{$test/descendant-or-self::node()/child::z}</two> )";
-        
+
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-        
+
 //        System.out.println("BUG1460791/1" + rs.getResource(0).getContent().toString() );
 //        System.out.println("BUG1460791/2" + rs.getResource(1).getContent().toString() );
-        
+
         assertEquals(2, rs.getSize(), "SFBUG 1460791 nr of results");
-        
+
         assertEquals("<one><z>zzz</z></one>", rs.getResource(0).getContent().toString(),
                 "SFBUG 1460791 result part 1");
-        
+
         assertEquals("<two><z>zzz</z></two>", rs.getResource(1).getContent().toString(),
                 "SFBUG 1460791 result part 2");
     }
@@ -1408,18 +1409,18 @@ public class XPathQueryTest {
                 +"let $one:=$list[1] return ( "
                 +"$m/Unit[string(data(@name)) eq string(data($list[1]/@aaa))],"
                 +"<br/>,$m/Unit[string(data(@name)) eq string(data($one/@aaa))] )";
-        
+
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-        
+
         assertEquals(3, rs.getSize(), "SFBUG 1462120 nr of results");
-        
+
         assertEquals("<Unit name=\"g\" size=\"1\"/>", rs.getResource(0).getContent().toString(),
                 "SFBUG 1462120 result part 1");
-        
+
         assertEquals("<br/>", rs.getResource(1).getContent().toString(),
                 "SFBUG 1462120 result part 2");
-        
+
         assertEquals("<Unit name=\"g\" size=\"1\"/>", rs.getResource(2).getContent().toString(),
                 "SFBUG 1462120 result part 3");
     }
@@ -1436,10 +1437,10 @@ public class XPathQueryTest {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String xQuery = "let $dum := <dummy><el>1</el><el>2</el></dummy> return $dum/el[2]";
-        
+
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-        
+
         assertEquals(1, rs.getSize(), "Predicate bug wiki_1");
         assertEquals("<el>2</el>", rs.getResource(0).getContent().toString(),
                 "Predicate bug wiki_1");
@@ -1475,11 +1476,11 @@ public class XPathQueryTest {
         assertEquals(1, rs.getSize(), "CardinalitySelfBUG bug wiki_2");
         assertEquals("employee", rs.getResource(0).getContent().toString(),
                 "CardinalitySelfBUG bug wiki_2");
-        
+
     }
 
     /**
-     * Problem in VirtualNodeSet which return 2 attributes because it 
+     * Problem in VirtualNodeSet which return 2 attributes because it
      * computes every level
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
@@ -1493,7 +1494,7 @@ public class XPathQueryTest {
 
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
-            
+
         assertEquals(1, rs.getSize(), "VirtualNodesetBUG_wiki_3");
         assertEquals("<a id=\"cool\"/>", rs.getResource(0).getContent().toString(),
                 "VirtualNodesetBUG_wiki_3");
@@ -1575,7 +1576,7 @@ public class XPathQueryTest {
      }
 
     /**
-     * Miscomputation of the expression context in where clause when no 
+     * Miscomputation of the expression context in where clause when no
      * wrapper expression is used. Using, e.g. where data($x/@id) eq "id" works !
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -1732,7 +1733,7 @@ public class XPathQueryTest {
         setUp();
         final XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
-            
+
         ResourceSet result = queryResource(service, "strings.xml",	"<test>{() or ()}</test>", 1);
         Resource r = result.getResource(0);
         assertXMLEqual("<test>false</test>", r.getContent().toString());
@@ -1828,7 +1829,7 @@ public class XPathQueryTest {
         setUp();
        final XQueryService service =
           storeXMLStringAndGetQueryService("ids.xml", ids);
-  
+
        queryResource(service, "ids.xml", "/idref('id2')", 1);
        queryResource(service, "ids.xml", "/idref('id1')", 2);
        queryResource(service, "ids.xml", "/idref(('id2', 'id1'))", 3);
@@ -1953,7 +1954,7 @@ public class XPathQueryTest {
         XMLResource doc = testCollection.createResource("strings.xml", XMLResource.class);
         doc.setContent(strings);
         testCollection.storeResource(doc);
-            
+
         doc = testCollection.createResource("strings2.xml", XMLResource.class);
         doc.setContent(strings);
         testCollection.storeResource(doc);
@@ -2250,7 +2251,7 @@ public class XPathQueryTest {
                     .getResource(i).getContent().toString(), "false " + (i + 1));
             }
         }
-        
+
         boolean exceptionThrown = false;
         String message = "";
         try {
@@ -2278,7 +2279,7 @@ public class XPathQueryTest {
                 module namespace foo="urn:foo";
                 declare function foo:test() { "Hello World! };\
                 """;
-        
+
         final EXistXQueryService service = (EXistXQueryService) getQueryService();
         boolean exceptionOccurred = false;
         try {
@@ -2288,7 +2289,7 @@ public class XPathQueryTest {
             exceptionOccurred = true;
         }
         assertTrue(exceptionOccurred, "Expected an exception");
-        
+
         exceptionOccurred = false;
         try {
             service.compileAndCheck(invalidModule);
@@ -2350,7 +2351,7 @@ public class XPathQueryTest {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service = getQueryService();
-        
+
         // Test cases by MIKA
         final String validQuery = "substring(\"MK-1234\", 4,1)";
         ResourceSet result = queryAndAssert( service, validQuery, 1, validQuery);

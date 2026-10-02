@@ -65,8 +65,8 @@ import java.util.List;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test expectations to check that the correct entries
@@ -446,7 +446,7 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             SAXException, LockException {
 
-        assertTrue(data instanceof FileInputSource);
+        assertInstanceOf(FileInputSource.class, data);
 
         broker.storeDocument(transaction, XmldbURI.create(dbFilename), data, MimeType.BINARY_TYPE, collection);
         final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, XmldbURI.create(dbFilename));

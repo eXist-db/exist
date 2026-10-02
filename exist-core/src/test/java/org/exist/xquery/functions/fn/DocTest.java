@@ -40,8 +40,10 @@ import org.junit.jupiter.api.BeforeEach;
 import static com.evolvedbinary.j8fu.Either.Left;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalXMLResource;
@@ -115,15 +117,15 @@ public class DocTest {
 
         existEmbeddedServer.getRoot().removeResource(existEmbeddedServer.getRoot().getResource("test.xml"));
     }
-    
+
     private void storeResource(final Collection col, final String fileName, final Class<? extends Resource> type, final String mimeType, final String content) throws XMLDBException {
     	Resource res = col.createResource(fileName, type);
     	res.setContent(content);
-    	
+
     	if (mimeType != null) {
             ((EXistResource) res).setMimeType(mimeType);
         }
-        
+
     	col.storeResource(res);
     }
 
@@ -172,7 +174,7 @@ public class DocTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
@@ -206,7 +208,7 @@ public class DocTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();

@@ -38,9 +38,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.InitializationError;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,27 +77,27 @@ public class XMLTestRunner extends AbstractTestRunner {
     /**
      * @param path The path to the XML file containing the tests.
      * @param parallel whether the tests should be run in parallel.
-     * @throws InitializationError if the test runner could not be constructed.
+     * @throws TestInitializationException if the test runner could not be constructed.
      */
 
-    XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
-        super(path, parallel);
+    XMLTestRunner(final Path path) throws TestInitializationException {
+        super(path);
         try {
             this.doc = parse(path);
         } catch (final ParserConfigurationException | IOException | SAXException e) {
-            throw new InitializationError(e);
+            throw new TestInitializationException(e);
         }
         this.info = extractTestInfo(path, doc);
     }
 
-    private static XMLTestInfo extractTestInfo(final Path path, final Document doc) throws InitializationError {
+    private static XMLTestInfo extractTestInfo(final Path path, final Document doc) throws TestInitializationException {
         String testSetName = null;
         String description = null;
         final List<String> testNames = new ArrayList<>();
 
         final Element docElement = doc.getDocumentElement();
         if(docElement == null) {
-            throw new InitializationError("Invalid XML test document: " + path.toAbsolutePath());
+            throw new TestInitializationException("Invalid XML test document: " + path.toAbsolutePath());
         }
 
         final NodeList children = docElement.getChildNodes();
@@ -121,7 +118,7 @@ public class XMLTestRunner extends AbstractTestRunner {
                             testName = getTaskText(child);
                         }
                         if (testName == null) {
-                            throw new InitializationError("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath());
+                            throw new TestInitializationException("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath());
                         }
                         testNames.add(testName);
                         break;
@@ -134,15 +131,16 @@ public class XMLTestRunner extends AbstractTestRunner {
         }
 
         if (testSetName == null) {
-            throw new InitializationError("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath());
+            throw new TestInitializationException("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath());
         }
 
         return new XMLTestInfo(testSetName, description, testNames);
     }
 
     private static @Nullable String getIdValue(final Node test) {
+        // as the runtime does: ($test/@id[. ne ""], $test/task)[1]
         final String id = ((Element)test).getAttribute("id");
-        return id.isBlank() ? null : id;
+        return id.isEmpty() ? null : id;
     }
 
     private static @Nullable String getTaskText(final Node test) {
@@ -150,12 +148,11 @@ public class XMLTestRunner extends AbstractTestRunner {
         for (int j = 0; j < testChildren.getLength(); j++) {
             final Node testChild = testChildren.item(j);
             if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null && "task".equals(testChild.getLocalName())) {
-                String textContent = testChild.getTextContent();
-                if (textContent != null) {
-                    textContent = textContent.trim();
-                    if (!textContent.isEmpty()) {
-                        return textContent;
-                    }
+                // the runtime reports the raw text of <task>, including any surrounding whitespace,
+                // so the name must not be trimmed or it would not match the reported test
+                final String textContent = testChild.getTextContent();
+                if (textContent != null && !textContent.isBlank()) {
+                    return textContent;
                 }
                 return null;
             }
@@ -163,22 +160,18 @@ public class XMLTestRunner extends AbstractTestRunner {
         return null;
     }
 
-    private String getSuiteName() {
+    @Override
+    public String getSuiteName() {
         return "xmlts." + info.name();
     }
 
     @Override
-    public Description getDescription() {
-        final String suiteName = checkDescription(info, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName);
-        for (final String childName : info.childNames()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName)));
-        }
-        return description;
+    public List<String> getTestNames() {
+        return List.copyOf(info.childNames());
     }
 
     @Override
-    public void run(final RunNotifier notifier) {
+    public void run(final TestEvents events, final BrokerPool brokerPool) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xml-test-runner.xq");
@@ -188,19 +181,15 @@ public class XMLTestRunner extends AbstractTestRunner {
                 context -> new Tuple2<>("id", Sequence.EMPTY_SEQUENCE),
 
                 // set callback functions for notifying junit!
-                context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), notifier, path)))),
-                context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
+                context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), events)))),
+                context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), events)))),
+                context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), events, path)))),
+                context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), events)))),
+                context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), events)))),
+                context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), events))))
             );
 
-            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
             executeQuery(brokerPool, query, externalVariableDeclarations);
-
-
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);

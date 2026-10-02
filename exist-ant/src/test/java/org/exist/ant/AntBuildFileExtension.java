@@ -21,26 +21,43 @@
  */
 package org.exist.ant;
 
-import org.apache.tools.ant.BuildFileRule;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.File;
+
 /**
- * JUnit 5 {@link org.junit.jupiter.api.extension.Extension} adapter for Ant's
- * {@link BuildFileRule}, which ships only as a JUnit 4 {@code TestRule} with no
- * upstream JUnit 5 equivalent.
- *
- * <p>{@code BuildFileRule} only overrides {@code after()} (its {@code before()} is
- * the inherited no-op from {@link org.junit.rules.ExternalResource}; setup instead
- * happens explicitly via {@link #configureProject(String)}), so exposing that one
- * protected lifecycle hook as {@link AfterEachCallback} is sufficient to use it as
- * an instance-level {@code @RegisterExtension} field without needing the JUnit 4
- * migration-support shim.</p>
+ * Loads an Ant build file for a test and runs its targets.
+ * <p>
+ * Ant's own test helper, {@code BuildFileRule}, only exists as a JUnit 4 rule, so this does
+ * the part of it that the tests need: configure a {@link Project} from a build file, execute
+ * targets, and afterwards run the build file's {@code tearDown} target if it has one.
  */
-public class AntBuildFileExtension extends BuildFileRule implements AfterEachCallback {
+public class AntBuildFileExtension implements AfterEachCallback {
+    private Project project;
+
+    public void configureProject(final String buildFile) {
+        final File antFile = new File(buildFile);
+        project = new Project();
+        project.init();
+        project.setUserProperty("ant.file", antFile.getAbsolutePath());
+        ProjectHelper.configureProject(project, antFile);
+    }
+
+    public void executeTarget(final String target) {
+        project.executeTarget(target);
+    }
+
+    public Project getProject() {
+        return project;
+    }
 
     @Override
     public void afterEach(final ExtensionContext context) {
-        after();
+        if (project != null && project.getTargets().containsKey("tearDown")) {
+            project.executeTarget("tearDown");
+        }
     }
 }

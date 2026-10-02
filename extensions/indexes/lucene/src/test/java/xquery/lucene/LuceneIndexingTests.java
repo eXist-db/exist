@@ -21,8 +21,7 @@
  */
 package xquery.lucene;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
 /**
  * Runs only the isolated Lucene field indexing XQSuite tests.
@@ -30,8 +29,7 @@ import org.junit.runner.RunWith;
  *
  * mvn test -Dtest=LuceneIndexingTests -pl extensions/indexes/lucene -DfailIfNoTests=false
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+@XQSuite({
     "src/test/xquery/lucene/ft-query-field.xqm",
     "src/test/xquery/lucene/self-axis-index.xqm",
     "src/test/xquery/lucene/field-expression-context.xqm"

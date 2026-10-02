@@ -53,9 +53,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class InspectModuleTest {
 
     @RegisterExtension
@@ -75,7 +76,7 @@ public class InspectModuleTest {
             declare function x:fun1() as xs:string {
               "hello from fun1"
             };
-            
+
             (:~
              : Some other description.
              :
@@ -87,7 +88,7 @@ public class InspectModuleTest {
             declare function x:fun2($one as xs:int, $two as xs:float) as xs:string {
               "hello from fun2"
             };
-            
+
             (:~
              : This is a multiline description and therefore
              : spans multiple
@@ -98,7 +99,7 @@ public class InspectModuleTest {
             declare function x:fun3() {
               "hello from fun3"
             };
-            
+
             (:~
              : An annotated function.
              :
@@ -154,7 +155,7 @@ public class InspectModuleTest {
             """;
     private static final String MAIN_MODULE = """
             import module namespace inspect = "http://exist-db.org/xquery/inspection";
-            
+
             inspect:inspect-module(xs:anyURI("xmldb:exist://%s"))/function[@name eq "%s"]
             """;
 
@@ -292,7 +293,7 @@ public class InspectModuleTest {
             assertNotNull(result);
             assertEquals(1, result.getItemCount());
             final Item item1 = result.itemAt(0);
-            assertTrue(item1 instanceof ElementImpl);
+            assertInstanceOf(ElementImpl.class, item1);
 
             final Element function = (Element)item1;
 

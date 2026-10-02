@@ -42,12 +42,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.runner.Description;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.InitializationError;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -60,8 +57,8 @@ import java.util.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * A JUnit test runner which can run the XQuery tests (XQSuite)
- * of eXist-db using $EXIST_HOME/src/org/exist/xquery/lib/xqsuite/xqsuite.xql.
+ * Runs the XQuery tests (XQSuite) of a file using $EXIST_HOME/src/org/exist/xquery/lib/xqsuite/xqsuite.xql,
+ * reporting each outcome to a {@link TestEvents}.
  *
  * @author Adam Retter
  */
@@ -73,37 +70,58 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     /**
      * @param path The path to the XQuery file containing the XQSuite tests
-     * @param parallel whether the tests should be run in parallel.
+     * @param discoveryPool a running database to discover the tests with, or null to discover by compiling the module
      *
-     * @throws InitializationError if the test runner could not be constructed.
+     * @throws TestInitializationException if the test runner could not be constructed.
      */
-    public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
-        super(path, parallel);
-        this.info = discoverOrExtractTestInfo(path);
+    public XQueryTestRunner(final Path path, @Nullable final BrokerPool discoveryPool) throws TestInitializationException {
+        super(path);
+        this.info = discoverOrExtractTestInfo(path, discoveryPool);
     }
 
     /**
      * Obtain test metadata by discovery when possible, otherwise by compiling the module.
-     * When the DB is already started (e.g. by XSuite), try runDiscovery first so we run a single
+     * When a database is available, try runDiscovery first so we run a single
      * discovery XQuery instead of compiling the module twice. Fall back to extractTestInfo in two
      * cases: (1) the DB is not started, or (2) the DB is started but runDiscovery returns null
      * (e.g. discovery failed, empty result, or wrong XML shape).
      *
      * @param path the path to the XQuery file containing the XQSuite tests
      * @return test info (from discovery or from compiling the module)
-     * @throws InitializationError if the runner could not be constructed
+     * @throws TestInitializationException if the runner could not be constructed
      */
-    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path) throws InitializationError {
-        if (XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
-            final BrokerPool pool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
-            if (pool != null) {
-                final XQueryTestInfo discovered = runDiscovery(pool, path);
-                if (discovered != null) {
-                    return discovered;
-                }
+    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path, @Nullable final BrokerPool pool) throws TestInitializationException {
+        if (pool != null) {
+            final XQueryTestInfo discovered = runDiscovery(pool, path);
+            if (discovered != null) {
+                return discovered;
             }
         }
         return extractTestInfo(path);
+    }
+
+    /**
+     * The name under which the XQSuite runtime reports a test that has no explicit {@code %test:name}
+     * (see {@code test:get-test-name} in xqsuite.xql): the lexical name of the function, with a prefix
+     * dropped only if it consists solely of word characters. XPath's {@code \w} excludes punctuation,
+     * so a prefix such as {@code my-tests} is kept.
+     */
+    static String runtimeTestName(final String prefix, final String localName) {
+        if (prefix == null || prefix.isEmpty() || prefix.codePoints().allMatch(XQueryTestRunner::isXPathWordChar)) {
+            return localName;
+        }
+        return prefix + ":" + localName;
+    }
+
+    private static boolean isXPathWordChar(final int codePoint) {
+        return switch (Character.getType(codePoint)) {
+            case Character.CONNECTOR_PUNCTUATION, Character.DASH_PUNCTUATION, Character.START_PUNCTUATION,
+                 Character.END_PUNCTUATION, Character.INITIAL_QUOTE_PUNCTUATION, Character.FINAL_QUOTE_PUNCTUATION,
+                 Character.OTHER_PUNCTUATION, Character.SPACE_SEPARATOR, Character.LINE_SEPARATOR,
+                 Character.PARAGRAPH_SEPARATOR, Character.CONTROL, Character.FORMAT, Character.SURROGATE,
+                 Character.PRIVATE_USE, Character.UNASSIGNED -> false;
+            default -> true;
+        };
     }
 
     private static Configuration getConfiguration() throws DatabaseConfigurationException {
@@ -117,7 +135,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
+    private static XQueryTestInfo extractTestInfo(final Path path) throws TestInitializationException {
         try {
             final Configuration config = getConfiguration();
 
@@ -126,7 +144,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                 expathRepo.configure(config);
                 expathRepo.prepare(null);
             } catch (final BrokerPoolServiceException e) {
-                throw new InitializationError(e);
+                throw new TestInitializationException(e);
             }
 
             final XQueryContext xqueryContext = new XQueryContext(config);
@@ -176,7 +194,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
                     if (isTest) {
                         if (testName == null) {
-                            testName = localFunctionSignature.getName().getLocalPart();
+                            testName = runtimeTestName(localFunctionSignature.getName().getPrefix(), localFunctionSignature.getName().getLocalPart());
                             testArity = localFunctionSignature.getArgumentCount();
                         }
 
@@ -198,7 +216,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
             }
 
         } catch (final DatabaseConfigurationException | IOException | PermissionDeniedException | XPathException e) {
-            throw new InitializationError(e);
+            throw new TestInitializationException(e);
         }
     }
 
@@ -247,7 +265,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private String getSuiteName() {
+    @Override
+    public String getSuiteName() {
         if (info.namespace() == null) {
             return path.getFileName().toString();
         }
@@ -292,40 +311,30 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     @Override
-    public Description getDescription() {
-        final String suiteName = checkDescription(this, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName);
-        for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.testFunctions()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.localName())));
-        }
-        return description;
+    public List<String> getTestNames() {
+        return info.testFunctions().stream().map(XQueryTestInfo.TestFunctionDef::localName).toList();
     }
 
     @Override
-    public void run(final RunNotifier notifier) {
+    public void run(final TestEvents events, final BrokerPool brokerPool) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xquery-test-runner.xq");
             final URI testModuleUri = path.toAbsolutePath().toUri();
 
-            final String suiteName = getSuiteName();
-
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
                     context -> new Tuple2<>("test-module-uri", new AnyURIValue(testModuleUri)),
 
-                    // set callback functions for notifying junit!
-                    context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, suiteName, notifier)))),
-                    context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, suiteName, notifier)))),
-                    context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, suiteName, notifier, path)))),
-                    context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, suiteName, notifier)))),
-                    context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, suiteName, notifier)))),
-                    context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, suiteName, notifier))))
+                    // set callback functions for reporting test outcomes!
+                    context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), events, path)))),
+                    context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), events)))),
+                    context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), events))))
             );
 
-            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
-            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
             executeQuery(brokerPool, query, externalVariableDeclarations);
-
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);

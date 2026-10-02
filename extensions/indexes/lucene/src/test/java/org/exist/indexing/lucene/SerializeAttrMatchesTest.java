@@ -56,7 +56,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 public class SerializeAttrMatchesTest {
 
     @RegisterExtension
@@ -98,7 +99,7 @@ public class SerializeAttrMatchesTest {
             assertEquals(1, seq.getItemCount());
 
             final Item item = seq.itemAt(0);
-            assertTrue(item instanceof ElementImpl);
+            assertInstanceOf(ElementImpl.class, item);
             assertEquals("lemma", ((ElementImpl)item).getAttribute("exist:matches"));
         }
     }

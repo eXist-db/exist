@@ -331,7 +331,7 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
-                <exclusion>
+                <exclusion> <!-- brings JUnit 4 at compile scope -->
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
                 </exclusion>
@@ -520,18 +520,9 @@
             <version>1.5.3</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test:
-                 both for org.exist.test.runner's JUnit4 Runner-API-based custom test runner
-                 (XSuite et al.), and org.exist.test.ExistEmbeddedServer/ExistXmldbEmbeddedServer/
-                 ExistWebServer extending org.junit.rules.ExternalResource for JUnit 4 backward
-                 compatibility alongside their JUnit 5 BeforeAllCallback/AfterAllCallback support. -->
-        </dependency>
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+            <scope>test</scope>
         </dependency>
 
         <!-- test dependencies -->
@@ -555,18 +546,31 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <!-- not just test scope, as needed for org.exist.test.ExistEmbeddedServer's
-                 BeforeAllCallback/AfterAllCallback support, used by downstream modules' tests -->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.opentest4j</groupId>
             <artifactId>opentest4j</artifactId>
-            <!-- not test scope: org.exist.test.runner.ExtTestFailureFunction (main source) throws
-                 AssertionFailedError for rich IDE diff rendering of XQSuite test failures -->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-testkit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -587,6 +591,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
@@ -597,12 +602,14 @@
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-legacy</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <!-- the one remaining use of JUnit 4: xmlunit-legacy's XMLAssert and XMLTestCase extend
+                 junit.framework.Assert, so tests that use them need it to compile. Replace those
+                 tests' XMLUnit 1 style assertions with XMLUnit 2 and this can go. -->
         </dependency>
 
         <!-- needed for starting up a jetty server -->
@@ -706,6 +713,30 @@
 
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-junit4</id>
+                        <configuration>
+                            <rules combine.self="override">
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- test scope is allowed here only: xmlunit-legacy needs junit:junit to compile -->
+                                        <exclude>junit:junit:*:*:compile</exclude>
+                                        <exclude>junit:junit:*:*:provided</exclude>
+                                        <exclude>org.junit.vintage</exclude>
+                                        <exclude>com.googlecode.junit-toolbox</exclude>
+                                    </excludes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>JUnit 4 must not be used outside the tests that need it for xmlunit-legacy; write tests with JUnit Jupiter.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
@@ -784,7 +815,7 @@
                                 <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
-                                <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
+                                <exclude>src/test/java/org/exist/test/DiffMatcher.java</exclude>
                                 <exclude>src/test/java/org/exist/test/Util.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
@@ -951,7 +982,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
-                                <include>src/main/java/org/exist/test/DiffMatcher.java</include>
+                                <include>src/test/java/org/exist/test/DiffMatcher.java</include>
                                 <include>src/test/java/org/exist/test/Util.java</include>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
@@ -1037,6 +1068,8 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
+                                <!-- only needed as the supertype of xmlunit-legacy's XMLAssert and XMLTestCase -->
+                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jcl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
@@ -1350,11 +1383,6 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     <dependency>
                         <groupId>org.junit.jupiter</groupId>
                         <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit.jupiter.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.vintage</groupId>
-                        <artifactId>junit-vintage-engine</artifactId>
                         <version>${junit.jupiter.version}</version>
                     </dependency>
                     <dependency>

@@ -51,6 +51,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -178,14 +179,14 @@ public class DomEnhancingNodeProxyAdapterTest {
         nodeProxy.getNode();  // NOTE(AR) causes type of the node proxy to be set
 
         // check type of original
-        assertTrue(nodeProxy instanceof NodeProxy, "Expected instanceof NodeProxy");
+        assertInstanceOf(NodeProxy.class, nodeProxy, "Expected instanceof NodeProxy");
         assertFalse(domInterfaceType.isInstance(nodeProxy), "Expected not(instanceof " + domInterfaceType.getSimpleName() + ")");
 
         // the function under test
         final NodeProxy nodeProxyProxy = DomEnhancingNodeProxyAdapter.create(nodeProxy);
 
         // check type of proxy
-        assertTrue(nodeProxyProxy instanceof NodeProxy, "Expected instanceof NodeProxy");
+        assertInstanceOf(NodeProxy.class, nodeProxyProxy, "Expected instanceof NodeProxy");
         assertTrue(domInterfaceType.isInstance(nodeProxyProxy), "Expected instanceof " + domInterfaceType.getSimpleName() + "; W3C Node type was: " + nodeProxyProxy.getNodeType());
 
         // check W3C DOM Interface methods of proxy
