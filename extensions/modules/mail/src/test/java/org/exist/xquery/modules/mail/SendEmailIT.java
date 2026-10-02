@@ -74,6 +74,7 @@ import static org.exist.xquery.modules.mail.Util.executeQuery;
 import static org.exist.xquery.modules.mail.Util.withCompiledQuery;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -166,7 +167,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -194,7 +195,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -223,7 +224,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
@@ -278,7 +279,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -311,7 +312,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -345,7 +346,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
@@ -384,7 +385,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/alternative"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -420,14 +421,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 
@@ -468,14 +469,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 
@@ -517,14 +518,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 

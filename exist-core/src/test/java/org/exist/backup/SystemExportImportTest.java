@@ -54,8 +54,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
@@ -98,14 +98,14 @@ public class SystemExportImportTest {
     private static XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
     private static XmldbURI doc04uri = TEST_COLLECTION_URI.append("test4.xml");
     private static XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
-    
+
     private static String XML1 = "<test attr=\"test\"/>";
-    private static String XML2 = 
+    private static String XML2 =
 		"""
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml"></html>""";
-    private static String XML2_PROPER = 
+    private static String XML2_PROPER =
 		"""
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" \
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -177,7 +177,7 @@ public class SystemExportImportTest {
             assertEquals(XML4, serializer(broker, doc, withXmlDeclOutputProps));
 
             doc = getDoc(broker, test, doc11uri.lastSegment());
-            assertTrue(doc instanceof BinaryDocument);
+            assertInstanceOf(BinaryDocument.class, doc);
             try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
                 assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
             }
@@ -189,7 +189,7 @@ public class SystemExportImportTest {
 	private DocumentImpl getDoc(final DBBroker broker, final Collection col, final XmldbURI uri) throws PermissionDeniedException {
         final DocumentImpl doc = col.getDocument(broker, uri);
     	assertNotNull(doc);
-		
+
     	return doc;
 	}
 
@@ -199,7 +199,7 @@ public class SystemExportImportTest {
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
     }
-	
+
 	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException {
 		return serializer(broker, document, contentsOutputProps);
 	}

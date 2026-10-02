@@ -35,7 +35,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>

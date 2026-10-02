@@ -30,7 +30,8 @@ import org.exist.xquery.parser.XQueryTreeParser;
 import org.junit.jupiter.api.Test;
 import antlr.collections.AST;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.util.ArrayList;

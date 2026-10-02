@@ -61,10 +61,11 @@ import java.util.Properties;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
@@ -135,10 +136,10 @@ public class XQueryContextAttributesTest {
                 // get the context of the library module
                 final Module[] libraryModules = mainQueryContext.getModules("http://mod1");
                 assertEquals(1, libraryModules.length);
-                assertTrue(libraryModules[0] instanceof ExternalModule);
+                assertInstanceOf(ExternalModule.class, libraryModules[0]);
                 final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
                 final XQueryContext libraryQueryContext = libraryModule.getContext();
-                assertTrue(libraryQueryContext instanceof ModuleContext);
+                assertInstanceOf(ModuleContext.class, libraryQueryContext);
 
                 libraryQueryContext.setAttribute("attr1", "value1");
                 libraryQueryContext.setAttribute("attr2", "value2");

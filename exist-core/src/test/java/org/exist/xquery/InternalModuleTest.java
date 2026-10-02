@@ -42,7 +42,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -102,7 +106,7 @@ public class InternalModuleTest {
             requestResponseSessionVariablesQuery_4_x_X_Api(queryService, querySource);
             fail("Expected XQuery error XPST0008");
         } catch (final XMLDBException e) {
-            assertTrue(e.getCause() instanceof XPathException);
+            assertInstanceOf(XPathException.class, e.getCause());
             final XPathException xpe = (XPathException)e.getCause();
             assertEquals(ErrorCodes.XPST0008, xpe.getErrorCode());
         }

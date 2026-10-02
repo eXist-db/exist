@@ -37,7 +37,9 @@ import org.xmlunit.diff.Diff;
 import javax.xml.transform.Source;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class ParseHtmlTest {
 
     @RegisterExtension
@@ -51,7 +53,7 @@ public class ParseHtmlTest {
         try (final DBBroker broker = server.getBrokerPool().getBroker()) {
             final Sequence result = xquery.execute(broker, query, null);
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof DocumentImpl);
+            assertInstanceOf(DocumentImpl.class, result.itemAt(0));
 
             final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><HTML><BODY><p>hello <img src=\"1.jpg\"/></p></BODY></HTML>").build();
             final Source actual = Input.fromDocument((DocumentImpl) result.itemAt(0)).build();

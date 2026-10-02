@@ -59,8 +59,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.FileUtils.withUnixSep;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 public class XMLDBRestoreTest {
 
     @RegisterExtension
@@ -316,9 +316,9 @@ public class XMLDBRestoreTest {
         final Collection collection = DatabaseManager.getCollection(XmldbURI.create(getBaseUri()).append(collectionUri).toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final Resource resource = collection.getResource(backupDocInfo.name);
         if (backupDocInfo.type == MimeType.XML) {
-            assertTrue(resource instanceof XMLResource);
+            assertInstanceOf(XMLResource.class, resource);
         } else {
-            assertTrue(resource instanceof BinaryResource);
+            assertInstanceOf(BinaryResource.class, resource);
         }
         if (backupDocInfo.mediaType != null) {
             assertEquals(backupDocInfo.mediaType, ((EXistResource) resource).getMimeType());
