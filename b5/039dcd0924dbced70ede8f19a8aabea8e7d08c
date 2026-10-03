@@ -1,0 +1,30 @@
+exist-core/src/test/java/xquery/CoreTests.java
+  s_c35c9b8dcc1ab8::t_6e991733700c84 27-28
+exist-core/src/test/resources/org/exist/test/runner/xquery-test-runner.xq
+  s_c35c9b8dcc1ab8::t_da60ea40871ca3 28
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunner.java
+  s_c35c9b8dcc1ab8::t_5e1f921f0d0d92 329
+exist-core/src/main/resources/org/exist/xquery/lib/test.xq
+  s_c35c9b8dcc1ab8::t_f7bdb1b2dbde1f 140
+  s_c35c9b8dcc1ab8::t_a1ffbb4754ca61 150-155,157-158
+  s_c35c9b8dcc1ab8::t_103839015bacdb 183
+  s_c35c9b8dcc1ab8::t_bc144903a8c6df 35-36
+  s_c35c9b8dcc1ab8::t_c6bab6e856209a 40,46-51,53-54,66,70,72-73,75,80,89,96,100
+  s_c35c9b8dcc1ab8::t_0807071b089707 129-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b5039dcd0924dbced70ede8f19a8aabea8e7d08c",
+  "prompts": {},
+  "sessions": {
+    "s_c35c9b8dcc1ab8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_efee8267fffe9ERhKwD6y52eTU",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
