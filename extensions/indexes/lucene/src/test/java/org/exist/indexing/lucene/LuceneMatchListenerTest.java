@@ -434,6 +434,41 @@ public class LuceneMatchListenerTest {
         }
     }
 
+    /**
+     * The term-rewrite cache on the match listener is reused by later queries on the same
+     * broker. A wildcard rewrite cached by one query must not hide a term that a store made
+     * afterwards, when a later query expands a hit containing that term.
+     */
+    @Test
+    public void wildcardHighlightsTermStoredByLaterQuery() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+        final String conf = """
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index><lucene><text qname="p"/></lucene></index>
+                </collection>""";
+        configureAndStore(conf, "<root><p>cwordearly</p></root>");
+
+        final String collection = TestConstants.TEST_COLLECTION_URI.toString();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQuery xquery = pool.getXQueryService();
+
+            final Sequence first = xquery.execute(broker,
+                    "count(util:expand(doc('" + collection + "/test_matches.xml')//p[ft:query(., 'cword*')])//exist:match)", null);
+            assertEquals(1, first.itemAt(0).toJavaObject(Integer.class).intValue());
+
+            xquery.execute(broker,
+                    "xmldb:store('" + collection + "', 'test_matches_late.xml', <root><p>cwordlate</p></root>)", null);
+            try {
+                final Sequence second = xquery.execute(broker,
+                        "count(util:expand(doc('" + collection + "/test_matches_late.xml')//p[ft:query(., 'cword*')])//exist:match)", null);
+                assertEquals("term stored after the first query must be highlighted", 1,
+                        second.itemAt(0).toJavaObject(Integer.class).intValue());
+            } finally {
+                xquery.execute(broker, "xmldb:remove('" + collection + "', 'test_matches_late.xml')", null);
+            }
+        }
+    }
+
     @Test
     public void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
