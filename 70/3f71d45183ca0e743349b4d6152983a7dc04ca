@@ -1,0 +1,41 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_c35c9b8dcc1ab8::t_677608b60a54c2 161-162
+  s_c35c9b8dcc1ab8::t_796a9d86b3f40c 163,165-166
+exist-core/src/test/java/org/exist/test/runner/AbstractTestRunner.java
+  s_c35c9b8dcc1ab8::t_c187e907632d09 84-91
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_c35c9b8dcc1ab8::t_7dfd198db4cbb0 175-177
+  s_c35c9b8dcc1ab8::t_59c8159642d475 93,95-101
+  s_c35c9b8dcc1ab8::t_f7c4fce06c0ba8 151,153,156-157
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_c35c9b8dcc1ab8::t_54cba33661d7b4 57-62,64-73
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunner.java
+  s_c35c9b8dcc1ab8::t_d623556b5cebff 318,327-328
+  s_c35c9b8dcc1ab8::t_3df30df7c53b16 319
+  s_c35c9b8dcc1ab8::t_74c58d89e45c41 324,330,337,340-341,343-352
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteDescriptor.java
+  s_c35c9b8dcc1ab8::t_a80f05d19774bd 29-30,35,37,41,43
+  s_c35c9b8dcc1ab8::t_5eeecf6fb9ce48 54-64,68-69
+  s_c35c9b8dcc1ab8::t_b26aa118d23152 65-67,70-79
+exist-core/src/test/java/org/exist/test/runner/XMLTestRunner.java
+  s_c35c9b8dcc1ab8::t_541da426dd8dbe 174,182,184,191
+exist-core/src/test/java/org/exist/test/xqsuite/FileDescriptor.java
+  s_c35c9b8dcc1ab8::t_a97cb568b81b88 35-36,40,42,45-46
+  s_c35c9b8dcc1ab8::t_b175534a62612a 50-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "703f71d45183ca0e743349b4d6152983a7dc04ca",
+  "prompts": {},
+  "sessions": {
+    "s_c35c9b8dcc1ab8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_efee8267fffe9ERhKwD6y52eTU",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
