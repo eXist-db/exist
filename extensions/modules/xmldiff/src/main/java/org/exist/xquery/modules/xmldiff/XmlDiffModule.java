@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -97,4 +98,9 @@ public class XmlDiffModule extends AbstractInternalModule {
     }
 
     static final ErrorCodes.ErrorCode UNSUPPORTED_DOM_IMPLEMENTATION = new XmldDiffModuleErrorCode("unsupported-dom-impl", "The DOM implementation of a Node is unsupported.");
+
+    public static final class Factory implements ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends Module> getModuleClass() { return XmlDiffModule.class; }
+    }
 }

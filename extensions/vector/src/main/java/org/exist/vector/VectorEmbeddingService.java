@@ -27,7 +27,9 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -41,6 +43,7 @@ public final class VectorEmbeddingService {
   private static volatile VectorEmbeddingService instance;
 
   private final Map<String, VectorEmbeddingProvider> cache = new ConcurrentHashMap<>();
+  private final Set<String> failed = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   private VectorEmbeddingService() {
   }
@@ -121,8 +124,13 @@ public final class VectorEmbeddingService {
     }
     final Path modelPath = ModelPathResolver.resolve(modelId, path);
     if (modelPath == null) {
-      LOG.warn("Model '{}' could not be resolved (path='{}'). Ensure the directory exists under exist.home and contains model.onnx and tokenizer.json, or configure <vector-models> in conf.xml, or use an absolute path or URL.",
-          modelId, path);
+      final String unresolvedKey = "unresolved:" + modelId + ":" + path;
+      if (failed.add(unresolvedKey)) {
+        LOG.warn("Model '{}' could not be resolved (path='{}'). Ensure the directory exists under exist.home and contains model.onnx and tokenizer.json, or configure <vector-models> in conf.xml, or use an absolute path or URL.",
+            modelId, path);
+      } else {
+        LOG.debug("Model '{}' still not available at '{}'", modelId, path);
+      }
       return null;
     }
     return getProviderByPath(modelId, modelPath, dim);
@@ -141,7 +149,13 @@ public final class VectorEmbeddingService {
       @Nonnull final Path modelPath,
       final int dimension) {
     final String cacheKey = modelId + ":" + modelPath.toAbsolutePath();
-    return cache.computeIfAbsent(cacheKey, k -> {
+    final VectorEmbeddingProvider cached = cache.get(cacheKey);
+    if (cached != null) return cached;
+    if (failed.contains(cacheKey)) return null;
+    // computeIfAbsent guarantees at most one concurrent construction per cacheKey, so two
+    // threads racing to load the same not-yet-cached model can't both create a provider
+    // (which would duplicate the expensive ONNX load and leak the discarded instance).
+    return cache.computeIfAbsent(cacheKey, key -> {
       try {
         final VectorEmbeddingProvider p = OnnxVectorProvider.create(modelPath, dimension);
         if (p != null) {
@@ -149,8 +163,12 @@ public final class VectorEmbeddingService {
           return p;
         }
       } catch (final Exception e) {
-        LOG.warn("Failed to load ONNX model {} from {}: {}", modelId, modelPath, e.getMessage());
+        if (failed.add(key)) {
+          LOG.warn("Failed to load ONNX model {} from {}: {}", modelId, modelPath, e.getMessage());
+        }
+        return null;
       }
+      failed.add(key);
       return null;
     });
   }
@@ -169,6 +187,7 @@ public final class VectorEmbeddingService {
   public void evict(@Nonnull final String modelId, @Nonnull final Path modelPath) {
     final String cacheKey = modelId + ":" + modelPath.toAbsolutePath();
     cache.remove(cacheKey);
+    failed.remove(cacheKey);
   }
 
   /**

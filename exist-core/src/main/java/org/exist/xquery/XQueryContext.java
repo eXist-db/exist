@@ -143,6 +143,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
     public static final String PROPERTY_STATIC_MODULE_MAP = "xquery.modules.static";
     public static final String PROPERTY_MODULE_PARAMETERS = "xquery.modules.parameters";
+    public static final String PROPERTY_MODULE_REGISTRATIONS = "xquery.modules.registrations";
 
     public static final String JAVA_URI_START = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
