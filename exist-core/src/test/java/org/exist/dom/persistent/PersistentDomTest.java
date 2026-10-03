@@ -359,9 +359,15 @@ public class PersistentDomTest {
                 outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
                 assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
 
-                // XDM serialization
+                // XDM serialization: exist:preserve-cdata is on by default, so the stored section survives
                 outputProperties = new Properties(defaultOutputProperties);
                 outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
+
+                // XDM serialization with preserve-cdata off: the specified escaping applies
+                outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                outputProperties.setProperty(EXistOutputKeys.PRESERVE_CDATA, "no");
                 final String expected = "<cdataText>" + CDATA_CONTENT.replace("<", "&lt;").replace(">", "&gt;") + "</cdataText>";
                 assertEquals(expected, serialize(broker, documentElement, outputProperties));
 
