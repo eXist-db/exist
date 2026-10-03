@@ -2874,7 +2874,7 @@ public class RESTServer {
         } else {
             effectiveHowmany = 0;
         }
-        final String method = outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY, "xml");
+        final String method = serializationMethod(outputProperties);
 
         if ("json".equals(method)) {
             writeResultJSON(response, broker, results, effectiveHowmany, start, outputProperties, timings.compilation(), timings.execution());
@@ -2882,6 +2882,30 @@ public class RESTServer {
             writeResultXML(response, broker, results, effectiveHowmany, start, typed, outputProperties, wrap, timings);
         }
 
+    }
+
+    /**
+     * Determine the serialization method for a result.
+     *
+     * Two properties can carry it, and both must be honored. The REST-specific
+     * `output-as` is set from the `_output-as` request parameter or the `method`
+     * attribute of a `<query>` envelope. The W3C `method` property is what
+     * XQueryContext.checkOptions() writes when the query itself declares
+     * `output:method` — which XQuery.execute() merges into these same
+     * properties after evaluation. Reading only `output-as` meant an in-query
+     * `declare option output:method "json"` selected the XML writer, so the
+     * JSON body went out under the XML media type.
+     *
+     * @param outputProperties the serialization properties for this result
+     *
+     * @return the serialization method, defaulting to xml
+     */
+    private static String serializationMethod(final Properties outputProperties) {
+        final String restMethod = outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY);
+        if (restMethod != null) {
+            return restMethod;
+        }
+        return outputProperties.getProperty(OutputKeys.METHOD, "xml");
     }
 
     private static String getEncoding(final Properties outputProperties) {
