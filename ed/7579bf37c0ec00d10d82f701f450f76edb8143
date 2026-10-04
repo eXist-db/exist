@@ -1,7 +1,9 @@
 exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
   s_5e856fe2fb973a::t_286644aa224331 29,168,181-184
+  s_5e856fe2fb973a::t_67044cd1c477df 29,168,181-184
 exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
   s_5e856fe2fb973a::t_378c2defb14183 26,149-156
+  s_5e856fe2fb973a::t_9bb38d0f2f5849 26,149-156
 ---
 {
   "schema_version": "authorship/3.0.0",
