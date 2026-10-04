@@ -1,5 +1,6 @@
 extensions/modules/xmldiff/src/test/xquery/modules/xmldiff/diff.xqm
   s_5e856fe2fb973a::t_b325291f87f183 42
+  s_5e856fe2fb973a::t_9a4e4f09353cdd 42
 ---
 {
   "schema_version": "authorship/3.0.0",
