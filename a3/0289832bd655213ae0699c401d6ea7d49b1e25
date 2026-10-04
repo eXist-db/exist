@@ -1,0 +1,21 @@
+exist-core/src/test/xquery/optimizer/expressions.xqm
+  s_5e856fe2fb973a::t_7f267fe2fa3a59 77
+exist-core/src/test/xquery/optimizer/positional.xqm
+  s_5e856fe2fb973a::t_d59c58f0ccafd3 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a30289832bd655213ae0699c401d6ea7d49b1e25",
+  "prompts": {},
+  "sessions": {
+    "s_5e856fe2fb973a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ddfe85e8-745a-4da3-80b5-ded1e15c84f3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
