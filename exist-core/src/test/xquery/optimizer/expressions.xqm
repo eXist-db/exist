@@ -74,7 +74,7 @@ declare variable $ot:DATA2 :=
         <y k1="c" k2="3"/>
     </root>;
 
-declare variable $ot:COLLECTION_NAME := "optimizertest";
+declare variable $ot:COLLECTION_NAME := "optimizertest-expressions";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
 declare
