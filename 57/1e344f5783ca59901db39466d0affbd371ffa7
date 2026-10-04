@@ -1,5 +1,6 @@
 extensions/indexes/range/src/test/xquery/range/optimizer.xql
   s_5e856fe2fb973a::t_05d1194c33b215 189,216-221,229-230,607,616,624,634-635,649-650
+  s_5e856fe2fb973a::t_77047e39291e64 189,216-221,229-230,607,616,624,634-635,649-650
 ---
 {
   "schema_version": "authorship/3.0.0",
