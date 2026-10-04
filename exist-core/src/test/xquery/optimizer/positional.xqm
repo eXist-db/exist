@@ -30,7 +30,7 @@ module namespace ot="http://exist-db.org/xquery/optimizer/test/positional";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace stats="http://exist-db.org/xquery/profiling";
 
-declare variable $ot:COLLECTION_NAME := "optimizertest";
+declare variable $ot:COLLECTION_NAME := "optimizertest-positional";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 declare variable $ot:DOC := $ot:COLLECTION || "/test.xml";
 declare variable $ot:DOC_NESTED := $ot:COLLECTION || "/nested.xml";
