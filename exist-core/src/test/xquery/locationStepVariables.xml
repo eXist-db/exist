@@ -33,8 +33,8 @@
         <author>Ron Van den Branden</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="coll"/>
-        <store collection="/db/coll" name="test.xml">
+        <create-collection parent="/db" name="coll-location-step-variables"/>
+        <store collection="/db/coll-location-step-variables" name="test.xml">
             <test>
                 <a><el n="1">match1</el></a>
                 <a><el n="2">match2</el></a>
@@ -51,12 +51,12 @@
             </test>;
     ]]></functions>
     <tearDown>
-        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/coll-location-step-variables"/>
     </tearDown>
     <test output="xml" ignore="yes">
         <task>[persistent] variable in location step</task>
         <code><![CDATA[
-            let $test := collection('/db/coll')/test
+            let $test := collection('/db/coll-location-step-variables')/test
             let $match2 := $test//el[matches(., 'match2')]
             return $test/a/$match2
         ]]></code>
@@ -68,7 +68,7 @@
     <test output="xml" ignore="yes">
         <task>[persistent] variable in location step + predicate</task>
         <code><![CDATA[
-            let $test := collection('/db/coll')/test
+            let $test := collection('/db/coll-location-step-variables')/test
             let $match2 := $test//el[matches(., 'match2')]
             return $test/a[./$match2]
             ]]></code>

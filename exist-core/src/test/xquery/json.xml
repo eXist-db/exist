@@ -28,10 +28,10 @@
         <author>Wolfgang Meier</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="test"/>
+        <create-collection parent="/db" name="test-json"/>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/test"/>
+        <remove-collection collection="/db/test-json"/>
     </tearDown>
     <test output="text" serialize="method=json">
         <task>Simple serialization test</task>
