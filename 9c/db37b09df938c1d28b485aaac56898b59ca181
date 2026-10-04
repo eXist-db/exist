@@ -1,0 +1,19 @@
+exist-core/src/test/java/xquery/xquery3/XQuery3Tests.java
+  s_5e856fe2fb973a::t_c1c8e57380de67 26-31,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9cdb37b09df938c1d28b485aaac56898b59ca181",
+  "prompts": {},
+  "sessions": {
+    "s_5e856fe2fb973a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ddfe85e8-745a-4da3-80b5-ded1e15c84f3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
