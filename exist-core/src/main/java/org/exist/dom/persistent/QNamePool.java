@@ -139,7 +139,7 @@ public class QNamePool extends AbstractHashSet<QName> {
             // remember the bucket, but continue to check
             // for duplicate keys
             bucket = idx;
-        } else if(values[idx].equals(value)) {
+        } else if(equals(values[idx], value.getLocalPart(), value.getNamespaceURI(), value.getPrefix(), value.getNameType())) {
             // duplicate value
             return values[idx];
         }
@@ -158,7 +158,7 @@ public class QNamePool extends AbstractHashSet<QName> {
                 values[idx] = value;
                 ++items;
                 return values[idx];
-            } else if(values[idx].equals(value)) {
+            } else if(equals(values[idx], value.getLocalPart(), value.getNamespaceURI(), value.getPrefix(), value.getNameType())) {
                 // duplicate value
                 return values[idx];
             }
