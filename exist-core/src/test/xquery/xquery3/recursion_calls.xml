@@ -31,10 +31,10 @@
         <author>https://github.com/ptrckb</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="xq3-test"/>
+        <create-collection parent="/db" name="xq3-recursion-calls"/>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/xq3-test"/>
+        <remove-collection collection="/db/xq3-recursion-calls"/>
     </tearDown>
     <test output="xml" id="recursion-function-calls-001">
         <task>recursion function call 1</task>
