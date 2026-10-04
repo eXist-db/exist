@@ -23,6 +23,7 @@ package org.exist.test.xqsuite;
 
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
@@ -144,6 +145,14 @@ class XQSuiteTestEngineTest {
     @Test
     void fileWithoutTestsRunsNothing() {
         run(NoTests.class).testEvents().assertStatistics(stats -> stats.started(0));
+    }
+
+    @Test
+    void fileTimeIsReportedForEachFile() {
+        final List<Event> entries = run(SingleTest.class).allEvents().reportingEntryPublished().list();
+        assertEquals(1, entries.size());
+        final String millis = entries.get(0).getRequiredPayload(ReportEntry.class).getKeyValuePairs().get("file-time-ms");
+        assertTrue(Long.parseLong(millis) >= 0);
     }
 
     @Test
