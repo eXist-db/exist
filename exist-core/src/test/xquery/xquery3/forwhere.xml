@@ -30,10 +30,10 @@
         <author>https://github.com/ptrckb</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="xq3-test"/>
+        <create-collection parent="/db" name="xq3-forwhere"/>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/xq3-test"/>
+        <remove-collection collection="/db/xq3-forwhere"/>
     </tearDown>
 
     <test output="text" id="for-where-001">

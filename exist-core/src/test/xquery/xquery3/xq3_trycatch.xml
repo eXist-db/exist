@@ -29,8 +29,8 @@
         <author>Dannes Wessels</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="xquery3"/>
-        <store collection="/db/xquery3" name="product-err.xml"><![CDATA[
+        <create-collection parent="/db" name="xquery3-trycatch"/>
+        <store collection="/db/xquery3-trycatch" name="product-err.xml"><![CDATA[
             <products>
               <product>
                 <name>broiler</name>
@@ -67,7 +67,7 @@
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/xquery3"/>
+        <remove-collection collection="/db/xquery3-trycatch"/>
     </tearDown>
 
     <!-- derived from w3c: http://www.w3.org/TR/xquery-30-use-cases/#try-catch-use-cases -->
@@ -79,7 +79,7 @@
 xquery version '3.0'; 
 try {
     <result>{
-        for $product in fn:doc("/db/xquery3/product-err.xml")//product
+        for $product in fn:doc("/db/xquery3-trycatch/product-err.xml")//product
         return
             <product>{$product/name}
             <margin>{$product/price - $product/cost}</margin>
@@ -98,7 +98,7 @@ try {
         <code><![CDATA[
 xquery version '3.0';
 <result>{
-    for $product in fn:doc("/db/xquery3/product-err.xml")//product
+    for $product in fn:doc("/db/xquery3-trycatch/product-err.xml")//product
     return
          try {
             <product>{$product/name}

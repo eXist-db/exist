@@ -29,8 +29,8 @@
         <author>Wolfgang Meier</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="xq3-test"/>
-        <store collection="/db/xq3-test" type="application/xquery" name="test1.xql"><![CDATA[
+        <create-collection parent="/db" name="xq3-annotations"/>
+        <store collection="/db/xq3-annotations" type="application/xquery" name="test1.xql"><![CDATA[
 module namespace ex2="http://exist-db.org/xquery/ex2";
 
 declare %private function ex2:private-function() {
@@ -43,14 +43,14 @@ declare %public function ex2:public-function() {
         ]]></store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/xq3-test"/>
+        <remove-collection collection="/db/xq3-annotations"/>
     </tearDown>
     <test output="text" id="annot-private">
         <task>Try to call a %private function</task>
         <code><![CDATA[xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist:///db/xq3-annotations/test1.xql";
 
 ex2:private-function()]]></code>
         <error>XPST0017</error>
@@ -60,7 +60,7 @@ ex2:private-function()]]></code>
         <code><![CDATA[xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist:///db/xq3-annotations/test1.xql";
 
 ex2:public-function()]]></code>
         <expected>This function is private</expected>
@@ -70,7 +70,7 @@ ex2:public-function()]]></code>
         <code><![CDATA[xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist:///db/xq3-annotations/test1.xql";
 
 count(function-lookup(xs:QName("ex2:private-function"), 0))]]></code>
         <expected>0</expected>
@@ -80,7 +80,7 @@ count(function-lookup(xs:QName("ex2:private-function"), 0))]]></code>
         <code><![CDATA[xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist:///db/xq3-annotations/test1.xql";
 
 let $f := ex2:private-function#0
 return
@@ -92,7 +92,7 @@ return
         <code><![CDATA[xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist:///db/xq3-annotations/test1.xql";
 
 util:describe-function(xs:QName("ex2:private-function"))]]></code>
         <xpath>$output//annotation[@name="private"]</xpath>
