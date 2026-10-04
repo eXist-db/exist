@@ -4,8 +4,10 @@ exist-core/src/test/xquery/logicalOp/or.xml
   s_5e856fe2fb973a::t_8c8af3574d0271 32-33,43,55,59,65
 exist-core/src/test/xquery/optimizer/expressions.xqm
   s_5e856fe2fb973a::t_bd0af4ed5be8b4 77
+  s_5e856fe2fb973a::t_7f267fe2fa3a59 77
 exist-core/src/test/xquery/optimizer/positional.xqm
   s_5e856fe2fb973a::t_4a415408557f48 33
+  s_5e856fe2fb973a::t_d59c58f0ccafd3 33
 exist-core/src/test/xquery/system/get-main-module-load-path.xqm
   s_5e856fe2fb973a::t_f09d0e00b7656d 39,48-49,52-53,60
 exist-core/src/test/xquery/system/get-module-load-path.xqm
