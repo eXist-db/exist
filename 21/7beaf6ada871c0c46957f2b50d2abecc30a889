@@ -1,0 +1,20 @@
+exist-core/src/main/java/org/exist/xslt/XsltURIResolverHelper.java
+  s_5e856fe2fb973a::t_7f9f8e65aa51bf 64-66,72-76
+  s_5e856fe2fb973a::t_2b9b4fe2e4862a 64-66,72-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "217beaf6ada871c0c46957f2b50d2abecc30a889",
+  "prompts": {},
+  "sessions": {
+    "s_5e856fe2fb973a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ddfe85e8-745a-4da3-80b5-ded1e15c84f3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+extensions/modules/file/src/test/resources/util/helper.xqm
+  s_5e856fe2fb973a::t_a746b65c959838 36,43,45-48,50-51,56-63,138-139
+  s_5e856fe2fb973a::t_6b9ad7989020bd 36,43,45-48,50-51,56-63,138-139
+extensions/modules/file/src/test/xquery/modules/file/sync-serialize.xqm
+  s_5e856fe2fb973a::t_fdbf1a8577db74 39-41,49-51,59,68,92,116,140,164,186,211,235
+  s_5e856fe2fb973a::t_d879adccb6f1ea 39-41,49-51,59,68,92,116,140,164,186,211,235
+extensions/modules/file/src/test/xquery/modules/file/sync.xqm
+  s_5e856fe2fb973a::t_fcbdc7cf2b51bc 34-36,40,46,54,69,84,99,109,119,129,143,153,163,173,183,197,216,235,254,273,292,325,348,367,386,410,417
+  s_5e856fe2fb973a::t_97c7e220fc6e15 34-36,40,46,54,69,84,99,109,119,129,143,153,163,173,183,197,216,235,254,273,292,325,348,367,386,410,417
+extensions/modules/file/src/test/xquery/modules/file/syncmod.xqm
+  s_5e856fe2fb973a::t_52ba8344d63732 34-36,44-46,52,60,75,90,109,128,147,166,182,198,217,240,263,282
+  s_5e856fe2fb973a::t_4083536e99c30a 34-36,44-46,52,60,75,90,109,128,147,166,182,198,217,240,263,282
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "34b58f79d082a2365fc1bc31f64f023acc68c8ad",
+  "prompts": {},
+  "sessions": {
+    "s_5e856fe2fb973a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ddfe85e8-745a-4da3-80b5-ded1e15c84f3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
