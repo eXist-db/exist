@@ -24,16 +24,22 @@ xquery version "3.1";
 module namespace guest="http://exist-db.org/xquery/guest";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $guest:COLLECTION_NAME := "test-guest";
+
+(:~ Full path of the collection of this file. :)
+declare variable $guest:COLLECTION := "/db/" || $guest:COLLECTION_NAME;
+
 declare
     %test:setUp
 function guest:setup() {
-    xmldb:create-collection("/db", "test"),
-    xmldb:store("/db/test", "test.xml", <foo/>)
+    xmldb:create-collection("/db", $guest:COLLECTION_NAME),
+    xmldb:store($guest:COLLECTION, "test.xml", <foo/>)
 };
 declare
     %test:tearDown
 function guest:tearDown() {
-    xmldb:remove("/db/test")
+    xmldb:remove($guest:COLLECTION)
 };
 declare
     %test:user("guest", "guest")
@@ -45,23 +51,23 @@ declare
     %test:user("guest", "guest")
     %test:assertError("java:org.xmldb.api.base.XMLDBException")
 function guest:store-document() {
-    xmldb:store("/db/test", "test2.xml", <guest-was-here/>)
+    xmldb:store($guest:COLLECTION, "test2.xml", <guest-was-here/>)
 };
 declare
     %test:user("guest", "guest")
     %test:assertError("java:org.xmldb.api.base.XMLDBException")
 function guest:overwrite-document() {
-    xmldb:store("/db/test", "test.xml", <guest-was-here/>)
+    xmldb:store($guest:COLLECTION, "test.xml", <guest-was-here/>)
 };
 declare
     %test:user("guest", "guest")
     %test:assertError("java:org.xmldb.api.base.XMLDBException")
 function guest:remove-document() {
-    xmldb:remove("/db/test", "test.xml")
+    xmldb:remove($guest:COLLECTION, "test.xml")
 };
 declare
     %test:user("guest", "guest")
     %test:assertError("java:org.xmldb.api.base.XMLDBException")
 function guest:remove-collection() {
-    xmldb:remove("/db/test")
+    xmldb:remove($guest:COLLECTION)
 };

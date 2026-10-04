@@ -34,8 +34,8 @@
         <author>Ron Van den Branden</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="coll"/>
-        <store collection="/db/coll" name="test.xml">
+        <create-collection parent="/db" name="coll-persistent-in-memory"/>
+        <store collection="/db/coll-persistent-in-memory" name="test.xml">
             <test>
                 <el n="1">test1</el>
                 <el n="2">test2</el>
@@ -52,13 +52,13 @@
         </test>;
     ]]></functions>
     <tearDown>
-        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/coll-persistent-in-memory"/>
     </tearDown>
     <test output="xml">
         <task>[persistent] variable in location step</task>
         <code><![CDATA[
-            let $persistent := collection('/db/coll')/test
-            let $els := collection('/db/coll')//el
+            let $persistent := collection('/db/coll-persistent-in-memory')/test
+            let $els := collection('/db/coll-persistent-in-memory')//el
             return $persistent//$els
             ]]></code>
         <expected>
@@ -70,7 +70,7 @@
     <test output="xml">
         <task>[persistent] variable in location step + predicate</task>
         <code><![CDATA[
-            let $persistent := collection('/db/coll')/test
+            let $persistent := collection('/db/coll-persistent-in-memory')/test
             let $els := $persistent//el
             return $persistent//$els[some $c in $els satisfies $c is .]
             ]]></code>
@@ -83,7 +83,7 @@
     <test output="xml" ignore="yes">
         <task>[persistent] tokenize inside predicate</task>
         <code><![CDATA[
-            let $persistent := collection('/db/coll')/test
+            let $persistent := collection('/db/coll-persistent-in-memory')/test
             let $els := $persistent//el
             return $els[tokenize(@n, '\s+')]
             ]]></code>
@@ -95,7 +95,7 @@
     <test output="xml" ignore="yes">
         <task>[persistent] compare tokenized sequence inside predicate</task>
         <code><![CDATA[
-            let $persistent := collection('/db/coll')/test
+            let $persistent := collection('/db/coll-persistent-in-memory')/test
             let $els := $persistent//el
             return $els[tokenize(@n, '\s+') = '1']
             ]]></code>
@@ -130,7 +130,7 @@
     <test output="xml">
         <task>[persistent] last() in single predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el
+            let $els := collection('/db/coll-persistent-in-memory')//el
             return $els[last()]
             ]]></code>
         <expected>
@@ -140,7 +140,7 @@
     <test output="xml">
         <task>[persistent] position() = last() in single predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el
+            let $els := collection('/db/coll-persistent-in-memory')//el
             return $els[position() = last()]
             ]]></code>
         <expected>
@@ -150,7 +150,7 @@
     <test output="xml" ignore="yes">
         <task>[persistent] . is $nodes[last() in single predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el
+            let $els := collection('/db/coll-persistent-in-memory')//el
             return $els[. is $els[last()]]
             ]]></code>
         <expected>
@@ -160,7 +160,7 @@
     <test output="xml">
         <task>[persistent] last() in predicate refining another predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el[@n]
+            let $els := collection('/db/coll-persistent-in-memory')//el[@n]
             return $els[last()]
             ]]></code>
         <expected>
@@ -170,7 +170,7 @@
     <test output="xml">
         <task>[persistent] position() = last() in predicate refining another predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el[@n]
+            let $els := collection('/db/coll-persistent-in-memory')//el[@n]
             return $els[position() = last()]
             ]]></code>
         <expected>
@@ -180,7 +180,7 @@
     <test output="xml" ignore="yes">
         <task>[persistent] . is $nodes[last()] in predicate refining another predicate</task>
         <code><![CDATA[
-            let $els := collection('/db/coll')//el[@n]
+            let $els := collection('/db/coll-persistent-in-memory')//el[@n]
             return $els[. is $els[last()]]
             ]]></code>
         <expected>
