@@ -23,8 +23,11 @@ package xquery;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+/**
+ * The files of this suite run concurrently, see {@link org.exist.test.xqsuite.XQSuite#parallel()} for what they must not share.
+ */
+@XQSuite(value = {
     "src/test/xquery"
-})
+}, parallel = true)
 public class CoreTests {
 }
