@@ -53,26 +53,32 @@ declare variable $ct:xconf :=
         </index> 
     </collection>;
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $ct:COLLECTION_NAME := "test-question-marks";
+
+(:~ Full path of the collection of this file. :)
+declare variable $ct:COLLECTION := "/db/" || $ct:COLLECTION_NAME;
+
 declare
         %test:setUp
 function ct:setup() {
-    xmldb:create-collection("/db/system/config/db", "test"),
-    xmldb:store("/db/system/config/db/test", "collection.xconf", $ct:xconf),
-    xmldb:create-collection("/db", "test"),
-    xmldb:store("/db/test", "test.xml", $ct:test)
+    xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
+    xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:xconf),
+    xmldb:create-collection("/db", $ct:COLLECTION_NAME),
+    xmldb:store($ct:COLLECTION, "test.xml", $ct:test)
 };
 
 declare
         %test:tearDown
 function ct:teardown() {
-    xmldb:remove("/db/test"),
-    xmldb:remove("/db/system/config/db/test")
+    xmldb:remove($ct:COLLECTION),
+    xmldb:remove("/db/system/config/db/" || $ct:COLLECTION_NAME)
 };
 
 declare
         %test:assertEquals(1)
 function ct:element-contains-question-mark() {
-    let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "?")]
+    let $hits := doc($ct:COLLECTION || "/test.xml")//tei:forename[fn:contains(., "?")]
     return
         count($hits)
 };
@@ -80,7 +86,7 @@ function ct:element-contains-question-mark() {
 declare
         %test:assertEquals(0)
 function ct:element-contains-escaped-question-mark() {
-    let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "\?")]
+    let $hits := doc($ct:COLLECTION || "/test.xml")//tei:forename[fn:contains(., "\?")]
     return
         count($hits)
 };
@@ -88,7 +94,7 @@ function ct:element-contains-escaped-question-mark() {
 declare
         %test:assertEquals(1)
 function ct:parent-element-contains-question-mark() {
-    let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "?")]
+    let $hits := doc($ct:COLLECTION || "/test.xml")//tei:persName[fn:contains(., "?")]
     return
         count($hits)
 };
@@ -96,7 +102,7 @@ function ct:parent-element-contains-question-mark() {
 declare
         %test:assertEquals(0)
 function ct:parent-element-contains-escaped-question-mark() {
-    let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "\?")]
+    let $hits := doc($ct:COLLECTION || "/test.xml")//tei:persName[fn:contains(., "\?")]
     return
         count($hits)
 };

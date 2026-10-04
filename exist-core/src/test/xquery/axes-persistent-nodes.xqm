@@ -48,18 +48,24 @@ declare variable $axpn:XML := document {
 </root>
 };
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $axpn:COLLECTION_NAME := "test-axes-persistent-nodes";
+
+(:~ Full path of the collection of this file. :)
+declare variable $axpn:COLLECTION := "/db/" || $axpn:COLLECTION_NAME;
+
 declare
     %test:setUp
 function axpn:setup() {
-    let $testCol := xmldb:create-collection("/db", "test")
+    let $testCol := xmldb:create-collection("/db", $axpn:COLLECTION_NAME)
     return
-        xmldb:store("/db/test", "test.xml", $axpn:XML)
+        xmldb:store($axpn:COLLECTION, "test.xml", $axpn:XML)
 };
 
 declare
     %test:tearDown
 function axpn:tearDown() {
-    xmldb:remove("/db/test")
+    xmldb:remove($axpn:COLLECTION)
 };
 
 (: PRECEDING AXIS TESTS :)
@@ -86,7 +92,7 @@ function axpn:preceding-with-predicate-mem-map() {
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-with-predicate-db-flwor() {
-    for $w in doc("/db/test/test.xml")//w[true()]
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w[true()]
     let $preceding-page := $w/preceding::pb[1]
     return
         if ($preceding-page) then
@@ -98,14 +104,14 @@ function axpn:preceding-with-predicate-db-flwor() {
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-with-predicate-db-map() {
-    doc("/db/test/test.xml")//w[true()]
+    doc($axpn:COLLECTION || "/test.xml")//w[true()]
         ! (./@id || ":" || (./preceding::pb[1]/@id, "PRECEDING_PB_NOT_FOUND")[1])
 };
 
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-with-context-predicate-db-flwor() {
-    for $w in doc("/db/test/test.xml")//w[exists(.)]
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w[exists(.)]
     let $preceding-page := $w/preceding::pb[1]
     return
         if ($preceding-page) then
@@ -117,14 +123,14 @@ function axpn:preceding-with-context-predicate-db-flwor() {
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-with-context-predicate-db-map() {
-    doc("/db/test/test.xml")//w[exists(.)]
+    doc($axpn:COLLECTION || "/test.xml")//w[exists(.)]
         ! (./@id || ":" || (./preceding::pb[1]/@id, "PRECEDING_PB_NOT_FOUND")[1])
 };
 
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-without-predicate-flwor() {
-    for $w in doc("/db/test/test.xml")//w
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w
     let $preceding-page := $w/preceding::pb[1]
     return
         if ($preceding-page) then
@@ -136,7 +142,7 @@ function axpn:preceding-without-predicate-flwor() {
 declare
     %test:assertEquals("w1:pb1", "w2:pb1", "w3:pb1", "w4:pb2", "w5:pb2")
 function axpn:preceding-without-predicate-map() {
-    doc("/db/test/test.xml")//w
+    doc($axpn:COLLECTION || "/test.xml")//w
         ! (./@id || ":" || (./preceding::pb[1]/@id, "PRECEDING_PB_NOT_FOUND")[1])
 };
 
@@ -164,7 +170,7 @@ function axpn:following-with-predicate-mem-map() {
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-with-predicate-db-flwor() {
-    for $w in doc("/db/test/test.xml")//w[true()]
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w[true()]
     let $following-page := $w/following::pb[1]
     return
         if ($following-page) then
@@ -176,14 +182,14 @@ function axpn:following-with-predicate-db-flwor() {
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-with-predicate-db-map() {
-    doc("/db/test/test.xml")//w[true()]
+    doc($axpn:COLLECTION || "/test.xml")//w[true()]
         ! (./@id || ":" || (./following::pb[1]/@id, "FOLLOWING_PB_NOT_FOUND")[1])
 };
 
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-with-context-predicate-db-flwor() {
-    for $w in doc("/db/test/test.xml")//w[exists(.)]
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w[exists(.)]
     let $following-page := $w/following::pb[1]
     return
         if ($following-page) then
@@ -195,14 +201,14 @@ function axpn:following-with-context-predicate-db-flwor() {
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-with-context-predicate-db-map() {
-    doc("/db/test/test.xml")//w[exists(.)]
+    doc($axpn:COLLECTION || "/test.xml")//w[exists(.)]
         ! (./@id || ":" || (./following::pb[1]/@id, "FOLLOWING_PB_NOT_FOUND")[1])
 };
 
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-without-predicate-flwor() {
-    for $w in doc("/db/test/test.xml")//w
+    for $w in doc($axpn:COLLECTION || "/test.xml")//w
     let $following-page := $w/following::pb[1]
     return
         if ($following-page) then
@@ -214,6 +220,6 @@ function axpn:following-without-predicate-flwor() {
 declare
     %test:assertEquals("w1:pb2", "w2:pb2", "w3:pb2", "w4:pb3", "w5:pb3")
 function axpn:following-without-predicate-map() {
-    doc("/db/test/test.xml")//w 
+    doc($axpn:COLLECTION || "/test.xml")//w
         ! (./@id || ":" || (./following::pb[1]/@id, "FOLLOWING_PB_NOT_FOUND")[1])
 };

@@ -45,8 +45,8 @@
     <setup>
         <create-collection parent="/db/system" name="config"/>
         <create-collection parent="/db/system/config" name="db"/>
-        <create-collection parent="/db/system/config/db" name="coll"/>
-        <store collection="/db/system/config/db/coll" name="collection.xconf">
+        <create-collection parent="/db/system/config/db" name="coll-parenthesized-location-step"/>
+        <store collection="/db/system/config/db/coll-parenthesized-location-step" name="collection.xconf">
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
                     <lucene>
@@ -64,8 +64,8 @@
                 </index>
             </collection>
         </store>
-        <create-collection parent="/db" name="coll"/>
-        <store collection="/db/coll" name="test.xml">
+        <create-collection parent="/db" name="coll-parenthesized-location-step"/>
+        <store collection="/db/coll-parenthesized-location-step" name="test.xml">
             <test>
                 <qname att.qname="test">this is a test document</qname>
                 <path att.path="test">this is a test document</path>
@@ -78,13 +78,13 @@
         };
         ]]></functions>    
     <tearDown>
-        <remove-collection collection="/db/coll"/>
-        <remove-collection collection="/db/system/config/db/coll"/>
+        <remove-collection collection="/db/coll-parenthesized-location-step"/>
+        <remove-collection collection="/db/system/config/db/coll-parenthesized-location-step"/>
     </tearDown>
     <test output="xml">
         <task>[retrieval, qname] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(qname)
+            collection('/db/coll-parenthesized-location-step')//test/(qname)
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -93,7 +93,7 @@
     <test output="xml">
         <task>[retrieval, path] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(path)
+            collection('/db/coll-parenthesized-location-step')//test/(path)
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -102,35 +102,35 @@
     <test output="text">
         <task>[retrieval, qname] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname/(@att.qname)/string()
+            collection('/db/coll-parenthesized-location-step')//test/qname/(@att.qname)/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text" ignore="yes">
         <task>[retrieval, qname] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname//(@att.qname)/string()
+            collection('/db/coll-parenthesized-location-step')//test/qname//(@att.qname)/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[retrieval, path] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path/(@att.path)/string()
+            collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text" ignore="yes">
         <task>[retrieval, path] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path//(@att.path)/string()
+            collection('/db/coll-parenthesized-location-step')//test/path//(@att.path)/string()
             ]]></code>
         <expected>test</expected>
     </test>    
     <test output="xml" ignore="yes">
         <task>[query, old FT index, qname, indirect] parenthesized element node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(qname)
             return $a[text:match-any(., 'test')]
             ]]></code>
         <expected>
@@ -141,7 +141,7 @@
     <test output="xml">
         <task>[query, range index, qname, direct] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(qname)[matches(., 'test')]
+            collection('/db/coll-parenthesized-location-step')//test/(qname)[matches(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -150,7 +150,7 @@
     <test output="xml">
         <task>[query, range index, qname, indirect] parenthesized element node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(qname)
             return $a[matches(., 'test')]
             ]]></code>
         <expected>
@@ -160,7 +160,7 @@
     <test output="xml">
         <task>[query, range index, path, direct] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(path)[matches(., 'test')]
+            collection('/db/coll-parenthesized-location-step')//test/(path)[matches(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -169,7 +169,7 @@
     <test output="xml">
         <task>[query, range index, path, indirect] parenthesized element node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(path)
             return $a[matches(., 'test')]
             ]]></code>
         <expected>
@@ -179,7 +179,7 @@
     <test output="xml">
         <task>[query, range index, qname, direct] parenthesized element node + self axis</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(qname)/self::*[matches(., 'test')]
+            collection('/db/coll-parenthesized-location-step')//test/(qname)/self::*[matches(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -188,7 +188,7 @@
     <test output="xml">
         <task>[query, range index, qname, indirect] parenthesized element node + self axis</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(qname)/self::*
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(qname)/self::*
             return $a[matches(., 'test')]
             ]]></code>
         <expected>
@@ -198,7 +198,7 @@
     <test output="xml">
         <task>[query, range index, path, direct] parenthesized element node + self axis</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(path)/self::*[matches(., 'test')]
+            collection('/db/coll-parenthesized-location-step')//test/(path)/self::*[matches(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -207,7 +207,7 @@
     <test output="xml">
         <task>[query, range index, path, indirect] parenthesized element node + self axis</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(path)/self::*
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(path)/self::*
             return $a[matches(., 'test')]
             ]]></code>
         <expected>
@@ -217,14 +217,14 @@
     <test output="text">
         <task>[query, range index, qname, direct] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname/(@att.qname)[matches(., 'test')]/string()
+            collection('/db/coll-parenthesized-location-step')//test/qname/(@att.qname)[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[query, range index, qname, indirect] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/qname/(@att.qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/qname/(@att.qname)
             return $a[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
@@ -232,14 +232,14 @@
     <test output="text" ignore="yes">
         <task>[query, range index, qname, direct] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname//(@att.qname)[matches(., 'test')]/string()
+            collection('/db/coll-parenthesized-location-step')//test/qname//(@att.qname)[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text" ignore="yes">
         <task>[query, range index, qname, indirect] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/qname//(@att.qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/qname//(@att.qname)
             return $a[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
@@ -247,14 +247,14 @@
     <test output="text">
         <task>[query, range index, path, direct] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path/(@att.path)[matches(., 'test')]/string()
+            collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[query, range index, path, indirect] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/path/(@att.path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)
             return $a[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
@@ -262,14 +262,14 @@
     <test output="text">
         <task>[query, range index, path, direct] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path/(@att.path)[matches(., 'test')]/string()
+            collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[query, range index, path, indirect] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/path/(@att.path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)
             return $a[matches(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
@@ -278,7 +278,7 @@
     <test output="xml">
         <task>[index, range index, qname] parenthesized element node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(qname)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
@@ -288,7 +288,7 @@
     <test output="xml">
         <task>[index, range index, path] parenthesized element node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(path)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
@@ -298,7 +298,7 @@
     <test output="xml">
         <task>[index, range index, qname] parenthesized element node + self axis</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(qname)/self::*
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(qname)/self::*
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
@@ -308,7 +308,7 @@
     <test output="xml">
         <task>[index, range index, path] parenthesized element node + self axis</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/(path)/self::*
+            let $a := collection('/db/coll-parenthesized-location-step')//test/(path)/self::*
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
@@ -318,7 +318,7 @@
     <test output="xml">
         <task>[index, range index, qname] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/qname/(@att.qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/qname/(@att.qname)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>            
@@ -328,7 +328,7 @@
     <test output="xml" ignore="yes">
         <task>[index, range index, qname] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/qname//(@att.qname)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/qname//(@att.qname)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>            
@@ -338,7 +338,7 @@
     <test output="xml">
         <task>[index, range index, path] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/path/(@att.path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/path/(@att.path)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
@@ -348,7 +348,7 @@
     <test output="xml" ignore="yes">
         <task>[index, range index, path] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            let $a := collection('/db/coll')//test/path//(@att.path)
+            let $a := collection('/db/coll-parenthesized-location-step')//test/path//(@att.path)
             return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
             ]]></code>
         <expected>
