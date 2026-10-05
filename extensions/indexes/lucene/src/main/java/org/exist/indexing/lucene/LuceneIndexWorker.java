@@ -79,6 +79,7 @@ import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.*;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 
 /**
@@ -947,23 +948,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return null;
     }
 
-    /** Build filter to restrict KNN to docs in the document set (index is shared across collections). */
+    /**
+     * Build filter to restrict KNN to docs in the document set (index is shared across collections).
+     *
+     * <p>Uses {@link IntField#newSetQuery(String, int...)} rather than a {@code BooleanQuery} of
+     * per-document {@code SHOULD} clauses: each {@code IntField} exact-match clause expands to
+     * several boolean clauses internally, so a one-clause-per-document {@code BooleanQuery} hits
+     * Lucene's 1024 clause cap (and throws {@code TooManyClauses}) at only ~341 documents. A set
+     * query has no such limit. See https://github.com/eXist-db/exist/issues/6738</p>
+     */
+    @Nullable
     private Query buildDocsFilterQuery(final DocumentSet docs) {
         if (docs == null || docs.getDocumentCount() == 0) {
             return null;
         }
-        final List<Query> docIdQueries = new ArrayList<>();
+        // Grown from the iterator itself, not sized from getDocumentCount(): the two aren't
+        // guaranteed consistent for every DocumentSet implementation, and a short iterator
+        // against a pre-sized array would silently leave trailing 0 (a real docId) in docIds.
+        final IntStream.Builder docIds = IntStream.builder();
         for (final Iterator<DocumentImpl> it = docs.getDocumentIterator(); it.hasNext(); ) {
-            docIdQueries.add(IntField.newExactQuery(FIELD_DOC_ID, it.next().getDocId()));
+            docIds.add(it.next().getDocId());
         }
-        if (docIdQueries.size() == 1) {
-            return docIdQueries.getFirst();
-        }
-        final BooleanQuery.Builder b = new BooleanQuery.Builder();
-        for (final Query q : docIdQueries) {
-            b.add(q, BooleanClause.Occur.SHOULD);
-        }
-        return b.build();
+        return IntField.newSetQuery(FIELD_DOC_ID, docIds.build().toArray());
     }
 
     @Nullable

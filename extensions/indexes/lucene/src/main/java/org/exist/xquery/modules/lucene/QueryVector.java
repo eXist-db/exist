@@ -27,8 +27,6 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
@@ -46,8 +44,11 @@ import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 
 /**
  * ft:query-vector(nodes, vector, k?, options?) — KNN vector search with node context.
+ *
+ * <p>See {@link AbstractVectorQueryFunction} for the shared {@link Optimizable} machinery and
+ * why it's needed.</p>
  */
-public class QueryVector extends BasicFunction {
+public class QueryVector extends AbstractVectorQueryFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_NODES = optManyParam("nodes", Type.NODE,
             "The node set to search (e.g. collection(...)//article). Document set and qnames are derived from this.");
@@ -86,6 +87,13 @@ public class QueryVector extends BasicFunction {
     };
 
     /**
+     * True when arg0 ("nodes") is provably a bare self-reference ({@code .}), matching the
+     * predicate's own candidate. Set by {@link #analyze(AnalyzeContextInfo)}, consumed by
+     * {@link #canOptimizeSequence(Sequence)}.
+     */
+    private boolean nodesArgIsSelf = false;
+
+    /**
      * Creates a new QueryVector function instance.
      *
      * @param context the XQuery context
@@ -93,6 +101,42 @@ public class QueryVector extends BasicFunction {
      */
     public QueryVector(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
+    }
+
+    /**
+     * Detects whether arg0 ("nodes") is a bare self-axis step, mirroring the same check
+     * {@link Query#analyze(AnalyzeContextInfo)} performs for exactly the same reason: only in
+     * that case is it safe for {@link #preSelect(Sequence, boolean)} to substitute the
+     * predicate's own candidate sequence for arg0's value. See
+     * {@link #canOptimizeSequence(Sequence)}.
+     */
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        // Pass a clone to super, not contextInfo itself: Function.analyze() mutates it
+        // (contextInfo.setParent(this)), and corrupting the caller's shared contextInfo breaks
+        // context-id tracking for whatever reads it afterward. Mirrors Query#analyze.
+        super.analyze(new AnalyzeContextInfo(contextInfo));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (steps.isEmpty() && getArgument(0) instanceof LocationStep step) {
+            steps = List.of(step);
+        }
+        nodesArgIsSelf = steps.size() == 1 && steps.getFirst() != null
+                && steps.getFirst().getAxis() == Constants.SELF_AXIS;
+    }
+
+    /**
+     * Only claims optimizability when arg0 ("nodes") is provably {@code .} ({@link #nodesArgIsSelf}).
+     * {@link #preSelect(Sequence, boolean)} substitutes {@code contextSequence} for arg0's value
+     * rather than re-evaluating it — correct precisely because {@code .} evaluated over a bulk
+     * {@code contextSequence} returns that same sequence. For any other "nodes" expression (e.g.
+     * a variable bound to an unrelated node set), that substitution would search the wrong
+     * domain, so optimization must be refused here: {@link org.exist.xquery.pragmas.Optimize#eval}
+     * then falls back to {@link AbstractVectorQueryFunction#eval(Sequence, Item)}'s plain path,
+     * which correctly re-evaluates arg0 itself via the inherited {@link #eval(Sequence[], Sequence)}.
+     */
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        return nodesArgIsSelf ? super.canOptimizeSequence(contextSequence) : Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
@@ -108,27 +152,79 @@ public class QueryVector extends BasicFunction {
         }
 
         final int k = parseK(args);
-        final QueryOptions options = args.length >= 4 && !args[3].isEmpty()
-                ? parseOptions(args[3]) : new QueryOptions();
+        final QueryOptions options = parseOptionsArg(args);
 
         final NodeSet nodes = nodesSeq.toNodeSet();
-        final DocumentSet docs = nodes.getDocumentSet();
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
-
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
-
-        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options));
+        return runSearch(nodes, nodes.getDocumentSet(), nodes, vector, k, options);
     }
 
-    private static int parseK(final Sequence[] args) throws XPathException {
-        if (args.length >= 3 && !args[2].isEmpty()) {
-            final int k = args[2].itemAt(0).toJavaObject(Integer.class);
-            return k > 0 ? k : 10;
+    @Override
+    public NodeSet preSelect(final Sequence contextSequence, final boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        if (contextSequence == null || !contextSequence.isPersistentSet()) {
+            // in-memory node sets won't have an index
+            preselectResult = NodeSet.EMPTY_SET;
+            return preselectResult;
         }
-        return 10;
+
+        final NodeSet nodes = contextSequence.toNodeSet();
+        if (nodes == null || nodes.isEmpty()) {
+            preselectResult = NodeSet.EMPTY_SET;
+            return preselectResult;
+        }
+
+        // arg0 ("nodes") is deliberately not re-evaluated: canOptimizeSequence() only reaches
+        // this point when arg0 is provably `.`, so the candidate set is contextSequence itself
+        // (the step's full candidate set, before the predicate applies) — see
+        // AbstractVectorQueryFunction#evalArgs and canOptimizeSequence() above.
+        final Sequence[] tailArgs = evalArgs(contextSequence, 1);
+        final float[] vector = arrayToFloats(tailArgs[1]);
+        if (vector == null) {
+            throw new XPathException(this, "Second argument must be an array of numbers");
+        }
+        final int k = parseK(tailArgs);
+        final QueryOptions options = parseOptionsArg(tailArgs);
+
+        final NodeSet contextSet = useContext ? nodes : null;
+        final Sequence result = runSearch(nodes, contextSequence.getDocumentSet(), contextSet, vector, k, options);
+        preselectResult = result.toNodeSet();
+        return preselectResult;
+    }
+
+    /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index/qnames and run the KNN search. */
+    private Sequence runSearch(final NodeSet nodes, final DocumentSet docs, @Nullable final NodeSet contextSet,
+            final float[] vector, final int k, final QueryOptions options) throws XPathException {
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
+                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, contextSet, qnames, vector, k, options));
+    }
+
+    /**
+     * Declares {@link Dependency#CONTEXT_SET} without {@link Dependency#CONTEXT_ITEM} for the
+     * common case (arg0 "nodes" is a bare node reference, typically {@code .}, that doesn't
+     * itself depend on the context item). This is essential, not cosmetic: {@link PathExpr#eval}
+     * chooses between evaluating a step once in bulk against the whole candidate sequence, or
+     * iterating it once per context item, based on whether its dependencies include
+     * {@code CONTEXT_ITEM}. Declaring {@code CONTEXT_ITEM} (the {@link Function} default) forces
+     * per-item iteration — one KNN search per candidate document — which is exactly the bug this
+     * class exists to fix: a per-document top-k search is never equivalent to a top-k search over
+     * the whole candidate set. Mirrors {@link Query#getDependencies()}.
+     */
+    @Override
+    public int getDependencies() {
+        final Expression nodesArg = getArgument(0);
+        if (Type.subTypeOf(nodesArg.returnsType(), Type.NODE)
+                && !Dependency.dependsOn(nodesArg, Dependency.CONTEXT_ITEM)) {
+            if (anyArgVariesPerCandidate(1)) {
+                return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+            }
+            return Dependency.CONTEXT_SET;
+        }
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 
     private List<QName> resolveQNames(final NodeSet nodes, final LuceneIndexWorker index) throws XPathException {
@@ -143,28 +239,6 @@ public class QueryVector extends BasicFunction {
         }
     }
 
-    private static float[] arrayToFloats(final Sequence seq) throws XPathException {
-        if (seq.isEmpty() || seq.getItemType() != Type.ARRAY_ITEM) {
-            return null;
-        }
-        final ArrayType arr = (ArrayType) seq.itemAt(0);
-        final int n = arr.getSize();
-        final float[] out = new float[n];
-        for (int i = 0; i < n; i++) {
-            final Sequence item = arr.get(i);
-            if (item.isEmpty()) {
-                return null;
-            }
-            final Item it = item.itemAt(0);
-            if (it instanceof NumericValue nv) {
-                out[i] = (float) nv.getDouble();
-            } else {
-                out[i] = (float) Double.parseDouble(it.getStringValue());
-            }
-        }
-        return out;
-    }
-
     private static List<QName> getQNamesFromNodes(final NodeSet nodes) {
         final Set<QName> seen = new LinkedHashSet<>();
         for (int i = 0; i < nodes.getItemCount(); i++) {
@@ -177,19 +251,5 @@ public class QueryVector extends BasicFunction {
             }
         }
         return new ArrayList<>(seen);
-    }
-
-    private QueryOptions parseOptions(final Sequence optSeq) throws XPathException {
-        if (optSeq.isEmpty()) {
-            return new QueryOptions();
-        }
-        final Item item = optSeq.itemAt(0);
-        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
-            return new QueryOptions((AbstractMapType) item);
-        }
-        if (Type.subTypeOf(item.getType(), Type.NODE)) {
-            return new QueryOptions(context, (NodeValue) item);
-        }
-        throw new XPathException(this, LuceneModule.EXXQDYFT0004, "Options must be a map or XML element");
     }
 }
