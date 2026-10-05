@@ -1,0 +1,19 @@
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_e7f7c831c628d7::t_09547a576675b8 26-31,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00d12cf96dc20afd7b7353f56b8d70524c755bc3",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
