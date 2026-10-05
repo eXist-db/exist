@@ -1,0 +1,32 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_e7f7c831c628d7::t_3ad78b083183de 27-28,164-185
+  s_e7f7c831c628d7::t_c4cd4c1dda38d3 45-47
+exist-core/src/test/java/org/exist/test/xqsuite/FileDescriptor.java
+  s_e7f7c831c628d7::t_8a54092d135c84 25,28,57-63,66-68,74-78
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunner.java
+  s_e7f7c831c628d7::t_c6b7799139d6c4 208,260-261,319-323,351-352
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_e7f7c831c628d7::t_5d237d868e8fed 164-167
+exist-core/src/test/java/org/exist/test/runner/AbstractTestRunner.java
+  s_e7f7c831c628d7::t_b2921922b74e35 83-90
+exist-core/src/test/resources/org/exist/test/runner/xquery-discovery.xq
+  s_e7f7c831c628d7::t_e0c22ded5ac672 56-58
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_e7f7c831c628d7::t_64942c8e5f5f3b 65-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c16e882529e950b84f11759e18df031e20f249aa",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

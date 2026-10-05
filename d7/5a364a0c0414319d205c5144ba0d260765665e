@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/test/runner/ExtTestFailureFunction.java
+  s_e7f7c831c628d7::t_1a434bb21c0159 25,36,51-53,90,92-100,121-133
+exist-core/src/test/java/org/exist/test/runner/ExtTestFailureFunctionTest.java
+  s_e7f7c831c628d7::t_b9ed0fa1b9ff6f 1-45
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_e7f7c831c628d7::t_58620f99941a91 98-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d75a364a0c0414319d205c5144ba0d260765665e",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
