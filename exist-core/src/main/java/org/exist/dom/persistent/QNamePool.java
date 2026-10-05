@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.util.hashtable.AbstractHashSet;
 
 import java.util.Iterator;
-import java.util.Objects;
 
 /**
  * A pool for QNames. This is a temporary pool for QName objects to avoid
@@ -65,14 +64,14 @@ public class QNamePool extends AbstractHashSet<QName> {
      * @return QName object
      */
     public final QName get(final byte type, final String namespaceURI, final String localName, final String prefix) {
-        int idx = hashCode(localName, namespaceURI, prefix, type) % tabSize;
+        int idx = QName.identicalHashCode(localName, namespaceURI, prefix, type) % tabSize;
         if(idx < 0) {
             idx *= -1;
         }
 
         if(values[idx] == null) {
             return null;  // key does not exist
-        } else if(equals(values[idx], localName, namespaceURI, prefix, type)) {
+        } else if(values[idx].isIdenticalTo(localName, namespaceURI, prefix, type)) {
             return values[idx]; //no hash-collision
         } else {
 
@@ -82,7 +81,7 @@ public class QNamePool extends AbstractHashSet<QName> {
                 idx = (idx + rehashVal) % tabSize;
                 if(values[idx] == null) {
                     return null; // key not found
-                } else if(equals(values[idx], localName, namespaceURI, prefix, type)) {
+                } else if(values[idx].isIdenticalTo(localName, namespaceURI, prefix, type)) {
                     return values[idx];
                 }
             }
@@ -124,7 +123,7 @@ public class QNamePool extends AbstractHashSet<QName> {
             throw new IllegalArgumentException("Illegal value: null");
         }
 
-        int idx = hashCode(value.getLocalPart(), value.getNamespaceURI(), value.getPrefix(), value.getNameType()) % tabSize;
+        int idx = value.identicalHashCode() % tabSize;
         if(idx < 0) {
             idx *= -1;
         }
@@ -139,7 +138,7 @@ public class QNamePool extends AbstractHashSet<QName> {
             // remember the bucket, but continue to check
             // for duplicate keys
             bucket = idx;
-        } else if(values[idx].equals(value)) {
+        } else if(values[idx].isIdenticalTo(value)) {
             // duplicate value
             return values[idx];
         }
@@ -158,7 +157,7 @@ public class QNamePool extends AbstractHashSet<QName> {
                 values[idx] = value;
                 ++items;
                 return values[idx];
-            } else if(values[idx].equals(value)) {
+            } else if(values[idx].isIdenticalTo(value)) {
                 // duplicate value
                 return values[idx];
             }
@@ -181,44 +180,6 @@ public class QNamePool extends AbstractHashSet<QName> {
         }
         return retVal;
     }
-
-    /**
-     * Used to calculate a hashCode for a QName
-     *
-     * This varies from {@see org.exist.dom.QName#hashCode()} in so far
-     * as it also includes the prefix in the hash calculation
-     *
-     * @param localPart
-     * @param namespaceURI
-     * @param prefix
-     * @param nameType
-     */
-    private static int hashCode(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
-        int h = nameType + 31 + localPart.hashCode();
-        h += 31 * h + namespaceURI.hashCode();
-        h += 31 * h + (prefix == null ? 1 : prefix.hashCode());
-        return h;
-    }
-
-    /**
-     * Used to calculate equality for a QName and it's constituent components
-     *
-     * This varies from {@see org.exist.dom.QName#equals(Object)} in so far
-     * as it also includes the prefix in the equality test
-     *
-     * @param qname             The QName to check equality against the other*
-     * @param otherLocalPart
-     * @param otherNamespaceURI
-     * @param otherPrefix
-     * @param otherNameType
-     */
-    private static boolean equals(final QName qname, final String otherLocalPart, final String otherNamespaceURI, final String otherPrefix, final byte otherNameType) {
-        return qname.getNameType() == otherNameType
-            && qname.getNamespaceURI().equals(otherNamespaceURI)
-            && qname.getLocalPart().equals(otherLocalPart)
-            && Objects.equals(qname.getPrefix(), otherPrefix);
-    }
-
 
     @Override
     public Iterator<QName> iterator() {

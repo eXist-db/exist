@@ -54,7 +54,7 @@ public class NamePool {
 
     /**
      * QName ignores nameType and prefix when testing for equality.
-     * Wrap it to overwrite those methods.
+     * Wrap it to compare all four parts instead, as {@link QName#isIdenticalTo(QName)} does.
      */
     private static class WrappedQName implements Comparable<WrappedQName> {
         private final QName qname;
@@ -68,43 +68,17 @@ public class NamePool {
             if (qname.getNameType() != other.qname.getNameType()) {
                 return qname.getNameType() < other.qname.getNameType() ? Constants.INFERIOR : Constants.SUPERIOR;
             }
-            final int c;
-            if (qname.getNamespaceURI() == null) {
-                c = other.qname.getNamespaceURI() == null ? Constants.EQUAL : Constants.INFERIOR;
-            } else if (other.qname.getNamespaceURI() == null) {
-                c = Constants.SUPERIOR;
-            } else {
-                c = qname.getNamespaceURI().compareTo(other.qname.getNamespaceURI());
-            }
-            return c == Constants.EQUAL ? qname.getLocalPart().compareTo(other.qname.getLocalPart()) : c;
+            return qname.compareTo(other.qname);
         }
 
         @Override
         public int hashCode() {
-            int h = qname.getNameType() + 31 + qname.getLocalPart().hashCode();
-            h += 31 * h + (qname.getNamespaceURI() == null ? 1 : qname.getNamespaceURI().hashCode());
-            h += 31 * h + (qname.getPrefix() == null ? 1 : qname.getPrefix().hashCode());
-            return h;
+            return qname.identicalHashCode();
         }
 
         @Override
         public boolean equals(final Object obj) {
-            if (obj == null || !(obj instanceof WrappedQName other)) {
-                return false;
-            }
-
-            final int cmp = compareTo(other);
-            if (cmp != 0) {
-                return false;
-            }
-
-            if (qname.getPrefix() == null) {
-                return other.qname.getPrefix() == null;
-            } else if (other.qname.getPrefix() == null) {
-                return false;
-            } else {
-                return qname.getPrefix().equals(other.qname.getPrefix());
-            }
+            return obj instanceof WrappedQName other && qname.isIdenticalTo(other.qname);
         }
     }
 }
