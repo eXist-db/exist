@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_e7f7c831c628d7::t_9693a2b0bad6b7 1938-1943
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexScanSparseDocValuesTest.java
+  s_e7f7c831c628d7::t_20a2edc32cf51d 1-169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d598ddb94f3aa6a0443edf83924f6adb8d018aa2",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
