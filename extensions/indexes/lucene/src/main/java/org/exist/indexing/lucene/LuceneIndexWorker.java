@@ -2091,6 +2091,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     config.build(broker, contextNode, doc, pending.text);
                 });
                 // register field analyzers so indexing uses the same analyzer as querying
+                final Map<String, Analyzer> documentAnalyzers = new HashMap<>();
                 final LuceneConfig luceneConfig = pending.idxConf.getParent();
                 for (AbstractFieldConfig config : facetConfigs) {
                     if (config instanceof LuceneFieldConfig lfc) {
@@ -2103,6 +2104,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         }
                         if (a != null) {
                             index.addFieldAnalyzer(lfc.getName(), a);
+                            documentAnalyzers.put(lfc.getName(), a);
                         }
                     }
                 }
@@ -2150,8 +2152,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final Analyzer customAnalyzer = pending.idxConf.getAnalyzer();
                 if (customAnalyzer != null && contentField != null) {
                     index.addFieldAnalyzer(contentField, customAnalyzer);
+                    documentAnalyzers.put(contentField, customAnalyzer);
                 }
-                writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
+                index.addDocument(writer, pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc), documentAnalyzers);
 	        }
         } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
