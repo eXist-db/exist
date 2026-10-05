@@ -1699,9 +1699,10 @@ public class XQueryTest {
         result = service.queryResource("cdata.xml", query);
         assertEquals(1, result.getSize());
 
-        // NOTE - no cdata-section-elements specified for XDM serialization
+        // No cdata-section-elements specified, but exist:preserve-cdata is on by default and the
+        // section came from the stored document, so it is serialized back as a CDATA section.
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, "<root><node>world</node></root>", resu.getContent().toString());
+        assertEquals("XQuery: " + query, "<root><node><![CDATA[world]]></node></root>", resu.getContent().toString());
     }
 
     /**
