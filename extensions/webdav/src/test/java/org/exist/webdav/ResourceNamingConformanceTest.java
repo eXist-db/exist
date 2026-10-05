@@ -90,10 +90,10 @@ import static org.junit.Assert.fail;
  */
 public class ResourceNamingConformanceTest {
 
-    @ClassRule
     /** The five predefined XML entities, for {@link #unescapeXml}. */
     private static final Pattern XML_ENTITY = Pattern.compile("&(amp|lt|gt|quot|apos);");
 
+    @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String TEST_COLLECTION = "/db/naming-conformance-test";
