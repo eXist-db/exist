@@ -40,7 +40,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -50,6 +49,10 @@ import static org.junit.Assert.assertNotNull;
  * <p>The assertions parse the serialized result and check the attribute's namespace URI, not its
  * prefix: a prefix that the element binds to a different URI puts the attribute in the wrong
  * namespace, which is the failure that matters and the one XQTS Constr-inscope-1 to -4 detect.</p>
+ *
+ * <p>The cases that a query can express are in {@code attribute-namespace-fixup.xqm}. This test
+ * covers the one that needs Java: a pooled query context left with in-scope bindings by an earlier
+ * execution.</p>
  */
 public class AttributeNamespaceFixupTest {
 
@@ -100,24 +103,6 @@ public class AttributeNamespaceFixupTest {
         assertNotNull("@" + localName + " must be in " + uri + "; got " + serialized, attr);
     }
 
-    /** XQTS Constr-inscope-3: foo is rebound on the new element. */
-    @Test
-    public void rebindsAPrefixTheElementBindsElsewhere() throws Exception {
-        final String out = run("serialize(for $x in <parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/> "
-                + "return <new xmlns:foo=\"" + EX + "\">{$x//@*:attr1}</new>)");
-        assertAttributeIn(out, PARENT1, "attr1");
-    }
-
-    /** XQTS Constr-inscope-4: two attributes with the same prefix and different URIs. */
-    @Test
-    public void separatesTwoAttributesThatShareAPrefix() throws Exception {
-        final String out = run("serialize(for $x in <inscope><parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/>"
-                + "<parent2 xmlns:foo=\"" + PARENT2 + "\" foo:attr2=\"attr2\"/></inscope> "
-                + "return <new>{$x//@*:attr1, $x//@*:attr2}</new>)");
-        assertAttributeIn(out, PARENT1, "attr1");
-        assertAttributeIn(out, PARENT2, "attr2");
-    }
-
     /**
      * The #6704 scenario: a pooled context carrying the bindings another result left behind. The
      * element's own bindings decide, so they cannot mislead it.
@@ -133,29 +118,4 @@ public class AttributeNamespaceFixupTest {
         assertAttributeIn(run(query), PARENT1, "attr1");
     }
 
-    /** A prefix the element already binds to the attribute's URI is reused rather than inventing one. */
-    @Test
-    public void reusesAPrefixTheElementAlreadyBindsToTheUri() throws Exception {
-        final String out = run("serialize(for $x in <parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/> "
-                + "return <new xmlns:foo=\"" + EX + "\" xmlns:bar=\"" + PARENT1 + "\">{$x//@*:attr1}</new>)");
-        assertAttributeIn(out, PARENT1, "attr1");
-        assertEquals("bar", parse(out).getAttributeNodeNS(PARENT1, "attr1").getPrefix());
-    }
-
-    /** A generated prefix must not be one the element already uses for another URI. */
-    @Test
-    public void generatesAPrefixTheElementDoesNotUse() throws Exception {
-        final String out = run("serialize(for $x in <parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/> "
-                + "return <new xmlns:foo=\"" + EX + "\" xmlns:XXX=\"urn:taken\">{$x//@*:attr1}</new>)");
-        assertAttributeIn(out, PARENT1, "attr1");
-        assertEquals("XXX1", parse(out).getAttributeNodeNS(PARENT1, "attr1").getPrefix());
-    }
-
-    /** No conflict: the attribute keeps its prefix. */
-    @Test
-    public void keepsAPrefixThatDoesNotConflict() throws Exception {
-        final String out = run("serialize(for $x in <parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/> "
-                + "return <new>{$x//@*:attr1}</new>)");
-        assertEquals("foo", parse(out).getAttributeNodeNS(PARENT1, "attr1").getPrefix());
-    }
 }

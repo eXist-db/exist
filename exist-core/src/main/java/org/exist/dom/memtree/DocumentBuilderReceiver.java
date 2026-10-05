@@ -39,6 +39,7 @@ import org.xml.sax.ext.LexicalHandler;
 import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 
 /**
@@ -269,23 +270,26 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         return new QName(qname.getLocalPart(), uri, prefix);
     }
 
+    /*
+     * The lookups below scan the element's own namespace nodes, so each is linear in their number.
+     * They run once or twice per namespaced attribute, which keeps construction quadratic only in the
+     * number of namespace nodes on one element -- a handful in practice.
+     */
+
     /** The URI the element binds {@code prefix} to, through its own name or a namespace node; or null. */
     private static String uriBoundOnElement(final DocumentImpl doc, final int element, final String prefix) {
+        final String boundByName = uriBoundByName(doc, element, prefix);
+        if (boundByName != null) {
+            return boundByName;
+        }
+        final QName namespace = findNamespaceNode(doc, element, ns -> prefix.equals(ns.getLocalPart()));
+        return namespace == null ? null : namespace.getNamespaceURI();
+    }
+
+    /** The URI the element's own name binds {@code prefix} to; or null. */
+    private static String uriBoundByName(final DocumentImpl doc, final int element, final String prefix) {
         final QName name = doc.nodeName[element];
-        if (name != null && prefix.equals(name.getPrefix())) {
-            return name.getNamespaceURI();
-        }
-        final int firstNs = doc.alphaLen[element];
-        if (firstNs < 0) {
-            return null;
-        }
-        for (int ns = firstNs; ns < doc.nextNamespace && doc.namespaceParent[ns] == element; ns++) {
-            final QName nsName = doc.namespaceCode[ns];
-            if (nsName != null && prefix.equals(nsName.getLocalPart())) {
-                return nsName.getNamespaceURI();
-            }
-        }
-        return null;
+        return name != null && prefix.equals(name.getPrefix()) ? name.getNamespaceURI() : null;
     }
 
     /** A non-empty prefix the element already binds to {@code uri}; or null. */
@@ -295,24 +299,39 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
                 && uri.equals(name.getNamespaceURI())) {
             return name.getPrefix();
         }
+        final QName namespace = findNamespaceNode(doc, element,
+                ns -> !ns.getLocalPart().isEmpty() && uri.equals(ns.getNamespaceURI()));
+        return namespace == null ? null : namespace.getLocalPart();
+    }
+
+    /**
+     * The first of the element's namespace nodes that matches; or null. A namespace node's local
+     * part is its prefix.
+     */
+    private static QName findNamespaceNode(final DocumentImpl doc, final int element, final Predicate<QName> matches) {
         final int firstNs = doc.alphaLen[element];
         if (firstNs < 0) {
             return null;
         }
         for (int ns = firstNs; ns < doc.nextNamespace && doc.namespaceParent[ns] == element; ns++) {
             final QName nsName = doc.namespaceCode[ns];
-            if (nsName != null && !nsName.getLocalPart().isEmpty() && uri.equals(nsName.getNamespaceURI())) {
-                return nsName.getLocalPart();
+            if (nsName != null && matches.test(nsName)) {
+                return nsName;
             }
         }
         return null;
     }
 
-    /** "XXX", "XXX1", "XXX2", ... -- the first the element does not already bind. */
+    /** A prefix the element does not already bind. */
     private static String freshPrefix(final DocumentImpl doc, final int element) {
+        return firstUnusedPrefix(candidate -> uriBoundOnElement(doc, element, candidate) != null);
+    }
+
+    /** "XXX", "XXX1", "XXX2", ... -- the first that {@code isBound} rejects. */
+    private static String firstUnusedPrefix(final Predicate<String> isBound) {
         String candidate = "XXX";
         int i = 0;
-        while (uriBoundOnElement(doc, element, candidate) != null) {
+        while (isBound.test(candidate)) {
             i++;
             candidate = "XXX" + i;
         }
@@ -333,10 +352,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         if (!isElementParent(doc, parent)) {
             return;
         }
-        if (isParentSelfDeclaration(doc, parent, prefix, uri)) {
-            return;
-        }
-        if (hasExistingPrefixDeclaration(doc, parent, prefix)) {
+        // already bound by the element's own name, or declared by one of its namespace nodes
+        if (uri.equals(uriBoundByName(doc, parent, prefix))
+                || findNamespaceNode(doc, parent, ns -> prefix.equals(ns.getLocalPart())) != null) {
             return;
         }
         builder.namespaceNode(prefix, uri);
@@ -344,41 +362,6 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     private static boolean isElementParent(final DocumentImpl doc, final int parent) {
         return parent >= 0 && doc.getNodeType(parent) == org.w3c.dom.Node.ELEMENT_NODE;
-    }
-
-    /**
-     * The parent element already carries the prefix-to-uri binding via its
-     * own name (e.g. parent is {@code <c:foo xmlns:c="..."/>} and we're being
-     * asked to emit {@code xmlns:c="..."} for the same URI). The declaration
-     * is redundant.
-     */
-    private static boolean isParentSelfDeclaration(final DocumentImpl doc, final int parent,
-                                                   final String prefix, final String uri) {
-        final QName parentName = doc.nodeName[parent];
-        return parentName != null
-                && prefix.equals(parentName.getPrefix())
-                && uri.equals(parentName.getNamespaceURI());
-    }
-
-    /**
-     * Scan the namespace declarations already attached to {@code parent} and
-     * return true if any of them binds the same {@code prefix}.
-     */
-    private static boolean hasExistingPrefixDeclaration(final DocumentImpl doc, final int parent,
-                                                       final String prefix) {
-        final int firstNs = doc.alphaLen[parent];
-        if (firstNs < 0) {
-            return false;
-        }
-        for (int ns = firstNs;
-             ns < doc.nextNamespace && doc.namespaceParent[ns] == parent;
-             ns++) {
-            final QName nsName = doc.namespaceCode[ns];
-            if (nsName != null && prefix.equals(nsName.getLocalPart())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -488,14 +471,6 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         if (requestedPrefix != null) {
             return requestedPrefix;
         }
-        // Generate "XXX", "XXX1", "XXX2", ... until we find one not already
-        // bound in scope.
-        String candidate = "XXX";
-        int i = 0;
-        while (context.getInScopeNamespace(candidate) != null) {
-            i++;
-            candidate = "XXX" + i;
-        }
-        return candidate;
+        return firstUnusedPrefix(candidate -> context.getInScopeNamespace(candidate) != null);
     }
 }
