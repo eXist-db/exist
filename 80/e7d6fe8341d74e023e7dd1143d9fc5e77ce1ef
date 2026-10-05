@@ -1,0 +1,33 @@
+exist-core/src/test/java/org/exist/test/runner/AbstractTestRunner.java
+  s_e7f7c831c628d7::t_b2503be43a8763 83-90
+exist-core/src/test/java/org/exist/test/runner/ExtTestFailureFunction.java
+  s_e7f7c831c628d7::t_338ca3f09da632 25,51-53,98-99,121-133
+exist-core/src/test/java/org/exist/test/runner/ExtTestFailureFunctionTest.java
+  s_e7f7c831c628d7::t_8c6af73c8e9810 1-45
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunner.java
+  s_e7f7c831c628d7::t_7689a8ffc7051b 208,260-261,319-323,351-352
+exist-core/src/test/java/org/exist/test/xqsuite/FileDescriptor.java
+  s_e7f7c831c628d7::t_48bf9d0a0cbb9f 25,28,57-63,68,74-78
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_e7f7c831c628d7::t_d55c15dc2b5933 164-167
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_e7f7c831c628d7::t_b4b2d38b0f4bf9 27-28,73-75,175-185
+exist-core/src/test/resources/org/exist/test/runner/xquery-discovery.xq
+  s_e7f7c831c628d7::t_34b3b153ff374a 56-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "80e7d6fe8341d74e023e7dd1143d9fc5e77ce1ef",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
