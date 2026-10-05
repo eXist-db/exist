@@ -922,6 +922,14 @@ function ser:serialize-xml-doctype-indent-no() {
         map { "method": "xml", "doctype-system": "a.dtd", "indent": false() })
 };
 
+(: test for https://github.com/eXist-db/exist/issues/4736 :)
+declare
+    %test:assertEquals('<!DOCTYPE a SYSTEM "a.dtd">&#10;<a>&#10;    <b/>&#10;</a>')
+function ser:serialize-xml-doctype-indent-yes() {
+    serialize(<a><b/></a>,
+        map { "method": "xml", "doctype-system": "a.dtd", "indent": true() })
+};
+
 (: test for https://github.com/eXist-db/exist/issues/4702 :)
 declare
     %test:assertEquals("<a>foo</a> <b>bar</b>")
