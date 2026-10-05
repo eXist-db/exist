@@ -137,45 +137,64 @@ public class XQueryNamingConformanceTest {
         final Set<String> failing = new LinkedHashSet<>();
 
         for (final String mode : List.of("raw", "encode")) {
-            matrix.append("\n-- resources, xmldb:store (").append(mode).append(") --\n");
-            matrix.append(String.format("%-16s %-8s %-26s %-8s %-8s %-18s%n",
-                    "requested", "created", "stored-key", "doc()", "coll()", "get-child-res"));
-            for (final String name : CORPUS) {
-                freshResources();
-                final String nameExpr = "encode".equals(mode) ? "xmldb:encode-uri(" + lit(name) + ")" : lit(name);
-                final boolean created = xqStr("xmldb:store(" + lit(RES_COLL) + ", " + nameExpr + ", <probe>M</probe>)").startsWith("/db/");
-                final String stored = created ? xqStr("string-join(xmldb:get-child-resources(" + lit(RES_COLL) + "), ',')") : "-";
-                final boolean doc = created && xqBool("exists(doc(concat(" + lit(RES_COLL + "/") + ", " + nameExpr + ")))");
-                final boolean coll = created && xqBool("exists(collection(" + lit(RES_COLL) + ")[ends-with(document-uri(.), concat('/', " + nameExpr + "))])");
-                final boolean gcr = created && xqBool("xmldb:get-child-resources(" + lit(RES_COLL) + ") = " + nameExpr);
-
-                record(failing, "res", mode, name, "doc", doc);
-                record(failing, "res", mode, name, "collection", coll);
-                record(failing, "res", mode, name, "get-child-resources", gcr);
-                matrix.append(String.format("%-16s %-8s %-26s %-8s %-8s %-18s%n",
-                        name, created ? "ok" : "FAIL", stored,
-                        doc ? "PASS" : "FAIL", coll ? "PASS" : "FAIL", gcr ? "PASS" : "FAIL"));
-            }
-
-            matrix.append("\n-- collections, xmldb:create-collection (").append(mode).append(") --\n");
-            matrix.append(String.format("%-16s %-8s %-26s %-18s%n", "requested", "created", "stored-key", "get-child-coll"));
-            for (final String name : CORPUS) {
-                freshCollections();
-                final String nameExpr = "encode".equals(mode) ? "xmldb:encode-uri(" + lit(name) + ")" : lit(name);
-                final boolean created = xqStr("xmldb:create-collection(" + lit(COLL_PARENT) + ", " + nameExpr + ")").startsWith("/db/");
-                final String stored = created ? xqStr("string-join(xmldb:get-child-collections(" + lit(COLL_PARENT) + "), ',')") : "-";
-                final boolean gcc = created && xqBool("xmldb:get-child-collections(" + lit(COLL_PARENT) + ") = " + nameExpr);
-
-                record(failing, "coll", mode, name, "get-child-collections", gcc);
-                matrix.append(String.format("%-16s %-8s %-26s %-18s%n", name, created ? "ok" : "FAIL", stored, gcc ? "PASS" : "FAIL"));
-            }
+            probeResources(mode, matrix, failing);
+            probeCollections(mode, matrix, failing);
         }
         System.out.println(matrix);
 
-        KnownFailuresRatchet.check(failing, KNOWN_FAILURES,
-                        "accessor cell(s) regressed (kind:mode:name:reader):", "cell(s)",
-                        "KNOWN_FAILURES", KnownFailuresRatchet::lines)
-                .ifPresent(msg -> fail(msg + "--- current matrix ---" + matrix));
+        final Optional<String> regression = KnownFailuresRatchet.check(failing, KNOWN_FAILURES,
+                "accessor cell(s) regressed (kind:mode:name:reader):", "cell(s)",
+                "KNOWN_FAILURES", KnownFailuresRatchet::lines);
+        if (regression.isPresent()) {
+            fail(regression.get() + "--- current matrix ---" + matrix);
+        }
+    }
+
+    /** Stores a resource under each name with xmldb:store, and reads it back by that name. */
+    private void probeResources(final String mode, final StringBuilder matrix, final Set<String> failing) {
+        matrix.append("\n-- resources, xmldb:store (").append(mode).append(") --\n");
+        matrix.append(String.format("%-16s %-8s %-26s %-8s %-8s %-18s%n",
+                "requested", "created", "stored-key", "doc()", "coll()", "get-child-res"));
+        for (final String name : CORPUS) {
+            freshResources();
+            final String nameExpr = nameExpression(mode, name);
+            final boolean created = xqStr("xmldb:store(" + lit(RES_COLL) + ", " + nameExpr + ", <probe>M</probe>)").startsWith("/db/");
+            final String stored = created ? xqStr("string-join(xmldb:get-child-resources(" + lit(RES_COLL) + "), ',')") : "-";
+            final boolean doc = created && xqBool("exists(doc(concat(" + lit(RES_COLL + "/") + ", " + nameExpr + ")))");
+            final boolean coll = created && xqBool("exists(collection(" + lit(RES_COLL) + ")[ends-with(document-uri(.), concat('/', " + nameExpr + "))])");
+            final boolean gcr = created && xqBool("xmldb:get-child-resources(" + lit(RES_COLL) + ") = " + nameExpr);
+
+            record(failing, "res", mode, name, "doc", doc);
+            record(failing, "res", mode, name, "collection", coll);
+            record(failing, "res", mode, name, "get-child-resources", gcr);
+            matrix.append(String.format("%-16s %-8s %-26s %-8s %-8s %-18s%n",
+                    name, created ? "ok" : "FAIL", stored, passFail(doc), passFail(coll), passFail(gcr)));
+        }
+    }
+
+    /** Creates a collection under each name with xmldb:create-collection, and lists it back. */
+    private void probeCollections(final String mode, final StringBuilder matrix, final Set<String> failing) {
+        matrix.append("\n-- collections, xmldb:create-collection (").append(mode).append(") --\n");
+        matrix.append(String.format("%-16s %-8s %-26s %-18s%n", "requested", "created", "stored-key", "get-child-coll"));
+        for (final String name : CORPUS) {
+            freshCollections();
+            final String nameExpr = nameExpression(mode, name);
+            final boolean created = xqStr("xmldb:create-collection(" + lit(COLL_PARENT) + ", " + nameExpr + ")").startsWith("/db/");
+            final String stored = created ? xqStr("string-join(xmldb:get-child-collections(" + lit(COLL_PARENT) + "), ',')") : "-";
+            final boolean gcc = created && xqBool("xmldb:get-child-collections(" + lit(COLL_PARENT) + ") = " + nameExpr);
+
+            record(failing, "coll", mode, name, "get-child-collections", gcc);
+            matrix.append(String.format("%-16s %-8s %-26s %-18s%n", name, created ? "ok" : "FAIL", stored, passFail(gcc)));
+        }
+    }
+
+    /** The name as an XQuery expression: a literal, or a literal passed through xmldb:encode-uri. */
+    private static String nameExpression(final String mode, final String name) {
+        return "encode".equals(mode) ? "xmldb:encode-uri(" + lit(name) + ")" : lit(name);
+    }
+
+    private static String passFail(final boolean ok) {
+        return ok ? "PASS" : "FAIL";
     }
 
     private static void record(final Set<String> failing, final String kind, final String mode, final String name, final String reader, final boolean ok) {
