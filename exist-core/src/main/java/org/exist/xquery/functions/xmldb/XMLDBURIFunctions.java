@@ -65,7 +65,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 		),
 		new FunctionSignature(
 				new QName("decode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Decodes the string $string such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
+				"Decodes the string $string such that any percent encoded octets will be translated to their decoded UTF-8 representation. A '+' is kept as a literal plus sign, not decoded as a space, and a '%' that is not followed by two hexadecimal digits is kept as it is.",
 				new SequenceType[] {
 					new FunctionParameterSequenceType("string",Type.STRING, Cardinality.EXACTLY_ONE, "The input string"),
 				},
@@ -73,7 +73,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 		),
 		new FunctionSignature(
 				new QName("decode-uri", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Decodes the URI $uri such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
+				"Decodes the URI $uri such that any percent encoded octets will be translated to their decoded UTF-8 representation. A '+' is kept as a literal plus sign, not decoded as a space, and a '%' that is not followed by two hexadecimal digits is kept as it is.",
 				new SequenceType[] {
 					new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI"),
 				},
