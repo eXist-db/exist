@@ -73,4 +73,14 @@ public class NamePoolTest {
         qr = pool.getSharedName(q3);
         assertSame(q1, qr);
     }
+
+    @Test
+    public void getSharedNameDifferentPrefixSameName() {
+        final NamePool pool = new NamePool();
+        final QName q1 = new QName("n1", "http://exist-db.org", "x");
+        final QName q2 = new QName("n1", "http://exist-db.org", "y");
+        pool.getSharedName(q1);
+        assertSame(q2, pool.getSharedName(q2));
+        assertSame(q1, pool.getSharedName(new QName("n1", "http://exist-db.org", "x")));
+    }
 }

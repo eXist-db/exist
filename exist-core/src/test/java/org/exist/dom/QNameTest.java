@@ -22,6 +22,7 @@
 
 package org.exist.dom;
 
+import org.exist.storage.ElementValue;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.junit.Test;
@@ -30,6 +31,8 @@ import javax.xml.XMLConstants;
 
 import static org.exist.dom.QName.Validity.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -150,6 +153,42 @@ public class QNameTest {
         } catch (Exception e) {
             assertEquals("No namespace defined for prefix {a. QName is invalid: INVALID_PREFIX", e.getMessage());
         }
+    }
+
+    @Test
+    public void identicalComparesAllFourParts() {
+        final QName qname = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
+
+        assertTrue(qname.isIdenticalTo(new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE)));
+        assertTrue(qname.isIdenticalTo("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE));
+
+        final QName[] others = {
+                new QName("other", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE),
+                new QName("id", "http://other", "xml", ElementValue.ATTRIBUTE),
+                new QName("id", XMLConstants.XML_NS_URI, "xm", ElementValue.ATTRIBUTE),
+                new QName("id", XMLConstants.XML_NS_URI, null, ElementValue.ATTRIBUTE),
+                new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ELEMENT)
+        };
+        for (final QName other : others) {
+            assertFalse(other.getPrefix() + ":" + other.getLocalPart() + " type " + other.getNameType(), qname.isIdenticalTo(other));
+            assertFalse(qname.isIdenticalTo(other.getLocalPart(), other.getNamespaceURI(), other.getPrefix(), other.getNameType()));
+        }
+
+        // equals still ignores prefix and name type
+        assertTrue(qname.equals(others[2]));
+        assertTrue(qname.equals(others[4]));
+    }
+
+    @Test
+    public void identicalHashCodeAgreesWithIsIdenticalTo() {
+        final QName qname = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
+        final QName copy = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
+
+        assertEquals(qname.identicalHashCode(), copy.identicalHashCode());
+        assertEquals(qname.identicalHashCode(), QName.identicalHashCode("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE));
+
+        final QName noPrefix = new QName("id", XMLConstants.NULL_NS_URI);
+        assertEquals(noPrefix.identicalHashCode(), QName.identicalHashCode("id", XMLConstants.NULL_NS_URI, null, ElementValue.ELEMENT));
     }
 }
 

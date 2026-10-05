@@ -27,6 +27,7 @@ import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
 
 import javax.xml.XMLConstants;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -254,6 +255,66 @@ public class QName implements Comparable<QName> {
         int result = namespaceURI.hashCode();
         result = 31 * result + localPart.hashCode();
         return result;
+    }
+
+    /**
+     * Checks whether two QNames are identical: their namespace URIs, local names, prefixes
+     * and name types are all equal. Unlike {@link #equals(Object)}, which compares only the
+     * namespace URI and local name, as XQuery's QName equality does.
+     *
+     * Use this, not {@link #equals(Object)}, wherever one QName object stands in for another,
+     * such as a pool of shared names: a QName with the wrong prefix serializes with that prefix,
+     * and one with the wrong name type is stored and indexed as the wrong kind of node.
+     *
+     * @param other The other QName
+     * @return true if all four parts are equal.
+     */
+    public boolean isIdenticalTo(final QName other) {
+        return other == this || isIdenticalTo(other.localPart, other.namespaceURI, other.prefix, other.nameType);
+    }
+
+    /**
+     * Checks whether this QName is identical to the one the given parts would make,
+     * without constructing it. See {@link #isIdenticalTo(QName)}.
+     *
+     * @param localPart    local part of the other QName
+     * @param namespaceURI namespace URI of the other QName
+     * @param prefix       prefix of the other QName, may be null
+     * @param nameType     name type of the other QName
+     * @return true if all four parts are equal.
+     */
+    public boolean isIdenticalTo(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
+        return this.nameType == nameType
+                && this.namespaceURI.equals(namespaceURI)
+                && this.localPart.equals(localPart)
+                && Objects.equals(this.prefix, prefix);
+    }
+
+    /**
+     * A hash code consistent with {@link #isIdenticalTo(QName)}: unlike {@link #hashCode()},
+     * it includes the prefix and name type.
+     *
+     * @return the hash code.
+     */
+    public int identicalHashCode() {
+        return identicalHashCode(localPart, namespaceURI, prefix, nameType);
+    }
+
+    /**
+     * The {@link #identicalHashCode()} of the QName the given parts would make,
+     * without constructing it.
+     *
+     * @param localPart    local part of the QName
+     * @param namespaceURI namespace URI of the QName
+     * @param prefix       prefix of the QName, may be null
+     * @param nameType     name type of the QName
+     * @return the hash code.
+     */
+    public static int identicalHashCode(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
+        int h = nameType + 31 + localPart.hashCode();
+        h += 31 * h + namespaceURI.hashCode();
+        h += 31 * h + (prefix == null ? 1 : prefix.hashCode());
+        return h;
     }
 
     public javax.xml.namespace.QName toJavaQName() {
