@@ -131,14 +131,6 @@ declare variable $rt:DATA :=
         </root>
     </test>;
 
-declare variable $rt:DATA2 :=
-    <object>
-        <parameter>
-            <name>key1</name>
-            <value>value1</value>
-        </parameter>
-    </object>;
-
 (: --- GitHub #3114: Lucene+range interaction with ft:query predicate --- :)
 declare variable $rt:I3114_DATA as document-node() := document {
     <root>
@@ -183,6 +175,9 @@ declare variable $rt:COLLECTION_NAME := "range-test-range";
 (:~ Full path of the test collection. :)
 declare variable $rt:COLLECTION := "/db/" || $rt:COLLECTION_NAME;
 
+(:~ A second collection with the same index and data, see rt:setup. :)
+declare variable $rt:BYSTANDER_NAME := "range-test-range-bystander";
+
 (:~
  : XQSuite setUp: create config parent chain, test collection, config subcollection,
  : store xconf and documents, reindex.
@@ -198,6 +193,17 @@ function rt:setup() {
      xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA),
      xmldb:store($rt:COLLECTION, "nested.xml", $rt:DATA_NESTED),
      xmldb:reindex($rt:COLLECTION),
+
+     (: The files of this suite run concurrently against one database, so a query that is not scoped to
+        $rt:COLLECTION also sees the data of other files, for example optimizer.xql, which indexes the same
+        field and stores the same names. This collection plays that other file: it has the same index and the
+        same documents, so a test that queries the whole database fails here every time, not only when
+        another file happens to run at the same moment. :)
+     xmldb:create-collection("/db/system/config/db", $rt:BYSTANDER_NAME),
+     xmldb:create-collection("/db", $rt:BYSTANDER_NAME),
+     xmldb:store("/db/system/config/db/" || $rt:BYSTANDER_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
+     xmldb:store("/db/" || $rt:BYSTANDER_NAME, "test.xml", $rt:DATA),
+     xmldb:reindex("/db/" || $rt:BYSTANDER_NAME),
 
      (: GitHub #3114: dual collections (Lucene-only vs Lucene+range) :)
      xmldb:create-collection("/db", $rt:I3114_COLL_NO_RANGE),
@@ -221,6 +227,8 @@ declare
 function rt:cleanup() {
     xmldb:remove($rt:COLLECTION),
     xmldb:remove("/db/system/config/db/" || $rt:COLLECTION_NAME),
+    xmldb:remove("/db/" || $rt:BYSTANDER_NAME),
+    xmldb:remove("/db/system/config/db/" || $rt:BYSTANDER_NAME),
 
     xmldb:remove("/db/" || $rt:I3114_COLL_NO_RANGE),
     xmldb:remove("/db/system/config/db/" || $rt:I3114_COLL_NO_RANGE),
@@ -509,7 +517,7 @@ function rt:update-insert() {
             <city code="77777">Bach</city>
         </address>
     into doc($rt:COLLECTION || "/test.xml")/test,
-    range:field-eq("address-name", "Willi Wiesel")/street/text(),
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Willi Wiesel")/street/text(),
     collection($rt:COLLECTION)//address[range:eq(name, "Willi Wiesel")]/city/text()
 };
 
@@ -518,7 +526,7 @@ declare
 function rt:update-delete() {
     update delete collection($rt:COLLECTION)/test/address[range:eq(name, "Berta Muh")],
     collection($rt:COLLECTION)//address[range:eq(name, "Berta Muh")],
-    range:field-eq("address-name", "Berta Muh")
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Berta Muh")
 };
 
 declare
@@ -532,9 +540,9 @@ function rt:update-replace() {
             <city code="77777">Bach</city>
         </address>,
     collection($rt:COLLECTION)//address[range:eq(name, "Albert Amsel")],
-    range:field-eq("address-name", "Albert Amsel"),
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Albert Amsel"),
     collection($rt:COLLECTION)//address[range:eq(name, "Berta Bieber")]/street/text(),
-    range:field-eq("address-name", "Berta Bieber")/city/text()
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Berta Bieber")/city/text()
 };
 
 declare
@@ -542,9 +550,9 @@ declare
 function rt:update-value() {
     update value collection($rt:COLLECTION)/test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
     collection($rt:COLLECTION)//address[range:eq(name, "Pü Reh")],
-    range:field-eq("address-name", "Pü Reh"),
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Pü Reh"),
     collection($rt:COLLECTION)//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
-    range:field-eq("address-name", "Rita Rebhuhn")/city/text()
+    collection($rt:COLLECTION)//range:field-eq("address-name", "Rita Rebhuhn")/city/text()
 };
 
 (: --- GitHub #4110: case-insensitive range index on attributes --- :)
