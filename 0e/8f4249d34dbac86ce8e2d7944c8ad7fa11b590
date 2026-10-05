@@ -1,0 +1,27 @@
+exist-core/src/test/java/org/exist/test/runner/AbstractTestRunner.java
+  s_e7f7c831c628d7::t_b2921922b74e35 83-90
+exist-core/src/test/java/org/exist/test/runner/XQueryTestRunner.java
+  s_e7f7c831c628d7::t_c6b7799139d6c4 208,260-261,319-323,351-352
+exist-core/src/test/java/org/exist/test/xqsuite/FileDescriptor.java
+  s_e7f7c831c628d7::t_8a54092d135c84 25,28,57-63,66-68,74-78
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_e7f7c831c628d7::t_5d237d868e8fed 164-167
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_e7f7c831c628d7::t_3ad78b083183de 27-28,73-75,164-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e8f4249d34dbac86ce8e2d7944c8ad7fa11b590",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
