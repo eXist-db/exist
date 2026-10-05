@@ -1918,9 +1918,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<LeafReaderContext> leaves = reader.leaves();
         for (LeafReaderContext context : leaves) {
             LeafReader leafReader = context.reader();
-            // FIXME: docidvalues is null and likely should not be
-            SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
-            BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
             if (LOG.isDebugEnabled() && terms == null) {
@@ -1944,6 +1941,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     continue;
                 }
                 PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
+                // The postings of every term start again at the first document, but a doc values iterator only moves
+                // forward (advanceExact needs a target at or above the current one), so each term gets its own.
+                // A segment where not every document has the value, which is the case once documents without a
+                // node id share it, does not tolerate going back.
+                final SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
+                final BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
                 while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
                     if (liveDocs != null && !liveDocs.get(postings.docID())) {
                         continue;
