@@ -53,7 +53,9 @@ return
                             else
                                 replace($meta/@name, "^\w+:([^:]+)$", "$1")
                         },
-                        attribute arity { function-arity($f) }
+                        attribute arity { function-arity($f) },
+                        (: where the function is declared, so that a tool can jump to the test :)
+                        attribute line { ($meta/@line/string(), "0")[1] }
                     }
                 )
             else

@@ -22,8 +22,10 @@
 package org.exist.test.xqsuite;
 
 import org.exist.test.runner.AbstractTestRunner;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
+import org.junit.platform.engine.support.descriptor.FilePosition;
 import org.junit.platform.engine.support.descriptor.FileSource;
 
 import java.util.ArrayList;
@@ -52,12 +54,26 @@ final class FileDescriptor extends AbstractTestDescriptor {
      * and each is a test in its own right, so a repeated name adds a further occurrence.
      */
     synchronized XQTestDescriptor addTest(final String name) {
+        return addTest(name, 0);
+    }
+
+    /**
+     * @param line the line the test starts on, which an IDE jumps to, or 0 if it is not known
+     */
+    synchronized XQTestDescriptor addTest(final String name, final int line) {
         final List<XQTestDescriptor> occurrences = tests.computeIfAbsent(name, n -> new ArrayList<>());
         final String segment = occurrences.isEmpty() ? name : name + "#" + (occurrences.size() + 1);
-        final XQTestDescriptor test = new XQTestDescriptor(getUniqueId().append("test", segment), name, getSource().orElseThrow());
+        // surefire reports a test under its display name and all tests of a suite under the suite class, so the
+        // file has to be in the name, or tests of different files of one suite cannot be told apart
+        final XQTestDescriptor test = new XQTestDescriptor(getUniqueId().append("test", segment), getDisplayName() + ": " + name, testSource(line));
         occurrences.add(test);
         addChild(test);
         return test;
+    }
+
+    private TestSource testSource(final int line) {
+        final FileSource file = (FileSource) getSource().orElseThrow();
+        return line > 0 ? FileSource.from(file.getFile(), FilePosition.from(line)) : file;
     }
 
     /**

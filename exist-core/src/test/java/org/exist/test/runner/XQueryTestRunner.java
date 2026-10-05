@@ -205,7 +205,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                             moduleNsUri = localFunctionSignature.getName().getNamespaceURI();
                         }
 
-                        testFunctions.add(new XQueryTestInfo.TestFunctionDef(testName, testArity));
+                        testFunctions.add(new XQueryTestInfo.TestFunctionDef(testName, testArity, 0));
                     }
                 } // end while
 
@@ -257,7 +257,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
                 final Element f = (Element) fList.item(i);
                 final String name = f.getAttribute("name");
                 final int arity = Integer.parseInt(f.getAttribute("arity"));
-                testFunctions.add(new XQueryTestInfo.TestFunctionDef(name, arity));
+                final String line = f.getAttribute("line");
+                testFunctions.add(new XQueryTestInfo.TestFunctionDef(name, arity, line.isEmpty() ? 0 : Integer.parseInt(line)));
             }
             return new XQueryTestInfo(prefix, namespace, testFunctions);
         } catch (final Exception e) {
@@ -316,6 +317,11 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     @Override
+    public List<Integer> getTestLines() {
+        return info.testFunctions().stream().map(XQueryTestInfo.TestFunctionDef::line).toList();
+    }
+
+    @Override
     public void run(final TestEvents events, final BrokerPool brokerPool) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
@@ -342,6 +348,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     record XQueryTestInfo(String prefix, String namespace, List<TestFunctionDef> testFunctions) {
-        record TestFunctionDef(String localName, int arity) { }
+        /** @param line the line the function is declared on, or 0 if not known (tests found by compiling the module) */
+        record TestFunctionDef(String localName, int arity, int line) { }
     }
 }
