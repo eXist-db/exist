@@ -123,6 +123,8 @@ function rtik:index-keys() {
  return count($keys)
 };
 
+(: Deliberately without a context: this call reads every document of the database. The field "who" is defined
+   only in this file, so no other file of the suite has data for it; do not reuse the name. :)
 declare
 %test:assertEquals(3)
 function rtik:index-keys-for-field() {
@@ -148,6 +150,7 @@ function rtik:index-keys-for-field-with-context-in-dynamic-function() {
 
 (: --- GitHub #4074: range:index-keys-for-field called from servlet context --- :)
 
+(: Deliberately without a context, that is what GH-4074 is about; the field "elem-field" is defined only in this file. :)
 declare
     %test:assertTrue
 function rtik:issue4074-no-context-returns-keys() {
