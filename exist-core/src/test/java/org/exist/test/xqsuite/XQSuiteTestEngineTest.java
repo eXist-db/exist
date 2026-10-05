@@ -96,6 +96,16 @@ class XQSuiteTestEngineTest {
         assertEquals("actual", assertionFailure.getActual().getValue());
     }
 
+    @Test
+    void failureMessageCarriesExpectedAndActual() {
+        // surefire keeps the message and drops the separate expected and actual values, so without this
+        // a failed assertion in a report cannot be told apart from an empty result
+        final String message = assertInstanceOf(AssertionFailedError.class, failures(run(FailingAssertion.class)).get(0)).getMessage();
+        assertTrue(message.startsWith("XQuery failure: failing-assertion.xqm:"), message);
+        assertTrue(message.contains(" ==> expected: <expected"), message);
+        assertTrue(message.endsWith(" but was: <actual>"), message);
+    }
+
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
     @Test
     void assertionFailureAndUnexpectedErrorAreBothReported() {
