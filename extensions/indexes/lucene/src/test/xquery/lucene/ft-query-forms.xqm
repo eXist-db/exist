@@ -663,7 +663,7 @@ declare
     %test:assertTrue
 function qrys:index-keys-by-qname-all() {
     let $callback := util:function(xs:QName("qrys:key"), 2),
-        $result := <terms>{ util:index-keys-by-qname(xs:QName("p"), (), $callback, 10000, "lucene-index") }</terms>
+        $result := <terms>{ collection($qrys:COLLECTION)/util:index-keys-by-qname(xs:QName("p"), (), $callback, 10000, "lucene-index") }</terms>
     return deep-equal($result, <terms>
         <t>acht</t><t>att</t><t>börjar</t><t>dags</t><t>dessutom</t><t>det</t><t>drei</t><t>eins</t><t>first</t><t>flera</t>
         <t>fraser</t><t>fünf</t><t>här</t><t>i</t><t>komponerat</t><t>krystat</t><t>level</t><t>långa</t><t>med</t><t>men</t>
@@ -677,7 +677,7 @@ declare
     %test:assertTrue
 function qrys:index-keys-by-qname-s() {
     let $callback := util:function(xs:QName("qrys:key"), 2),
-        $result := <terms>{ util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index") }</terms>
+        $result := <terms>{ collection($qrys:COLLECTION)/util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index") }</terms>
     return deep-equal($result, <terms><t>sechs</t><t>second</t><t>sieben</t><t>sluta</t><t>som</t><t>stycket</t></terms>)
 };
 
@@ -723,7 +723,7 @@ declare
     %test:assertTrue
 function qrys:index-keys-by-qname-attr-type() {
     let $callback := util:function(xs:QName("qrys:key"), 2),
-        $result := <terms>{ util:index-keys-by-qname(xs:QName("@type"), "", $callback, 10000, "lucene-index") }</terms>
+        $result := <terms>{ collection($qrys:COLLECTION)/util:index-keys-by-qname(xs:QName("@type"), "", $callback, 10000, "lucene-index") }</terms>
     return deep-equal($result, <terms><t>chapter</t><t>section</t><t>subsection</t></terms>)
 };
 
