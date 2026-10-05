@@ -162,8 +162,10 @@ public final class XQSuiteTestEngine implements TestEngine {
         final SuiteDescriptor suite = new SuiteDescriptor(suiteId, clazz, annotation.parallel(), failure);
         for (final AbstractTestRunner runner : runners) {
             final FileDescriptor file = new FileDescriptor(suiteId.append("file", runner.getSourcePath().toString()), runner);
-            for (final String testName : runner.getTestNames()) {
-                file.addTest(testName);
+            final List<String> testNames = runner.getTestNames();
+            final List<Integer> testLines = runner.getTestLines();
+            for (int i = 0; i < testNames.size(); i++) {
+                file.addTest(testNames.get(i), i < testLines.size() ? testLines.get(i) : 0);
             }
             suite.addChild(file);
         }

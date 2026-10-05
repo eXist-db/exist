@@ -81,6 +81,14 @@ public abstract class AbstractTestRunner {
     public abstract List<String> getTestNames();
 
     /**
+     * @return for each test of {@link #getTestNames()}, in the same order, the line of the file it starts on,
+     * so that a tool can jump to the test; 0 for a test whose line is not known, and empty if no lines are known
+     */
+    public List<Integer> getTestLines() {
+        return List.of();
+    }
+
+    /**
      * Runs the tests of this file, reporting each outcome to {@code events}.
      *
      * @param events receives the outcome of each test
