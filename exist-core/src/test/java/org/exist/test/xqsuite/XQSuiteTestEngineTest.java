@@ -24,6 +24,8 @@ package org.exist.test.xqsuite;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.FilePosition;
+import org.junit.platform.engine.support.descriptor.FileSource;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
@@ -39,6 +41,9 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 class XQSuiteTestEngineTest {
 
     private static final String FIXTURES = "src/test/resources/org/exist/test/runner/";
+
+    /** the line of "function single:f1()" in single-test.xqm */
+    private static final int SINGLE_TEST_FUNCTION_LINE = 30;
 
     @XQSuite(value = FIXTURES + "single-test.xqm", fixture = true)
     static class SingleTest {
@@ -115,7 +120,8 @@ class XQSuiteTestEngineTest {
     @Test
     void nodeResultIsNotEscapedIntoTheFailureMessage() {
         final AssertionFailedError failure = assertInstanceOf(AssertionFailedError.class, failures(run(FailingSerialization.class)).get(0));
-        assertEquals("<doc a=\"1\">text</doc>", failure.getActual().getValue(),
+        assertEquals("""
+                <doc a="1">text</doc>""", failure.getActual().getValue(),
                 "a node-valued result should reach the failure message as markup, not XML-escaped");
     }
 
@@ -155,6 +161,28 @@ class XQSuiteTestEngineTest {
     @Test
     void fileWithoutTestsRunsNothing() {
         run(NoTests.class).testEvents().assertStatistics(stats -> stats.started(0));
+    }
+
+    @Test
+    void reportNameOfATestLeadsWithItsFile() {
+        // XML reports group tests under the suite class, so the file has to be in the name, or tests of
+        // different files of one suite cannot be told apart
+        final List<String> names = run(SingleTest.class).testEvents().started().list().stream()
+                .map(event -> event.getTestDescriptor().getDisplayName())
+                .toList();
+        assertEquals(1, names.size());
+        assertTrue(names.get(0).startsWith("single-test.xqm: "), names.get(0));
+    }
+
+    @Test
+    void testSourceIsTheLineOfItsFunction() {
+        // so that an IDE jumps to the test, not to the top of its file
+        final var sources = run(SingleTest.class).testEvents().started().list().stream()
+                .map(event -> event.getTestDescriptor().getSource().orElseThrow())
+                .toList();
+        assertEquals(1, sources.size());
+        final FileSource source = assertInstanceOf(FileSource.class, sources.get(0));
+        assertEquals(FilePosition.from(SINGLE_TEST_FUNCTION_LINE), source.getPosition().orElseThrow());
     }
 
     @Test
