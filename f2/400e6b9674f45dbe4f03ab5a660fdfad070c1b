@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_e7f7c831c628d7::t_64942c8e5f5f3b 65-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f2400e6b9674f45dbe4f03ab5a660fdfad070c1b",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
