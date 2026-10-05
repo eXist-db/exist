@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-binary-field-after-delete.xqm
+  s_e7f7c831c628d7::t_b169e0e374379b 1-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea9e9a6d7b32300b735d887954cd2c2ff97d1a62",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
