@@ -21,12 +21,10 @@
  */
 package org.exist.indexing.lucene;
 
-import com.evolvedbinary.j8fu.function.FunctionE;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.*;
 import org.apache.lucene.facet.DrillDownQuery;
@@ -62,7 +60,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Expression;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -77,6 +74,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.util.*;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -107,6 +105,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
+
+    /** releases the hold on a taxonomy reader when the facets that need it are unreachable, see {@link LuceneFacets} */
+    private static final Cleaner TAXONOMY_READER_RELEASER = Cleaner.create();
     
     protected LuceneIndex index;
     
@@ -779,7 +780,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          */
         public void compute(DirectoryTaxonomyReader reader, FacetsConfig config, FacetsCollector collector)
                 throws IOException {
-            this.facets = new FastTaxonomyFacetCounts(reader, config, collector);
+            final Facets counts = new FastTaxonomyFacetCounts(reader, config, collector);
+            // The reader is lent by the searcher manager only for the duration of the query, but the facets are
+            // read later (ft:facets), and a refresh caused by another thread closes a reader nobody holds.
+            // So hold the reader for as long as the facets can be read.
+            reader.incRef();
+            TAXONOMY_READER_RELEASER.register(counts, new TaxonomyReaderRelease(reader));
+            this.facets = counts;
+        }
+    }
+
+    /**
+     * Releases the hold on a taxonomy reader once the facets that need it are unreachable. It must not refer to the
+     * facets, or they would never become unreachable.
+     */
+    private record TaxonomyReaderRelease(DirectoryTaxonomyReader reader) implements Runnable {
+        @Override
+        public void run() {
+            try {
+                reader.decRef();
+            } catch (final IOException e) {
+                LOG.warn("Could not release a taxonomy reader: {}", e.getMessage(), e);
+            }
         }
     }
 
