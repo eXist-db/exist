@@ -997,3 +997,48 @@ declare
 function ot:issue4942-test-direct-without-pragma() {
     count(collection($ot:COLLECTION)//root/a[@ID = "123"]) eq 1
 };
+
+(: Patterns Lucene's RegExp cannot serve with XPath semantics must fall back to fn:matches and
+ : still return the right answer. Fixture: foo/@bar = baz, bat, Baz, qux. :)
+
+declare
+    %test:assertEquals(1)
+function ot:matches-unicode-property-falls-back-to-the-right-answer() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^\p{Lu}")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:matches-class-subtraction-falls-back-to-the-right-answer() {
+    (: consonant-initial, lower-case: baz, bat, qux :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^[a-z-[aeiou]]")])
+};
+
+declare
+    %test:assertEquals(4)
+function ot:matches-non-digit-class-falls-back-to-the-right-answer() {
+    (: none of the values contains a digit, so \D+ anchored matches all four;
+     : Lucene would read \D as the letter D and match none :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^\D+$")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:matches-dot-stays-on-the-index-with-xpath-meaning() {
+    (: baz, bat, Baz have 'a' in the middle; qux does not :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^.a.$")])
+};
+
+declare
+    %test:stats
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function ot:matches-unicode-property-is-not-sent-to-the-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "^\p{Lu}")]
+};
+
+declare
+    %test:assertEquals(0)
+function ot:matches-too-complex-for-lucene-falls-back-to-the-right-answer() {
+    (: valid XPath that Lucene cannot determinize within its work limit :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^(a|b)*a(a|b){20}$")])
+};

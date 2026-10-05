@@ -43,8 +43,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.automaton.Operations;
-import org.apache.lucene.util.automaton.RegExp;
+import org.apache.lucene.util.automaton.TooComplexToDeterminizeException;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -170,12 +169,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 }
                 case MATCH -> {
-                    String pattern = content.getStringValue();
-                    pattern = XPathToLuceneRegexTranslator.translate(pattern);
-                    if (matchFlags != 0) {
-                        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+                    final String xpathPattern = content.getStringValue();
+                    try {
+                        // Lookup checks isServable first and falls back to fn:matches, so this is the
+                        // last line of defense rather than the expected path.
+                        return XPathToLuceneRegexTranslator.toQuery(field, xpathPattern, matchFlags);
+                    } catch (final IllegalArgumentException | TooComplexToDeterminizeException e) {
+                        throw new XPathException(ErrorCodes.FORX0002,
+                                "Invalid regular expression '" + xpathPattern + "': " + e.getMessage());
                     }
-                    return new RegexpQuery(new Term(field, pattern));
                 }
                 default -> {
                 }
