@@ -99,7 +99,14 @@ public class SerializationTest {
     private static final String XML_WITH_DOCTYPE =
             """
                     <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
-                    <bookmap id="bookmap-1"/>""";
+                    <bookmap id="bookmap-1"><title>The Title</title></bookmap>""";
+
+    private static final String XML_WITH_DOCTYPE_INDENTED =
+            """
+                    <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+                    <bookmap id="bookmap-1">
+                        <title>The Title</title>
+                    </bookmap>""";
 
     private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
@@ -185,7 +192,7 @@ public class SerializationTest {
     @Test
     public void getDocTypeDefault() throws XMLDBException {
         final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-        assertEquals(XML_WITH_DOCTYPE, res.getContent());
+        assertEquals(XML_WITH_DOCTYPE_INDENTED, res.getContent());
     }
 
     @Test
@@ -194,7 +201,7 @@ public class SerializationTest {
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
             testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
-            assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+            assertEquals("<bookmap id=\"bookmap-1\">\n    <title>The Title</title>\n</bookmap>", res.getContent());
         } finally {
             if (prevOutputDocType != null) {
                 testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
@@ -208,7 +215,7 @@ public class SerializationTest {
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
             testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-            assertEquals(XML_WITH_DOCTYPE, res.getContent());
+            assertEquals(XML_WITH_DOCTYPE_INDENTED, res.getContent());
         } finally {
             if (prevOutputDocType != null) {
                 testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
@@ -226,7 +233,7 @@ public class SerializationTest {
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
             testCollection.setProperty(INDENT, "no");
-            assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\"><bookmap id=\"bookmap-1\"/>", res.getContent());
+            assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\"><bookmap id=\"bookmap-1\"><title>The Title</title></bookmap>", res.getContent());
         } finally {
             if (prevIndent != null) {
                 testCollection.setProperty(INDENT, prevIndent);
