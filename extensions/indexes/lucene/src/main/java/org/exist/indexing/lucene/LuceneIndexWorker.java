@@ -1396,6 +1396,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /**
      * Resolve binary field by eXist document ID and node ID. Uses query-by-FIELD_DOC_ID
      * and FIELD_NODE_ID so the lookup is valid across reader refreshes (avoids volatile Lucene docID).
+     * <p>
+     * The Lucene doc id found by the search is only valid in the reader the search ran on, so the value is
+     * read from that same reader, never from another one acquired afterwards: the searcher and the plain
+     * reader refresh independently, and a commit by another thread in between can renumber the documents.
      */
     public @Nullable BytesRef getBinaryFieldByExistDocId(final int existDocId, final NodeId nodeId, final String field) throws IOException {
         try {
@@ -1406,30 +1410,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return null;
                 }
                 final int luceneDocId = topDocs.scoreDocs[0].doc;
-                return getBinaryFieldForLuceneDocId(luceneDocId, field);
+                return getBinaryFieldForLuceneDocId(searcher.searcher().getIndexReader(), luceneDocId, field);
             });
         } catch (XPathException e) {
             throw new IOException("Unexpected XPath error in getBinaryFieldByExistDocId", e);
         }
     }
 
-    private @Nullable BytesRef getBinaryFieldForLuceneDocId(final int luceneDocId, final String field) throws IOException {
-        return index.withReader(reader -> {
-            final List<LeafReaderContext> leaves = reader.leaves();
-            for (final LeafReaderContext context : leaves) {
-                final int id = luceneDocId - context.docBase;
-                if (id >= 0 && id < context.reader().numDocs()) {
-                    final BinaryDocValues values = context.reader().getBinaryDocValues(field);
-                    if (values != null && values.advanceExact(id)) {
-                        final BytesRef bytes = values.binaryValue();
-                        if (bytes != null && bytes.length > 0) {
-                            return bytes;
-                        }
-                    }
-                }
+    private static @Nullable BytesRef getBinaryFieldForLuceneDocId(final IndexReader reader, final int luceneDocId, final String field) throws IOException {
+        // the leaf that holds the document: the last one that starts at or before it
+        final List<LeafReaderContext> leaves = reader.leaves();
+        final LeafReaderContext context = leaves.get(ReaderUtil.subIndex(luceneDocId, leaves));
+        // ids within a leaf run up to maxDoc(), which is larger than numDocs() once the leaf has deleted documents
+        final BinaryDocValues values = context.reader().getBinaryDocValues(field);
+        if (values != null && values.advanceExact(luceneDocId - context.docBase)) {
+            final BytesRef bytes = values.binaryValue();
+            if (bytes != null && bytes.length > 0) {
+                return bytes;
             }
-            return null;
-        });
+        }
+        return null;
     }
 
     private static Query docIdAndNodeIdQuery(final int existDocId, final NodeId nodeId) {
