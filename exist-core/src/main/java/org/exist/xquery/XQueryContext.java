@@ -1603,7 +1603,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         clearUpdateListeners();
 
-        profiler.reset();
+        profiler.endQuery();
 
         if (!keepGlobals) {
             httpContext = null;
