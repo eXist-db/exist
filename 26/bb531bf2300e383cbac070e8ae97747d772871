@@ -1,0 +1,39 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_e77a973088f8d4::t_28cf6f35ead8c5 85-97
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  s_e77a973088f8d4::t_09415b42e0534a 286-288
+  s_e77a973088f8d4::t_fa9ddf8c12ae8c 65-75
+  s_e77a973088f8d4::t_39b9d1d503e140 87
+  s_e77a973088f8d4::t_b5c62e517147db 340
+  s_e77a973088f8d4::t_3e9d2270c8d8b9 330-339,341-343
+  s_e77a973088f8d4::t_25249b09bbd8e8 30
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_e77a973088f8d4::t_91f5fe128032d1 638
+  s_e77a973088f8d4::t_3d6e484953c4d7 815
+  s_e77a973088f8d4::t_cebc3dd0d6a520 1199
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Search.java
+  s_e77a973088f8d4::t_0dd99920e3b095 69-75
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_e77a973088f8d4::t_f1d34d00f16b12 66-72
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_e77a973088f8d4::t_3507b29b34689d 1-29,31-49,53-72,77-103
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_e77a973088f8d4::t_b2221b29b4b231 52-55
+  s_e77a973088f8d4::t_e4877718a8739b 236-272
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "26bb531bf2300e383cbac070e8ae97747d772871",
+  "prompts": {},
+  "sessions": {
+    "s_e77a973088f8d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "90594510-d0c7-44bd-a5e8-62b28c547f3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
