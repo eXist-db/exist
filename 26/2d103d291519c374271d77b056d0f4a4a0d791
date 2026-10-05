@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexScanSparseDocValuesTest.java
+  s_e7f7c831c628d7::t_bce9c58e01123e 76-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "262d103d291519c374271d77b056d0f4a4a0d791",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
