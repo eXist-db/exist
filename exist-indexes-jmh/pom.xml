@@ -89,6 +89,12 @@
             <version>${jmh.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <!-- ExistEmbeddedServer, which the benchmarks use, implements the Jupiter extension callbacks,
+                 so the Jupiter API has to be on the compile classpath of this main code -->
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -147,6 +153,8 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.openjdk.jmh:jmh-generator-annprocess:jar:${jmh.version}</ignoredUnusedDeclaredDependency>
+                                <!-- only needed by the compiler, for the supertypes of ExistEmbeddedServer -->
+                                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter-api:jar:${junit.jupiter.version}</ignoredUnusedDeclaredDependency>
                                 <!--
                                     The index extensions are loaded reflectively at runtime by
                                     the embedded BrokerPool via conf.xml; they do not appear
@@ -156,6 +164,10 @@
                                 <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-range:jar:${project.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <!-- compile scope on purpose, see the dependency; the analyzer only sees the tests using it -->
+                                <ignoredNonTestScopedDependency>org.junit.jupiter:junit-jupiter-api:jar:${junit.jupiter.version}</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
