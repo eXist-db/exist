@@ -778,15 +778,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     /**
-     * Regular expression search.
+     * Search for the indexed terms that match a string: exactly, or as a substring, prefix or suffix.
+     * Regular expressions are matched by {@link #matchRegex} and {@link #matchAllRegex}.
      *
      * @param docs               the documents to search in.
      * @param contextSet         the current context node set.
      * @param axis               the axis to search on.
-     * @param expr               the regular expression to match.
+     * @param expr               the string to match.
      * @param qnames             the qualified names to search for.
-     * @param type               like type argument for {@link org.exist.storage.RegexMatcher} constructor
-     * @param flags              like flags argument for {@link org.exist.storage.RegexMatcher} constructor
+     * @param type               {@link DBBroker#MATCH_EXACT}, {@link DBBroker#MATCH_CONTAINS},
+     *                           {@link DBBroker#MATCH_STARTSWITH} or {@link DBBroker#MATCH_ENDSWITH}
+     * @param flags              not used
      * @param caseSensitiveQuery whether the query is case sensitive.
      * @param result             the node set to store results in.
      * @param collator           the collator to use for comparisons.
