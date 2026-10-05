@@ -27,6 +27,7 @@ import java.util.Deque;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
@@ -81,6 +82,16 @@ public class Profiler {
 
     private PerformanceStats stats;
 
+    /**
+     * whether the query's own statistics are on from the start: the {@code trace} setting of the configuration, or
+     * the {@code trace} option of the compiled query. This is what {@link #endQuery()} restores, as a pooled query
+     * does not compile its options again for the next execution.
+     */
+    private boolean statsEnabledByDefault = false;
+
+    /** true once {@link #setStatsEnabled(boolean)} was called, so that {@link #endQuery()} restores the default */
+    private boolean statsSwitchedByQuery = false;
+
     private long queryStart = 0;
 
     private Database db;
@@ -93,6 +104,7 @@ public class Profiler {
             final String xqueryProfilingTraceEnabled = (String) db.getConfiguration().getProperty(PerformanceStatsImpl.CONFIG_PROPERTY_TRACE);
             performanceStatsEnabled = ("yes".equals(xqueryProfilingTraceEnabled) || "functions".equals(xqueryProfilingTraceEnabled));
         }
+        this.statsEnabledByDefault = performanceStatsEnabled;
         this.stats = new PerformanceStatsImpl(performanceStatsEnabled, locallyEnabled -> locallyEnabled || (db != null && db.getPerformanceStats().isEnabled()));
     }
 
@@ -114,6 +126,7 @@ public class Profiler {
             params = Option.parseKeyValuePair(option);
             if (params != null) {
                 if ("trace".equals(params[0])) {
+                    statsEnabledByDefault = true;
                     stats.setEnabled(true);
 
                 } else if ("tracelog".equals(params[0])) {
@@ -414,6 +427,11 @@ public class Profiler {
         log.debug(buf.toString());
     }    
     
+    /**
+     * Hand the statistics recorded so far on to the database-wide statistics, and start recording again from zero.
+     * This is what {@code system:trace()} calls in the middle of a query, so it leaves the way the query's own
+     * statistics were switched as it is: the query goes on recording, if it was.
+     */
     public void reset() {
         if (!stack.isEmpty()) {
             log.debug("QUERY RESET");
@@ -421,17 +439,35 @@ public class Profiler {
 
         stack.clear();
 
+        flushStats();
+    }
+
+    /**
+     * The query has ended, or its context is prepared for the next execution of a pooled query. Does what
+     * {@link #reset()} does, and also puts the query's own statistics back to how they were when it was compiled,
+     * dropping what a query that switched them off before it ended left over.
+     */
+    public void endQuery() {
+        reset();
+
+        if (statsSwitchedByQuery) {
+            stats.setEnabled(statsEnabledByDefault);
+            stats.reset();
+            statsSwitchedByQuery = false;
+        }
+    }
+
+    /** merge the statistics into the central BrokerPool stats, which ignores them while it is not enabled */
+    private void flushStats() {
         if (stats.isEnabled()) {
-            // merge these stats into the central BrokerPool stats
             if (db != null) {
-                final PerformanceStats brokerPoolPerformanceStats = db.getPerformanceStats();
-                brokerPoolPerformanceStats.recordAll(stats);
+                db.getPerformanceStats().recordAll(stats);
             }
 
             stats.reset();
         }
     }
-    
+
     private void printPosition(Expression expr) {
         if (expr.getLine() > -1) {
             buf.append('[');
@@ -481,6 +517,41 @@ public class Profiler {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * Switch the collection of statistics (function calls, index use, optimizations) on or off for this query only.
+     * Unlike the database-wide setting, which every query follows, this does not make any other query record
+     * statistics, and what is recorded stays in this profiler until it is cleared, handed on by {@link #reset()}
+     * (which {@code system:trace()} calls) or the query ends: {@link #endQuery()}
+     * puts the statistics back to how the compiled query had them (the {@code trace} configuration or option, else
+     * off) and drops what is left, so a pooled query starts its next execution with those.
+     *
+     * @param enabled true to record statistics for this query
+     */
+    public void setStatsEnabled(final boolean enabled) {
+        statsSwitchedByQuery = true;
+        stats.setEnabled(enabled);
+    }
+
+    /**
+     * Serialize the statistics recorded by this query only, without merging them into the database-wide statistics.
+     *
+     * @param builder the in-memory DOM builder to receive the serialized XML events
+     */
+    public void serializeStats(final MemTreeBuilder builder) {
+        stats.serialize(builder);
+    }
+
+    /**
+     * Forget the statistics recorded so far by this query. While the database-wide statistics are on, what the query
+     * recorded up to now is added to them first, as it would be when the query ends: the query's own view starts
+     * from zero, and the database-wide statistics lose nothing. This also forgets what was recorded before the
+     * query switched its statistics off, which {@link #setStatsEnabled(boolean)} does not.
+     */
+    public void clearStats() {
+        flushStats();
+        stats.reset();
     }
 
     public void setVerbosity(int verbosity) {
