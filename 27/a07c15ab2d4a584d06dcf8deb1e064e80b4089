@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_e7f7c831c628d7::t_e1e967c32f11e5 1399-1402,1413,1420-1429,1431-1432
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneBinaryFieldLookupTest.java
+  s_e7f7c831c628d7::t_862cb453913bc8 1-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27a07c15ab2d4a584d06dcf8deb1e064e80b4089",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
