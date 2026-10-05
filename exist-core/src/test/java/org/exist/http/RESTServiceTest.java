@@ -1338,6 +1338,50 @@ try {
     }
 
     /**
+     * The method of a POST envelope takes precedence over the query's own output:method, for
+     * the serialized body as well as for the media type: an envelope asking for XML around a
+     * query that declares JSON must not send a JSON body as application/xml.
+     */
+    @Test
+    public void postQueryEnvelopeMethodOverridesInQueryMethod() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" method="xml">
+                    <text><![CDATA[
+                        declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                        declare option output:method "json";
+                        <root><a>1</a></root>
+                    ]]></text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(query);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+            assertTrue("Expected an XML body, got: " + response, response.contains("<a>1</a>"));
+            assertFalse("Expected an XML body, got: " + response, response.trim().startsWith("{"));
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
      * An explicit media-type must be honored for JSON results rather than being
      * overridden by the application/json default.
      */

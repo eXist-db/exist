@@ -2875,6 +2875,8 @@ public class RESTServer {
             effectiveHowmany = 0;
         }
         final String method = serializationMethod(outputProperties);
+        // the serializer reads the W3C method itself: make it agree with the writer chosen here
+        outputProperties.setProperty(OutputKeys.METHOD, method);
 
         if ("json".equals(method)) {
             writeResultJSON(response, broker, results, effectiveHowmany, start, outputProperties, timings.compilation(), timings.execution());
@@ -2888,8 +2890,8 @@ public class RESTServer {
      * Determine the serialization method for a result.
      *
      * Two properties can carry it, and both must be honored. The REST-specific
-     * `output-as` is set from the `_output-as` request parameter or the `method`
-     * attribute of a `<query>` envelope. The W3C `method` property is what
+     * `output-as` is set from the `method` attribute of a `<query>` envelope, and
+     * takes precedence. The W3C `method` property is what
      * XQueryContext.checkOptions() writes when the query itself declares
      * `output:method` — which XQuery.execute() merges into these same
      * properties after evaluation. Reading only `output-as` meant an in-query
