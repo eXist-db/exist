@@ -27,6 +27,7 @@ import java.util.Deque;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
@@ -80,6 +81,9 @@ public class Profiler {
     private int verbosity = 0; 
 
     private PerformanceStats stats;
+
+    /** true once {@link #setStatsEnabled(boolean)} was called, so that {@link #reset()} switches it back off */
+    private boolean statsSwitchedByQuery = false;
 
     private long queryStart = 0;
 
@@ -430,6 +434,14 @@ public class Profiler {
 
             stats.reset();
         }
+
+        if (statsSwitchedByQuery) {
+            // the query switched its own statistics on or off: the next execution of this (pooled) query starts
+            // with them off, and with nothing left over from a query that switched them off before it ended
+            stats.setEnabled(false);
+            stats.reset();
+            statsSwitchedByQuery = false;
+        }
     }
     
     private void printPosition(Expression expr) {
@@ -481,6 +493,33 @@ public class Profiler {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * Switch the collection of statistics (function calls, index use, optimizations) on or off for this query only.
+     * Unlike the database-wide setting, which every query follows, this does not make any other query record
+     * statistics, and what is recorded stays in this profiler until it is cleared or the query ends: {@link #reset()}
+     * switches the statistics off again and drops what is left, so a pooled query starts its next execution without them.
+     *
+     * @param enabled true to record statistics for this query
+     */
+    public void setStatsEnabled(final boolean enabled) {
+        statsSwitchedByQuery = true;
+        stats.setEnabled(enabled);
+    }
+
+    /**
+     * Serialize the statistics recorded by this query only, without merging them into the database-wide statistics.
+     *
+     * @param builder the in-memory DOM builder to receive the serialized XML events
+     */
+    public void serializeStats(final MemTreeBuilder builder) {
+        stats.serialize(builder);
+    }
+
+    /** Forget the statistics recorded so far by this query, leaving the database-wide statistics alone. */
+    public void clearStats() {
+        stats.reset();
     }
 
     public void setVerbosity(int verbosity) {

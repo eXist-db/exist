@@ -437,6 +437,8 @@ declare %private function test:test(
                         test:print-result($meta, $result, $assertResult)
                     )
             } catch test:failure {
+                (: a test that threw never reached the end of test:apply, so tracing may still be on :)
+                let $_ := system:enable-query-tracing(false())
                 (: when test:fail was called read expected and actual values from $err:value :)
                 (: expected and actual values can be function types and need to be serialized :)
                 let $serialized-expected := serialize($err:value?expected, map {"method": "adaptive"})
@@ -463,6 +465,9 @@ declare %private function test:test(
                     )
                 )
             } catch * {
+                (: a test that threw never reached the end of test:apply, so tracing may still be on :)
+                let $_ := system:enable-query-tracing(false())
+                return
                 if ($assertError) then
                     if (
                         $assertError/value
@@ -559,8 +564,9 @@ declare function test:enable-tracing($meta as element(function)) {
     let $statsAnno := $meta//annotation[contains(@name, ":stats")]
     return
         if (exists($statsAnno)) then (
-            system:clear-trace(),
-            system:enable-tracing(true(), false()),
+            (: the statistics of this query only: files that run at the same time must not see each other's calls :)
+            system:clear-query-trace(),
+            system:enable-query-tracing(true()),
             true()
         ) else
             false()
@@ -786,7 +792,7 @@ declare function test:apply($func as function(*), $meta as element(function), $a
         if ($trace) then
             (: Get trace output and filter out stats :)
             let $traceOutput :=
-                (system:trace(), system:clear-trace(), system:enable-tracing(false()))
+                (system:query-trace(), system:clear-query-trace(), system:enable-query-tracing(false()))
             return
                 element { node-name($traceOutput) } {
                     $traceOutput/stats:*[not(starts-with(@source, "org.exist") or contains(@source, "xqsuite.xql"))]

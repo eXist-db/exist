@@ -83,6 +83,9 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(FunctionTrace.signatures[2], FunctionTrace.class),
             new FunctionDef(FunctionTrace.signatures[3], FunctionTrace.class),
             new FunctionDef(FunctionTrace.signatures[4], FunctionTrace.class),
+            new FunctionDef(QueryTrace.signatures[0], QueryTrace.class),
+            new FunctionDef(QueryTrace.signatures[1], QueryTrace.class),
+            new FunctionDef(QueryTrace.signatures[2], QueryTrace.class),
             new FunctionDef(GetUptime.signature, GetUptime.class),
             new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class),
             
