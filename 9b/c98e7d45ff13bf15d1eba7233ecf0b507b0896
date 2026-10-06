@@ -1,0 +1,23 @@
+extensions/indexes/range/src/test/xquery/range/conditions.xql
+  s_d5ac7bf05ec2fb::t_3e773fca261d61 205-207,217-227,234-236,319,332,384,397,410,438,444,450,482,501,515,528,541
+extensions/indexes/range/src/test/xquery/range/index-keys.xql
+  s_d5ac7bf05ec2fb::t_9ba4ed144f53b1 126-127,153
+extensions/indexes/range/src/test/xquery/range/prefixed-conditions.xql
+  s_d5ac7bf05ec2fb::t_6b65afe39537c2 101,108,115,122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9bc98e7d45ff13bf15d1eba7233ecf0b507b0896",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
