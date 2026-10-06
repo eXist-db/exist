@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/repo/ClasspathHelper.java
+  s_d5ac7bf05ec2fb::t_ac48ae033cbb1c 88
+exist-core/src/main/java/org/exist/repo/Deployment.java
+  s_d5ac7bf05ec2fb::t_9ac2668d67debe 96,113
+exist-core/src/main/java/org/exist/repo/ExistRepository.java
+  s_d5ac7bf05ec2fb::t_2c85b303405829 50,52,59,72-73,111-112,114,163-167,175-195,199-202,208,211,213-234,236-242,249,256,259-260,262,275,279,294,298,302-329,349,439,512,524,536
+exist-core/src/test/java/org/exist/repo/ExistRepositoryConcurrencyTest.java
+  s_d5ac7bf05ec2fb::t_6b0ded9f2a6e2d 24,27-28,36-40,45-46,59-60,142-269
+exist-services/src/main/java/org/exist/repo/PackageService.java
+  s_d5ac7bf05ec2fb::t_2aa3566b32ade1 91,245,283,382,385
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/GetResource.java
+  s_d5ac7bf05ec2fb::t_32061ac9ca4b29 68
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ListFunction.java
+  s_d5ac7bf05ec2fb::t_38b9476f1be9cd 71
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ResourceAvailable.java
+  s_d5ac7bf05ec2fb::t_7412af56d628f3 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bde6534eaf8647f7257050354ad682821f8e12d0",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

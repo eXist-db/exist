@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-forms.xqm
+  s_e7f7c831c628d7::t_8f73c2a219b0ed 666,680,726
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "327a16e2be4f838ff42d1684c3736f0d43fcdfef",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
