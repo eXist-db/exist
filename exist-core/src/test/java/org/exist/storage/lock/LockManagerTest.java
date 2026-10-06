@@ -33,11 +33,13 @@
 package org.exist.storage.lock;
 
 import com.evolvedbinary.j8fu.function.RunnableE;
+import java.util.stream.Stream;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
@@ -48,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,11 +65,11 @@ public class LockManagerTest {
     private static String previousLockEventsState = null;
     private static String previousPathsMultiWriterState = null;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "Collection single-writer/multi-reader", false},
-                { "Collection multi-writer/multi-reader", true }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("Collection single-writer/multi-reader", false),
+            Arguments.of("Collection multi-writer/multi-reader", true)
+        );
     }
     public String apiName;
     public boolean enablePathsMultiWriterState;

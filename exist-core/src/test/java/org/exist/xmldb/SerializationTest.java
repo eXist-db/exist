@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import java.util.stream.Stream;
 import org.exist.Namespaces;
 import org.exist.TestUtils;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -46,7 +48,6 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 
-import java.util.Arrays;
 
 import static javax.xml.transform.OutputKeys.INDENT;
 import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
@@ -117,11 +118,11 @@ public class SerializationTest {
                     <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
                     <bookmap id="bookmap-2"/>""";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"local", "xmldb:exist://"},
-                {"remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc"}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", "xmldb:exist://"),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc")
+        );
     }
 
     @Parameter(0)

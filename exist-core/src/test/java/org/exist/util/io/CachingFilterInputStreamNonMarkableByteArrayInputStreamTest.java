@@ -26,16 +26,16 @@
  */
 package org.exist.util.io;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.commons.io.input.MarkShieldInputStream;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
-import java.util.Arrays;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -64,13 +64,12 @@ public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
 
     private Class<FilterInputStreamCache> cacheClass;
 
-    public static Collection data() {
-        Object[][] data = new Object[][]{
-            {MemoryFilterInputStreamCache.class},
-            {MemoryMappedFileFilterInputStreamCache.class},
-            {FileFilterInputStreamCache.class}
-        };
-        return Arrays.asList(data);
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of(MemoryFilterInputStreamCache.class),
+            Arguments.of(MemoryMappedFileFilterInputStreamCache.class),
+            Arguments.of(FileFilterInputStreamCache.class)
+        );
     }
 
     public void initCachingFilterInputStreamNonMarkableByteArrayInputStreamTest(final Class<FilterInputStreamCache> cacheClass) {

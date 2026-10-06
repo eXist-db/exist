@@ -21,8 +21,10 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.util.stream.Stream;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
+import org.junit.jupiter.params.provider.Arguments;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.BinaryResource;
@@ -30,7 +32,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.Parameter;
@@ -52,11 +53,11 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "local", "xmldb:exist://" },
-                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", "xmldb:exist://"),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc")
+        );
     }
     @Parameter(0)
     public String apiName;
