@@ -1,0 +1,19 @@
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_d5ac7bf05ec2fb::t_de1ef8e871de31 189,216-221,229-230,607,616,624,634-635,649-650
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4db3858e89dd14a7e240b751cb4df42ad27505d3",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
