@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import java.util.stream.Stream;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.exist.TestUtils;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -48,7 +50,6 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -86,11 +87,11 @@ public class XMLDBRestoreTest {
     @TempDir
     Path tempFolder;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"local", XmldbURI.EMBEDDED_SERVER_URI.toString()},
-                {"remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc"},
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", XmldbURI.EMBEDDED_SERVER_URI.toString()),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc")
+        );
     }
     @Parameter(0)
     public String apiName;

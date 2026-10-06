@@ -22,6 +22,7 @@
 package org.exist.util.sorters;
 
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
@@ -48,16 +50,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Execution(ExecutionMode.CONCURRENT)
 public class SortTest {
 
-    public static java.util.Collection<Object[]> data() {
-        final List<Object[]> parameters = new ArrayList<>();
+    public static Stream<Arguments> data() {
+        final List<Arguments> parameters = new ArrayList<>();
         for (final SortingAlgorithmTester s : SortingAlgorithmTester.allSorters()) {
             for (final SortMethodChecker c : SortMethodChecker.allCheckers(s)) {
                 final String name = s.getClass().getSimpleName() + ": " + c.getClass().getSimpleName();
-                parameters.add(new Object[]{name, c});
+                parameters.add(Arguments.of(name, c));
             }
         }
 
-        return parameters;
+        return parameters.stream();
     }
 
 	private final Random rnd = new Random();

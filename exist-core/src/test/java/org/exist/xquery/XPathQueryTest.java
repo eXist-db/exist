@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.util.stream.Stream;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.EXistXQueryService;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,11 +77,11 @@ public class XPathQueryTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "local", XmldbURI.LOCAL_DB },
-                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" +  XmldbURI.ROOT_COLLECTION}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", XmldbURI.LOCAL_DB),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" +  XmldbURI.ROOT_COLLECTION)
+        );
     }
     @Parameter(0)
     public String apiName;
