@@ -1,0 +1,19 @@
+exist-core/src/test/xquery/xquery3/higher-order.xqm
+  s_d5ac7bf05ec2fb::t_4465764b226c8e 37-42,46,65,309,428
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6d3126e6597a5125a73049bb80c308c21139cc2",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
