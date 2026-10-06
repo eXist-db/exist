@@ -94,12 +94,11 @@ public class InstallFunction extends BasicFunction {
         Optional<ExistRepository> repo = getContext().getRepository();
         try {
             if (repo.isPresent()) {
-                Repository parent_repo = repo.get().getParentRepo();
                 Package pkg;
                 if (isCalledAs("install")) {
                     // download .xar from a URI
                     URI uri = _getURI(pkgOrPath);
-                    pkg = parent_repo.installPackage(uri, force, interact);
+                    pkg = repo.get().installPackage(uri, force, interact);
                     repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
                 } else {
                     // .xar is stored as a binary resource
@@ -107,7 +106,7 @@ public class InstallFunction extends BasicFunction {
                             final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
 					    final DocumentImpl doc = lockedDoc.getDocument();
                         LOG.debug("Installing file: {}", doc.getURI());
-                        pkg = parent_repo.installPackage(new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc), force, interact);
+                        pkg = repo.get().installPackage(new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc), force, interact);
 					    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
                         transaction.commit();

@@ -85,7 +85,7 @@ public class ClasspathHelper implements BrokerPoolService {
         try {
             final Optional<ExistRepository> repo = pool.getExpathRepo();
 	    if (repo.isPresent()) {
-            for (final Packages pkgs : repo.get().getParentRepo().listPackages()) {
+            for (final Packages pkgs : repo.get().listPackages()) {
                 final Package pkg = pkgs.latest();
                 if (!isCompatible(pkg)) {
                     LOG.warn("Package {} is not compatible with this version of eXist. To avoid conflicts, Java libraries shipping with this package are not loaded.", pkg.getName());

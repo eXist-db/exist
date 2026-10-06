@@ -93,7 +93,7 @@ public class Deployment {
         Optional<Path> packageDir = Optional.empty();
 
         if (repo.isPresent()) {
-            for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+            for (final Packages pp : repo.get().listPackages()) {
                 final org.expath.pkg.repo.Package pkg = pp.latest();
                 if (pkg.getName().equals(pkgName)) {
                     packageDir = Optional.of(getPackageDir(pkg));
@@ -110,7 +110,7 @@ public class Deployment {
 
     protected Optional<org.expath.pkg.repo.Package> getPackage(final String pkgName, final Optional<ExistRepository> repo) throws PackageException {
         if (repo.isPresent()) {
-            for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+            for (final Packages pp : repo.get().listPackages()) {
                 final org.expath.pkg.repo.Package pkg = pp.latest();
                 if (pkg.getName().equals(pkgName)) {
                     return Optional.ofNullable(pkg);
@@ -244,7 +244,7 @@ public class Deployment {
             // installing the xar into the expath repo
             LOG.info("Installing package {}", xar.getURI());
             final UserInteractionStrategy interact = new BatchUserInteraction();
-            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
+            final org.expath.pkg.repo.Package pkg = repo.get().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty()) {
                 ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);

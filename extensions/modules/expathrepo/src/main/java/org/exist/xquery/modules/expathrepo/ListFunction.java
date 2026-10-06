@@ -39,7 +39,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import org.expath.pkg.repo.Packages;
-import org.expath.pkg.repo.Repository;
 
 /**
  * List function: Lists out repository packages
@@ -69,8 +68,7 @@ public class ListFunction extends BasicFunction {
             Optional<ExistRepository> repo = getContext().getRepository();
 	    if (repo.isPresent()) {
 		try {
-		    Repository parent_repo = repo.get().getParentRepo();
-		    for ( Packages pkg :  parent_repo.listPackages() ) {
+		    for ( Packages pkg :  repo.get().listPackages() ) {
 			String name = pkg.name();
 			result.add(new StringValue(this, name));
 		    }
