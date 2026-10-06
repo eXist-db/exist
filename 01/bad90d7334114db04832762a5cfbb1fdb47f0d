@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/security/XMLDBSecurityTest.java
+  s_d5ac7bf05ec2fb::t_0e5aebb7d549ea 37,44,87,96,103,112,123,133,148,175,193,212,274,291,308,346,363,418,436,454,494,512,535,558,594,618,644,670,699,728,759,790,823,856,935,940,1075,1135,1606-1608,1678-1680,2079-2102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "01bad90d7334114db04832762a5cfbb1fdb47f0d",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
