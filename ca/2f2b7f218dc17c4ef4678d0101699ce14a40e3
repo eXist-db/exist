@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/xquery/StoredModuleTest.java
+  s_d5ac7bf05ec2fb::t_68c684cd0bf9db 113
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/GroupManagementFunctionRemoveGroupTest.java
+  s_d5ac7bf05ec2fb::t_f74e8f9a814cbf 188,214-215,230-231
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChownTest.java
+  s_d5ac7bf05ec2fb::t_223a5e4c391a50 97,117,137,157,177,197,217,237,356,376,396,416,436,456,476,496,515,535,555,575,595,615,635,655,773,793,866,886,906,926,946,966,986,1006,1027,1039,1054,1121,1133,1145,1157,1205,1217,1303,1315,1327,1339,1383,1389,1395,1401,1407,1416,1422,1477,1483,1489,1495,1501,1520
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca2f2b7f218dc17c4ef4678d0101699ce14a40e3",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
