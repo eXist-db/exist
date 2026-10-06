@@ -21,16 +21,16 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
@@ -105,35 +105,35 @@ public class JaxpDtdCatalogTest {
      * ***********************************************************************************
      */
     @org.junit.jupiter.api.Test
-    public void dtd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdStoredCatalogValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void dtd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdStoredCatalogInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void dtd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdAnyURICatalogValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void dtd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdAnyURICatalogInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
-       executeAndEvaluate(query,"invalid");
+       assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     /*
@@ -143,26 +143,18 @@ public class JaxpDtdCatalogTest {
      *
      */
     @org.junit.jupiter.api.Test
-    public void dtd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdSearchedValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void dtd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void dtdSearchedInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query,"invalid");
-    }
-
-    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 }

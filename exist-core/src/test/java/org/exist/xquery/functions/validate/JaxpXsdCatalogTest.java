@@ -21,21 +21,21 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -59,7 +59,7 @@ public class JaxpXsdCatalogTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws XMLDBException, IOException, URISyntaxException {
+    public static void prepareResources() throws XMLDBException, IOException {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse")) {
@@ -126,51 +126,51 @@ public class JaxpXsdCatalogTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdStoredCatalogValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdStoredCatalogInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdAnyURICatalogValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdAnyURICatalogInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdSearchedValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdSearchedInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
     
     // test boolean function
@@ -193,22 +193,22 @@ public class JaxpXsdCatalogTest {
     
     // test parse function
     @org.junit.jupiter.api.Test
-    public void xsd_searched_parse_valid() throws SAXException, IOException, XpathException, XMLDBException {
+    public void xsdSearchedParseValid() throws XMLDBException {
         final String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         final String r = existEmbeddedServer.executeOneValue(query);
-        assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
+        assertThat(r, hasXPath("//Y", equalTo("2006-05-04T18:13:51.0Z")));
     }
     
     // test parse function
     @org.junit.jupiter.api.Test
-    public void xsd_searched_parse_invalid() throws SAXException, IOException, XpathException, XMLDBException {
+    public void xsdSearchedParseInvalid() throws XMLDBException {
         final String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         final String r = existEmbeddedServer.executeOneValue(query);
-        assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
+        assertThat(r, hasXPath("//Y", equalTo("2006-05-04T18:13:51.0Z")));
     }
 
     // Directory-search catalog + XSD 1.1 schema, resolved purely by namespace (no
@@ -216,25 +216,18 @@ public class JaxpXsdCatalogTest {
     // LSResourceResolver support makes directory-search catalogs work with the XSD 1.1
     // validator pipeline too, not just the default SAX pipeline.
     @org.junit.jupiter.api.Test
-    public void xsd11SearchedValid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsd11SearchedValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/searched-xsd11-valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query, "valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd11SearchedInvalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsd11SearchedInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/searched-xsd11-invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
-        executeAndEvaluate(query, "invalid");
-    }
-
-    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 }
