@@ -88,7 +88,7 @@ public class PackageService {
         if (maybeRepo.isEmpty()) {
             return Collections.emptyList();
         }
-        final Repository repo = maybeRepo.get().getParentRepo();
+        final ExistRepository repo = maybeRepo.get();
         final List<Map<String, Object>> result = new ArrayList<>();
         for (final Packages packages : repo.listPackages()) {
             final Package pkg = packages.latest();
@@ -222,8 +222,7 @@ public class PackageService {
         deployment.undeploy(broker, transaction, pkgName, maybeRepo);
 
         // Remove from repository
-        final Repository parentRepo = maybeRepo.get().getParentRepo();
-        parentRepo.removePackage(pkgName, false, new BatchUserInteraction());
+        maybeRepo.get().removePackage(pkgName, false, new BatchUserInteraction());
         maybeRepo.get().reportAction(ExistRepository.Action.UNINSTALL, pkgName);
 
         // Clear XQuery cache
@@ -243,7 +242,7 @@ public class PackageService {
         if (maybeRepo.isEmpty()) {
             return Collections.emptyList();
         }
-        final Repository repo = maybeRepo.get().getParentRepo();
+        final ExistRepository repo = maybeRepo.get();
         final List<String> dependents = new ArrayList<>();
 
         for (final Packages packages : repo.listPackages()) {
@@ -281,7 +280,7 @@ public class PackageService {
         if (maybeRepo.isEmpty()) {
             return Collections.emptyList();
         }
-        final Repository repo = maybeRepo.get().getParentRepo();
+        final ExistRepository repo = maybeRepo.get();
         final String findUrl = registryUrl + "/find";
         final String processorVersion = org.exist.SystemProperties.getInstance()
                 .getSystemProperty("product-version", "7.0.0");
@@ -380,10 +379,10 @@ public class PackageService {
         if (maybeRepo.isEmpty()) {
             return null;
         }
-        final Repository repo = maybeRepo.get().getParentRepo();
+        final ExistRepository repo = maybeRepo.get();
 
         // Try as package name (URI) first
-        final Packages byName = repo.getPackages(nameOrAbbrev);
+        final Packages byName = repo.getParentRepo().getPackages(nameOrAbbrev);
         if (byName != null) {
             return byName.latest();
         }
