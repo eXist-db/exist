@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_7086c18caa853d 107,427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e4d06b40baab47e8f70b54ac5454ceaac92fb90",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
