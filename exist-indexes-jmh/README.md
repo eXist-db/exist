@@ -27,6 +27,21 @@ Each class has the same four `@Benchmark` methods:
 
 Shape A reads should be flat (literal vs. let-bound shouldn't differ measurably). The interesting comparison is **`shapeBForVarPredicate` vs. `shapeBForVarWhere`**: any optimizer rewrite that turns the latter into the former is the win Juri's PR is angling toward.
 
+### `LoopVariablePredicateBenchmark`
+
+The classes above load three documents, so they cannot show costs that grow with the number of documents in a step's context sequence. `LoopVariablePredicateBenchmark` stores `docCount` (100, 1000, 4000) single-`<item>` documents, with and without a range index on `id` (`indexed`), and runs `collection(...)/item[id = $key]` and related shapes ([#6619](https://github.com/eXist-db/exist/issues/6619)):
+
+| Benchmark | Form |
+|---|---|
+| `predicateLiteral` | `for $i in 1 to 10 return $items[id = 'literal']` |
+| `predicateOuterVar` | `let $key := 'literal' return for $i in 1 to 10 return $items[id = $key]` |
+| `predicateLoopVar` | `for $key in $KEYS return $items[id = $key]` &mdash; the shape of #6619 |
+| `predicateLoopVarUnoptimized` | the same with `declare option exist:optimize 'enable=no'`, as a reference |
+| `whereNavigating` | `for $item in $items where $item/id = 'literal'` &mdash; evaluated in a single step |
+| `whereVariableAsKey` | `for $q in //q where $items[id = $q]` &mdash; must be evaluated per item ([#2204](https://github.com/eXist-db/exist/issues/2204)) |
+
+All `predicate*` benchmarks should scale linearly with `docCount` and stay close to `predicateLoopVarUnoptimized` (or below it, with `indexed=true`).
+
 ## Running
 
 Build the module. The `package` phase runs `maven-shade-plugin` to produce a fat uber-jar (`target/exist-indexes-jmh-${version}-benchmarks.jar`) with `org.openjdk.jmh.Main` as its entry point and `META-INF/services` entries merged via `ServicesResourceTransformer`. The `install` step also puts a fresh `exist-core` into the local Maven repo so the benchmark picks up your branch's code:
