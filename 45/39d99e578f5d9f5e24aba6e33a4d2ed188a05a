@@ -1,0 +1,67 @@
+exist-ant/src/test/java/org/exist/ant/ServerTaskTest.java
+  s_d5ac7bf05ec2fb::t_5017e0347cf93d 102-103
+exist-ant/src/test/java/org/exist/ant/XmldbTaskTest.java
+  s_d5ac7bf05ec2fb::t_e55b316814d133 335-336
+exist-core/src/test/java/org/exist/backup/DeepEmbeddedBackupRestoreTest.java
+  s_d5ac7bf05ec2fb::t_8a0229f1894880 208-209
+exist-core/src/test/java/org/exist/backup/RestoreAppsTest.java
+  s_d5ac7bf05ec2fb::t_2b6f6c6fc9830f 346-347
+exist-core/src/test/java/org/exist/backup/SystemExportFiltersTest.java
+  s_d5ac7bf05ec2fb::t_f39a3b59a7f379 226-227
+exist-core/src/test/java/org/exist/backup/SystemExportImportTest.java
+  s_d5ac7bf05ec2fb::t_b21fdf7f301d19 261-262
+exist-core/src/test/java/org/exist/backup/XMLDBRestoreTest.java
+  s_d5ac7bf05ec2fb::t_c0fcef56fb1def 688-689
+exist-core/src/test/java/org/exist/management/client/JMXTokenProviderTest.java
+  s_d5ac7bf05ec2fb::t_005a456f4888f5 185-186
+exist-core/src/test/java/org/exist/storage/AbstractUpdateTest.java
+  s_d5ac7bf05ec2fb::t_7e73817a08b586 62
+exist-core/src/test/java/org/exist/storage/BrokerPoolsTest.java
+  s_d5ac7bf05ec2fb::t_3b689571b84f2e 108-109
+exist-core/src/test/java/org/exist/storage/CollectionTest.java
+  s_d5ac7bf05ec2fb::t_45e0ce95d17ba5 56
+exist-core/src/test/java/org/exist/storage/ConcurrentStoreTest.java
+  s_d5ac7bf05ec2fb::t_5fe54757ded84c 59
+exist-core/src/test/java/org/exist/storage/RecoverBinary2Test.java
+  s_d5ac7bf05ec2fb::t_14cfa8f151581c 53
+exist-core/src/test/java/org/exist/storage/Recovery2Test.java
+  s_d5ac7bf05ec2fb::t_f5622e4e6e38dd 69
+exist-core/src/test/java/org/exist/storage/Recovery3Test.java
+  s_d5ac7bf05ec2fb::t_5baf717e820169 61,181-182
+exist-core/src/test/java/org/exist/storage/ReindexRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_274a7b4ecd6b78 61
+exist-core/src/test/java/org/exist/storage/RemoveCollectionIT.java
+  s_d5ac7bf05ec2fb::t_f3bfda7ed37f3a 62
+exist-core/src/test/java/org/exist/storage/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_7f3f25455a47d1 62
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_8a4b34d1bd50c6 82
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreImplTest.java
+  s_d5ac7bf05ec2fb::t_e22f76613e3da8 469-470
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_b75b53e105091c 579-580
+exist-core/src/test/java/org/exist/storage/journal/JournalTest.java
+  s_d5ac7bf05ec2fb::t_6209f8450aa788 443-444
+exist-core/src/test/java/org/exist/xmldb/MultiDBTest.java
+  s_d5ac7bf05ec2fb::t_0f6ebb3636273f 137-138
+exist-core/src/test/java/org/exist/xquery/ConstructedNodesRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_9c8ef171c070d7 105
+exist-core/src/test/java/org/exist/xquery/StoredModuleTest.java
+  s_d5ac7bf05ec2fb::t_dfff1a7c8d5437 416-417
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4539d99e578f5d9f5e24aba6e33a4d2ed188a05a",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
