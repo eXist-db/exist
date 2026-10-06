@@ -34,12 +34,14 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -82,7 +84,7 @@ public class XMLDBSecurityTest {
         allowOthersToOpenTestCollection();
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
         final CollectionManagementService cms = test.getService(CollectionManagementService.class);
-        assertThrows(XMLDBException.class, () -> cms.createCollection("createdByGuest"));
+        assertDenied("No write permissions for", () -> cms.createCollection("createdByGuest"));
     }
 
     @Test // fails since guest has no write permissions
@@ -91,14 +93,14 @@ public class XMLDBSecurityTest {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
         final Resource resource = test.createResource("createdByGuest", XMLResource.class);
         resource.setContent("<testMe/>");
-        assertThrows(XMLDBException.class, () -> test.storeResource(resource));
+        assertDenied("Write permission is not granted on the Collection.", () -> test.storeResource(resource));
     }
 
     @Test // fails since guest has no write permissions
     void worldRemoveCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "guest", "guest");
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
-        assertThrows(XMLDBException.class, () -> cms.removeCollection("securityTest1"));
+        assertDenied("Permission denied to open collection", () -> cms.removeCollection("securityTest1"));
     }
 
     @Test // fails since guest has no write permissions
@@ -107,7 +109,7 @@ public class XMLDBSecurityTest {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        assertThrows(XMLDBException.class, () -> ums.chmod(0777));
+        assertDenied("Only a DBA or the resources owner can change the mode of a resource.", () -> ums.chmod(0777));
     }
 
     @Test // fails since guest has no write permissions
@@ -118,7 +120,7 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        assertThrows(XMLDBException.class, () -> ums.chmod(resource, 0777));
+        assertDenied("Only a DBA or the resources owner can change the mode of a resource.", () -> ums.chmod(resource, 0777));
     }
 
     @Test // fails since guest has no write permissions
@@ -128,7 +130,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
         final Account guest = ums.getAccount("guest");
         // make myself the owner ;-)
-        assertThrows(XMLDBException.class, () -> ums.chown(guest, "guest"));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(guest, "guest"));
     }
 
     /**
@@ -143,7 +145,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
         final Account test2 = ums.getAccount("guest");
-        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2, "guest"));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(resource, test2, "guest"));
     }
 
     @Test
@@ -170,7 +172,7 @@ public class XMLDBSecurityTest {
     void groupRemoveCollectionCanNotWriteParent() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "test2", "test2");
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
-        assertThrows(XMLDBException.class, () -> cms.removeCollection("securityTest1"));
+        assertDenied("is not allowed to remove collection", () -> cms.removeCollection("securityTest1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -188,7 +190,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // grant myself all rights ;-)
-        assertThrows(XMLDBException.class, () -> ums.chmod(07777));
+        assertDenied("Only a DBA or the resources owner can change the mode of a resource.", () -> ums.chmod(07777));
     }
 
     @Test
@@ -207,7 +209,7 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        assertThrows(XMLDBException.class, () -> ums.chmod(resource, 0777));
+        assertDenied("Only a DBA or the resources owner can change the mode of a resource.", () -> ums.chmod(resource, 0777));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -269,7 +271,7 @@ public class XMLDBSecurityTest {
 
         // attempt to change uid ownership of /db/securityTest1 to the test2 user
         final Account test2 = ums.getAccount("test2");
-        assertThrows(XMLDBException.class, () -> ums.chown(test2));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(test2));
     }
 
     /**
@@ -286,7 +288,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to change gid ownership of /db/securityTest1 to the guest group
-        assertThrows(XMLDBException.class, () -> ums.chgrp("guest"));
+        assertDenied("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.", () -> ums.chgrp("guest"));
     }
 
     /**
@@ -303,7 +305,7 @@ public class XMLDBSecurityTest {
 
         // attempt to take uid ownership of /db/securityTest1
         final Account test2 = ums.getAccount("test2");
-        assertThrows(XMLDBException.class, () -> ums.chown(test2));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(test2));
     }
 
     /**
@@ -341,7 +343,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to have user 'test2' take gid ownership of /db/securityTest1 (which is owner by test1:users)
-        assertThrows(XMLDBException.class, () -> ums.chgrp("test2-only"));
+        assertDenied("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.", () -> ums.chgrp("test2-only"));
     }
 
     /**
@@ -358,7 +360,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to take gid ownership of /db/securityTest1
-        assertThrows(XMLDBException.class, () -> ums.chgrp("guest"));
+        assertDenied("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.", () -> ums.chgrp("guest"));
     }
 
     /**
@@ -413,7 +415,7 @@ public class XMLDBSecurityTest {
 
         // attempt to change uid ownership of /db/securityTest1/test.xml to the test2 user
         final Account test2 = ums.getAccount("test2");
-        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(resource, test2));
     }
 
     /**
@@ -431,7 +433,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to change gid ownership of /db/securityTest1/test.xml to the guest group
-        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "guest"));
+        assertDenied("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.", () -> ums.chgrp(resource, "guest"));
     }
 
     /**
@@ -449,7 +451,7 @@ public class XMLDBSecurityTest {
 
         // attempt to take uid ownership of /db/securityTest1/test.xml
         final Account test2 = ums.getAccount("test2");
-        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2));
+        assertDenied("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.", () -> ums.chown(resource, test2));
     }
 
     /**
@@ -489,7 +491,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to have user 'test2' take gid ownership of /db/securityTest1/test.xml (which is owned by test1:users)
-        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "test2-only"));
+        assertDenied("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.", () -> ums.chgrp(resource, "test2-only"));
     }
 
     /**
@@ -507,7 +509,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // attempt to take gid ownership of /db/securityTest1/test.xml
-        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "guest"));
+        assertDenied("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.", () -> ums.chgrp(resource, "guest"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -530,7 +532,7 @@ public class XMLDBSecurityTest {
         ums.chmod("rw-rw-rw-");
         test.close();
 
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -553,7 +555,7 @@ public class XMLDBSecurityTest {
         ums.chmod("rw-rw-rw-");
         test.close();
 
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db", "test1", "test1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -589,7 +591,7 @@ public class XMLDBSecurityTest {
 
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-        assertThrows(XMLDBException.class, () -> reopened.listResources());
+        assertDenied("Permission denied to read collection", () -> reopened.listResources());
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -613,7 +615,7 @@ public class XMLDBSecurityTest {
 
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-        assertThrows(XMLDBException.class, () -> reopened.listChildCollections());
+        assertDenied("Permission denied to read collection", "Permission to list sub-collections denied", () -> reopened.listChildCollections());
     }
 
     @Test
@@ -639,7 +641,7 @@ public class XMLDBSecurityTest {
         test.close();
 
         // without execute permission on the parent collection the collection cannot even be opened
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @Test
@@ -665,7 +667,7 @@ public class XMLDBSecurityTest {
         test.close();
 
         // without execute permission on the parent collection the collection cannot even be opened
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @Test
@@ -694,7 +696,7 @@ public class XMLDBSecurityTest {
 
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-        assertThrows(XMLDBException.class, () -> reopened.getResource("test.xml"));
+        assertDenied("does not have '------r--' access to document", () -> reopened.getResource("test.xml"));
     }
 
     @Test
@@ -723,7 +725,7 @@ public class XMLDBSecurityTest {
 
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-        assertThrows(XMLDBException.class, () -> reopened.getResource("test.bin"));
+        assertDenied("does not have '------r--' access to document", () -> reopened.getResource("test.bin"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -754,7 +756,7 @@ public class XMLDBSecurityTest {
 
         final Resource resource = reopened.createResource("other.xml", XMLResource.class);
         resource.setContent("<other/>");
-        assertThrows(XMLDBException.class, () -> reopened.storeResource(resource));
+        assertDenied("Write permission is not granted on the Collection.", () -> reopened.storeResource(resource));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -785,7 +787,7 @@ public class XMLDBSecurityTest {
 
         final Resource resource = reopened.createResource("other.bin", BinaryResource.class);
         resource.setContent("binary".getBytes());
-        assertThrows(XMLDBException.class, () -> reopened.storeResource(resource));
+        assertDenied("Write permission is not granted on the Collection.", () -> reopened.storeResource(resource));
     }
 
     @Test
@@ -818,7 +820,7 @@ public class XMLDBSecurityTest {
         test.close();
 
         // without execute permission on the parent collection the collection cannot even be opened
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @Test
@@ -851,7 +853,7 @@ public class XMLDBSecurityTest {
         test.close();
 
         // without execute permission on the parent collection the collection cannot even be opened
-        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
+        assertDenied("Permission denied to open collection", () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @Test
@@ -930,12 +932,12 @@ public class XMLDBSecurityTest {
 
         //execute the stored XQuery
         final EXistXPathQueryService queryService = reopened.getService(EXistXPathQueryService.class);
-        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest1/test.xquery"));
+        assertDenied("not allowed requested access to document", "Insufficient privileges to access resource", () -> queryService.executeStoredQuery("/db/securityTest1/test.xquery"));
     }
 
     @Test
     void cannotOpenCollection() throws XMLDBException {
-        assertThrows(XMLDBException.class, () ->
+        assertDenied("Permission denied to open collection", () ->
             //check that a user not in the users group (i.e. test3) cannot open the collection /db/securityTest1
             DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test3", "test3"));
     }
@@ -1070,7 +1072,7 @@ public class XMLDBSecurityTest {
         //as the 'test3' user copy the collection
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
         final EXistCollectionManagementService reopenedCms = (EXistCollectionManagementService) reopened.getService(CollectionManagementService.class);
-        assertThrows(XMLDBException.class, () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
+        assertDenied("Permission denied to copy collection", () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
     }
 
     /**
@@ -1130,7 +1132,7 @@ public class XMLDBSecurityTest {
         //as the 'test3' user copy the collection
         final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
         final EXistCollectionManagementService reopenedCms = (EXistCollectionManagementService) reopened.getService(CollectionManagementService.class);
-        assertThrows(XMLDBException.class, () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
+        assertDenied("Permission denied to read document", () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
 
         //TODO check perms are/areNot preserved? on the replaced resource
     }
@@ -1601,7 +1603,9 @@ public class XMLDBSecurityTest {
         //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
         final Collection test2 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
         final EXistXPathQueryService queryService = test2.getService(EXistXPathQueryService.class);
-        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery"));
+        // the collection is mode 0700 and the query runs as another user, so the query does not get as far as writing:
+        // it cannot locate the collection (the denial is at the lookup, not at the write)
+        assertFailsWith("Could not locate collection", () -> queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery"));
     }
 
     @Test
@@ -1671,7 +1675,9 @@ public class XMLDBSecurityTest {
         //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
         final Collection test3 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test3", "test3");
         final EXistXPathQueryService queryService = test3.getService(EXistXPathQueryService.class);
-        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest2/not_setgid.xquery"));
+        // the collection is mode 0700 and the query runs as another user, so the query does not get as far as writing:
+        // it cannot locate the collection (the denial is at the lookup, not at the write)
+        assertFailsWith("Could not locate collection", () -> queryService.executeStoredQuery("/db/securityTest2/not_setgid.xquery"));
     }
 
     @Test
@@ -2069,5 +2075,29 @@ public class XMLDBSecurityTest {
                 }
             }
         }
+    }
+
+    /**
+     * The call must fail with an XMLDBException that says why: the embedded API raises PERMISSION_DENIED with the
+     * reason, the remote API wraps the same reason in a vendor error, so the reason is what both have in common.
+     */
+    private void assertDenied(final String reason, final Executable call) {
+        assertDenied(reason, reason, call);
+    }
+
+    /** for a failure the two APIs word differently: what the embedded API says, and what the remote API says */
+    private void assertDenied(final String embeddedReason, final String remoteReason, final Executable call) {
+        final boolean embedded = "local".equals(apiName);
+        final String reason = embedded ? embeddedReason : remoteReason;
+        final XMLDBException e = assertThrows(XMLDBException.class, call);
+        assertTrue(e.getMessage().contains(reason), () -> "expected the failure to say '" + reason + "' but it was: " + e.getMessage());
+        if (embedded) {
+            assertEquals(ErrorCodes.PERMISSION_DENIED, e.errorCode);
+        }
+    }
+
+    private static void assertFailsWith(final String reason, final Executable call) {
+        final XMLDBException e = assertThrows(XMLDBException.class, call);
+        assertTrue(e.getMessage().contains(reason), () -> "expected the failure to say '" + reason + "' but it was: " + e.getMessage());
     }
 }
