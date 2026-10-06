@@ -1,0 +1,28 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_e7f7c831c628d7::t_9693a2b0bad6b7 1944-1949
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexScanSparseDocValuesTest.java
+  s_e7f7c831c628d7::t_20a2edc32cf51d 1-75,84-169
+  s_e7f7c831c628d7::t_bce9c58e01123e 76-83
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-binary.xqm
+  s_e7f7c831c628d7::t_70328c79c73167 144-145,148-149,151,155,164
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_e7f7c831c628d7::t_64942c8e5f5f3b 65-67
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_e7f7c831c628d7::t_c4cd4c1dda38d3 45-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "70e7d19030b7329913f55498b4725df1d3c6225e",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
