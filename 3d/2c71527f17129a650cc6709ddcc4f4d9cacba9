@@ -1,0 +1,33 @@
+exist-core/src/test/xquery/axes-persistent-nodes.xqm
+  s_d5ac7bf05ec2fb::t_11902edb7de915 51-56,60,62,68,95,107,114,126,133,145,173,185,192,204,211,223
+exist-core/src/test/xquery/guest.xql
+  s_d5ac7bf05ec2fb::t_9117b873baeca9 27-32,36-37,42,54,60,66,72
+exist-core/src/test/xquery/npt.xqm
+  s_d5ac7bf05ec2fb::t_644531666baa99 45-50,54-55,61,73,86,98,110,122
+exist-core/src/test/xquery/question-marks-in-contains-function.xql
+  s_d5ac7bf05ec2fb::t_0e88467059f653 56-61,65-68,74-75,81,89,97,105
+exist-core/src/test/xquery/system/get-main-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_29ed927b16e4cd 39,46-51,55-56,59-60,67
+exist-core/src/test/xquery/system/get-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_7702ca3998228c 39,46-51,55-56,59-60,67
+exist-core/src/test/xquery/xquery3/higher-order.xqm
+  s_d5ac7bf05ec2fb::t_4465764b226c8e 37-42,46,65,309,428
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_d5ac7bf05ec2fb::t_c8ae711b9f99f5 204-209,223-227,235-236,622,641,655-656
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d2c71527f17129a650cc6709ddcc4f4d9cacba9",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
