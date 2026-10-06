@@ -1,0 +1,45 @@
+exist-core/src/test/java/org/exist/xmldb/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_0e5b2a47087893 232
+exist-core/src/test/java/org/exist/xquery/functions/system/GetRunningXQueriesTest.java
+  s_d5ac7bf05ec2fb::t_f907cf0ea2497a 41
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpDtdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_9587c0a40d62ee 112,120,128,136,150,158
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_93fa17495b300f 62,133,141,149,157,165,173,196,206,223,231
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxvTest.java
+  s_d5ac7bf05ec2fb::t_85e3013b868a48 92,105,118,131
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingOnvdlTest.java
+  s_d5ac7bf05ec2fb::t_a6a9b33b64c95c 99,104,108,113,122,130,138,146
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingRelaxNgTest.java
+  s_d5ac7bf05ec2fb::t_8e39b276268cd8 96,104,112,120,128,136,143,150
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingSchematronTest.java
+  s_d5ac7bf05ec2fb::t_2aa8da254be6af 88,110,118,126
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingXsdTest.java
+  s_d5ac7bf05ec2fb::t_caf0037f752ecb 56,84,92,100,108
+exist-core/src/test/java/org/exist/xquery/functions/validate/NativeSchemaJaxpCatalogGapTest.java
+  s_d5ac7bf05ec2fb::t_f895214e52ba65 99,177
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseDtdNokTest.java
+  s_d5ac7bf05ec2fb::t_2d4a421070b3f1 79,91,102,114
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseXsdNokTest.java
+  s_d5ac7bf05ec2fb::t_e39643c8ba1c3c 79,91,103,115
+exist-core/src/test/java/org/exist/xquery/functions/validate/QueryResults.java
+  s_d5ac7bf05ec2fb::t_5164230a8b1152 1-45
+exist-core/src/test/java/org/exist/xquery/functions/validate/TournamentSchemaLanguageComparisonTest.java
+  s_d5ac7bf05ec2fb::t_fcbe195590af68 104,116,124,131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00f6bcc7ebce60c6c435636c04f2b4ae51f7ba50",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
