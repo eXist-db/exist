@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunDeepEqualPerformanceTest.java
+  s_d5ac7bf05ec2fb::t_e78abe292917ef 57-68,84-99,157-159,169-170,174-184,187-203,217-220,222-225,227-229,238-242,244-247,249-252,257-267,269-277
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d88398ca0ec90ba1674bc4fdfe071a6ddb883d66",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
