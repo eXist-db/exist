@@ -24,10 +24,12 @@ package xquery.optimizer;
 import org.exist.test.xqsuite.XQSuite;
 
 /**
- * XQuery optimizer tests
+ * XQuery optimizer tests.
+ *
+ * The files of this suite run concurrently, see {@link org.exist.test.xqsuite.XQSuite#parallel()} for what they must not share.
  */
-@XQSuite({
+@XQSuite(value = {
     "src/test/xquery/optimizer"
-})
+}, parallel = true)
 public class OptimizerTests {
 }
