@@ -26,6 +26,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,6 +59,25 @@ public class ForExpr extends BindingExpression {
      */
     public void setPositionalVariable(final QName variable) {
         positionalVariable = variable;
+    }
+
+    /**
+     * Get the name of the optional positional variable.
+     *
+     * @return the name of the positional variable, or null if there is none.
+     */
+    @Nullable QName getPositionalVariable() {
+        return positionalVariable;
+    }
+
+    /**
+     * Determine if this "for" clause starts a chain of {@link FLWORClause#preEval(Sequence)} calls,
+     * i.e. it is not itself pre-evaluated by a preceding "for" clause.
+     *
+     * @return true if this is the outer "for" clause.
+     */
+    boolean isOuterFor() {
+        return isOuterFor;
     }
 
 	/* (non-Javadoc)
