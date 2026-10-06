@@ -41,7 +41,7 @@ import org.exist.util.*;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -57,6 +57,7 @@ class ConcurrentStoreTest {
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
     // started and stopped by the tests themselves, not by an extension, as some tests force corruption
+    @AutoClose("stopDb")
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private Collection test, test2;
@@ -83,10 +84,10 @@ class ConcurrentStoreTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        read(pool);
+        assertRead(pool);
     }
 
-    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
+    private void assertRead(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
@@ -125,11 +126,6 @@ class ConcurrentStoreTest {
     private BrokerPool restartDb() throws EXistException, IOException, DatabaseConfigurationException {
         existEmbeddedServer.restart(false);
         return existEmbeddedServer.getBrokerPool();
-    }
-
-    @AfterEach
-    void stopDb() {
-        existEmbeddedServer.stopDb();
     }
 
     @AfterAll
