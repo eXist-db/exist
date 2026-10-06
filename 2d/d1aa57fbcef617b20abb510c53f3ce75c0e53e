@@ -1,0 +1,45 @@
+exist-core/src/test/java/org/exist/security/XMLDBSecurityTest.java
+  s_d5ac7bf05ec2fb::t_0e5aebb7d549ea 37,44,87,96,103,112,123,133,148,175,193,212,274,291,308,346,363,418,436,454,494,512,535,558,594,618,644,670,699,728,759,790,823,856,935,940,1075,1135,1606-1608,1678-1680,2079-2102
+exist-ant/src/test/java/org/exist/ant/ServerTaskTest.java
+  s_d5ac7bf05ec2fb::t_88d9f38971918d 38,88,90,95
+exist-ant/src/test/java/org/exist/ant/XmldbTaskTest.java
+  s_d5ac7bf05ec2fb::t_db4ed85488f5f7 48,327
+exist-core/src/test/java/org/exist/backup/RestoreAppsTest.java
+  s_d5ac7bf05ec2fb::t_feaa8de9dba0ba 95,120,141,163,188,209,212
+exist-core/src/test/java/org/exist/storage/AbstractRecoverTest.java
+  s_d5ac7bf05ec2fb::t_0d5af5ad60dca1 104,108,131,135,159,163,187,191,215,219,243,247,275,279,307,311,343,347,379,383,416,420,490,531,564,568,601,605,691,693,703,705,715
+exist-core/src/test/java/org/exist/storage/RecoverXmlTest.java
+  s_d5ac7bf05ec2fb::t_0f2d99e2f97fc2 108
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreImplTest.java
+  s_d5ac7bf05ec2fb::t_0935587d46218f 101,122-125,146,166-167,169-170,185-186,214,240-241,244-245,252-253,277-279,282,325,347,378,425,435
+exist-core/src/test/java/org/exist/storage/journal/JournalXmlTest.java
+  s_d5ac7bf05ec2fb::t_52efe19bf27c82 100,129
+exist-core/src/test/java/org/exist/xmldb/MultiDBTest.java
+  s_d5ac7bf05ec2fb::t_bee0c2492bb23a 76,89
+exist-core/src/test/java/org/exist/http/RESTServiceTest.java
+  s_d5ac7bf05ec2fb::t_ad6410eb3672b9 812,815,818,1528-1531,1572,1574-1575,1690
+exist-core/src/test/java/org/exist/storage/ConcurrentStoreTest.java
+  s_d5ac7bf05ec2fb::t_64261222b4840a 87,90
+exist-core/src/test/java/org/exist/storage/ReindexRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_e08a53527eada9 41,80
+exist-core/src/test/java/org/exist/storage/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_c24a572fd3241e 81,101,148,151
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_64f8d003381069 95,107,289,427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2dd1aa57fbcef617b20abb510c53f3ce75c0e53e",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

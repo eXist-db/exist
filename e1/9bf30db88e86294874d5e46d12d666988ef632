@@ -1,0 +1,85 @@
+exist-core/src/test/java/org/exist/backup/SystemExportImportTest.java
+  s_d5ac7bf05ec2fb::t_b3e45afb0c3c31 33,68,123-129
+exist-core/src/test/java/org/exist/backup/XMLDBBackupTest.java
+  s_d5ac7bf05ec2fb::t_4cf2d14ad56188 24,32,77-83
+exist-core/src/test/java/org/exist/backup/XMLDBRestoreTest.java
+  s_d5ac7bf05ec2fb::t_48942267352a3c 24,39,90-94
+exist-core/src/test/java/org/exist/collections/triggers/TriggerConfigTest.java
+  s_d5ac7bf05ec2fb::t_5ec5ab876c33f1 26,39,65-70
+exist-core/src/test/java/org/exist/dom/memtree/DocumentBuilderReceiverIntegrationTest.java
+  s_d5ac7bf05ec2fb::t_18afe4367869fa 25,30,58-65
+exist-core/src/test/java/org/exist/dom/memtree/MemtreeBuilderTest.java
+  s_d5ac7bf05ec2fb::t_f40be6fc31e35c 25,31,53-57
+exist-core/src/test/java/org/exist/security/XMLDBSecurityTest.java
+  s_d5ac7bf05ec2fb::t_0f6708dcd8f3b1 25,39,65-69
+exist-core/src/test/java/org/exist/security/XmldbApiSecurityTest.java
+  s_d5ac7bf05ec2fb::t_b6563accecc84e 27,33,58-62
+exist-core/src/test/java/org/exist/storage/NativeValueIndexTest.java
+  s_d5ac7bf05ec2fb::t_5a18110342e769 24,29,38-42
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_dd81ae75554b53 36,62,95-99
+exist-core/src/test/java/org/exist/storage/lock/DeadlockIT.java
+  s_d5ac7bf05ec2fb::t_e494f14bf5869d 33,56,134-142
+exist-core/src/test/java/org/exist/storage/lock/LockManagerTest.java
+  s_d5ac7bf05ec2fb::t_06ed4d21356de7 36,42,68-72
+exist-core/src/test/java/org/exist/util/io/CachingFilterInputStreamNonMarkableByteArrayInputStreamTest.java
+  s_d5ac7bf05ec2fb::t_747e92993c6a32 29,36,67-72
+exist-core/src/test/java/org/exist/util/io/CachingFilterInputStreamTest.java
+  s_d5ac7bf05ec2fb::t_99a7a34f4f0d3a 24-25,32,55-60
+exist-core/src/test/java/org/exist/util/sorters/SortComparatorTest.java
+  s_d5ac7bf05ec2fb::t_c921f1274f5cd9 24,27,50-51,54,57
+exist-core/src/test/java/org/exist/util/sorters/SortTest.java
+  s_d5ac7bf05ec2fb::t_e307d9193ad734 25,33,53-54,58,62
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java
+  s_d5ac7bf05ec2fb::t_3f2397ae5eb5e9 24,39,75-76,110,115-124,127-136
+exist-core/src/test/java/org/exist/xmldb/DeclareVariableTest.java
+  s_d5ac7bf05ec2fb::t_973f21c188c9ff 24,32,55-59
+exist-core/src/test/java/org/exist/xmldb/DeleteCollectionTest.java
+  s_d5ac7bf05ec2fb::t_094c897d791e10 24,32,50-54
+exist-core/src/test/java/org/exist/xmldb/MoveCollectionTest.java
+  s_d5ac7bf05ec2fb::t_8f3f6ade563a84 24,32,50-54
+exist-core/src/test/java/org/exist/xmldb/RenameCollectionTest.java
+  s_d5ac7bf05ec2fb::t_70b6d3a87109c3 24,32,52-56
+exist-core/src/test/java/org/exist/xmldb/SerializationTest.java
+  s_d5ac7bf05ec2fb::t_a8ebc4b4a1ee74 24,35,121-125
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java
+  s_d5ac7bf05ec2fb::t_f315d0eee91956 24,35,80-84
+exist-core/src/test/java/org/exist/xquery/XmldbBinariesTest.java
+  s_d5ac7bf05ec2fb::t_5380cbda51f922 25,28,57-58,60-61
+exist-core/src/test/java/org/exist/xquery/functions/fn/ExtDocTest.java
+  s_d5ac7bf05ec2fb::t_15403483eb83b4 25,30,58-64
+exist-core/src/test/java/org/exist/xquery/value/NumericOpPromotionTest.java
+  s_d5ac7bf05ec2fb::t_2ade80a2126670 24,30,42-47
+exist-core/src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java
+  s_d5ac7bf05ec2fb::t_3c0f083a160e69 35,42,59-74
+exist-core/src/test/java/org/exist/xquery/value/SubSequenceTest.java
+  s_d5ac7bf05ec2fb::t_d23e9fcc52ab23 35,41,57-71
+exist-core/src/test/java/org/exist/xslt/TransformerFactoryAllocatorTest.java
+  s_d5ac7bf05ec2fb::t_139fa39c6af94b 26,29,46-49
+exist-core/src/test/java/org/exist/xupdate/XUpdateTest.java
+  s_d5ac7bf05ec2fb::t_c0e04eb43803c6 30,47,77-91,98,103-104
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/LibraryCircularDependencyIntegrationTest.java
+  s_d5ac7bf05ec2fb::t_006e4cdb624cad 29,33,60-63
+extensions/indexes/indexes-integration-tests/src/test/java/org/exist/indexing/EnforceIndexUseTest.java
+  s_d5ac7bf05ec2fb::t_04c662c3c32303 24,50,62-66
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/XmldbBinariesTest.java
+  s_d5ac7bf05ec2fb::t_8508a10345dd25 24,27,56-60
+extensions/modules/mail/src/test/java/org/exist/xquery/modules/mail/SendEmailIT.java
+  s_d5ac7bf05ec2fb::t_4db807cf4a5be3 44,65,116-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e19bf30db88e86294874d5e46d12d666988ef632",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
