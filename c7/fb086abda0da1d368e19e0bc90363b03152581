@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceTest.java
+  s_d5ac7bf05ec2fb::t_5d77fd32b8ad3a 44-48,98-99,103-108,130-176,180,271-279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c7fb086abda0da1d368e19e0bc90363b03152581",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
