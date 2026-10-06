@@ -22,7 +22,7 @@
 
 package org.exist.util.io;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,17 +41,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class VirtualTempPathTest {
     private TemporaryFileManager temporaryFileManager;
+    @AutoClose
     private VirtualTempPath virtualTempPath;
 
     @BeforeEach
     void setUp() {
         temporaryFileManager = TemporaryFileManager.getInstance();
         virtualTempPath = new VirtualTempPath(2048, temporaryFileManager);
-    }
-
-    @AfterEach
-    void tearDown() {
-        virtualTempPath.close();
     }
 
     @Test

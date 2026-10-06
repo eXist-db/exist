@@ -44,7 +44,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -80,6 +80,7 @@ class UpdateRecoverTest {
         "</products>";
 
     // started and stopped by the tests themselves, not by an extension, as some tests force corruption
+    @AutoClose("stopDb")
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -91,7 +92,7 @@ class UpdateRecoverTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        read(pool);
+        assertRead(pool);
     }
 
     @Test
@@ -103,7 +104,7 @@ class UpdateRecoverTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        xmldbRead(pool);
+        assertXmldbRead();
     }
 
     private void store(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, ParserConfigurationException, XPathException {
@@ -285,7 +286,7 @@ class UpdateRecoverTest {
         }
     }
 
-    private void read(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
+    private void assertRead(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.borrowSerializer();
 
@@ -423,7 +424,7 @@ class UpdateRecoverTest {
         }
     }
 
-    private void xmldbRead(final BrokerPool pool) throws XMLDBException {
+    private void assertXmldbRead() throws XMLDBException {
         final org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI2, "admin", "");
         assertNotNull(test2);
         final Resource res = test2.getResource("test_xmldb.xml");
@@ -449,11 +450,6 @@ class UpdateRecoverTest {
     private BrokerPool restartDb() throws DatabaseConfigurationException, IOException, EXistException {
         existEmbeddedServer.restart(false);
         return existEmbeddedServer.getBrokerPool();
-    }
-
-    @AfterEach
-    void stopDb() {
-        existEmbeddedServer.stopDb();
     }
 
 }

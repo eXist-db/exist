@@ -38,12 +38,13 @@ import org.exist.xmldb.XmldbURI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -59,6 +60,7 @@ class ReindexRecoveryTest {
     private static final Logger LOG = LogManager.getLogger(ReindexRecoveryTest.class);
 
     // started and stopped by the tests themselves, not by an extension, as some tests force corruption
+    @AutoClose("stopDb")
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -75,7 +77,7 @@ class ReindexRecoveryTest {
 
         existEmbeddedServer.stopDb(false);
 
-        restart();
+        assertDoesNotThrow(this::restart);
     }
 
     /**
@@ -85,7 +87,6 @@ class ReindexRecoveryTest {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
 
             try(final Txn transaction = transact.beginTransaction()) {
                 assertNotNull(transaction);
@@ -158,11 +159,6 @@ class ReindexRecoveryTest {
     private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
         existEmbeddedServer.startDb();
         return existEmbeddedServer.getBrokerPool();
-    }
-
-    @AfterEach
-    void stopDb() {
-        existEmbeddedServer.stopDb();
     }
 
     @AfterAll
