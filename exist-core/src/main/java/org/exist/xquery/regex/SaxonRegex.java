@@ -76,9 +76,28 @@ public final class SaxonRegex {
 
     private static final UnicodeString EMPTY = StringView.of("");
 
-    private static final Cache<String, RegularExpression> CACHE = Caffeine.newBuilder()
+    /**
+     * Compiled expressions, keyed by the Saxon configuration that compiled them as well as the
+     * pattern and flags: each BrokerPool has its own configuration.
+     */
+    private static final Cache<CacheKey, RegularExpression> CACHE = Caffeine.newBuilder()
             .maximumSize(1_000)
             .build();
+
+    private record CacheKey(Configuration configuration, String flags, String pattern) {
+    }
+
+    /** Carries a Saxon compilation error out of the cache's mapping function. */
+    private static final class CompilationException extends RuntimeException {
+        private CompilationException(final net.sf.saxon.trans.XPathException cause) {
+            super(cause);
+        }
+
+        @Override
+        public synchronized net.sf.saxon.trans.XPathException getCause() {
+            return (net.sf.saxon.trans.XPathException) super.getCause();
+        }
+    }
 
     private SaxonRegex() {
     }
@@ -148,22 +167,23 @@ public final class SaxonRegex {
      */
     public static RegularExpression compile(final Expression context, final Configuration configuration,
             final String pattern, final String flags) throws XPathException {
-        final String key = flags + '\u0000' + pattern;
-        final RegularExpression cached = CACHE.getIfPresent(key);
-        if (cached != null) {
-            return cached;
-        }
         try {
-            final List<String> warnings = new ArrayList<>(1);
-            final RegularExpression compiled = configuration.compileRegularExpression(
-                    StringView.of(pattern), flags, HOST_LANGUAGE, warnings);
-            for (final String warning : warnings) {
-                LOG.warn("Regular expression '{}': {}", pattern, warning);
-            }
-            CACHE.put(key, compiled);
-            return compiled;
-        } catch (final net.sf.saxon.trans.XPathException e) {
-            throw translate(context, e, pattern);
+            // compiled once even when several threads first ask for the same pattern at once
+            return CACHE.get(new CacheKey(configuration, flags, pattern), key -> {
+                try {
+                    final List<String> warnings = new ArrayList<>(1);
+                    final RegularExpression compiled = configuration.compileRegularExpression(
+                            StringView.of(pattern), flags, HOST_LANGUAGE, warnings);
+                    for (final String warning : warnings) {
+                        LOG.warn("Regular expression '{}': {}", pattern, warning);
+                    }
+                    return compiled;
+                } catch (final net.sf.saxon.trans.XPathException e) {
+                    throw new CompilationException(e);
+                }
+            });
+        } catch (final CompilationException e) {
+            throw translate(context, e.getCause(), pattern);
         }
     }
 
@@ -194,7 +214,11 @@ public final class SaxonRegex {
      * Compiles for a given XQuery version. XPath 4.0 lookaround has no Saxon-native implementation
      * yet (Saxon 12.5 rejects it under both {@code XP31} and {@code XP40}), so in 4.0 mode a pattern
      * that needs it is compiled with {@code ;j} added -- Java's engine, requested explicitly, which
-     * is a different thing from falling back to it on failure.
+     * is a different thing from falling back to it on failure. The patterns that get it are those
+     * {@link RegexUtil#needsXQuery40JavaRegex} accepts: with XPath 4.0 or Java-style lookaround, or
+     * with {@code \b} or {@code \B}. The whole pattern then has Java's semantics, so for example a
+     * character-class subtraction such as {@code [a-z-[aeiou]]} in the same pattern is read as a
+     * union.
      *
      * @param context the calling expression, for error reporting
      * @param configuration the Saxon configuration to compile with

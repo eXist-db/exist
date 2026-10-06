@@ -51,7 +51,6 @@ import static org.exist.xquery.regex.SaxonRegex.*;
  */
 public class FunAnalyzeString extends BasicFunction {
 
-    /** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
 
     private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
