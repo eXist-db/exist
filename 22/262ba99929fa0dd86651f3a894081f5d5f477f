@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/security/SimpleACLPermissionTest.java
+  s_d5ac7bf05ec2fb::t_3ddb1b2c12f5f9 294-329
+exist-core/src/test/java/org/exist/storage/NativeBrokerTest.java
+  s_d5ac7bf05ec2fb::t_b60781cf20fdab 396-402,404-405,407-408,410-411,414-417,419,421-424,426-432,434-438,440-441,443-444,446-447,449-455,468-474,476-477,479-480,482-483,486-489,491,493-496,498-507,509-513,515-516,518-519,521-522,524-530,618-686
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "22262ba99929fa0dd86651f3a894081f5d5f477f",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
