@@ -28,15 +28,14 @@ import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import org.custommonkey.xmlunit.XMLAssert;
 
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -86,7 +85,7 @@ public class JaxpParseTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void parse_and_fill_defaults() throws XMLDBException, IOException, SAXException {
+    public void parseAndFillDefaults() throws XMLDBException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);
         assertEquals("defaultTest", result);
@@ -101,7 +100,7 @@ public class JaxpParseTest {
                     <shoesize country="nl">43</shoesize>
                 </ns1:root>""";
 
-        XMLAssert.assertXMLEqual(expected, result);
+        assertThat(result, hasSimilarXml(expected));
     }
 
     private String execute(final String query) throws XMLDBException {

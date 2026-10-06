@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.request;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class GetHeaderTest extends RESTTest {
 		testGetHeader("value1");
 	}
 
-	private void testGetHeader(String headerValue) throws IOException, SAXException {
+	private void testGetHeader(String headerValue) throws IOException {
 		final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no")).GET();
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
@@ -79,6 +80,6 @@ public class GetHeaderTest extends RESTTest {
 
 		assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
 
-		assertXMLEqual(xmlExpectedResponse.toString(), response.body());
+		assertThat(response.body(), hasSimilarXml(xmlExpectedResponse.toString()));
 	}
 }
