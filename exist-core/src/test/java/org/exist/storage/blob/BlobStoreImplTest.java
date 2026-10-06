@@ -46,7 +46,6 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -69,7 +68,7 @@ public class BlobStoreImplTest {
     private static final DigestType DIGEST_TYPE = DigestType.BLAKE_256;
 
     @TempDir
-    public File temporaryFolder;
+    Path temporaryFolder;
     private final Random random = new Random();
 
     private static BlobStore newBlobStore(final Path blobDbx, final Path blobDir) {
@@ -84,8 +83,8 @@ public class BlobStoreImplTest {
 
     @Test
     void addUnique() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final List<Tuple2<byte[], MessageDigest>> testFiles = Arrays.asList(
                 generateTestFile(),
@@ -99,7 +98,7 @@ public class BlobStoreImplTest {
             blobStore.open();
 
             for (final Tuple2<byte[], MessageDigest> testFile : testFiles) {
-                addAndVerify(blobStore, testFile);
+                assertAddAndVerify(blobStore, testFile);
             }
         }
 
@@ -111,8 +110,8 @@ public class BlobStoreImplTest {
 
     @Test
     void addDuplicates() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -120,10 +119,10 @@ public class BlobStoreImplTest {
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            addAndVerify(blobStore, testFile1);
-            addAndVerify(blobStore, testFile2);
-            addAndVerify(blobStore, testFile1);
-            addAndVerify(blobStore, testFile2);
+            assertAddAndVerify(blobStore, testFile1);
+            assertAddAndVerify(blobStore, testFile2);
+            assertAddAndVerify(blobStore, testFile1);
+            assertAddAndVerify(blobStore, testFile2);
         }
 
         // should be 1 entry per unique test file in the blob.dbx, each entry is the digest and then the reference count
@@ -135,8 +134,8 @@ public class BlobStoreImplTest {
 
     @Test
     void getNonExistent() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile = generateTestFile();
 
@@ -144,7 +143,7 @@ public class BlobStoreImplTest {
             blobStore.open();
 
             // store a blob
-            final BlobId storedId = addAndVerify(blobStore, testFile);
+            final BlobId storedId = assertAddAndVerify(blobStore, testFile);
 
             final BlobId nonExistent = new BlobId(reverse(storedId.getId()));
 
@@ -155,8 +154,8 @@ public class BlobStoreImplTest {
 
     @Test
     void get() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -164,18 +163,18 @@ public class BlobStoreImplTest {
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            final BlobId testFileId1 = addAndVerify(blobStore, testFile1);
-            final BlobId testFileId2 = addAndVerify(blobStore, testFile2);
+            final BlobId testFileId1 = assertAddAndVerify(blobStore, testFile1);
+            final BlobId testFileId2 = assertAddAndVerify(blobStore, testFile2);
 
-            getAndVerify(blobStore, testFileId1, testFile1);
-            getAndVerify(blobStore, testFileId2, testFile2);
+            assertGetAndVerify(blobStore, testFileId1, testFile1);
+            assertGetAndVerify(blobStore, testFileId2, testFile2);
         }
     }
 
     @Test
     void with() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -183,8 +182,8 @@ public class BlobStoreImplTest {
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            final BlobId testFileId1 = addAndVerify(blobStore, testFile1);
-            final BlobId testFileId2 = addAndVerify(blobStore, testFile2);
+            final BlobId testFileId1 = assertAddAndVerify(blobStore, testFile1);
+            final BlobId testFileId2 = assertAddAndVerify(blobStore, testFile2);
 
             final MessageDigest gotTestFile1Digest = blobStore.with(null, testFileId1, BlobStoreImplTest::digest).get();
             assertArrayEquals(testFile1._2.getValue(), gotTestFile1Digest.getValue());
@@ -196,8 +195,8 @@ public class BlobStoreImplTest {
 
     @Test
     void removeUnique() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final List<Tuple2<byte[], MessageDigest>> testFiles = Arrays.asList(
                 generateTestFile(),
@@ -212,7 +211,7 @@ public class BlobStoreImplTest {
 
             final List<BlobId> addedBlobIds = new ArrayList<>();
             for (final Tuple2<byte[], MessageDigest> testFile : testFiles) {
-                addedBlobIds.add(addAndVerify(blobStore, testFile));
+                addedBlobIds.add(assertAddAndVerify(blobStore, testFile));
             }
 
             // remove each added blob
@@ -229,8 +228,8 @@ public class BlobStoreImplTest {
 
     @Test
     void removeDuplicates() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -238,20 +237,20 @@ public class BlobStoreImplTest {
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            BlobId testFile1Id = addAndVerify(blobStore, testFile1);
-            BlobId testFile2Id = addAndVerify(blobStore, testFile2);
+            BlobId testFile1Id = assertAddAndVerify(blobStore, testFile1);
+            BlobId testFile2Id = assertAddAndVerify(blobStore, testFile2);
 
             // add again to increase reference count
-            testFile1Id = addAndVerify(blobStore, testFile1);
-            testFile2Id = addAndVerify(blobStore, testFile2);
+            testFile1Id = assertAddAndVerify(blobStore, testFile1);
+            testFile2Id = assertAddAndVerify(blobStore, testFile2);
 
             // remove second reference
             blobStore.remove(null, testFile1Id);
             blobStore.remove(null, testFile2Id);
 
             // should still exist with one more reference
-            getAndVerify(blobStore, testFile1Id, testFile1);
-            getAndVerify(blobStore, testFile2Id, testFile2);
+            assertGetAndVerify(blobStore, testFile1Id, testFile1);
+            assertGetAndVerify(blobStore, testFile2Id, testFile2);
 
             // remove first reference
             blobStore.remove(null, testFile1Id);
@@ -265,8 +264,8 @@ public class BlobStoreImplTest {
 
     @Test
     void compactPersistentReferences() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -275,12 +274,12 @@ public class BlobStoreImplTest {
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
-            final BlobId testFile2Id = addAndVerify(blobStore, testFile2);
-            BlobId testFile3Id = addAndVerify(blobStore, testFile3);
+            assertAddAndVerify(blobStore, testFile1);
+            final BlobId testFile2Id = assertAddAndVerify(blobStore, testFile2);
+            BlobId testFile3Id = assertAddAndVerify(blobStore, testFile3);
 
             // add a second reference for testFile3
-            testFile3Id = addAndVerify(blobStore, testFile3);
+            testFile3Id = assertAddAndVerify(blobStore, testFile3);
 
             // remove testFile2
             blobStore.remove(null, testFile2Id);
@@ -315,15 +314,15 @@ public class BlobStoreImplTest {
      */
     @Test
     void blindCopy() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
         try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
-            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+            final BlobId testFile1Id = assertAddAndVerify(blobStore, testFile1);
 
             // attempt copy
             try (final InputStream src = blobStore.get(null, testFile1Id)) {
@@ -336,8 +335,8 @@ public class BlobStoreImplTest {
 
     @Test
     void copy() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
@@ -345,7 +344,7 @@ public class BlobStoreImplTest {
             blobStore.open();
 
             // store
-            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+            final BlobId testFile1Id = assertAddAndVerify(blobStore, testFile1);
 
             // copy
             final BlobId copyBlobId = blobStore.copy(null, testFile1Id);
@@ -367,8 +366,8 @@ public class BlobStoreImplTest {
 
     @Test
     void copyRemove() throws IOException {
-        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
-        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
@@ -376,7 +375,7 @@ public class BlobStoreImplTest {
             blobStore.open();
 
             // store
-            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+            final BlobId testFile1Id = assertAddAndVerify(blobStore, testFile1);
 
             // copy
             final BlobId copyBlobId = blobStore.copy(null, testFile1Id);
@@ -423,7 +422,7 @@ public class BlobStoreImplTest {
         return Tuple(data, expectedDataDigest);
     }
 
-    private BlobId addAndVerify(final BlobStore blobStore, final Tuple2<byte[], MessageDigest> blob) throws IOException {
+    private BlobId assertAddAndVerify(final BlobStore blobStore, final Tuple2<byte[], MessageDigest> blob) throws IOException {
         final Tuple2<BlobId, Long> actualBlob;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob._1)) {
             actualBlob = blobStore.add(null, is);
@@ -433,7 +432,7 @@ public class BlobStoreImplTest {
         return actualBlob._1;
     }
 
-    private void getAndVerify(final BlobStore blobStore, final BlobId blobId, final Tuple2<byte[], MessageDigest> expectedBlob) throws IOException {
+    private void assertGetAndVerify(final BlobStore blobStore, final BlobId blobId, final Tuple2<byte[], MessageDigest> expectedBlob) throws IOException {
         try (InputStream is = blobStore.get(null, blobId)) {
             assertNotNull(is);
 
@@ -461,18 +460,4 @@ public class BlobStoreImplTest {
         });
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }

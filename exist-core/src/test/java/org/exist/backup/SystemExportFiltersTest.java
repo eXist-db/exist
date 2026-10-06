@@ -49,7 +49,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -104,7 +103,7 @@ public class SystemExportFiltersTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public static File tempFolder;
+    Path tempFolder;
 
     @BeforeAll
     static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
@@ -145,7 +144,7 @@ public class SystemExportFiltersTest {
 
             boolean direct = true;
             final SystemExport sysexport = new SystemExport(broker, transaction, null, null, direct);
-            final Path backupDir = newFolder(tempFolder, "junit").toPath();
+            final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
             file = sysexport.export(backupDir.toAbsolutePath().toString(), false, false, null);
 
             transaction.commit();
@@ -218,18 +217,4 @@ public class SystemExportFiltersTest {
         broker.storeDocument(txn, name, new StringInputSource(data), MimeType.XML_TYPE, col);
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }
