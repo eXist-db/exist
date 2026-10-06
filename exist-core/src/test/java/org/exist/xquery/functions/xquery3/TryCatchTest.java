@@ -145,17 +145,13 @@ public class TryCatchTest {
 
     @Test
     public void catchWithErrorNoMatches() {
-        assertThrows(XMLDBException.class, () -> {
-            final String query = "xquery version '3.0';"
-                    + "try { a + 7 } "
-                    + "catch err:XPDY0001 { 1 }"
-                    + "catch err:XPDY0002 { a }"
-                    + "catch err:XPDY0003 { 3 }";
+        final String query = "xquery version '3.0';"
+                + "try { a + 7 } "
+                + "catch err:XPDY0001 { 1 }"
+                + "catch err:XPDY0002 { a }"
+                + "catch err:XPDY0003 { 3 }";
 
-            final ResourceSet results = existEmbeddedServer.executeQuery(query);
-            final String r = (String) results.getResource(0).getContent();
-            assertEquals("2", r);
-        });
+        assertThrows(XMLDBException.class, () -> existEmbeddedServer.executeQuery(query));
     }
 
     @Test

@@ -291,6 +291,8 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
+    // NOTE (see #6804): the verify(...) at the end of the lambda never runs, because the call before it throws. Its expectations
+    // do not hold for the throwing path (running it fails), so it is left as it was until the mock setup is reviewed.
     public void insertAtEnd() {
         assertThrows(PermissionDeniedException.class, () -> {
             final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
