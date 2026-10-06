@@ -56,6 +56,7 @@ public class HtmlSerializerBenchmarkTest {
 
     private static final int PARAGRAPH_COUNT = 80;
     private static final int ITERATIONS = 200;
+    private static final int ROUNDS = 7;
 
     /**
      * Counts both bulk and per-char writes so we can verify the hot path is
@@ -203,22 +204,21 @@ public class HtmlSerializerBenchmarkTest {
             }
         }
 
-        // Bulk path (current code)
-        long bulkStart = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
-            try (java.io.OutputStreamWriter w = newProductionLikeWriter()) { run(w); }
-        }
-        long bulkMs = (System.nanoTime() - bulkStart) / 1_000_000L;
-
-        // Per-char path: wraps the OutputStreamWriter so every char goes through
-        // OutputStreamWriter.write(int) — same path the previous writeCharSeq used.
-        long perCharStart = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
-            try (java.io.OutputStreamWriter w = newProductionLikeWriter()) {
-                run(new PerCharWriter(w));
+        // Both paths are timed in several rounds, in alternating order, and each path is judged by its
+        // fastest round: load on the machine (other tests, GC, a busy CI runner) slows a round down but
+        // never makes it faster than the code can run, so the minimum is the least disturbed measurement
+        // and no single slow round decides the outcome.
+        long bulkMs = Long.MAX_VALUE;
+        long perCharMs = Long.MAX_VALUE;
+        for (int round = 0; round < ROUNDS; round++) {
+            if (round % 2 == 0) {
+                bulkMs = Math.min(bulkMs, timeBulk());
+                perCharMs = Math.min(perCharMs, timePerChar());
+            } else {
+                perCharMs = Math.min(perCharMs, timePerChar());
+                bulkMs = Math.min(bulkMs, timeBulk());
             }
         }
-        long perCharMs = (System.nanoTime() - perCharStart) / 1_000_000L;
 
         System.out.println("[HtmlSerializerBenchmarkTest] " + ITERATIONS + " iters of "
                 + PARAGRAPH_COUNT + "-paragraph HTML doc to OutputStreamWriter(UTF-8):");
@@ -229,7 +229,7 @@ public class HtmlSerializerBenchmarkTest {
         System.out.println("[HtmlSerializerBenchmarkTest]   speedup:       "
                 + String.format("%.2fx", perCharMs * 1.0 / Math.max(1, bulkMs)));
 
-        assertTrue(bulkMs < perCharMs, "Bulk path should be faster than per-char path; bulk="
+        assertTrue(bulkMs < perCharMs, "Bulk path should be faster than per-char path; best of " + ROUNDS + " rounds: bulk="
                 + bulkMs + "ms perChar=" + perCharMs + "ms");
     }
 
@@ -269,6 +269,29 @@ public class HtmlSerializerBenchmarkTest {
         // are a tiny minority of output for typical HTML.
         assertTrue(bulkPct > 90.0,
                 "Expected >90% of chars to be flushed in bulk, but got " + bulkPct + "%");
+    }
+
+    /** Bulk path (current code). */
+    private long timeBulk() throws TransformerException, IOException {
+        final long start = System.nanoTime();
+        for (int i = 0; i < ITERATIONS; i++) {
+            try (java.io.OutputStreamWriter w = newProductionLikeWriter()) { run(w); }
+        }
+        return (System.nanoTime() - start) / 1_000_000L;
+    }
+
+    /**
+     * Per-char path: wraps the OutputStreamWriter so every char goes through
+     * OutputStreamWriter.write(int), the same path the previous writeCharSeq used.
+     */
+    private long timePerChar() throws TransformerException, IOException {
+        final long start = System.nanoTime();
+        for (int i = 0; i < ITERATIONS; i++) {
+            try (java.io.OutputStreamWriter w = newProductionLikeWriter()) {
+                run(new PerCharWriter(w));
+            }
+        }
+        return (System.nanoTime() - start) / 1_000_000L;
     }
 
     private void run(final Writer out) throws TransformerException {
