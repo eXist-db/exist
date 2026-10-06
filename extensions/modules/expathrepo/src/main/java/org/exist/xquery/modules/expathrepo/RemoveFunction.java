@@ -34,7 +34,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.UserInteractionStrategy;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 
@@ -72,8 +71,7 @@ public class RemoveFunction extends BasicFunction {
         }
 
         try {
-            final Repository parentRepo = repo.get().getParentRepo();
-            parentRepo.removePackage(pkg, force, interact);
+            repo.get().removePackage(pkg, force, interact);
             repo.get().reportAction(ExistRepository.Action.UNINSTALL, pkg);
             context.getBroker().getBrokerPool().getXQueryPool().clear();
         } catch (final PackageException pe) {
