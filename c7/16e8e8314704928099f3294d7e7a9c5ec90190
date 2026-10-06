@@ -1,0 +1,69 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteCancellationTest.java
+  s_d5ac7bf05ec2fb::t_e649d017529879 1-117
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_d5ac7bf05ec2fb::t_2e7b651553bf6d 26,59-62,73-77,82,88-89,94,114-121,185-186,189,191-195,203-222,273-276,281-282,284-285
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_d5ac7bf05ec2fb::t_9fdaae1169cab6 32,195,197-201,206-207,223
+exist-core/src/test/java/org/exist/dom/memtree/TextImplTest.java
+  s_d5ac7bf05ec2fb::t_b82e19dbac4835 284,310,333,359,385,411,430,456,473
+exist-core/src/test/java/org/exist/dom/persistent/SymbolTableTest.java
+  s_d5ac7bf05ec2fb::t_631b7f693ba6a8 89,96,103,118,133,148
+exist-core/src/test/java/org/exist/dom/persistent/TextImplTest.java
+  s_d5ac7bf05ec2fb::t_78ed4fdd9f68cf 213,222,231,240,249,258,267,276,285
+exist-core/src/test/java/org/exist/security/AbstractAccountTest.java
+  s_d5ac7bf05ec2fb::t_9f9b00af6fa924 120,158
+exist-core/src/test/java/org/exist/security/AbstractGroupTest.java
+  s_d5ac7bf05ec2fb::t_be2803d07d2c68 97,135,182,209,236
+exist-core/src/test/java/org/exist/security/SimpleACLPermissionTest.java
+  s_d5ac7bf05ec2fb::t_6612ae323e1331 333,365,398,505,532,568,616,664
+exist-core/src/test/java/org/exist/storage/NativeBrokerTest.java
+  s_d5ac7bf05ec2fb::t_3592978a462059 178,247,332,545
+exist-core/src/test/java/org/exist/xmldb/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_197805c90bbe13 59,322-323
+exist-core/src/test/java/org/exist/xquery/StoredModuleTest.java
+  s_d5ac7bf05ec2fb::t_ed2fec618519d7 47,308,332,336
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  s_d5ac7bf05ec2fb::t_ca18297a4fdb34 75,1380,1931,1985,1997,2015,2026,2039,2057,2086,2100,2123,2139,2199,2215,2231,2264,2292,2307,2311,2345,2372,2388,2408,2435,2452,2479,2495,2512,2529,2545,2586,2604,2621,2648,2663,2742,2812,2884,2892,2921,2925,2933,2940,2958,2995,3025,3041,3078,3106
+exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java
+  s_d5ac7bf05ec2fb::t_2d7de52be6dd34 55,60,65,68
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChownTest.java
+  s_d5ac7bf05ec2fb::t_ccd8e843e76e3c 99,109,119,129,139,149,159,169,179,189,199,209,219,229,239,249,261,272,284,295,307,320,333,346,364,384,404,424,444,464,484,504,517,527,537,547,557,567,577,587,597,607,617,627,637,647,657,667,679,690,702,713,725,738,751,764,775,785,795,805,817,830,843,856,874,894,914,934,954,974,994,1014,1023,1029,1035,1041,1047,1056,1062,1074,1083,1092,1101,1110,1117,1123,1129,1135,1141,1147,1153,1159,1167,1176,1185,1194,1201,1207,1213,1219,1225,1237,1244,1256,1265,1274,1283,1292,1299,1305,1311,1317,1323,1329,1335,1341,1349,1358,1367,1376,1385,1391,1397,1403,1409,1418,1424,1436,1445,1454,1463,1472,1479,1485,1491,1497,1503,1515,1522,1534,1543,1552,1561,1570,1574-1575,1578-1579,1582,1610-1611,1614
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxvTest.java
+  s_d5ac7bf05ec2fb::t_01f4ea9024e234 80
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingOnvdlTest.java
+  s_d5ac7bf05ec2fb::t_dd0ffeaeeb6e0a 150
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingRelaxNgTest.java
+  s_d5ac7bf05ec2fb::t_a4cc5586481fc0 81
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingSchematronTest.java
+  s_d5ac7bf05ec2fb::t_f3dee0875a33ce 92
+exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java
+  s_d5ac7bf05ec2fb::t_e58ce03e33fd06 52,63,87
+exist-core/src/test/java/org/exist/xquery/value/AbstractTimeRelatedTestCase.java
+  s_d5ac7bf05ec2fb::t_d11b6a2ea7aa16 43
+exist-core/src/test/java/org/exist/xquery/value/Base64BinaryValueTypeTest.java
+  s_d5ac7bf05ec2fb::t_975245d49ac7e4 40,63,65,69,71,75,77,81
+exist-core/src/test/java/org/exist/xquery/value/BinaryValueFromInputStreamTest.java
+  s_d5ac7bf05ec2fb::t_4c372fc3f5abbd 143,221,321,377
+exist-core/src/test/java/org/exist/xquery/value/DoubleValueTest.java
+  s_d5ac7bf05ec2fb::t_8dfe27e9707c72 78,89
+exist-core/src/test/java/org/exist/xquery/value/DurationTest.java
+  s_d5ac7bf05ec2fb::t_5eceab375d6849 176-181
+exist-core/src/test/java/org/exist/xquery/value/HexBinaryValueTypeTest.java
+  s_d5ac7bf05ec2fb::t_4eefa5c992e943 29,45,47,58,60,64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c716e8e8314704928099f3294d7e7a9c5ec90190",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
