@@ -23,8 +23,12 @@ package xquery.modules.expathrepo;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+/**
+ * The files of this suite run concurrently, see {@link org.exist.test.xqsuite.XQSuite#parallel()} for what they must not share.
+ * Files that install packages share the package registry of the database, whose changes are serialized by {@code ExistRepository}.
+ */
+@XQSuite(value = {
         "src/test/xquery/modules/expathrepo"
-})
+}, parallel = true)
 public class ExpathRepoTests {
 }
