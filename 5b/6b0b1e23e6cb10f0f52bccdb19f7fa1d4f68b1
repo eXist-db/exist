@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/storage/ConcurrentStoreTest.java
+  s_d5ac7bf05ec2fb::t_64261222b4840a 87,90
+exist-core/src/test/java/org/exist/storage/ReindexRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_e08a53527eada9 41,80
+exist-core/src/test/java/org/exist/storage/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_c24a572fd3241e 81,101,148,151
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_64f8d003381069 95,107,289,427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b6b0b1e23e6cb10f0f52bccdb19f7fa1d4f68b1",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
