@@ -32,7 +32,9 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -61,6 +63,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class XMLDBRestoreTest {
 
     @RegisterExtension
@@ -88,16 +92,17 @@ public class XMLDBRestoreTest {
                 {"remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc"},
         });
     }
+    @Parameter(0)
     public String apiName;
+    @Parameter(1)
     public String baseUri;
 
     private String getBaseUri() {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreValidZipBackup(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreValidZipBackup() throws IOException, XMLDBException {
         final Path zipFile = createZipBackupWithValidContent();
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -113,9 +118,8 @@ public class XMLDBRestoreTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreValidDirBackup(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreValidDirBackup() throws IOException, XMLDBException {
         final Path contentsFile = createBackupWithValidContent();
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -131,9 +135,8 @@ public class XMLDBRestoreTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreZipIsBestEffortAttempt(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreZipIsBestEffortAttempt() throws IOException, XMLDBException {
         final Path zipFile = createZipBackupWithInvalidContent();
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -144,9 +147,8 @@ public class XMLDBRestoreTest {
         assertEquals(1, listener.warnings.size());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreDirIsBestEffortAttempt(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreDirIsBestEffortAttempt() throws IOException, XMLDBException {
         final Path contentsFile = createBackupWithInvalidContent();
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -157,9 +159,8 @@ public class XMLDBRestoreTest {
         assertEquals(1, listener.warnings.size());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreZipBackupWithDifferentAdminPassword(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreZipBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
         final String backupAdminPassword = UUID.randomUUID().toString();
         final Path zipFile = createZipBackupWithDifferentAdminPassword(backupAdminPassword);
         final TestRestoreListener listener = new TestRestoreListener();
@@ -172,9 +173,8 @@ public class XMLDBRestoreTest {
         assertEquals(0, listener.errors.size());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreDirBackupWithDifferentAdminPassword(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreDirBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
         final String backupAdminPassword = UUID.randomUUID().toString();
         final Path contentsFile = createBackupWithDifferentAdminPassword(backupAdminPassword);
         final TestRestoreListener listener = new TestRestoreListener();
@@ -187,9 +187,8 @@ public class XMLDBRestoreTest {
         assertEquals(0, listener.errors.size());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreUserWithoutGroupIsPlacedInNoGroup(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreUserWithoutGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
         final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserWithoutPrimaryGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
@@ -209,9 +208,8 @@ public class XMLDBRestoreTest {
         assertArrayEquals(new String[]{SecurityManager.UNKNOWN_GROUP}, account.getGroups());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreUserWithNoSuchGroupIsPlacedInNoGroup(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreUserWithNoSuchGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
         final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserInNoSuchGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
@@ -235,10 +233,9 @@ public class XMLDBRestoreTest {
      * Restores users with groups from /db/system/security/exist
      */
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
-    @Disabled("Not yet supported") @MethodSource("data")
-    @ParameterizedTest(name = "{0}")
-    void restoreUserWithGroupsFromExistRealm(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Disabled("Not yet supported")
+    @Test
+    void restoreUserWithGroupsFromExistRealm() throws IOException, XMLDBException {
         final Path backupPath = newFolder(tempFolder, "junit").toPath();
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve("exist").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 8);
@@ -248,10 +245,9 @@ public class XMLDBRestoreTest {
      * Restores users with groups from /db/system/security
      */
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
-    @Disabled("Not yet supported") @MethodSource("data")
-    @ParameterizedTest(name = "{0}")
-    void restoreUserWithGroupsFromSecurityCollection(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Disabled("Not yet supported")
+    @Test
+    void restoreUserWithGroupsFromSecurityCollection() throws IOException, XMLDBException {
         final Path backupPath = newFolder(tempFolder, "junit").toPath();
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 9);
@@ -261,10 +257,9 @@ public class XMLDBRestoreTest {
      * Restores users with groups from /db/system
      */
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
-    @Disabled("Not yet supported") @MethodSource("data")
-    @ParameterizedTest(name = "{0}")
-    void restoreUserWithGroupsFromSystemCollection(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Disabled("Not yet supported")
+    @Test
+    void restoreUserWithGroupsFromSystemCollection() throws IOException, XMLDBException {
         final Path backupPath = newFolder(tempFolder, "junit").toPath();
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 10);
@@ -274,9 +269,8 @@ public class XMLDBRestoreTest {
      * Restores users with groups from /db
      */
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void restoreUserWithGroupsFromDbCollection(String apiName, String baseUri) throws IOException, XMLDBException {
-        initXMLDBRestoreTest(apiName, baseUri);
+    @Test
+    void restoreUserWithGroupsFromDbCollection() throws IOException, XMLDBException {
         final Path backupPath = newFolder(tempFolder, "junit").toPath();
         final Path restorePath = backupPath.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 11);
@@ -344,7 +338,6 @@ public class XMLDBRestoreTest {
                         "    <acl entries=\"0\" version=\"1\"/>\n" +
                         "    <subcollection name=\"" + COLLECTION1_NAME + "\" filename=\"" + COLLECTION1_NAME + "\"/>\n" +
                         "</collection>";
-
 
         final StringBuilder col1Contents = new StringBuilder();
         col1Contents.append("<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/").append(COLLECTION1_NAME).append("\" owner=\"admin\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n");
@@ -693,10 +686,5 @@ public class XMLDBRestoreTest {
             }
         }
         return result;
-    }
-
-    public void initXMLDBRestoreTest(String apiName, String baseUri) {
-        this.apiName = apiName;
-        this.baseUri = baseUri;
     }
 }

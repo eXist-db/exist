@@ -24,7 +24,10 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -35,6 +38,8 @@ import java.util.Arrays;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class MoveCollectionTest {
 
     @RegisterExtension
@@ -47,7 +52,9 @@ public class MoveCollectionTest {
                 { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     }
+    @Parameter(0)
     public String apiName;
+    @Parameter(1)
     public String baseUri;
 
     private static final String TEST_COLLECTION_NAME = "testMove";
@@ -61,10 +68,8 @@ public class MoveCollectionTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void move(String apiName, String baseUri) throws XMLDBException {
-        initMoveCollectionTest(apiName, baseUri);
-        setUp();
+    @Test
+    void move() throws XMLDBException {
         /*
          * Create the collections:
          *
@@ -93,7 +98,8 @@ public class MoveCollectionTest {
         service.move(XmldbURI.create(X_COLLECTION_NAME), XmldbURI.create(oneCollection.getName()), null);
     }
 
-    private void setUp() throws XMLDBException {
+    @BeforeEach
+    void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -106,10 +112,5 @@ public class MoveCollectionTest {
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
-    }
-
-    public void initMoveCollectionTest(String apiName, String baseUri) {
-        this.apiName = apiName;
-        this.baseUri = baseUri;
     }
 }
