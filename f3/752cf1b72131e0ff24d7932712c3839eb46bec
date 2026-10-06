@@ -1,0 +1,32 @@
+extensions/modules/xmldiff/src/test/xquery/modules/xmldiff/diff.xqm
+  s_5e856fe2fb973a::t_b325291f87f183 42
+  s_5e856fe2fb973a::t_9a4e4f09353cdd 42
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_e7f7c831c628d7::t_f1d40b9c13dabb 33,43,108,116-130,131-152,192-193,226
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRunTimeSummaryTest.java
+  s_e7f7c831c628d7::t_80b0f53548c78f 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3752cf1b72131e0ff24d7932712c3839eb46bec",
+  "prompts": {},
+  "sessions": {
+    "s_5e856fe2fb973a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ddfe85e8-745a-4da3-80b5-ded1e15c84f3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

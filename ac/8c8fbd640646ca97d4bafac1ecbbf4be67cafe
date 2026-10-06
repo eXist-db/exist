@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_d5ac7bf05ec2fb::t_cbaa08587d4953 59-72
+exist-core/src/test/java/xquery/CoreTests.java
+  s_d5ac7bf05ec2fb::t_45e7f99f02f2c6 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ac8c8fbd640646ca97d4bafac1ecbbf4be67cafe",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+extensions/modules/expathrepo/src/test/java/xquery/modules/expathrepo/ExpathRepoTests.java
+  s_d5ac7bf05ec2fb::t_c5ea8505825c20 26,29-30,32
+  s_d5ac7bf05ec2fb::t_46d09219c1c939 27-28
+extensions/indexes/range/src/test/xquery/range/range.xql
+  s_d5ac7bf05ec2fb::t_5457cd7a5a8107 186-188,205-215,238-239,528,537,551,553,561,563
+exist-core/src/test/xquery/axes-persistent-nodes.xqm
+  s_d5ac7bf05ec2fb::t_87671a36db2b6c 217
+exist-core/src/test/java/xquery/xquery3/XQuery3Tests.java
+  s_d5ac7bf05ec2fb::t_d1f53fd2b79886 27
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_d5ac7bf05ec2fb::t_b3859c7d64dec9 27
+exist-core/src/test/java/xquery/optimizer/OptimizerTests.java
+  s_d5ac7bf05ec2fb::t_cc9e412f860988 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2040c338e05f45954d70b5bf97bc345c731f8d21",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
