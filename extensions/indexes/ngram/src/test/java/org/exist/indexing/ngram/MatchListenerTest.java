@@ -21,23 +21,20 @@
  */
 package org.exist.indexing.ngram;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.custommonkey.xmlunit.NamespaceContext;
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLAssert;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -52,7 +49,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
@@ -64,10 +60,22 @@ import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.xmlunit.builder.Input;
+import org.xmlunit.matchers.HasXPathMatcher;
+import org.xmlunit.xpath.JAXPXPathEngine;
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 public class MatchListenerTest {
+
+    private static final Map<String, String> NAMESPACES = Map.of(
+            "tei", "http://www.tei-c.org/ns/1.0",
+            "exist", "http://exist.sourceforge.net/NS/exist");
+    private static final JAXPXPathEngine XPATH = new JAXPXPathEngine();
+
+    static {
+        XPATH.setNamespaceContext(NAMESPACES);
+    }
 
     private static String XML = "<root>" + "   <para>some paragraph with <hi>mixed</hi> content.</para>"
         + "   <para>another paragraph with <note><hi>nested</hi> inner</note> elements.</para>"
@@ -320,7 +328,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
+    public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -351,11 +359,9 @@ public class MatchListenerTest {
                 + MATCH_START + "nested" + MATCH_END + "</hi>" + MATCH_START + " inner" + MATCH_END + "</note>"
                 + MATCH_START + " elements." + MATCH_END + "</para>", result);
 
-            final XpathEngine xpe = XMLUnit.newXpathEngine();
-            final NodeList matches = xpe.getMatchingNodes("//exist:match", XMLUnit.buildControlDocument(result));
             final StringBuilder m = new StringBuilder();
-            for (int i = 0; i < matches.getLength(); i++) {
-                m.append(matches.item(i).getTextContent());
+            for (final Node matchNode : XPATH.selectNodes("//exist:match", Input.fromString(result).build())) {
+                m.append(matchNode.getTextContent());
             }
             String match = m.toString();
 
@@ -368,7 +374,7 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             assertEquals("<para>Where did all the " + MATCH_START + "*s go?" + MATCH_END + "</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
             assertMatches(wildcardQuery, match);
 
             wildcardQuery = ".est[][?]tes.";
@@ -380,7 +386,7 @@ public class MatchListenerTest {
             assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " " + MATCH_START + "test[test"
                 + MATCH_END + " " + MATCH_START + "test?test" + MATCH_END + "</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
 
             seq = xquery.execute(broker, "//para[ngram:wildcard-contains(., '^" + wildcardQuery + "')]", null);
             assertNotNull(seq);
@@ -389,7 +395,7 @@ public class MatchListenerTest {
             assertEquals("<para>" + MATCH_START + "test]test" + MATCH_END + " test[test test?test</para>",
                 result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
 
             seq = xquery.execute(broker, "//para[ngram:wildcard-contains(., '" + wildcardQuery + "$')]", null);
             assertNotNull(seq);
@@ -398,7 +404,7 @@ public class MatchListenerTest {
             assertEquals("<para>test]test test[test " + MATCH_START + "test?test" + MATCH_END + "</para>",
                 result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
 
             wildcardQuery = "^aaa.aaa$";
             seq = xquery.execute(broker, "//para[ngram:wildcard-contains(., '" + wildcardQuery + "')]", null);
@@ -407,7 +413,7 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             assertEquals("<para>" + MATCH_START + "aaacaaa" + MATCH_END + "</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
             assertMatches(wildcardQuery, match);
 
             wildcardQuery = ".+simple";
@@ -417,7 +423,7 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             assertEquals("<para>" + MATCH_START + "a simple" + MATCH_END + " paragraph</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
             assertMatches(wildcardQuery, match);
 
             wildcardQuery = "a s.?i.?m.?p.?l.?e.?";
@@ -427,7 +433,7 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
             assertMatches(wildcardQuery, match);
 
             wildcardQuery = "a s.?i.?m.?p.?l.?e.?";
@@ -437,7 +443,7 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             assertEquals("<para>" + MATCH_START + "a simple " + MATCH_END + "paragraph</para>", result);
 
-            match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+            match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
             assertMatches(wildcardQuery, match);
 
             wildcardQuery = "b.{3,6}c";
@@ -447,7 +453,7 @@ public class MatchListenerTest {
 
             for (int i = 0; i < 2; i++) {
                 result = queryResult2String(broker, seq, i);
-                match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
+                match = XPATH.evaluate("//exist:match", Input.fromString(result).build());
                 assertMatches(wildcardQuery, match);
             }
         }
@@ -458,7 +464,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
+    public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -476,14 +482,14 @@ public class MatchListenerTest {
                 assertEquals(1, seq.getItemCount());
                 final String result = queryResult2String(broker, seq, 0);
 
-                XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
-                XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
+                assertThat(result, hasXPath("count(//exist:match)", equalTo(i < 2 ? "2" : "1")).withNamespaceContext(NAMESPACES));
+                assertThat(result, HasXPathMatcher.hasXPath("//exist:match[text() = '" + strings[i] + "']").withNamespaceContext(NAMESPACES));
             }
         }
     }
 
     @Test
-    public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, XpathException, CollectionConfigurationException, LockException, EXistException {
+    public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, CollectionConfigurationException, LockException, EXistException {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -503,8 +509,8 @@ public class MatchListenerTest {
                 assertEquals(1, seq.getItemCount());
                 final String result = queryResult2String(broker, seq, 0);
 
-                XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
-                XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
+                assertThat(result, hasXPath("count(//exist:match)", equalTo(i < 2 ? "2" : "1")).withNamespaceContext(NAMESPACES));
+                assertThat(result, HasXPathMatcher.hasXPath("//exist:match[text() = '" + strings[i] + "']").withNamespaceContext(NAMESPACES));
             }
         }
     }
@@ -513,7 +519,7 @@ public class MatchListenerTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+    public static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -525,12 +531,6 @@ public class MatchListenerTest {
 
             transact.commit(transaction);
         }
-
-        final HashMap<String, String> m = new HashMap<String, String>();
-        m.put("tei", "http://www.tei-c.org/ns/1.0");
-        m.put("exist", "http://exist.sourceforge.net/NS/exist");
-        final NamespaceContext ctx = new SimpleNamespaceContext(m);
-        XMLUnit.setXpathNamespaceContext(ctx);
     }
 
     @AfterAll
@@ -571,7 +571,7 @@ public class MatchListenerTest {
         }
     }
 
-    private String queryResult2String(DBBroker broker, Sequence seq, int index) throws SAXException, XPathException {
+    private String queryResult2String(DBBroker broker, Sequence seq, int index) throws SAXException {
         Properties props = new Properties();
         props.setProperty(OutputKeys.INDENT, "no");
         props.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");

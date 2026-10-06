@@ -149,8 +149,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.xmlunit</groupId>
-            <artifactId>xmlunit-legacy</artifactId>
+            <artifactId>xmlunit-matchers</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
