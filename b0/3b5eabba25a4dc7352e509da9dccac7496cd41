@@ -1,0 +1,67 @@
+exist-ant/src/test/java/org/exist/ant/ServerTaskTest.java
+  s_d5ac7bf05ec2fb::t_22b7fd0b21d68e 46,57,83
+exist-ant/src/test/java/org/exist/ant/XmldbTaskTest.java
+  s_d5ac7bf05ec2fb::t_528a810bcdcdef 73,149,163,181,195,210,224,262,278
+exist-core/src/test/java/org/exist/backup/DeepEmbeddedBackupRestoreTest.java
+  s_d5ac7bf05ec2fb::t_4170780ff2c711 70,91
+exist-core/src/test/java/org/exist/backup/RestoreAppsTest.java
+  s_d5ac7bf05ec2fb::t_50d4d3eb1c5c98 54,240,257
+exist-core/src/test/java/org/exist/backup/SystemExportFiltersTest.java
+  s_d5ac7bf05ec2fb::t_d246a349299a1a 106,147
+exist-core/src/test/java/org/exist/backup/SystemExportImportTest.java
+  s_d5ac7bf05ec2fb::t_77f751b42cbde9 84,143
+exist-core/src/test/java/org/exist/backup/XMLDBBackupTest.java
+  s_d5ac7bf05ec2fb::t_7a58e32577f863 51,74,195
+exist-core/src/test/java/org/exist/backup/XMLDBRestoreTest.java
+  s_d5ac7bf05ec2fb::t_2272420fa2cfcf 57,87,239,251,263,274,324,330,332,361,367-368,398,404-405,434-435,465-466,607-608
+exist-core/src/test/java/org/exist/dom/persistent/CDataIntergationTest.java
+  s_d5ac7bf05ec2fb::t_6f74600b957b3f 43,62
+exist-core/src/test/java/org/exist/management/client/JMXTokenProviderTest.java
+  s_d5ac7bf05ec2fb::t_7c25c4bef53f78 49,71,79,94,119,143,158
+exist-core/src/test/java/org/exist/storage/BrokerPoolsTest.java
+  s_d5ac7bf05ec2fb::t_f472b42f757993 46,56
+exist-core/src/test/java/org/exist/storage/DataBackupTest.java
+  s_d5ac7bf05ec2fb::t_ae47b55e71d94d 78,100
+exist-core/src/test/java/org/exist/storage/RecoverBinaryTest.java
+  s_d5ac7bf05ec2fb::t_ec4a5f3e5d6c64 66,72,75
+exist-core/src/test/java/org/exist/storage/RecoverXmlTest.java
+  s_d5ac7bf05ec2fb::t_64ac3199093498 73,79,82
+exist-core/src/test/java/org/exist/storage/Recovery3Test.java
+  s_d5ac7bf05ec2fb::t_289ea88ebbd187 64,70
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreImplTest.java
+  s_d5ac7bf05ec2fb::t_ad209a8af07591 71,86-87,113-114,137-138,157-158,176-177,198-199,231-232,267-268,317-318,338-339,369-370
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_0e8a0f3fcddb41 92,127-128,133,142,164-165,170,179,199-200,205,215,235-236,241,251,273-274,279,289,311-312,317,327,349-350,355,366,388-389,394,405
+exist-core/src/test/java/org/exist/storage/btree/BTreeTest.java
+  s_d5ac7bf05ec2fb::t_9a8306ee4ef8e4 65,363
+exist-core/src/test/java/org/exist/storage/journal/JournalBinaryTest.java
+  s_d5ac7bf05ec2fb::t_921cdd52d64b0f 83,89,92
+exist-core/src/test/java/org/exist/storage/journal/JournalTest.java
+  s_d5ac7bf05ec2fb::t_d78084af0fe3ce 61,254,260,304,348,390,425-426
+exist-core/src/test/java/org/exist/storage/journal/JournalXmlTest.java
+  s_d5ac7bf05ec2fb::t_40c68217748985 86,92,95
+exist-core/src/test/java/org/exist/xmldb/MultiDBTest.java
+  s_d5ac7bf05ec2fb::t_1e762504478c8d 52,104
+exist-core/src/test/java/org/exist/xquery/AbstractBinariesTest.java
+  s_d5ac7bf05ec2fb::t_517647975f1cc7 56,94
+exist-core/src/test/java/org/exist/xquery/StoredModuleTest.java
+  s_d5ac7bf05ec2fb::t_e1e58999d7eadf 59,228
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java
+  s_d5ac7bf05ec2fb::t_7f7a414a0b793f 72,2262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b03b5eabba25a4dc7352e509da9dccac7496cd41",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
