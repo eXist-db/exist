@@ -1,0 +1,31 @@
+exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java
+  s_d5ac7bf05ec2fb::t_a8e6194b1b1aec 158,182,202,223,243,263,283
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java
+  s_d5ac7bf05ec2fb::t_f8447172f6a124 595,661,720,777,825,918,1087,1134,1304,1727,1743,2023,2324
+exist-core/src/test/java/org/exist/xquery/XQueryProcessingInstructionTest.java
+  s_d5ac7bf05ec2fb::t_8b23f17d906440 44
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  s_d5ac7bf05ec2fb::t_df74b0ba9cf862 232,531,571,909,1267,1453,2047,2174,3166,3181
+exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java
+  s_d5ac7bf05ec2fb::t_e43a9140f5e35e 68
+exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java
+  s_d5ac7bf05ec2fb::t_7054322d98b0b4 75
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpParseTest.java
+  s_d5ac7bf05ec2fb::t_5ea53c13bf50d3 88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b7eaebd97724d121d14779a08bf1ea1562e6d60c",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
