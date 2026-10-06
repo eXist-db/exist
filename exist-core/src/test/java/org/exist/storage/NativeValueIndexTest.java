@@ -21,24 +21,25 @@
  */
 package org.exist.storage;
 
+import java.util.stream.Stream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Type;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class NativeValueIndexTest {
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "xs:string", Type.STRING },
-                { "xs:int", Type.INT }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("xs:string", Type.STRING),
+            Arguments.of("xs:int", Type.INT)
+        );
     }
     public String typeName;
     public int type;

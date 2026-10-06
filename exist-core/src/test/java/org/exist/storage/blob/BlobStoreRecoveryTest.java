@@ -33,6 +33,7 @@
 package org.exist.storage.blob;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import java.util.stream.Stream;
 import org.exist.EXistException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.SecurityManager;
@@ -58,12 +59,12 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
@@ -91,11 +92,11 @@ public class BlobStoreRecoveryTest {
     @TempDir
     Path temporaryFolder;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "crash", SIMULATE_CRASH },
-                { "shutdown", CLEAN_SHUTDOWN }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("crash", SIMULATE_CRASH),
+            Arguments.of("shutdown", CLEAN_SHUTDOWN)
+        );
     }
 
     @AfterAll

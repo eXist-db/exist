@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 
+import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
@@ -65,6 +65,7 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
@@ -119,13 +120,13 @@ public class SystemExportImportTest {
 
     private static String BINARY = "test";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"direct", true, false},
-                {"non-direct", false, false},
-                {"direct", true, true},
-                {"non-direct", false, true}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("direct", true, false),
+            Arguments.of("non-direct", false, false),
+            Arguments.of("direct", true, true),
+            Arguments.of("non-direct", false, true)
+        );
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0} zip:{2}")

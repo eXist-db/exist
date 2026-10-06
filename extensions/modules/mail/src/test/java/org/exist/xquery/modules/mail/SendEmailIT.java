@@ -41,6 +41,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import java.util.stream.Stream;
 import org.apache.commons.codec.binary.Base64;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -61,12 +62,12 @@ import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -112,12 +113,12 @@ public class SendEmailIT {
     private static final String EMAIL_UID = "emailuid";
     private static final String EMAIL_PWD = "emailpwd";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of(SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED),
+            Arguments.of(SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED),
+            Arguments.of(SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED)
+        );
     }
 
     @BeforeAll

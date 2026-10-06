@@ -21,8 +21,10 @@
  */
 package org.exist.util.sorters;
 
+import java.util.stream.Stream;
 import org.exist.util.sorters.ComparatorChecker.SortOrder;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
@@ -45,14 +47,14 @@ import java.util.Random;
  */
 public class SortComparatorTest {
 
-    public static java.util.Collection<Object[]> data() {
-        final List<Object[]> parameters = new ArrayList<>();
+    public static Stream<Arguments> data() {
+        final List<Arguments> parameters = new ArrayList<>();
         for (final SortingAlgorithmTester s : SortingAlgorithmTester.allSorters()) {
             final String name = s.getClass().getSimpleName() + ": " + PlainArrayChecker.class.getSimpleName();
-            parameters.add(new Object[]{name, new PlainArrayChecker(s)});
+            parameters.add(Arguments.of(name, new PlainArrayChecker(s)));
         }
 
-        return parameters;
+        return parameters.stream();
     }
 
     private final Random rnd = new Random();

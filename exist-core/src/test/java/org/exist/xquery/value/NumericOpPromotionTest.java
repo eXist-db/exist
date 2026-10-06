@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.value;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.util.Arrays;
 
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,12 +39,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Execution(ExecutionMode.CONCURRENT)
 public class NumericOpPromotionTest {
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"decimal", new DecimalValue(VALUE)},
-                {"double", new DoubleValue(VALUE)},
-                {"float", new FloatValue((float) VALUE)}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("decimal", new DecimalValue(VALUE)),
+            Arguments.of("double", new DoubleValue(VALUE)),
+            Arguments.of("float", new FloatValue((float) VALUE))
+        );
     }
     public String typeName;
     public ComputableValue operand;

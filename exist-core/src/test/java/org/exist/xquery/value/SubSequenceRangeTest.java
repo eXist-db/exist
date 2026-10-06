@@ -32,15 +32,16 @@
  */
 package org.exist.xquery.value;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.RangeSequence;
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,22 +56,22 @@ public class SubSequenceRangeTest {
     private static final long RANGE_START = 1;
     private static final long RANGE_END = 99;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"0 until 1",       0,      1,  0},
-                {"0 until 100",     0,    100, 99},
-                {"1 until 100",     1,    100, 99},
-                {"2 until 100",     2,    100, 98},
-                {"10 until 90",    10,     90, 80},
-                {"1 until 99",      1,     99, 98},
-                {"1 until 100",     1,    100, 99},
-                {"1 until 101",     1,    101, 99},
-                {"-1 until 110",   -1,    110, 99},
-                {"-4 until 6",     -4,      6,  5},
-                {"-4 until -7",    -4,     -7,  0},
-                {"99 until 100",   99,    100,  1},
-                {"100 until 101",  100,   101,  0}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("0 until 1",       0,      1,  0),
+            Arguments.of("0 until 100",     0,    100, 99),
+            Arguments.of("1 until 100",     1,    100, 99),
+            Arguments.of("2 until 100",     2,    100, 98),
+            Arguments.of("10 until 90",    10,     90, 80),
+            Arguments.of("1 until 99",      1,     99, 98),
+            Arguments.of("1 until 100",     1,    100, 99),
+            Arguments.of("1 until 101",     1,    101, 99),
+            Arguments.of("-1 until 110",   -1,    110, 99),
+            Arguments.of("-4 until 6",     -4,      6,  5),
+            Arguments.of("-4 until -7",    -4,     -7,  0),
+            Arguments.of("99 until 100",   99,    100,  1),
+            Arguments.of("100 until 101",  100,   101,  0)
+        );
     }
     public String subSequenceStartEndName;
     public long fromInclusive;

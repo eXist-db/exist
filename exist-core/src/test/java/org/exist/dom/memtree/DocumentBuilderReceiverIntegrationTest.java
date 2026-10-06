@@ -22,10 +22,12 @@
 
 package org.exist.dom.memtree;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -37,7 +39,6 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 
-import java.util.Arrays;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,14 +55,14 @@ public class DocumentBuilderReceiverIntegrationTest {
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"docs-null-ns-1", "<x>{document { <dummy xmlns=''/> }}</x>", "<x><dummy/></x>"},
-                {"merge-docs-ns-1", "<x>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x><dummy/></x>"},
-                {"merge-docs-ns-2", "<x xmlns=''>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x><dummy/></x>"},
-                {"merge-docs-ns-3", "<x xmlns='xyz'>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x xmlns='xyz'><dummy xmlns=''/></x>"},
-                {"merge-docs-ns-3", "<x xmlns=''>{parse-xml(\"<dummy xmlns='xyz'/>\")}</x>", "<x><dummy xmlns='xyz'/></x>"}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("docs-null-ns-1", "<x>{document { <dummy xmlns=''/> }}</x>", "<x><dummy/></x>"),
+            Arguments.of("merge-docs-ns-1", "<x>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x><dummy/></x>"),
+            Arguments.of("merge-docs-ns-2", "<x xmlns=''>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x><dummy/></x>"),
+            Arguments.of("merge-docs-ns-3", "<x xmlns='xyz'>{parse-xml(\"<dummy xmlns=''/>\")}</x>", "<x xmlns='xyz'><dummy xmlns=''/></x>"),
+            Arguments.of("merge-docs-ns-3", "<x xmlns=''>{parse-xml(\"<dummy xmlns='xyz'/>\")}</x>", "<x><dummy xmlns='xyz'/></x>")
+        );
     }
     public String testName;
     public String query;

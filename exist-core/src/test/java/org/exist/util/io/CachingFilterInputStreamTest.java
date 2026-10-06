@@ -21,13 +21,15 @@
  */
 package org.exist.util.io;
 
+import java.nio.file.Files;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.Collection;
-import java.util.Arrays;
 
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,12 +52,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Execution(ExecutionMode.CONCURRENT)
 public class CachingFilterInputStreamTest {
 
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-            {"MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class},
-            {"MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class},
-            {"FileFilterInputStreamCache", FileFilterInputStreamCache.class}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class),
+            Arguments.of("MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class),
+            Arguments.of("FileFilterInputStreamCache", FileFilterInputStreamCache.class)
+        );
     }
     public String cacheName;
     public Class<FilterInputStreamCache> cacheClass;

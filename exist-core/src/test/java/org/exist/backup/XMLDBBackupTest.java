@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import java.util.stream.Stream;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.AbstractRestoreServiceTaskListener;
@@ -28,6 +29,7 @@ import org.exist.xmldb.EXistRestoreService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -51,7 +53,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -73,13 +74,13 @@ public class XMLDBBackupTest {
     @TempDir
     Path tempFolder;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "local (classic)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false },
-                { "remote (classic)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", false },
-                { "local (dedup)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false },
-                { "remote (dedup)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", true },
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local (classic)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false),
+            Arguments.of("remote (classic)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", false),
+            Arguments.of("local (dedup)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false),
+            Arguments.of("remote (dedup)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", true)
+        );
     }
     public String apiName;
     public String baseUri;

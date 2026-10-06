@@ -26,13 +26,14 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -56,10 +57,10 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
     /**
      * All possibilities for the order that the modules could be stored to the database in.
      */
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { XQUERY_MOD1_FILENAME, XQUERY_MOD2_FILENAME, XQUERY_MOD3_FILENAME }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of(XQUERY_MOD1_FILENAME, XQUERY_MOD2_FILENAME, XQUERY_MOD3_FILENAME)
+        );
     }
 
     private static String TEST_COLLECTION = "/db/restxq/library-circular-dependency-integration-test";
