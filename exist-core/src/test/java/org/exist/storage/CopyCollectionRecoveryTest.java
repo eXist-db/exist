@@ -106,9 +106,9 @@ public class CopyCollectionRecoveryTest {
 
     @Test
     public void copyToSubCollection() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
         assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-            final TransactionManager transact = pool.getTransactionManager();
             try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = transact.beginTransaction()) {
 

@@ -106,10 +106,9 @@ public class BinaryValueFromInputStreamTest {
 
     @Test
     public void filterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
@@ -180,10 +179,9 @@ public class BinaryValueFromInputStreamTest {
 
     @Test
     public void multiFilterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
@@ -277,10 +275,9 @@ public class BinaryValueFromInputStreamTest {
 
     @Test
     public void filterFilterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);

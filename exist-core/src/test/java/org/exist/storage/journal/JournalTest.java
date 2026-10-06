@@ -107,18 +107,16 @@ public class JournalTest {
 
     @Test
     public void journalFileNumWithPathShortMinValueRaisesException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
-            Journal.journalFileNum(Path.of(fileName));
-        });
+        final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
+        assertThrows(IllegalArgumentException.class, () ->
+            Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test
     public void journalFileNumWithPathMinusOneRaisesException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
-            Journal.journalFileNum(Path.of(fileName));
-        });
+        final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
+        assertThrows(IllegalArgumentException.class, () ->
+            Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test

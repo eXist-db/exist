@@ -3145,10 +3145,10 @@ public class XQueryTest {
 
     @org.junit.jupiter.api.Test
     public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException {
+        final String query = """
+                declare function local:test() { (1,<n/>) };
+                <x/>/local:test()""";
         assertThrows(XPathException.class, () -> {
-            final String query = """
-                    declare function local:test() { (1,<n/>) };
-                    <x/>/local:test()""";
             try {
                 existEmbeddedServer.executeQuery(query);
             } catch (final XMLDBException e) {

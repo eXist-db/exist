@@ -87,18 +87,18 @@ public class XQueryWatchDogTest {
 
     @Test
     public void setTimeoutFromOptionNonNumericThrowsException() throws Exception {
-        assertThrows(XPathException.class, () -> {
-            final XQueryWatchDog watchDog = createWatchDog();
-            watchDog.setTimeoutFromOption(timeoutOption("abc"));
-        });
+        final XQueryWatchDog watchDog = createWatchDog();
+        Option timeoutOption = timeoutOption("abc");
+        assertThrows(XPathException.class, () ->
+            watchDog.setTimeoutFromOption(timeoutOption));
     }
 
     @Test
     public void setTimeoutFromOptionMultipleValuesThrowsException() throws Exception {
-        assertThrows(XPathException.class, () -> {
-            final XQueryWatchDog watchDog = createWatchDog();
-            watchDog.setTimeoutFromOption(timeoutOption("100 200"));
-        });
+        final XQueryWatchDog watchDog = createWatchDog();
+        Option timeoutOption = timeoutOption("100 200");
+        assertThrows(XPathException.class, () ->
+            watchDog.setTimeoutFromOption(timeoutOption));
     }
 
     @Test

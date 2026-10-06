@@ -159,62 +159,51 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void readSingleByteAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
+        assertThrows(IOException.class, () ->
 
             //should throw IOException
-            is.read();
-        });
+            is.read());
     }
 
     @Test
     public void readMultipleBytesAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
-
-            byte readBuf[] = new byte[2];
+        byte readBuf[] = new byte[2];
+        assertThrows(IOException.class, () ->
             //should throw IOException
-            is.read(readBuf);
-        });
+            is.read(readBuf));
     }
 
     @Test
     public void readMultipleBytesSpecificAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
-
-            byte readBuf[] = new byte[2];
+        byte readBuf[] = new byte[2];
+        assertThrows(IOException.class, () ->
 
             //should throw IOException
-            is.read(readBuf, 0, 2);
-        });
+            is.read(readBuf, 0, 2));
     }
 
     @Test

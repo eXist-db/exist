@@ -35,10 +35,9 @@ public class HexBinaryValueTypeTest {
     
     @Test
     public void verifyNotMultipleOf2CharsFails() {
-        assertThrows(XPathException.class, () -> {
-            TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-            hexType.verifyString("010010101");
-        });
+        TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
+        assertThrows(XPathException.class, () ->
+            hexType.verifyString("010010101"));
     }
 
     @Test
@@ -49,10 +48,9 @@ public class HexBinaryValueTypeTest {
 
     @Test
     public void verifyNotValidCharsFails() {
-        assertThrows(XPathException.class, () -> {
-            TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-            hexType.verifyString("true");
-        });
+        TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
+        assertThrows(XPathException.class, () ->
+            hexType.verifyString("true"));
     }
 
     @Test

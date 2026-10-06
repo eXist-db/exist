@@ -47,11 +47,10 @@ public class AccountManagementFunctionRemoveAccountTest {
 
     @Test
     public void cannotDeleteSystemAccount() throws XPathException, EXistException, AuthenticationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existWebServer.getBrokerPool();
-            final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin)));
-        });
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        assertThrows(PermissionDeniedException.class, () ->
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin))));
     }
 
     @Test

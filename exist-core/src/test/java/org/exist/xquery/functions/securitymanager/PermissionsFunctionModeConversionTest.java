@@ -60,16 +60,14 @@ public class PermissionsFunctionModeConversionTest {
     
     @Test
     public void modeToOctalInvalidMode() {
-        assertThrows(XPathException.class, () -> {
-            final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
-
-            final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
-            Sequence args[] = {
+        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
+        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
+        Sequence args[] = {
                     new StringValue("invalid")
             };
+        assertThrows(XPathException.class, () ->
 
-            permissionsFunctions.eval(args, null);
-        });
+            permissionsFunctions.eval(args, null));
     }
     
     @Test
