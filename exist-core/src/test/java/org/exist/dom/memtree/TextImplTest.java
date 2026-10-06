@@ -263,23 +263,21 @@ public class TextImplTest {
 
     @Test
     public void insertData_pastEnd() {
-        assertThrows(DOMException.class, () -> {
-            final MemTreeBuilder builder = new MemTreeBuilder();
-            builder.startDocument();
-            builder.startElement(new QName("p", null, null), null);
-            builder.characters("hello");
-            builder.startElement(new QName("span", null, null), null);
-            builder.characters("goodbye");
-            builder.endElement();
-            builder.endElement();
-            builder.endDocument();
+        final MemTreeBuilder builder = new MemTreeBuilder();
+        builder.startDocument();
+        builder.startElement(new QName("p", null, null), null);
+        builder.characters("hello");
+        builder.startElement(new QName("span", null, null), null);
+        builder.characters("goodbye");
+        builder.endElement();
+        builder.endElement();
+        builder.endDocument();
+        final Document doc = builder.getDocument();
+        final Text text = (Text) doc.getDocumentElement().getFirstChild();
+        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () ->
 
-            final Document doc = builder.getDocument();
-            final Text text = (Text) doc.getDocumentElement().getFirstChild();
-            assertEquals("hello", text.getTextContent());
-
-            text.insertData(10, "world");
-        });
+            text.insertData(10, "world"));
     }
 
     @Test
@@ -411,23 +409,21 @@ public class TextImplTest {
 
     @Test
     public void replaceData_pastEnd() {
-        assertThrows(DOMException.class, () -> {
-            final MemTreeBuilder builder = new MemTreeBuilder();
-            builder.startDocument();
-            builder.startElement(new QName("p", null, null), null);
-            builder.characters("hello");
-            builder.startElement(new QName("span", null, null), null);
-            builder.characters("goodbye");
-            builder.endElement();
-            builder.endElement();
-            builder.endDocument();
+        final MemTreeBuilder builder = new MemTreeBuilder();
+        builder.startDocument();
+        builder.startElement(new QName("p", null, null), null);
+        builder.characters("hello");
+        builder.startElement(new QName("span", null, null), null);
+        builder.characters("goodbye");
+        builder.endElement();
+        builder.endElement();
+        builder.endDocument();
+        final Document doc = builder.getDocument();
+        final Text text = (Text) doc.getDocumentElement().getFirstChild();
+        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () ->
 
-            final Document doc = builder.getDocument();
-            final Text text = (Text) doc.getDocumentElement().getFirstChild();
-            assertEquals("hello", text.getTextContent());
-
-            text.insertData(10, "world");
-        });
+            text.insertData(10, "world"));
     }
 
     @Test

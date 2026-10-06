@@ -46,18 +46,16 @@ public class Base64BinaryValueTypeTest {
 
     @Test
     public void verifyInvalidBase64Fails() {
-        assertThrows(XPathException.class, () -> {
-            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-            base64Type.verifyString("=aaabbcd");
-        });
+        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+        assertThrows(XPathException.class, () ->
+            base64Type.verifyString("=aaabbcd"));
     }
 
     @Test
     public void verifyInvalidBase64Fails2() {
-        assertThrows(XPathException.class, () -> {
-            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-            base64Type.verifyString("frfhforlksid745323==");
-        });
+        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+        assertThrows(XPathException.class, () ->
+            base64Type.verifyString("frfhforlksid745323=="));
     }
 
     @Test

@@ -824,12 +824,11 @@ public class PermissionsFunctionChownTest {
      */
     @org.junit.jupiter.api.Test
     public void changeDocumentGroupToMemberGroupAsNonOwner() throws AuthenticationException, XPathException, EXistException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() ->
                     changeGroup(user2, NOT_RESTRICTED, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), OTHER_GROUP_NAME)
-            );
-        });
+            ));
     }
 
     /**
@@ -851,12 +850,11 @@ public class PermissionsFunctionChownTest {
      */
     @org.junit.jupiter.api.Test
     public void changeCollectionGroupToMemberGroupAsNonOwner() throws AuthenticationException, XPathException, EXistException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() ->
                     changeGroup(user2, NOT_RESTRICTED, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), OTHER_GROUP_NAME)
-            );
-        });
+            ));
     }
 
     /**

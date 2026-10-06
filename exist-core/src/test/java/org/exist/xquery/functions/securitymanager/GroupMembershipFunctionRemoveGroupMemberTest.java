@@ -55,28 +55,26 @@ public class GroupMembershipFunctionRemoveGroupMemberTest {
 
     @Test
     public void cannotRemoveAllGroupsFromUserAsOwner() throws XPathException, EXistException, AuthenticationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existWebServer.getBrokerPool();
-            final Subject owner = pool.getSecurityManager().authenticate(USER1_NAME, USER1_NAME);
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final Subject owner = pool.getSecurityManager().authenticate(USER1_NAME, USER1_NAME);
+        assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 xqueryRemoveUserFromGroup(USER1_NAME, OTHER_GROUP2_NAME, Optional.of(owner));
                 xqueryRemoveUserFromGroup(USER1_NAME, OTHER_GROUP1_NAME, Optional.of(owner));
                 xqueryRemoveUserFromGroup(USER1_NAME, USER1_NAME, Optional.of(owner));
-            });
-        });
+            }));
     }
 
     @Test
     public void cannotRemoveAllGroupsFromUserAsDBA() throws XPathException, EXistException, AuthenticationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existWebServer.getBrokerPool();
-            final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> {
                 xqueryRemoveUserFromGroup(USER1_NAME, OTHER_GROUP2_NAME, Optional.of(admin));
                 xqueryRemoveUserFromGroup(USER1_NAME, OTHER_GROUP1_NAME, Optional.of(admin));
                 xqueryRemoveUserFromGroup(USER1_NAME, USER1_NAME, Optional.of(admin));
-            });
-        });
+            }));
     }
 
     @BeforeEach

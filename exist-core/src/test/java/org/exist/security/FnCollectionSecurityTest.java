@@ -152,13 +152,11 @@ public class FnCollectionSecurityTest {
 
     @Test
     public void cannotAccessRestrictedCollection() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
+        final String query = "fn:collection('" + TEST_COLLECTION_SYSTEM_ONLY + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-            // as docTestUser1 user
-            final String query = "fn:collection('" + TEST_COLLECTION_SYSTEM_ONLY + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -179,14 +177,11 @@ public class FnCollectionSecurityTest {
 
     @Test
     public void cannotAccessCollectionInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
+        final String query = "fn:collection('" + TEST_SUB_COLLECTION_1_1 + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-
-            // as docTestUser1 user
-            final String query = "fn:collection('" + TEST_SUB_COLLECTION_1_1 + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -207,14 +202,11 @@ public class FnCollectionSecurityTest {
 
     @Test
     public void cannotAccessCollectionInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
+        final String query = "fn:collection('" + TEST_SUB_COLLECTION_2_2 + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-
-            // as docTestUser1 user
-            final String query = "fn:collection('" + TEST_SUB_COLLECTION_2_2 + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {
