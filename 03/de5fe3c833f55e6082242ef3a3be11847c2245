@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java
+  s_d5ac7bf05ec2fb::t_7567bd14c39834 181-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "03de5fe3c833f55e6082242ef3a3be11847c2245",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
