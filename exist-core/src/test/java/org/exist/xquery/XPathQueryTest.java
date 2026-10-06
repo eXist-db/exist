@@ -55,7 +55,8 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -591,7 +592,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void precedingSiblingAxisPersistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void precedingSiblingAxisPersistent(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         XQueryService service =
@@ -600,16 +601,16 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>Z</s> <n>4</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>Z</s> <n>4</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>C</s> <n>5</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>C</s> <n>5</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "/test/preceding-sibling::node()", 2);
         assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
@@ -657,7 +658,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void precedingSiblingAxisMemtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void precedingSiblingAxisMemtree(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service = getQueryService();
@@ -670,9 +671,9 @@ public class XPathQueryTest {
         rs = service.query("let $doc := <doc><div id='1'/><div id='2'><div id='3'/></div><div id='4'/><div id='5'><div id='6'/></div></doc> " +
                 "return $doc/div/preceding-sibling::div");
         assertEquals(3, rs.getSize());
-        assertXMLEqual("<div id='1'/>", rs.getResource(0).getContent().toString());
-        assertXMLEqual("<div id='2'><div id='3'/></div>", rs.getResource(1).getContent().toString());
-        assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());
+        assertThat(rs.getResource(0).getContent().toString(), hasSimilarXml("<div id='1'/>"));
+        assertThat(rs.getResource(1).getContent().toString(), hasSimilarXml("<div id='2'><div id='3'/></div>"));
+        assertThat(rs.getResource(2).getContent().toString(), hasSimilarXml("<div id='4'/>"));
 
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[1]/preceding-sibling::node()");
         assertEquals(0, rs.getSize());
@@ -716,7 +717,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingSiblingAxisPersistent(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void followingSiblingAxisPersistent(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         XQueryService service = storeXMLStringAndGetQueryService("siblings.xml", siblings);
@@ -724,16 +725,16 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[following-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>Z</s> <n>2</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>Z</s> <n>2</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[following-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>A</s> <n>1</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a> <s>A</s> <n>1</n> </a>"));
 
         result = queryResource(service, "siblings.xml", "/test/following-sibling::node()", 1);
         assertEquals("<!-- 3 -->", result.getResource(0).getContent().toString());
@@ -773,7 +774,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingSiblingAxisMemtree(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void followingSiblingAxisMemtree(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service = getQueryService();
@@ -786,7 +787,7 @@ public class XPathQueryTest {
         rs = service.query("let $doc := <doc><div id='1'><div id='2'/></div><div id='3'/></doc> " +
                 "return $doc/div[1]/following-sibling::div");
         assertEquals(1, rs.getSize());
-        assertXMLEqual("<div id='3'/>", rs.getResource(0).getContent().toString());
+        assertThat(rs.getResource(0).getContent().toString(), hasSimilarXml("<div id='3'/>"));
 
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/test/following-sibling::node()");
         assertEquals(1, rs.getSize());
@@ -795,7 +796,7 @@ public class XPathQueryTest {
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[1]/following-sibling::node()");
         assertEquals(3, rs.getSize());
         assertEquals("<!-- 2 -->", rs.getResource(0).getContent().toString());
-        assertXMLEqual("<test/>", rs.getResource(1).getContent().toString());
+        assertThat(rs.getResource(1).getContent().toString(), hasSimilarXml("<test/>"));
         assertEquals("<!-- 3 -->", rs.getResource(2).getContent().toString());
 
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[1]/following-sibling::comment()[1]");
@@ -821,7 +822,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void followingAxis(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void followingAxis(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service =
@@ -832,9 +833,9 @@ public class XPathQueryTest {
         queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s", 3);
         queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::n", 4);
         ResourceSet result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[1]", 1);
-        assertXMLEqual("<s>Z</s>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<s>Z</s>"));
         result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[2]", 1);
-        assertXMLEqual("<s>C</s>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<s>C</s>"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -914,7 +915,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void position(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void position(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
 
@@ -990,7 +991,7 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
         result = service.queryResource("numbers.xml", query);
         assertEquals(1, result.getSize(), "XPath: " + query);
-        assertXMLEqual("<a><b/></a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a><b/></a>"));
 
         //TODO : make this work ! It currently returns some content
         //query = "let $doc := document {<a><b><c>1</c></b><b><c>a</c></b></a>} " +
@@ -1083,7 +1084,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void predicates(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String numbers =
@@ -1108,18 +1109,14 @@ public class XPathQueryTest {
 
         result = queryResource(service, "numbers.xml", "for $i in //item return " +
                 "<item>{$i/price, $i/stock}</item>", 4);
-        assertXMLEqual("<item><price>5.6</price><stock>22</stock></item>",
-                result.getResource(0).getContent().toString());
-        assertXMLEqual("<item><price>65.54</price><stock>16</stock></item>",
-                result.getResource(3).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<item><price>5.6</price><stock>22</stock></item>"));
+        assertThat(result.getResource(3).getContent().toString(), hasSimilarXml("<item><price>65.54</price><stock>16</stock></item>"));
 
         // test positional predicates
         result = queryResource(service, "numbers.xml", "/test/node()[2]", 1);
-        assertXMLEqual("<item id='2'><price>7.4</price><stock>43</stock></item>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<item id='2'><price>7.4</price><stock>43</stock></item>"));
         result = queryResource(service, "numbers.xml", "/test/element()[2]", 1);
-        assertXMLEqual("<item id='2'><price>7.4</price><stock>43</stock></item>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<item id='2'><price>7.4</price><stock>43</stock></item>"));
 
         // positional predicate on sequence of atomic values
         result = queryResource(service, "numbers.xml", "('test', 'pass')[2]", 1);
@@ -1134,7 +1131,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void predicates2(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void predicates2(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String numbers =
@@ -1156,8 +1153,8 @@ public class XPathQueryTest {
                 + "<a> <s>Z</s> 6 </a>" + "</test>"
                 + "return $t//a[s='Z' and preceding-sibling::*[1]/s='B']";
         ResourceSet result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
-        .getContent().toString());
+        assertThat(result.getResource(0)
+        .getContent().toString(), hasSimilarXml("<a><s>Z</s> 4 </a>"));
 
         query = "let $t := <test>" + "<a> <s>A</s> 1 </a>"
                 + "<a> <s>Z</s> 2 </a>" + "<a> <s>B</s> 3 </a>"
@@ -1165,27 +1162,27 @@ public class XPathQueryTest {
                 + "<a> <s>Z</s> 6 </a>" + "</test>"
                 + "return $t//a[s='Z' and ./preceding-sibling::*[1]/s='B']";
         result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
-        .getContent().toString());
+        assertThat(result.getResource(0)
+        .getContent().toString(), hasSimilarXml("<a><s>Z</s> 4 </a>"));
 
         query = "let $doc := <doc><rec n='1'><a>first</a><b>second</b></rec>" +
                 "<rec n='2'><a>first</a><b>third</b></rec></doc> " +
                 "return $doc//rec[fn:not(b = 'second') and (./a = 'first')]";
         result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<rec n=\"2\"><a>first</a><b>third</b></rec>", result.getResource(0)
-        .getContent().toString());
+        assertThat(result.getResource(0)
+        .getContent().toString(), hasSimilarXml("<rec n=\"2\"><a>first</a><b>third</b></rec>"));
 
         query = "let $doc := <doc><a b='c' d='e'/></doc> " +
                 "return $doc/a[$doc/a/@b or $doc/a/@d]";
         result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
-                .getContent().toString());
+        assertThat(result.getResource(0)
+                .getContent().toString(), hasSimilarXml("<a b=\"c\" d=\"e\"/>"));
 
         query = "let $x := <a><b><x/><x/></b><b><x/></b></a>" +
             "return $x//b[count(x) = 2]";
         result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<b><x/><x/></b>", result.getResource(0)
-                .getContent().toString());
+        assertThat(result.getResource(0)
+                .getContent().toString(), hasSimilarXml("<b><x/><x/></b>"));
 
 
         //Boolean evaluation for "." (atomic sequence)
@@ -1197,8 +1194,8 @@ public class XPathQueryTest {
 
         query = " 	let $c := (<a/>,<b/>), $i := 1 return $c[$i]";
         result = queryResource(service, "numbers.xml", query, 1);
-        assertXMLEqual("<a/>", result.getResource(0)
-                .getContent().toString());
+        assertThat(result.getResource(0)
+                .getContent().toString(), hasSimilarXml("<a/>"));
 
         query = "(1,2,3)[position() = last()]";
         result = queryResource(service, "numbers.xml", query, 1);
@@ -1259,8 +1256,8 @@ public class XPathQueryTest {
             "for $name in ('A', 'B') return " +
             "$res/element[@name=$name][1]";
         result = queryResource(service, "numbers.xml", query, 2);
-        assertXMLEqual("<element name='A'/>", result.getResource(0).getContent().toString());
-        assertXMLEqual("<element name='B'/>", result.getResource(1).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<element name='A'/>"));
+        assertThat(result.getResource(1).getContent().toString(), hasSimilarXml("<element name='B'/>"));
     }
 
 
@@ -1304,7 +1301,7 @@ public class XPathQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1533053&group_id=17691&atid=117691
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void nestedPredicatesBug1533053(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void nestedPredicatesBug1533053(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         String xQuery = "let $doc := <objects>" +
@@ -1331,8 +1328,7 @@ public class XPathQueryTest {
 	    rs = service.query(xQuery);
 
 	    assertEquals(1, rs.getSize());
-	    assertXMLEqual("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>",
-	    		rs.getResource(0).getContent().toString());
+	    assertThat(rs.getResource(0).getContent().toString(), hasSimilarXml("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>"));
 
     }
 
@@ -1728,7 +1724,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void logicalOr(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void logicalOr(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service =
@@ -1736,7 +1732,7 @@ public class XPathQueryTest {
 
         ResourceSet result = queryResource(service, "strings.xml",	"<test>{() or ()}</test>", 1);
         Resource r = result.getResource(0);
-        assertXMLEqual("<test>false</test>", r.getContent().toString());
+        assertThat(r.getContent().toString(), hasSimilarXml("<test>false</test>"));
 
         result = queryResource(service, "strings.xml",	"() or ()", 1);
         r = result.getResource(0);
@@ -1744,7 +1740,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void logicalAnd(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void logicalAnd(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service =
@@ -1752,7 +1748,7 @@ public class XPathQueryTest {
 
         ResourceSet result = queryResource(service, "strings.xml",	"<test>{() and ()}</test>", 1);
         Resource r = result.getResource(0);
-        assertXMLEqual("<test>false</test>", r.getContent().toString());
+        assertThat(r.getContent().toString(), hasSimilarXml("<test>false</test>"));
 
         result = queryResource(service, "strings.xml",	"() and ()", 1);
         r = result.getResource(0);
@@ -2024,7 +2020,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void preserveSpace(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void preserveSpace(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final XQueryService service =
@@ -2035,9 +2031,9 @@ public class XPathQueryTest {
         assertEquals(2, result.getSize());
 
         String item = result.getResource(0).getContent().toString();
-        assertXMLEqual("<text> </text>", item);
+        assertThat(item, hasSimilarXml("<text> </text>"));
         item = result.getResource(1).getContent().toString();
-        assertXMLEqual("<text xml:space=\"default\"> </text>", item);
+        assertThat(item, hasSimilarXml("<text xml:space=\"default\"> </text>"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -2325,7 +2321,7 @@ public class XPathQueryTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void atomization(String apiName, String baseUri) throws XMLDBException, IOException, SAXException, ReflectiveOperationException {
+    public void atomization(String apiName, String baseUri) throws XMLDBException, ReflectiveOperationException {
         initXPathQueryTest(apiName, baseUri);
         setUp();
         final String query =
@@ -2343,7 +2339,7 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
         final ResourceSet result = service.query(query);
         assertEquals(1, result.getSize());
-        assertXMLEqual("<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")

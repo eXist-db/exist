@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.custommonkey.xmlunit.DetailedDiff;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -44,7 +43,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -66,8 +64,9 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.custommonkey.xmlunit.XMLUnit.compareXML;
+import static org.exist.test.XmlStringDiffMatcher.hasIdenticalXml;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -230,7 +229,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void let() throws XMLDBException, IOException, SAXException {
+    public void let() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -265,8 +264,8 @@ public class XQueryTest {
 
         //WARNING : the return order CHANGES !!!!!!!!!!!!!!!!!!
 
-        assertXMLEqual("<value>99</value>", result.getResource(0).getContent().toString());
-        assertXMLEqual("<value>1</value>", result.getResource(49).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<value>99</value>"));
+        assertThat(result.getResource(49).getContent().toString(), hasSimilarXml("<value>1</value>"));
     }
 
     @org.junit.jupiter.api.Test
@@ -529,7 +528,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void virtualNodesets() throws XMLDBException, IOException, SAXException {
+    public void virtualNodesets() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -547,29 +546,29 @@ public class XQueryTest {
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
         assertEquals(1, result.getSize(), "XQuery: " + query);
-        assertXMLEqual("<a id='cool'/>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a id='cool'/>"));
 
         query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/child::b " +
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
         assertEquals(1, result.getSize(), "XQuery: " + query);
-        assertXMLEqual("<a><b id='cool'/></a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a><b id='cool'/></a>"));
 
         query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/descendant::b " +
                 "return <a>{$node}</a>";
         result = service.queryResource(NUMBERS_XML, query);
         assertEquals(1, result.getSize(), "XQuery: " + query);
-        assertXMLEqual("<a><b id='cool'/></a>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<a><b id='cool'/></a>"));
 
         query = "let $doc := <a id='a'><b id='b'/></a> " +
                 "return $doc/*/(<id>{@id}</id>)";
         result = service.queryResource(NUMBERS_XML, query);
         assertEquals(1, result.getSize(), "XQuery: " + query);
-        assertXMLEqual("<id id='b' />", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<id id='b' />"));
     }
 
     @org.junit.jupiter.api.Test
-    public void whereClause() throws XMLDBException, IOException, SAXException {
+    public void whereClause() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -593,8 +592,7 @@ public class XQueryTest {
                 "return $x";
         result = service.queryResource(NUMBERS_XML, query);
         assertEquals(1, result.getSize(), "XQuery: " + query);
-        assertXMLEqual("<node1 id='id'><node1>1</node1><node2>2</node2></node1>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<node1 id='id'><node1>1</node1><node2>2</node2></node1>"));
     }
 
     @org.junit.jupiter.api.Test
@@ -908,7 +906,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void namespace() throws XMLDBException, IOException, SAXException {
+    public void namespace() throws XMLDBException {
         Resource doc;
         ResourceSet result;
         String query;
@@ -1060,8 +1058,7 @@ public class XQueryTest {
                 "for $x in <parent4 xmlns=\"http://www.example.com/parent4\"><child4/></parent4> " +
                 "return <new>{$x//*:child4}</new>";
         result = service.query(query);
-        assertXMLEqual("<new><child4 xmlns='http://www.example.com/parent4'/></new>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<new><child4 xmlns='http://www.example.com/parent4'/></new>"));
     }
 
     @org.junit.jupiter.api.Test
@@ -1267,7 +1264,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void modulesAndNS() throws XMLDBException, IOException, SAXException {
+    public void modulesAndNS() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE7_NAME, BinaryResource.class);
         doc.setContent(module7);
@@ -1284,8 +1281,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
         assertEquals(1, result.getSize());
         result.getResource(0).getContent();
-        assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a xmlns=\"\" href='#'>Link</a></div>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<div xmlns='http://www.w3.org/1999/xhtml'><a xmlns=\"\" href='#'>Link</a></div>"));
 
         query = """
                 xquery version "1.0";
@@ -1295,8 +1291,7 @@ public class XQueryTest {
         result = service.query(query);
         assertEquals(1, result.getSize());
         result.getResource(0).getContent();
-        assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>",
-                result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>"));
     }
 
     @org.junit.jupiter.api.Test
@@ -1455,7 +1450,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void functionDoc() throws XMLDBException, IOException, SAXException {
+    public void functionDoc() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -1470,8 +1465,7 @@ public class XQueryTest {
         assertEquals(1, result.getSize(), "XQuery: " + query);
 
         Node n = ((XMLResource) result.getResource(0)).getContentAsDOM();
-        DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
-        assertEquals(0, d.getAllDifferences().size());
+        assertThat(n.toString(), hasIdenticalXml(numbers));
         //ignore eXist namespace's attributes
         //assertEquals(1, d.getAllDifferences().size());
 
@@ -2050,12 +2044,12 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void enclosedExpressions() throws XMLDBException, IOException, SAXException {
+    public void enclosedExpressions() throws XMLDBException {
         String query = "let $a := <docum><titolo>titolo</titolo><autor>giulio</autor></docum> " +
                 "return <row>{$a/titolo/text()} {' '} {$a/autor/text()}</row>";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
-        assertXMLEqual("<row>titolo giulio</row>", result.getResource(0).getContent().toString());
+        assertThat(result.getResource(0).getContent().toString(), hasSimilarXml("<row>titolo giulio</row>"));
     }
 
     @org.junit.jupiter.api.Test
@@ -2177,7 +2171,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1740886
      */
     @org.junit.jupiter.api.Test
-    public void cardinalityIssues_1740886() throws XMLDBException, IOException, SAXException {
+    public void cardinalityIssues1740886() throws XMLDBException {
         String xmldoc = "<Foo><Bar/><Bar/><Bar/></Foo>";
         String query =
                 "declare namespace tst = \"urn:test\"; " +
@@ -2194,7 +2188,7 @@ public class XQueryTest {
         ResourceSet result = service.query(query);
 
         assertEquals(1, result.getSize());
-        assertXMLEqual("Oops", xmldoc, result.getResource(0).getContent().toString());
+        assertThat("Oops", result.getResource(0).getContent().toString(), hasSimilarXml(xmldoc));
     }
 
     /**
@@ -3169,7 +3163,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void exprContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+    public void exprContainingNodesAndNonNodes() throws XMLDBException {
         final String query = """
                 declare function local:test() { (1,<n/>) };
                 local:test()""";
@@ -3184,7 +3178,7 @@ public class XQueryTest {
      * @see https://github.com/eXist-db/exist/issues/1121
      */
     @org.junit.jupiter.api.Test
-    public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+    public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException {
         final String query = """
                 declare variable $a := 'a';
                 declare function local:test() { (1,<n/>) };

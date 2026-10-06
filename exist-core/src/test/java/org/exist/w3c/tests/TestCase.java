@@ -37,7 +37,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
-import org.custommonkey.xmlunit.Diff;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.NodeProxy;
@@ -279,8 +281,8 @@ public abstract class TestCase {
 		expResult = expResult.replaceAll("\n", "");
 		expResult = expResult.replaceAll("\t", "");
 		
-		Diff diff = new Diff(expResult.trim(), res);
-        if (!diff.identical()) {
+		Diff diff = DiffBuilder.compare(Input.fromString(expResult.trim())).withTest(Input.fromString(res)).checkForIdentical().build();
+        if (diff.hasDifferences()) {
         	System.out.println("expected:");
         	System.out.println(expResult);
         	System.out.println("get:");

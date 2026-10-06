@@ -21,16 +21,15 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 /**
  *
@@ -42,7 +41,7 @@ public class XQueryProcessingInstructionTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void testPI() throws XPathException, SAXException, IOException, XMLDBException {
+    public void testPI() throws XMLDBException {
         final String query = """
                 let $xml := <doc>\
                 <?pi test?>\
@@ -52,6 +51,6 @@ public class XQueryProcessingInstructionTest {
                 $xml""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
-        assertXMLEqual(r, "<doc><?pi test?>This is a p.</doc>");
+        assertThat("<doc><?pi test?>This is a p.</doc>", hasSimilarXml(r));
     }
 }

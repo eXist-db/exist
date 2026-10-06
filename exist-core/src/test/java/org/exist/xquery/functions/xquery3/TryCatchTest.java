@@ -23,20 +23,18 @@ package org.exist.xquery.functions.xquery3;
 
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.IOException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXmlIgnoringWhitespace;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -74,7 +72,7 @@ public class TryCatchTest {
     }
 
    @Test
-    public void encapsulated_3() throws XMLDBException, IOException, SAXException {
+    public void encapsulated3() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "<foo>{ for $i in (1,2,3,4) return <a>{ try { 'b' + $i } catch * { 'c' } }</a> }</foo>";
 
@@ -82,8 +80,7 @@ public class TryCatchTest {
         assertEquals(1, results.getSize());
 
         final String r = (String) results.getResource(0).getContent();
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLAssert.assertXMLEqual("<foo><a>c</a><a>c</a><a>c</a><a>c</a></foo>", r);
+        assertThat(r, hasSimilarXmlIgnoringWhitespace("<foo><a>c</a><a>c</a><a>c</a><a>c</a></foo>"));
     }
 
     @Test
