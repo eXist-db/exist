@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ActiveDirectoryRealmTest {
+class ActiveDirectoryRealmTest {
 
 	private static String config = 
 		"<ActiveDirectory xmlns='http://exist-db.org/Configuration'>" +
@@ -54,11 +54,11 @@ public class ActiveDirectoryRealmTest {
 
 	private static ActiveDirectoryRealm realm;
 
-	/**
-	 * @throws java.lang.Exception
+    /**
+     * @throws java.lang.Exception
 	 */
-	@BeforeAll
-	public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config.getBytes(StandardCharsets.UTF_8));
 		
 		Configuration config = Configurator.parse(is);
@@ -66,19 +66,19 @@ public class ActiveDirectoryRealmTest {
 		realm = new ActiveDirectoryRealm(null, config);
 	}
 
-	/**
-	 * @throws java.lang.Exception
+    /**
+     * @throws java.lang.Exception
 	 */
-	@AfterAll
-	public static void tearDownAfterClass() throws Exception {
+    @AfterAll
+    static void tearDownAfterClass() throws Exception {
 	}
 
-	/**
-	 * Test method for {@link org.exist.security.realm.activedirectory.ActiveDirectoryRealm#authenticate(java.lang.String, java.lang.Object)}.
-	 */
-	@Disabled("Requires external Active Directory server")
-	@Test
-	public void testAuthenticate() {
+    /**
+     * Test method for {@link org.exist.security.realm.activedirectory.ActiveDirectoryRealm#authenticate(java.lang.String, java.lang.Object)}.
+     */
+    @Disabled("Requires external Active Directory server")
+    @Test
+    void testAuthenticate() {
 		Subject currentUser = null;
 		try {
 			currentUser = realm.authenticate("accounter@fake.com", "password");

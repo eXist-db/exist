@@ -41,10 +41,10 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * ({@code verify -DskipUnitTests=true}).
  */
 @SuppressWarnings("PMD.ClassNamingConventions") // Failsafe *IT suffix; not a JUnit *Test class
-public class WindowsPathResourceIT {
+class WindowsPathResourceIT {
 
     @Test
-    public void resolveWebInfOnWindowsDriveUri() throws Exception {
+    void resolveWebInfOnWindowsDriveUri() throws Exception {
         assumeTrue(OSUtil.isWindows(), "Windows-only PathResource URI regression");
 
         final ResourceFactory resourceFactory = ResourceFactory.root();

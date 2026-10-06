@@ -27,10 +27,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class WindowsServiceManagerTest {
+class WindowsServiceManagerTest {
 
     @Test
-    public void asJavaCmdlineMemoryString() {
+    void asJavaCmdlineMemoryString() {
         assertEquals(Optional.of("1024k"), WindowsServiceManager.asJavaCmdlineMemoryString("1024k"));
         assertEquals(Optional.of("1024K"), WindowsServiceManager.asJavaCmdlineMemoryString("1024K"));
         assertEquals(Optional.of("1024m"), WindowsServiceManager.asJavaCmdlineMemoryString("1024m"));
@@ -52,7 +52,7 @@ public class WindowsServiceManagerTest {
     }
 
     @Test
-    public void asPrunSrvMemoryString() {
+    void asPrunSrvMemoryString() {
         assertEquals(Optional.of("1"), WindowsServiceManager.asPrunSrvMemoryString("1024k"));
         assertEquals(Optional.of("1"), WindowsServiceManager.asPrunSrvMemoryString("1024K"));
         assertEquals(Optional.of("1024"), WindowsServiceManager.asPrunSrvMemoryString("1024m"));

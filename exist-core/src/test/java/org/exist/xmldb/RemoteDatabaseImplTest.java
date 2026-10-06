@@ -40,17 +40,17 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author <a href="mailto:pierrick.brihaye@free.fr">Sebastian Bossung, Technische Universitaet Hamburg-Harburg
  * @author Pierrick Brihaye</a>
  */
-public class RemoteDatabaseImplTest extends RemoteDBTest {
+class RemoteDatabaseImplTest extends RemoteDBTest {
 
     protected final static String ADMIN_COLLECTION_NAME = "admin-collection";
 
     @BeforeEach
-	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
         setUpRemoteDatabase();
-	}    
+	}
 
     @Test
-    public void testGetCollection() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SyntaxException, PermissionDeniedException {
+    void testGetCollection() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SyntaxException, PermissionDeniedException {
         Class<?> cl = Class.forName(DB_DRIVER);
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);

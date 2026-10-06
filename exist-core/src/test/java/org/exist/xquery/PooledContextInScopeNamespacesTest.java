@@ -101,7 +101,7 @@ public class PooledContextInScopeNamespacesTest {
     }
 
     @Test
-    public void bindingsFromAPreviousExecutionDoNotChangeTheNextOne() throws Exception {
+    void bindingsFromAPreviousExecutionDoNotChangeTheNextOne() throws Exception {
         // What serializing a Constr-inscope-2/-4 result leaves behind: the same two prefixes,
         // bound to the other URIs.
         run(context -> {
@@ -122,7 +122,7 @@ public class PooledContextInScopeNamespacesTest {
      * the XQTS runner supplies an environment's prefixes to its assertions (json-to-xml-008, -009).
      */
     @Test
-    public void callerDeclaredNamespacesSurviveReanalysisDuringCompilation() throws Exception {
+    void callerDeclaredNamespacesSurviveReanalysisDuringCompilation() throws Exception {
         final BrokerPool pool = server.getBrokerPool();
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
@@ -139,7 +139,7 @@ public class PooledContextInScopeNamespacesTest {
     }
 
     @Test
-    public void resetLeavesNoInScopeNamespacesBehind() throws Exception {
+    void resetLeavesNoInScopeNamespacesBehind() throws Exception {
         final BrokerPool pool = server.getBrokerPool();
         final XQueryContext context = new XQueryContext(pool);
         context.declareInScopeNamespace("foo", PARENT1);

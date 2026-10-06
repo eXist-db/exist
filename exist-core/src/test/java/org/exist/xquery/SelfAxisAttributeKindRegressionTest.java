@@ -60,7 +60,7 @@ public class SelfAxisAttributeKindRegressionTest {
             "let $n := (<t:root xmlns:t=\"urn:example\"><t:target id=\"1\" t:qualified=\"2\"/></t:root>)/t:target ";
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         query("""
                 xmldb:store('/db', 'i6689.xml',
                     <t:root xmlns:t="urn:example"><t:target id="1" t:qualified="2"/></t:root>)
@@ -68,7 +68,7 @@ public class SelfAxisAttributeKindRegressionTest {
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'i6689.xml')");
     }
 
@@ -84,54 +84,54 @@ public class SelfAxisAttributeKindRegressionTest {
 
     /** The reported failure: a named attribute kind test on the self axis. */
     @Test
-    public void namedAttributeKindTestOnSelfAxis() throws XMLDBException {
+    void namedAttributeKindTestOnSelfAxis() throws XMLDBException {
         assertEquals("1", count(IN_MEMORY, "$n/@*[self::attribute(id)]"));
         assertEquals("1", count(PERSISTENT, "$n/@*[self::attribute(id)]"));
     }
 
     /** The same test on an attribute in a namespace. */
     @Test
-    public void namespacedAttributeKindTestOnSelfAxis() throws XMLDBException {
+    void namespacedAttributeKindTestOnSelfAxis() throws XMLDBException {
         assertEquals("1", count(IN_MEMORY, "$n/@*[self::attribute(t:qualified)]"));
         assertEquals("1", count(PERSISTENT, "$n/@*[self::attribute(t:qualified)]"));
     }
 
     /** A name that matches no attribute must still return nothing. */
     @Test
-    public void nonMatchingAttributeKindTestOnSelfAxis() throws XMLDBException {
+    void nonMatchingAttributeKindTestOnSelfAxis() throws XMLDBException {
         assertEquals("0", count(IN_MEMORY, "$n/@*[self::attribute(absent)]"));
         assertEquals("0", count(PERSISTENT, "$n/@*[self::attribute(absent)]"));
     }
 
     /** The context step being a named attribute step rather than {@code @*} must not matter. */
     @Test
-    public void namedAttributeKindTestUnderNamedContextStep() throws XMLDBException {
+    void namedAttributeKindTestUnderNamedContextStep() throws XMLDBException {
         assertEquals("1", count(PERSISTENT, "$n/@id[self::attribute(id)]"));
     }
 
     /** Nor must binding the attributes to a variable first. */
     @Test
-    public void namedAttributeKindTestOnBoundVariable() throws XMLDBException {
+    void namedAttributeKindTestOnBoundVariable() throws XMLDBException {
         assertEquals("1", query(PROLOG + PERSISTENT
                 + "let $a := $n/@* return count($a[self::attribute(id)])"));
     }
 
     /** Unnamed and wildcard attribute kind tests were never broken; pin them. */
     @Test
-    public void unnamedAndWildcardAttributeKindTestsOnSelfAxis() throws XMLDBException {
+    void unnamedAndWildcardAttributeKindTestsOnSelfAxis() throws XMLDBException {
         assertEquals("2", count(PERSISTENT, "$n/@*[self::attribute()]"));
         assertEquals("2", count(PERSISTENT, "$n/@*[self::attribute(*)]"));
     }
 
     /** The attribute axis selects the correct index half already; pin that too. */
     @Test
-    public void namedAttributeKindTestOnAttributeAxis() throws XMLDBException {
+    void namedAttributeKindTestOnAttributeAxis() throws XMLDBException {
         assertEquals("1", count(PERSISTENT, "$n/attribute::attribute(id)"));
     }
 
     /** Named element kind and name tests on the self axis must be unaffected. */
     @Test
-    public void namedElementTestsOnSelfAxisAreUnaffected() throws XMLDBException {
+    void namedElementTestsOnSelfAxisAreUnaffected() throws XMLDBException {
         assertEquals("1", count(PERSISTENT, "$n/self::t:target"));
         assertEquals("1", count(PERSISTENT, "$n/self::element(t:target)"));
         assertEquals("0", count(PERSISTENT, "$n/self::element(t:absent)"));

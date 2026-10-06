@@ -223,7 +223,7 @@ public class TransformTest {
      * {@see https://github.com/eXist-db/exist/issues/1506}
      */
     @org.junit.jupiter.api.Test
-    public void keys() throws EXistException, PermissionDeniedException, XPathException {
+    void keys() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -248,7 +248,7 @@ public class TransformTest {
 
     @Disabled("https://github.com/eXist-db/exist/issues/2096")
     @org.junit.jupiter.api.Test
-    public void xslDocument() throws EXistException, PermissionDeniedException, XPathException {
+    void xslDocument() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -277,7 +277,7 @@ public class TransformTest {
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
     @org.junit.jupiter.api.Test
-    public void transformReindexTransform() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
+    void transformReindexTransform() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_COLLECTION);
         reindex(TEST_SIMPLE_XML_COLLECTION);
         transform1(TEST_SIMPLE_XML_COLLECTION);
@@ -287,7 +287,7 @@ public class TransformTest {
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
     @org.junit.jupiter.api.Test
-    public void transformReindexTransform_with_comment() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
+    void transformReindexTransform_with_comment() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_WITH_COMMENT_COLLECTION);
         reindex(TEST_SIMPLE_XML_WITH_COMMENT_COLLECTION);
         transform1(TEST_SIMPLE_XML_WITH_COMMENT_COLLECTION);
@@ -297,7 +297,7 @@ public class TransformTest {
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
     @org.junit.jupiter.api.Test
-    public void transformReindexTransform_with_two_comments() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
+    void transformReindexTransform_with_two_comments() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_WITH_TWO_COMMENTS_COLLECTION);
         reindex(TEST_SIMPLE_XML_WITH_TWO_COMMENTS_COLLECTION);
         transform1(TEST_SIMPLE_XML_WITH_TWO_COMMENTS_COLLECTION);
@@ -307,7 +307,7 @@ public class TransformTest {
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
     @org.junit.jupiter.api.Test
-    public void twoNodesCountDescendants() throws EXistException, PermissionDeniedException, XPathException, IOException, LockException {
+    void twoNodesCountDescendants() throws EXistException, PermissionDeniedException, XPathException, IOException, LockException {
         transform_twoNodesCountDescendants();
         reindex(TEST_TWO_NODES_COLLECTION);
         transform_twoNodesCountDescendants();
@@ -388,7 +388,7 @@ public class TransformTest {
     }
 
     @BeforeAll
-    public static void storeResources() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void storeResources() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -447,7 +447,7 @@ public class TransformTest {
     }
 
     @AfterAll
-    public static void cleanupResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanupResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {

@@ -49,7 +49,7 @@ public class TryCatchTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void encapsulated_1() throws XMLDBException {
+    void encapsulated1() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "<a>{ try { 'b' + 7 } catch * { 'c' } }</a>";
 
@@ -59,8 +59,8 @@ public class TryCatchTest {
         assertEquals("<a>c</a>", r);
     }
 
-       @Test
-    public void encapsulated_2() throws XMLDBException {
+    @Test
+    void encapsulated2() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "for $i in (1,2,3,4) return <a>{ try { 'b' + $i } catch * { 'c' } }</a>";
 
@@ -71,8 +71,8 @@ public class TryCatchTest {
         assertEquals("<a>c</a>", r);
     }
 
-   @Test
-    public void encapsulated3() throws XMLDBException {
+    @Test
+    void encapsulated3() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "<foo>{ for $i in (1,2,3,4) return <a>{ try { 'b' + $i } catch * { 'c' } }</a> }</foo>";
 
@@ -84,7 +84,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void xQuery3_1() throws XMLDBException {
+    void xQuery31() throws XMLDBException {
         final String query1 = "xquery version '1.0';"
                 + "try { a + 7 } catch * { 1 }";
         try {
@@ -104,7 +104,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void simpleCatch() throws XMLDBException {
+    void simpleCatch() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "try { a + 7 } catch * { 1 }";
 
@@ -114,7 +114,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchWithCodeAndDescription() throws XMLDBException {
+    void catchWithCodeAndDescription() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "try { a + 7 } "
                 + "catch * "
@@ -131,7 +131,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchWithError3Matches() throws XMLDBException {
+    void catchWithError3Matches() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "try { a + 7 } "
                 + "catch err:XPDY0001 { 1 }"
@@ -144,7 +144,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchWithErrorNoMatches() {
+    void catchWithErrorNoMatches() {
         final String query = "xquery version '3.0';"
                 + "try { a + 7 } "
                 + "catch err:XPDY0001 { 1 }"
@@ -155,7 +155,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchWithMultipleMatches() throws XMLDBException {
+    void catchWithMultipleMatches() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "try { a + 7 } "
                 + "catch err:XPDY0001 | err:XPDY0003 { 13 }"
@@ -179,7 +179,7 @@ public class TryCatchTest {
 
 
     @Test
-    public void catchFnError() throws XMLDBException {
+    void catchFnError() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error( fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000') ) "
@@ -249,7 +249,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchFullErrorCode() throws XMLDBException {
+    void catchFullErrorCode() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "try { a + 7 } "
                 + "catch *  "
@@ -269,7 +269,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchDefinedNamespace() throws XMLDBException {
+    void catchDefinedNamespace() throws XMLDBException {
         final String query1 = "xquery version '3.0';"
                 + "declare namespace foo='http://foo.com'; "
                 + "try { "
@@ -299,7 +299,7 @@ public class TryCatchTest {
     }
 
     @Test
-    public void catchDefinedNamespace2() throws XMLDBException {
+    void catchDefinedNamespace2() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "declare namespace foo='http://foo.com'; "
                 + "try { "

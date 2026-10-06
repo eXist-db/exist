@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Subject, so a different Subject querying the same resolved URI doesn't observe a cached answer
  * populated by someone else's fetch.
  */
-public class JaxpXsd11DetectionCacheTest {
+class JaxpXsd11DetectionCacheTest {
 
     private static final String XSD_1_1_SCHEMA = """
             <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -48,12 +48,12 @@ public class JaxpXsd11DetectionCacheTest {
             <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>""";
 
     @AfterEach
-    public void clearCache() {
+    void clearCache() {
         Jaxp.clearXsd11DetectionCache();
     }
 
     @Test
-    public void cachesResultAcrossCallsAndClearCacheInvalidatesIt() throws Exception {
+    void cachesResultAcrossCallsAndClearCacheInvalidatesIt() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaxp-xsd11-cache-test");
         try {
             final Path instance = tempDir.resolve("instance.xml");
@@ -86,7 +86,7 @@ public class JaxpXsd11DetectionCacheTest {
     }
 
     @Test
-    public void cacheIsScopedPerSubject() throws Exception {
+    void cacheIsScopedPerSubject() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaxp-xsd11-cache-subject-test");
         try {
             final Path instance = tempDir.resolve("instance.xml");

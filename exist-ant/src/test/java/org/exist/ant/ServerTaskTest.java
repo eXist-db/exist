@@ -53,7 +53,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void backup() throws IOException {
+    void backup() throws IOException {
         final Project project = buildFileRule.getProject();
         final Path backupDir = newFolder(temporaryFolder, "junit").toPath();
         project.setProperty(PROP_ANT_TEST_DATA_BACKUP_DIR, backupDir.toAbsolutePath().toString());
@@ -64,7 +64,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void restore() throws URISyntaxException, XMLDBException {
+    void restore() throws URISyntaxException, XMLDBException {
         final URL backupContentsUrl = getClass().getResource("backup-test/db/__contents__.xml");
         assertNotNull(backupContentsUrl);
         final Path backupDir = Path.of(backupContentsUrl.toURI()).getParent().getParent();
@@ -79,7 +79,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void backupRestore() throws IOException {
+    void backupRestore() throws IOException {
         final Project project = buildFileRule.getProject();
         final Path backupDir = newFolder(temporaryFolder, "junit").toPath();
         project.setProperty(PROP_ANT_TEST_DATA_BACKUP_DIR, backupDir.toAbsolutePath().toString());
@@ -90,7 +90,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void shutdown() {
+    void shutdown() {
         buildFileRule.executeTarget("shutdown");
     }
 

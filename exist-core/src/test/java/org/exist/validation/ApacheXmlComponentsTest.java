@@ -31,11 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ApacheXmlComponentsTest {
+class ApacheXmlComponentsTest {
 
 
     @Test
-    public void parserVersion() {
+    void parserVersion() {
         final StringBuilder xmlLibMessage = new StringBuilder();
 
         final boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
@@ -44,7 +44,7 @@ public class ApacheXmlComponentsTest {
     }
 
     @Test
-    public void transformerVersion() {
+    void transformerVersion() {
         final StringBuilder xmlLibMessage = new StringBuilder();
 
         final boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);

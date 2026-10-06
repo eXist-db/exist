@@ -39,23 +39,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class VirtualTempPathTest {
+class VirtualTempPathTest {
     private TemporaryFileManager temporaryFileManager;
     private VirtualTempPath virtualTempPath;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         temporaryFileManager = TemporaryFileManager.getInstance();
         virtualTempPath = new VirtualTempPath(2048, temporaryFileManager);
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         virtualTempPath.close();
     }
 
     @Test
-    public void newOutputStreamMemoryOnly() throws IOException {
+    void newOutputStreamMemoryOnly() throws IOException {
         OutputStream out = virtualTempPath.newOutputStream();
 
         assertEquals(OverflowToDiskStream.class, out.getClass());
@@ -65,7 +65,7 @@ public class VirtualTempPathTest {
     }
 
     @Test
-    public void newOutputStreamNoMemoryBuffer() throws IOException {
+    void newOutputStreamNoMemoryBuffer() throws IOException {
         virtualTempPath = new VirtualTempPath(0, temporaryFileManager);
         OutputStream out = virtualTempPath.newOutputStream();
 
@@ -76,7 +76,7 @@ public class VirtualTempPathTest {
     }
 
     @Test
-    public void newInputStreamUseEmptyInputStreamIfNotAlreadyWritten() throws IOException {
+    void newInputStreamUseEmptyInputStreamIfNotAlreadyWritten() throws IOException {
         InputStream in = virtualTempPath.newInputStream();
 
         assertNotNull(in);
@@ -85,7 +85,7 @@ public class VirtualTempPathTest {
     }
 
     @Test
-    public void newInputStreamAfterDataWrittenInMemory() throws IOException {
+    void newInputStreamAfterDataWrittenInMemory() throws IOException {
         byte[] buf = writeTestData(virtualTempPath.newOutputStream(), 1024);
 
         InputStream in = virtualTempPath.newInputStream();
@@ -97,7 +97,7 @@ public class VirtualTempPathTest {
     }
 
     @Test
-    public void newInputStreamAfterDataWrittenToDisk() throws IOException {
+    void newInputStreamAfterDataWrittenToDisk() throws IOException {
         byte[] buf = writeTestData(virtualTempPath.newOutputStream(), 2048);
 
         InputStream in = virtualTempPath.newInputStream();
@@ -109,19 +109,19 @@ public class VirtualTempPathTest {
     }
 
     @Test
-    public void sizeNotYetWritten() {
+    void sizeNotYetWritten() {
         assertEquals(0, virtualTempPath.size());
     }
 
     @Test
-    public void sizeNWrittenInMemory() throws IOException {
+    void sizeNWrittenInMemory() throws IOException {
         writeTestData(virtualTempPath.newOutputStream(), 123);
 
         assertEquals(123L, virtualTempPath.size());
     }
 
     @Test
-    public void sizeNWrittenToDisk() throws IOException {
+    void sizeNWrittenToDisk() throws IOException {
         writeTestData(virtualTempPath.newOutputStream(), 2123);
 
         assertEquals(2123L, virtualTempPath.size());

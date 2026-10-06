@@ -44,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * @author wolf
  *
  */
-public class DOMSerializerTest {
+class DOMSerializerTest {
 
-	@Test
-	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException, URISyntaxException {
+    @Test
+    void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException, URISyntaxException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		assertNotNull(factory);
 		factory.setNamespaceAware(true);

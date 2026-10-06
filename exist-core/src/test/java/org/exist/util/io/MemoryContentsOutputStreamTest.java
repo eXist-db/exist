@@ -37,18 +37,18 @@ import static org.easymock.EasyMock.verify;
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class MemoryContentsOutputStreamTest {
+class MemoryContentsOutputStreamTest {
     private MemoryContents memoryContents;
     private MemoryContentsOutputStream outputStream;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         memoryContents = createMock(MemoryContents.class);
         outputStream = new MemoryContentsOutputStream(memoryContents);
     }
 
     @Test
-    public void writeByte() throws IOException {
+    void writeByte() throws IOException {
         expect(memoryContents.writeAtEnd(aryEq(new byte[]{'a'}), eq(0), eq(1))).andReturn(1);
 
         replay(memoryContents);
@@ -59,7 +59,7 @@ public class MemoryContentsOutputStreamTest {
     }
 
     @Test
-    public void writeByteArray() throws IOException {
+    void writeByteArray() throws IOException {
         byte[] buf = new byte[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
         expect(memoryContents.writeAtEnd(buf, 2, 3)).andReturn(1);

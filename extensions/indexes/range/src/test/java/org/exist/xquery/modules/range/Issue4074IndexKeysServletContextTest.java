@@ -99,7 +99,7 @@ public class Issue4074IndexKeysServletContextTest {
     private static XmldbURI collectionUri;
 
     @BeforeAll
-    public static void setUp() throws EXistException, PermissionDeniedException, LockException, TriggerException, SAXException, CollectionConfigurationException, IOException {
+    static void setUp() throws EXistException, PermissionDeniedException, LockException, TriggerException, SAXException, CollectionConfigurationException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         collectionUri = XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION_NAME);
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -108,7 +108,7 @@ public class Issue4074IndexKeysServletContextTest {
     }
 
     @AfterAll
-    public static void tearDown() throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+    static void tearDown() throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         if (collectionUri == null) {
             return;
         }
@@ -125,7 +125,7 @@ public class Issue4074IndexKeysServletContextTest {
     }
 
     @Test
-    public void indexKeysForFieldWithEmptyStaticDocsReturnsKeys() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException {
+    void indexKeysForFieldWithEmptyStaticDocsReturnsKeys() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = executeWithEmptyStaticDocs(pool, broker, INDEX_KEYS_QUERY);

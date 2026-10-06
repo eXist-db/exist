@@ -88,7 +88,7 @@ public class OrderByClauseMemoryBenchmark {
     }
 
     @Test
-    public void memoryBenchmark() throws XMLDBException {
+    void memoryBenchmark() throws XMLDBException {
         Assumptions.assumeTrue(
                 Boolean.getBoolean("exist.run.benchmarks"),
                 "Benchmark skipped by default. Re-run with -Dexist.run.benchmarks=true");

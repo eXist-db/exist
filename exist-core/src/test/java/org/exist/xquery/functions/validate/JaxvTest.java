@@ -54,7 +54,7 @@ public class JaxvTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
         final String noValidation = "<?xml version='1.0'?>" +
                 "<collection xmlns=\"http://exist-db.org/collection-config/1.0" +
                 "\">" +
@@ -77,7 +77,7 @@ public class JaxvTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_stored_valid() throws XMLDBException {
+    void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxv( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
@@ -89,7 +89,7 @@ public class JaxvTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredReportValid() throws XMLDBException {
+    void xsdStoredReportValid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
@@ -102,7 +102,7 @@ public class JaxvTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredInvalid() throws XMLDBException {
+    void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
@@ -115,7 +115,7 @@ public class JaxvTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriValid() throws XMLDBException {
+    void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
@@ -128,7 +128,7 @@ public class JaxvTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriInvalid() throws XMLDBException {
+    void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";

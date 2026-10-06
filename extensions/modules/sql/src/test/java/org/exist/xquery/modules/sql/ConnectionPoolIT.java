@@ -65,7 +65,7 @@ public class ConnectionPoolIT {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void getConnectionFromPoolIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getConnectionFromPoolIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
         // NOTE: pool-1 is configured in src/test/resources-filtered/conf.xml
         final String mainQuery =
                 """

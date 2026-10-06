@@ -62,7 +62,7 @@ public class MoveCollectionTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void move(String apiName, String baseUri) throws XMLDBException {
+    void move(String apiName, String baseUri) throws XMLDBException {
         initMoveCollectionTest(apiName, baseUri);
         setUp();
         /*
@@ -101,7 +101,7 @@ public class MoveCollectionTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);

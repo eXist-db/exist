@@ -41,7 +41,7 @@ public class Base64FunctionsTest {
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void testBase64Encode() throws XMLDBException {
+    void testBase64Encode() throws XMLDBException {
         final String query = "util:base64-encode( 'This is a test!' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -49,7 +49,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64EncodeWithTrim() throws XMLDBException {
+    void testBase64EncodeWithTrim() throws XMLDBException {
         final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', true() )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -57,7 +57,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64EncodeWithTrimFalse() throws XMLDBException {
+    void testBase64EncodeWithTrimFalse() throws XMLDBException {
         final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', false() )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -65,7 +65,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64Decode() throws XMLDBException {
+    void testBase64Decode() throws XMLDBException {
         final String query = "util:base64-decode( 'VGhpcyBpcyBhIHRlc3Qh' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -73,7 +73,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64EncodeDecode() throws XMLDBException {
+    void testBase64EncodeDecode() throws XMLDBException {
         final String query = "util:base64-decode( util:base64-encode( 'This is a test!' ) )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -81,7 +81,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64EncodeUrlSafeNoSpecial() throws XMLDBException {
+    void testBase64EncodeUrlSafeNoSpecial() throws XMLDBException {
         final String query = "util:base64-encode-url-safe( 'This is a test!' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -89,7 +89,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64EncodeUrlSafeSpecial() throws XMLDBException {
+    void testBase64EncodeUrlSafeSpecial() throws XMLDBException {
         final String query = "util:base64-encode-url-safe( '.ÿd' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -97,7 +97,7 @@ public class Base64FunctionsTest {
     }
 
     @Test
-    public void testBase64DecodeUrlSafe() throws XMLDBException {
+    void testBase64DecodeUrlSafe() throws XMLDBException {
         final String query = "util:base64-decode( 'LsO_ZA' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();

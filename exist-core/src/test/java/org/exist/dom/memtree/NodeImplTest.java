@@ -29,10 +29,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NodeImplTest {
+class NodeImplTest {
 
     @Test
-    public void iterate_loop() {
+    void iterate_loop() {
         final SequenceIterator it = new StubNodeImpl().iterate();
         int count = 0;
         while (it.hasNext()) {
@@ -44,7 +44,7 @@ public class NodeImplTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    void iterate_skip_loop() {
         final SequenceIterator it = new StubNodeImpl().iterate();
 
         assertEquals(1, it.skippable());
@@ -63,7 +63,7 @@ public class NodeImplTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    void iterate_loop_skip_loop() {
         final SequenceIterator it = new StubNodeImpl().iterate();
 
         int len = 20;

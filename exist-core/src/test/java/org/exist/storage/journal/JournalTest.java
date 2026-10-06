@@ -62,7 +62,7 @@ public class JournalTest {
     public static File TEMPORARY_FOLDER;
 
     @Test
-    public void getFileName() {
+    void getFileName() {
         assertEquals("0000000000.log", Journal.getFileName((short)0));
         assertEquals("0000000001.log", Journal.getFileName((short)1));
         assertEquals("0000000002.log", Journal.getFileName((short)2));
@@ -78,19 +78,19 @@ public class JournalTest {
     }
 
     @Test
-    public void getFileNameWithFileNumShortMinValueRaisesException() {
+    void getFileNameWithFileNumShortMinValueRaisesException() {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFileName(Short.MIN_VALUE));
     }
 
     @Test
-    public void getFileNameWithFileNumMinusOneRaisesException() {
+    void getFileNameWithFileNumMinusOneRaisesException() {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFileName((short) -1));
     }
 
     @Test
-    public void journalFileNum() {
+    void journalFileNum() {
         assertEquals(0, Journal.journalFileNum(Path.of("0000000000.log")));
         assertEquals(1, Journal.journalFileNum(Path.of("0000000001.log")));
         assertEquals(2, Journal.journalFileNum(Path.of("0000000002.log")));
@@ -106,21 +106,21 @@ public class JournalTest {
     }
 
     @Test
-    public void journalFileNumWithPathShortMinValueRaisesException() {
+    void journalFileNumWithPathShortMinValueRaisesException() {
         final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
         assertThrows(IllegalArgumentException.class, () ->
             Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test
-    public void journalFileNumWithPathMinusOneRaisesException() {
+    void journalFileNumWithPathMinusOneRaisesException() {
         final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
         assertThrows(IllegalArgumentException.class, () ->
             Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test
-    public void findLastFile() {
+    void findLastFile() {
         try (final Stream<Path> paths = Stream.of(
                 Path.of(Journal.getFileName((short)1)),
                 Path.of(Journal.getFileName((short)31)),
@@ -177,7 +177,7 @@ public class JournalTest {
     }
 
     @Test
-    public void getFiles() throws IOException {
+    void getFiles() throws IOException {
         List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
         Path mockJournalDir = createTempDirWithFiles(input);
         List<String> actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
@@ -197,7 +197,7 @@ public class JournalTest {
     }
 
     @Test
-    public void getFile() throws IOException {
+    void getFile() throws IOException {
         List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
         Path mockJournalDir = createTempDirWithFiles(input);
 
@@ -250,20 +250,20 @@ public class JournalTest {
     }
 
     @Test
-    public void getFileWithFileNumShortMinValueRaisesException() throws IOException {
+    void getFileWithFileNumShortMinValueRaisesException() throws IOException {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFile(newFolder(TEMPORARY_FOLDER, "junit").toPath(), Short.MIN_VALUE));
     }
 
     @Test
-    public void getFileWithFileNumMinusOneRaisesException() throws IOException {
+    void getFileWithFileNumMinusOneRaisesException() throws IOException {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFile(newFolder(TEMPORARY_FOLDER, "junit").toPath(), (short) -1));
     }
 
 
     @Test
-    public void writeJournalHeader() throws IOException {
+    void writeJournalHeader() throws IOException {
         final SeekableByteChannel mockSeekableByteChannel = mock(SeekableByteChannel.class);
         final Capture<ByteBuffer> captureByteBuffer = newCapture(CaptureType.FIRST);
         expect(mockSeekableByteChannel.write(capture(captureByteBuffer))).andReturn(Journal.JOURNAL_HEADER_LEN);
@@ -289,7 +289,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFiles() throws EXistException, IOException, ReadOnlyException, InterruptedException {
+    void switchFiles() throws EXistException, IOException, ReadOnlyException, InterruptedException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);
@@ -333,7 +333,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFilesBacksUpOldFileFirst() throws EXistException, IOException, ReadOnlyException {
+    void switchFilesBacksUpOldFileFirst() throws EXistException, IOException, ReadOnlyException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);
@@ -375,7 +375,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFilesWrapsCurrentJournalFileNumberAround() throws EXistException, IOException, ReadOnlyException {
+    void switchFilesWrapsCurrentJournalFileNumberAround() throws EXistException, IOException, ReadOnlyException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);

@@ -68,7 +68,7 @@ public class DocumentBuilderReceiverIntegrationTest {
     public String expectedResult;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void mergeDocuments(String testName, String query, String expectedResult) throws XMLDBException {
+    void mergeDocuments(String testName, String query, String expectedResult) throws XMLDBException {
         initDocumentBuilderReceiverIntegrationTest(testName, query, expectedResult);
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
 

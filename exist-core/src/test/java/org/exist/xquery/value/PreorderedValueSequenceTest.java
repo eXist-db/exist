@@ -31,10 +31,10 @@ import org.w3c.dom.Node;
 import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PreorderedValueSequenceTest {
+class PreorderedValueSequenceTest {
 
     @Test
-    public void iterate_loop() throws XPathException {
+    void iterate_loop() throws XPathException {
         final PreorderedValueSequence orderedValueSequence = mockPreorderedValueSequence(99);
 
         final SequenceIterator it = orderedValueSequence.iterate();
@@ -48,7 +48,7 @@ public class PreorderedValueSequenceTest {
     }
 
     @Test
-    public void iterate_skip_loop() throws XPathException {
+    void iterate_skip_loop() throws XPathException {
         final PreorderedValueSequence orderedValueSequence = mockPreorderedValueSequence(99);
         final SequenceIterator it = orderedValueSequence.iterate();
 
@@ -68,7 +68,7 @@ public class PreorderedValueSequenceTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() throws XPathException {
+    void iterate_loop_skip_loop() throws XPathException {
         final PreorderedValueSequence orderedValueSequence = mockPreorderedValueSequence(99);
         final SequenceIterator it = orderedValueSequence.iterate();
 

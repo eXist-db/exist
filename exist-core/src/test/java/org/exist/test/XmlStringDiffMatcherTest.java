@@ -46,16 +46,16 @@ import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
  * Every idiom is shown to pass and to fail: a matcher that cannot fail would make each test that uses
  * it pass, whatever the XML is.
  */
-public class XmlStringDiffMatcherTest {
+class XmlStringDiffMatcherTest {
 
     @Test
-    public void similarIgnoresTheOrderOfAttributes() {
+    void similarIgnoresTheOrderOfAttributes() {
         assertThat("<a x='1' y='2'/>", hasSimilarXml("<a y='2' x='1'/>"));
         assertThat("<a x='1' y='2'/>", hasIdenticalXml("<a y='2' x='1'/>"));
     }
 
     @Test
-    public void similarAcceptsAnotherNamespacePrefixButIdenticalDoesNot() {
+    void similarAcceptsAnotherNamespacePrefixButIdenticalDoesNot() {
         final String control = "<p:a xmlns:p='urn:x'/>";
         final String test = "<q:a xmlns:q='urn:x'/>";
 
@@ -64,25 +64,25 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void bothRejectAnotherAttributeValue() {
+    void bothRejectAnotherAttributeValue() {
         assertThrows(AssertionError.class, () -> assertThat("<a x='2'/>", hasSimilarXml("<a x='1'/>")));
         assertThrows(AssertionError.class, () -> assertThat("<a x='2'/>", hasIdenticalXml("<a x='1'/>")));
     }
 
     @Test
-    public void bothRejectAnotherText() {
+    void bothRejectAnotherText() {
         assertThrows(AssertionError.class, () -> assertThat("<a>two</a>", hasSimilarXml("<a>one</a>")));
         assertThrows(AssertionError.class, () -> assertThat("<a>two</a>", hasIdenticalXml("<a>one</a>")));
     }
 
     @Test
-    public void bothRejectAnotherElementName() {
+    void bothRejectAnotherElementName() {
         assertThrows(AssertionError.class, () -> assertThat("<b/>", hasSimilarXml("<a/>")));
         assertThrows(AssertionError.class, () -> assertThat("<b/>", hasIdenticalXml("<a/>")));
     }
 
     @Test
-    public void whitespaceBetweenElementsMattersUnlessItIsIgnored() {
+    void whitespaceBetweenElementsMattersUnlessItIsIgnored() {
         final String control = "<a><b/></a>";
         final String test = "<a>\n  <b/>\n</a>";
 
@@ -91,12 +91,12 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void ignoringWhitespaceStillRejectsAnotherText() {
+    void ignoringWhitespaceStillRejectsAnotherText() {
         assertThrows(AssertionError.class, () -> assertThat("<a>\n two\n</a>", hasSimilarXmlIgnoringWhitespace("<a>one</a>")));
     }
 
     @Test
-    public void aFailureNamesTheDifference() {
+    void aFailureNamesTheDifference() {
         final AssertionError error = assertThrows(AssertionError.class,
                 () -> assertThat("<a x='2'/>", hasSimilarXml("<a x='1'/>")));
 
@@ -105,7 +105,7 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void xpathComparesTheStringValue() {
+    void xpathComparesTheStringValue() {
         final String xml = "<a><b>1</b><b>2</b></a>";
 
         assertThat(xml, hasXPath("count(/a/b)", equalTo("2")));
@@ -114,7 +114,7 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void xpathExistsFailsWhenThereIsNoMatch() {
+    void xpathExistsFailsWhenThereIsNoMatch() {
         final String xml = "<a><b/></a>";
 
         assertThat(xml, HasXPathMatcher.hasXPath("//b"));
@@ -122,7 +122,7 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void xpathUsesTheNamespaceContextItIsGiven() {
+    void xpathUsesTheNamespaceContextItIsGiven() {
         final String xml = "<m xmlns:e='urn:exist'><e:match/><e:match/></m>";
 
         assertThat(xml, hasXPath("count(//e:match)", equalTo("2")).withNamespaceContext(Map.of("e", "urn:exist")));
@@ -132,7 +132,7 @@ public class XmlStringDiffMatcherTest {
     }
 
     @Test
-    public void xpathAcceptsADocument() {
+    void xpathAcceptsADocument() {
         final Document document = Convert.toDocument(Input.fromString("<a><b>1</b></a>").build());
 
         assertThat(document, hasXPath("/a/b/text()", equalTo("1")));

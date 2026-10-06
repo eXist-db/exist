@@ -79,7 +79,7 @@ public class TournamentSchemaLanguageComparisonTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/tournament")) {
@@ -97,7 +97,7 @@ public class TournamentSchemaLanguageComparisonTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, IOException {
+    void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, IOException {
         // No xsi:schemaLocation hint on the instance -- resolved purely by Tournament.xsd's
         // targetNamespace via directory-search, the same mechanism JaxpXsdCatalogTest's
         // xsd_searched_* tests use. See the class javadoc for why this is "invalid".
@@ -108,7 +108,7 @@ public class TournamentSchemaLanguageComparisonTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, IOException {
+    void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, IOException {
         // Bare XSD structural validation cannot see the Singles/nbrParticipants-vs-nbrTeams
         // co-occurrence constraint -- proven here by getting the exact same verdict and error as
         // the "valid" document above, despite the co-occurrence violation. Only the accompanying
@@ -120,13 +120,13 @@ public class TournamentSchemaLanguageComparisonTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, IOException {
+    void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, IOException {
         assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/Tournament.rng') )"), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, IOException {
+    void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, IOException {
         // Same co-occurrence limitation as the XSD case above, for RELAX NG.
         assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/Tournament.rng') )"), hasXPath("//status/text()", equalTo("valid")));

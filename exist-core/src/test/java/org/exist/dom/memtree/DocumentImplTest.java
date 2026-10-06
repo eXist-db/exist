@@ -47,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DocumentImplTest {
+class DocumentImplTest {
 
     private static final String DOC_WITH_NAMESPACES =
             """
@@ -56,7 +56,7 @@ public class DocumentImplTest {
             </repo:meta>""";
 
     @Test
-    public void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {
+    void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {
         final Document doc;
         try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseXerces(is);
@@ -89,7 +89,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         final Document doc;
         try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseSaxon(is);
@@ -120,7 +120,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void checkNamespaces_exist() throws IOException, SAXException, ParserConfigurationException {
+    void checkNamespaces_exist() throws IOException, SAXException, ParserConfigurationException {
         final DocumentImpl doc;
         try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseExist(is);

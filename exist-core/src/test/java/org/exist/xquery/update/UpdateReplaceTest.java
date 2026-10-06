@@ -38,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
-public class UpdateReplaceTest extends AbstractTestUpdate {
+class UpdateReplaceTest extends AbstractTestUpdate {
 
     @Test
-    public void replaceOnlyChildWhereParentHasNoAttributes() throws XMLDBException {
+    void replaceOnlyChildWhereParentHasNoAttributes() throws XMLDBException {
         final String testDocName = "replaceOnlyChildWhereParentHasNoAttributes.xml";
         final String testDoc = "<Test><Content><A/></Content></Test>";
 
@@ -75,7 +75,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void replaceFirstChildWhereParentHasNoAttributes() throws XMLDBException {
+    void replaceFirstChildWhereParentHasNoAttributes() throws XMLDBException {
         final String testDocName = "replaceFirstChildWhereParentHasNoAttributes.xml";
         final String testDoc = "<Test><Content><A/><A/></Content></Test>";
 
@@ -109,7 +109,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void replaceOnlyChildWhereParentHasAttribute() throws XMLDBException {
+    void replaceOnlyChildWhereParentHasAttribute() throws XMLDBException {
         final String testDocName = "replaceOnlyChildWhereParentHasAttribute.xml";
         final String testDoc = "<Test><Content Foo=\"bar\"><A/></Content></Test>";
 
@@ -143,7 +143,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void replaceFirstChildWhereParentHasAttribute() throws XMLDBException {
+    void replaceFirstChildWhereParentHasAttribute() throws XMLDBException {
         final String testDocName = "replaceFirstChildWhereParentHasAttribute.xml";
         final String testDoc = "<Test><Content Foo=\"bar\"><A/><A/></Content></Test>";
 

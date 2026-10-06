@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EmptySequenceTest {
+class EmptySequenceTest {
 
     @Test
-    public void iterate_loop() {
+    void iterate_loop() {
         final EmptySequence emptySequence = (EmptySequence)Sequence.EMPTY_SEQUENCE;
 
         final SequenceIterator it = emptySequence.iterate();
@@ -43,7 +43,7 @@ public class EmptySequenceTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    void iterate_skip_loop() {
         final EmptySequence emptySequence = (EmptySequence)Sequence.EMPTY_SEQUENCE;
         final SequenceIterator it = emptySequence.iterate();
 
@@ -63,7 +63,7 @@ public class EmptySequenceTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    void iterate_loop_skip_loop() {
         final EmptySequence emptySequence = (EmptySequence)Sequence.EMPTY_SEQUENCE;
         final SequenceIterator it = emptySequence.iterate();
 

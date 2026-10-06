@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
  * detect duplicates could return an attribute QName for an element of the same name, or a QName
  * with another prefix, whenever the probe sequence met that entry.
  */
-public class QNamePoolTest {
+class QNamePoolTest {
 
     /**
      * Names added to one pool. A pair of names differing only in type or prefix never hashes to the
@@ -47,7 +47,7 @@ public class QNamePoolTest {
     private static final int NAMES = 380;
 
     @Test
-    public void addKeepsNameTypeWhenAttributeOfSameNameIsPooled() {
+    void addKeepsNameTypeWhenAttributeOfSameNameIsPooled() {
         final QNamePool pool = new QNamePool();
         for (int i = 0; i < NAMES; i++) {
             pool.add(ElementValue.ATTRIBUTE, "", "name" + i, null);
@@ -59,7 +59,7 @@ public class QNamePoolTest {
     }
 
     @Test
-    public void addKeepsNameTypeWhenElementOfSameNameIsPooled() {
+    void addKeepsNameTypeWhenElementOfSameNameIsPooled() {
         final QNamePool pool = new QNamePool();
         for (int i = 0; i < NAMES; i++) {
             pool.add(ElementValue.ELEMENT, "", "name" + i, null);
@@ -71,7 +71,7 @@ public class QNamePoolTest {
     }
 
     @Test
-    public void addKeepsPrefixWhenAnotherPrefixIsPooled() {
+    void addKeepsPrefixWhenAnotherPrefixIsPooled() {
         final QNamePool pool = new QNamePool();
         for (int i = 0; i < NAMES; i++) {
             pool.add(ElementValue.ATTRIBUTE, Namespaces.XML_NS, "name" + i, "xm");
@@ -83,7 +83,7 @@ public class QNamePoolTest {
     }
 
     @Test
-    public void addReturnsThePooledInstanceForAnIdenticalName() {
+    void addReturnsThePooledInstanceForAnIdenticalName() {
         final QNamePool pool = new QNamePool();
         final QName first = pool.add(ElementValue.ELEMENT, Namespaces.XML_NS, "id", "xml");
 

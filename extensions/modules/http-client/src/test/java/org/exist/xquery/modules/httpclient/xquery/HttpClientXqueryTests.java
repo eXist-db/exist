@@ -30,14 +30,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 @XQSuite({
-    "src/test/xquery"
+        "src/test/xquery"
 })
-public class HttpClientXqueryTests {
+class HttpClientXqueryTests {
 
     private static WireMockServer wireMock;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         wireMock = new WireMockServer(wireMockConfig().dynamicPort());
         wireMock.start();
 
@@ -78,7 +78,7 @@ public class HttpClientXqueryTests {
     }
 
     @AfterAll
-    public static void teardown() {
+    static void teardown() {
         System.clearProperty("wiremock.port");
         wireMock.stop();
     }

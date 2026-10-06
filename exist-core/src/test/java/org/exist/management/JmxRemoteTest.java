@@ -54,7 +54,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
     }
 
     @Test
-    public void checkContent() throws IOException {
+    void checkContent() throws IOException {
         // Get content
         final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri())).GET().build();
         final String jmxXml = withHttpClient(client ->
@@ -98,7 +98,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
     }
 
     @Test
-    public void vectorCategoryIncludesVectorStore() throws IOException {
+    void vectorCategoryIncludesVectorStore() throws IOException {
         final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri() + "?c=vector")).GET().build();
         final String jmxXml = withHttpClient(client ->
                 AbstractHttpTest.executeForStatusAndBody(client, request).body());
@@ -115,7 +115,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
     }
 
     @Test
-    public void vectorCategoryIncludesVectorEmbeddingWhenExtensionPresent() throws IOException {
+    void vectorCategoryIncludesVectorEmbeddingWhenExtensionPresent() throws IOException {
         assumeTrue(isVectorExtensionPresent(), "Vector extension not on classpath");
 
         final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri() + "?c=vector")).GET().build();
@@ -131,7 +131,7 @@ public class JmxRemoteTest extends AbstractHttpTest {
     }
 
     @Test
-    public void checkBasicRequest() throws IOException {
+    void checkBasicRequest() throws IOException {
         final HttpRequest request = HttpRequest.newBuilder(URI.create(getServerUri()))
                 .header("Accept", "application/xml")
                 .GET()

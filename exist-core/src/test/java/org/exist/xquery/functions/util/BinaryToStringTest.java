@@ -34,10 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author aretter
  */
-public class BinaryToStringTest {
+class BinaryToStringTest {
 
     @Test
-    public void roundtrip() throws XPathException {
+    void roundtrip() throws XPathException {
         final String value = "hello world";
         final String encoding = "UTF-8";
 

@@ -33,68 +33,68 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
+class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
 
     @Test
-    public void create1() {
+    void create1() {
         assertThrows(XPathException.class, () -> {
             new DayTimeDurationValue("P1Y4M");
         });
     }
 
     @Test
-    public void create2() {
+    void create2() {
         assertThrows(XPathException.class, () -> {
             new DayTimeDurationValue("P1Y");
         });
     }
 
     @Test
-    public void create3() {
+    void create3() {
         assertThrows(XPathException.class, () -> {
             new DayTimeDurationValue("P4M");
         });
     }
 
     @Test
-    public void stringFormat1() throws XPathException {
+    void stringFormat1() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("P3DT1H2M3S");
         assertEquals("P3DT1H2M3S", dv.getStringValue());
     }
 
     @Test
-    public void stringFormat2() throws XPathException {
+    void stringFormat2() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("P1DT25H65M66.5S");
         assertEquals("P2DT2H6M6.5S", new DurationValue(dv.getCanonicalDuration()).getStringValue());
     }
 
     @Test
-    public void stringFormat3() throws XPathException {
+    void stringFormat3() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("P0DT0H");
         assertEquals("PT0S", dv.getStringValue());
     }
 
     @Test
-    public void stringFormat4() throws XPathException {
+    void stringFormat4() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("PT5H0M0S");
         assertEquals("PT5H", dv.getStringValue());
     }
 
     @Test
-    public void convert1() throws XPathException {
+    void convert1() throws XPathException {
         final DayTimeDurationValue dtdv = new DayTimeDurationValue("P3DT1H2M3S");
         final DurationValue dv = (DurationValue) dtdv.convertTo(Type.DURATION);
         assertEquals("P3DT1H2M3S", dv.getStringValue());
     }
 
     @Test
-    public void convert2() throws XPathException {
+    void convert2() throws XPathException {
         final DayTimeDurationValue dtdv = new DayTimeDurationValue("P3DT1H2M3S");
         assertEquals("P0M", dtdv.convertTo(Type.YEAR_MONTH_DURATION).getStringValue());
     }
 
     @Test
-    public void getPart1() throws XPathException {
+    void getPart1() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("P3DT4H5M6S");
         assertEquals(0, dv.getPart(DurationValue.YEAR));
         assertEquals(0, dv.getPart(DurationValue.MONTH));
@@ -105,7 +105,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void getPart2() throws XPathException {
+    void getPart2() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("-P3DT4H5M6S");
         assertEquals(0, dv.getPart(DurationValue.YEAR));
         assertEquals(0, dv.getPart(DurationValue.MONTH));
@@ -116,25 +116,25 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void getValue1() throws XPathException {
+    void getValue1() throws XPathException {
         final DayTimeDurationValue dv = new DayTimeDurationValue("P1DT30S");
         assertEquals(1.0 * 24 * 60 * 60 + 30.0, dv.getValue(), 0.0);
     }
 
     @Test
-    public void getValue2() throws XPathException {
+    void getValue2() throws XPathException {
         final DayTimeDurationValue dv = new DayTimeDurationValue("P1D");
         assertEquals(1.0 * 24 * 60 * 60, dv.getValue(), 0.0);
     }
 
     @Test
-    public void getType() throws XPathException {
+    void getType() throws XPathException {
         final DurationValue dv = new DayTimeDurationValue("P3DT4H5M6S");
         assertEquals(Type.DAY_TIME_DURATION, dv.getType());
     }
 
     @Test
-    public void compare1() throws XPathException {
+    void compare1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT2H3M5S");
         assertEquals(-1, dv1.compareTo(null, dv2));
@@ -142,7 +142,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void compare2() throws XPathException {
+    void compare2() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT2H3M4S");
         assertEquals(0, dv1.compareTo(null, dv2));
@@ -150,7 +150,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void compare3() throws XPathException {
+    void compare3() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT2H3M5S");
         assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
@@ -162,7 +162,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void compare4() throws XPathException {
+    void compare4() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT2H3M4S");
         assertTrue(dv1.compareTo(null, Comparison.EQ, dv2));
@@ -174,7 +174,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void compare5() throws XPathException {
+    void compare5() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("PT2H");
         final DurationValue dv2 = new DayTimeDurationValue("PT2H0M");
         assertEquals(0, dv1.compareTo(null, dv2));
@@ -182,7 +182,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void minMax1() throws XPathException {
+    void minMax1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT2H3M5S");
         assertDurationEquals(dv2, dv1.max(null, dv2));
@@ -192,7 +192,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void plus1() throws XPathException {
+    void plus1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P2DT12H5M");
         final DurationValue dv2 = new DayTimeDurationValue("P5DT12H");
         final DurationValue dv3 = new DayTimeDurationValue("P8DT5M");
@@ -201,7 +201,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void minus1() throws XPathException {
+    void minus1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P2DT12H");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT10H30M");
         final DurationValue dv3 = new DayTimeDurationValue("P1DT1H30M");
@@ -209,7 +209,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void mult1() throws XPathException {
+    void mult1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("PT2H10M");
         final DecimalValue f = new DecimalValue("2.1");
         final DurationValue dv2 = new DayTimeDurationValue("PT4H33M");
@@ -218,7 +218,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void div1() throws XPathException {
+    void div1() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P1DT2H30M10.5S");
         final DecimalValue f = new DecimalValue("1.5");
         final DurationValue dv2 = new DayTimeDurationValue("PT17H40M7S");
@@ -226,7 +226,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void div2() throws XPathException {
+    void div2() throws XPathException {
         final DurationValue dv1 = new DayTimeDurationValue("P2DT53M11S");
         final DurationValue dv2 = new DayTimeDurationValue("P1DT10H");
         assertEquals(1.4378349, ((Double) dv1.div(dv2).toJavaObject(Double.class)).doubleValue(), 0.0000001);

@@ -82,7 +82,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreSkipNewer() throws Exception {
+    void restoreSkipNewer() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("1.0.0", REPO_XML_APP);
@@ -107,7 +107,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreSkipNewerLib() throws Exception {
+    void restoreSkipNewerLib() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("1.0.0", REPO_XML_LIB);
@@ -128,7 +128,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreWithIncompleteSemverAndSkipNewer() throws Exception {
+    void restoreWithIncompleteSemverAndSkipNewer() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("1", REPO_XML_APP);
@@ -150,7 +150,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreOverwriteOlder() throws Exception {
+    void restoreOverwriteOlder() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("2.0.0", REPO_XML_APP);
@@ -175,7 +175,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreOverwriteOlderLib() throws Exception {
+    void restoreOverwriteOlderLib() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("2.0.0", REPO_XML_LIB);
@@ -196,7 +196,7 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreOverwriteOlderWithIncompleteSemver() throws Exception {
+    void restoreOverwriteOlderWithIncompleteSemver() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         createAndInstallApp("2.0.0", REPO_XML_APP);

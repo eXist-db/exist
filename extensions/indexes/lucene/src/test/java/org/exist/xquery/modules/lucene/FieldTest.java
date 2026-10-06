@@ -33,20 +33,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * {@link Field#bytesToAtomic} and {@link Field#stringToAtomic} for xs:boolean.
  * Covers XQuery lexical forms: "true", "false", "1", "0".
  */
-public class FieldTest {
+class FieldTest {
 
     @Test
-    public void parseBooleanTrue() throws XPathException {
+    void parseBooleanTrue() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("true").getValue());
     }
 
     @Test
-    public void parseBooleanFalse() throws XPathException {
+    void parseBooleanFalse() throws XPathException {
         assertFalse(FieldValueParser.parseBoolean("false").getValue());
     }
 
     @Test
-    public void parseBooleanCaseInsensitive() throws XPathException {
+    void parseBooleanCaseInsensitive() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("True").getValue());
         assertTrue(FieldValueParser.parseBoolean("TRUE").getValue());
         assertFalse(FieldValueParser.parseBoolean("False").getValue());
@@ -54,25 +54,25 @@ public class FieldTest {
     }
 
     @Test
-    public void parseBooleanOneAndZero() throws XPathException {
+    void parseBooleanOneAndZero() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("1").getValue());
         assertFalse(FieldValueParser.parseBoolean("0").getValue());
     }
 
     @Test
-    public void parseBooleanTrimmed() throws XPathException {
+    void parseBooleanTrimmed() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("  true  ").getValue());
         assertFalse(FieldValueParser.parseBoolean("  false  ").getValue());
     }
 
     @Test
-    public void parseBooleanInvalidThrows() {
+    void parseBooleanInvalidThrows() {
         assertThrows(XPathException.class, () ->
             FieldValueParser.parseBoolean("yes"));
     }
 
     @Test
-    public void parseBooleanEmptyThrows() {
+    void parseBooleanEmptyThrows() {
         assertThrows(XPathException.class, () ->
             FieldValueParser.parseBoolean(""));
     }

@@ -59,7 +59,7 @@ public class FollowingAxisPositionRegressionTest {
     private static final int ROUNDS = 5;
 
     @BeforeAll
-    public static void storeTestDocuments() throws XMLDBException {
+    static void storeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query(
@@ -75,7 +75,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @AfterAll
-    public static void removeTestDocuments() throws XMLDBException {
+    static void removeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("xmldb:remove('/db', 'words-small.xml')");
@@ -83,7 +83,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void reproducerOutputAtMidpoint() throws XMLDBException {
+    void reproducerOutputAtMidpoint() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet rs = xqs.query(
@@ -100,7 +100,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void reproducerOutputAtLatePosition() throws XMLDBException {
+    void reproducerOutputAtLatePosition() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet rs = xqs.query(
@@ -117,7 +117,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void followingExcludesDescendants() throws XMLDBException {
+    void followingExcludesDescendants() throws XMLDBException {
         // The fix changes the StAX reader to start at the reference node, so
         // its descendant events come first. The FollowingFilter must still
         // exclude them.
@@ -145,7 +145,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void followingAxisIsPositionIndependent() throws XMLDBException {
+    void followingAxisIsPositionIndependent() throws XMLDBException {
         // On a 50,000-element flat document, isolating the wildcard following::
         // axis. Before the fix, the late-position run took 1.6-2x the early-
         // position run because the StAX reader walked from the document root.

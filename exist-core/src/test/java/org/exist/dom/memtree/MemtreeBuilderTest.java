@@ -59,7 +59,7 @@ public class MemtreeBuilderTest {
     public boolean namespaceAware;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parseSimple(String parameterizedTestsName, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
+    void parseSimple(String parameterizedTestsName, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
         initMemtreeBuilderTest(parameterizedTestsName, namespaceAware);
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
         final DocumentImpl parsedDoc = parse(doc);

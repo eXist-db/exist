@@ -33,25 +33,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LuceneIndexWorkerBatchSizeTest {
+class LuceneIndexWorkerBatchSizeTest {
 
     @Test
-    public void clampBatchClausesNegativeBecomesOne() {
+    void clampBatchClausesNegativeBecomesOne() {
         assertEquals(1, LuceneIndexWorker.clampReindexDeleteBatchClauses(-1, 1024));
     }
 
     @Test
-    public void clampBatchClausesZeroBecomesOne() {
+    void clampBatchClausesZeroBecomesOne() {
         assertEquals(1, LuceneIndexWorker.clampReindexDeleteBatchClauses(0, 1024));
     }
 
     @Test
-    public void clampBatchClausesHugeIsCappedAtMax() {
+    void clampBatchClausesHugeIsCappedAtMax() {
         assertEquals(1024, LuceneIndexWorker.clampReindexDeleteBatchClauses(Integer.MAX_VALUE, 1024));
     }
 
     @Test
-    public void clampBatchClausesValidValueIsPreserved() {
+    void clampBatchClausesValidValueIsPreserved() {
         assertEquals(256, LuceneIndexWorker.clampReindexDeleteBatchClauses(256, 1024));
     }
 
@@ -61,7 +61,7 @@ public class LuceneIndexWorkerBatchSizeTest {
      * node-scope guard that protects ft:index named-field records during xmldb:reindex.
      */
     @Test
-    public void reindexDeleteQueryUsesKeywordDocIdAndNodeScopedCanary() {
+    void reindexDeleteQueryUsesKeywordDocIdAndNodeScopedCanary() {
         final Query query = LuceneIndexWorker.reindexNodeDeleteQueryForDocIds(List.of(new BytesRef("7")));
         assertInstanceOf(BooleanQuery.class, query, "Expected BooleanQuery composition");
         final BooleanQuery bq = (BooleanQuery) query;

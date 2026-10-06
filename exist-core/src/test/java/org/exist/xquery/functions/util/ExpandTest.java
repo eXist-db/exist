@@ -49,7 +49,7 @@ public class ExpandTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void setup() throws XMLDBException {
+    static void setup() throws XMLDBException {
         final Collection expandTestCol = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "expand-test");
         ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc1.xml", DOC1_CONTENT.getBytes(UTF_8));
         ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc2.xml", DOC2_CONTENT.getBytes(UTF_8));
@@ -58,7 +58,7 @@ public class ExpandTest {
     }
 
     @Test
-    public void expandWithDefaultNS() throws XMLDBException {
+    void expandWithDefaultNS() throws XMLDBException {
     	final String expected = "<ok xmlns=\"some\">\n    <concept xmlns=\"\"/>\n</ok>";
 
         String query = """
@@ -85,7 +85,7 @@ public class ExpandTest {
     }
 
     @Test
-    public void expandPersistentDom() throws XMLDBException {
+    void expandPersistentDom() throws XMLDBException {
         final String query = "util:expand(doc('/db/expand-test/doc1.xml'))";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -93,7 +93,7 @@ public class ExpandTest {
     }
 
     @Test
-    public void expandPersistentDomCommentsFirst() throws XMLDBException {
+    void expandPersistentDomCommentsFirst() throws XMLDBException {
         final String query = "util:expand(doc('/db/expand-test/doc2.xml'))";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -101,7 +101,7 @@ public class ExpandTest {
     }
 
     @Test
-    public void expandPersistentDomAttr() throws XMLDBException {
+    void expandPersistentDomAttr() throws XMLDBException {
         final String query = "util:expand(doc('/db/expand-test/doc3.xml')/doc3/@foo)";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource res = result.getResource(0);
@@ -115,7 +115,7 @@ public class ExpandTest {
     }
 
     @Test
-    public void expandPersistentDomAttrNs() throws XMLDBException {
+    void expandPersistentDomAttrNs() throws XMLDBException {
         final String query = """
                 declare namespace x = "http://x";
                 util:expand(doc('/db/expand-test/doc4.xml')/doc4/@x:foo)""";

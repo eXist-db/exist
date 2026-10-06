@@ -96,7 +96,7 @@ public class NativeSchemaJaxpCatalogGapTest {
     private static String nativeSchemaFileUri;
 
     @BeforeAll
-    public static void prepareResources() throws XMLDBException {
+    static void prepareResources() throws XMLDBException {
         nativeSchemaPath = resolveSchemaPath();
         assertTrue(Files.exists(nativeSchemaPath),
                 """
@@ -128,13 +128,13 @@ public class NativeSchemaJaxpCatalogGapTest {
     }
 
     @BeforeEach
-    public void clearGrammarCache() throws XMLDBException {
+    void clearGrammarCache() throws XMLDBException {
         final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
     @Test
-    public void jaxvXsd11AgainstNativeCollectionSchemaValid() throws Exception {
+    void jaxvXsd11AgainstNativeCollectionSchemaValid() throws Exception {
         final String query = """
                 validation:jaxv-report(
                     doc('/db/native-schema-gap/valid.xml'),
@@ -145,7 +145,7 @@ public class NativeSchemaJaxpCatalogGapTest {
     }
 
     @Test
-    public void jaxvXsd11AgainstNativeCollectionSchemaEmptyFailsAssert() throws Exception {
+    void jaxvXsd11AgainstNativeCollectionSchemaEmptyFailsAssert() throws Exception {
         final String query = """
                 validation:jaxv-report(
                     doc('/db/native-schema-gap/empty.xml'),
@@ -163,7 +163,7 @@ public class NativeSchemaJaxpCatalogGapTest {
      * {@code schemaLocation} hint on the instance).
      */
     @Test
-    public void jaxpViaOasisCatalogAgainstNativeCollectionSchemaValid() throws Exception {
+    void jaxpViaOasisCatalogAgainstNativeCollectionSchemaValid() throws Exception {
         final String query = """
                 validation:jaxp-report(
                     doc('/db/native-schema-gap/valid.xml'),

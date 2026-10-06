@@ -40,9 +40,9 @@ public class CounterTest {
 
     private final static String IMPORT = "import module namespace counter=\"" + CounterModule.NAMESPACE_URI + "\" " +
         "at \"java:org.exist.xquery.modules.counter.CounterModule\"; ";
-    
+
     @Test
-    public void createAndDestroyCounter() throws XPathException, XMLDBException {
+    void createAndDestroyCounter() throws XPathException, XMLDBException {
         String query = IMPORT + "counter:create('jasper1')";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
@@ -58,9 +58,9 @@ public class CounterTest {
         r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
     }
-    
+
     @Test
-    public void createAndInitAndDestroyCounter() throws XPathException, XMLDBException {
+    void createAndInitAndDestroyCounter() throws XPathException, XMLDBException {
         String query = IMPORT +"counter:create('jasper3',xs:long(1200))";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
@@ -76,9 +76,9 @@ public class CounterTest {
         r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
     }
-    
+
     @Test
-    public void threadedIncrement() throws XPathException, InterruptedException, XMLDBException {
+    void threadedIncrement() throws XPathException, InterruptedException, XMLDBException {
 		String query = IMPORT +"counter:create('jasper2')";
 		ResourceSet result = existEmbeddedServer.executeQuery(query);
 		

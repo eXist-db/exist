@@ -43,10 +43,10 @@ import org.w3c.dom.Node;
  *
  * @author aretter
  */
-public class URLRewriteTest {
+class URLRewriteTest {
 
     @Test
-    public void constructorAddsMultipleParameterValuesForSameParameterName() {
+    void constructorAddsMultipleParameterValuesForSameParameterName() {
 
         final String ELEMENT_ADD_PARAMETER = "add-parameter";
         final String PARAM_NAME = "param1";

@@ -72,7 +72,7 @@ public class MoveResourceTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @AfterAll
-    public static void closeHttpConnectionManager() {
+    static void closeHttpConnectionManager() {
         CheckThread.closeConnectionManager();
     }
 
@@ -85,7 +85,7 @@ public class MoveResourceTest {
     }
 
     @Test
-    public void testMove() throws InterruptedException, ExecutionException {
+    void testMove() throws InterruptedException, ExecutionException {
 
         final List<Callable<Boolean>> tasks = new ArrayList<>();
         tasks.add(new MoveThread(50));

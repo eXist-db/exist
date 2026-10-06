@@ -50,7 +50,7 @@ import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ConcurrentStoreTest {
+class ConcurrentStoreTest {
 
     private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
 
@@ -62,7 +62,7 @@ public class ConcurrentStoreTest {
     private Collection test, test2;
 
     @Test
-    public void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         setupCollections(pool);
@@ -128,12 +128,12 @@ public class ConcurrentStoreTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
     

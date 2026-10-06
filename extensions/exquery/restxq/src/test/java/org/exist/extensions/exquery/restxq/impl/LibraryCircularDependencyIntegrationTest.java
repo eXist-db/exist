@@ -114,12 +114,12 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
     );
 
     @BeforeEach
-    public void enableRestXq() throws IOException {
+    void enableRestXq() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
     }
 
     @AfterEach
-    public void removeResourceFunctions() throws IOException, InterruptedException {
+    void removeResourceFunctions() throws IOException, InterruptedException {
         removeXquery(TEST_COLLECTION, storeThirdModuleFilename);
         removeXquery(TEST_COLLECTION, storeSecondModuleFilename);
         removeXquery(TEST_COLLECTION, storeFirstModuleFilename);
@@ -128,7 +128,7 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0} {1} {2}")
-    public void storeCircularXqueryLibraryModules(String storeFirstModuleFilename, String storeSecondModuleFilename, String storeThirdModuleFilename) throws IOException, InterruptedException {
+    void storeCircularXqueryLibraryModules(String storeFirstModuleFilename, String storeSecondModuleFilename, String storeThirdModuleFilename) throws IOException, InterruptedException {
         initLibraryCircularDependencyIntegrationTest(storeFirstModuleFilename, storeSecondModuleFilename, storeThirdModuleFilename);
         final String firstModuleContent = filenameToXQuery.get(storeFirstModuleFilename);
         storeXquery(TEST_COLLECTION, storeFirstModuleFilename, firstModuleContent);

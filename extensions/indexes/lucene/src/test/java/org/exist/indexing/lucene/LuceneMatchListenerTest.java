@@ -167,7 +167,7 @@ public class LuceneMatchListenerTest {
      * &lt;create qname="a"/&gt;.
      */
     @Test
-    public void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
 
         configureAndStore(CONF2, XML);
 
@@ -220,7 +220,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
+    void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
         configureAndStore(CONF1, XML);
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -241,7 +241,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
+    void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
         configureAndStore(CONF3, XML);
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -262,7 +262,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineNodesWhenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void inlineNodesWhenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF4, XML1);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -311,7 +311,7 @@ public class LuceneMatchListenerTest {
      * to verify expectations. Does not assert.
      */
     @Test
-    public void issue4835Diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void issue4835Diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -378,7 +378,7 @@ public class LuceneMatchListenerTest {
      * nodes or multiple matches in parent. Fixed by stopping scan at root boundary in LuceneMatchListener.
      */
     @Test
-    public void issue4835MultipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void issue4835MultipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -433,7 +433,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -478,7 +478,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -500,7 +500,7 @@ public class LuceneMatchListenerTest {
     }
 
     @BeforeAll
-    public static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -515,7 +515,7 @@ public class LuceneMatchListenerTest {
     }
 
     @AfterAll
-    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 

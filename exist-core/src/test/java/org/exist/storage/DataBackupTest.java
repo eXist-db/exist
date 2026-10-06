@@ -79,7 +79,7 @@ public class DataBackupTest {
     public static File folder;
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -92,7 +92,7 @@ public class DataBackupTest {
     }
 
     @Test
-    public void backup() throws InterruptedException, IOException, EXistException, PermissionDeniedException, SAXException, LockException {
+    void backup() throws InterruptedException, IOException, EXistException, PermissionDeniedException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         // Store a document to ensure all storage systems are initialized and flushed

@@ -63,7 +63,7 @@ public class RenameCollectionTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void renameSameName(String apiName, String baseUri) throws XMLDBException {
+    void renameSameName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
         setUp();
         /*
@@ -98,7 +98,7 @@ public class RenameCollectionTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void renameDifferentName(String apiName, String baseUri) throws XMLDBException {
+    void renameDifferentName(String apiName, String baseUri) throws XMLDBException {
         initRenameCollectionTest(apiName, baseUri);
         setUp();
         /*
@@ -134,7 +134,7 @@ public class RenameCollectionTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);

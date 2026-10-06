@@ -93,7 +93,7 @@ public class EvalWebSocketEndpointTest {
             new ExistWebServer(true, false, true, true);
 
     @BeforeAll
-    public static void storeTestModule() throws Exception {
+    static void storeTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final SecurityManager securityManager = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(securityManager.getSystemSubject()));
@@ -118,7 +118,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @AfterAll
-    public static void cleanupTestModule() throws Exception {
+    static void cleanupTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final SecurityManager securityManager = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(securityManager.getSystemSubject()));
@@ -193,7 +193,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void simpleEval() throws Exception {
+    void simpleEval() throws Exception {
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
         final List<String> allMessages = new CopyOnWriteArrayList<>();
@@ -237,7 +237,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void evalWithVariables() throws Exception {
+    void evalWithVariables() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
         final AtomicReference<String> errorData = new AtomicReference<>();
@@ -283,7 +283,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void compileError() throws Exception {
+    void compileError() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> errorMsg = new AtomicReference<>();
 
@@ -323,7 +323,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void compileAction() throws Exception {
+    void compileAction() throws Exception {
         final CountDownLatch compileLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> compileMsg = new AtomicReference<>();
 
@@ -363,7 +363,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void compileActionWithError() throws Exception {
+    void compileActionWithError() throws Exception {
         final CountDownLatch compileLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> compileMsg = new AtomicReference<>();
 
@@ -403,7 +403,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void streamingResults() throws Exception {
+    void streamingResults() throws Exception {
         final List<Map<String, Object>> resultChunks = new CopyOnWriteArrayList<>();
         final CountDownLatch finalLatch = new CountDownLatch(1);
 
@@ -460,7 +460,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void cancellation() throws Exception {
+    void cancellation() throws Exception {
         final CountDownLatch cancelledLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> cancelledMsg = new AtomicReference<>();
         final CountDownLatch progressLatch = new CountDownLatch(1);
@@ -517,7 +517,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void timing() throws Exception {
+    void timing() throws Exception {
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> resultMsg = new AtomicReference<>();
 
@@ -556,7 +556,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void progressReporting() throws Exception {
+    void progressReporting() throws Exception {
         final List<Map<String, Object>> progressMessages = new CopyOnWriteArrayList<>();
         final CountDownLatch doneLatch = new CountDownLatch(1);
 
@@ -601,7 +601,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void serializationOptions() throws Exception {
+    void serializationOptions() throws Exception {
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
 
@@ -644,7 +644,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void maxExecutionTime() throws Exception {
+    void maxExecutionTime() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> errorMsg = new AtomicReference<>();
 
@@ -686,7 +686,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void invalidMessage() throws Exception {
+    void invalidMessage() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
 
         final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -719,7 +719,7 @@ public class EvalWebSocketEndpointTest {
     }
 
     @Test
-    public void missingQuery() throws Exception {
+    void missingQuery() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
 
         final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -759,7 +759,7 @@ public class EvalWebSocketEndpointTest {
      * Two eval actions on the same connection should produce independent results.
      */
     @Test
-    public void concurrentQueries() throws Exception {
+    void concurrentQueries() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(2);
         final Map<String, String> results = new ConcurrentHashMap<>();
 
@@ -808,7 +808,7 @@ public class EvalWebSocketEndpointTest {
      * Stream 100K+ items and verify chunk count.
      */
     @Test
-    public void largeResultStreaming() throws Exception {
+    void largeResultStreaming() throws Exception {
         final int totalItems = 100000;
         final int chunkSize = 1000;
         final int expectedChunks = totalItems / chunkSize; // 100
@@ -865,7 +865,7 @@ public class EvalWebSocketEndpointTest {
      * xs:base64Binary result should serialize without error.
      */
     @Test
-    public void binaryResultHandling() throws Exception {
+    void binaryResultHandling() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
         final AtomicReference<String> errorData = new AtomicReference<>();
@@ -916,7 +916,7 @@ public class EvalWebSocketEndpointTest {
      * Map and array results should serialize with adaptive method.
      */
     @Test
-    public void mapArrayResultSerialization() throws Exception {
+    void mapArrayResultSerialization() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
         final AtomicReference<String> errorData = new AtomicReference<>();
@@ -968,7 +968,7 @@ public class EvalWebSocketEndpointTest {
      * Query that imports a module stored in the database via module-load-path.
      */
     @Test
-    public void moduleLoadPath() throws Exception {
+    void moduleLoadPath() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
         final AtomicReference<String> errorData = new AtomicReference<>();
@@ -1020,7 +1020,7 @@ public class EvalWebSocketEndpointTest {
      * Non-DBA user should get permission denied.
      */
     @Test
-    public void adminCancelRequiresDba() throws Exception {
+    void adminCancelRequiresDba() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
         final AtomicReference<Map<String, Object>> errorMsg = new AtomicReference<>();
 
@@ -1065,7 +1065,7 @@ public class EvalWebSocketEndpointTest {
      * are broadcast when a query runs on /ws/eval.
      */
     @Test
-    public void monitorChannelReceivesQueryEvents() throws Exception {
+    void monitorChannelReceivesQueryEvents() throws Exception {
         final List<Map<String, Object>> monitorMessages = new CopyOnWriteArrayList<>();
         final CountDownLatch monitorEventLatch = new CountDownLatch(1);
         final CountDownLatch evalDoneLatch = new CountDownLatch(1);
@@ -1153,7 +1153,7 @@ public class EvalWebSocketEndpointTest {
      * Disconnect mid-query: the server should cancel the query and release resources.
      */
     @Test
-    public void connectionCleanup() throws Exception {
+    void connectionCleanup() throws Exception {
         final CountDownLatch progressLatch = new CountDownLatch(1);
 
         final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -1199,7 +1199,7 @@ public class EvalWebSocketEndpointTest {
      * After sending invalid JSON, the connection should stay alive for subsequent valid messages.
      */
     @Test
-    public void errorRecovery() throws Exception {
+    void errorRecovery() throws Exception {
         final CountDownLatch errorLatch = new CountDownLatch(1);
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final AtomicReference<String> resultData = new AtomicReference<>();
@@ -1248,7 +1248,7 @@ public class EvalWebSocketEndpointTest {
      * Should either cancel or complete without hanging.
      */
     @Test
-    public void rapidCancel() throws Exception {
+    void rapidCancel() throws Exception {
         final CountDownLatch doneLatch = new CountDownLatch(1);
         final AtomicReference<String> responseType = new AtomicReference<>();
 

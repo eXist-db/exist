@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class CollectionLocksTest {
+class CollectionLocksTest {
 
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
     private static final int TEST_DEADLOCK_TIMEOUT = 24_000; // 24 seconds
@@ -130,7 +130,7 @@ public class CollectionLocksTest {
      * a read lock at the same time
      */
     @Test
-    public void multipleReaders() throws LockException, InterruptedException, ExecutionException {
+    void multipleReaders() throws LockException, InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI collectionUri = XmldbURI.create("/db/x/y/z");
 
@@ -176,7 +176,7 @@ public class CollectionLocksTest {
      * holds the write lock when the second thread attempts to acquire it
      */
     @Test
-    public void singleWriter() throws LockException, InterruptedException, ExecutionException {
+    void singleWriter() throws LockException, InterruptedException, ExecutionException {
         singleWriter(false);
     }
 
@@ -189,7 +189,7 @@ public class CollectionLocksTest {
      * holds the write lock when the second thread attempts to acquire it
      */
     @Test
-    public void singleWriter_lockParent() throws LockException, InterruptedException, ExecutionException {
+    void singleWriter_lockParent() throws LockException, InterruptedException, ExecutionException {
         singleWriter(true);
     }
 
@@ -277,7 +277,7 @@ public class CollectionLocksTest {
      * t2,2 - request WRITE_LOCK /db/x/y
      */
     @Test
-    public void S1_noDeadlock_writeWrite_subtree_parentFirst() throws InterruptedException, ExecutionException {
+    void S1_noDeadlock_writeWrite_subtree_parentFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
@@ -293,7 +293,7 @@ public class CollectionLocksTest {
      * t2,2 - request WRITE_LOCK /db/x/y/z
      */
     @Test
-    public void S2_noDeadlock_writeWrite_subtree_descendantFirst() throws InterruptedException, ExecutionException {
+    void S2_noDeadlock_writeWrite_subtree_descendantFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y/z");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y");
 
@@ -309,7 +309,7 @@ public class CollectionLocksTest {
      * t2,2 - request WRITE_LOCK /db/a
      */
     @Test
-    public void S3_noDeadlock_writeWrite_leftRight() throws InterruptedException, ExecutionException {
+    void S3_noDeadlock_writeWrite_leftRight() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
@@ -325,7 +325,7 @@ public class CollectionLocksTest {
      * t2,2 - request WRITE_LOCK /db/b
      */
     @Test
-    public void S4_noDeadlock_writeWrite_rightLeft() throws InterruptedException, ExecutionException {
+    void S4_noDeadlock_writeWrite_rightLeft() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/b");
         final XmldbURI col2Uri = XmldbURI.create("/db/a");
 
@@ -341,7 +341,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/x/y
      */
     @Test
-    public void S5_noDeadlock_writeRead_subtree_parentFirst() throws InterruptedException, ExecutionException {
+    void S5_noDeadlock_writeRead_subtree_parentFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
@@ -357,7 +357,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/x/y/z
      */
     @Test
-    public void S6_noDeadlock_writeRead_subtree_descendantFirst() throws InterruptedException, ExecutionException {
+    void S6_noDeadlock_writeRead_subtree_descendantFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y/z");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y");
 
@@ -373,7 +373,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/a
      */
     @Test
-    public void S7_noDeadlock_writeRead_leftRight() throws InterruptedException, ExecutionException {
+    void S7_noDeadlock_writeRead_leftRight() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
@@ -389,7 +389,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/b
      */
     @Test
-    public void S8_noDeadlock_writeRead_rightLeft() throws InterruptedException, ExecutionException {
+    void S8_noDeadlock_writeRead_rightLeft() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/b");
         final XmldbURI col2Uri = XmldbURI.create("/db/a");
 
@@ -405,7 +405,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/x/y
      */
     @Test
-    public void S9_noDeadlock_readRead_subtree_parentFirst() throws InterruptedException, ExecutionException {
+    void S9_noDeadlock_readRead_subtree_parentFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
@@ -421,7 +421,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/x/y/z
      */
     @Test
-    public void S10_noDeadlock_readRead_subtree_descendantFirst() throws InterruptedException, ExecutionException {
+    void S10_noDeadlock_readRead_subtree_descendantFirst() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y/z");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y");
 
@@ -437,7 +437,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/a
      */
     @Test
-    public void S11_noDeadlock_readRead_leftRight() throws InterruptedException, ExecutionException {
+    void S11_noDeadlock_readRead_leftRight() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
@@ -453,7 +453,7 @@ public class CollectionLocksTest {
      * t2,2 - request READ_LOCK /db/b
      */
     @Test
-    public void S12_noDeadlock_readRead_rightLeft() throws InterruptedException, ExecutionException {
+    void S12_noDeadlock_readRead_rightLeft() throws InterruptedException, ExecutionException {
         final XmldbURI col1Uri = XmldbURI.create("/db/b");
         final XmldbURI col2Uri = XmldbURI.create("/db/a");
 
@@ -554,7 +554,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_writeWrite_subtree() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_writeWrite_subtree() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
@@ -572,7 +572,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_writeWrite() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_writeWrite() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
@@ -590,7 +590,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_writeRead_subtree() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_writeRead_subtree() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
@@ -608,7 +608,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_writeRead() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_writeRead() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
@@ -626,7 +626,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_readRead_subtree() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_readRead_subtree() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
@@ -644,7 +644,7 @@ public class CollectionLocksTest {
     }
 
     @Test
-    public void stress_noDeadlock_readRead() throws InterruptedException, ExecutionException {
+    void stress_noDeadlock_readRead() throws InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
 
         final XmldbURI col1Uri = XmldbURI.create("/db/a");

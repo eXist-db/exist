@@ -69,7 +69,7 @@ public class CollectionTest {
     }
 
     @Test
-    public void doc_dynamicallyAvailableCollection_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
+    void doc_dynamicallyAvailableCollection_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
@@ -101,7 +101,7 @@ public class CollectionTest {
     }
 
     @Test
-    public void doc_dynamicallyAvailableCollection_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
+    void doc_dynamicallyAvailableCollection_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";

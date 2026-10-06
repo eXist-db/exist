@@ -77,13 +77,13 @@ public class DeepEmbeddedBackupRestoreTest {
     private final XXHash64 hash64 = xxHashFactory.hash64();
 
     @BeforeAll
-    public static void registerXmldbDatabaseDriver() throws XMLDBException {
+    static void registerXmldbDatabaseDriver() throws XMLDBException {
         final DatabaseImpl databaseImpl = new DatabaseImpl();
         DatabaseManager.registerDatabase(databaseImpl);
     }
 
     @Test
-    public void backupThenRestore() throws IOException, XMLDBException, SAXException, LockException, PermissionDeniedException, EXistException {
+    void backupThenRestore() throws IOException, XMLDBException, SAXException, LockException, PermissionDeniedException, EXistException {
         // create some collections and documents in the database
         final CollectionsAndDocuments collectionsAndDocs = createHierarchy(XmldbURI.create("/db/exist-EmbeddedBackupRestoreWithAppsTest"), 20, 20, 20, 20);
         assertFalse(collectionsAndDocs.collectionUris.isEmpty());

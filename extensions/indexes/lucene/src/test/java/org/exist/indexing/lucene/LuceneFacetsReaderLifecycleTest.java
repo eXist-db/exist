@@ -81,7 +81,7 @@ public class LuceneFacetsReaderLifecycleTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transactionManager = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -98,7 +98,7 @@ public class LuceneFacetsReaderLifecycleTest {
     }
 
     @Test
-    public void facetsAreReadableAfterTheIndexWasRefreshed() throws Exception {
+    void facetsAreReadableAfterTheIndexWasRefreshed() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transactionManager = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

@@ -60,7 +60,7 @@ public class MoveCollectionTest {
      * Test move collection /db/a/b/c/d/e/f/g/h/i/j/k to /db/z/y/x/w/v/u/k
      */
     @Test
-    public void moveDeep() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
+    void moveDeep() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -96,7 +96,7 @@ public class MoveCollectionTest {
      * this test checks that the sub-collections are correctly preserved.
      */
     @Test
-    public void moveDeepWithSubCollections() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
+    void moveDeepWithSubCollections() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -143,7 +143,7 @@ public class MoveCollectionTest {
      * Test rename collection /db/move-collection-test-rename/before to /db/move-collection-test-rename/after
      */
     @Test
-    public void rename() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void rename() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -183,7 +183,7 @@ public class MoveCollectionTest {
      * this test checks that the sub-collections are correctly preserved.
      */
     @Test
-    public void renameWithSubCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void renameWithSubCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

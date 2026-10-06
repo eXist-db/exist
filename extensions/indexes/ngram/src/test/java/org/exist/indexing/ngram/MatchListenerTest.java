@@ -125,7 +125,7 @@ public class MatchListenerTest {
 
 
     @Test
-    public void nestedContent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void nestedContent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -163,7 +163,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void matchInParent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void matchInParent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -180,7 +180,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void matchInAncestor() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void matchInAncestor() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -203,7 +203,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void nestedIndex() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void nestedIndex() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -232,7 +232,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void mixedContentQueries() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
+    void mixedContentQueries() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -273,7 +273,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void indexOnInnerElement() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void indexOnInnerElement() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF2, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -297,7 +297,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void doubleMatch() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
+    void doubleMatch() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -328,7 +328,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -464,7 +464,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+    void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -489,7 +489,7 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, CollectionConfigurationException, LockException, EXistException {
+    void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, CollectionConfigurationException, LockException, EXistException {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -519,7 +519,7 @@ public class MatchListenerTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -534,7 +534,7 @@ public class MatchListenerTest {
     }
 
     @AfterAll
-    public static void closeDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void closeDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         final TransactionManager transact = pool.getTransactionManager();

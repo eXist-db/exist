@@ -44,21 +44,21 @@ public class NativeValueIndexTest {
     public int type;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void convertToAtomicNull(String typeName, int type) {
+    void convertToAtomicNull(String typeName, int type) {
         initNativeValueIndexTest(typeName, type);
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, null);
         assertNull(result);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void convertToAtomicEmptyString(String typeName, int type) {
+    void convertToAtomicEmptyString(String typeName, int type) {
         initNativeValueIndexTest(typeName, type);
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, "");
         assertNull(result);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void convertToAtomic(String typeName, int type) throws XPathException {
+    void convertToAtomic(String typeName, int type) throws XPathException {
         initNativeValueIndexTest(typeName, type);
         final String mockValue = "1234567890";
         final AtomicValue result = NativeValueIndex.convertToAtomic(type, mockValue);

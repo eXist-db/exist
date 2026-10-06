@@ -51,7 +51,7 @@ public class CommentTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void commentContentNotEscaped() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
+    void commentContentNotEscaped() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final XmldbURI docUri = XmldbURI.create("comments.xml");
         final String xml = "<root><!-- text <a> &lt;b&gt;  --></root>";
 

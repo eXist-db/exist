@@ -105,7 +105,7 @@ public class AttributeEqIndexConsistencyTest {
     private static XmldbURI collectionUri;
 
     @BeforeAll
-    public static void setUp() throws EXistException, PermissionDeniedException, LockException,
+    static void setUp() throws EXistException, PermissionDeniedException, LockException,
             TriggerException, SAXException, CollectionConfigurationException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         collectionUri = XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION_NAME);
@@ -127,7 +127,7 @@ public class AttributeEqIndexConsistencyTest {
     }
 
     @AfterAll
-    public static void tearDown() throws EXistException, PermissionDeniedException, LockException,
+    static void tearDown() throws EXistException, PermissionDeniedException, LockException,
             TriggerException, IOException {
         if (collectionUri == null) {
             return;
@@ -148,7 +148,7 @@ public class AttributeEqIndexConsistencyTest {
      * Reduced reproducer from issue #3964: both shapes must agree.
      */
     @Test
-    public void attributeEqMatchesStringEqOnCollectionWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
+    void attributeEqMatchesStringEqOnCollectionWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
         final long shapeA = count(
                 "collection('/db/" + COLLECTION_NAME + "')//contrib-id[@contrib-id-type eq 'jb-contributor-id']");
         final long shapeB = count(
@@ -166,7 +166,7 @@ public class AttributeEqIndexConsistencyTest {
      * Same check using {@code =} (general comparison).
      */
     @Test
-    public void attributeGeneralEqMatchesStringEqOnCollectionWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
+    void attributeGeneralEqMatchesStringEqOnCollectionWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
         final long shapeA = count(
                 "collection('/db/" + COLLECTION_NAME + "')//contrib-id[@contrib-id-type = 'jb-contributor-id']");
         final long shapeB = count(
@@ -181,7 +181,7 @@ public class AttributeEqIndexConsistencyTest {
      * and guards against regressing it.
      */
     @Test
-    public void attributeEqMatchesStringEqOnDocWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
+    void attributeEqMatchesStringEqOnDocWithoutIndex() throws EXistException, PermissionDeniedException, XPathException {
         final String docPath = "/db/" + COLLECTION_NAME + "/article-1.xml";
         final long shapeA = count("doc('" + docPath + "')//contrib-id[@contrib-id-type eq 'jb-contributor-id']");
         final long shapeB = count("doc('" + docPath + "')//contrib-id[@contrib-id-type/string() eq 'jb-contributor-id']");

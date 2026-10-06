@@ -62,7 +62,7 @@ public class SecurityManagerTest {
     private static final String TEST_GROUP_NAME = TEST_USER_NAME;
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException {
+    static void setup() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final SecurityManager securityManager = brokerPool.getSecurityManager();
 
@@ -86,7 +86,7 @@ public class SecurityManagerTest {
     }
 
     @Test
-    public void deleteAccount() throws EXistException, PermissionDeniedException, XPathException, LockException {
+    void deleteAccount() throws EXistException, PermissionDeniedException, XPathException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final SecurityManager securityManager = brokerPool.getSecurityManager();
 

@@ -39,42 +39,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class ExistXqueryRegistryTest {
-    
+class ExistXqueryRegistryTest {
+
     @Test
-    public void getAbsoluteModuleHint_relative() {
+    void getAbsoluteModuleHint_relative() {
         
         final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
-    
+
     @Test
-    public void getAbsoluteModuleHint_relativeParent() {
+    void getAbsoluteModuleHint_relativeParent() {
         
         final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("../b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/b.xqm", absoluteModulePath);
     }
-    
+
     @Test
-    public void getAbsoluteModuleHint_absoluteEmbedded() {
+    void getAbsoluteModuleHint_absoluteEmbedded() {
         
         final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("xmldb:exist://embedded-eXist-server/db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
-    
+
     @Test
-    public void getAbsoluteModuleHint_absoluteLocal() {
+    void getAbsoluteModuleHint_absoluteLocal() {
         
         final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("xmldb:exist:///db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
-    
+
     @Test
-    public void getAbsoluteModuleHint_absoluteSimple() {
+    void getAbsoluteModuleHint_absoluteSimple() {
         
         final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("/db/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         

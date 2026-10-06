@@ -46,7 +46,7 @@ public class MapEntryRegressionTest {
 
     /** XQTS map-entry-003: looking up an absent key returned Java null and NPE'd in fn:empty. */
     @Test
-    public void missingKeyLookupSequenceValueReturnsEmpty() throws Exception {
+    void missingKeyLookupSequenceValueReturnsEmpty() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry("foo", ("x", "y", "z"))
                 return empty($result("bar"))
@@ -55,7 +55,7 @@ public class MapEntryRegressionTest {
 
     /** XQTS map-entry-004: same NPE shape, untyped-atomic key + map value. */
     @Test
-    public void missingKeyLookupUntypedAtomicKeyMapValueReturnsEmpty() throws Exception {
+    void missingKeyLookupUntypedAtomicKeyMapValueReturnsEmpty() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry(xs:untypedAtomic("foo"), map{})
                 return empty($result("bar"))
@@ -67,7 +67,7 @@ public class MapEntryRegressionTest {
      * (op:same-key treats NaN as equal to NaN) retrieves the entry.
      */
     @Test
-    public void nanKeyXsDoubleStoredAndLookedUp() throws Exception {
+    void nanKeyXsDoubleStoredAndLookedUp() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry(number('NaN'), 'NaN')
                 return map:size($result) eq 1 and exists($result(number('NaN')))
@@ -76,7 +76,7 @@ public class MapEntryRegressionTest {
 
     /** XQTS map-entry-006: same as 005 but with xs:float NaN. */
     @Test
-    public void nanKeyXsFloatStoredAndLookedUp() throws Exception {
+    void nanKeyXsFloatStoredAndLookedUp() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry(xs:float('NaN'), 'NaN')
                 return map:size($result) eq 1 and exists($result(number('NaN')))
@@ -85,7 +85,7 @@ public class MapEntryRegressionTest {
 
     /** Cross-type NaN: xs:float('NaN') and xs:double('NaN') are op:same-key. */
     @Test
-    public void nanKeyCrossTypeLookup() throws Exception {
+    void nanKeyCrossTypeLookup() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry(xs:float('NaN'), 'fNaN')
                 return $result(xs:double('NaN')) eq 'fNaN'
@@ -94,7 +94,7 @@ public class MapEntryRegressionTest {
 
     /** map:get on a SingleKeyMapType with absent key returns (), not null. */
     @Test
-    public void mapGetMissingKeySingleKeyMapReturnsEmpty() throws Exception {
+    void mapGetMissingKeySingleKeyMapReturnsEmpty() throws Exception {
         assertEquals("true", run("""
                 let $result := map:entry("foo", "bar")
                 return empty(map:get($result, "baz"))

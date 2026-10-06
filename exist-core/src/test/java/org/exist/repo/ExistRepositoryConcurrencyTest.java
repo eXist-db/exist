@@ -69,7 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * threads that install or remove packages at the same time can read a half-written file
  * ({@code Error transforming the file: .../packages.xml}) or overwrite each other's change.</p>
  */
-public class ExistRepositoryConcurrencyTest {
+class ExistRepositoryConcurrencyTest {
 
     private static final int THREADS = 6;
     private static final int ROUNDS = 15;
@@ -86,7 +86,7 @@ public class ExistRepositoryConcurrencyTest {
      * No call may fail, and afterwards no package of this test may be left in the registry.
      */
     @Test
-    public void concurrentInstallAndRemoveOfDifferentPackages() throws Exception {
+    void concurrentInstallAndRemoveOfDifferentPackages() throws Exception {
         final ExistRepository repo = repository();
         final List<Path> xars = createPackages();
 
@@ -110,7 +110,7 @@ public class ExistRepositoryConcurrencyTest {
      * thread overwrote the change of another (a lost update).
      */
     @Test
-    public void registryKeepsEveryPackageInstalledAtTheSameTime() throws Exception {
+    void registryKeepsEveryPackageInstalledAtTheSameTime() throws Exception {
         final ExistRepository repo = repository();
         final List<Path> xars = createPackages();
 
@@ -148,7 +148,7 @@ public class ExistRepositoryConcurrencyTest {
      * {@link java.util.ConcurrentModificationException}.
      */
     @Test
-    public void listingPackagesIsNotDisturbedByAnInstallDuringTheIteration() throws Exception {
+    void listingPackagesIsNotDisturbedByAnInstallDuringTheIteration() throws Exception {
         final ExistRepository repo = repository();
         final List<Path> xars = createPackages();
         install(repo, xars.get(0));
@@ -184,7 +184,7 @@ public class ExistRepositoryConcurrencyTest {
      * cannot if the registry is locked while the download is read.
      */
     @Test
-    public void stalledDownloadDoesNotBlockOtherInstallsOrReaders() throws Exception {
+    void stalledDownloadDoesNotBlockOtherInstallsOrReaders() throws Exception {
         final ExistRepository repo = repository();
         final List<Path> xars = createPackages();
         final byte[] slowXar = Files.readAllBytes(xars.get(0));
@@ -246,7 +246,7 @@ public class ExistRepositoryConcurrencyTest {
      * {@link PackageException} that carries the {@code NotFoundException} of the address, and nothing is installed.
      */
     @Test
-    public void failedDownloadIsReportedLikeTheRepositoryDoes() throws Exception {
+    void failedDownloadIsReportedLikeTheRepositoryDoes() throws Exception {
         final ExistRepository repo = repository();
         final HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         server.createContext("/missing.xar", exchange -> exchange.sendResponseHeaders(404, -1));

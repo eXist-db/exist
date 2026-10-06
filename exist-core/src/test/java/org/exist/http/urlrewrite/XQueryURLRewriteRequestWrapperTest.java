@@ -43,10 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * {@code XQueryServlet}, fixed for eXist-db/exist#6615) even when the container could have resolved
  * a real path.
  */
-public class XQueryURLRewriteRequestWrapperTest {
+class XQueryURLRewriteRequestWrapperTest {
 
     @Test
-    public void nullPathInfoFallsBackToUnderlyingRequestPathTranslated() {
+    void nullPathInfoFallsBackToUnderlyingRequestPathTranslated() {
         final HttpServletRequest underlying = createNiceMock(HttpServletRequest.class);
         expect(underlying.getParameterMap()).andReturn(Collections.emptyMap()).anyTimes();
         expect(underlying.getPathTranslated()).andReturn("/underlying/real/path").anyTimes();
@@ -60,7 +60,7 @@ public class XQueryURLRewriteRequestWrapperTest {
     }
 
     @Test
-    public void nonNullPathInfoResolvesViaServletContextRealPath() {
+    void nonNullPathInfoResolvesViaServletContextRealPath() {
         final ServletContext servletContext = createNiceMock(ServletContext.class);
         expect(servletContext.getRealPath("/bar.xql")).andReturn("/resolved/real/path").anyTimes();
         replay(servletContext);

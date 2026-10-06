@@ -84,7 +84,7 @@ public class ConnectionIT {
     public H2DatabaseResource h2Database = new H2DatabaseResource();
 
     @Test
-    public void getConnectionIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getConnectionIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                 "sql:get-connection(\"" + h2Database.getDriverClass().getName() + "\", \"" + h2Database.getUrl() + "\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")";
@@ -120,7 +120,7 @@ public class ConnectionIT {
     }
 
     @Test
-    public void getConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, SAXException {
+    void getConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, SAXException {
         final String moduleQuery =
                 "module namespace mymodule = \"http://mymodule.com\";\n" +
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
@@ -185,7 +185,7 @@ public class ConnectionIT {
     }
 
     @Test
-    public void getConnectionCanBeExplicitlyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getConnectionCanBeExplicitlyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String query =
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                         "let $conn := sql:get-connection(\"" + h2Database.getDriverClass().getName() + "\", \"" + h2Database.getUrl() + "\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")\n" +

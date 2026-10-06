@@ -42,16 +42,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Peter Ciuffetti
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class MimeTableTest  {
+class MimeTableTest  {
 
-	/**
-	 * This test checks the behavior of MimeTable.java
-	 * with respect to the distribution version of mime-types.xml.
-	 * The distribution version of mime-types.xml does not use the
-	 * default mime type capability.
-	 */
+    /**
+     * This test checks the behavior of MimeTable.java
+     * with respect to the distribution version of mime-types.xml.
+     * The distribution version of mime-types.xml does not use the
+     * default mime type capability.
+     */
     @org.junit.jupiter.api.Test
-	public void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
+    void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
@@ -81,12 +81,12 @@ public class MimeTableTest  {
 		assertNull(mt, "Should return null mime type for file with extension not configured in mime-types.xml");
 	}
 
-	/**
-	 * This test checks the behavior of the mime-types@default-resource-type attribute
-	 * The test config assigns all resources to application/xml
-	 */
+    /**
+     * This test checks the behavior of the mime-types@default-resource-type attribute
+     * The test config assigns all resources to application/xml
+     */
     @org.junit.jupiter.api.Test
-	public void testWithDefaultResourceTypeFeature() throws URISyntaxException {
+    void testWithDefaultResourceTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-xml-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
@@ -120,12 +120,12 @@ public class MimeTableTest  {
 		assertEquals(MimeType.XML, mt.getType(), "Incorrect resource type");
 	}
 
-	/**
-	 * This test checks the behavior of the mime-types@default-mime-type attribute
-	 * The test config assigns all resources to foo/bar (BINARY)
-	 */
+    /**
+     * This test checks the behavior of the mime-types@default-mime-type attribute
+     * The test config assigns all resources to foo/bar (BINARY)
+     */
     @org.junit.jupiter.api.Test
-	public void testWithDefaultMimeTypeFeature() throws URISyntaxException {
+    void testWithDefaultMimeTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-foo-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
@@ -159,23 +159,23 @@ public class MimeTableTest  {
 		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 	}
 
-	@org.junit.jupiter.api.Test
-	public void testClasspathDefaultIncludesApplicationXquery() {
+    @org.junit.jupiter.api.Test
+    void testClasspathDefaultIncludesApplicationXquery() {
 		final MimeTable mimeTable = new MimeTable();
 		final MimeType xquery = mimeTable.getContentType("application/xquery");
 		assertNotNull(xquery, "application/xquery must be registered in the default mime-types.xml");
 		assertEquals("application/xquery", xquery.getName());
 	}
 
-	@org.junit.jupiter.api.Test
-	public void testUnreadablePathThrows() {
+    @org.junit.jupiter.api.Test
+    void testUnreadablePathThrows() {
 		final Path missing = Path.of("/nonexistent/mime-types-does-not-exist.xml");
 		final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> new MimeTable(missing));
 		assertTrue(ex.getMessage().contains("not readable"));
 	}
 
-	@org.junit.jupiter.api.Test
-	public void testInvalidXmlThrows() throws Exception {
+    @org.junit.jupiter.api.Test
+    void testInvalidXmlThrows() throws Exception {
 		final Path broken = Files.createTempFile("mime-types-broken", ".xml");
 		try {
 			Files.writeString(broken, "<not-valid-xml");

@@ -68,7 +68,7 @@ public class StressTest {
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void stressTest() throws XMLDBException {
+    void stressTest() throws XMLDBException {
         insertTags();
         removeTags();
         fetchDb();
@@ -138,7 +138,7 @@ public class StressTest {
     }
 
     @BeforeEach
-    public void setUp() throws XMLDBException {
+    void setUp() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
         if (testCol != null) {
@@ -158,7 +158,7 @@ public class StressTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    void tearDown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

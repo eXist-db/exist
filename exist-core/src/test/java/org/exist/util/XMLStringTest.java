@@ -26,13 +26,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class XMLStringTest {
+class XMLStringTest {
 
-	/*
-	 * Test for XMLString append(char[], int, int)
-	 */
-	@Test
-	public void appendcharArrayintint() {
+    /*
+     * Test for XMLString append(char[], int, int)
+     */
+    @Test
+    void appendcharArrayintint() {
 		final XMLString s = new XMLString();
 		try {
 			char ch[] = "Hello".toCharArray();
@@ -43,8 +43,8 @@ public class XMLStringTest {
 		}
 	}
 
-	@Test
-	public void normalize() {
+    @Test
+    void normalize() {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
@@ -61,8 +61,8 @@ public class XMLStringTest {
 		}
 	}
 
-	@Test
-    public void collapse() {
+    @Test
+    void collapse() {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
@@ -79,8 +79,8 @@ public class XMLStringTest {
 		}
     }
 
-	@Test
-	public void substring() {
+    @Test
+    void substring() {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
@@ -97,8 +97,8 @@ public class XMLStringTest {
 		}
 	}
 
-	@Test
-	public void insert() {
+    @Test
+    void insert() {
 		final XMLString s = new XMLString();
 		try {
 			final char ch[] = "Hello World".toCharArray();

@@ -38,13 +38,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class PermissionsFunctionModeConversionTest {
+class PermissionsFunctionModeConversionTest {
 
     /**
      * Test of eval method, of class PermissionsFunctions.
      */
     @Test
-    public void modeToOctal() throws XPathException {
+    void modeToOctal() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
@@ -57,9 +57,9 @@ public class PermissionsFunctionModeConversionTest {
        assertEquals(1, result.getItemCount());
        assertEquals("0750", result.itemAt(0).toString());
     }
-    
+
     @Test
-    public void modeToOctalInvalidMode() {
+    void modeToOctalInvalidMode() {
         final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
         final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
         Sequence args[] = {
@@ -69,9 +69,9 @@ public class PermissionsFunctionModeConversionTest {
 
             permissionsFunctions.eval(args, null));
     }
-    
+
     @Test
-    public void octalToMode() throws XPathException {
+    void octalToMode() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_OCTAL_TO_MODE);

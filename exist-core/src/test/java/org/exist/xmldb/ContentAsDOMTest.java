@@ -73,7 +73,7 @@ public class ContentAsDOMTest {
 
 
     @Test
-    public void getContentAsDOM() throws XMLDBException, TransformerException, IOException {
+    void getContentAsDOM() throws XMLDBException, TransformerException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XQueryService service = testCollection.getService(XQueryService.class);
         ResourceSet result = service.query(XQUERY);
@@ -94,7 +94,7 @@ public class ContentAsDOMTest {
 
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = testCollection.getService(UserManagementService.class);
@@ -110,7 +110,7 @@ public class ContentAsDOMTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         //delete the test collection
         Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
         CollectionManagementService service = root.getService(CollectionManagementService.class);

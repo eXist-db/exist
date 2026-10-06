@@ -76,7 +76,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
     private static Path testFile2 = null;
 
     @BeforeAll
-    public static void storeTempXmlDocs() throws IOException {
+    static void storeTempXmlDocs() throws IOException {
         testFile1 = temporaryFolder.toPath().resolve("RecoverXmlTest.doc1.xml");
         Files.write(testFile1, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element1>text1</element1>"), CREATE_NEW);
 
@@ -85,7 +85,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
     }
 
     @Test
-    public void storeLargeAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
+    void storeLargeAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, InterruptedException {
         // generate a string filled with random a-z characters which is larger than the journal buffer
         final byte[] buf = new byte[Journal.BUFFER_SIZE * 3]; // 3 * the journal buffer size

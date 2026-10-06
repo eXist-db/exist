@@ -34,7 +34,7 @@ public class DeclareVariableTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void defaultNamespaceTest() throws XMLDBException {
+    void defaultNamespaceTest() throws XMLDBException {
         final String query = """
             xquery version "3.1";
             

@@ -181,8 +181,8 @@ public class DeadlockIT {
 	@RegisterExtension
 	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeAll
-	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeAll
+    static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -209,14 +209,14 @@ public class DeadlockIT {
 	}
 
     @AfterEach
-    public void clearDB() throws XMLDBException {
+    void clearDB() throws XMLDBException {
 		final org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
 		CollectionManagementService service = root.getService(CollectionManagementService.class);
 		service.removeCollection(".");
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") @Timeout(value = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void runTasks(String testName, int mode) {
+    void runTasks(String testName, int mode) {
         initDeadlockIT(testName, mode);
 		taskFailure.set(null);
 		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);

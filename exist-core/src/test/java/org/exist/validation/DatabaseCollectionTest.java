@@ -52,7 +52,7 @@ public class DatabaseCollectionTest {
     private final static String TEST_COLLECTION = "testValidationDatabaseCollection";
 
     @BeforeEach
-    public void setUp() throws XMLDBException {
+    void setUp() throws XMLDBException {
         final CollectionManagementService cms = existServer.getRoot().getService(CollectionManagementService.class);
         final Collection test = cms.createCollection(TEST_COLLECTION);
         final UserManagementService ums = test.getService(UserManagementService.class);
@@ -64,14 +64,14 @@ public class DatabaseCollectionTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService cms = existServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);
     }
 
     @Test
-    public void createCollections() throws XMLDBException {
+    void createCollections() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         final CollectionManagementService service = testCollection.getService(CollectionManagementService.class);
         Collection validationCollection = service.createCollection(TestTools.VALIDATION_HOME_COLLECTION);

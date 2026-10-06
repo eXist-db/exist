@@ -47,7 +47,7 @@ public class BFileOverflowTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void add() throws EXistException, IOException {
+    void add() throws EXistException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager mgr = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -91,7 +91,7 @@ public class BFileOverflowTest {
     }
 
     @Test
-    public void read() throws EXistException {
+    void read() throws EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

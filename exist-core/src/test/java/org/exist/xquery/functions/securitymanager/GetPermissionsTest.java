@@ -54,7 +54,7 @@ public class GetPermissionsTest {
      * See https://github.com/eXist-db/exist/issues/3231
      */
     @Test
-    public void getPermissionsNestedXml() throws EXistException, PermissionDeniedException, XPathException {
+    void getPermissionsNestedXml() throws EXistException, PermissionDeniedException, XPathException {
         final String query = "<outer><inner perm=\"{sm:get-permissions(xs:anyURI(\"/db\"))/sm:permission/@owner}\"/></outer>";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

@@ -56,7 +56,7 @@ public class FilterInputStreamCacheMonitorTest {
     private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 
     @BeforeAll
-    public static void setup() throws XMLDBException, URISyntaxException {
+    static void setup() throws XMLDBException, URISyntaxException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
@@ -75,13 +75,13 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final CollectionManagementService cms = existXmldbEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION_NAME);
     }
 
     @Test
-    public void binaryResult() throws XMLDBException {
+    void binaryResult() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet
@@ -117,7 +117,7 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @Test
-    public void enclosedExpressionCleanup() throws XMLDBException {
+    void enclosedExpressionCleanup() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet
@@ -149,7 +149,7 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @Test
-    public void enclosedExpressionsCleanup() throws XMLDBException {
+    void enclosedExpressionsCleanup() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet

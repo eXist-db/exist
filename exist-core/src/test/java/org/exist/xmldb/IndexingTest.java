@@ -88,7 +88,7 @@ public class IndexingTest {
     private boolean randomSizes;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         siblingCount = 2;
         depth = 16;
         arity = 16;
@@ -97,7 +97,7 @@ public class IndexingTest {
     }
 
     @Test
-    public void irregularilyStructured()
+    void irregularilyStructured()
             throws XMLDBException, ParserConfigurationException, SAXException,
             IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 

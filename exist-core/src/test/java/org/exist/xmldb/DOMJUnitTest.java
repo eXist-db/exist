@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author <a href="mailto:pierrick.brihaye@free.fr">jmv
  * @author Pierrick Brihaye</a>
  */
-public class DOMJUnitTest extends RemoteDBTest {
+class DOMJUnitTest extends RemoteDBTest {
 	private static String name = "test.xml";
 	private Collection rootColl;
 	private Database database;
@@ -49,8 +49,8 @@ public class DOMJUnitTest extends RemoteDBTest {
 		return getUri() + XmldbURI.ROOT_COLLECTION;
 	}
 
-	@BeforeEach
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeEach
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		System.setProperty("exist.initdb", "true");
 		Class<?> dbc = Class.forName(DB_DRIVER);
 		database = (Database) dbc.newInstance();
@@ -63,10 +63,10 @@ public class DOMJUnitTest extends RemoteDBTest {
 		r.setContent("<?xml-stylesheet type=\"text/xsl\" href=\"test.xsl\"?><!-- Root Comment --><properties><property key=\"type\">Table</property></properties>");
 		rootColl.storeResource(r);
 	}
-	
-	/** test Update of an existing document through DOM */
-	@Test
-	public void domUpdate() throws XMLDBException {
+
+    /** test Update of an existing document through DOM */
+    @Test
+    void domUpdate() throws XMLDBException {
 		XMLResource index = (XMLResource) rootColl.getResource(name);
 		String content = (String) index.getContent();
 		Document doc=null;

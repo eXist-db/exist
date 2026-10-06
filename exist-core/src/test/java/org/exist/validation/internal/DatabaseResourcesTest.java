@@ -43,7 +43,7 @@ public class DatabaseResourcesTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void cleanupRunsOnSuccessPath() throws Exception {
+    void cleanupRunsOnSuccessPath() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
 

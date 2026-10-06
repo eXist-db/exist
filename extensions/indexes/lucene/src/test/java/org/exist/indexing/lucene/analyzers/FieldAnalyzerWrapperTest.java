@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * The text "Foo Bar" is told apart by its analyzer: the standard analyzer gives "foo" and "bar", the keyword
  * analyzer the whole text.
  */
-public class FieldAnalyzerWrapperTest {
+class FieldAnalyzerWrapperTest {
 
     private static final String TEXT = "Foo Bar";
     private static final List<String> STANDARD = List.of("foo", "bar");
@@ -67,12 +67,12 @@ public class FieldAnalyzerWrapperTest {
     }
 
     @Test
-    public void defaultAnalyzerIsUsedForAFieldWithoutOne() throws IOException {
+    void defaultAnalyzerIsUsedForAFieldWithoutOne() throws IOException {
         assertEquals(STANDARD, tokens(new FieldAnalyzerWrapper(standard), "p"));
     }
 
     @Test
-    public void registeredAnalyzerIsUsedWhenThreadGaveNone() throws IOException {
+    void registeredAnalyzerIsUsedWhenThreadGaveNone() throws IOException {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", keyword);
         assertEquals(KEYWORD, tokens(wrapper, "p"));
@@ -80,7 +80,7 @@ public class FieldAnalyzerWrapperTest {
     }
 
     @Test
-    public void analyzerOfThreadWinsOverRegisteredAnalyzer() throws IOException {
+    void analyzerOfThreadWinsOverRegisteredAnalyzer() throws IOException {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", keyword);
 
@@ -95,7 +95,7 @@ public class FieldAnalyzerWrapperTest {
      * document (it may wait for a flush that another thread started) another thread had put its own there.
      */
     @Test
-    public void analyzerOfThreadSurvivesAnotherThreadRegisteringOneForTheSameField() throws Exception {
+    void analyzerOfThreadSurvivesAnotherThreadRegisteringOneForTheSameField() throws Exception {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", standard);
 
@@ -117,7 +117,7 @@ public class FieldAnalyzerWrapperTest {
     }
 
     @Test
-    public void analyzerOfThreadIsNotSeenByOtherThreads() throws Exception {
+    void analyzerOfThreadIsNotSeenByOtherThreads() throws Exception {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", keyword);
 
@@ -142,7 +142,7 @@ public class FieldAnalyzerWrapperTest {
     }
 
     @Test
-    public void analyzersOfThreadAreRestoredAfterTheCallAndNest() throws IOException {
+    void analyzersOfThreadAreRestoredAfterTheCallAndNest() throws IOException {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", keyword);
 
@@ -158,7 +158,7 @@ public class FieldAnalyzerWrapperTest {
     }
 
     @Test
-    public void analyzersOfThreadAreRemovedWhenTheActionFails() {
+    void analyzersOfThreadAreRemovedWhenTheActionFails() {
         final FieldAnalyzerWrapper wrapper = new FieldAnalyzerWrapper(standard);
         wrapper.addAnalyzer("p", keyword);
 

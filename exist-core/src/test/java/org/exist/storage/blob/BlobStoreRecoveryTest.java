@@ -100,7 +100,7 @@ public class BlobStoreRecoveryTest {
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 
@@ -123,7 +123,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -160,7 +160,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is NOT present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -195,7 +195,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is NOT present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitRemoveCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitRemoveCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -231,7 +231,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitRemoveNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitRemoveNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -269,7 +269,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitAddCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitAddCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -307,7 +307,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitAddNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitAddNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -345,7 +345,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitAddCommitRemoveCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitAddCommitRemoveCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
@@ -384,7 +384,7 @@ public class BlobStoreRecoveryTest {
      * Expect that the Blob is present after recovery.
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void addCommitAddCommitRemoveNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+    void addCommitAddCommitRemoveNoCommit(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
         initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();

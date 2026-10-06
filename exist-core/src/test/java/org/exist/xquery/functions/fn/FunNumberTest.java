@@ -37,9 +37,9 @@ public class FunNumberTest {
 
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
-    
+
     @Test
-    public void testFnNumberWithContext() throws XMLDBException {
+    void testFnNumberWithContext() throws XMLDBException {
         final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
             "let $errors := " +
                 "<report>" +
@@ -55,9 +55,9 @@ public class FunNumberTest {
         assertEquals(1, resourceSet.getSize());
         assertEquals("194", resourceSet.getResource(0).getContent());
     }
-    
+
     @Test
-    public void testFnNumberWithArgument() throws XMLDBException {
+    void testFnNumberWithArgument() throws XMLDBException {
         final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
             "let $errors := " +
                 "<report>" +

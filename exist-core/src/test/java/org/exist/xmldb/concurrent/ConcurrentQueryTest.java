@@ -44,14 +44,14 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 	private Path tempFile;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         final String[] wordList = DBUtils.wordList();
         tempFile = DBUtils.generateXMLFile(500, 7, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         FileUtils.deleteQuietly(tempFile);
     }
 

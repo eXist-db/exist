@@ -46,13 +46,13 @@ public class IntersectElementReturnTypeTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void store() throws XMLDBException {
+    static void store() throws XMLDBException {
         embedded.executeQuery(
                 "xmldb:store('/db', 'issue4255.xml', <root><x/><y/><z/></root>)");
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         try {
             embedded.executeQuery("xmldb:remove('/db', 'issue4255.xml')");
         } catch (final XMLDBException ignored) {
@@ -60,7 +60,7 @@ public class IntersectElementReturnTypeTest {
     }
 
     @Test
-    public void persistentIntersectAgainstElementReturnType() throws XMLDBException {
+    void persistentIntersectAgainstElementReturnType() throws XMLDBException {
         final String query = """
                 declare function local:f() as element() {
                     let $root := doc('/db/issue4255.xml')/root
@@ -75,7 +75,7 @@ public class IntersectElementReturnTypeTest {
     }
 
     @Test
-    public void inMemoryIntersectAgainstElementReturnType() throws XMLDBException {
+    void inMemoryIntersectAgainstElementReturnType() throws XMLDBException {
         final String query = """
                 declare function local:f() as element() {
                     let $root := <root><x/><y/><z/></root>
@@ -90,7 +90,7 @@ public class IntersectElementReturnTypeTest {
     }
 
     @Test
-    public void persistentUnionAgainstElementReturnType() throws XMLDBException {
+    void persistentUnionAgainstElementReturnType() throws XMLDBException {
         // Sanity: same fix path should keep union working
         final String query = """
                 declare function local:f() as element()+ {
@@ -106,7 +106,7 @@ public class IntersectElementReturnTypeTest {
     }
 
     @Test
-    public void persistentExceptAgainstElementReturnType() throws XMLDBException {
+    void persistentExceptAgainstElementReturnType() throws XMLDBException {
         // Sanity: same fix path should keep except working
         final String query = """
                 declare function local:f() as element() {

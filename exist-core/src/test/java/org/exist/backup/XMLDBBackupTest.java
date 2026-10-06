@@ -98,7 +98,7 @@ public class XMLDBBackupTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void backupRestore(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+    void backupRestore(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
         initXMLDBBackupTest(apiName, baseUri, deduplicateBlobs);
         setUpTestCollection();
         final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);
@@ -141,7 +141,7 @@ public class XMLDBBackupTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void backupRestoreWithXmlDecl(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+    void backupRestoreWithXmlDecl(String apiName, String baseUri, boolean deduplicateBlobs) throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
         initXMLDBBackupTest(apiName, baseUri, deduplicateBlobs);
         setUpTestCollection();
         final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);

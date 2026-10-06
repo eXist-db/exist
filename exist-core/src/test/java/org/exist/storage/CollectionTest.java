@@ -57,7 +57,7 @@ public class CollectionTest {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
+    void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
 
@@ -109,7 +109,7 @@ public class CollectionTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         BrokerPool.FORCE_CORRUPTION = false;
         existEmbeddedServer.stopDb();
     }

@@ -40,13 +40,13 @@ import org.xml.sax.SAXException;
  * @author aretter
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DocumentBuilderReceiverTest {
+class DocumentBuilderReceiverTest {
 
     private static String ATOM_NS = "http://www.w3.org/2005/Atom";
 //    private static String ATOM_PREFIX = "atom";
     
     @Test
-    public void when_prefix_is_known_in_context_dont_use_if_namespace_equals_default_namespace() throws SAXException {
+    void when_prefix_is_known_in_context_dont_use_if_namespace_equals_default_namespace() throws SAXException {
         
         final String entry_name = "entry";
         final String id_name = "id";
@@ -87,7 +87,7 @@ public class DocumentBuilderReceiverTest {
     }
 
     @Test
-    public void use_given_namespace_prefix() throws SAXException {
+    void use_given_namespace_prefix() throws SAXException {
         // if an explicit namespace prefix is present, it should be used
         // unless a different mapping was defined in context
         final String title = "title";
@@ -122,7 +122,7 @@ public class DocumentBuilderReceiverTest {
     }
 
     @Test
-    public void use_namespace_prefix_from_context() throws SAXException {
+    void use_namespace_prefix_from_context() throws SAXException {
         // if a namespace is mapped in the current context, use its prefix and overwrite
         // local prefix
         final String title = "title";

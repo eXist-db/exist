@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * only). Fast, in-process coverage of the request-wrapping behavior that used to be exercisable
  * only indirectly through a full HTTP round trip.
  */
-public class ControllerRequestWrapperTest {
+class ControllerRequestWrapperTest {
 
     private static HttpServletRequest mockRequest() {
         final HttpServletRequest request = createNiceMock(HttpServletRequest.class);
@@ -49,7 +49,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getRequestURIUsesUnderlyingRequestWhenInContextPathNotSet() {
+    void getRequestURIUsesUnderlyingRequestWhenInContextPathNotSet() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getRequestURI()).andReturn("/exist/apps/foo").anyTimes();
         replay(underlying);
@@ -60,7 +60,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getRequestURIReflectsSetPaths() {
+    void getRequestURIReflectsSetPaths() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getContextPath()).andReturn("/exist").anyTimes();
         replay(underlying);
@@ -72,7 +72,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getRequestURIStripsJsessionid() {
+    void getRequestURIStripsJsessionid() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getRequestURI()).andReturn("/exist/apps/foo;jsessionid=ABC123").anyTimes();
         replay(underlying);
@@ -83,7 +83,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getInContextPathFallsBackToComputingFromRequestURI() {
+    void getInContextPathFallsBackToComputingFromRequestURI() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getRequestURI()).andReturn("/exist/apps/foo").anyTimes();
         expect(underlying.getContextPath()).andReturn("/exist").anyTimes();
@@ -95,7 +95,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void removePathPrefixStripsPrefixFromBothPaths() {
+    void removePathPrefixStripsPrefixFromBothPaths() {
         final HttpServletRequest underlying = mockRequest();
         replay(underlying);
 
@@ -108,7 +108,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getServletPathFallsBackToUnderlyingWhenNotSet() {
+    void getServletPathFallsBackToUnderlyingWhenNotSet() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getServletPath()).andReturn("").anyTimes();
         replay(underlying);
@@ -119,7 +119,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getPathInfoReturnsNullWhenPathEqualsServletPath() {
+    void getPathInfoReturnsNullWhenPathEqualsServletPath() {
         final HttpServletRequest underlying = mockRequest();
         replay(underlying);
 
@@ -130,7 +130,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getPathInfoReturnsRemainderAfterServletPath() {
+    void getPathInfoReturnsRemainderAfterServletPath() {
         final HttpServletRequest underlying = mockRequest();
         replay(underlying);
 
@@ -141,7 +141,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getPathInfoReturnsNullWhenServletPathLongerThanPath() {
+    void getPathInfoReturnsNullWhenServletPathLongerThanPath() {
         // Defensive branch: servletPath (set independently via setPaths) longer than the
         // in-context path itself -- an internal-inconsistency case that must not throw.
         final HttpServletRequest underlying = mockRequest();
@@ -154,7 +154,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void setDataMakesInputStreamAndContentLengthReflectTheBufferedBytes() throws Exception {
+    void setDataMakesInputStreamAndContentLengthReflectTheBufferedBytes() throws Exception {
         final HttpServletRequest underlying = mockRequest();
         replay(underlying);
 
@@ -166,7 +166,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getInputStreamFallsBackToUnderlyingWhenNoDataSet() throws Exception {
+    void getInputStreamFallsBackToUnderlyingWhenNoDataSet() throws Exception {
         final HttpServletRequest underlying = mockRequest();
         final jakarta.servlet.ServletInputStream underlyingStream = createNiceMock(jakarta.servlet.ServletInputStream.class);
         expect(underlying.getInputStream()).andReturn(underlyingStream).anyTimes();
@@ -178,7 +178,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getReaderReadsBackBufferedData() throws Exception {
+    void getReaderReadsBackBufferedData() throws Exception {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getCharacterEncoding()).andReturn("UTF-8").anyTimes();
         replay(underlying);
@@ -190,7 +190,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getParameterReturnsFirstCopiedValue() {
+    void getParameterReturnsFirstCopiedValue() {
         final HttpServletRequest underlying = createNiceMock(HttpServletRequest.class);
         expect(underlying.getParameterMap())
                 .andReturn(java.util.Map.of("name", new String[]{"first", "second"}))
@@ -205,7 +205,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void addParameterAppendsToExistingValues() {
+    void addParameterAppendsToExistingValues() {
         final HttpServletRequest underlying = createNiceMock(HttpServletRequest.class);
         expect(underlying.getParameterMap())
                 .andReturn(java.util.Map.of("name", new String[]{"first"}))
@@ -219,7 +219,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getContentTypeFallsBackToUnderlyingWhenNotOverridden() {
+    void getContentTypeFallsBackToUnderlyingWhenNotOverridden() {
         final HttpServletRequest underlying = createNiceMock(HttpServletRequest.class);
         expect(underlying.getParameterMap()).andReturn(Collections.emptyMap()).anyTimes();
         expect(underlying.getContentType()).andReturn("text/xml").anyTimes();
@@ -231,7 +231,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void setContentTypeOverridesUnderlyingValue() {
+    void setContentTypeOverridesUnderlyingValue() {
         // Constructor captures the underlying Content-Type at construction time; this proves an
         // explicit setContentType() call afterward wins over it, as applyViews() relies on when
         // it sets a view request's Content-Type from the previous step's response.
@@ -247,7 +247,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void characterEncodingFallsBackToUnderlyingUntilOverridden() {
+    void characterEncodingFallsBackToUnderlyingUntilOverridden() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getCharacterEncoding()).andReturn("ISO-8859-1").anyTimes();
         replay(underlying);
@@ -260,7 +260,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getMethodFallsBackToUnderlyingUntilOverridden() {
+    void getMethodFallsBackToUnderlyingUntilOverridden() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getMethod()).andReturn("GET").anyTimes();
         replay(underlying);
@@ -273,7 +273,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getDateHeaderSuppressesIfModifiedSinceWhenCachingDisallowed() {
+    void getDateHeaderSuppressesIfModifiedSinceWhenCachingDisallowed() {
         // See #6603: allowCaching(false) must blank the *conditional-GET check's* view of
         // If-Modified-Since (read via getDateHeader()) without touching getHeader(), so a view
         // that changed the output isn't wrongly suppressed by a 304 based on the resource's own,
@@ -296,7 +296,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void getDateHeaderPassesThroughIfModifiedSinceWhenCachingAllowed() {
+    void getDateHeaderPassesThroughIfModifiedSinceWhenCachingAllowed() {
         final HttpServletRequest underlying = mockRequest();
         expect(underlying.getDateHeader("If-Modified-Since")).andReturn(12345L).anyTimes();
         replay(underlying);
@@ -308,7 +308,7 @@ public class ControllerRequestWrapperTest {
     }
 
     @Test
-    public void basePathSetterAndGetterRoundTrip() {
+    void basePathSetterAndGetterRoundTrip() {
         final HttpServletRequest underlying = mockRequest();
         replay(underlying);
 

@@ -61,7 +61,7 @@ public class InternalModuleTest {
     private static final String EOL = System.getProperty("line.separator");
 
     @Test
-    public void moduleVariables() throws XMLDBException {
+    void moduleVariables() throws XMLDBException {
         final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
         final EXistXQueryService queryService = existServer.getRoot().getService(EXistXQueryService.class);
 
@@ -75,7 +75,7 @@ public class InternalModuleTest {
      * context) do not cause problems.
      */
     @Test
-    public void reusedModuleVariables() throws XMLDBException {
+    void reusedModuleVariables() throws XMLDBException {
         final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
         final EXistXQueryService queryService = existServer.getRoot().getService(EXistXQueryService.class);
 
@@ -89,7 +89,7 @@ public class InternalModuleTest {
      * $response:response variables were removed in eXist-db 5.0.0.
      */
     @Test
-    public void requestResponseSessionVariables_4_x_x_Api() throws XMLDBException {
+    void requestResponseSessionVariables_4_x_x_Api() throws XMLDBException {
         final Source querySource = new StringSource(
                 "document{" + EOL +
                         "  <vars>" + EOL +

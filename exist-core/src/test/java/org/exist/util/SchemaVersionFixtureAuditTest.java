@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * fixture got fixed but this tracker wasn't updated) -- so it stays an honest, current map of
  * what's left, not a one-time snapshot.
  */
-public class SchemaVersionFixtureAuditTest {
+class SchemaVersionFixtureAuditTest {
 
     private static final Set<String> FIXTURE_FILE_NAMES = Set.of("conf.xml", "controller-config.xml", "collection.xconf.init");
 
@@ -76,7 +76,7 @@ public class SchemaVersionFixtureAuditTest {
             "extensions/modules/http-client/src/test/resources/conf.xml");
 
     @Test
-    public void reportFixturesMissingSchemaVersion() throws Exception {
+    void reportFixturesMissingSchemaVersion() throws Exception {
         final Path repoRoot = resolveRepoRoot();
 
         final List<Path> fixtures = findFixtures(repoRoot);

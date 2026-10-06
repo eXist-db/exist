@@ -36,8 +36,8 @@ public class TextUpdateTest extends ConcurrentTestBase {
 	private static final String XML =
 		"<article/>";
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);
 	}
 

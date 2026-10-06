@@ -61,7 +61,7 @@ public class MultiDBTest {
             "</exist>";
 
     @Test
-    public void store() throws XMLDBException, IOException {
+    void store() throws XMLDBException, IOException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             Collection test = root.getChildCollection("test");
@@ -97,7 +97,7 @@ public class MultiDBTest {
     }
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException, XMLDBException {
 
         // initialize database drivers
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -118,7 +118,7 @@ public class MultiDBTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", "");
             final CollectionManagementService service = root.getService(CollectionManagementService.class);

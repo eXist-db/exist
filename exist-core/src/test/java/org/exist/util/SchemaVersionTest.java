@@ -40,14 +40,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SchemaVersionTest {
+class SchemaVersionTest {
 
     private static final String CAPTURE_LOGGER = "org.exist.util.SchemaVersionTest.capture";
 
     private CapturingAppender appender;
 
     @BeforeEach
-    public void attachAppender() {
+    void attachAppender() {
         appender = new CapturingAppender();
         appender.start();
         // The test log4j2 config sets the root logger to OFF, which would filter these events before
@@ -69,7 +69,7 @@ public class SchemaVersionTest {
     }
 
     @AfterEach
-    public void detachAppender() {
+    void detachAppender() {
         final Logger logger = (Logger) LogManager.getLogger(CAPTURE_LOGGER);
         final LoggerContext ctx = logger.getContext();
         ctx.getConfiguration().removeLogger(CAPTURE_LOGGER);
@@ -78,12 +78,12 @@ public class SchemaVersionTest {
     }
 
     @Test
-    public void attributeNameIsSchemaVersion() {
+    void attributeNameIsSchemaVersion() {
         assertEquals("schemaVersion", SchemaVersion.ATTRIBUTE);
     }
 
     @Test
-    public void logDocumentVersionAcceptsMatchingValue() throws Exception {
+    void logDocumentVersionAcceptsMatchingValue() throws Exception {
         final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         final var root = doc.createElement("exist");
         root.setAttribute(SchemaVersion.ATTRIBUTE, SchemaVersion.CONF);
@@ -98,7 +98,7 @@ public class SchemaVersionTest {
     }
 
     @Test
-    public void logDocumentVersionAcceptsMissingAttribute() throws Exception {
+    void logDocumentVersionAcceptsMissingAttribute() throws Exception {
         final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         final var root = doc.createElement("exist");
         doc.appendChild(root);
@@ -112,7 +112,7 @@ public class SchemaVersionTest {
     }
 
     @Test
-    public void logDocumentVersionWarnsOnMismatch() throws Exception {
+    void logDocumentVersionWarnsOnMismatch() throws Exception {
         final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         final var root = doc.createElement("exist");
         root.setAttribute(SchemaVersion.ATTRIBUTE, "0.0.1");

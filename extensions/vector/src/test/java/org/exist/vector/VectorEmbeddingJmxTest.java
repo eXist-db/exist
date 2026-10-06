@@ -41,7 +41,7 @@ class VectorEmbeddingJmxTest {
     static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void registersVectorEmbeddingAtBrokerPoolStartup() throws Exception {
+    void registersVectorEmbeddingAtBrokerPoolStartup() throws Exception {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         final ObjectName query = new ObjectName(VectorEmbedding.getAllInstancesQuery());
         final Set<ObjectName> names = server.queryNames(query, null);
@@ -49,7 +49,7 @@ class VectorEmbeddingJmxTest {
     }
 
     @Test
-    public void vectorEmbeddingMBeanReportsAvailable() throws Exception {
+    void vectorEmbeddingMBeanReportsAvailable() throws Exception {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         final ObjectName query = new ObjectName(VectorEmbedding.getAllInstancesQuery());
         final Set<ObjectName> names = server.queryNames(query, null);
@@ -60,7 +60,7 @@ class VectorEmbeddingJmxTest {
     }
 
     @Test
-    public void unregisterAllowsReregistrationAfterBrokerPoolRestart() throws Exception {
+    void unregisterAllowsReregistrationAfterBrokerPoolRestart() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         VectorEmbeddingJmx.unregister(pool);
         VectorEmbeddingJmx.registerIfAbsent(pool);

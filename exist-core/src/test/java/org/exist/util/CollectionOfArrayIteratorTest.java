@@ -44,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class CollectionOfArrayIteratorTest {
+class CollectionOfArrayIteratorTest {
 
     @Test
-    public void nullCollection() {
+    void nullCollection() {
         final CollectionOfArrayIterator<String> it = new CollectionOfArrayIterator<>(null);
         assertFalse(it.hasNext());
 
@@ -60,7 +60,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void emptyCollection() {
+    void emptyCollection() {
         final CollectionOfArrayIterator<String> it = new CollectionOfArrayIterator<>(Collections.emptyList());
         assertFalse(it.hasNext());
 
@@ -73,7 +73,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void oneEmptyArray() {
+    void oneEmptyArray() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[0]
         ));
@@ -88,7 +88,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void oneArray() {
+    void oneArray() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5}
         ));
@@ -114,7 +114,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void twoArrays() {
+    void twoArrays() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[] {66,77,88,99,111}
@@ -152,7 +152,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void twoArraysOverlap() {
+    void twoArraysOverlap() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[] {5,6,7,8,9}
@@ -190,7 +190,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void twoArraysBothEmpty() {
+    void twoArraysBothEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[0],
                 new Integer[0]
@@ -206,7 +206,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void twoArraysFirstEmpty() {
+    void twoArraysFirstEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[0],
                 new Integer[] {6,7,8,9,10}
@@ -233,7 +233,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void twoArraysSecondEmpty() {
+    void twoArraysSecondEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[0]
@@ -260,7 +260,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArrays() {
+    void threeArrays() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[] {66,77,88,99,111},
@@ -310,7 +310,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArraysOverlap() {
+    void threeArraysOverlap() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[] {5,6,7,8,9},
@@ -361,7 +361,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArraysAllEmpty() {
+    void threeArraysAllEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[0],
                 new Integer[0],
@@ -378,7 +378,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArraysFirstEmpty() {
+    void threeArraysFirstEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[0],
                 new Integer[] {66,77,88,99,111},
@@ -417,7 +417,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArraysSecondEmpty() {
+    void threeArraysSecondEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[0],
@@ -456,7 +456,7 @@ public class CollectionOfArrayIteratorTest {
     }
 
     @Test
-    public void threeArraysLastEmpty() {
+    void threeArraysLastEmpty() {
         final CollectionOfArrayIterator<Integer> it = new CollectionOfArrayIterator<>(listOf(
                 new Integer[] {1,2,3,4,5},
                 new Integer[] {66,77,88,99,111},

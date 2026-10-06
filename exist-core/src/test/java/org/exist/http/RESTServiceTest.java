@@ -321,7 +321,7 @@ public class RESTServiceTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setup() throws PermissionDeniedException, IOException, TriggerException {
+    static void setup() throws PermissionDeniedException, IOException, TriggerException {
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
         badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
 
@@ -362,7 +362,7 @@ public class RESTServiceTest {
     }
 
     @Test
-    public void getFailNoSuchDocument() throws IOException {
+    void getFailNoSuchDocument() throws IOException {
         final String uri = getCollectionUri() + "/nosuchdocument.xml";
         final HttpURLConnection connect = getConnection(uri);
         try {
@@ -377,7 +377,7 @@ public class RESTServiceTest {
     }
 
     @Test
-    public void xqueryGetWithEmptyPath() throws IOException {
+    void xqueryGetWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
@@ -402,7 +402,7 @@ public class RESTServiceTest {
     }
 
     @Test
-    public void xqueryPOSTWithEmptyPath() throws IOException {
+    void xqueryPOSTWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
@@ -425,7 +425,7 @@ try {
     }
 
     @Test
-    public void xqueryGetWithNonEmptyPath() throws IOException {
+    void xqueryGetWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
@@ -450,7 +450,7 @@ try {
     }
 
     @Test
-    public void xqueryPOSTWithNonEmptyPath() throws IOException {
+    void xqueryPOSTWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
@@ -474,7 +474,7 @@ try {
 
 
     @Test
-    public void xqueryGetFailWithNonEmptyPath() throws IOException {
+    void xqueryGetFailWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         final HttpURLConnection sconnect = getConnection(getResourceUri());
         try {
@@ -502,7 +502,7 @@ try {
     }
 
     @Test
-    public void testPut() throws IOException {
+    void testPut() throws IOException {
         final int r = uploadData();
         assertEquals(HttpStatus.CREATED_201, r, "Server returned response code " + r);
 
@@ -510,7 +510,7 @@ try {
     }
 
     @Test
-    public void testPutPlus() throws IOException {
+    void testPutPlus() throws IOException {
         assumeTrue(not(containsString("win")).matches(System.getProperty("os.name").toLowerCase()), "Requires non-Windows platform");
 
         final int r = uploadDataPlus();
@@ -520,7 +520,7 @@ try {
     }
 
     @Test
-    public void putFailAgainstCollection() throws IOException {
+    void putFailAgainstCollection() throws IOException {
         final HttpURLConnection connect = getConnection(getCollectionUri());
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
@@ -540,7 +540,7 @@ try {
     }
 
     @Test
-    public void putWithCharset() throws IOException {
+    void putWithCharset() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceUri());
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
@@ -563,7 +563,7 @@ try {
     }
 
     @Test
-    public void putFailAndRechallengeAuthorization() throws IOException {
+    void putFailAndRechallengeAuthorization() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceUri());
         try {
             connect.setRequestProperty("Authorization", "Basic " + badCredentials);
@@ -581,7 +581,7 @@ try {
     }
 
     @Test
-    public void putAgainstXQuery() throws IOException {
+    void putAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_AND_CONTENT, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         final String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
@@ -608,7 +608,7 @@ try {
     }
 
     @Test
-    public void deleteAgainstXQuery() throws IOException {
+    void deleteAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         final String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
@@ -631,7 +631,7 @@ try {
     }
 
     @Test
-    public void headAgainstXQuery() throws IOException {
+    void headAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         final String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
@@ -649,7 +649,7 @@ try {
     }
 
     @Test
-    public void xUpdate() throws IOException {
+    void xUpdate() throws IOException {
         final HttpURLConnection connect = preparePost(XUPDATE, getResourceUri());
         try {
             connect.connect();
@@ -663,7 +663,7 @@ try {
     }
 
     @Test
-    public void queryPost() throws IOException, SAXException, ParserConfigurationException {
+    void queryPost() throws IOException, SAXException, ParserConfigurationException {
         uploadData();
         
         final HttpURLConnection connect = preparePost(QUERY_REQUEST, getResourceUri());
@@ -681,7 +681,7 @@ try {
     }
 
     @Test
-    public void queryPostXQueryError() throws IOException {
+    void queryPostXQueryError() throws IOException {
         final HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, getResourceUri());
         try {
             connect.connect();
@@ -693,7 +693,7 @@ try {
     }
 
     @Test
-    public void queryGet() throws IOException {
+    void queryGet() throws IOException {
         final String uri = getCollectionUri()
                 + "?_query="
                 + URLEncoder
@@ -717,7 +717,7 @@ try {
     }
 
     @Test
-    public void queryGetXQueryError() throws IOException {
+    void queryGetXQueryError() throws IOException {
         String uri = getCollectionUri()
                 + "?_query="
                 + URLEncoder
@@ -737,7 +737,7 @@ try {
     }
 
     @Test
-    public void requestModule() throws IOException {
+    void requestModule() throws IOException {
         String uri = getCollectionUri() + "?_query=request:get-uri()&_wrap=no";
         HttpURLConnection connect = getConnection(uri);
         try {
@@ -771,7 +771,7 @@ try {
     }
 
     @Test
-    public void requestGetParameterFromModule() throws IOException {
+    void requestGetParameterFromModule() throws IOException {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_PARAMETER, "requestparameter.xql", HttpStatus.CREATED_201);
         doPut(TEST_XQUERY_PARAMETER_MODULE, "requestparametermod.xqm", HttpStatus.CREATED_201);
@@ -809,7 +809,7 @@ try {
     }
 
     @Test
-    public void storedQuery() throws IOException {
+    void storedQuery() throws IOException {
         doPut(TEST_MODULE, "module.xq", HttpStatus.CREATED_201);
         doPut(TEST_XQUERY, "test.xq", HttpStatus.CREATED_201);
 
@@ -823,7 +823,7 @@ try {
     }
 
     @Test
-    public void execQueryWithNoAuth() throws IOException {
+    void execQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed only by owner
@@ -845,7 +845,7 @@ try {
     }
 
     @Test
-    public void execGuestQueryWithNoAuth() throws IOException {
+    void execGuestQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed by guest
@@ -891,7 +891,7 @@ try {
     }
 
     @Test
-    public void execQueryWithBasicAuth() throws IOException {
+    void execQueryWithBasicAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed only by owner
@@ -938,7 +938,7 @@ try {
     }
 
     @Test
-    public void execQueryWithBasicAuthCaseInsensitive() throws IOException {
+    void execQueryWithBasicAuthCaseInsensitive() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed only by owner
@@ -985,7 +985,7 @@ try {
     }
 
     @Test
-    public void execSetUidQueryWithNoAuth() throws IOException {
+    void execSetUidQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed setUid as admin by guest
@@ -1037,7 +1037,7 @@ try {
     }
 
     @Test
-    public void execSetUidQueryWithBasicAuth() throws IOException {
+    void execSetUidQueryWithBasicAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed setUid as admin by guest
@@ -1084,7 +1084,7 @@ try {
     }
 
     @Test
-    public void execQueryWithBearerAuth() throws IOException {
+    void execQueryWithBearerAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed only by owner
@@ -1107,7 +1107,7 @@ try {
     }
 
     @Test
-    public void execSetUidQueryWithBearerAuth() throws IOException {
+    void execSetUidQueryWithBearerAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed setUid as admin by guest
@@ -1162,7 +1162,7 @@ try {
     // test rest server ability to handle encoded characters
     // all the tests with EncodedPath in function declaration aim to test rest server ability to handle special characters
     @Test
-    public void doGetEncodedPath() throws IOException {
+    void doGetEncodedPath() throws IOException {
         final String docUri = getServerUri() + GET_METHOD_ENCODED_DOC_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
         try {
@@ -1188,7 +1188,7 @@ try {
     }
 
     @Test
-    public void doHeadEncodedPath() throws IOException {
+    void doHeadEncodedPath() throws IOException {
         final String docUri = getServerUri() + GET_METHOD_ENCODED_DOC_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
         try {
@@ -1203,7 +1203,7 @@ try {
     }
 
     @Test
-    public void doPutEncodedPath() throws IOException {
+    void doPutEncodedPath() throws IOException {
         final String docUri = getServerUri() + PUT_METHOD_ENCODED_DOC_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
         final HttpURLConnection getConnect = getConnection(docUri);
@@ -1240,7 +1240,7 @@ try {
     }
 
     @Test
-    public void doPostEncodedPath() throws IOException {
+    void doPostEncodedPath() throws IOException {
         final String docUri = getServerUri() + GET_METHOD_ENCODED_COLLECTION_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
 
@@ -1274,7 +1274,7 @@ try {
     }
 
     @Test
-    public void doDeleteEncodedPath() throws IOException {
+    void doDeleteEncodedPath() throws IOException {
         final String docUri = getServerUri() + DELETE_METHOD_ENCODED_DOC_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
         final HttpURLConnection getConnect = getConnection(docUri);
@@ -1309,7 +1309,7 @@ try {
      * the wrong (or no) media type and output:media-type was silently ignored.
      */
     @Test
-    public void postQueryJsonContentType() throws IOException {
+    void postQueryJsonContentType() throws IOException {
         final String queryJson = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
                     <text>1 + 1</text>
@@ -1388,7 +1388,7 @@ try {
      * overridden by the application/json default.
      */
     @Test
-    public void postQueryJsonExplicitMediaType() throws IOException {
+    void postQueryJsonExplicitMediaType() throws IOException {
         final String queryJson = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
                     <properties>
@@ -1562,7 +1562,7 @@ try {
      * request:negotiate-content-type picks the best server media type for the request's Accept header.
      */
     @Test
-    public void negotiateContentTypeFromAcceptHeader() throws IOException {
+    void negotiateContentTypeFromAcceptHeader() throws IOException {
         final String query = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist">
                     <text>
@@ -1596,7 +1596,7 @@ try {
      * request:parse-accept-header parses the Accept header into a quality-ranked sequence of maps.
      */
     @Test
-    public void parseAcceptHeaderReturnsRankedMediaTypes() throws IOException {
+    void parseAcceptHeaderReturnsRankedMediaTypes() throws IOException {
         final String query = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist">
                     <text>
@@ -1631,7 +1631,7 @@ try {
      * By default there should be NO doctype serialized.
      */
     @Test
-    public void getDocTypeDefault() throws IOException {
+    void getDocTypeDefault() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri());
         try {
             connect.setRequestMethod("GET");
@@ -1657,7 +1657,7 @@ try {
     }
 
     @Test
-    public void getDocTypeNo() throws IOException {
+    void getDocTypeNo() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=no");
         try {
             connect.setRequestMethod("GET");
@@ -1682,7 +1682,7 @@ try {
     }
 
     @Test
-    public void getDocTypeYes() throws IOException {
+    void getDocTypeYes() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=yes");
         try {
             connect.setRequestMethod("GET");
@@ -1709,7 +1709,7 @@ try {
     }
 
     @Test
-    public void getDocWithXslPi() throws IOException {
+    void getDocWithXslPi() throws IOException {
         final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI);
         final HttpURLConnection connect = getConnection(docWithXslPiUri);
         try {
@@ -1750,14 +1750,14 @@ try {
     }
 
     @Test
-    public void getDocWithXslPi_twice() throws IOException {
+    void getDocWithXslPi_twice() throws IOException {
         // NOTE(AR) doing this twice revealed an issue with the Serializer not being correctly reset
         getDocWithXslPi();
         getDocWithXslPi();
     }
 
     @Test
-    public void getXmlDeclDefault() throws IOException {
+    void getXmlDeclDefault() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri());
         try {
             connect.setRequestMethod("GET");
@@ -1782,7 +1782,7 @@ try {
     }
 
     @Test
-    public void omitXmlDeclarationNo() throws IOException {
+    void omitXmlDeclarationNo() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-xml-declaration=no");
         try {
             connect.setRequestMethod("GET");
@@ -1808,7 +1808,7 @@ try {
     }
 
     @Test
-    public void omitXmlDeclarationYes() throws IOException {
+    void omitXmlDeclarationYes() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-xml-declaration=yes");
         try {
             connect.setRequestMethod("GET");

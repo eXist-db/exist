@@ -54,7 +54,7 @@ import java.util.Optional;
 /**
  * Test crash recovery after reindexing a collection.
  */
-public class ReindexRecoveryTest {
+class ReindexRecoveryTest {
 
     private static final Logger LOG = LogManager.getLogger(ReindexRecoveryTest.class);
 
@@ -62,7 +62,7 @@ public class ReindexRecoveryTest {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {
+    void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         storeDocuments(pool);
@@ -161,12 +161,12 @@ public class ReindexRecoveryTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

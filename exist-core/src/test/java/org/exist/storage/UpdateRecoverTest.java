@@ -68,7 +68,7 @@ import java.util.Optional;
  * @author wolf
  *
  */
-public class UpdateRecoverTest {
+class UpdateRecoverTest {
     
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
@@ -83,7 +83,7 @@ public class UpdateRecoverTest {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {
+    void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -95,7 +95,7 @@ public class UpdateRecoverTest {
     }
 
     @Test
-    public void storeAndReadXmldb() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, XMLDBException, EXistException, ClassNotFoundException, IOException {
+    void storeAndReadXmldb() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, XMLDBException, EXistException, ClassNotFoundException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
         xmldbStore(pool);
@@ -452,7 +452,7 @@ public class UpdateRecoverTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb();
     }
 

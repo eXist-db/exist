@@ -135,7 +135,7 @@ public class W3CXIncludeTestSuite {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}: {5}")
-    public void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
+    void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
         // Skip tests requiring features eXist doesn't support
         if (features != null && !features.isEmpty()) {
             Assumptions.assumeFalse(features.contains("xpointer-scheme"), "Skipping: requires xpointer-scheme");

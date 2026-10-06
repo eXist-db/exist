@@ -56,7 +56,7 @@ public class MimeTypeTest {
     }
 
     @Test
-    public void testXMLMimeType() throws XMLDBException {
+    void testXMLMimeType() throws XMLDBException {
         // store an XML document without an .xml extension
     	try(Collection collection = DatabaseManager.getCollection(getBaseUri() + "/db/" + COLLECTION_NAME, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)){
             final Class<? extends Resource> xmlResourceType = XMLResource.class;
@@ -73,8 +73,8 @@ public class MimeTypeTest {
     	}
     }
 
-	@BeforeAll
-    public static void startServer() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SAXException {
+    @BeforeAll
+    static void startServer() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SAXException {
         // initialize XML:DB driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -87,7 +87,7 @@ public class MimeTypeTest {
     }
 
     @AfterAll
-    public static void stopServer() throws XMLDBException {
+    static void stopServer() throws XMLDBException {
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         CollectionManagementService mgmt =
                 root.getService(CollectionManagementService.class);

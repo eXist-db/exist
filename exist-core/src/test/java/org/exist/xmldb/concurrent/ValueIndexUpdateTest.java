@@ -43,8 +43,8 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 	        "</exist:index>" +
         "</exist:collection>";
 
-	@BeforeEach
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XCONF);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");
 	}

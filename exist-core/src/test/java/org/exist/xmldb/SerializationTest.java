@@ -130,7 +130,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void wrappedNsTest1(String apiName, String baseUri) throws XMLDBException {
+    void wrappedNsTest1(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final XQueryService service = testCollection.getService(XQueryService.class);
@@ -142,7 +142,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void wrappedNsTest2(String apiName, String baseUri) throws XMLDBException {
+    void wrappedNsTest2(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final XQueryService service = testCollection.getService(XQueryService.class);
@@ -161,7 +161,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void xqueryUpdateNsTest(String apiName, String baseUri) throws XMLDBException {
+    void xqueryUpdateNsTest(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final XQueryService service = testCollection.getService(XQueryService.class);
@@ -190,7 +190,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getDocTypeDefault(String apiName, String baseUri) throws XMLDBException {
+    void getDocTypeDefault(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
@@ -198,7 +198,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getDocTypeNo(String apiName, String baseUri) throws XMLDBException {
+    void getDocTypeNo(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
@@ -214,7 +214,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getDocTypeYes(String apiName, String baseUri) throws XMLDBException {
+    void getDocTypeYes(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
@@ -234,7 +234,7 @@ public class SerializationTest {
      * See https://github.com/eXist-db/exist/issues/4736
      */
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getDocTypeIndentNo(String apiName, String baseUri) throws XMLDBException {
+    void getDocTypeIndentNo(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final String prevIndent = testCollection.getProperty(INDENT);
@@ -250,7 +250,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getXmlDeclDefault(String apiName, String baseUri) throws XMLDBException {
+    void getXmlDeclDefault(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
@@ -258,7 +258,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getXmlDeclNo(String apiName, String baseUri) throws XMLDBException {
+    void getXmlDeclNo(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
@@ -274,7 +274,7 @@ public class SerializationTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getXmlDeclYes(String apiName, String baseUri) throws XMLDBException {
+    void getXmlDeclYes(String apiName, String baseUri) throws XMLDBException {
         initSerializationTest(apiName, baseUri);
         setUp();
         final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
@@ -323,7 +323,7 @@ public class SerializationTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);

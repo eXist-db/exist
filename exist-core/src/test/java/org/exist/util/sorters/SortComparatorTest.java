@@ -61,7 +61,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void comparatorAscending(String sortTestName, ComparatorChecker checker) throws Exception {
+    void comparatorAscending(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
@@ -72,7 +72,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void comparatorDescending(String sortTestName, ComparatorChecker checker) throws Exception {
+    void comparatorDescending(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
@@ -83,7 +83,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void badComparatorUnstable(String sortTestName, ComparatorChecker checker) throws Exception {
+    void badComparatorUnstable(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
@@ -93,7 +93,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void badComparatorRandom(String sortTestName, ComparatorChecker checker) throws Exception {
+    void badComparatorRandom(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		checker.init(getRandomIntArray(100));
 		checker.sort(SortOrder.RANDOM);
@@ -101,7 +101,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void sortSubsection1asc(String sortTestName, ComparatorChecker checker) throws Exception {
+    void sortSubsection1asc(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -127,7 +127,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void sortSubsection2asc(String sortTestName, ComparatorChecker checker) throws Exception {
+    void sortSubsection2asc(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -152,7 +152,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void sortSubsection1desc(String sortTestName, ComparatorChecker checker) throws Exception {
+    void sortSubsection1desc(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -179,7 +179,7 @@ public class SortComparatorTest {
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to the checker, whose implementations assert internally
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void sortSubsection2desc(String sortTestName, ComparatorChecker checker) throws Exception {
+    void sortSubsection2desc(String sortTestName, ComparatorChecker checker) throws Exception {
         initSortComparatorTest(sortTestName, checker);
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];

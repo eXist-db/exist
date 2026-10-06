@@ -41,7 +41,7 @@ public class XQueryProcessingInstructionTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void testPI() throws XMLDBException {
+    void testPI() throws XMLDBException {
         final String query = """
                 let $xml := <doc>\
                 <?pi test?>\

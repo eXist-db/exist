@@ -61,12 +61,12 @@ public class ExecuteIT {
     public final H2DatabaseResource h2Database = new H2DatabaseResource();
 
     @Test
-    public void executeResultsInSqlNS() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void executeResultsInSqlNS() throws EXistException, XPathException, PermissionDeniedException, IOException {
         executeForNS(SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
     }
 
     @Test
-    public void executeResultsInCustomNS() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void executeResultsInCustomNS() throws EXistException, XPathException, PermissionDeniedException, IOException {
         executeForNS("http://custom/ns", "custom");
     }
 

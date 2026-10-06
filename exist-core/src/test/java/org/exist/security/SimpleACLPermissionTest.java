@@ -48,12 +48,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class SimpleACLPermissionTest {
+class SimpleACLPermissionTest {
 
     private final static int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;
 
     @Test
-    public void add() throws PermissionDeniedException {
+    void add() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -83,7 +83,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void addACE_ForUserWithModeString() throws PermissionDeniedException {
+    void addACE_ForUserWithModeString() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -119,7 +119,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void addACE_ForGroupWithModeString() throws PermissionDeniedException {
+    void addACE_ForGroupWithModeString() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -156,7 +156,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void insert_atFront_whenEmpty() throws PermissionDeniedException {
+    void insert_atFront_whenEmpty() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -187,7 +187,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void insert_atFront() throws PermissionDeniedException {
+    void insert_atFront() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -227,7 +227,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void insert_inMiddle() throws PermissionDeniedException {
+    void insert_inMiddle() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -290,10 +290,10 @@ public class SimpleACLPermissionTest {
         verify(mockSecurityManager, mockDatabase, mockBroker, mockCurrentSubject);
     }
 
-    @Test
     // NOTE (see #6804): the verify(...) at the end of the lambda never runs, because the call before it throws. Its expectations
     // do not hold for the throwing path (running it fails), so it is left as it was until the mock setup is reviewed.
-    public void insertAtEnd() {
+    @Test
+    void insertAtEnd() {
         assertThrows(PermissionDeniedException.class, () -> {
             final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
             final Database mockDatabase = EasyMock.createMock(Database.class);
@@ -330,7 +330,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void remove_firstACE() throws PermissionDeniedException {
+    void removeFirstACE() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -362,7 +362,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void remove_middleACE() throws PermissionDeniedException {
+    void removeMiddleACE() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -395,7 +395,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void remove_lastACE() throws PermissionDeniedException {
+    void removeLastACE() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -425,7 +425,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void modify() throws PermissionDeniedException {
+    void modify() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
@@ -473,7 +473,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void clear() throws PermissionDeniedException {
+    void clear() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -502,7 +502,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void validate_cant_read_when_readNotInACL() throws PermissionDeniedException {
+    void validateCantReadWhenReadNotInACL() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
@@ -529,7 +529,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void validate_read_when_readInACL() throws PermissionDeniedException {
+    void validateReadWhenReadInACL() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -565,7 +565,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void validate_cant_read_ACL_ordered_entries() throws PermissionDeniedException {
+    void validateCantReadACLOrderedEntries() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -613,7 +613,7 @@ public class SimpleACLPermissionTest {
     }
 
     @Test
-    public void validate_can_write_ACL_ordered_entries() throws PermissionDeniedException {
+    void validateCanWriteACLOrderedEntries() throws PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -659,9 +659,9 @@ public class SimpleACLPermissionTest {
 
         assertTrue(isValid);
     }
-    
+
     @Test
-    public void roundtrip_write_read() throws PermissionDeniedException, IOException {
+    void roundtripWriteRead() throws PermissionDeniedException, IOException {
         
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);

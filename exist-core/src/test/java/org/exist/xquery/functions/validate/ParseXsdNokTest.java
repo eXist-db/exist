@@ -55,7 +55,7 @@ public class ParseXsdNokTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/addressbook")) {
@@ -76,7 +76,7 @@ public class ParseXsdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredValid() throws XMLDBException {
+    void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
@@ -88,7 +88,7 @@ public class ParseXsdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredInvalid() throws XMLDBException {
+    void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_invalid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
@@ -100,7 +100,7 @@ public class ParseXsdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriValid() throws XMLDBException {
+    void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_valid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 
@@ -112,7 +112,7 @@ public class ParseXsdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriInvalid() throws XMLDBException {
+    void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_invalid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 

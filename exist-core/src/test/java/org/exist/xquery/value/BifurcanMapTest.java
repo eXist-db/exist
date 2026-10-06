@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class BifurcanMapTest {
+class BifurcanMapTest {
 
     /**
      * Reproduces the XQSuite Test `mt:immutable-remove-then-remove()` from `maps.xql`:
@@ -63,7 +63,7 @@ public class BifurcanMapTest {
      * </code>
      */
     @Test
-    public void immutableRemoveThenRemove() {
+    void immutableRemoveThenRemove() {
 
         /*
           1. Create the initial map: `map { 1: true(), 2: true() }`
@@ -136,7 +136,7 @@ public class BifurcanMapTest {
     }
 
     @Test
-    public void bifurcanImmutableRemoveThenRemove() {
+    void bifurcanImmutableRemoveThenRemove() {
 
         /*
           1. Create the initial map: `map { 1: true(), 2: true() }`

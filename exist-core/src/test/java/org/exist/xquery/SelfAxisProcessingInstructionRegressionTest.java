@@ -59,12 +59,12 @@ public class SelfAxisProcessingInstructionRegressionTest {
     private static final String IN_MEMORY = "let $r := parse-xml('" + CONTENT + "')/root ";
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         query("xmldb:store('/db', 'i6689-pi.xml', '" + CONTENT + "', 'application/xml')");
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'i6689-pi.xml')");
     }
 
@@ -80,35 +80,35 @@ public class SelfAxisProcessingInstructionRegressionTest {
 
     /** The reported shape: a named processing-instruction test on the self axis. */
     @Test
-    public void namedProcessingInstructionTestOnSelfAxis() throws XMLDBException {
+    void namedProcessingInstructionTestOnSelfAxis() throws XMLDBException {
         assertEquals("1", count(IN_MEMORY, "$r/node()[self::processing-instruction('target')]"));
         assertEquals("1", count(PERSISTENT, "$r/node()[self::processing-instruction('target')]"));
     }
 
     /** A target matching no processing instruction must return nothing. */
     @Test
-    public void nonMatchingProcessingInstructionTestOnSelfAxis() throws XMLDBException {
+    void nonMatchingProcessingInstructionTestOnSelfAxis() throws XMLDBException {
         assertEquals("0", count(IN_MEMORY, "$r/node()[self::processing-instruction('absent')]"));
         assertEquals("0", count(PERSISTENT, "$r/node()[self::processing-instruction('absent')]"));
     }
 
     /** The unnamed form must select both processing instructions and nothing else. */
     @Test
-    public void unnamedProcessingInstructionTestOnSelfAxis() throws XMLDBException {
+    void unnamedProcessingInstructionTestOnSelfAxis() throws XMLDBException {
         assertEquals("2", count(IN_MEMORY, "$r/node()[self::processing-instruction()]"));
         assertEquals("2", count(PERSISTENT, "$r/node()[self::processing-instruction()]"));
     }
 
     /** In step position rather than predicate position. */
     @Test
-    public void namedProcessingInstructionTestAsStep() throws XMLDBException {
+    void namedProcessingInstructionTestAsStep() throws XMLDBException {
         assertEquals("1", count(PERSISTENT, "$r/node()/self::processing-instruction('target')"));
         assertEquals("2", count(PERSISTENT, "$r/node()/self::processing-instruction()"));
     }
 
     /** The other named-node kinds on the same axis must be unaffected. */
     @Test
-    public void namedElementAndAttributeTestsAreUnaffected() throws XMLDBException {
+    void namedElementAndAttributeTestsAreUnaffected() throws XMLDBException {
         assertEquals("1", count(PERSISTENT, "$r/node()[self::element(a)]"));
         assertEquals("0", count(PERSISTENT, "$r/node()[self::element(zz)]"));
     }

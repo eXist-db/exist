@@ -75,7 +75,7 @@ public class ShutdownIT {
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeEach
-    public void setUp() throws XMLDBException, IOException {
+    void setUp() throws XMLDBException, IOException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         Collection testCol = rootCol.getChildCollection("C1");
         if(testCol == null) {
@@ -94,15 +94,15 @@ public class ShutdownIT {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         Collection rootCol = existXmldbEmbeddedServer.getRoot();
         DBUtils.removeCollection(rootCol, "C1");
         Resource res = rootCol.getResource("biblio.rdf");
         rootCol.removeResource(res);
     }
 
-	@org.junit.jupiter.api.Test
-	public void shutdown() throws Exception {
+    @org.junit.jupiter.api.Test
+    void shutdown() throws Exception {
 		for (int i = 0; i < ITERATIONS; i++) {
 			existXmldbEmbeddedServer.restart();
 			final Collection rootCol = existXmldbEmbeddedServer.getRoot();

@@ -58,7 +58,7 @@ public class CopyResourceRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
+    void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndRead";
 
@@ -72,7 +72,7 @@ public class CopyResourceRecoveryTest {
     }
 
     @Test
-    public void storeAndReadAborted() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
+    void storeAndReadAborted() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndReadAborted";
 
@@ -204,7 +204,7 @@ public class CopyResourceRecoveryTest {
 	}
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

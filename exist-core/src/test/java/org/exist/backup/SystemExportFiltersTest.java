@@ -107,7 +107,7 @@ public class SystemExportFiltersTest {
     public static File tempFolder;
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -129,7 +129,7 @@ public class SystemExportFiltersTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void exportImport() throws Exception {
+    void exportImport() throws Exception {
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

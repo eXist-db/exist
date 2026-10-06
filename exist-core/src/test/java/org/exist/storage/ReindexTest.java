@@ -75,7 +75,7 @@ public class ReindexTest {
             "</n>";
 
     @Test
-    public void reindexDocumentChildNodes() throws IOException, EXistException, PermissionDeniedException, SAXException, LockException {
+    void reindexDocumentChildNodes() throws IOException, EXistException, PermissionDeniedException, SAXException, LockException {
         reindexDocumentChildNodes_checkNodes();
 
         reindex(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
@@ -84,7 +84,7 @@ public class ReindexTest {
     }
 
     @Test
-    public void reindexElementChildren() throws EXistException, PermissionDeniedException, IOException, LockException {
+    void reindexElementChildren() throws EXistException, PermissionDeniedException, IOException, LockException {
         reindexElementChildren_checkNodes();
 
         reindex(ELEMENT_WITH_CHILD_NODES_COLLECTION);
@@ -93,7 +93,7 @@ public class ReindexTest {
     }
 
     @Test
-    public void reindexCollectionWithScope() throws EXistException, PermissionDeniedException, IOException, LockException {
+    void reindexCollectionWithScope() throws EXistException, PermissionDeniedException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -240,13 +240,13 @@ public class ReindexTest {
     }
 
     @BeforeAll
-    public static void setup() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+    static void setup() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         storeDocument(DOCUMENT_WITH_CHILD_NODES_COLLECTION, DOCUMENT_WITH_CHILD_NODES_NAME, DOCUMENT_WITH_CHILD_NODES_XML);
         storeDocument(ELEMENT_WITH_CHILD_NODES_COLLECTION, ELEMENT_WITH_CHILD_NODES_NAME, ELEMENT_WITH_CHILD_NODES_XML);
     }
 
     @AfterAll
-    public static void cleanup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void cleanup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         removeCollection(ELEMENT_WITH_CHILD_NODES_COLLECTION);
         removeCollection(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
     }

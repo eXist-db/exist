@@ -45,11 +45,11 @@ public class ConstructedNodesTest {
 	@RegisterExtension
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	/**
-	 * Iteratively constructs some nodes
-	 */
+    /**
+     * Iteratively constructs some nodes
+     */
     @Test
-	public void iterateConstructNodes() throws XPathException, XMLDBException {
+    void iterateConstructNodes() throws XPathException, XMLDBException {
 		String xquery =
 				"""
                 declare variable $categories :=\s
@@ -86,12 +86,12 @@ public class ConstructedNodesTest {
             assertEquals(expectedResults[i], result.getResource(i).getContent());
         }
 	}
-	
-	/***
-	 * Test sorting of constructed nodes
-	 */
+
+    /***
+     * Test sorting of constructed nodes
+     */
     @Test
-	public void constructedNodesSort() throws XMLDBException {
+    void constructedNodesSort() throws XMLDBException {
 		String xquery =
 			"""
             declare variable $categories :=\s
@@ -121,12 +121,12 @@ public class ConstructedNodesTest {
             assertEquals(expectedResults[i], result.getResource(i).getContent());
         }
 	}
-	
-	/**
-	 * Test retrieving sorted nodes by position
-	 */
+
+    /**
+     * Test retrieving sorted nodes by position
+     */
     @Test
-	public void constructedNodesPosition() throws XMLDBException {
+    void constructedNodesPosition() throws XMLDBException {
 		String xquery =
 			"""
             declare variable $categories :=\s
@@ -155,14 +155,14 @@ public class ConstructedNodesTest {
             assertEquals(expectedResults[i], result.getResource(i).getContent());
         }
 	}
-	
-	/**
-	 * Test storing constructed (text) nodes
-	 * Tests absence of bug #2646744 which gave err:XPTY0018 for $hello-text-first
-	 * cf org.exist.xquery.XQueryTest.testXPTY0018_mixedsequences_2429093()
-	 */
+
+    /**
+     * Test storing constructed (text) nodes
+     * Tests absence of bug #2646744 which gave err:XPTY0018 for $hello-text-first
+     * cf org.exist.xquery.XQueryTest.testXPTY0018_mixedsequences_2429093()
+     */
     @Test
-	public void constructedTextNodes() throws XMLDBException {
+    void constructedTextNodes() throws XMLDBException {
 		String xquery =
 			"""
             declare variable $hello-text-first := <a>{ "hello" }<b>world</b></a>;

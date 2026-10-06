@@ -40,7 +40,7 @@ public class SwitchTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void oneCaseCaseMatch() throws XMLDBException {
+    void oneCaseCaseMatch() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "let $animal := 'Cat' return "
                 + "switch ($animal)"
@@ -55,7 +55,7 @@ public class SwitchTest {
     }
 
     @Test
-    public void twoCaseDefault() throws XMLDBException {
+    void twoCaseDefault() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "let $animal := 'Cat' return "
                 + "switch ($animal)"
@@ -68,7 +68,7 @@ public class SwitchTest {
     }
 
     @Test
-    public void twoCaseCaseMatch() throws XMLDBException {
+    void twoCaseCaseMatch() throws XMLDBException {
         final String query = "xquery version '3.0';"
                 + "let $animal := 'Calf' return "
                 + "switch ($animal)"

@@ -30,95 +30,95 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @see org.exist.indexing.range.XPathToLuceneRegexTranslator
  */
-public class XPathToLuceneRegexTranslatorTest {
+class XPathToLuceneRegexTranslatorTest {
 
     @Test
-    public void prefixPattern() {
+    void prefixPattern() {
         assertEquals("b.*", XPathToLuceneRegexTranslator.translate("^b"));
     }
 
     @Test
-    public void prefixPatternLonger() {
+    void prefixPatternLonger() {
         assertEquals("foo.*", XPathToLuceneRegexTranslator.translate("^foo"));
     }
 
     @Test
-    public void prefixPatternWithDigits() {
+    void prefixPatternWithDigits() {
         assertEquals("some_123_thing.*", XPathToLuceneRegexTranslator.translate("^some_123_thing"));
     }
 
     @Test
-    public void suffixPattern() {
+    void suffixPattern() {
         assertEquals(".*b", XPathToLuceneRegexTranslator.translate("b$"));
     }
 
     @Test
-    public void suffixPatternLonger() {
+    void suffixPatternLonger() {
         assertEquals(".*z", XPathToLuceneRegexTranslator.translate("z$"));
     }
 
     @Test
-    public void exactPattern() {
+    void exactPattern() {
         assertEquals("b", XPathToLuceneRegexTranslator.translate("^b$"));
     }
 
     @Test
-    public void exactPatternLonger() {
+    void exactPatternLonger() {
         assertEquals("baz", XPathToLuceneRegexTranslator.translate("^baz$"));
     }
 
     @Test
-    public void anchorOnlyStart() {
+    void anchorOnlyStart() {
         assertEquals("^", XPathToLuceneRegexTranslator.translate("^"));
     }
 
     @Test
-    public void anchorOnlyEnd() {
+    void anchorOnlyEnd() {
         assertEquals("$", XPathToLuceneRegexTranslator.translate("$"));
     }
 
     @Test
-    public void emptyPattern() {
+    void emptyPattern() {
         assertEquals("", XPathToLuceneRegexTranslator.translate(""));
     }
 
     @Test
-    public void isTranslatablePrefix() {
+    void isTranslatablePrefix() {
         assertEquals(true, XPathToLuceneRegexTranslator.isTranslatable("^b"));
     }
 
     @Test
-    public void isTranslatableSuffix() {
+    void isTranslatableSuffix() {
         assertEquals(true, XPathToLuceneRegexTranslator.isTranslatable("b$"));
     }
 
     @Test
-    public void isTranslatableExact() {
+    void isTranslatableExact() {
         assertEquals(true, XPathToLuceneRegexTranslator.isTranslatable("^b$"));
     }
 
     @Test
-    public void isTranslatableUnanchored() {
+    void isTranslatableUnanchored() {
         assertEquals(false, XPathToLuceneRegexTranslator.isTranslatable("b"));
     }
 
     @Test
-    public void isTranslatableBackref() {
+    void isTranslatableBackref() {
         assertEquals(false, XPathToLuceneRegexTranslator.isTranslatable("^(.)\\1$"));
     }
 
     @Test
-    public void isTranslatableXmlSchemaEscapeI() {
+    void isTranslatableXmlSchemaEscapeI() {
         assertEquals(false, XPathToLuceneRegexTranslator.isTranslatable("^\\i"));
     }
 
     @Test
-    public void isTranslatableXmlSchemaEscapeC() {
+    void isTranslatableXmlSchemaEscapeC() {
         assertEquals(false, XPathToLuceneRegexTranslator.isTranslatable("^\\c$"));
     }
 
     @Test
-    public void isTranslatableDigitEscape() {
+    void isTranslatableDigitEscape() {
         assertEquals(true, XPathToLuceneRegexTranslator.isTranslatable("^\\d+$"));
     }
 }

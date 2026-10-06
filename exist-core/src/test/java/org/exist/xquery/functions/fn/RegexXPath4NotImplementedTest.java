@@ -54,17 +54,17 @@ public class RegexXPath4NotImplementedTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void matchesLookaroundRaisesNotImplemented() {
+    void matchesLookaroundRaisesNotImplemented() {
         assertNotImplemented("fn:matches('foobar', '(*positive_lookahead:foo)bar')");
     }
 
     @Test
-    public void analyzeStringLookaroundRaisesNotImplemented() {
+    void analyzeStringLookaroundRaisesNotImplemented() {
         assertNotImplemented("fn:analyze-string('foobar', '(*positive_lookahead:foo)bar')");
     }
 
     @Test
-    public void matchesPlainPatternStillWorks() throws Exception {
+    void matchesPlainPatternStillWorks() throws Exception {
         assertEquals("true", executeStringValue("fn:matches('foobar', 'foo')"));
     }
 

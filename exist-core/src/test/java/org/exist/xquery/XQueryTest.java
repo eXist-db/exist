@@ -72,6 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -211,14 +212,14 @@ public class XQueryTest {
     private String xml;
 
     @BeforeEach
-    public void setup() throws XMLDBException {
+    void setup() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.createCollection("test");
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");
@@ -229,7 +230,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void let() throws XMLDBException {
+    void let() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -269,7 +270,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testFor() throws XMLDBException {
+    void testFor() throws XMLDBException {
         ResourceSet result;
         String query;
         XMLResource resu;
@@ -323,7 +324,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void recursion() throws XMLDBException {
+    void recursion() throws XMLDBException {
         String q1 =
                 """
                 declare function local:append($head, $i) {
@@ -340,7 +341,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void constructedNode1() throws XMLDBException {
+    void constructedNode1() throws XMLDBException {
         String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
         XPathQueryService service =
@@ -350,7 +351,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void combiningNodeSequences() throws XMLDBException {
+    void combiningNodeSequences() throws XMLDBException {
         ResourceSet result;
         String query;
 
@@ -388,7 +389,7 @@ public class XQueryTest {
      * @author Gev
      */
     @org.junit.jupiter.api.Test
-    public void inMemoryNodeSequences() throws XMLDBException {
+    void inMemoryNodeSequences() throws XMLDBException {
         ResourceSet result;
         String query;
 
@@ -437,7 +438,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void variable() throws XMLDBException {
+    void variable() throws XMLDBException {
         ResourceSet result;
         String query;
         XMLResource resu;
@@ -528,7 +529,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void virtualNodesets() throws XMLDBException {
+    void virtualNodesets() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -568,7 +569,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void whereClause() throws XMLDBException {
+    void whereClause() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -596,7 +597,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void typedVariables() throws XMLDBException {
+    void typedVariables() throws XMLDBException {
         ResourceSet result;
         String query;
         boolean exceptionThrown;
@@ -730,7 +731,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void precedence() throws XMLDBException {
+    void precedence() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -755,7 +756,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void improbableAxesAndNodeTestsCombinations() throws XMLDBException {
+    void improbableAxesAndNodeTestsCombinations() throws XMLDBException {
         ResourceSet result;
         String query;
         boolean exceptionThrown;
@@ -906,7 +907,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void namespace() throws XMLDBException {
+    void namespace() throws XMLDBException {
         Resource doc;
         ResourceSet result;
         String query;
@@ -1062,7 +1063,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void namespaceWithTransform() throws XMLDBException {
+    void namespaceWithTransform() throws XMLDBException {
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
 
         String query =
@@ -1100,7 +1101,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void module() throws XMLDBException {
+    void module() throws XMLDBException {
         Resource doc;
         ResourceSet result;
         String query;
@@ -1264,7 +1265,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void modulesAndNS() throws XMLDBException {
+    void modulesAndNS() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE7_NAME, BinaryResource.class);
         doc.setContent(module7);
@@ -1295,7 +1296,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void importExternalClasspathMainModule() throws EXistException, IOException, PermissionDeniedException, XPathException, QName.IllegalQNameException {
+    void importExternalClasspathMainModule() throws EXistException, IOException, PermissionDeniedException, XPathException, QName.IllegalQNameException {
         final long timestamp = System.currentTimeMillis();
         final BrokerPool brokerPool = BrokerPool.getInstance();
         try (final DBBroker broker = brokerPool.getBroker()) {
@@ -1349,7 +1350,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void importExternalClasspathLibraryModule() throws XMLDBException {
+    void importExternalClasspathLibraryModule() throws XMLDBException {
         final long timestamp = System.currentTimeMillis();
         final Collection testCollection = getTestCollection();
         final Resource doc = testCollection.createResource("import-external-classpath.xq", BinaryResource.class);
@@ -1376,7 +1377,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void doubleDocNode_2078755() throws XMLDBException {
+    void doubleDocNode2078755() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE8_NAME, BinaryResource.class);
         doc.setContent(module8);
@@ -1401,7 +1402,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void globalVars() throws XMLDBException {
+    void globalVars() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource(MODULE5_NAME, BinaryResource.class);
         doc.setContent(module5);
@@ -1450,7 +1451,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void functionDoc() throws XMLDBException {
+    void functionDoc() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -1500,7 +1501,7 @@ public class XQueryTest {
      * This test only works if there is an Internet access
      */
     @org.junit.jupiter.api.Test
-    public void functionDocExternal() throws XMLDBException {
+    void functionDocExternal() throws XMLDBException {
         boolean hasInternetAccess = false;
 
         //Checking that we have an Internet Access
@@ -1553,7 +1554,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void textConstructor() throws XMLDBException {
+    void textConstructor() throws XMLDBException {
         String query = "text{ \"a\" }, text{ \"b\" }, text{ \"c\" }, text{ \"d\" }";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -1567,7 +1568,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void userEscalationForInMemoryNodes() throws XMLDBException {
+    void userEscalationForInMemoryNodes() throws XMLDBException {
         String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), sm:id()/sm:id/sm:effective/sm:username/text(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return sm:id()/sm:id/sm:effective/sm:username/text()";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -1587,7 +1588,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void constructedAttributeValue() throws XMLDBException {
+    void constructedAttributeValue() throws XMLDBException {
         String query = "let $attr := attribute d { \"xxx\" } " + "return string($attr)";
         XPathQueryService service = getTestCollection().getService(
                 XPathQueryService.class);
@@ -1597,7 +1598,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attributeAxis() throws XMLDBException {
+    void attributeAxis() throws XMLDBException {
         ResourceSet result;
         String query;
         XMLResource resu;
@@ -1615,7 +1616,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void instanceOfDocumentNode() throws XMLDBException {
+    void instanceOfDocumentNode() throws XMLDBException {
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
@@ -1626,7 +1627,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void instanceOfNamespaceNode() throws XMLDBException {
+    void instanceOfNamespaceNode() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("namespace test { 'test' } instance of namespace-node()");
         assertEquals(1,result.getSize());
         assertEquals("true", result.getResource(0).getContent().toString());
@@ -1637,7 +1638,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void largeAttributeSimple() throws XMLDBException {
+    void largeAttributeSimple() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -1653,7 +1654,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void cdataSerialization() throws XMLDBException {
+    void cdataSerialization() throws XMLDBException {
         ResourceSet result;
         String query;
         XMLResource resu;
@@ -1669,7 +1670,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void cdataQuery() throws XMLDBException {
+    void cdataQuery() throws XMLDBException {
         ResourceSet result;
         String query;
         XMLResource resu;
@@ -1709,7 +1710,7 @@ public class XQueryTest {
      * Tests that no result will be returned if an attribute's value is selected on a node which wasn't found
      */
     @org.junit.jupiter.api.Test
-    public void attributeForNoResult() throws XMLDBException {
+    void attributeForNoResult() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " + //
                 "return /a[./c]/@id/string()";
 
@@ -1719,7 +1720,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void largeAttributeContains() throws XMLDBException {
+    void largeAttributeContains() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -1736,7 +1737,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void largeAttributeKeywordOperator() throws XMLDBException {
+    void largeAttributeKeywordOperator() throws XMLDBException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
@@ -1752,7 +1753,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attributeNamespace() throws XMLDBException {
+    void attributeNamespace() throws XMLDBException {
 
         String query = "declare function local:copy($nodes as node()*) as node()* {" + "for $n in $nodes return " + "if ($n instance of element()) then " + "  element {node-name($n)} {(local:copy($n/@*), local:copy($n/node()))} " + "else if ($n instance of attribute()) then " + "  attribute {node-name($n)} {$n} " + "else if ($n instance of text()) then " + "  text {$n} " + "else " + "  <Other/>" + "};" + "let $c :=" + "<c:C  xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">" + "ccc" + "</c:C>" + "return local:copy($c)";
 
@@ -1771,7 +1772,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void nameConflicts() throws XMLDBException {
+    void nameConflicts() throws XMLDBException {
         String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";
 
         XPathQueryService service = getTestCollection().getService(
@@ -1782,7 +1783,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void serialization() throws XMLDBException {
+    void serialization() throws XMLDBException {
         @SuppressWarnings("unused")
 		ResourceSet result;
         String query;
@@ -1831,7 +1832,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void retrieveLargeAttribute() throws XMLDBException {
+    void retrieveLargeAttribute() throws XMLDBException {
         createXMLContentWithLargeString();
         storeXMLStringAndGetQueryService(file_name, xml);
         final XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
@@ -1839,7 +1840,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void largeAttributeText() throws XMLDBException {
+    void largeAttributeText() throws XMLDBException {
         final String large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
         String xml = "<details format='xml'><metadata docid='" + large +
                 "'></metadata></details>";
@@ -1860,7 +1861,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xupdateWithAdjacentTextNodes() throws XMLDBException {
+    void xupdateWithAdjacentTextNodes() throws XMLDBException {
         String query = "let $name := xmldb:store('/db' , 'xupdateTest.xml', <test>aaa</test>)" +
                 "let $xu :=" +
                 "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
@@ -1882,7 +1883,7 @@ public class XQueryTest {
     //expected:<3> but was:<2>
     @Disabled
     @org.junit.jupiter.api.Test
-    public void xupdateAttributesAndElements() throws XMLDBException {
+    void xupdateAttributesAndElements() throws XMLDBException {
         ResourceSet result;
         String query;
 
@@ -1915,7 +1916,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void nodeName() throws XMLDBException {
+    void nodeName() throws XMLDBException {
         String query = "declare function local:name($node as node()) as xs:string? { " + " if ($node/self::element() != '') then name($node) else () }; " + " let $n := <!-- Just a comment! --> return local:name($n) ";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -1927,7 +1928,7 @@ public class XQueryTest {
      */
     //DWES Funny in sandbox and REST it fails ; here it is OK... sometimes
     @org.junit.jupiter.api.Test
-    public void order_1691112() throws XMLDBException {
+    void order1691112() throws XMLDBException {
 
         String query = "declare namespace tt = \"http://example.com\";" +
                 "declare function tt:function( $function as element(Function)) {" +
@@ -1981,7 +1982,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1691177&group_id=17691&atid=117691
      */
     @org.junit.jupiter.api.Test
-    public void attribute_1691177() throws XMLDBException {
+    void attribute1691177() throws XMLDBException {
         String query = "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " + "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) " + "let $node := doc($uri)/element() " + "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* " + "return update insert $attrib into $node  ";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -1993,7 +1994,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1691174&group_id=17691&atid=117691
      */
     @org.junit.jupiter.api.Test
-    public void attribute_1691174() throws XMLDBException {
+    void attribute1691174() throws XMLDBException {
         String query = "declare function local:show($el1, $el2) { " 
                 + "	<Foobar> "
                 + "	{ (\"first: \", $el1, \" second: \", $el2) } "
@@ -2011,7 +2012,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void qnameToString_1632365() throws XMLDBException {
+    void qnameToString1632365() throws XMLDBException {
         String query = "let $qname := QName(\"http://test.org\", \"test:name\") " +
                 "return xs:string($qname)";
         String expectedresult = "test:name";
@@ -2022,7 +2023,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void comments_1715035() throws XMLDBException {
+    void comments1715035() throws XMLDBException {
         String query = "<!-- < aa > -->";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -2035,7 +2036,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void documentNode_1730690() throws XMLDBException {
+    void documentNode1730690() throws XMLDBException {
         String query = "let $doc := document { <element/> } " +
                 "return $doc/root() instance of document-node()";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2044,7 +2045,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void enclosedExpressions() throws XMLDBException {
+    void enclosedExpressions() throws XMLDBException {
         String query = "let $a := <docum><titolo>titolo</titolo><autor>giulio</autor></docum> " +
                 "return <row>{$a/titolo/text()} {' '} {$a/autor/text()}</row>";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2053,7 +2054,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void orderCompareAtomicType_1733265() throws XMLDBException {
+    void orderCompareAtomicType1733265() throws XMLDBException {
         String query = "( ) = \"A\"";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -2065,7 +2066,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void positionInPredicate() throws XMLDBException {
+    void positionInPredicate() throws XMLDBException {
         String query = "let $example := <Root> <Element>1</Element> <Element>2</Element> </Root>" +
                 "return  $example/Element[1] ";
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2082,7 +2083,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1740880
      */
     @org.junit.jupiter.api.Test
-    public void elementConstructionWithNamespace_1740880() throws XMLDBException {
+    void elementConstructionWithNamespace1740880() throws XMLDBException {
         String query = "let $a := <foo:Bar xmlns:foo=\"urn:foo\"/> " +
                 "let $b := element { QName(\"urn:foo\", \"foo:Bar\") } { () } " +
                 "return deep-equal($a, $b) ";
@@ -2096,7 +2097,7 @@ public class XQueryTest {
      * http://sourceforge.net/support/tracker.php?aid=1740883
      */
     @org.junit.jupiter.api.Test
-    public void noErrorNeOperatorWithSequence_1740883() {
+    void noErrorNeOperatorWithSequence1740883() {
         try {
             String query = "let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo> " +
                     "return $foo[Bar ne \"B\"]";
@@ -2119,7 +2120,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1740885
      */
     @org.junit.jupiter.api.Test
-    public void neOperatorDoesNotWork_1740885() throws XMLDBException {
+    void neOperatorDoesNotWork1740885() throws XMLDBException {
         String query = "let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo>" +
                 "return $foo/Bar[. ne \"B\"]";
 
@@ -2135,7 +2136,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1740891
      */
     @org.junit.jupiter.api.Test
-    public void evalLoosesContext_1740891() throws XMLDBException {
+    void evalLoosesContext1740891() throws XMLDBException {
         String module = "module namespace tst = \"urn:test\"; " +
                 "declare namespace util = \"http://exist-db.org/xquery/util\";" +
                 "declare function tst:bar() as element(Bar)* { " +
@@ -2171,7 +2172,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1740886
      */
     @org.junit.jupiter.api.Test
-    public void cardinalityIssues1740886() throws XMLDBException {
+    void cardinalityIssues1740886() throws XMLDBException {
         String xmldoc = "<Foo><Bar/><Bar/><Bar/></Foo>";
         String query =
                 "declare namespace tst = \"urn:test\"; " +
@@ -2195,7 +2196,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1755910
      */
     @org.junit.jupiter.api.Test
-    public void qnameString_1755910() throws XMLDBException {
+    void qnameString1755910() throws XMLDBException {
         String query = "let $qname1 := QName(\"http://www.w3.org/2001/XMLSchema\", \"xs:element\") " + "let $qname2 := QName(\"http://foo.com\", \"foo:bar\") " + "return (xs:string($qname1), xs:string($qname2))";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2211,7 +2212,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1665215
      */
     @org.junit.jupiter.api.Test
-    public void predicateMinLast_1665215() throws XMLDBException {
+    void predicateMinLast1665215() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "let $data :=<parent><child>1</child><child>2</child><child>3</child><child>4</child></parent>" +
                 "return <result>{$data/child[min((last(),3))]}</result>";
@@ -2227,7 +2228,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1665213
      */
     @org.junit.jupiter.api.Test
-    public void predicatePositionLast_1665213() throws XMLDBException {
+    void predicatePositionLast1665213() throws XMLDBException {
         // OK, regression
         String query = "(1, 2, 3)[ position() = last() ]";
 
@@ -2260,7 +2261,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1769086
      */
     @org.junit.jupiter.api.Test
-    public void cce_IndexOf_1769086() throws XMLDBException {
+    void cceIndexOf1769086() throws XMLDBException {
         String query = "(\"One\", \"Two\", \"Three\")[index-of((\"1\", \"2\", \"3\"), \"2\")]";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2271,7 +2272,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void shortVersionPositionPredicate() throws XMLDBException {
+    void shortVersionPositionPredicate() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" + "let $foo :=  <foo>    <bar baz=\"\"/>  </foo>" + "let $bar1 := $foo/bar[exists(@baz)][1]" + "let $bar2 := $foo/bar[exists(@baz)][position() = 1]" + "return  <found> <bar1>{$bar1}</bar1> <bar2>{$bar2}</bar2> </found>";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2288,7 +2289,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/tracker/index.php?func=detail&aid=1787285&group_id=17691&atid=117691
      */
     @org.junit.jupiter.api.Test
-    public void wrongInvalidTypeError_1787285() throws XMLDBException {
+    void wrongInvalidTypeError1787285() throws XMLDBException {
         String query = "let $arg1 as xs:string := \"A String\"" + "let $arg2 as xs:integer := 3 return $arg2";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2303,11 +2304,11 @@ public class XQueryTest {
      *
      * @see http://sourceforge.net/support/tracker.php?aid=1805612
      *
-     * Same as {@link #asDouble_1840775()}
+     * Same as {@link #asDouble1840775()}
      */
     @Disabled
     @org.junit.jupiter.api.Test
-    public void wrongAttributeTypeCheck_1805612() throws XMLDBException {
+    void wrongAttributeTypeCheck1805612() throws XMLDBException {
 
         // OK
         String query = "declare namespace tst = \"http://test\"; "
@@ -2341,7 +2342,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1805609
      */
     @org.junit.jupiter.api.Test
-    public void wrongAttributeCardinalityCount_1805609() throws XMLDBException {
+    void wrongAttributeCardinalityCount1805609() throws XMLDBException {
 
         // OK
         String query = "element {\"a\"} { <element b=\"\" c=\"\" />/attribute()[namespace-uri(.) != " + "\"http://www.asml.com/metainformation\"]}";
@@ -2368,7 +2369,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1806901
      */
     @org.junit.jupiter.api.Test
-    public void doubleDefaultNamespace_1806901() throws XMLDBException {
+    void doubleDefaultNamespace1806901() throws XMLDBException {
         // OK
         String query = "declare namespace xf = \"http://a\"; " + "declare option exist:serialize 'indent=no';" + "<html xmlns=\"http://b\"><xf:model><xf:instance xmlns=\"\"/></xf:model></html>";
 
@@ -2384,7 +2385,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1828168
      */
     @org.junit.jupiter.api.Test
-    public void predicateInPredicateEmptyResult_1828168() throws XMLDBException {
+    void predicateInPredicateEmptyResult1828168() throws XMLDBException {
         String query = "let $docs := <Document/> return $docs[a[1] = 'b']";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2404,7 +2405,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1846228
      */
     @org.junit.jupiter.api.Test
-    public void namespaceHandlingSameModule_1846228() throws XMLDBException {
+    void namespaceHandlingSameModule1846228() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "declare function local:table () {" +
                 "<d>Bar</d>};" +
@@ -2431,7 +2432,7 @@ public class XQueryTest {
      * @see  http://sourceforge.net/support/tracker.php?aid=1841105
      */
     @org.junit.jupiter.api.Test
-    public void stringOfEmptySequence_1841105() throws XMLDBException {
+    void stringOfEmptySequence1841105() throws XMLDBException {
         // OK
         String query = "empty( ()/string() )";
 
@@ -2448,7 +2449,7 @@ public class XQueryTest {
      */
     @Disabled
     @org.junit.jupiter.api.Test
-    public void stringOfEmptySequenceWithExplicitContext_2871975() throws XMLDBException {
+    void stringOfEmptySequenceWithExplicitContext2871975() throws XMLDBException {
 
         // OK
         String query = "empty( ()/string() )";
@@ -2475,7 +2476,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1970717
      */
     @org.junit.jupiter.api.Test
-    public void constructTextNodeWithEmptyString_1970717() throws XMLDBException {
+    void constructTextNodeWithEmptyString1970717() throws XMLDBException {
         String query = "text {\"\"} =\"\"";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2491,7 +2492,7 @@ public class XQueryTest {
      */
     @Disabled
     @org.junit.jupiter.api.Test
-    public void attributeNamespaceDeclaration_1848497() throws XMLDBException {
+    void attributeNamespaceDeclaration1848497() throws XMLDBException {
         String query = "declare namespace foo = \"foo\";" +
                 "declare function foo:boe() { \"boe\" };" +
                 "<xml xmlns:foo2=\"foo\">{ foo2:boe() }</xml>";
@@ -2508,7 +2509,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1884403
      */
     @org.junit.jupiter.api.Test
-    public void atomization_1884403() throws XMLDBException {
+    void atomization1884403() throws XMLDBException {
         String query = "declare namespace tst = \"tt\"; " +
                 "declare function tst:foo() as xs:string { <string>myTxt</string> }; " +
                 "tst:foo()";
@@ -2525,7 +2526,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1884360
      */
     @org.junit.jupiter.api.Test
-    public void cardinalityAttributeNamespace_1884360() throws XMLDBException {
+    void cardinalityAttributeNamespace1884360() throws XMLDBException {
         String query = "let $el := <element a=\"1\" b=\"2\"/> " +
                 "for $attr in $el/attribute()[namespace-uri(.) ne \"h\"] " +
                 "return <c>{$attr}</c>";
@@ -2541,7 +2542,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void currentDateTimeInModules_1894009() throws XMLDBException {
+    void currentDateTimeInModules1894009() throws XMLDBException {
         String module = """
                 module namespace dt = "dt";
                 
@@ -2582,7 +2583,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1909505
      */
     @org.junit.jupiter.api.Test
-    public void testXmldbStoreComment_1909505() throws XMLDBException {
+    void testXmldbStoreComment1909505() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
                 "let $docIn := <a><!-- b --></a>" +
                 "let $uri := xmldb:store(\"/db\", \"commenttest.xml\", $docIn)" +
@@ -2600,7 +2601,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1938498
      */
     @org.junit.jupiter.api.Test
-    public void memproc_1938498() throws XMLDBException {
+    void memproc1938498() throws XMLDBException {
         String xmldocument = "<Root><Child/></Root>";
         String location = "1938498.xml";
         String query =
@@ -2617,7 +2618,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void cce_SaxException() throws XMLDBException {
+    void cceSaxException() throws XMLDBException {
         String xmldocument = "<a><b><c>mmm</c></b></a>";
         String location = "ccesax.xml";
         String query =
@@ -2644,7 +2645,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=2003042
      */
     @org.junit.jupiter.api.Test
-    public void xpty0018_MixNodesAtomicValues_2003042() throws XMLDBException {
+    void xpty0018MixNodesAtomicValues2003042() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no'; <a>{2}<b/></a>";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
@@ -2654,12 +2655,12 @@ public class XQueryTest {
         assertEquals("<a>2<b/></a>", result.getResource(0).getContent().toString(), //checked with saxon
                 query);
     }
-    
+
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1816496
      */
     @org.junit.jupiter.api.Test
-    public void divYieldsWrongInf_1816496() throws XMLDBException {
+    void divYieldsWrongInf1816496() throws XMLDBException {
         String query = "let $negativeZero := xs:double(-1.0e-1024) let $positiveZero := xs:double(1.0e-1024) "
                 +"return ("
                 +"(xs:double(1)  div xs:double(0)),   (xs:double(1)  div $positiveZero),  (xs:double(1)  div $negativeZero), "
@@ -2702,7 +2703,7 @@ public class XQueryTest {
      * @see https://github.com/eXist-db/exist/issues/3441
      */
     @org.junit.jupiter.api.Test
-    public void divErrorArgVariable() throws XMLDBException {
+    void divErrorArgVariable() throws XMLDBException {
         String query = "let $x := 2 " +
                 "return 1 div $x * 4";
 
@@ -2716,10 +2717,10 @@ public class XQueryTest {
     }
 
     /**
-            * @see https://github.com/eXist-db/exist/issues/3441
-            */
+     * @see https://github.com/eXist-db/exist/issues/3441
+     */
     @org.junit.jupiter.api.Test
-    public void divErrorArgVariable2() throws XMLDBException {
+    void divErrorArgVariable2() throws XMLDBException {
         String query = """
                 let $x := 2\s
                 let $y := 1 div $x * 4
@@ -2733,12 +2734,12 @@ public class XQueryTest {
         assertEquals("2", result.getResource(0).getContent().toString(), query);
 
     }
-    
+
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1841635
      */
     @org.junit.jupiter.api.Test
-    public void resolveBaseURI_1841635() throws XMLDBException {
+    void resolveBaseURI1841635() throws XMLDBException {
         String xmldoc = "<Root><Node1><Node2><Node3></Node3></Node2></Node1></Root>";
 
         XPathQueryService service = storeXMLStringAndGetQueryService("baseuri.xml", xmldoc);
@@ -2778,7 +2779,7 @@ public class XQueryTest {
      * @see <a href="https://github.com/eXist-db/exist/issues/3497">[BUG] ()/fn:base-uri() incorrectly raises XPDY0002</a>
      */
     @org.junit.jupiter.api.Test
-    public void resolveBaseURIErrorCases() throws XMLDBException {
+    void resolveBaseURIErrorCases() throws XMLDBException {
         final XPathQueryService service = existEmbeddedServer.getRoot().getService(XPathQueryService.class);
 
         String query = "()/fn:base-uri()";
@@ -2808,7 +2809,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=2429093
      */
     @org.junit.jupiter.api.Test
-    public void xpty0018_mixedsequences_2429093() throws XMLDBException {
+    void xpty0018Mixedsequences2429093() throws XMLDBException {
         String query = """
                 declare variable $a := <A><B/></A>;
                 ($a/B, "delete") """;
@@ -2824,7 +2825,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void messageDigester() throws XMLDBException {
+    void messageDigester() throws XMLDBException {
         String query = """
                 let $value:="ABCDEF"
                 let $alg:="MD5"
@@ -2875,12 +2876,12 @@ public class XQueryTest {
      * @see http://sourceforge.net/tracker/?func=detail&aid=2846187&group_id=17691&atid=317691
      */
     @org.junit.jupiter.api.Test
-    public void dynamicallySizedNamePool() throws XMLDBException {
+    void dynamicallySizedNamePool() throws XMLDBException {
         String query = "<root> { for $i in 1 to 2000  "
                 + "return element {concat(\"elt-\", $i)} {} } </root>";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
-        service.query(query);
+        assertDoesNotThrow(() -> service.query(query));
     }
 
 
@@ -2888,7 +2889,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=2903815
      */
     @org.junit.jupiter.api.Test
-    public void replaceBug_2903815() throws XMLDBException {
+    void replaceBug2903815() throws XMLDBException {
         String query = "let $f := <z>fred</z>" +
                 "let $s:= <s>xxxxtxxx</s>" +
                 "let $t := <t>t</t>" +
@@ -2917,11 +2918,11 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1840775
      *
-     * Same as {@link #wrongAttributeTypeCheck_1805612()}
+     * Same as {@link #wrongAttributeTypeCheck1805612()}
      */
     @Disabled
     @org.junit.jupiter.api.Test
-    public void asDouble_1840775() throws XMLDBException {
+    void asDouble1840775() throws XMLDBException {
         String query = "declare function local:testCase($failure as element(Failure)?)"
                 + "as element(TestCase) { <TestCase/> };"
                 + "local:testCase("
@@ -2929,14 +2930,14 @@ public class XQueryTest {
                 + "let $ltValue as xs:double := 0.0e0 return <Failure/>)";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
-        service.query(query);
+        assertDoesNotThrow(() -> service.query(query));
     }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2117655
      */
     @org.junit.jupiter.api.Test
-    public void typeMismatch_2117655() throws XMLDBException {
+    void typeMismatch2117655() throws XMLDBException {
         String query = "declare namespace t = \"test\"; "
                 +"declare function t:foo() as xs:string{"
                 + "<Value>23</Value>}; "
@@ -2954,7 +2955,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1959010
      */
     @org.junit.jupiter.api.Test
-    public void noNamepaceDefinedForPrefix_1959010() throws XMLDBException {
+    void noNamepaceDefinedForPrefix1959010() throws XMLDBException {
         String query =
                  "declare function local:copy($nodes as node()*) as node()* "
                 +"{ "
@@ -2991,7 +2992,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1807014
      */
     @org.junit.jupiter.api.Test
-    public void wrongAddNamespace_1807014() throws XMLDBException {
+    void wrongAddNamespace1807014() throws XMLDBException {
         Collection testCollection = getTestCollection();
         Resource doc = testCollection.createResource("a.xqy", BinaryResource.class);
         doc.setContent("module namespace a = \"http://www.a.com\"; "
@@ -3021,7 +3022,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1789370
      */
     @org.junit.jupiter.api.Test
-    public void orderBy_1789370() throws XMLDBException {
+    void orderBy1789370() throws XMLDBException {
         String query =
                  "(for $vi in <elem>text</elem> order by $vi return $vi)/text()";
 
@@ -3037,7 +3038,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1817822
      */
     @org.junit.jupiter.api.Test
-    public void variableScopeBug_1817822() throws XMLDBException {
+    void variableScopeBug1817822() throws XMLDBException {
         String query =
                      "declare namespace test = \"http://example.com\"; "
                     +"declare function test:expression($expr) as xs:double? { "
@@ -3074,7 +3075,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1718626
      */
     @org.junit.jupiter.api.Test
-    public void constructednodePosition_1718626() throws XMLDBException {
+    void constructednodePosition1718626() throws XMLDBException {
         String query =
                  "declare variable $categories := "
                 +" <categories> "
@@ -3102,7 +3103,7 @@ public class XQueryTest {
      * @see http://sourceforge.net/support/tracker.php?aid=1460791
      */
     @org.junit.jupiter.api.Test
-    public void descendantOrSelf_1460791() throws XMLDBException {
+    void descendantOrSelf1460791() throws XMLDBException {
         String query =
                  "declare option exist:serialize 'indent=no';"
                 +"let $test:=<z> <a> aaa </a> <z> zzz </z> </z> "
@@ -3124,7 +3125,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attributesSerialization() throws XMLDBException {
+    void attributesSerialization() throws XMLDBException {
         final XPathQueryService service =
                 storeXMLStringAndGetQueryService(attributesSERIALIZATION, attributes);
 
@@ -3144,7 +3145,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException {
+    void pathOperatorContainingNodesAndNonNodes() throws XMLDBException {
         final String query = """
                 declare function local:test() { (1,<n/>) };
                 <x/>/local:test()""";
@@ -3163,7 +3164,7 @@ public class XQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void exprContainingNodesAndNonNodes() throws XMLDBException {
+    void exprContainingNodesAndNonNodes() throws XMLDBException {
         final String query = """
                 declare function local:test() { (1,<n/>) };
                 local:test()""";
@@ -3178,7 +3179,7 @@ public class XQueryTest {
      * @see https://github.com/eXist-db/exist/issues/1121
      */
     @org.junit.jupiter.api.Test
-    public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException {
+    void multipleExprsContainingNodesAndNonNodes() throws XMLDBException {
         final String query = """
                 declare variable $a := 'a';
                 declare function local:test() { (1,<n/>) };

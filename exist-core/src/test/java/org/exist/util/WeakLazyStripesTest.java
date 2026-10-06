@@ -30,10 +30,10 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-public class WeakLazyStripesTest {
+class WeakLazyStripesTest {
 
     @Test
-    public void stripeReuse() {
+    void stripeReuse() {
         final WeakLazyStripes<Integer, UUID> stripes = new WeakLazyStripes<>(key -> UUID.randomUUID());
 
         // get some stripes

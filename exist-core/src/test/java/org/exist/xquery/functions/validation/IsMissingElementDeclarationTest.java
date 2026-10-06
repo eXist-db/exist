@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * would otherwise only surface indirectly (and much less diagnosably) via {@code
  * JaxpXsdCatalogTest#xsd11SearchedValid}/{@code xsd11SearchedInvalid} failing.</p>
  */
-public class IsMissingElementDeclarationTest {
+class IsMissingElementDeclarationTest {
 
     private static final String XSD_1_1_ONLY_SCHEMA = """
             <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -75,7 +75,7 @@ public class IsMissingElementDeclarationTest {
             </root>""";
 
     @Test
-    public void realCvcElt1aFailureIsRecognized() throws Exception {
+    void realCvcElt1aFailureIsRecognized() throws Exception {
         final Path tempDir = Files.createTempDirectory("is-missing-element-declaration-test");
         try {
             Files.writeString(tempDir.resolve("schema.xsd"), XSD_1_1_ONLY_SCHEMA);

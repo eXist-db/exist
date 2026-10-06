@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-public class NativeBrokerTest {
+class NativeBrokerTest {
 
     /**
      * When copying a Collection (/db/test/source) where
@@ -52,7 +52,7 @@ public class NativeBrokerTest {
      * we should be allowed to copy the Collection.
      */
     @Test
-    public void copyCollection_noDescendants_toNonExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollection_noDescendants_toNonExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
         final XmldbURI newName = XmldbURI.create("dest");
@@ -115,7 +115,7 @@ public class NativeBrokerTest {
      * we should NOT be allowed to copy the Collection.
      */
     @Test
-    public void copyCollectionNoDescendantsToNonExistingDestCannotWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollectionNoDescendantsToNonExistingDestCannotWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
         final XmldbURI newName = XmldbURI.create("dest");
@@ -175,7 +175,7 @@ public class NativeBrokerTest {
      * we should be allowed to copy the Collection.
      */
     @Test
-    public void copyCollection_oneSubDoc_toNonExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollectionOneSubDocToNonExistingDestCanWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
         final XmldbURI newName = XmldbURI.create("dest");
@@ -244,7 +244,7 @@ public class NativeBrokerTest {
      */
     @Disabled("Mock API changed — iteratorNoLock() vs iterator()")
     @Test
-    public void copyCollection_oneSubDoc_oneSubColl_toNonExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollectionOneSubDocOneSubCollToNonExistingDestCanWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
         final XmldbURI newName = XmldbURI.create("dest");
@@ -329,7 +329,7 @@ public class NativeBrokerTest {
      * we should be allowed to copy the content of the Collection.
      */
     @Test
-    public void copyCollection_noDescendants_toExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollectionNoDescendantsToExistingDestCanWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
         final XmldbURI newName = XmldbURI.create("dest");
@@ -392,10 +392,10 @@ public class NativeBrokerTest {
      * and we DO NOT have execute+write access on /db/test
      * we should NOT be allowed to copy the content of the Collection.
      */
-    @Test
     // NOTE (see #6804): the verify(...) at the end of the lambda never runs, because the call before it throws. Its expectations
     // do not hold for the throwing path (running it fails), so it is left as it was until the mock setup is reviewed.
-    public void copyCollectionNoDescendantsToExistingDestCannotWriteDest() throws LockException {
+    @Test
+    void copyCollectionNoDescendantsToExistingDestCannotWriteDest() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
             final XmldbURI src = XmldbURI.create("/db/test/source");
             final XmldbURI dest = XmldbURI.create("/db/test");
@@ -464,10 +464,10 @@ public class NativeBrokerTest {
      * but DO NOT have execute+write access on /db/test/dest
      * we should NOT be allowed to copy the content of the Collection.
      */
-    @Test
     // NOTE (see #6804): the verify(...) at the end of the lambda never runs, because the call before it throws. Its expectations
     // do not hold for the throwing path (running it fails), so it is left as it was until the mock setup is reviewed.
-    public void copyCollectionNoDescendantsToExistingDestCannotWriteNewDest() throws LockException {
+    @Test
+    void copyCollectionNoDescendantsToExistingDestCannotWriteNewDest() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
             final XmldbURI src = XmldbURI.create("/db/test/source");
             final XmldbURI dest = XmldbURI.create("/db/test");
@@ -542,7 +542,7 @@ public class NativeBrokerTest {
      * we should be allowed to copy the content of the Collection.
      */
     @Test
-    public void copyCollection_oneSubDoc_toExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
+    void copyCollectionOneSubDocToExistingDestCanWriteDest() throws LockException, PermissionDeniedException {
 
         final XmldbURI src = XmldbURI.create("/db/test/source");
         final XmldbURI dest = XmldbURI.create("/db/test");
@@ -614,10 +614,10 @@ public class NativeBrokerTest {
      * and we have execute+write access on /db/test and /db/test/dest
      * we should NOT be allowed to copy the content of the Collection.
      */
-    @Test
     // NOTE (see #6804): the verify(...) at the end of the lambda never runs, because the call before it throws. Its expectations
     // do not hold for the throwing path (running it fails), so it is left as it was until the mock setup is reviewed.
-    public void copyCollectionOneSubDocToExistingDestCannotReadSubDoc() throws LockException {
+    @Test
+    void copyCollectionOneSubDocToExistingDestCannotReadSubDoc() throws LockException {
         assertThrows(PermissionDeniedException.class, () -> {
 
             final XmldbURI src = XmldbURI.create("/db/test/source");

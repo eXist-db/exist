@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * peek declines and falls through -- which would independently attempt the same kind of fetch,
  * confounding any attempt to observe whether the peek itself made a network call.</p>
  */
-public class JaxpSchemaLocationSecurityTest {
+class JaxpSchemaLocationSecurityTest {
 
     private static Path tempDir;
     private static String fileBaseUri;
@@ -59,7 +59,7 @@ public class JaxpSchemaLocationSecurityTest {
             <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>""";
 
     @BeforeAll
-    public static void setup() throws Exception {
+    static void setup() throws Exception {
         tempDir = Files.createTempDirectory("jaxp-security-test");
         final Path instance = tempDir.resolve("instance.xml");
         Files.writeString(instance, "<root/>");
@@ -69,7 +69,7 @@ public class JaxpSchemaLocationSecurityTest {
     }
 
     @AfterAll
-    public static void teardown() throws Exception {
+    static void teardown() throws Exception {
         Files.deleteIfExists(tempDir.resolve("instance.xml"));
         Files.deleteIfExists(tempDir.resolve("schema11.xsd"));
         Files.deleteIfExists(tempDir.resolve("schema10.xsd"));
@@ -77,17 +77,17 @@ public class JaxpSchemaLocationSecurityTest {
     }
 
     @Test
-    public void sameOriginRelativeXsd11SchemaIsDetected() {
+    void sameOriginRelativeXsd11SchemaIsDetected() {
         assertTrue(Jaxp.isXsd11Schema("test-subject", fileBaseUri, "schema11.xsd"));
     }
 
     @Test
-    public void sameOriginRelativeXsd10SchemaIsNotDetectedAsXsd11() {
+    void sameOriginRelativeXsd10SchemaIsNotDetectedAsXsd11() {
         assertFalse(Jaxp.isXsd11Schema("test-subject", fileBaseUri, "schema10.xsd"));
     }
 
     @Test @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void crossOriginHttpLocationIsRefused() {
+    void crossOriginHttpLocationIsRefused() {
         // A real instance would never have a `file://` base URI reachable from an unprivileged
         // caller (only Java-object-backed items do, which already requires elevated capability) --
         // this is just the most convenient same-scheme baseline to contrast against. The case that
@@ -97,14 +97,14 @@ public class JaxpSchemaLocationSecurityTest {
     }
 
     @Test @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void crossOriginHttpLocationIsRefusedForDatabaseBaseUri() {
+    void crossOriginHttpLocationIsRefusedForDatabaseBaseUri() {
         // The realistic, unprivileged case: a document stored in the database (xmldb:// base URI)
         // with an absolute http:// schemaLocation hint pointing out to an attacker-controlled host.
         assertFalse(Jaxp.isXsd11Schema("test-subject", "xmldb://db/test/instance.xml", "http://203.0.113.1:1/evil.xsd"));
     }
 
     @Test @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void crossHostXmldbLocationIsRefused() {
+    void crossHostXmldbLocationIsRefused() {
         // An absolute xmldb:// location naming a different host is not "same scheme" enough --
         // XmldbURL.isEmbedded() treats a non-empty host as a remote XML-RPC target
         // (EmbeddedURLConnection -> XmlrpcInputStream), so this must be refused too.

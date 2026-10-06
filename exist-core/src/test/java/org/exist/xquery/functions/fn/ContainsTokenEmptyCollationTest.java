@@ -48,21 +48,21 @@ public class ContainsTokenEmptyCollationTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void emptyCollationEmptySequenceLiteral() throws Exception {
+    void emptyCollationEmptySequenceLiteral() throws Exception {
         // contains-token-80: third arg is ()
         assertEquals("true",
                 executeStringValue("fn:contains-token('a b c', 'b', ())"));
     }
 
     @Test
-    public void emptyCollationEmptyStringSequence() throws Exception {
+    void emptyCollationEmptyStringSequence() throws Exception {
         // contains-token-82: third arg comes from a let returning empty sequence
         assertEquals("true",
                 executeStringValue("let $c := () return fn:contains-token('a b c', 'b', $c)"));
     }
 
     @Test
-    public void presentCollationStillWorks() throws Exception {
+    void presentCollationStillWorks() throws Exception {
         assertEquals("true",
                 executeStringValue("fn:contains-token('a b c', 'B', " +
                         "'http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive')"));

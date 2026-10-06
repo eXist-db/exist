@@ -49,7 +49,7 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
         "<result>{for $t in distinct-values(collection(\"" + XmldbURI.ROOT_COLLECTION + "\")//mods/subject/topic) order by $t return <topic>{$t}</topic>}</result>";
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
         assertNotNull(c1);
     }

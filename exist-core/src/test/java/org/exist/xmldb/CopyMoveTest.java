@@ -44,7 +44,7 @@ public class CopyMoveTest {
     private final static String TEST_COLLECTION = "testCopyMove";
 
     @Test
-    public void copyResourceChangeName() throws XMLDBException {
+    void copyResourceChangeName() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource original = testCollection.createResource("original", XMLResource.class);
         original.setContent("<sample/>");
@@ -57,7 +57,7 @@ public class CopyMoveTest {
     }
 
     @Test
-    public void queryCopiedResource() throws XMLDBException {
+    void queryCopiedResource() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource original = testCollection.createResource("original", XMLResource.class);
         original.setContent("<sample/>");
@@ -70,9 +70,9 @@ public class CopyMoveTest {
         ResourceSet rs = xq.queryResource("duplicate", "/sample");
         assertEquals(1, rs.getSize());
     }
-    
+
     @Test
-    public void changePermissionsAfterCopy() throws XMLDBException {
+    void changePermissionsAfterCopy() throws XMLDBException {
         final String collectionURL = XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION;
         final String originalResource = "original.xml";
         final String copyResource = "copy.xml";
@@ -121,7 +121,7 @@ public class CopyMoveTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
         final UserManagementService ums = testCollection.getService(UserManagementService.class);
@@ -132,7 +132,7 @@ public class CopyMoveTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);

@@ -58,7 +58,7 @@ public class PathExprDedupTest {
      * must deduplicate results per §3.3.1.1.
      */
     @Test
-    public void functionCallInPathDedup() throws XMLDBException {
+    void functionCallInPathDedup() throws XMLDBException {
         final String result = query("""
                 declare variable $root := <root><c/></root>;
                 declare function local:function($arg) { $root[$arg] };
@@ -70,7 +70,7 @@ public class PathExprDedupTest {
      * Simpler case: child::* / function that always returns the same node.
      */
     @Test
-    public void functionReturnsConstantNodeDedup() throws XMLDBException {
+    void functionReturnsConstantNodeDedup() throws XMLDBException {
         final String result = query("""
                 declare variable $root := <root><a/><b/></root>;
                 declare function local:getroot($x) { $root };
@@ -83,7 +83,7 @@ public class PathExprDedupTest {
      * This is the scenario from the 2009 bug fix (SF #2880394).
      */
     @Test
-    public void forLoopPreservesDuplicates() throws XMLDBException {
+    void forLoopPreservesDuplicates() throws XMLDBException {
         final String result = query("""
                 declare variable $root := <root/>;
                 count(for $x in (1, 2, 3) return $root)""");
@@ -94,7 +94,7 @@ public class PathExprDedupTest {
      * Global variable with for-loop should preserve all results.
      */
     @Test
-    public void globalVarForLoopPreservesDuplicates() throws XMLDBException {
+    void globalVarForLoopPreservesDuplicates() throws XMLDBException {
         final String result = query("""
                 declare variable $data := <item/>;
                 count(for $i in 1 to 5 return $data)""");
@@ -106,7 +106,7 @@ public class PathExprDedupTest {
      * Must not NPE when removeDuplicates is called on atomic results.
      */
     @Test
-    public void pathEndingWithIntegerLiteral() throws XMLDBException {
+    void pathEndingWithIntegerLiteral() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet result = xqs.query("""
                 declare variable $myVar := <e/>;
@@ -122,7 +122,7 @@ public class PathExprDedupTest {
      * Must not NPE when removeDuplicates is called on atomic results.
      */
     @Test
-    public void pathEndingWithNumberFunction() throws XMLDBException {
+    void pathEndingWithNumberFunction() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet result = xqs.query("""
                 declare variable $myVar := <e/>;
@@ -137,7 +137,7 @@ public class PathExprDedupTest {
      * Path with axis step followed by function call — dedup should apply.
      */
     @Test
-    public void axisStepThenFunctionCallDedup() throws XMLDBException {
+    void axisStepThenFunctionCallDedup() throws XMLDBException {
         final String result = query("""
                 declare variable $doc := <doc><a/><b/><c/></doc>;
                 declare function local:parent($n) { $n/.. };

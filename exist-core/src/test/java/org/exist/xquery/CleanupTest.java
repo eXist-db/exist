@@ -88,7 +88,7 @@ public class CleanupTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeEach
-    public void setup() throws XMLDBException {
+    void setup() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         collection = service.createCollection("test");
@@ -99,14 +99,14 @@ public class CleanupTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");
     }
 
     @org.junit.jupiter.api.Test
-    public void resetStateOfModuleVars() throws XMLDBException, XPathException {
+    void resetStateOfModuleVars() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
         final CompiledExpression compiled = service.compile(TEST_QUERY);
 
@@ -141,7 +141,7 @@ public class CleanupTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void resetStateOfInlineFunc() throws XMLDBException, EXistException, PermissionDeniedException, XPathException {
+    void resetStateOfInlineFunc() throws XMLDBException, EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = BrokerPool.getInstance();
         final XQuery xquery = pool.getXQueryService();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -156,7 +156,7 @@ public class CleanupTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void preserveExternalVariable() throws XMLDBException, XPathException {
+    void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 
@@ -175,7 +175,7 @@ public class CleanupTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void resetStateofInternalModule() throws XMLDBException, XPathException {
+    void resetStateofInternalModule() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);

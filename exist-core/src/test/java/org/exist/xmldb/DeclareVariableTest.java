@@ -69,7 +69,7 @@ public class DeclareVariableTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
@@ -77,7 +77,7 @@ public class DeclareVariableTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void declareBigInteger(String apiName, String baseUri) throws XMLDBException {
+    void declareBigInteger(String apiName, String baseUri) throws XMLDBException {
         initDeclareVariableTest(apiName, baseUri);
         setUp();
         final Resource result = executeQueryWithExternalVariable(new BigInteger("123456789123456789123456789"));
@@ -85,7 +85,7 @@ public class DeclareVariableTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void declareBigDecimal(String apiName, String baseUri) throws XMLDBException {
+    void declareBigDecimal(String apiName, String baseUri) throws XMLDBException {
         initDeclareVariableTest(apiName, baseUri);
         setUp();
         final Resource result = executeQueryWithExternalVariable(new BigDecimal("1.1"));

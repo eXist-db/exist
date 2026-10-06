@@ -96,18 +96,18 @@ public class VectorSearchEmbeddingIT {
         "<articles><article><p> this is a <bold>cute</bold> cat</p></article></articles>";
 
     @BeforeEach
-    public void checkModel() {
+    void checkModel() {
         assumeTrue(hasEmbeddingModel(), "ONNX model not found — run with -Ponnx-model");
     }
 
     @Test
-    public void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
+    void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         assertCount(queryVectorCount(COLLECTION, "Hello world", 3), 3);
     }
 
     @Test
-    public void embedReturnsDimension384() throws XPathException, PermissionDeniedException, EXistException {
+    void embedReturnsDimension384() throws XPathException, PermissionDeniedException, EXistException {
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
@@ -116,7 +116,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void embedBatchReturnsTwoArrays() throws XPathException, PermissionDeniedException, EXistException {
+    void embedBatchReturnsTwoArrays() throws XPathException, PermissionDeniedException, EXistException {
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
@@ -129,7 +129,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void diagnosticsReportsModel() throws XPathException, PermissionDeniedException, EXistException {
+    void diagnosticsReportsModel() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         final Sequence result = executeQuery(
             """
@@ -141,19 +141,19 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void queryFieldVectorReturnsHits() throws XPathException, PermissionDeniedException, EXistException {
+    void queryFieldVectorReturnsHits() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         assertCount(queryFieldVectorCount(COLLECTION, "Hello world", 2), 2);
     }
 
     @Test
-    public void kParameterLimitsResults() throws XPathException, PermissionDeniedException, EXistException {
+    void kParameterLimitsResults() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         assertCount(queryVectorCount(COLLECTION, "Hello world", 1), 1);
     }
 
     @Test
-    public void closerTextRanksHigher() throws XPathException, PermissionDeniedException, EXistException {
+    void closerTextRanksHigher() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
@@ -167,7 +167,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void embedEmptyTextErrors() throws EXistException, PermissionDeniedException {
+    void embedEmptyTextErrors() throws EXistException, PermissionDeniedException {
         try {
             executeQuery(
                 "xquery version \"3.1\";\n"
@@ -180,7 +180,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void embedBlankTextErrors() throws EXistException, PermissionDeniedException {
+    void embedBlankTextErrors() throws EXistException, PermissionDeniedException {
         try {
             executeQuery(
                 "xquery version \"3.1\";\n"
@@ -193,7 +193,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void embedBatchEmptySequenceReturnsEmptyArray() throws XPathException, PermissionDeniedException, EXistException {
+    void embedBatchEmptySequenceReturnsEmptyArray() throws XPathException, PermissionDeniedException, EXistException {
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
@@ -202,7 +202,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void embedBatchSingleTextReturnsOneArray() throws XPathException, PermissionDeniedException, EXistException {
+    void embedBatchSingleTextReturnsOneArray() throws XPathException, PermissionDeniedException, EXistException {
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
@@ -214,13 +214,13 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
-    public void queryVectorWithKZeroDefaultsToTen() throws XPathException, PermissionDeniedException, EXistException {
+    void queryVectorWithKZeroDefaultsToTen() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         assertCount("k=0 should default to 10, returning all 3 docs", queryVectorCount(COLLECTION, "Hello world", 0), 3);
     }
 
     @Test
-    public void inlineElementsDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
+    void inlineElementsDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
         final String inlineCol = "/db/lucene-test-vector-inline-it";
         final String inlineColName = "lucene-test-vector-inline-it";
         final String inlineConfCol = "/db/system/config/db/" + inlineColName;
@@ -233,7 +233,7 @@ public class VectorSearchEmbeddingIT {
     }
 
     @AfterEach
-    public void cleanupCollections() {
+    void cleanupCollections() {
         cleanupCollection(COLLECTION, CONFIG_COLLECTION);
     }
 

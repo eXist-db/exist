@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class BrokerPoolServiceTest {
+class BrokerPoolServiceTest {
 
     // NOTE: this is a concurrent list because it is shared between the test and the BackgroundJobsBrokerPoolService
     private final List<Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>>> futures = new CopyOnWriteArrayList<>();
@@ -70,7 +70,7 @@ public class BrokerPoolServiceTest {
      * stops.
      */
     @Test
-    public void backgroundJobsShutdownCleanly() throws EXistException, IOException, DatabaseConfigurationException, InterruptedException, ExecutionException {
+    void backgroundJobsShutdownCleanly() throws EXistException, IOException, DatabaseConfigurationException, InterruptedException, ExecutionException {
         // Create and add our BackgroundJobsBrokerPoolService to the BrokerPool
         final BrokerPoolService testBrokerPoolService = new BackgroundJobsBrokerPoolService(futures);
         final Properties configProps = new Properties();

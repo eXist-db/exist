@@ -130,7 +130,7 @@ public class SystemExportImportTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0} zip:{2}")
-    public void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
+    void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
         initSystemExportImportTest(apiName, direct, zip);
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -229,8 +229,8 @@ public class SystemExportImportTest {
         }
     }
 
-	@BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+    @BeforeAll
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

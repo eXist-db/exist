@@ -65,7 +65,7 @@ public class StartupTriggerTest {
      * Check if startup trigger has access to security manager.
      */
     @Test
-    public void createUser() throws DatabaseConfigurationException, EXistException, IOException {
+    void createUser() throws DatabaseConfigurationException, EXistException, IOException {
         assertTrue(TestStartupTrigger.completed);
     }
 

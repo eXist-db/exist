@@ -92,14 +92,14 @@ public class Indexer2Test {
             "</result>";
 
     @Test
-    public void store_preserve_mixed_ws() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, XPathException, AuthenticationException {
+    void store_preserve_mixed_ws() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, XPathException, AuthenticationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         assertTrue(((Boolean) pool.getConfiguration().getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT)).booleanValue());
         assertEquals("none", pool.getConfiguration().getProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
     }
 
     @Test
-    public void retrieve_boundary_space_preserve_with_preserve_mixed_ws() throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException {
+    void retrieve_boundary_space_preserve_with_preserve_mixed_ws() throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException {
         assertEquals("<result name=\"" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "\">\n" +
                 "    <inline>\n" +
                 "Government of new Territory of Nevada—Governor Nye and the practical jokers—Mr. Clemens begins journalistic life on Virginia City Enterprise.\n" + "</inline>\n" +
@@ -155,7 +155,7 @@ public class Indexer2Test {
             false);
 
     @BeforeAll
-    public static void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, AuthenticationException {
+    static void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, AuthenticationException {
         storeDoc();
     }
 }

@@ -32,10 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CollationsTest {
+class CollationsTest {
 
     @Test
-    public void htmlAscii_contains() throws XPathException {
+    void htmlAscii_contains() throws XPathException {
         final Collator collator = Collations.getCollationFromURI(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI, (Expression)null);
 
         assertTrue(Collations.contains(collator, "iNPut", "pu"));
@@ -45,7 +45,7 @@ public class CollationsTest {
     }
 
     @Test
-    public void javaUriCustomCollatorCanBeLoaded() throws XPathException {
+    void javaUriCustomCollatorCanBeLoaded() throws XPathException {
         final Collator collator = Collations.getCollationFromURI(
                 "java:org.exist.util.TestJavaCollator",
                 (Expression) null

@@ -43,8 +43,8 @@ public class ResourceSetTest {
 
 	private Collection testCollection;
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 		testCollection = service.createCollection(TEST_COLLECTION);
 		assertNotNull(testCollection);
@@ -62,15 +62,15 @@ public class ResourceSetTest {
 		}
 	}
 
-	@AfterEach
-	public void tearDown() throws XMLDBException {
+    @AfterEach
+    void tearDown() throws XMLDBException {
 		//delete the test collection
 		final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);
 		service.removeCollection(TEST_COLLECTION);
 	}
 
     @Test
-	public void intersection1() throws XMLDBException {
+    void intersection1() throws XMLDBException {
 		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*";
 		final String query1 = xpathPrefix + "[position() >= 5 ]";
 		final String query2 = xpathPrefix + "[position() <= 10]";
@@ -84,8 +84,8 @@ public class ResourceSetTest {
         assertEquals(expected, ResourceSetHelper.intersection(result1, result2).getSize(), "size of intersection of " + query1 + " and " + query2 + " yields ");
 	}
 
-	@Test
-	public void intersection2() throws XMLDBException {
+    @Test
+    void intersection2() throws XMLDBException {
 	   	final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/hamlet.xml')//LINE";
 		final String query1 = xpathPrefix + "[fn:contains(. , 'funeral')]";		// count=4
 		final String query2 = xpathPrefix + "[fn:contains(. , 'dirge')]";		// count=1, intersection=1

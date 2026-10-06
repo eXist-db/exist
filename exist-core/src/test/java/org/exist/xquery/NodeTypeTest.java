@@ -77,17 +77,17 @@ public class NodeTypeTest {
 			"    <body/>" +
 			"</page>";
 
-	/**
-	 * This test passes nodes containing xml entities to eXist and tries
-	 * to read it back in:
-	 * <ul>
-	 * <li>Register a database instance</li>
-	 * <li>Write a "live" document to the database using the XQueryService</li>
-	 * <li>Create a "work" version of it</li>
-	 * </ul>
-	 */
-	@Test
-	public final void removeAndReload() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    /**
+     * This test passes nodes containing xml entities to eXist and tries
+     * to read it back in:
+     * <ul>
+     * <li>Register a database instance</li>
+     * <li>Write a "live" document to the database using the XQueryService</li>
+     * <li>Create a "work" version of it</li>
+     * </ul>
+     */
+    @Test
+    final void removeAndReload() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		// write "live" document to the database
 		store(DOC, "live.xml");
 		

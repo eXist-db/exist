@@ -38,7 +38,7 @@ public class GetRunningXQueriesTest {
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void caller() throws XMLDBException {
+    void caller() throws XMLDBException {
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery("system:get-running-xqueries()");
         assertNotNull(result);
         final String resultDoc = (String) result.getResource(0).getContent();

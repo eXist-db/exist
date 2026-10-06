@@ -35,7 +35,7 @@ import java.io.IOException;
  * Test for XQuery Library Modules that import themselves, i.e. a self circular dependency.
  * See issue <a href="https://github.com/eXist-db/exist/issues/3448#issue-640018884">#3448</a>.
  */
-public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIntegrationTest {
+class SelfImportCircularDependencyIntegrationTest extends AbstractClassIntegrationTest {
 
     private static String TEST_COLLECTION = "/db/restxq/self-import-circular-dependency-integration-test";
 
@@ -66,12 +66,12 @@ public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIn
     private static String STAGE3_XQUERY = STAGE1_XQUERY;
 
     @BeforeAll
-    public static void storeResourceFunctions() throws IOException {
+    static void storeResourceFunctions() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
     }
 
     @Test
-    public void storeSelfDependentXqueryLibraryModule() throws IOException {
+    void storeSelfDependentXqueryLibraryModule() throws IOException {
         storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE1_XQUERY);
         storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE2_XQUERY);
         storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE3_XQUERY);

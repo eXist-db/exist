@@ -73,7 +73,7 @@ public class SequenceTypeNodeKindTest {
     }
 
     @Test
-    public void referenceToAStoredElement() throws Exception {
+    void referenceToAStoredElement() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final NodeProxy stored = storedElement(broker);
@@ -94,7 +94,7 @@ public class SequenceTypeNodeKindTest {
     }
 
     @Test
-    public void storedElementOfUnknownKind() throws Exception {
+    void storedElementOfUnknownKind() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final NodeProxy stored = storedElement(broker);

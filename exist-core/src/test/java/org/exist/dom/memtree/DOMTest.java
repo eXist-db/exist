@@ -51,14 +51,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * @author wolf
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DOMTest {
+class DOMTest {
 
     private final static String XML =
             "<test count=\"1\" value=\"5543\" xmlns:x=\"http://foo.org\" xmlns=\"http://bla.org\"><x:title id=\"s1\">My title</x:title><paragraph>First paragraph</paragraph>"
                     + "<section><title>subsection</title></section></test>";
 
     @Test
-    public void documentBuilder() throws ParserConfigurationException, SAXException, IOException, TransformerException {
+    void documentBuilder() throws ParserConfigurationException, SAXException, IOException, TransformerException {
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
         SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
@@ -77,7 +77,7 @@ public class DOMTest {
     }
 
     @Test
-    public void getChildNodes1() {
+    void getChildNodes1() {
         MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("top", null, null), null);
@@ -92,7 +92,7 @@ public class DOMTest {
     }
 
     @Test
-    public void getChildNodes2() {
+    void getChildNodes2() {
         MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("top", null, null), null);
@@ -110,7 +110,7 @@ public class DOMTest {
     }
 
     @Test
-    public void getElementsByTagName() {
+    void getElementsByTagName() {
         MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("xquery", null, null), null);

@@ -45,48 +45,48 @@ import static org.hamcrest.Matchers.equalTo;
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class AbsolutePathTests extends XQueryCompilationTest {
+class AbsolutePathTests extends XQueryCompilationTest {
     @Test
-    public void declaredFunctionAbsoluteSlash() throws EXistException, PermissionDeniedException {
+    void declaredFunctionAbsoluteSlash() throws EXistException, PermissionDeniedException {
         final String query = "declare function local:x() { /x }; local:x()";
         final String expectedMessage = "Leading '/' selects nothing, ContextItem is absent in function body";
         assertXQStaticError(ErrorCodes.XPDY0002, 1,30, expectedMessage, compileQuery(query));
     }
 
     @Test
-    public void declaredFunctionLoneSlash() throws EXistException, PermissionDeniedException {
+    void declaredFunctionLoneSlash() throws EXistException, PermissionDeniedException {
         final String query = "declare function local:x() { / }; local:x()";
         final String expectedMessage = "Leading '/' selects nothing, ContextItem is absent in function body";
         assertXQStaticError(ErrorCodes.XPDY0002, 1, 30, expectedMessage, compileQuery(query));
     }
 
     @Test
-    public void declaredFunctionAbsoluteDoubleSlash() throws EXistException, PermissionDeniedException {
+    void declaredFunctionAbsoluteDoubleSlash() throws EXistException, PermissionDeniedException {
         final String query = "declare function local:x() { //x }; local:x()";
         final String expectedMessage = "Leading '//' selects nothing, ContextItem is absent in function body";
         assertXQStaticError(ErrorCodes.XPDY0002, 1, 30, expectedMessage, compileQuery(query));
     }
 
     @Test
-    public void immediateLambdaContainsSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaContainsSlash() throws EXistException, PermissionDeniedException {
         final String query = "(function() { /x })()";
         assertXQStaticError(ErrorCodes.XPDY0002, 1, 15, compileQuery(query));
     }
 
     @Test
-    public void immediateLambdaContainsLoneSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaContainsLoneSlash() throws EXistException, PermissionDeniedException {
         final String query = "(function() { / })()";
         assertXQStaticError(ErrorCodes.XPDY0002, 1, 15, compileQuery(query));
     }
 
     @Test
-    public void immediateLambdaContainsDoubleSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaContainsDoubleSlash() throws EXistException, PermissionDeniedException {
         final String query = "(function() { //x })()";
         assertXQStaticError(ErrorCodes.XPDY0002, 1, 15, compileQuery(query));
     }
 
     @Test
-    public void immediateLambdaWithDocumentAndDoubleSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaWithDocumentAndDoubleSlash() throws EXistException, PermissionDeniedException {
         final Source expected = elemSource("<result><x/><x/><x/></result>");
 
         final String query = """
@@ -100,7 +100,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     }
 
     @Test
-    public void immediateLambdaWithDocumentAndSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaWithDocumentAndSlash() throws EXistException, PermissionDeniedException {
         final Source expected = elemSource("<root/>");
 
         final String query = """
@@ -114,7 +114,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     }
 
     @Test
-    public void immediateLambdaWithDocumentAndLoneSlash() throws EXistException, PermissionDeniedException {
+    void immediateLambdaWithDocumentAndLoneSlash() throws EXistException, PermissionDeniedException {
         final Source expected = docSource("<root/>");
 
         final String query = """
@@ -128,7 +128,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     }
 
     @Test
-    public void topLevelAbsolutePath() throws EXistException, PermissionDeniedException {
+    void topLevelAbsolutePath() throws EXistException, PermissionDeniedException {
         // The fresh database's only content is /db's own auto-derived system collection.xconf
         // (from exist-distribution's canonical collection.xconf.init): a <collection> root with
         // a <triggers> child (itself empty -- just a commented-out example trigger).

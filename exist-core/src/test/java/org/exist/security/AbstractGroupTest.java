@@ -42,10 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author aretter
  */
-public class AbstractGroupTest {
+class AbstractGroupTest {
 
     @Test
-    public void isManager_retuns_true_when_manager() throws ConfigurationException {
+    void isManager_retuns_true_when_manager() throws ConfigurationException {
 
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -62,9 +62,9 @@ public class AbstractGroupTest {
         final boolean result = group.isManager(mockAccount);
         assertTrue(result);
     }
-    
+
     @Test
-    public void isManager_returns_false_when_not_manager() throws ConfigurationException {
+    void isManager_returns_false_when_not_manager() throws ConfigurationException {
 
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
@@ -84,7 +84,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroupFailsWhenUserIsNull() throws ConfigurationException {
+    void assertCanModifyGroupFailsWhenUserIsNull() throws ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
 
@@ -94,7 +94,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroup_succeeds_when_user_is_dba() throws PermissionDeniedException, ConfigurationException {
+    void assertCanModifyGroupSucceedsWhenUserIsDba() throws PermissionDeniedException, ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Account mockAccount = EasyMock.createMock(Account.class);
@@ -113,7 +113,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroupFailsWhenUserIsNotDba() throws ConfigurationException {
+    void assertCanModifyGroupFailsWhenUserIsNotDba() throws ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Account mockAccount = EasyMock.createMock(Account.class);
@@ -132,7 +132,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroup_succeeds_when_user_is_manager() throws PermissionDeniedException, ConfigurationException {
+    void assertCanModifyGroupSucceedsWhenUserIsManager() throws PermissionDeniedException, ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Account mockAccount = EasyMock.createMock(Account.class);
@@ -155,7 +155,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void assertCanModifyGroupFailsWhenUserIsNotManager() throws ConfigurationException {
+    void assertCanModifyGroupFailsWhenUserIsNotManager() throws ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Account mockAccount = EasyMock.createMock(Account.class);
@@ -179,7 +179,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void addManager_calls_assertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
+    void addManagerCallsAssertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
@@ -206,7 +206,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void addManagerWithString_calls_assertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
+    void addManagerWithStringCallsAssertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createNiceMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
@@ -233,7 +233,7 @@ public class AbstractGroupTest {
     }
 
     @Test
-    public void removeManager_calls_assertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
+    void removeManagerCallsAssertCanModifyGroup() throws PermissionDeniedException, NoSuchMethodException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);

@@ -29,10 +29,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WallClockQueryTimeoutTest {
+class WallClockQueryTimeoutTest {
 
     @Test
-    public void scheduleInvokesCallbackAfterDelay() throws Exception {
+    void scheduleInvokesCallbackAfterDelay() throws Exception {
         final WallClockQueryTimeout timeout = new WallClockQueryTimeout();
         final CountDownLatch latch = new CountDownLatch(1);
         timeout.schedule(50, latch::countDown);
@@ -41,7 +41,7 @@ public class WallClockQueryTimeoutTest {
     }
 
     @Test
-    public void cancelPreventsCallback() throws Exception {
+    void cancelPreventsCallback() throws Exception {
         final WallClockQueryTimeout timeout = new WallClockQueryTimeout();
         final CountDownLatch latch = new CountDownLatch(1);
         timeout.schedule(200, latch::countDown);

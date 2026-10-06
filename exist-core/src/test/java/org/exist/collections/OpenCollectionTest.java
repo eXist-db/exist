@@ -49,7 +49,7 @@ public class OpenCollectionTest {
     private static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollection");
 
     @BeforeAll
-    public static void init() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void init() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -66,12 +66,12 @@ public class OpenCollectionTest {
      * Test opening a collection using a full XmldbURI including scheme.
      */
     @Test
-    public void loadFullXmldbURI() throws PermissionDeniedException, IOException, EXistException, URISyntaxException, DatabaseConfigurationException {
+    void loadFullXmldbURI() throws PermissionDeniedException, IOException, EXistException, URISyntaxException, DatabaseConfigurationException {
         loadCollection(XmldbURI.xmldbUriFor("xmldb:exist:///db/testCollection"));
     }
 
     @Test
-    public void loadRelativeXmldbURI() throws PermissionDeniedException, IOException, EXistException, URISyntaxException, DatabaseConfigurationException {
+    void loadRelativeXmldbURI() throws PermissionDeniedException, IOException, EXistException, URISyntaxException, DatabaseConfigurationException {
         loadCollection(XmldbURI.xmldbUriFor("testCollection"));
     }
 

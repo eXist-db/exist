@@ -92,7 +92,7 @@ public class GetResourceForExecutionTest {
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException, TriggerException {
+    static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException, TriggerException {
         final BrokerPool pool = server.getBrokerPool();
         final SecurityManager securityManager = pool.getSecurityManager();
 
@@ -115,7 +115,7 @@ public class GetResourceForExecutionTest {
     }
 
     @Test
-    public void executeOnlyResourceIsResolvedAndReportsThatTheCallerCannotRead() throws EXistException, AuthenticationException, PermissionDeniedException {
+    void executeOnlyResourceIsResolvedAndReportsThatTheCallerCannotRead() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker();
              final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY)) {
 
@@ -127,7 +127,7 @@ public class GetResourceForExecutionTest {
     }
 
     @Test
-    public void readableResourceIsResolvedAndReportsThatTheCallerCanRead() throws EXistException, AuthenticationException, PermissionDeniedException {
+    void readableResourceIsResolvedAndReportsThatTheCallerCanRead() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker();
              final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_AND_READ)) {
 
@@ -138,7 +138,7 @@ public class GetResourceForExecutionTest {
     }
 
     @Test
-    public void readWithoutExecuteIsDenied() throws EXistException, AuthenticationException {
+    void readWithoutExecuteIsDenied() throws EXistException, AuthenticationException {
         try (final DBBroker broker = testUserBroker()) {
             broker.getResourceForExecution(READ_ONLY);
             fail("Execution must require EXECUTE, being able to read the query is not enough");
@@ -148,14 +148,14 @@ public class GetResourceForExecutionTest {
     }
 
     @Test
-    public void missingResourceIsNotFoundRatherThanDenied() throws EXistException, AuthenticationException, PermissionDeniedException {
+    void missingResourceIsNotFoundRatherThanDenied() throws EXistException, AuthenticationException, PermissionDeniedException {
         try (final DBBroker broker = testUserBroker()) {
             assertNull(broker.getResourceForExecution(NOT_STORED));
         }
     }
 
     @Test
-    public void theDbaCanExecuteAndReadEverything() throws EXistException, PermissionDeniedException {
+    void theDbaCanExecuteAndReadEverything() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = server.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final ExecutableResource resource = broker.getResourceForExecution(EXECUTE_ONLY)) {
@@ -170,7 +170,7 @@ public class GetResourceForExecutionTest {
      * way to fetch the source of an execute-only query as data.
      */
     @Test
-    public void readingAnExecuteOnlyResourceAsDataIsStillDenied() throws EXistException, AuthenticationException {
+    void readingAnExecuteOnlyResourceAsDataIsStillDenied() throws EXistException, AuthenticationException {
         try (final DBBroker broker = testUserBroker()) {
             broker.getXMLResource(EXECUTE_ONLY, LockMode.READ_LOCK);
             fail("Reading a query as data must still require READ");
@@ -184,7 +184,7 @@ public class GetResourceForExecutionTest {
      * not been migrated to the execution boundary behaves exactly as before.
      */
     @Test
-    public void theCollectionGetterDefaultsToRead() throws EXistException, AuthenticationException, PermissionDeniedException, LockException {
+    void theCollectionGetterDefaultsToRead() throws EXistException, AuthenticationException, PermissionDeniedException, LockException {
         try (final DBBroker broker = testUserBroker();
              final Collection collection = broker.openCollection(TEST_COLLECTION, LockMode.READ_LOCK)) {
 
