@@ -111,22 +111,14 @@ public class PermissionsFunctionChmodTest {
 
     @org.junit.jupiter.api.Test
     public void changeDocumentModeAsNonOwner() throws AuthenticationException, XPathException, EXistException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-            extractPermissionDenied(() ->
-                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX)
-            );
-        });
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        assertThrows(PermissionDeniedException.class, () -> extractPermissionDenied(() -> changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_DOC1), RWXRWXRWX) ));
     }
 
     @org.junit.jupiter.api.Test
     public void changeCollectionModeAsNonOwner() throws AuthenticationException, XPathException, EXistException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-            extractPermissionDenied(() ->
-                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX)
-            );
-        });
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        assertThrows(PermissionDeniedException.class, () -> extractPermissionDenied(() -> changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1), RWXRWXRWX) ));
     }
 
     @org.junit.jupiter.api.Test
@@ -186,6 +178,9 @@ public class PermissionsFunctionChmodTest {
     }
 
     @org.junit.jupiter.api.Test
+    // NOTE (see #6804): as written this passes because user2 cannot read the document, so the first assertion (the read in
+    // assertDocumentSetGid) throws PermissionDeniedException; the chmod and the last assertion are never reached.
+    // Left as it was while the intent is unclear: the last assertion expects NOT_SET, its comment says "still set".
     public void changeDocumentModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, XPathException {
         assertThrows(PermissionDeniedException.class, () -> {
             final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
@@ -204,21 +199,17 @@ public class PermissionsFunctionChmodTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void changeCollectionModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, XPathException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+    public void changeCollectionModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, XPathException, PermissionDeniedException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
 
-            // check the setGid bit is set before we begin
-            assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
+        // check the setGid bit is set before we begin
+        assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
 
-            // change the mode
-            extractPermissionDenied(() ->
-                    changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), RWXRWSRWX)
-            );
+        // change the mode
+        assertThrows(PermissionDeniedException.class, () -> extractPermissionDenied(() -> changeMode(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), RWXRWSRWX) ));
 
-            // check the setGid bit still set
-            assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), NOT_SET);
-        });
+        // the change was denied, so the setGid bit is still set
+        assertCollectionSetGid(user2, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2), IS_SET);
     }
 
     private void changeMode(final Subject execAsUser, final XmldbURI uri, final String newMode) throws EXistException, PermissionDeniedException, XPathException {

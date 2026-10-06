@@ -209,28 +209,26 @@ public class EvalTest {
 
     //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
     @org.junit.jupiter.api.Test
-    public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() {
-        assertThrows(XMLDBException.class, () -> {
-            Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
-            final String processorModule =
-                    "xquery version \"1.0\";\r\n" +
-                            "module namespace processor = \"http://processor\";\r\n" +
-                            "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
-                            "declare function processor:process($q as xs:string) {\r\n" +
-                            "\tutil:eval($q)\r\n" +
-                            "};";
+    public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() throws XMLDBException {
+        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        final String processorModule =
+                "xquery version \"1.0\";\r\n" +
+                        "module namespace processor = \"http://processor\";\r\n" +
+                        "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
+                        "declare function processor:process($q as xs:string) {\r\n" +
+                        "\tutil:eval($q)\r\n" +
+                        "};";
 
-            writeModule(testHome, "processor.xqm", processorModule);
+        writeModule(testHome, "processor.xqm", processorModule);
 
-            final String query =
-                    "xquery version \"1.0\";\r\n" +
-                            "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";\r\n" +
-                            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
-                            "let $q := \"/db:article\" return\r\n" +
-                            "processor:process($q)";
+        final String query =
+                "xquery version \"1.0\";\r\n" +
+                        "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";\r\n" +
+                        "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
+                        "let $q := \"/db:article\" return\r\n" +
+                        "processor:process($q)";
 
-            existEmbeddedServer.executeQuery(query);
-        });
+        assertThrows(XMLDBException.class, () -> existEmbeddedServer.executeQuery(query));
     }
 
     /**

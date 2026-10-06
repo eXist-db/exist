@@ -145,23 +145,21 @@ public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
     }
 
     @MethodSource("data") @ParameterizedTest
-    public void readByteOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+    public void readByteOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException, IOException {
         initCachingFilterInputStreamNonMarkableByteArrayInputStreamTest(cacheClass);
-        assertThrows(IOException.class, () -> {
 
-            final String testString = "helloWorld";
-            final byte testData[] = testString.getBytes();
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
 
-            final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
-            final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
-            assertEquals(testData[0], cfis.read());
+        assertEquals(testData[0], cfis.read());
 
-            cfis.close();
+        cfis.close();
 
-            //should cause IOException
-            cfis.read();
-        });
+        //should cause IOException
+        assertThrows(IOException.class, () -> cfis.read());
     }
 
     @MethodSource("data") @ParameterizedTest
@@ -314,25 +312,23 @@ public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
     }
 
     @MethodSource("data") @ParameterizedTest
-    public void readBytesOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+    public void readBytesOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException, IOException {
         initCachingFilterInputStreamNonMarkableByteArrayInputStreamTest(cacheClass);
-        assertThrows(IOException.class, () -> {
 
-            final String testString = "helloWorld";
-            final byte testData[] = testString.getBytes();
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
 
-            final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
-            final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
-            final byte result[] = new byte[2];
-            cfis.read(result);
-            assertArrayEquals(subArray(testData, 2), result);
+        final byte result[] = new byte[2];
+        cfis.read(result);
+        assertArrayEquals(subArray(testData, 2), result);
 
-            cfis.close();
+        cfis.close();
 
-            //should cause IOException
-            cfis.read(result);
-        });
+        //should cause IOException
+        assertThrows(IOException.class, () -> cfis.read(result));
     }
 
     @MethodSource("data") @ParameterizedTest
@@ -613,21 +609,19 @@ public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
     }
 
     @MethodSource("data") @ParameterizedTest
-    public void skipOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+    public void skipOnClosedStream(final Class<FilterInputStreamCache> cacheClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException, IOException {
         initCachingFilterInputStreamNonMarkableByteArrayInputStreamTest(cacheClass);
-        assertThrows(IOException.class, () -> {
-            final String testString = "helloWorld";
-            final byte testData[] = testString.getBytes();
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
 
-            final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
+        final InputStream is = new UnsynchronizedByteArrayInputStream(testData);
 
-            final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
-            cfis.close();
+        cfis.close();
 
-            //should cause IOException
-            cfis.skip(1);
-        });
+        //should cause IOException
+        assertThrows(IOException.class, () -> cfis.skip(1));
     }
 
     @MethodSource("data") @ParameterizedTest

@@ -42,16 +42,12 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
 
     @Test
     public void create1() {
-        assertThrows(XPathException.class, () -> {
-            new TimeValue("2005-10-11T10:00:00Z");
-        });
+        assertThrows(XPathException.class, () -> new TimeValue("2005-10-11T10:00:00Z"));
     }
 
     @Test
     public void create2() {
-        assertThrows(XPathException.class, () -> {
-            new TimeValue("2005-10-11");
-        });
+        assertThrows(XPathException.class, () -> new TimeValue("2005-10-11"));
     }
 
     @Test
@@ -218,27 +214,21 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void adjustedToTimezone6() {
-        assertThrows(XPathException.class, () -> {
-            final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
-            v1.adjustedToTimezone(new DayTimeDurationValue("-PT15H"));
-        });
+    public void adjustedToTimezone6() throws XPathException {
+        final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
+        assertThrows(XPathException.class, () -> v1.adjustedToTimezone(new DayTimeDurationValue("-PT15H")));
     }
 
     @Test
-    public void adjustedToTimezone7() {
-        assertThrows(XPathException.class, () -> {
-            final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
-            v1.adjustedToTimezone(new DayTimeDurationValue("PT14H01M"));
-        });
+    public void adjustedToTimezone7() throws XPathException {
+        final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
+        assertThrows(XPathException.class, () -> v1.adjustedToTimezone(new DayTimeDurationValue("PT14H01M")));
     }
 
     @Test
-    public void adjustedToTimezone8() {
-        assertThrows(XPathException.class, () -> {
-            final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
-            v1.adjustedToTimezone(new DayTimeDurationValue("PT8H4S"));
-        });
+    public void adjustedToTimezone8() throws XPathException {
+        final AbstractDateTimeValue v1 = new TimeValue("00:00:00+01:00");
+        assertThrows(XPathException.class, () -> v1.adjustedToTimezone(new DayTimeDurationValue("PT8H4S")));
     }
 
     @Test

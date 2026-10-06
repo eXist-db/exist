@@ -301,23 +301,14 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void fallback2() {
-        assertThrows(IOException.class, () -> {
-            final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
+    public void fallback2() throws IOException {
+        final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
 
-            final HttpURLConnection connect = getConnection(uri);
-            connect.setRequestMethod("GET");
-            connect.connect();
+        final HttpURLConnection connect = getConnection(uri);
+        connect.setRequestMethod("GET");
+        connect.connect();
 
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
-            String line;
-            final StringBuilder out = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                out.append(line);
-                out.append("\r\n");
-            }
-            final String responseXML = out.toString();
-        });
+        assertThrows(IOException.class, connect::getInputStream);
     }
 
     //TODO add full url test e.g. http://www.example.org/test.xml for xinclude

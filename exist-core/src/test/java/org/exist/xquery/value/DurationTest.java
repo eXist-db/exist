@@ -163,11 +163,9 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
     }
 
     @Test
-    public void compareFail1() {
-        assertThrows(XPathException.class, () -> {
-            final DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
-            dv.compareTo(null, Comparison.LT, dv);
-        });
+    public void compareFail1() throws XPathException {
+        final DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
+        assertThrows(XPathException.class, () -> dv.compareTo(null, Comparison.LT, dv));
     }
 
     @Test
