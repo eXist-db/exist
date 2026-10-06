@@ -56,6 +56,7 @@ public class FollowingAxisPositionRegressionTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String LARGE_DOC = "/db/words-large.xml";
+    private static final int ROUNDS = 5;
 
     @BeforeAll
     public static void storeTestDocuments() throws XMLDBException {
@@ -158,14 +159,26 @@ public class FollowingAxisPositionRegressionTest {
         xqs.query(followingOnlyQuery(25000));
         xqs.query(followingOnlyQuery(25000));
 
-        final long earlyMs = timeQuery(xqs, followingOnlyQuery(5000));
-        final long lateMs = timeQuery(xqs, followingOnlyQuery(45000));
+        // Five rounds in alternating order, each position judged by its fastest round: load slows a
+        // round down but never makes it faster than the code can run, so one slow round cannot decide
+        // the outcome.
+        long earlyMs = Long.MAX_VALUE;
+        long lateMs = Long.MAX_VALUE;
+        for (int round = 0; round < ROUNDS; round++) {
+            if (round % 2 == 0) {
+                earlyMs = Math.min(earlyMs, timeQuery(xqs, followingOnlyQuery(5000)));
+                lateMs = Math.min(lateMs, timeQuery(xqs, followingOnlyQuery(45000)));
+            } else {
+                lateMs = Math.min(lateMs, timeQuery(xqs, followingOnlyQuery(45000)));
+                earlyMs = Math.min(earlyMs, timeQuery(xqs, followingOnlyQuery(5000)));
+            }
+        }
 
         final long threshold = Math.max(500L, earlyMs * 3L);
         assertTrue(
                 lateMs <= threshold,
                 "following:: at position 45000 took " + lateMs + "ms; "
-                        + "at position 5000 it took " + earlyMs + "ms; "
+                        + "at position 5000 it took " + earlyMs + "ms (best of " + ROUNDS + " rounds each); "
                         + "threshold=" + threshold + "ms (3x early or 500ms min). "
                         + "If this regressed, the StAX reader is probably walking "
                         + "from the document root again - see issue #2129.");
