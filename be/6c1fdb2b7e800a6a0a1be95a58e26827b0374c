@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/FollowingAxisPositionRegressionTest.java
+  s_d5ac7bf05ec2fb::t_37ffe565e5cc9f 59,162-175,181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "be6c1fdb2b7e800a6a0a1be95a58e26827b0374c",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
