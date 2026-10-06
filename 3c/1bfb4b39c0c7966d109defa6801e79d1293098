@@ -1,0 +1,21 @@
+exist-core/src/test/xquery/system/get-main-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_29ed927b16e4cd 39,46-51,55-56,59-60,67
+exist-core/src/test/xquery/system/get-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_7702ca3998228c 39,46-51,55-56,59-60,67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3c1bfb4b39c0c7966d109defa6801e79d1293098",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
