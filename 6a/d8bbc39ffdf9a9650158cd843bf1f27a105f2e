@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteCancellationTest.java
+  s_d5ac7bf05ec2fb::t_e649d017529879 1-117
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_d5ac7bf05ec2fb::t_2e7b651553bf6d 26,59-62,73-77,82,88-89,94,114-121,185-186,189,191-195,203-222,273-276,281-282,284-285
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_d5ac7bf05ec2fb::t_9fdaae1169cab6 32,195,197-201,206-207,223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6ad8bbc39ffdf9a9650158cd843bf1f27a105f2e",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
