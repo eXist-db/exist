@@ -26,8 +26,11 @@ import org.exist.TestUtils;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -51,6 +54,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class SerializationTest {
 
     @RegisterExtension
@@ -119,7 +124,11 @@ public class SerializationTest {
         });
     }
 
+    @Parameter(0)
+
     public String apiName;
+
+    @Parameter(1)
 
     public String baseUri;
 
@@ -129,10 +138,8 @@ public class SerializationTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void wrappedNsTest1(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void wrappedNsTest1() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         final ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
         assertEquals(2, result.getSize());
@@ -141,10 +148,8 @@ public class SerializationTest {
         assertXMLEquals(XML_EXPECTED1, resource);
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void wrappedNsTest2(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void wrappedNsTest2() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         final ResourceSet result = service.query("""
                 declare namespace config='urn:config';
@@ -160,10 +165,8 @@ public class SerializationTest {
         assertXMLEquals(XML_EXPECTED2, resource);
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void xqueryUpdateNsTest(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void xqueryUpdateNsTest() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         final ResourceSet result = service.query("""
                 xquery version "1.0";
@@ -189,18 +192,14 @@ public class SerializationTest {
         assertXMLEquals(XML_UPDATED_EXPECTED, onDiskResource);
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getDocTypeDefault(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getDocTypeDefault() throws XMLDBException {
         final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
         assertEquals(XML_WITH_DOCTYPE_INDENTED, res.getContent());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getDocTypeNo(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getDocTypeNo() throws XMLDBException {
         final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
@@ -213,10 +212,8 @@ public class SerializationTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getDocTypeYes(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getDocTypeYes() throws XMLDBException {
         final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
@@ -233,10 +230,8 @@ public class SerializationTest {
      * With indent=no there must not be a newline after the doctype.
      * See https://github.com/eXist-db/exist/issues/4736
      */
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getDocTypeIndentNo(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getDocTypeIndentNo() throws XMLDBException {
         final String prevIndent = testCollection.getProperty(INDENT);
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
@@ -249,18 +244,14 @@ public class SerializationTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getXmlDeclDefault(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getXmlDeclDefault() throws XMLDBException {
         final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
         assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getXmlDeclNo(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getXmlDeclNo() throws XMLDBException {
         final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
@@ -273,10 +264,8 @@ public class SerializationTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void getXmlDeclYes(String apiName, String baseUri) throws XMLDBException {
-        initSerializationTest(apiName, baseUri);
-        setUp();
+    @Test
+    void getXmlDeclYes() throws XMLDBException {
         final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
         try {
             final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
@@ -300,7 +289,8 @@ public class SerializationTest {
         assertFalse(diff.hasDifferences(), diff.toString());
     }
 
-    private void setUp() throws XMLDBException {
+    @BeforeEach
+    void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -328,10 +318,5 @@ public class SerializationTest {
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
-    }
-
-    public void initSerializationTest(String apiName, String baseUri) {
-        this.apiName = apiName;
-        this.baseUri = baseUri;
     }
 }

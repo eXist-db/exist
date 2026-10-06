@@ -24,7 +24,10 @@ package org.exist.xmldb;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
@@ -38,6 +41,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class DeclareVariableTest {
 
     private static final String TEST_COLLECTION_NAME = "xmldb-declare-variable-test";
@@ -52,7 +57,9 @@ public class DeclareVariableTest {
                 { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     }
+    @Parameter(0)
     public String apiName;
+    @Parameter(1)
     public String baseUri;
 
     private Collection testCollection;
@@ -61,7 +68,8 @@ public class DeclareVariableTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    private void setUp() throws XMLDBException {
+    @BeforeEach
+    void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -76,18 +84,14 @@ public class DeclareVariableTest {
         testCollection = null;
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void declareBigInteger(String apiName, String baseUri) throws XMLDBException {
-        initDeclareVariableTest(apiName, baseUri);
-        setUp();
+    @Test
+    void declareBigInteger() throws XMLDBException {
         final Resource result = executeQueryWithExternalVariable(new BigInteger("123456789123456789123456789"));
         assertEquals("123456789123456789123456789", result.getContent());
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    void declareBigDecimal(String apiName, String baseUri) throws XMLDBException {
-        initDeclareVariableTest(apiName, baseUri);
-        setUp();
+    @Test
+    void declareBigDecimal() throws XMLDBException {
         final Resource result = executeQueryWithExternalVariable(new BigDecimal("1.1"));
         assertEquals("1.1", result.getContent());
     }
@@ -109,10 +113,5 @@ public class DeclareVariableTest {
         final Resource resource = resourceSet.getResource(0);
         assertNotNull(resource);
         return resource;
-    }
-
-    public void initDeclareVariableTest(String apiName, String baseUri) {
-        this.apiName = apiName;
-        this.baseUri = baseUri;
     }
 }
