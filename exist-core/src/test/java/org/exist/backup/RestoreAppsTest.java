@@ -34,7 +34,6 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,7 +51,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class RestoreAppsTest {
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -93,7 +92,7 @@ public class RestoreAppsTest {
 
         createAndInstallApp("2.0.0", REPO_XML_APP);
 
-        restoreAndCheck(pool, backup, "Newer version is already installed.");
+        assertRestore(pool, backup, "Newer version is already installed.");
     }
 
     /**
@@ -118,7 +117,7 @@ public class RestoreAppsTest {
 
         createAndInstallApp("2.0.0", REPO_XML_LIB);
 
-        restoreAndCheck(pool, backup, "Newer version is already installed.");
+        assertRestore(pool, backup, "Newer version is already installed.");
     }
 
     /**
@@ -139,7 +138,7 @@ public class RestoreAppsTest {
 
         createAndInstallApp("2.0.0", REPO_XML_APP);
 
-        restoreAndCheck(pool, backup, "Newer version is already installed.");
+        assertRestore(pool, backup, "Newer version is already installed.");
     }
 
     /**
@@ -161,7 +160,7 @@ public class RestoreAppsTest {
 
         createAndInstallApp("1.0.0", REPO_XML_APP);
 
-        restoreAndCheck(pool, backup, null);
+        assertRestore(pool, backup, null);
     }
 
     /**
@@ -186,7 +185,7 @@ public class RestoreAppsTest {
 
         createAndInstallApp("1.0.0", REPO_XML_LIB);
 
-        restoreAndCheck(pool, backup, null);
+        assertRestore(pool, backup, null);
     }
 
     /**
@@ -207,10 +206,10 @@ public class RestoreAppsTest {
 
         createAndInstallApp("1.0", REPO_XML_APP);
 
-        restoreAndCheck(pool, backup, null);
+        assertRestore(pool, backup, null);
     }
 
-    private void restoreAndCheck(BrokerPool pool, Path backup, String expectedMessage) throws Exception {
+    private void assertRestore(BrokerPool pool, Path backup, String expectedMessage) throws Exception {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             Restore restore = new Restore();
@@ -238,7 +237,7 @@ public class RestoreAppsTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             SystemExport export = new SystemExport(broker, transaction, null, null, false);
-            String backupDir = newFolder(temporaryFolder, "junit").getAbsolutePath();
+            String backupDir = Files.createDirectories(temporaryFolder.resolve("junit")).toAbsolutePath().toString();
             backup = export.export(backupDir, false, true, null);
 
             transaction.commit();
@@ -255,7 +254,7 @@ public class RestoreAppsTest {
                 "   <title>Backup Test App</title>\n" +
                 "   <dependency processor=\"http://exist-db.org\" semver-min=\"5.0.0-RC8\"/>\n" +
                 "</package>";
-        Path xarFile = File.createTempFile("junit", null, temporaryFolder).toPath();
+        Path xarFile = Files.createTempFile(temporaryFolder, "junit", null);
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(xarFile, StandardOpenOption.WRITE))) {
             ZipEntry entry = new ZipEntry("expath-pkg.xml");
             zos.putNextEntry(entry);
@@ -338,18 +337,4 @@ public class RestoreAppsTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }

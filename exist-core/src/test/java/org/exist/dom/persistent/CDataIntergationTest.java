@@ -36,11 +36,11 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
@@ -59,7 +59,7 @@ public class CDataIntergationTest extends AbstractHttpTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @TempDir
-    public static File tempFolder;
+    Path tempFolder;
 
     private final static String cdata_content = "Hello there \"Bob?\"";
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";

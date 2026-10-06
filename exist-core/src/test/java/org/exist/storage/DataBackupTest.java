@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,7 +75,7 @@ public class DataBackupTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public static File folder;
+    Path folder;
 
     @AfterEach
     void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
@@ -98,7 +97,7 @@ public class DataBackupTest {
         // Store a document to ensure all storage systems are initialized and flushed
         storeMinimalDocument(pool);
 
-        final TestableDataBackup dataBackup = new TestableDataBackup(folder.toPath());
+        final TestableDataBackup dataBackup = new TestableDataBackup(folder);
         pool.triggerSystemTask(dataBackup);
 
         final long deadline = System.currentTimeMillis() + BACKUP_TIMEOUT_MS;

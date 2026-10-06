@@ -32,7 +32,6 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +49,7 @@ public class MultiDBTest {
     private final static int INSTANCE_COUNT = 5;
 
     @TempDir
-    public static File TEMP_FOLDER;
+    Path TEMP_FOLDER;
 
     private final static String CONFIG =
             "<exist>" +
@@ -74,7 +73,7 @@ public class MultiDBTest {
                 loadFile(SAMPLES.getShakespeareSample(sampleName), test, sampleName);
             }
 
-            doQuery(test, "//SPEECH[SPEAKER='HAMLET']");
+            assertQuery(test, "//SPEECH[SPEAKER='HAMLET']");
         }
     }
 
@@ -87,7 +86,7 @@ public class MultiDBTest {
         collection.storeResource(document);
     }
 
-    private static void doQuery(Collection collection, String query) throws XMLDBException {
+    private static void assertQuery(Collection collection, String query) throws XMLDBException {
         EXistXQueryService service = collection.getService(EXistXQueryService.class);
         ResourceSet result = service.query(query);
         for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
@@ -102,7 +101,7 @@ public class MultiDBTest {
         // initialize database drivers
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         for (int i = 0; i < INSTANCE_COUNT; i++) {
-            final Path dir = newFolder(TEMP_FOLDER, "db" + i).toPath();
+            final Path dir = Files.createDirectories(TEMP_FOLDER.resolve("db" + i));
             final Path conf = dir.resolve("conf.xml");
 
             try (final OutputStream os = Files.newOutputStream(conf)) {
@@ -129,18 +128,4 @@ public class MultiDBTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }

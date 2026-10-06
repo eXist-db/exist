@@ -56,7 +56,7 @@ public class StoredModuleTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     private final static String MODULE =
             """
@@ -225,7 +225,7 @@ public class StoredModuleTest {
         final String collection2Name = "module2";
         final String collection3Name = "module3";
 
-        final Path tempDir = newFolder(temporaryFolder, "testRelativeImportFile").toPath();
+        final Path tempDir = Files.createDirectories(temporaryFolder.resolve("testRelativeImportFile"));
         final Path c2 = tempDir.resolve(collection2Name);
         Files.createDirectories(c2);
         // note c3 is a sub-directory of c2, i.e. module2/module3
@@ -405,18 +405,4 @@ public class StoredModuleTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }
