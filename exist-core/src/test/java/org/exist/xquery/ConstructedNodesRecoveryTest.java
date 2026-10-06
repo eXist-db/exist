@@ -46,8 +46,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -57,8 +57,8 @@ import javax.xml.transform.OutputKeys;
 
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests for recovery of database corruption after constructed node operations (in-memory nodes)
@@ -271,7 +271,7 @@ public class ConstructedNodesRecoveryTest {
 		return existEmbeddedServer.getBrokerPool();
 	}
 
-	@After
+	@AfterEach
 	public void stopDb() {
 		existEmbeddedServer.stopDb();
 	}

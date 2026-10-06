@@ -27,7 +27,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.test.XQueryCompilationTest;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.transform.Source;
 

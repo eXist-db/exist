@@ -24,13 +24,16 @@ package org.exist.storage;
 import java.math.BigDecimal;
 
 import org.exist.EXistException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import org.exist.storage.btree.Value;
 import org.exist.xquery.value.DecimalValue;
 import org.exist.xquery.value.DoubleValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class ValueIndexFactoryTest {
@@ -45,7 +48,7 @@ public class ValueIndexFactoryTest {
         final byte[] data2 = encodeDouble(1.0);
 
         // -8.6 < 1.0
-        assertTrue("v1 < v2", new Value(data1).compareTo(new Value(data2)) < 0);
+        assertTrue(new Value(data1).compareTo(new Value(data2)) < 0, "v1 < v2");
     }
 
     @Test
@@ -58,7 +61,7 @@ public class ValueIndexFactoryTest {
         final byte[] data2 = encodeDouble(1.0);
 
         // 8.6 > 1.0
-        assertTrue("v1 > v2", new Value(data1).compareTo(new Value(data2)) > 0);
+        assertTrue(new Value(data1).compareTo(new Value(data2)) > 0, "v1 > v2");
     }
 
     @Test
@@ -71,7 +74,7 @@ public class ValueIndexFactoryTest {
         final byte[] data2 = encodeDouble(-1.0);
 
         // 8.6 > -1.0
-        assertTrue("v1 > v2", new Value(data1).compareTo(new Value(data2)) > 0);
+        assertTrue(new Value(data1).compareTo(new Value(data2)) > 0, "v1 > v2");
     }
 
     @Test
@@ -81,7 +84,7 @@ public class ValueIndexFactoryTest {
         byte data[] = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
 
         Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
-        assertTrue(value instanceof DecimalValue);
+        assertInstanceOf(DecimalValue.class, value);
 
         assertEquals(dec, ((DecimalValue)value).getValue());
     }
@@ -92,7 +95,7 @@ public class ValueIndexFactoryTest {
         for (final double d : values) {
             final byte[] data = ValueIndexFactory.serialize(new DoubleValue(d), 0);
             final Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
-            assertTrue(value instanceof DoubleValue);
+            assertInstanceOf(DoubleValue.class, value);
             assertEquals(d, ((DoubleValue) value).getValue(), 0.0);
         }
     }
@@ -106,8 +109,8 @@ public class ValueIndexFactoryTest {
         }
         for (int i = 0; i < ordered.length; i++) {
             for (int j = i + 1; j < ordered.length; j++) {
-                assertTrue(ordered[i] + " < " + ordered[j],
-                        new Value(encoded[i]).compareTo(new Value(encoded[j])) < 0);
+                assertTrue(new Value(encoded[i]).compareTo(new Value(encoded[j])) < 0,
+                        ordered[i] + " < " + ordered[j]);
             }
         }
     }

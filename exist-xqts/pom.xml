@@ -78,6 +78,30 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- exist-xqts-runner uses exist-core's org.exist.test.ExistEmbeddedServer (which implements
+             the JUnit Jupiter extension callbacks) and loads JUnit classes (junit.framework.Test)
+             at startup, but it declares neither library. They used to arrive transitively via
+             exist-core's main jar, which no longer has them. The test support classes it uses (such as ExistEmbeddedServer)
+             are in the exist-core test-jar, added below. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- needed for the AppAssembler booter approach -->
         <dependency>
             <groupId>org.codehaus.mojo.appassembler</groupId>
@@ -90,6 +114,28 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-junit4</id>
+                        <configuration>
+                            <rules combine.self="override">
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- junit:junit is allowed here: the external exist-xqts-runner brings it (via ant-junit) and needs it at runtime -->
+                                        <exclude>org.junit.vintage</exclude>
+                                        <exclude>com.googlecode.junit-toolbox</exclude>
+                                    </excludes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>The Vintage engine and junit-toolbox must not be used; write tests with JUnit Jupiter.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>

@@ -146,11 +146,11 @@
         <xmlunit.version>2.14.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>6.1.3</junit.jupiter.version>
+        <opentest4j.version>1.3.0</opentest4j.version>
         <easymock.version>5.7.0</easymock.version>
         <objenesis.version>3.6</objenesis.version>
         <assertj.version>3.27.7</assertj.version>
         <awaitility.version>4.3.0</awaitility.version>
-        <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
 
         <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
@@ -627,11 +627,18 @@
             </dependency>
 
             <dependency>
+                <!-- not covered by junit-bom's import (separate groupId) -->
+                <groupId>org.opentest4j</groupId>
+                <artifactId>opentest4j</artifactId>
+                <version>${opentest4j.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
                 <!-- scope>test</scope -->
-                <!-- not just test scope, as needed for org.exist.test -->
+                <!-- test support code lives in exist-core's test-jar -->
                 <exclusions>
                     <exclusion>
                         <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
@@ -645,16 +652,10 @@
                 <artifactId>hamcrest</artifactId>
                 <version>${hamcrest.version}</version>
                 <!-- scope>test</scope -->
-                <!-- not just test scope, as needed for org.exist.test -->
+                <!-- test support code lives in exist-core's test-jar -->
             </dependency>
 
             <!-- test dependencies -->
-            <dependency>
-                <groupId>com.googlecode.junit-toolbox</groupId>
-                <artifactId>junit-toolbox</artifactId>
-                <version>${junit.toolbox.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
@@ -1147,7 +1148,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <!-- NOTE: version 3.5.3 fails to run XSuite tests -->
                     <version>3.6.0</version>
                     <dependencies>
                         <dependency>
@@ -1158,11 +1158,6 @@
                         <dependency>
                             <groupId>org.junit.jupiter</groupId>
                             <artifactId>junit-jupiter-engine</artifactId>
-                            <version>${junit.jupiter.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.junit.vintage</groupId>
-                            <artifactId>junit-vintage-engine</artifactId>
                             <version>${junit.jupiter.version}</version>
                         </dependency>
                         <dependency>
@@ -1346,6 +1341,29 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.6.3</version>
                 <executions>
+                    <execution>
+                        <id>ban-junit4</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- JUnit 4 and its runners are gone: tests use JUnit Jupiter. Runtime scope is
+                                             not banned because the external exist-xqts-runner needs junit:junit when it runs. -->
+                                        <exclude>junit:junit:*:*:compile</exclude>
+                                        <exclude>junit:junit:*:*:provided</exclude>
+                                        <exclude>junit:junit:*:*:test</exclude>
+                                        <exclude>org.junit.vintage</exclude>
+                                        <exclude>com.googlecode.junit-toolbox</exclude>
+                                    </excludes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>JUnit 4 (junit:junit, the Vintage engine, junit-toolbox) must not be used; write tests with JUnit Jupiter.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>enforce-java</id>
                         <goals>

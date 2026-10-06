@@ -24,16 +24,17 @@ package org.exist.xquery.modules.httpclient.jmx;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.xquery.modules.httpclient.config.HttpClientOptions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.management.MBeanServer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.net.http.HttpClient;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for {@link HttpClientCacheMonitor} JMX registration and attribute reporting.
@@ -44,7 +45,7 @@ public class HttpClientCacheMonitorTest {
     private ObjectName name;
     private Cache<HttpClientOptions, HttpClient> cache;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         server = ManagementFactory.getPlatformMBeanServer();
         name = new ObjectName(HttpClientCacheMonitor.OBJECT_NAME);
@@ -58,7 +59,7 @@ public class HttpClientCacheMonitorTest {
         HttpClientCacheMonitor.register(cache);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (server.isRegistered(name)) {
             server.unregisterMBean(name);
@@ -67,7 +68,7 @@ public class HttpClientCacheMonitorTest {
 
     @Test
     public void mBeanIsRegistered() {
-        assertTrue("HttpClientCache MBean should be registered", server.isRegistered(name));
+        assertTrue(server.isRegistered(name), "HttpClientCache MBean should be registered");
     }
 
     @Test
@@ -114,10 +115,10 @@ public class HttpClientCacheMonitorTest {
                 HttpClient.newHttpClient());
 
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");
-        assertTrue("Summary should mention followRedirect=true", summary.contains("followRedirect=true"));
-        assertTrue("Summary should mention followRedirect=false", summary.contains("followRedirect=false"));
-        assertTrue("Summary should mention timeout=30", summary.contains("timeout=30"));
-        assertTrue("Summary should mention autoAcceptEncoding=true", summary.contains("autoAcceptEncoding=true"));
+        assertTrue(summary.contains("followRedirect=true"), "Summary should mention followRedirect=true");
+        assertTrue(summary.contains("followRedirect=false"), "Summary should mention followRedirect=false");
+        assertTrue(summary.contains("timeout=30"), "Summary should mention timeout=30");
+        assertTrue(summary.contains("autoAcceptEncoding=true"), "Summary should mention autoAcceptEncoding=true");
     }
 
     @Test

@@ -37,16 +37,17 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for exercising the BrokerPoolService
@@ -94,7 +95,7 @@ public class BrokerPoolServiceTest {
                 final List<BackgroundJobsBrokerPoolService.TimestampAndId> backgroundJobResult = future.get();
 
                 // should contain at least 1 result
-                assertTrue(!backgroundJobResult.isEmpty());
+                assertFalse(backgroundJobResult.isEmpty());
 
                 totalBackgroundJobResults += backgroundJobResult.size();
 

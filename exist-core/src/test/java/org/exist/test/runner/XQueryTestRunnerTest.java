@@ -19,47 +19,55 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.test.runner;
 
 import org.junit.jupiter.api.Test;
-import org.junit.runner.Description;
-import org.junit.runners.model.InitializationError;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the global methods of the {@link XQueryTestRunner}.
  */
 class XQueryTestRunnerTest {
-    @Test
-    void testGetDescription() throws URISyntaxException, InitializationError {
-        final URL queryUrl = getClass().getResource("single-test.xqm");
-        final XQueryTestRunner runner = new XQueryTestRunner(Path.of(queryUrl.toURI()), false);
-        final Description description = runner.getDescription();
-        assertNotNull(description);
-        assertTrue(description.isSuite());
-        assertTrue(description.getAnnotations().isEmpty());
-        assertEquals("xqts.org.exist-db.xquery.single-test-module", description.getDisplayName());
-        assertEquals(1, description.testCount());
+
+    private XQueryTestRunner runnerFor(final String resource) throws URISyntaxException, TestInitializationException {
+        final URL queryUrl = getClass().getResource(resource);
+        return new XQueryTestRunner(Path.of(queryUrl.toURI()), null);
     }
 
     @Test
-     void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
-        final URL queryUrl = getClass().getResource("no-tests.xqm");
-        final XQueryTestRunner runner = new XQueryTestRunner(Path.of(queryUrl.toURI()), false);
-        final Description description = runner.getDescription();
-        assertNotNull(description);
-        assertFalse(description.isSuite());
-        assertTrue(description.getAnnotations().isEmpty());
-        assertEquals("no-tests.xqm", description.getDisplayName());
-        assertEquals(1, description.testCount());
+    void suiteNameIsDerivedFromTheModuleNamespace() throws URISyntaxException, TestInitializationException {
+        final XQueryTestRunner runner = runnerFor("single-test.xqm");
+        assertEquals("xqts.org.exist-db.xquery.single-test-module", runner.getSuiteName());
+        assertEquals(List.of("f1"), runner.getTestNames());
+    }
+
+    @Test
+    void fileWithoutTestsIsNamedAfterTheFileAndHasNoTests() throws URISyntaxException, TestInitializationException {
+        final XQueryTestRunner runner = runnerFor("no-tests.xqm");
+        assertEquals("no-tests.xqm", runner.getSuiteName());
+        assertTrue(runner.getTestNames().isEmpty());
+    }
+
+    @Test
+    void testNamesFollowTheNamesTheXQSuiteRuntimeReports() throws URISyntaxException, TestInitializationException {
+        // a prefix with a hyphen is kept, an explicit %test:name is used as is
+        assertEquals(List.of("my-tests:f1", "explicitly named"), runnerFor("hyphenated-prefix.xqm").getTestNames());
+    }
+
+    @Test
+    void runtimeTestNameDropsOnlyAPrefixOfWordCharacters() {
+        assertEquals("f1", XQueryTestRunner.runtimeTestName("single", "f1"));
+        assertEquals("f1", XQueryTestRunner.runtimeTestName("t1", "f1"));
+        assertEquals("f1", XQueryTestRunner.runtimeTestName("", "f1"));
+        assertEquals("my-tests:f1", XQueryTestRunner.runtimeTestName("my-tests", "f1"));
+        // underscore is punctuation in XPath regular expressions, so it is not a word character
+        assertEquals("my_tests:f1", XQueryTestRunner.runtimeTestName("my_tests", "f1"));
     }
 }

@@ -21,10 +21,10 @@
  */
 package org.exist.xquery;
 
-import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -34,7 +34,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOrSelfNodeKindTest {
 
     private static final String TEST_DOCUMENT_NAME = "PersistentDescendantOrSelfNodeKindTest.xml";
@@ -50,7 +50,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
         return  existEmbeddedServer.executeQuery(getDbQuery(docQuery));
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestDoc() throws XMLDBException {
         final Collection root =  existEmbeddedServer.getRoot();
         final XMLResource res = root.createResource(TEST_DOCUMENT_NAME, XMLResource.class);
@@ -58,7 +58,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
         root.storeResource(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestDoc() throws XMLDBException {
         final Collection root =  existEmbeddedServer.getRoot();
         final Resource res = root.getResource(TEST_DOCUMENT_NAME);

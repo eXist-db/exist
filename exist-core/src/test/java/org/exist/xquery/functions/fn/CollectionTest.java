@@ -34,8 +34,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -53,14 +52,15 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class CollectionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
@@ -86,7 +86,7 @@ public class CollectionTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
@@ -96,7 +96,7 @@ public class CollectionTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
         }
     }
 
@@ -120,7 +120,7 @@ public class CollectionTest {
 
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Node);
+            assertInstanceOf(Node.class, result.itemAt(0));
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
@@ -130,7 +130,7 @@ public class CollectionTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
         }
     }
 

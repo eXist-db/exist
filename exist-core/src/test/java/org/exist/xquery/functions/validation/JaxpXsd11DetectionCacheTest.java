@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.functions.validation;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that {@code Jaxp.isXsd11Schema}'s result cache (a) actually caches -- a second call for
@@ -47,7 +47,7 @@ public class JaxpXsd11DetectionCacheTest {
     private static final String XSD_1_0_SCHEMA = """
             <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>""";
 
-    @After
+    @AfterEach
     public void clearCache() {
         Jaxp.clearXsd11DetectionCache();
     }
@@ -70,14 +70,14 @@ public class JaxpXsd11DetectionCacheTest {
             // call is actually served from cache, it must still report the stale (cached) "true",
             // not re-read this new content.
             Files.writeString(schema, XSD_1_0_SCHEMA);
-            assertTrue("second call should be served from cache, not re-read the changed file",
-                    Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
+            assertTrue(Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"),
+                    "second call should be served from cache, not re-read the changed file");
 
             // Clearing the cache (what validation:clear-grammar-cache() does) must make the next
             // call re-read the file and observe the now-current (XSD 1.0) content.
             Jaxp.clearXsd11DetectionCache();
-            assertFalse("after clearing the cache, the now-current XSD 1.0 content must be observed",
-                    Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"));
+            assertFalse(Jaxp.isXsd11Schema("subject-a", baseUri, "schema.xsd"),
+                    "after clearing the cache, the now-current XSD 1.0 content must be observed");
         } finally {
             Files.deleteIfExists(tempDir.resolve("instance.xml"));
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));
@@ -103,8 +103,8 @@ public class JaxpXsd11DetectionCacheTest {
             // miss) fails/returns false -- if subject-b's call were wrongly served from
             // subject-a's cache entry, it would still report "true" despite never reading anything.
             Files.delete(schema);
-            assertFalse("a different Subject must not observe a cache entry populated by another Subject's fetch",
-                    Jaxp.isXsd11Schema("subject-b", baseUri, "schema.xsd"));
+            assertFalse(Jaxp.isXsd11Schema("subject-b", baseUri, "schema.xsd"),
+                    "a different Subject must not observe a cache entry populated by another Subject's fetch");
         } finally {
             Files.deleteIfExists(tempDir.resolve("instance.xml"));
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));

@@ -26,11 +26,10 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +37,7 @@ import java.util.Map;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.util.MapUtil.hashMap;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test for XQuery Library Modules that depend on each other, i.e. a circular dependency.
@@ -46,13 +45,17 @@ import static org.junit.Assert.assertEquals;
  *
  * mod1.xqm contains the Resource Functions, and depends on mod2.xqm, mod2.xqm depends on mod3.xqm which in turn depends on mod2.xqm.
  */
-@RunWith(Parameterized.class)
 public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIntegrationTest {
+
+    private static final int MAX_WAIT_PERIOD = 10 * 1000;  // 10 seconds
+    private static final int WAIT_INTERVAL = 1000;
+    public String storeFirstModuleFilename;
+    public String storeSecondModuleFilename;
+    public String storeThirdModuleFilename;
 
     /**
      * All possibilities for the order that the modules could be stored to the database in.
      */
-    @Parameterized.Parameters(name = "{0} {1} {2}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { XQUERY_MOD1_FILENAME, XQUERY_MOD2_FILENAME, XQUERY_MOD3_FILENAME }
@@ -110,22 +113,12 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
             Tuple(XQUERY_MOD3_FILENAME, MOD3_XQUERY)
     );
 
-    private static final int MAX_WAIT_PERIOD = 10 * 1000;  // 10 seconds
-    private static final int WAIT_INTERVAL = 1000;  // 1 second
-
-    @Parameterized.Parameter(0)
-    public String storeFirstModuleFilename;
-    @Parameterized.Parameter(1)
-    public String storeSecondModuleFilename;
-    @Parameterized.Parameter(2)
-    public String storeThirdModuleFilename;
-
-    @Before
+    @BeforeEach
     public void enableRestXq() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
     }
 
-    @After
+    @AfterEach
     public void removeResourceFunctions() throws IOException, InterruptedException {
         removeXquery(TEST_COLLECTION, storeThirdModuleFilename);
         removeXquery(TEST_COLLECTION, storeSecondModuleFilename);
@@ -134,8 +127,9 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
         assertRestXqResourceFunctionsCount(0);
     }
 
-    @Test
-    public void storeCircularXqueryLibraryModules() throws IOException, InterruptedException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1} {2}")
+    public void storeCircularXqueryLibraryModules(String storeFirstModuleFilename, String storeSecondModuleFilename, String storeThirdModuleFilename) throws IOException, InterruptedException {
+        initLibraryCircularDependencyIntegrationTest(storeFirstModuleFilename, storeSecondModuleFilename, storeThirdModuleFilename);
         final String firstModuleContent = filenameToXQuery.get(storeFirstModuleFilename);
         storeXquery(TEST_COLLECTION, storeFirstModuleFilename, firstModuleContent);
         assertRestXqResourceFunctionsCount(0);
@@ -160,5 +154,11 @@ public class LibraryCircularDependencyIntegrationTest extends AbstractInstanceIn
             timeSlept += WAIT_INTERVAL;
         }
         assertEquals(1, restXqResourceFunctionsCount);
+    }
+
+    public void initLibraryCircularDependencyIntegrationTest(String storeFirstModuleFilename, String storeSecondModuleFilename, String storeThirdModuleFilename) {
+        this.storeFirstModuleFilename = storeFirstModuleFilename;
+        this.storeSecondModuleFilename = storeSecondModuleFilename;
+        this.storeThirdModuleFilename = storeThirdModuleFilename;
     }
 }

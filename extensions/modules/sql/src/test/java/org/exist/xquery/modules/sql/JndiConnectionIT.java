@@ -54,10 +54,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.jdbcx.JdbcDataSourceFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osjava.sj.loader.JndiLoader;
 import org.xml.sax.SAXException;
 
@@ -68,12 +67,16 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 /**
  * SQL Connection Integration Tests.
@@ -84,15 +87,15 @@ public class JndiConnectionIT {
 
     private static final String JNDI_DS_NAME = "com.fusiondb.xquery.modules.sql.H2DataSource";
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Rule
+    @RegisterExtension
     public H2DatabaseResource h2Database = new H2DatabaseResource();
 
     private Context ctx = null;
 
-    @Before
+    @BeforeEach
     public void setupJndiEnvironment() throws NamingException {
         final Properties properties = new Properties();
         properties.setProperty(JNDI_DS_NAME + ".type", JdbcDataSource.class.getName());
@@ -108,7 +111,7 @@ public class JndiConnectionIT {
         loader.load(properties, ctx);
     }
 
-    @After
+    @AfterEach
     public void teardownJndiEnvironment() throws NamingException {
         ctx.unbind(JNDI_DS_NAME);
         ctx.close();
@@ -133,7 +136,7 @@ public class JndiConnectionIT {
 
                 // check that the handle for the sql connection that was created was valid
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertInstanceOf(IntegerValue.class, result.itemAt(0));
                 assertEquals(Type.LONG, result.itemAt(0).getType());
                 final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
                 assertFalse(connectionHandle == 0);
@@ -179,17 +182,17 @@ public class JndiConnectionIT {
                 // get the context of the library module
                 final org.exist.xquery.Module[] libraryModules = mainQueryContext.getModules("http://mymodule.com");
                 assertEquals(1, libraryModules.length);
-                assertTrue(libraryModules[0] instanceof ExternalModule);
+                assertInstanceOf(ExternalModule.class, libraryModules[0]);
                 final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
                 final XQueryContext libraryQueryContext = libraryModule.getContext();
-                assertTrue(libraryQueryContext instanceof ModuleContext);
+                assertInstanceOf(ModuleContext.class, libraryQueryContext);
 
                 // execute the query
                 final Sequence result = executeQuery(broker, mainCompiledQuery);
 
                 // check that the handle for the sql connection that was created was valid
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertInstanceOf(IntegerValue.class, result.itemAt(0));
                 assertEquals(Type.LONG, result.itemAt(0).getType());
                 final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
                 assertFalse(connectionHandle == 0);
@@ -200,7 +203,7 @@ public class JndiConnectionIT {
 
             final XQueryContext escapedMainQueryContext = escapedContexts._1;
             final ModuleContext escapedLibraryQueryContext = escapedContexts._2;
-            assertTrue(escapedMainQueryContext != escapedLibraryQueryContext);
+            assertNotSame(escapedMainQueryContext, escapedLibraryQueryContext);
 
             // check the connections were closed in the main module
             final int mainConnectionsCount = ModuleUtils.readContextMap(escapedMainQueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);

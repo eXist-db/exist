@@ -21,8 +21,6 @@
  */
 package org.exist.security.realm.activedirectory;
 
-import static org.junit.Assert.*;
-
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -31,10 +29,12 @@ import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -57,7 +57,7 @@ public class ActiveDirectoryRealmTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config.getBytes(StandardCharsets.UTF_8));
 		
@@ -69,14 +69,14 @@ public class ActiveDirectoryRealmTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 	}
 
 	/**
 	 * Test method for {@link org.exist.security.realm.activedirectory.ActiveDirectoryRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
-	@Ignore("Requires external Active Directory server")
+	@Disabled("Requires external Active Directory server")
 	@Test
 	public void testAuthenticate() {
 		Subject currentUser = null;

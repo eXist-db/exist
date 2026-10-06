@@ -22,8 +22,8 @@
 
 package org.exist.util.sorters;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * check sort(long[], Object[])
@@ -88,7 +88,7 @@ class LongArrayAndObjectChecker extends SortMethodChecker {
 	 * This method asserts single values
 	 */
 	void checkValue(int idx, int v) {
-		assertEquals("@" + idx, v, a[idx]);
-		assertEquals("@" + idx, v, b[idx].intValue());
+		assertEquals(v, a[idx], "@" + idx);
+		assertEquals(v, b[idx].intValue(), "@" + idx);
 	}
 }

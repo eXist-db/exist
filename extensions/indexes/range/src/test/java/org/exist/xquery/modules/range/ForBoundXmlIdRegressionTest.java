@@ -37,16 +37,16 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Regression test: range index lookup with for-bound value comparand.
@@ -63,7 +63,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ForBoundXmlIdRegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String CONFIG_LEGACY_ONLY = """
@@ -88,7 +88,7 @@ public class ForBoundXmlIdRegressionTest {
     private static final XmldbURI COL_LEGACY = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-L");
     private static final XmldbURI COL_RANGE = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-N");
 
-    @BeforeClass
+    @BeforeAll
     public static void setupCollections() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -97,7 +97,7 @@ public class ForBoundXmlIdRegressionTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownCollections() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         cleanup(pool, COL_LEGACY);
@@ -107,15 +107,15 @@ public class ForBoundXmlIdRegressionTest {
     @Test
     public void legacyAutoIndexOnlyReturnsExpectedHits() throws Exception {
         final long[] hits = runScenario(COL_LEGACY, N_KEYS);
-        assertEquals("L literal expected 1 hit", 1, hits[0]);
-        assertEquals("L for-bound expected " + N_KEYS + " hits", N_KEYS, hits[1]);
+        assertEquals(1, hits[0], "L literal expected 1 hit");
+        assertEquals(N_KEYS, hits[1], "L for-bound expected " + N_KEYS + " hits");
     }
 
     @Test
     public void rangeIndexConfiguredReturnsCorrectHits() throws Exception {
         final long[] hits = runScenario(COL_RANGE, N_KEYS);
-        assertEquals("N literal expected 1 hit", 1, hits[0]);
-        assertEquals("N for-bound expected " + N_KEYS + " hits", N_KEYS, hits[1]);
+        assertEquals(1, hits[0], "N literal expected 1 hit");
+        assertEquals(N_KEYS, hits[1], "N for-bound expected " + N_KEYS + " hits");
     }
 
     /**

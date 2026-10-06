@@ -22,10 +22,11 @@
 package org.exist.xquery.functions.validate;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 
 import org.exist.xquery.XPathException;
@@ -35,6 +36,7 @@ import org.xmldb.api.base.ResourceSet;
 import java.io.IOException;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests for the validation:jing() function with NVDLs
@@ -44,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JingOnvdlTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String RNG_DATA1 =
@@ -76,7 +78,7 @@ public class JingOnvdlTest {
             "<Publisher>Anchor Books</Publisher>" +
             "</Book>";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final String query = "xmldb:create-collection('xmldb:exist:///db','validate-test')";
 		existEmbeddedServer.executeQuery(query);
@@ -94,7 +96,7 @@ public class JingOnvdlTest {
         existEmbeddedServer.executeQuery(data2);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_valid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
         final String query = "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
@@ -103,7 +105,7 @@ public class JingOnvdlTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_invalid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
         final String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
@@ -113,7 +115,7 @@ public class JingOnvdlTest {
     }
 
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/valid.xml'), " +
@@ -121,7 +123,7 @@ public class JingOnvdlTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/invalid.xml'), " +
@@ -129,7 +131,7 @@ public class JingOnvdlTest {
         executeAndEvaluate(query,"invalid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
@@ -137,7 +139,7 @@ public class JingOnvdlTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
@@ -145,7 +147,7 @@ public class JingOnvdlTest {
         executeAndEvaluate(query,"invalid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void onvdl_anyuri_valid_boolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
@@ -153,8 +155,8 @@ public class JingOnvdlTest {
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
-        assertEquals(query, "true",
-                results.getResource(0).getContent().toString());
+        assertEquals("true", results.getResource(0).getContent().toString(),
+                query);
     }
 
     private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {

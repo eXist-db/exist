@@ -31,7 +31,7 @@ import java.net.URLEncoder;
 import org.exist.http.AbstractHttpTest;
 import org.exist.http.AbstractHttpTest.HttpResponseResult;
 import org.exist.test.ExistWebServer;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -42,7 +42,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
-    @ClassRule
+    @RegisterExtension
     public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String baseUri = "/db";

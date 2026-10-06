@@ -26,10 +26,9 @@ import org.exist.TestUtils;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -37,14 +36,15 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.urlrewrite.XQueryURLRewrite.LEGACY_XQUERY_CONTROLLER_FILENAME;
 import static org.exist.http.urlrewrite.XQueryURLRewrite.XQUERY_CONTROLLER_FILENAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Consolidated HTTP-level tests for the controller.xql URL-rewriting pipeline, formerly nine
@@ -65,7 +65,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     // Scenario fixtures
@@ -382,12 +382,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         final String body = sendWithIfModifiedSince(coll);
 
         // The header name is visible to the handler...
-        assertTrue("If-Modified-Since should be listed by get-header-names(): " + body,
-                body.contains("name-present=\"true\""));
+        assertTrue(body.contains("name-present=\"true\""),
+                "If-Modified-Since should be listed by get-header-names(): " + body);
         // ...and, after the #6603 fix, so is its value: the view handover no longer blanks
         // getHeader(), so request:get-header() returns what the client sent.
-        assertTrue("If-Modified-Since value must survive the view handover (#6603): " + body,
-                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
+        assertTrue(body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""),
+                "If-Modified-Since value must survive the view handover (#6603): " + body);
     }
 
     @Test
@@ -400,8 +400,8 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
 
         // Control: the identical request through a view-less dispatch exposes the real value,
         // confirming the header is genuinely sent and that the loss is specific to the view path.
-        assertTrue("If-Modified-Since value should be visible without a view: " + body,
-                body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""));
+        assertTrue(body.contains("get-header=\"" + IF_MODIFIED_SINCE + "\""),
+                "If-Modified-Since value should be visible without a view: " + body);
     }
 
     // ================================================================================
@@ -421,12 +421,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         // and the controller/RESTXQ path never exposed the uploaded file at all (#6578).
         for (final String method : new String[]{"POST", "PUT", "PATCH"}) {
             final String body = sendMultipart(coll, method);
-            assertTrue(method + ": is-multipart-content() should be true: " + body,
-                    body.contains("is-multipart=\"true\""));
-            assertTrue(method + ": form field 'path' should be visible: " + body,
-                    body.contains("path=\"edition/01/17410105.xml\""));
-            assertTrue(method + ": uploaded file 'file' should be visible: " + body,
-                    body.contains("uploaded-files=\"17410105.xml\""));
+            assertTrue(body.contains("is-multipart=\"true\""),
+                    method + ": is-multipart-content() should be true: " + body);
+            assertTrue(body.contains("path=\"edition/01/17410105.xml\""),
+                    method + ": form field 'path' should be visible: " + body);
+            assertTrue(body.contains("uploaded-files=\"17410105.xml\""),
+                    method + ": uploaded file 'file' should be visible: " + body);
         }
     }
 
@@ -440,17 +440,17 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         // and no uploaded file is exposed to the handler. (Non-file form fields may still leak via
         // the servlet container's parameter map -- a pre-existing quirk this fix does not change.)
         final String body = sendMultipart(coll, "GET");
-        assertTrue("GET: is-multipart-content() must be false: " + body,
-                body.contains("is-multipart=\"false\""));
-        assertTrue("GET: uploaded file must not be exposed: " + body,
-                body.contains("uploaded-files=\"\""));
+        assertTrue(body.contains("is-multipart=\"false\""),
+                "GET: is-multipart-content() must be false: " + body);
+        assertTrue(body.contains("uploaded-files=\"\""),
+                "GET: uploaded file must not be exposed: " + body);
     }
 
     // ================================================================================
     // URLRewritingTest: finds the nearest parent collection's controller.xq
     // ================================================================================
 
-    @BeforeClass
+    @BeforeAll
     public static void setupUrlRewritingTest() throws IOException {
         final HttpRequest request = authenticatedRequest(
                 URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME),
@@ -462,7 +462,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         assertEquals(HttpURLConnection.HTTP_CREATED, statusCode);
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownUrlRewritingTest() throws IOException {
         final HttpRequest request = authenticatedRequest(URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION),
                 TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
@@ -506,7 +506,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // regressions in that round trip.
     // ================================================================================
 
-    @BeforeClass
+    @BeforeAll
     public static void setupViewPipelineTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION;
 
@@ -518,7 +518,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         chmodRwxrxrx(VP_TEST_COLLECTION, "controller.xq", "view.xq");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownViewPipelineTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION);
     }
@@ -540,20 +540,20 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         final String body = result.body();
 
         // The response should contain the original title from the source HTML
-        assertTrue("Response should contain the source page's title",
-                body.contains("Test Page"));
+        assertTrue(body.contains("Test Page"),
+                "Response should contain the source page's title");
 
         // The response should contain the view's wrapper title
-        assertTrue("Response should contain the view's title",
-                body.contains("View Pipeline Test"));
+        assertTrue(body.contains("View Pipeline Test"),
+                "Response should contain the view's title");
 
         // The response should contain the body content
-        assertTrue("Response should contain body content",
-                body.contains("Hello World"));
+        assertTrue(body.contains("Hello World"),
+                "Response should contain body content");
 
         // The response should NOT contain raw XML entities (indicating string was returned)
-        assertTrue("Response should not contain escaped XML (string instead of nodes)",
-                !body.contains("&lt;html"));
+        assertTrue(!body.contains("&lt;html"),
+                "Response should not contain escaped XML (string instead of nodes)");
     }
 
     /**
@@ -572,8 +572,8 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         assertEquals(HTTP_OK, status);
 
         final String body = result.body();
-        assertTrue("Response should contain body content",
-                body.contains("Hello World"));
+        assertTrue(body.contains("Hello World"),
+                "Response should contain body content");
     }
 
     // ================================================================================
@@ -582,7 +582,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // getWriter".
     // ================================================================================
 
-    @BeforeClass
+    @BeforeAll
     public static void setupXsltViewPipelineTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION;
 
@@ -593,7 +593,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         chmodRwxrxrx(XSLT_TEST_COLLECTION, "controller.xql", "A.xql");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownXsltViewPipelineTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION);
     }
@@ -608,8 +608,8 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                 AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
 
         assertOk(result);
-        assertTrue("Response should contain the XSLT-transformed output",
-                result.body().contains("Hello Bob"));
+        assertTrue(result.body().contains("Hello Bob"),
+                "Response should contain the XSLT-transformed output");
     }
 
     // ================================================================================
@@ -623,7 +623,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // a forward step must survive to the final response even though applyViews() discards
     // that step's response wrapper once the view runs. --
 
-    @BeforeClass
+    @BeforeAll
     public static void setupSetHeaderSurvivesTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION;
 
@@ -634,7 +634,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         chmodRwxrxrx(SH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownSetHeaderSurvivesTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION);
     }
@@ -651,22 +651,22 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
 
         // Proves the request actually went through the full forward-then-view pipeline, not just
         // step1's raw output.
-        assertTrue("Response should contain the view's output, not step1's raw output",
-                result.body().contains("View saw: Hello"));
+        assertTrue(result.body().contains("View saw: Hello"),
+                "Response should contain the view's output, not step1's raw output");
 
         // The actual behavior under test: the forward step's <exist:set-header> directives must
         // have survived past the view step that replaced its response wrapper.
-        assertEquals("Cache-Control set on the forward step must survive to the final response",
-                "no-cache", result.headers().firstValue("Cache-Control").orElse(null));
-        assertEquals("Pragma set on the forward step must survive to the final response",
-                "no-cache", result.headers().firstValue("Pragma").orElse(null));
+        assertEquals("no-cache",
+                result.headers().firstValue("Cache-Control").orElse(null), "Cache-Control set on the forward step must survive to the final response");
+        assertEquals("no-cache",
+                result.headers().firstValue("Pragma").orElse(null), "Pragma set on the forward step must survive to the final response");
     }
 
     // -- URLRewriteResponseSetHeaderViewPipelineTest: a header an intermediate step sets
     // programmatically via response:set-header() -- no static config representation at
     // all -- must NOT leak past a view step that discards that step's output. --
 
-    @BeforeClass
+    @BeforeAll
     public static void setupIntermediateSetHeaderTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION;
 
@@ -677,7 +677,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         chmodRwxrxrx(IH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownIntermediateSetHeaderTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION);
     }
@@ -693,20 +693,20 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         assertOk(result);
 
         // Proves the request actually went through the full forward-then-view pipeline.
-        assertTrue("Response should contain the view's output",
-                result.body().contains("View saw: Hello"));
+        assertTrue(result.body().contains("View saw: Hello"),
+                "Response should contain the view's output");
 
         // The actual behavior under test: step1's own header must not leak past the view that
         // replaced its output -- step1's response was never the one actually sent to the client.
-        assertTrue("X-Step1-Debug from the discarded intermediate step must not reach the client",
-                result.headers().firstValue("X-Step1-Debug").isEmpty());
+        assertTrue(result.headers().firstValue("X-Step1-Debug").isEmpty(),
+                "X-Step1-Debug from the discarded intermediate step must not reach the client");
     }
 
     // -- URLRewriteFinalStepResponseSetHeaderSurvivesTest: the opposite, equally
     // necessary case -- a header the FINAL, actually-flushed step sets the same way
     // must still reach the client. --
 
-    @BeforeClass
+    @BeforeAll
     public static void setupFinalStepSetHeaderTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION;
 
@@ -717,7 +717,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         chmodRwxrxrx(FH_TEST_COLLECTION, "controller.xql", "step1.xql", "view.xql");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownFinalStepSetHeaderTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION);
     }
@@ -731,8 +731,8 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         final AbstractHttpTest.HttpResponseResult result =
                 AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
         assertOk(result);
-        assertEquals("The final step's own response:set-header() call must reach the client",
-                "custom-value", result.headers().firstValue("X-Custom-Header").orElse(null));
+        assertEquals("custom-value",
+                result.headers().firstValue("X-Custom-Header").orElse(null), "The final step's own response:set-header() call must reach the client");
     }
 
     // ================================================================================
@@ -830,9 +830,9 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
 
     /** Assert a 200 OK status, including a truncated response body in the failure message. */
     private static void assertOk(final AbstractHttpTest.HttpResponseResult result) {
-        assertEquals("Expected 200 OK but got " + result.statusCode() + ": "
-                        + result.body().substring(0, Math.min(300, result.body().length())),
-                HTTP_OK, result.statusCode());
+        assertEquals(HTTP_OK,
+                result.statusCode(), "Expected 200 OK but got " + result.statusCode() + ": "
+                        + result.body().substring(0, Math.min(300, result.body().length())));
     }
 
 }

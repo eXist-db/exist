@@ -22,12 +22,12 @@
 package org.exist.xquery.functions.map;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression tests for the map:entry bugs documented in
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class MapEntryRegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server =
             new ExistXmldbEmbeddedServer(true, true, true);
 

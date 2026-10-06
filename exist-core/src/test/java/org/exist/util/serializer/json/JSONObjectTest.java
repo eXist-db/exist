@@ -23,8 +23,10 @@ package org.exist.util.serializer.json;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>

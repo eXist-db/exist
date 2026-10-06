@@ -23,9 +23,10 @@ package org.exist.xquery.modules.lucene;
 
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * JUnit tests for {@link FieldValueParser#parseBoolean}, which backs
@@ -64,13 +65,15 @@ public class FieldTest {
         assertFalse(FieldValueParser.parseBoolean("  false  ").getValue());
     }
 
-    @Test(expected = XPathException.class)
-    public void parseBooleanInvalidThrows() throws XPathException {
-        FieldValueParser.parseBoolean("yes");
+    @Test
+    public void parseBooleanInvalidThrows() {
+        assertThrows(XPathException.class, () ->
+            FieldValueParser.parseBoolean("yes"));
     }
 
-    @Test(expected = XPathException.class)
-    public void parseBooleanEmptyThrows() throws XPathException {
-        FieldValueParser.parseBoolean("");
+    @Test
+    public void parseBooleanEmptyThrows() {
+        assertThrows(XPathException.class, () ->
+            FieldValueParser.parseBoolean(""));
     }
 }

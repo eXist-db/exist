@@ -22,7 +22,9 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.XPathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -30,9 +32,11 @@ import org.junit.Test;
  */
 public class ByteTest {
     
-    @Test(expected=XPathException.class)
-    public void testOver() throws XPathException {
-        new IntegerValue("128", Type.BYTE);
+    @Test
+    public void testOver() {
+        assertThrows(XPathException.class, () -> {
+            new IntegerValue("128", Type.BYTE);
+        });
     }
     
     @Test
@@ -45,8 +49,10 @@ public class ByteTest {
         new IntegerValue("-128", Type.BYTE);
     }
     
-    @Test(expected=XPathException.class)
-    public void testUnder() throws XPathException {
-        new IntegerValue("-129", Type.BYTE);
+    @Test
+    public void testUnder() {
+        assertThrows(XPathException.class, () -> {
+            new IntegerValue("-129", Type.BYTE);
+        });
     }
 }

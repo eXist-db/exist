@@ -22,15 +22,15 @@
 package org.exist.source;
 
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -38,9 +38,12 @@ import java.net.URL;
 import java.nio.file.Path;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(ParallelRunner.class)
+
+@Execution(ExecutionMode.CONCURRENT)
 public class SourceFactoryTest {
 
     @Test
@@ -52,7 +55,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof FileSource);
+        assertInstanceOf(FileSource.class, source);
         assertEquals(new java.io.File(libraryUrl.toURI()).getAbsolutePath(), source.path());
     }
 
@@ -65,7 +68,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof FileSource);
+        assertInstanceOf(FileSource.class, source);
         assertEquals(new java.io.File(libraryUrl.toURI()).getAbsolutePath(), source.path());
     }
 
@@ -77,7 +80,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof FileSource);
+        assertInstanceOf(FileSource.class, source);
         assertEquals(new java.io.File(getClass().getResource("library.xqm").toURI()).getAbsolutePath(), source.path());
     }
 
@@ -89,7 +92,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof FileSource);
+        assertInstanceOf(FileSource.class, source);
         assertEquals(new java.io.File(getClass().getResource("library.xqm").toURI()).getAbsolutePath(), source.path());
     }
 
@@ -102,7 +105,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof FileSource);
+        assertInstanceOf(FileSource.class, source);
         assertEquals(Path.of(getClass().getResource("library.xqm").toURI()).toString(), source.path());
     }
 
@@ -113,7 +116,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -124,7 +127,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -135,7 +138,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -145,11 +148,11 @@ public class SourceFactoryTest {
         final String location = "library.xqm";
 
         final Source mainSource = SourceFactory.getSource(null, "", contextPath, false);
-        assertTrue(mainSource instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, mainSource);
 
         final Source relativeSource = SourceFactory.getSource(null, ((ClassLoaderSource)mainSource).getSource(), location, false);
 
-        assertTrue(relativeSource instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, relativeSource);
         assertEquals(getClass().getResource(location).getFile(), relativeSource.path());
     }
 
@@ -160,7 +163,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -171,7 +174,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -182,7 +185,7 @@ public class SourceFactoryTest {
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
-        assertTrue(source instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, source);
         assertEquals(getClass().getResource("library.xqm").getFile(), source.path());
     }
 
@@ -192,11 +195,11 @@ public class SourceFactoryTest {
         final String location = "library.xqm";
 
         final Source mainSource = SourceFactory.getSource(null, "", contextPath, false);
-        assertTrue(mainSource instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, mainSource);
 
         final Source relativeSource = SourceFactory.getSource(null, ((ClassLoaderSource)mainSource).getSource(), location, false);
 
-        assertTrue(relativeSource instanceof ClassLoaderSource);
+        assertInstanceOf(ClassLoaderSource.class, relativeSource);
         assertEquals(getClass().getResource(location).getFile(), relativeSource.path());
     }
 
@@ -220,7 +223,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
@@ -246,7 +249,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(contextPath).append(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
@@ -304,7 +307,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
@@ -330,7 +333,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(contextPath).append(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
@@ -388,7 +391,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(contextPath).append(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
@@ -414,7 +417,7 @@ public class SourceFactoryTest {
         replay(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);
 
         final Source libSource = SourceFactory.getSource(mockBroker, contextPath, location, false);
-        assertTrue(libSource instanceof DBSource);
+        assertInstanceOf(DBSource.class, libSource);
         assertEquals(XmldbURI.create(location), ((DBSource)libSource).getDocumentPath());
 
         verify(mockBrokerPool, mockBroker, mockLockedDoc, mockBinDoc);

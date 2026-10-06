@@ -22,18 +22,18 @@
 package org.exist.xquery.functions.websocket;
 
 import org.exist.test.ExistWebServer;
-import org.junit.ClassRule;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import jakarta.websocket.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Integration test for the WebSocket endpoint.
@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  */
 public class WebSocketEndpointTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @Test
@@ -61,7 +61,7 @@ public class WebSocketEndpointTest {
             // They are handled transparently by the WS layer and do not fire onMessage.
             // The observable effect is that the session stays open.
             Thread.sleep(1500);
-            assertTrue("Session should remain open after heartbeat interval", session.isOpen());
+            assertTrue(session.isOpen(), "Session should remain open after heartbeat interval");
         } finally {
             session.close();
         }
@@ -98,7 +98,7 @@ public class WebSocketEndpointTest {
 
         try {
             // wait for subscription
-            assertTrue("Should subscribe within 2s", subscribedLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(subscribedLatch.await(2, TimeUnit.SECONDS), "Should subscribe within 2s");
             // allow server time to process subscription
             Thread.sleep(200);
 
@@ -106,7 +106,7 @@ public class WebSocketEndpointTest {
             WebSocketModule.send("test-channel", "{\"hello\": \"world\"}");
 
             // should receive the message
-            assertTrue("Should receive channel message within 2s", messageLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(messageLatch.await(2, TimeUnit.SECONDS), "Should receive channel message within 2s");
             assertEquals("{\"hello\": \"world\"}", receivedMessage.get());
         } finally {
             session.close();
@@ -118,7 +118,7 @@ public class WebSocketEndpointTest {
         final int port = existWebServer.getPort();
         final URI wsUri = new URI("ws://localhost:" + port + "/ws");
 
-        assertEquals("No subscribers initially", 0, WebSocketEndpoint.getChannelCount("count-test"));
+        assertEquals(0, WebSocketEndpoint.getChannelCount("count-test"), "No subscribers initially");
 
         final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         final CountDownLatch subscribedLatch = new CountDownLatch(1);
@@ -136,12 +136,12 @@ public class WebSocketEndpointTest {
         }, ClientEndpointConfig.Builder.create().build(), wsUri);
 
         try {
-            assertTrue("Should subscribe within 2s", subscribedLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(subscribedLatch.await(2, TimeUnit.SECONDS), "Should subscribe within 2s");
             // poll for the server to process the subscription; @OnMessage runs
             // on a separate thread, so the client-side latch does not guarantee
             // the server-side state has been updated yet.
-            assertTrue("One subscriber within 2s",
-                    awaitChannelCount("count-test", 1, 2000));
+            assertTrue(awaitChannelCount("count-test", 1, 2000),
+                    "One subscriber within 2s");
         } finally {
             session.close();
             // poll for session cleanup so a leaked session cannot affect

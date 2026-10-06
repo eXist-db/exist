@@ -21,49 +21,49 @@
  */
 package org.exist.collections;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.Test;
 
-import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class CollectionURITest {
 
 	@Test
 	public void append() {
 		CollectionURI uri = new CollectionURI("/db");
 		uri.append("test1");
-		assertTrue(uri.equals(new CollectionURI("/db/test1")));
-		assertEquals(uri.toString(), "/db/test1");
+        assertEquals(uri, new CollectionURI("/db/test1"));
+        assertEquals("/db/test1", uri.toString());
         assertEquals(uri.hashCode(), "/db/test1".hashCode());
         uri.append("test2");
-        assertTrue(uri.equals(new CollectionURI("/db/test1/test2")));
-		assertEquals(uri.toString(), "/db/test1/test2");
+        assertEquals(uri, new CollectionURI("/db/test1/test2"));
+        assertEquals("/db/test1/test2", uri.toString());
         assertEquals(uri.hashCode(), "/db/test1/test2".hashCode());
 
         uri = new CollectionURI("/db/system/config");
         uri.append("/db/test");
-        assertEquals(uri.toString(), "/db/system/config/db/test");
-        assertTrue(uri.equals(new CollectionURI("/db/system/config/db/test")));
+        assertEquals("/db/system/config/db/test", uri.toString());
+        assertEquals(uri, new CollectionURI("/db/system/config/db/test"));
     }
 
     @Test
     public void remove() {
         CollectionURI uri = new CollectionURI("/db/test1/test2");
         uri.removeLastSegment();
-        assertTrue(uri.equals(new CollectionURI("/db/test1")));
-        assertEquals(uri.toString(), "/db/test1");
+        assertEquals(uri, new CollectionURI("/db/test1"));
+        assertEquals("/db/test1", uri.toString());
         uri.removeLastSegment();
-        assertTrue(uri.equals(new CollectionURI("/db")));
-        assertEquals(uri.toString(), "/db");
+        assertEquals(uri, new CollectionURI("/db"));
+        assertEquals("/db", uri.toString());
 
         uri.append("testMe");
-        assertTrue(uri.equals(new CollectionURI("/db/testMe")));
-        assertEquals(uri.toString(), "/db/testMe");
+        assertEquals(uri, new CollectionURI("/db/testMe"));
+        assertEquals("/db/testMe", uri.toString());
 
         uri.removeLastSegment();
-        assertTrue(uri.equals(new CollectionURI("/db")));
-        assertEquals(uri.toString(), "/db");
+        assertEquals(uri, new CollectionURI("/db"));
+        assertEquals("/db", uri.toString());
     }
 }

@@ -26,27 +26,27 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class VectorStoreImplTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private VectorStoreImpl store;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final VectorStore vectorStore = pool.getVectorStore();
         assertNotNull(vectorStore);
-        assertTrue(vectorStore instanceof VectorStoreImpl);
+        assertInstanceOf(VectorStoreImpl.class, vectorStore);
         store = (VectorStoreImpl) vectorStore;
         store.resetEntryCountCache();
     }

@@ -32,7 +32,7 @@
  */
 package org.exist.xquery.modules.mail;
 
-import com.icegreen.greenmail.junit4.GreenMailRule;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
 import jakarta.mail.Address;
@@ -58,13 +58,10 @@ import org.exist.util.UUIDGenerator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -75,14 +72,16 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.mail.Util.executeQuery;
 import static org.exist.xquery.modules.mail.Util.withCompiledQuery;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Send Email Integration Tests.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@RunWith(Parameterized.class)
 public class SendEmailIT {
 
     enum SmtpImplementation {
@@ -95,23 +94,14 @@ public class SendEmailIT {
         AUTHENTICATED
     }
 
-    @Parameterized.Parameters(name = "{0} {1}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
-                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
-        });
-    }
-
-    @Parameterized.Parameter(0)
     public SmtpImplementation smtpImplementation;
-
-    @Parameterized.Parameter(1)
     public AuthenticationOption authenticationOption;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
+    @RegisterExtension
+    public final GreenMailExtension greenMail = new GreenMailExtension(new ServerSetup(0, "127.0.0.1", "smtp"));
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/mail-module-test");
     private static final XmldbURI XML_DOC1_NAME = XmldbURI.create("doc1.xml");
@@ -122,10 +112,15 @@ public class SendEmailIT {
     private static final String EMAIL_UID = "emailuid";
     private static final String EMAIL_PWD = "emailpwd";
 
-    @Rule
-    public final GreenMailRule greenMail = new GreenMailRule(new ServerSetup(0, "127.0.0.1", "smtp"));
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
+        });
+    }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
@@ -140,15 +135,16 @@ public class SendEmailIT {
         }
     }
 
-    @Before
-    public void setSmtpAuth() {
+    private void setSmtpAuth() {
         if (authenticationOption == AuthenticationOption.AUTHENTICATED) {
             greenMail.setUser(EMAIL_UID, EMAIL_PWD);
         }
     }
 
-    @Test
-    public void sendTextEmail() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -158,8 +154,10 @@ public class SendEmailIT {
         assertEquals(messageText, GreenMailUtil.getBody(receivedMessage));
     }
 
-    @Test
-    public void sendTextEmailWithXmlAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -169,7 +167,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -184,8 +182,10 @@ public class SendEmailIT {
         assertEquals(XML_DOC1_CONTENT, new String(Base64.decodeBase64(secondPartBody), UTF_8));
     }
 
-    @Test
-    public void sendTextEmailWithBinaryAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -195,7 +195,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -210,8 +210,10 @@ public class SendEmailIT {
         assertArrayEquals(BIN_DOC1_CONTENT, Base64.decodeBase64(secondPartBody));
     }
 
-    @Test
-    public void sendTextEmailWithXmlAndBinaryAttachments() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -222,7 +224,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
@@ -242,8 +244,10 @@ public class SendEmailIT {
         assertArrayEquals(BIN_DOC1_CONTENT, Base64.decodeBase64(thirdPartBody));
     }
 
-    @Test
-    public void sendHtmlEmail() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendHtmlEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -259,8 +263,10 @@ public class SendEmailIT {
         assertTrue(body.contains("<p>" + htmlMessageText + "</p>"));
     }
 
-    @Test
-    public void sendHtmlEmailWithXmlAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendHtmlEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -273,7 +279,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -290,8 +296,10 @@ public class SendEmailIT {
         assertEquals(XML_DOC1_CONTENT, new String(Base64.decodeBase64(secondPartBody), UTF_8));
     }
 
-    @Test
-    public void sendHtmlEmailWithBinaryAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendHtmlEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -304,7 +312,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -321,8 +329,10 @@ public class SendEmailIT {
         assertArrayEquals(BIN_DOC1_CONTENT, Base64.decodeBase64(secondPartBody));
     }
 
-    @Test
-    public void sendHtmlEmailWithXmlAndBinaryAttachments() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendHtmlEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -336,7 +346,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
@@ -358,8 +368,10 @@ public class SendEmailIT {
         assertArrayEquals(BIN_DOC1_CONTENT, Base64.decodeBase64(thirdPartBody));
     }
 
-    @Test
-    public void sendTextAndHtmlEmail() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextAndHtmlEmail(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -373,7 +385,7 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/alternative"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
@@ -390,8 +402,10 @@ public class SendEmailIT {
         assertTrue(secondPartBody.contains("<p>" + htmlMessageText + "</p>"));
     }
 
-    @Test
-    public void sendTextAndHtmlEmailWithXmlAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextAndHtmlEmailWithXmlAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -407,14 +421,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 
@@ -436,8 +450,10 @@ public class SendEmailIT {
         assertEquals(XML_DOC1_CONTENT, new String(Base64.decodeBase64(secondPartBody), UTF_8));
     }
 
-    @Test
-    public void sendTextAndHtmlEmailWithBinaryAttachment() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextAndHtmlEmailWithBinaryAttachment(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -453,14 +469,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(2, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 
@@ -482,8 +498,10 @@ public class SendEmailIT {
         assertArrayEquals(BIN_DOC1_CONTENT, Base64.decodeBase64(secondPartBody));
     }
 
-    @Test
-    public void sendTextAndHtmlEmailWithXmlAndBinaryAttachments() throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+    @MethodSource("data") @ParameterizedTest(name = "{0} {1}")
+    public void sendTextAndHtmlEmailWithXmlAndBinaryAttachments(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        initSendEmailIT(smtpImplementation, authenticationOption);
+        setSmtpAuth();
         final String messageText = UUIDGenerator.getUUIDversion4();
         final String message = "<text>" + messageText + "</text>";
 
@@ -500,14 +518,14 @@ public class SendEmailIT {
 
         assertTrue(receivedMessage.getContentType().startsWith("multipart/mixed"));
         final Object content = receivedMessage.getContent();
-        assertTrue(content instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, content);
         final MimeMultipart multipartContent = (MimeMultipart) content;
         assertEquals(3, multipartContent.getCount());
 
         final BodyPart firstPart = multipartContent.getBodyPart(0);
         assertTrue(firstPart.getContentType().startsWith("multipart/alternative"));
         final Object firstPartContent = firstPart.getContent();
-        assertTrue(firstPartContent instanceof MimeMultipart);
+        assertInstanceOf(MimeMultipart.class, firstPartContent);
         final MimeMultipart multipartFirstPartContent = (MimeMultipart) firstPartContent;
         assertEquals(2, multipartFirstPartContent.getCount());
 
@@ -689,6 +707,11 @@ public class SendEmailIT {
         assertEquals(subject, receivedMessage.getSubject());
 
         return receivedMessage;
+    }
+
+    public void initSendEmailIT(SmtpImplementation smtpImplementation, AuthenticationOption authenticationOption) {
+        this.smtpImplementation = smtpImplementation;
+        this.authenticationOption = authenticationOption;
     }
 
 }

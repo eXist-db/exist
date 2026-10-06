@@ -22,8 +22,8 @@
 
 package org.exist.util.sorters;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +86,6 @@ class ListChecker extends SortMethodChecker {
 	 * This method asserts single values
 	 */
 	void checkValue(int idx, int v) {
-		assertEquals("@" + idx, v, a.get(idx).intValue());
+		assertEquals(v, a.get(idx).intValue(), "@" + idx);
 	}
 }

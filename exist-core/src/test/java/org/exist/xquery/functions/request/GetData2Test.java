@@ -31,7 +31,7 @@ import org.exist.util.XMLReaderPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -40,7 +40,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Unlike {@link GetDataTest} this test tries to test the code of
@@ -88,7 +91,7 @@ public class GetData2Test {
             assertNotNull(result);
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Document);
+            assertInstanceOf(Document.class, result.itemAt(0));
             assertEquals("hello", ((Document) result.itemAt(0)).getDocumentElement().getLocalName());
             assertEquals("world", ((Document) result.itemAt(0)).getDocumentElement().getTextContent());
 
@@ -134,7 +137,7 @@ public class GetData2Test {
             assertNotNull(result);
             assertFalse(result.isEmpty());
             assertEquals(1, result.getItemCount());
-            assertTrue(result.itemAt(0) instanceof Document);
+            assertInstanceOf(Document.class, result.itemAt(0));
             assertEquals("hello", ((Document) result.itemAt(0)).getDocumentElement().getLocalName());
             assertEquals("world", ((Document) result.itemAt(0)).getDocumentElement().getTextContent());
 

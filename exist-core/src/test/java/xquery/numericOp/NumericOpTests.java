@@ -21,12 +21,14 @@
  */
 package xquery.numericOp;
 
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+import org.exist.test.xqsuite.XQSuite;
 
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
+/**
+ * The files of this suite only evaluate expressions on numbers: none reads or writes the database, so they
+ * do not depend on each other and can run concurrently.
+ */
+@XQSuite(value = {
     "src/test/xquery/numericOp"
-})
+}, parallel = true)
 public class NumericOpTests {
 }

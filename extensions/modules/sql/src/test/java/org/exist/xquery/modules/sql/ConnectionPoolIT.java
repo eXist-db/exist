@@ -47,20 +47,21 @@ import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Map;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class ConnectionPoolIT {
 
-    @Rule
+    @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -85,7 +86,7 @@ public class ConnectionPoolIT {
 
                 // check that the handle for the sql connection that was created was valid
                 assertEquals(1, result.getItemCount());
-                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertInstanceOf(IntegerValue.class, result.itemAt(0));
                 assertEquals(Type.LONG, result.itemAt(0).getType());
                 final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
                 assertFalse(connectionHandle == 0);

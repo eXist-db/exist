@@ -35,10 +35,12 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -46,6 +48,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author wolf
@@ -64,11 +67,11 @@ public class RemoveAppendTest {
     private Collection testCol;
     private final Random rand = new Random();
 
-    @Rule
+    @RegisterExtension
     public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @Ignore("Test setup broken — ITEM_COUNT is zero")
-    @Test
+    @Disabled("Test setup broken — ITEM_COUNT is zero")
+    @org.junit.jupiter.api.Test
     public void testRemoveAppend() throws Exception {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);
@@ -78,12 +81,12 @@ public class RemoveAppendTest {
             remove(service, which);
             
             ResourceSet result = query.query("/test/item[@id='" + which + "']");
-            assertEquals(result.getSize(), 1);
+            assertEquals(1, result.getSize());
             result.getResource(0).getContent();
         }
     }
     
-    @Test
+    @org.junit.jupiter.api.Test
     public void appendRemove() throws XMLDBException, IOException {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);
@@ -91,7 +94,7 @@ public class RemoveAppendTest {
             append(service, i);
             
             ResourceSet result = query.query("/test/item[@id='" + i + "']");
-            assertEquals(result.getSize(), 1);
+            assertEquals(1, result.getSize());
         }
         
         for (int i = 100; i > 10; i--) {
@@ -100,7 +103,7 @@ public class RemoveAppendTest {
                 "   <xu:remove select=\"/test/item[@id='" + i + "']\"/>" +
                 "</xu:modifications>";
             long mods = service.update(xu);
-            assertEquals(mods, 1);
+            assertEquals(1, mods);
             
             ResourceSet result = query.query("/test/item/e0");
         }
@@ -114,7 +117,7 @@ public class RemoveAppendTest {
         out.write("</xu:append>");
         out.write("</xu:modifications>");
         final long mods = service.update(out.toString());
-        assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
     protected void insert(final XUpdateQueryService service, final int id) throws IOException, XMLDBException {
@@ -127,7 +130,7 @@ public class RemoveAppendTest {
         out.write("</xu:insert-before>");
         out.write("</xu:modifications>");
          long mods = service.update(out.toString());
-         assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
     protected void remove(final XUpdateQueryService service, final int id) throws XMLDBException {
@@ -138,10 +141,10 @@ public class RemoveAppendTest {
             "</xu:modifications>";
 
         long mods = service.update(XU_REMOVE);
-        assertEquals(mods, 1);
+        assertEquals(1, mods);
     }
     
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         rootCol = existXmldbEmbeddedServer.getRoot();
         
@@ -157,7 +160,7 @@ public class RemoveAppendTest {
         DBUtils.addXMLResource(testCol, "test.xml", "<test/>");
     }
     
-    @After
+    @AfterEach
     public void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }

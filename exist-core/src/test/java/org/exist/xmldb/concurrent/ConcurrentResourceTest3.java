@@ -24,13 +24,13 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.MultiResourcesAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
 
 /**
  * @author wolf
@@ -40,7 +40,7 @@ public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	private static final String FILES_DIR = "/home/wolf/xml/movies";
 	private static final String QUERY0 = "collection('" + XmldbURI.ROOT_COLLECTION + "')/movie";
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		final Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		assertNotNull(c1);

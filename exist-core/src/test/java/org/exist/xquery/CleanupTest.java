@@ -33,7 +33,8 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -41,10 +42,11 @@ import org.xmldb.api.modules.CollectionManagementService;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Test if inline functions and functions defined in imported modules are properly reset.
@@ -82,10 +84,10 @@ public class CleanupTest {
 
     private Collection collection;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @Before
+    @BeforeEach
     public void setup() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
@@ -96,14 +98,14 @@ public class CleanupTest {
         collection.storeResource(doc);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void resetStateOfModuleVars() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
         final CompiledExpression compiled = service.compile(TEST_QUERY);
@@ -127,8 +129,8 @@ public class CleanupTest {
 
         // execute query and check result
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "Hello world123");
+        assertEquals(1, result.getSize());
+        assertEquals("Hello world123", result.getResource(0).getContent());
 
         Sequence[] args = calledFunc.getCurrentArguments();
         assertNull(args);
@@ -138,14 +140,14 @@ public class CleanupTest {
         assertNull(var2.getContextDocSet());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void resetStateOfInlineFunc() throws XMLDBException, EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = BrokerPool.getInstance();
         final XQuery xquery = pool.getXQueryService();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             // execute query to get a function item
             final Sequence result = xquery.execute(broker, TEST_INLINE, Sequence.EMPTY_SEQUENCE);
-            assertEquals(result.getItemCount(), 1);
+            assertEquals(1, result.getItemCount());
             final FunctionCall call = ((FunctionReference)result.itemAt(0)).getCall();
             // closure variables are set when function item is created, but should be cleared after query
             final List<ClosureVariable> closure = call.getFunction().getClosureVariables();
@@ -153,7 +155,7 @@ public class CleanupTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
@@ -165,14 +167,14 @@ public class CleanupTest {
         module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
 
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 2);
-        assertEquals(result.getResource(1).getContent(), "TEST");
+        assertEquals(2, result.getSize());
+        assertEquals("TEST", result.getResource(1).getContent());
 
         final Variable var = module.resolveVariable(new QName("VAR", MODULE_NS, "t"));
         assertNull(var);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void resetStateofInternalModule() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 
@@ -185,8 +187,8 @@ public class CleanupTest {
         final TestModule.TestFunction func = (TestModule.TestFunction) root.getFunction();
 
         final ResourceSet result = service.execute(compiled);
-        assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "TEST");
+        assertEquals(1, result.getSize());
+        assertEquals("TEST", result.getResource(0).getContent());
         assertFalse(func.dummyProperty);
     }
 

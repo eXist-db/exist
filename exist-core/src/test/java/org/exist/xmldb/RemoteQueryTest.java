@@ -29,9 +29,9 @@ import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmlrpc.XmlRpcTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -46,8 +46,8 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
 
 public class RemoteQueryTest extends RemoteDBTest {
@@ -62,7 +62,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 		CompiledExpression compiled = service.compile(query);
 		ResourceSet result = service.execute(compiled);
 
-		assertEquals(result.getSize(), 359);
+        assertEquals(359, result.getSize());
 
 		for (int i = 0; i < result.getSize(); i++) {
 			XMLResource r = (XMLResource) result.getResource(i);
@@ -85,14 +85,14 @@ public class RemoteQueryTest extends RemoteDBTest {
         CompiledExpression compiled = service.compile(query);
         ResourceSet result = service.execute(compiled);
 
-        assertEquals(result.getSize(), 2);
+        assertEquals(2, result.getSize());
 
         for (int i = 0; i < result.getSize(); i++) {
             XMLResource r = (XMLResource) result.getResource(i);
         }
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, URISyntaxException, IOException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -126,7 +126,7 @@ public class RemoteQueryTest extends RemoteDBTest {
         xmlrpcCollection.storeResource(br);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
         if (!((EXistCollection) testCollection).isRemoteCollection()) {
             DatabaseInstanceManager dim =

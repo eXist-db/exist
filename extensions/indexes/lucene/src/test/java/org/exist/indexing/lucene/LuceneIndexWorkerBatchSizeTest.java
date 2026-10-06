@@ -25,12 +25,13 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LuceneIndexWorkerBatchSizeTest {
 
@@ -62,14 +63,14 @@ public class LuceneIndexWorkerBatchSizeTest {
     @Test
     public void reindexDeleteQueryUsesKeywordDocIdAndNodeScopedCanary() {
         final Query query = LuceneIndexWorker.reindexNodeDeleteQueryForDocIds(List.of(new BytesRef("7")));
-        assertTrue("Expected BooleanQuery composition", query instanceof BooleanQuery);
+        assertInstanceOf(BooleanQuery.class, query, "Expected BooleanQuery composition");
         final BooleanQuery bq = (BooleanQuery) query;
         assertEquals(2, bq.clauses().size());
         assertEquals(BooleanClause.Occur.MUST, bq.clauses().getFirst().occur());
         assertEquals(BooleanClause.Occur.MUST, bq.clauses().get(1).occur());
-        assertTrue("Expected docIdKeyword delete path",
-                bq.clauses().getFirst().query().toString().contains(LuceneIndexWorker.FIELD_DOC_ID_KEYWORD));
-        assertTrue("Expected node-scoped delete guard",
-                bq.clauses().get(1).query().toString().contains(LuceneUtil.FIELD_NODE_ID_DV));
+        assertTrue(bq.clauses().getFirst().query().toString().contains(LuceneIndexWorker.FIELD_DOC_ID_KEYWORD),
+                "Expected docIdKeyword delete path");
+        assertTrue(bq.clauses().get(1).query().toString().contains(LuceneUtil.FIELD_NODE_ID_DV),
+                "Expected node-scoped delete guard");
     }
 }

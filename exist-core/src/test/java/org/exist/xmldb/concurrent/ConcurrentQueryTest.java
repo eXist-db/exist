@@ -28,8 +28,8 @@ import java.util.List;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -43,14 +43,14 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 
 	private Path tempFile;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final String[] wordList = DBUtils.wordList();
         tempFile = DBUtils.generateXMLFile(500, 7, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws XMLDBException {
         FileUtils.deleteQuietly(tempFile);
     }

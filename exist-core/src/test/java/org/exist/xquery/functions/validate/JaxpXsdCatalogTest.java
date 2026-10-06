@@ -24,12 +24,14 @@ package org.exist.xquery.functions.validate;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +41,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -47,7 +50,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JaxpXsdCatalogTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
@@ -55,7 +58,7 @@ public class JaxpXsdCatalogTest {
             "    <validation mode='no'/>" +
             "</collection>";
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareResources() throws XMLDBException, IOException, URISyntaxException {
 
         // Switch off validation
@@ -116,13 +119,13 @@ public class JaxpXsdCatalogTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void clearGrammarCache() throws XMLDBException {
         final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
@@ -130,7 +133,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
@@ -138,7 +141,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query,"invalid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
@@ -146,7 +149,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
@@ -154,7 +157,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query,"invalid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
@@ -162,7 +165,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query,"valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
@@ -171,7 +174,7 @@ public class JaxpXsdCatalogTest {
     }
     
     // test boolean function
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_valid_boolean() throws XMLDBException {
         final String query = "validation:jaxp( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
@@ -180,7 +183,7 @@ public class JaxpXsdCatalogTest {
     }
     
     // test boolean function
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_invalid_boolean() throws XMLDBException {
         final String query = "validation:jaxp( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
@@ -189,7 +192,7 @@ public class JaxpXsdCatalogTest {
     }
     
     // test parse function
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_parse_valid() throws SAXException, IOException, XpathException, XMLDBException {
         final String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
@@ -199,7 +202,7 @@ public class JaxpXsdCatalogTest {
     }
     
     // test parse function
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_searched_parse_invalid() throws SAXException, IOException, XpathException, XMLDBException {
         final String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
@@ -212,7 +215,7 @@ public class JaxpXsdCatalogTest {
     // schemaLocation hint on the instance). Proves item 6: SearchResourceResolver's
     // LSResourceResolver support makes directory-search catalogs work with the XSD 1.1
     // validator pipeline too, not just the default SAX pipeline.
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd11SearchedValid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/searched-xsd11-valid.xml'), false()," +
@@ -220,7 +223,7 @@ public class JaxpXsdCatalogTest {
         executeAndEvaluate(query, "valid");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd11SearchedInvalid() throws XMLDBException, SAXException, XpathException, IOException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/searched-xsd11-invalid.xml'), false()," +

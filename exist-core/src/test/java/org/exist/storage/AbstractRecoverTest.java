@@ -50,19 +50,20 @@ import org.exist.util.FileInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -79,11 +80,11 @@ public abstract class AbstractRecoverTest {
      * We set useTemporaryStorage=true for ExistEmbeddedServer
      * so that each test runs on its own data directory.
      */
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
 
-    @After
+    @AfterEach
     public void tearDown() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
@@ -463,7 +464,7 @@ public abstract class AbstractRecoverTest {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
     public void replaceWithoutCommitThenDeleteAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
@@ -525,7 +526,7 @@ public abstract class AbstractRecoverTest {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
     public void replaceWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
@@ -720,9 +721,9 @@ public abstract class AbstractRecoverTest {
             try( final LockedDocument doc = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
 
                 if (!shouldExist) {
-                    assertNull("Document should not exist in the database: " + uri, doc);
+                    assertNull(doc, "Document should not exist in the database: " + uri);
                 } else {
-                    assertNotNull("Document does not exist in the database: " + uri, doc);
+                    assertNotNull(doc, "Document does not exist in the database: " + uri);
 
                     readAndVerify(broker, doc.getDocument(), data, dbFilename);
                 }

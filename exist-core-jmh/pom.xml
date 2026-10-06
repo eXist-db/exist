@@ -56,6 +56,13 @@
             <artifactId>exist-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-index-lucene</artifactId>
@@ -82,9 +89,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <!-- ExistEmbeddedServer, which the benchmarks use, implements the Jupiter extension callbacks,
+                 so the Jupiter API has to be on the compile classpath of this main code -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -189,7 +197,13 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.openjdk.jmh:jmh-generator-annprocess:jar:${jmh.version}</ignoredUnusedDeclaredDependency>
+                                <!-- only needed by the compiler, for the supertypes of ExistEmbeddedServer -->
+                                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter-api:jar:${junit.jupiter.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <!-- compile scope on purpose, see the dependency; the analyzer only sees the tests using it -->
+                                <ignoredNonTestScopedDependency>org.junit.jupiter:junit-jupiter-api:jar:${junit.jupiter.version}</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>

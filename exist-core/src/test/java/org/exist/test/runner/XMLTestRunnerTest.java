@@ -19,67 +19,57 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.test.runner;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.runner.Description;
-import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.file.Files.write;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the global methods of the {@link XMLTestRunner}.
  */
 class XMLTestRunnerTest {
+
     @TempDir
     Path tempPath;
-    XMLTestRunner runner;
 
-    @BeforeEach
-    void prepare() throws InitializationError, IOException {
+    private XMLTestRunner runnerFor(final String... lines) throws TestInitializationException, IOException {
         final Path xmlTestFile = tempPath.resolve("test.xml");
-        final List<String> lines = new ArrayList<>();
-        lines.add("<TestSet>");
-        lines.add("    <testName>demoTest</testName>");
-        lines.add("    <description>description for the demo test</description>");
-        lines.add("    <test id='testId'/>");
-        lines.add("    <test>");
-        lines.add("        <task>taskName</task>");
-        lines.add("    </test>");
-        lines.add("</TestSet>");
-        write(xmlTestFile, lines);
-        runner = new XMLTestRunner(xmlTestFile, false);
+        write(xmlTestFile, List.of(lines));
+        return new XMLTestRunner(xmlTestFile);
     }
 
     @Test
-    void testGetDescription() {
-        final Description description = runner.getDescription();
-        assertNotNull(description);
-        assertTrue(description.isSuite());
-        assertTrue(description.getAnnotations().isEmpty());
-        assertEquals("xmlts.demoTest", description.getDisplayName());
-        assertEquals(2, description.testCount());
-        final ArrayList<Description> children = description.getChildren();
-        assertChild(children.getFirst(), "testId(xmlts.demoTest)");
-        assertChild(children.get(1), "taskName(xmlts.demoTest)");
+    void suiteAndTestNamesComeFromTheTestSet() throws TestInitializationException, IOException {
+        final XMLTestRunner runner = runnerFor(
+                "<TestSet>",
+                "    <testName>demoTest</testName>",
+                "    <description>description for the demo test</description>",
+                "    <test id='testId'/>",
+                "    <test>",
+                "        <task>taskName</task>",
+                "    </test>",
+                "</TestSet>");
+
+        assertEquals("xmlts.demoTest", runner.getSuiteName());
+        assertEquals(List.of("testId", "taskName"), runner.getTestNames());
     }
 
-    private void assertChild(final Description description, final String expectedDisplayName) {
-        assertFalse(description.isSuite());
-        assertTrue(description.getAnnotations().isEmpty());
-        assertEquals(expectedDisplayName, description.getDisplayName());
-        assertEquals(1, description.testCount());
+    @Test
+    void taskNameIsTheRawTextBecauseThatIsWhatTheRuntimeReports() throws TestInitializationException, IOException {
+        final XMLTestRunner runner = runnerFor(
+                "<TestSet>",
+                "    <testName>demoTest</testName>",
+                "    <test><task>trailing space </task></test>",
+                "</TestSet>");
+
+        assertEquals(List.of("trailing space "), runner.getTestNames());
     }
 }

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
@@ -31,8 +32,9 @@ import org.exist.util.LockException;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -45,16 +47,17 @@ import org.xmldb.api.modules.XQueryService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * 
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class OptimizerTest {
 
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
@@ -80,14 +83,14 @@ public class OptimizerTest {
     	"</collection>";
     private static Collection testCollection;
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void nestedQuery() throws XMLDBException {
         execute("/root/a[descendant::b = 'one']", true, "Inner b node should be returned.", 2);
         execute("/root/a[b = 'one']", true, "Inner b node should not be returned.", 1);
         execute("/root/a[b = 'one']", false, "Inner b node should not be returned.", 1);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void simplePredicatesRegex() throws XMLDBException {
         long r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
         execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
@@ -99,7 +102,7 @@ public class OptimizerTest {
         execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void noOptimization() throws XMLDBException {
         long r = execute("/root//b[parent::c/b = 'two']", false);
         assertEquals(1, r);
@@ -122,14 +125,14 @@ public class OptimizerTest {
         execute("/root//b[matches(text()/parent::b, 'two')]", true, "Parent axis should not be optimized.", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void reversePaths() throws XMLDBException {
         long r = execute("/root//b/parent::c[b = 'two']", false);
         assertEquals(1, r);
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void reversePathsWithWildcard() throws XMLDBException {
         //parent with wildcard
         long r = execute("/root//b/parent::*[b = 'two']", false);
@@ -137,7 +140,7 @@ public class OptimizerTest {
         execute("/root//b/parent::*[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void booleanOperator() throws XMLDBException {
         execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
@@ -153,7 +156,7 @@ public class OptimizerTest {
      * DOM. The query below must return {@code <F id="1"/>} on both persistent
      * and in-memory DOM, with or without the optimizer.
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void nestedComparisonPreservedIssue4958() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         service.query("xmldb:store('/db/test', 'issue-4958.xml', <root><F id=\"1\"/></root>)");
@@ -206,10 +209,10 @@ public class OptimizerTest {
             query = NAMESPACES + NO_OPTIMIZE + query;
         }
         ResourceSet result = service.query(query);
-        assertEquals(message, expected, result.getSize());
+        assertEquals(expected, result.getSize(), message);
     }
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
             propertiesBuilder()
                     .put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE) //Since we use the deprecated text:match-all() function, we have to be sure is is enabled
@@ -217,7 +220,7 @@ public class OptimizerTest {
             true,
             true);
 
-    @BeforeClass
+    @BeforeAll
     public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException, URISyntaxException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -229,7 +232,7 @@ public class OptimizerTest {
         CollectionManagementService service =
                 root.getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
-        Assert.assertNotNull(testCollection);
+        Assertions.assertNotNull(testCollection);
 
         IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -247,7 +250,7 @@ public class OptimizerTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
 	}

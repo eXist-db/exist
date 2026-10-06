@@ -22,8 +22,8 @@
 
 package org.exist.util.sorters;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Comparator;
 
@@ -99,7 +99,7 @@ class PlainArrayChecker extends ComparatorChecker {
 	 * This method asserts single values
 	 */
 	void checkValue(int idx, int v) {
-		assertEquals("@" + idx, v, a[idx].intValue());
+		assertEquals(v, a[idx].intValue(), "@" + idx);
 	}
 
 	/**

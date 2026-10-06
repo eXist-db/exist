@@ -40,8 +40,7 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -52,16 +51,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class CollectionStoreTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_XML_DOC_URI = XmldbURI.create("test.xml");
@@ -94,7 +93,7 @@ public class CollectionStoreTest {
                                 .checkForSimilar()
                                 .build();
 
-                        assertFalse(diff.toString(), diff.hasDifferences());
+                        assertFalse(diff.hasDifferences(), diff.toString());
                     }
                 }
             }
@@ -134,7 +133,7 @@ public class CollectionStoreTest {
                     col.close();
 
                     if (lockedDoc != null) {
-                        assertTrue(lockedDoc.getDocument() instanceof BinaryDocument);
+                        assertInstanceOf(BinaryDocument.class, lockedDoc.getDocument());
 
                         final BinaryDocument doc = (BinaryDocument)lockedDoc.getDocument();
                         final Try<String, IOException> docContent = broker.withBinaryFile(transaction, doc, is ->

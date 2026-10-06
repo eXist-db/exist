@@ -21,9 +21,11 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link ContentTypeHelper}.
@@ -172,9 +174,9 @@ public class ContentTypeHelperTest {
 
     @Test
     public void imagePngIsBinary() {
-        assertFalse("image/png should not be text", ContentTypeHelper.isText("image/png"));
-        assertFalse("image/png should not be xml", ContentTypeHelper.isXml("image/png"));
-        assertFalse("image/png should not be html", ContentTypeHelper.isHtml("image/png"));
+        assertFalse(ContentTypeHelper.isText("image/png"), "image/png should not be text");
+        assertFalse(ContentTypeHelper.isXml("image/png"), "image/png should not be xml");
+        assertFalse(ContentTypeHelper.isHtml("image/png"), "image/png should not be html");
     }
 
     @Test
@@ -209,14 +211,14 @@ public class ContentTypeHelperTest {
 
     @Test
     public void applicationXmlIsNotText() {
-        assertFalse("XML should be parsed, not returned as text",
-                ContentTypeHelper.isText("application/xml"));
+        assertFalse(ContentTypeHelper.isText("application/xml"),
+                "XML should be parsed, not returned as text");
     }
 
     @Test
     public void textHtmlIsNotText() {
-        assertFalse("HTML should be parsed, not returned as text",
-                ContentTypeHelper.isText("text/html"));
+        assertFalse(ContentTypeHelper.isText("text/html"),
+                "HTML should be parsed, not returned as text");
     }
 
     // ========================================================================

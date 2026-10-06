@@ -41,12 +41,12 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
+import org.junit.jupiter.api.Test;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -59,17 +59,17 @@ import static org.bouncycastle.util.Arrays.reverse;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class BlobStoreImplTest {
 
     private static final DigestType DIGEST_TYPE = DigestType.BLAKE_256;
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
     private final Random random = new Random();
 
     private static BlobStore newBlobStore(final Path blobDbx, final Path blobDir) {
@@ -84,8 +84,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void addUnique() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final List<Tuple2<byte[], MessageDigest>> testFiles = Arrays.asList(
                 generateTestFile(),
@@ -111,8 +111,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void addDuplicates() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -135,8 +135,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void getNonExistent() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile = generateTestFile();
 
@@ -155,8 +155,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void get() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -174,8 +174,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void with() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -196,8 +196,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void removeUnique() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final List<Tuple2<byte[], MessageDigest>> testFiles = Arrays.asList(
                 generateTestFile(),
@@ -229,8 +229,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void removeDuplicates() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -265,8 +265,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void compactPersistentReferences() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
@@ -315,8 +315,8 @@ public class BlobStoreImplTest {
      */
     @Test
     public void blindCopy() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
@@ -336,8 +336,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void copy() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
@@ -367,8 +367,8 @@ public class BlobStoreImplTest {
 
     @Test
     public void copyRemove() throws IOException {
-        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
-        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+        final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
+        final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
 
@@ -459,5 +459,22 @@ public class BlobStoreImplTest {
             FileUtils.digest(path, streamableDigest);
             return streamableDigest.copyMessageDigest();
         });
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

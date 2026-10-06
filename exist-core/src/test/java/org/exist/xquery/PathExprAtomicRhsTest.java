@@ -22,14 +22,14 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression test for PathExpr per-item iteration over atomic-returning steps.
@@ -44,17 +44,17 @@ import static org.junit.Assert.assertEquals;
  */
 public class PathExprAtomicRhsTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer embedded =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void store() throws XMLDBException {
         embedded.executeQuery(
                 "xmldb:store('/db', 'pathexpr-issue798.xml', <a><b/><b/></a>)");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         try {
             embedded.executeQuery("xmldb:remove('/db', 'pathexpr-issue798.xml')");

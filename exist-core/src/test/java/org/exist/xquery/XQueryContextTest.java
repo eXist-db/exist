@@ -24,7 +24,7 @@ package org.exist.xquery;
 import org.exist.storage.DBBroker;
 import org.exist.security.Subject;
 import org.exist.xquery.value.BinaryValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.easymock.EasyMock;
 
 import javax.xml.XMLConstants;
@@ -33,8 +33,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class XQueryContextTest {
     private static final List<String> INITIAL_NAMESPACES = Arrays.asList(

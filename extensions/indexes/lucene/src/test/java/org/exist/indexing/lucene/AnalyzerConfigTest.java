@@ -23,7 +23,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.util.StringInputSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -38,10 +38,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -72,18 +73,20 @@ public class AnalyzerConfigTest {
         assertArrayEquals(new char[]{'\'', '-', '’'}, (char[]) constructorParameter.value());
     }
 
-    @Test(expected = AnalyzerConfig.ParameterException.class)
-    public void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
-        final String strParam =
-                """
-                <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
-                    <value>'</value>
-                    <value/>
-                    <value>’</value>
-                </param>""";
+    @Test
+    public void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException {
+        assertThrows(AnalyzerConfig.ParameterException.class, () -> {
+            final String strParam =
+                    """
+                            <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
+                                <value>'</value>
+                                <value/>
+                                <value>’</value>
+                            </param>""";
 
-        final Element elemParam = parse(strParam).getDocumentElement();
-        AnalyzerConfig.getConstructorParameter(elemParam);
+            final Element elemParam = parse(strParam).getDocumentElement();
+            AnalyzerConfig.getConstructorParameter(elemParam);
+        });
     }
 
     @Test
@@ -130,7 +133,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -159,7 +162,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -188,7 +191,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 
@@ -217,7 +220,7 @@ public class AnalyzerConfigTest {
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
         assertEquals("punctuationDictionary", extractedConstructorArg2.key());
         assertEquals(Set.class, extractedConstructorArg2.valueClass());
-        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertInstanceOf(HashSet.class, extractedConstructorArg2.value());
         assertEquals(2, ((Set<Character>) extractedConstructorArg2.value()).size());
     }
 

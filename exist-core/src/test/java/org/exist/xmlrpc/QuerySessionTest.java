@@ -26,7 +26,9 @@ import org.apache.logging.log4j.Logger;
 import org.exist.TestDataGenerator;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
@@ -39,15 +41,16 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 public class QuerySessionTest {
 
     private static final Logger LOG = LogManager.getLogger(QuerySessionTest.class);
 
-    @ClassRule
+    @RegisterExtension
     public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String generateXQ =
@@ -88,22 +91,24 @@ public class QuerySessionTest {
 
     private Random random = new Random();
 
-    @Test (expected=XMLDBException.class)
-    public void manualRelease() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        XQueryService service = test.getService(XQueryService.class);
-        ResourceSet result = service.query("//chapter[@xml:id eq 'chapter1']");
-        assertEquals(1, result.getSize());
+    @org.junit.jupiter.api.Test
+    public void manualRelease() {
+        assertThrows(XMLDBException.class, () -> {
+            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+            XQueryService service = test.getService(XQueryService.class);
+            ResourceSet result = service.query("//chapter[@xml:id eq 'chapter1']");
+            assertEquals(1, result.getSize());
 
-        // clear should release the query result on the server
-        result.clear();
+            // clear should release the query result on the server
+            result.clear();
 
-        // the result has been cleared already. we should get an exception here
-        Resource members = result.getMembersAsResource();
-        members.getContent();
+            // the result has been cleared already. we should get an exception here
+            Resource members = result.getMembersAsResource();
+            members.getContent();
+        });
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void runTasks() {
         ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < 100; i++) {
@@ -117,7 +122,7 @@ public class QuerySessionTest {
 		} catch (InterruptedException e) {
 		    Thread.currentThread().interrupt();
 		}
-		Assert.assertTrue(terminated);
+		Assertions.assertTrue(terminated);
     }
 
     private class QueryTask implements Runnable {
@@ -144,7 +149,7 @@ public class QuerySessionTest {
         }
     }
 
-	@BeforeClass
+	@BeforeAll
     public static void startServer() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SAXException {
         // initialize XML:DB driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -167,7 +172,7 @@ public class QuerySessionTest {
         generator.releaseAll();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopServer() throws XMLDBException {
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         CollectionManagementService mgmt =

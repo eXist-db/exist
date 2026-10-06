@@ -32,8 +32,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.TransformerException;
@@ -43,10 +42,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
 
     private static final String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>";
@@ -61,7 +60,7 @@ public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
         expansionEnabledConfigProperties.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
     }
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(expansionEnabledConfigProperties, true, true);
 
     @Override

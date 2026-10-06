@@ -22,19 +22,19 @@
 
 package org.exist.util.io;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -43,13 +43,13 @@ public class VirtualTempPathTest {
     private TemporaryFileManager temporaryFileManager;
     private VirtualTempPath virtualTempPath;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         temporaryFileManager = TemporaryFileManager.getInstance();
         virtualTempPath = new VirtualTempPath(2048, temporaryFileManager);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         virtualTempPath.close();
     }

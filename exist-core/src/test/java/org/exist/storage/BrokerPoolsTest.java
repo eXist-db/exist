@@ -25,25 +25,26 @@ import org.exist.EXistException;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
+import java.nio.file.Files;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 public class BrokerPoolsTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Test
     public void shutdownConcurrent() throws InterruptedException, ExecutionException, EXistException, DatabaseConfigurationException, IOException {
@@ -53,7 +54,7 @@ public class BrokerPoolsTest {
         final List<Future<Exception>> shutdownTasks = new ArrayList<>();
         final ExecutorService executorService = Executors.newFixedThreadPool(testThreads);
         for (int i = 0; i < testThreads; i ++) {
-            final Path dataDir = temporaryFolder.newFolder("exist" + i).toPath().normalize().toAbsolutePath();
+            final Path dataDir = newFolder(temporaryFolder, "exist" + i).toPath().normalize().toAbsolutePath();
 
             // load config from classpath and override data and journal dir
             final Configuration configuration = new Configuration("conf.xml");
@@ -97,5 +98,22 @@ public class BrokerPoolsTest {
                 return e;
             }
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

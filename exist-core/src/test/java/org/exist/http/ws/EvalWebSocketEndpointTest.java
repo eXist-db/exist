@@ -40,12 +40,15 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import jakarta.websocket.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -57,8 +60,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Integration tests for the /ws/eval WebSocket endpoint.
@@ -86,11 +88,11 @@ public class EvalWebSocketEndpointTest {
             };
             """;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer =
             new ExistWebServer(true, false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final SecurityManager securityManager = pool.getSecurityManager();
@@ -115,7 +117,7 @@ public class EvalWebSocketEndpointTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final SecurityManager securityManager = pool.getSecurityManager();
@@ -224,11 +226,11 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"q-1","query":"1 + 1"}""");
 
-            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(resultLatch.await(5, TimeUnit.SECONDS), "Should receive result within 5s");
             assertEquals("2", resultData.get());
 
             // Should have received at least one progress message and one result
-            assertTrue("Should have multiple messages", allMessages.size() >= 2);
+            assertTrue(allMessages.size() >= 2, "Should have multiple messages");
         } finally {
             session.close();
         }
@@ -272,8 +274,8 @@ public class EvalWebSocketEndpointTest {
                             "query":"declare variable $x external; xs:integer($x) * 2",\
                             "variables":{"x":"21"}}""");
 
-            assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
-            assertNull("Should not have error: " + errorData.get(), errorData.get());
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Should receive response within 5s");
+            assertNull(errorData.get(), "Should not have error: " + errorData.get());
             assertEquals("42", resultData.get());
         } finally {
             session.close();
@@ -311,7 +313,7 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"q-3","query":"let $x := retrun"}""");
 
-            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Should receive error within 5s");
             final Map<String, Object> error = errorMsg.get();
             assertNotNull(error.get("message"));
             assertEquals("q-3", error.get("id"));
@@ -352,8 +354,8 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"compile","id":"c-1","query":"1 + 1"}""");
 
-            assertTrue("Should receive compile result within 5s",
-                    compileLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(compileLatch.await(5, TimeUnit.SECONDS),
+                    "Should receive compile result within 5s");
             assertEquals(true, compileMsg.get().get("success"));
         } finally {
             session.close();
@@ -391,8 +393,8 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"compile","id":"c-2","query":"let $x := retrun"}""");
 
-            assertTrue("Should receive compile result within 5s",
-                    compileLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(compileLatch.await(5, TimeUnit.SECONDS),
+                    "Should receive compile result within 5s");
             assertEquals(false, compileMsg.get().get("success"));
             assertEquals("c-2", compileMsg.get().get("id"));
         } finally {
@@ -436,22 +438,22 @@ public class EvalWebSocketEndpointTest {
                             "query":"1 to 500",\
                             "chunk-size":100,"streaming":true}""");
 
-            assertTrue("Should receive all chunks within 10s",
-                    finalLatch.await(10, TimeUnit.SECONDS));
+            assertTrue(finalLatch.await(10, TimeUnit.SECONDS),
+                    "Should receive all chunks within 10s");
 
-            assertEquals("Should have 5 result chunks", 5, resultChunks.size());
+            assertEquals(5, resultChunks.size(), "Should have 5 result chunks");
 
             // First 4 chunks should have more=true
             for (int i = 0; i < 4; i++) {
-                assertEquals("Chunk " + i + " should have more=true",
-                        true, resultChunks.get(i).get("more"));
+                assertEquals(true,
+                        resultChunks.get(i).get("more"), "Chunk " + i + " should have more=true");
             }
             // Last chunk should have more=false
             assertEquals(false, resultChunks.get(4).get("more"));
 
             // Last chunk should have timing
-            assertNotNull("Last chunk should have timing",
-                    resultChunks.get(4).get("timing"));
+            assertNotNull(resultChunks.get(4).get("timing"),
+                    "Last chunk should have timing");
         } finally {
             session.close();
         }
@@ -498,16 +500,16 @@ public class EvalWebSocketEndpointTest {
                     "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
             // Wait for the server to confirm the query is executing before cancelling.
-            assertTrue("Query should start executing within 10s",
-                    progressLatch.await(10, TimeUnit.SECONDS));
+            assertTrue(progressLatch.await(10, TimeUnit.SECONDS),
+                    "Query should start executing within 10s");
 
             session.getBasicRemote().sendText(
                     """
                             {"action":"cancel","id":"q-cancel"}""");
 
             // Await longer than max-execution-time so the watchdog safety net can fire on slow CI.
-            assertTrue("Should receive cancelled/error within " + CANCEL_AWAIT_SEC + "s",
-                    cancelledLatch.await(CANCEL_AWAIT_SEC, TimeUnit.SECONDS));
+            assertTrue(cancelledLatch.await(CANCEL_AWAIT_SEC, TimeUnit.SECONDS),
+                    "Should receive cancelled/error within " + CANCEL_AWAIT_SEC + "s");
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();
@@ -546,8 +548,8 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"q-timing","query":"1 to 100"}""");
 
-            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
-            assertNotNull("Should have timing object", resultMsg.get().get("timing"));
+            assertTrue(resultLatch.await(5, TimeUnit.SECONDS), "Should receive result within 5s");
+            assertNotNull(resultMsg.get().get("timing"), "Should have timing object");
         } finally {
             session.close();
         }
@@ -586,13 +588,13 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"q-prog","query":"1 to 100"}""");
 
-            assertTrue("Should complete within 5s", doneLatch.await(5, TimeUnit.SECONDS));
-            assertFalse("Should have at least one progress message",
-                    progressMessages.isEmpty());
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Should complete within 5s");
+            assertFalse(progressMessages.isEmpty(),
+                    "Should have at least one progress message");
 
             // Should have parsing and/or evaluating phases
-            assertTrue("Should have phase field",
-                    progressMessages.stream().allMatch(m -> m.containsKey("phase")));
+            assertTrue(progressMessages.stream().allMatch(m -> m.containsKey("phase")),
+                    "Should have phase field");
         } finally {
             session.close();
         }
@@ -632,10 +634,10 @@ public class EvalWebSocketEndpointTest {
                             "query":"<root><item>1</item></root>",\
                             "serialization":{"method":"adaptive"}}""");
 
-            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
-            assertNotNull("Should have result data", resultData.get());
+            assertTrue(resultLatch.await(5, TimeUnit.SECONDS), "Should receive result within 5s");
+            assertNotNull(resultData.get(), "Should have result data");
             // Adaptive serialization wraps elements in their XML representation
-            assertTrue("Result should contain XML", resultData.get().contains("<root>"));
+            assertTrue(resultData.get().contains("<root>"), "Result should contain XML");
         } finally {
             session.close();
         }
@@ -675,8 +677,8 @@ public class EvalWebSocketEndpointTest {
                     "\"max-execution-time\":" + TIMEOUT_MAX_EXECUTION_MS + "}");
 
             final long errorWaitMs = TIMEOUT_MAX_EXECUTION_MS + TIMEOUT_AWAIT_SLACK_MS;
-            assertTrue("Should receive timeout response within " + errorWaitMs + "ms",
-                    errorLatch.await(errorWaitMs, TimeUnit.MILLISECONDS));
+            assertTrue(errorLatch.await(errorWaitMs, TimeUnit.MILLISECONDS),
+                    "Should receive timeout response within " + errorWaitMs + "ms");
             assertEquals("q-timeout", errorMsg.get().get("id"));
         } finally {
             session.close();
@@ -710,7 +712,7 @@ public class EvalWebSocketEndpointTest {
         try {
             session.getBasicRemote().sendText("not valid json{{{");
 
-            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Should receive error within 5s");
         } finally {
             session.close();
         }
@@ -745,7 +747,7 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"q-noquery"}""");
 
-            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Should receive error within 5s");
         } finally {
             session.close();
         }
@@ -793,8 +795,8 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"eval","id":"conc-2","query":"10 * 7"}""");
 
-            assertTrue("Both queries should complete within 5s",
-                    doneLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS),
+                    "Both queries should complete within 5s");
             assertEquals("5", results.get("conc-1"));
             assertEquals("70", results.get("conc-2"));
         } finally {
@@ -842,18 +844,18 @@ public class EvalWebSocketEndpointTest {
                     "\"query\":\"1 to " + totalItems + "\"," +
                     "\"chunk-size\":" + chunkSize + ",\"streaming\":true}");
 
-            assertTrue("Should receive all chunks within 60s",
-                    finalLatch.await(60, TimeUnit.SECONDS));
+            assertTrue(finalLatch.await(60, TimeUnit.SECONDS),
+                    "Should receive all chunks within 60s");
 
-            assertEquals("Should have " + expectedChunks + " result chunks",
-                    expectedChunks, resultChunks.size());
+            assertEquals(expectedChunks,
+                    resultChunks.size(), "Should have " + expectedChunks + " result chunks");
 
             // Last chunk should have timing and items
             final Map<String, Object> lastChunk = resultChunks.get(resultChunks.size() - 1);
             assertEquals(false, lastChunk.get("more"));
-            assertNotNull("Last chunk should have timing", lastChunk.get("timing"));
-            assertEquals("Total items should be " + totalItems,
-                    (long) totalItems, lastChunk.get("items"));
+            assertNotNull(lastChunk.get("timing"), "Last chunk should have timing");
+            assertEquals((long) totalItems,
+                    lastChunk.get("items"), "Total items should be " + totalItems);
         } finally {
             session.close();
         }
@@ -900,11 +902,11 @@ public class EvalWebSocketEndpointTest {
                             {"action":"eval","id":"q-bin",\
                             "query":"xs:base64Binary('SGVsbG8=')"}""");
 
-            assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
-            assertNull("Should not have error: " + errorData.get(), errorData.get());
-            assertNotNull("Should have result data", resultData.get());
-            assertTrue("Result should contain base64 data",
-                    resultData.get().contains("SGVsbG8="));
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Should receive response within 5s");
+            assertNull(errorData.get(), "Should not have error: " + errorData.get());
+            assertNotNull(resultData.get(), "Should have result data");
+            assertTrue(resultData.get().contains("SGVsbG8="),
+                    "Result should contain base64 data");
         } finally {
             session.close();
         }
@@ -951,12 +953,12 @@ public class EvalWebSocketEndpointTest {
                             "query":"map { 'key': 'value', 'nums': [1, 2, 3] }",\
                             "serialization":{"method":"adaptive"}}""");
 
-            assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
-            assertNull("Should not have error: " + errorData.get(), errorData.get());
-            assertNotNull("Should have result data", resultData.get());
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Should receive response within 5s");
+            assertNull(errorData.get(), "Should not have error: " + errorData.get());
+            assertNotNull(resultData.get(), "Should have result data");
             // Adaptive serialization of maps uses {"key":"value",...} format
-            assertTrue("Result should contain key",
-                    resultData.get().contains("key"));
+            assertTrue(resultData.get().contains("key"),
+                    "Result should contain key");
         } finally {
             session.close();
         }
@@ -1005,8 +1007,8 @@ public class EvalWebSocketEndpointTest {
                     "\"query\":\"" + escapeJson(query) + "\"," +
                     "\"module-load-path\":\"" + TEST_COLLECTION + "\"}");
 
-            assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
-            assertNull("Should not have error: " + errorData.get(), errorData.get());
+            assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Should receive response within 5s");
+            assertNull(errorData.get(), "Should not have error: " + errorData.get());
             assertEquals("Hello, World!", resultData.get());
         } finally {
             session.close();
@@ -1050,9 +1052,9 @@ public class EvalWebSocketEndpointTest {
                     """
                             {"action":"admin-cancel","id":"12345"}""");
 
-            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
-            assertTrue("Should mention permission denied",
-                    ((String) errorMsg.get().get("message")).contains("Permission denied"));
+            assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Should receive error within 5s");
+            assertTrue(((String) errorMsg.get().get("message")).contains("Permission denied"),
+                    "Should mention permission denied");
         } finally {
             session.close();
         }
@@ -1100,7 +1102,7 @@ public class EvalWebSocketEndpointTest {
         }, ClientEndpointConfig.Builder.create().build(), monitorUri);
 
         try {
-            assertTrue("Should subscribe within 2s", subscribedLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(subscribedLatch.await(2, TimeUnit.SECONDS), "Should subscribe within 2s");
             Thread.sleep(200); // allow server to process subscription
 
             // 2. Run a query on /ws/eval
@@ -1129,16 +1131,16 @@ public class EvalWebSocketEndpointTest {
                         "{\"action\":\"eval\",\"id\":\"q-monitor\"," +
                         "\"query\":\"1 to 100\"}");
 
-                assertTrue("Eval should complete within 5s",
-                        evalDoneLatch.await(5, TimeUnit.SECONDS));
+                assertTrue(evalDoneLatch.await(5, TimeUnit.SECONDS),
+                        "Eval should complete within 5s");
 
                 // Wait for monitor events (broadcast is async, snapshot is every 1s)
-                assertTrue("Should receive at least one monitor event within 3s",
-                        monitorEventLatch.await(3, TimeUnit.SECONDS));
+                assertTrue(monitorEventLatch.await(3, TimeUnit.SECONDS),
+                        "Should receive at least one monitor event within 3s");
 
-                assertFalse("Should have monitor messages", monitorMessages.isEmpty());
-                assertTrue("All monitor messages should have type=monitor",
-                        monitorMessages.stream().allMatch(m -> "monitor".equals(m.get("type"))));
+                assertFalse(monitorMessages.isEmpty(), "Should have monitor messages");
+                assertTrue(monitorMessages.stream().allMatch(m -> "monitor".equals(m.get("type"))),
+                        "All monitor messages should have type=monitor");
             } finally {
                 evalSession.close();
             }
@@ -1182,8 +1184,8 @@ public class EvalWebSocketEndpointTest {
                 "\"max-execution-time\":" + CANCEL_MAX_EXECUTION_MS + "}");
 
         // Wait for evaluating phase, then abruptly close
-        assertTrue("Should reach evaluating phase within 5s",
-                progressLatch.await(5, TimeUnit.SECONDS));
+        assertTrue(progressLatch.await(5, TimeUnit.SECONDS),
+                "Should reach evaluating phase within 5s");
         session.close();
 
         // Allow session-close cancellation to finish before later tests reuse the broker pool
@@ -1229,12 +1231,12 @@ public class EvalWebSocketEndpointTest {
         try {
             // Send invalid JSON
             session.getBasicRemote().sendText("{{{{not json}}}}");
-            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Should receive error within 5s");
 
             // Connection should still be alive — send a valid query
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-recovery\",\"query\":\"42\"}");
-            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
+            assertTrue(resultLatch.await(5, TimeUnit.SECONDS), "Should receive result within 5s");
             assertEquals("42", resultData.get());
         } finally {
             session.close();
@@ -1284,9 +1286,9 @@ public class EvalWebSocketEndpointTest {
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-rapid\"}");
 
-            assertTrue("Should receive a response within 30s",
-                    doneLatch.await(30, TimeUnit.SECONDS));
-            assertNotNull("Should get some response type", responseType.get());
+            assertTrue(doneLatch.await(30, TimeUnit.SECONDS),
+                    "Should receive a response within 30s");
+            assertNotNull(responseType.get(), "Should get some response type");
         } finally {
             session.close();
         }

@@ -21,7 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 

@@ -29,10 +29,9 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.ExtendedResource;
 import org.exist.xmldb.LocalBinaryResource;
 import org.exist.xquery.value.BinaryValue;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -41,20 +40,22 @@ import org.xmldb.api.modules.CollectionManagementService;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.fail;
 public class FilterInputStreamCacheMonitorTest {
 
-    @ClassRule
+    @RegisterExtension
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     protected final static Logger LOG = LogManager.getLogger(FilterInputStreamCacheMonitorTest.class);
 
     private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws XMLDBException, URISyntaxException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
         int activeCount = monitor.getActive().size();
@@ -73,7 +74,7 @@ public class FilterInputStreamCacheMonitorTest {
         testCollection.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final CollectionManagementService cms = existXmldbEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION_NAME);
@@ -97,8 +98,8 @@ public class FilterInputStreamCacheMonitorTest {
             assertEquals(1, resourceSet.getSize());
 
             try (final EXistResource resource = (EXistResource)resourceSet.getResource(0)) {
-                assertTrue(resource instanceof LocalBinaryResource);
-                assertTrue(((ExtendedResource)resource).getExtendedContent() instanceof BinaryValue);
+                assertInstanceOf(LocalBinaryResource.class, resource);
+                assertInstanceOf(BinaryValue.class, ((ExtendedResource) resource).getExtendedContent());
 
                 // one active binary (as it is in the result set)
                 assertEquals(1, monitor.getActive().size());

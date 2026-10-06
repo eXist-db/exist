@@ -22,16 +22,17 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Regression test for GH-4050: fn:deep-equal was ~24x slower than
@@ -46,7 +47,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class FunDeepEqualPerformanceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -106,7 +107,7 @@ public class FunDeepEqualPerformanceTest {
      * attributes per element, compareAttributes' O(attrs^2) NamedNodeMap
      * lookup also bites.
      */
-    @BeforeClass
+    @BeforeAll
     public static void storeLargeDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -129,7 +130,7 @@ public class FunDeepEqualPerformanceTest {
                 """);
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeStoredDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
@@ -169,9 +170,9 @@ public class FunDeepEqualPerformanceTest {
         System.out.println("[GH-4050] in-memory equal 10k-element trees: " + elapsedMs + "ms");
         final long threshold = 3000L;
         assertTrue(
+                elapsedMs <= threshold,
                 "fn:deep-equal on 10,000-element in-memory equal trees took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms)",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms)");
     }
 
     @Test
@@ -191,23 +192,23 @@ public class FunDeepEqualPerformanceTest {
         // regression that puts us back into multi-second territory.
         final long threshold = 5000L;
         assertTrue(
+                elapsedMs <= threshold,
                 "fn:deep-equal on stored 10,000-element docs took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); GH-4050 regression?",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms); GH-4050 regression?");
     }
 
     @Test
     public void deepEqualOnRootMismatchStillShortCircuits() throws XMLDBException {
         // Top-level name mismatch: in-memory case (memtree). The legacy
         // path bails on the first compareNames mismatch.
-        assertEquals(false, queryResult(LARGE_TREES_DIFFER_AT_ROOT));
+        assertFalse(queryResult(LARGE_TREES_DIFFER_AT_ROOT));
         final long elapsedMs = timeQuery(LARGE_TREES_DIFFER_AT_ROOT);
         System.out.println("[GH-4050] deep-equal on root-mismatched 10k-element trees: " + elapsedMs + "ms");
         final long threshold = 1500L;
         assertTrue(
+                elapsedMs <= threshold,
                 "Root-mismatch fn:deep-equal took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); pre-check ordering broken?",
-                elapsedMs <= threshold);
+                        + "ms (threshold " + threshold + "ms); pre-check ordering broken?");
     }
 
     @Test
@@ -215,7 +216,7 @@ public class FunDeepEqualPerformanceTest {
         // Difference is buried at every leaf; the comparator (streaming
         // for stored docs, recursive for memtree) walks until the leaf
         // mismatch surfaces. Correctness gate only.
-        assertEquals(false, queryResult(LARGE_TREES_DIFFER_AT_LEAF));
+        assertFalse(queryResult(LARGE_TREES_DIFFER_AT_LEAF));
     }
 
     @Test
@@ -225,7 +226,7 @@ public class FunDeepEqualPerformanceTest {
                 let $b := <e c="3" a="1" b="2"/>
                 return fn:deep-equal($a, $b)
                 """;
-        assertEquals(true, queryResult(q));
+        assertTrue(queryResult(q));
     }
 
     @Test
@@ -235,27 +236,26 @@ public class FunDeepEqualPerformanceTest {
                 let $b := <root><e b="2" a="1"/><f y="y" x="x"/></root>
                 return fn:deep-equal($a, $b)
                 """;
-        assertEquals(true, queryResult(q));
+        assertTrue(queryResult(q));
     }
 
     @Test
     public void typedNumericVsStringNotEqual() throws XMLDBException {
         // Per W3C XPath 3.1 deep-equal, xs:integer 1 is NOT deep-equal to "1".
         // Atomic comparison; streaming path does not apply.
-        assertEquals(false, queryResult("fn:deep-equal(xs:integer(1), '1')"));
+        assertFalse(queryResult("fn:deep-equal(xs:integer(1), '1')"));
     }
 
     @Test
     public void integerAndDoubleEqual() throws XMLDBException {
         // xs:integer 1 IS deep-equal to xs:double 1.0 per spec.
-        assertEquals(true, queryResult("fn:deep-equal(xs:integer(1), xs:double(1.0))"));
+        assertTrue(queryResult("fn:deep-equal(xs:integer(1), xs:double(1.0))"));
     }
 
     @Test
     public void nanEqualToNan() throws XMLDBException {
         // Special case: NaN is deep-equal to NaN even though NaN != NaN.
-        assertEquals(true,
-                queryResult("fn:deep-equal(xs:double('NaN'), xs:double('NaN'))"));
+        assertTrue(queryResult("fn:deep-equal(xs:double('NaN'), xs:double('NaN'))"));
     }
 
     @Test
@@ -266,7 +266,7 @@ public class FunDeepEqualPerformanceTest {
                 let $b := <e>hello<?pi data?>world</e>
                 return fn:deep-equal($a, $b)
                 """;
-        assertEquals(true, queryResult(q));
+        assertTrue(queryResult(q));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class FunDeepEqualPerformanceTest {
                 let $b := <root><b/><a/></root>
                 return fn:deep-equal($a, $b)
                 """;
-        assertEquals(false, queryResult(q));
+        assertFalse(queryResult(q));
     }
 
     @Test
@@ -287,7 +287,7 @@ public class FunDeepEqualPerformanceTest {
                 let $b := <e xmlns="urn:b"/>
                 return fn:deep-equal($a, $b)
                 """;
-        assertEquals(false, queryResult(q));
+        assertFalse(queryResult(q));
     }
 
     @Test

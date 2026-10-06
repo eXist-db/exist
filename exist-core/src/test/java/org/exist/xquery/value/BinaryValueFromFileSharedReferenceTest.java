@@ -21,16 +21,16 @@
  */
 package org.exist.xquery.value;
 
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Test;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A file-backed binary value must honor the shared-reference contract that
@@ -66,7 +66,7 @@ public class BinaryValueFromFileSharedReferenceTest {
             bin.close();
 
             // having escaped the enclosed expression, the value must still be readable
-            assertFalse("a binary value shared out of an enclosed expression must not be closed", bin.isClosed());
+            assertFalse(bin.isClosed(), "a binary value shared out of an enclosed expression must not be closed");
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 bin.streamBinaryTo(baos);
                 assertArrayEquals(content, baos.toByteArray());
@@ -74,7 +74,7 @@ public class BinaryValueFromFileSharedReferenceTest {
 
             // the final cleanup releases it for real
             bin.close();
-            assertTrue("once the last reference is released the value is closed", bin.isClosed());
+            assertTrue(bin.isClosed(), "once the last reference is released the value is closed");
         } finally {
             Files.deleteIfExists(file);
         }
@@ -94,7 +94,7 @@ public class BinaryValueFromFileSharedReferenceTest {
 
             assertFalse(bin.isClosed());
             bin.close();
-            assertTrue("a single owner's close() releases the value", bin.isClosed());
+            assertTrue(bin.isClosed(), "a single owner's close() releases the value");
         } finally {
             Files.deleteIfExists(file);
         }

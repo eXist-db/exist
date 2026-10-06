@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.io.VariableByteInput;
@@ -33,16 +34,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.exist.util.Configuration;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class SymbolTableTest {
 
     private final SymbolTable createSymbolTable(final Path dir) throws BrokerPoolServiceException {
@@ -77,11 +78,13 @@ public class SymbolTableTest {
         symbolTable.close();
     }
     
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void getSymbol_for_localName_throws_exception_when_name_is_empty_string() throws IOException, BrokerPoolServiceException {
-        final SymbolTable symbolTable = createSymbolTable(createTempDir());
-        symbolTable.getSymbol("");
-        symbolTable.close();
+        assertThrows(IllegalArgumentException.class, () -> {
+            final SymbolTable symbolTable = createSymbolTable(createTempDir());
+            symbolTable.getSymbol("");
+            symbolTable.close();
+        });
     }
 
     @Test

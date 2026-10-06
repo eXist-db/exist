@@ -21,8 +21,6 @@
  */
 package org.exist.deadlocks;
 
-import static org.junit.Assert.*;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -35,8 +33,12 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xquery.FunctionFactory;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -49,7 +51,7 @@ public class GetReleaseBrokerDeadlocksTest {
 	private static Random rd = new Random();
 
 	@Test
-	@Ignore("Deadlock test — hangs indefinitely")
+	@Disabled("Deadlock test — hangs indefinitely")
 	public void exterServiceMode() {
 		try { 
 	        Configuration config = new Configuration();
@@ -98,7 +100,7 @@ public class GetReleaseBrokerDeadlocksTest {
 	}
 
 	@Test
-	@Ignore("Deadlock test — hangs indefinitely")
+	@Disabled("Deadlock test — hangs indefinitely")
 	public void testingGetReleaseCycle() {
 		boolean debug = false;
 		try { 

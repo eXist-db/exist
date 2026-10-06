@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -84,7 +84,7 @@ public class RemoveTest extends AbstractUpdateTest {
         final Serializer serializer = broker.borrowSerializer();
 
         try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
-            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", lockedDoc);
+            assertNotNull(lockedDoc, "Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null");
             final String data = serializer.serialize(lockedDoc.getDocument());
         } finally {
             broker.returnSerializer(serializer);

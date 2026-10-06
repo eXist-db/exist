@@ -25,15 +25,15 @@ package org.exist.dom;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.XMLConstants;
 
 import static org.exist.dom.QName.Validity.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -170,7 +170,7 @@ public class QNameTest {
                 new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ELEMENT)
         };
         for (final QName other : others) {
-            assertFalse(other.getPrefix() + ":" + other.getLocalPart() + " type " + other.getNameType(), qname.isIdenticalTo(other));
+            assertFalse(qname.isIdenticalTo(other), other.getPrefix() + ":" + other.getLocalPart() + " type " + other.getNameType());
             assertFalse(qname.isIdenticalTo(other.getLocalPart(), other.getNamespaceURI(), other.getPrefix(), other.getNameType()));
         }
 

@@ -21,17 +21,16 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
+import org.junit.jupiter.api.Test;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -40,7 +39,7 @@ import static org.easymock.EasyMock.verify;
  *
  * @author aretter
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class XQueryURLRewriteTest
 {
     @Test
@@ -53,7 +52,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "blog/entries/some-entry.xml?edit");
+        assertEquals("blog/entries/some-entry.xml?edit", adjustedPath);
     }
 
     @Test
@@ -66,7 +65,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "adamretter.org.uk/blog/entries/some-entry.xml?edit");
+        assertEquals("adamretter.org.uk/blog/entries/some-entry.xml?edit", adjustedPath);
     }
 
     @Test
@@ -79,7 +78,7 @@ public class XQueryURLRewriteTest
 
         String adjustedPath = rewriter.adjustPathForSourceLookup(basePath, path);
 
-        assertEquals(adjustedPath, "xquery/functions.xql");
+        assertEquals("xquery/functions.xql", adjustedPath);
     }
 
     @Test

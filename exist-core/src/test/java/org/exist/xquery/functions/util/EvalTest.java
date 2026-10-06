@@ -24,10 +24,8 @@ package org.exist.xquery.functions.util;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.*;
 import org.exist.xquery.ErrorCodes;
-import org.junit.*;
-
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
@@ -38,15 +36,24 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+
 
 /**
  *
  * @author jim.fuller@webcomposite.com
  */
-//@RunWith(ParallelRunner.class)
 public class EvalTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static Resource invokableQuery;
@@ -54,7 +61,7 @@ public class EvalTest {
     private final static String INVOKABLE_QUERY_FILENAME = "invokable.xql";
     private final static String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         invokableQuery = existEmbeddedServer.getRoot().createResource(INVOKABLE_QUERY_FILENAME, BinaryResource.class);
         invokableQuery.setContent(
@@ -64,12 +71,12 @@ public class EvalTest {
         existEmbeddedServer.getRoot().storeResource(invokableQuery);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         existEmbeddedServer.getRoot().removeResource(invokableQuery);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void eval() throws XPathException, XMLDBException {
         final String query = """
                 let $query := 'let $a := 1 return $a'
@@ -80,7 +87,7 @@ public class EvalTest {
         assertEquals("1", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalWithExternalVars() throws XPathException, XMLDBException {
         final String query = "let $value := 'world' return\n" +
                 "\tutil:eval(xs:anyURI('/db/" + INVOKABLE_QUERY_FILENAME + "'), false(), (xs:QName('" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "'), $value))";
@@ -88,11 +95,11 @@ public class EvalTest {
 
         final LocalXMLResource res = (LocalXMLResource)result.getResource(0);
         final Node n = res.getContentAsDOM();
-        assertEquals(n.getLocalName(), "hello");
+        assertEquals("hello", n.getLocalName());
         assertEquals("world", n.getFirstChild().getNodeValue());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalwithPI() throws XPathException, XMLDBException {
         final String query = """
                 let $query := 'let $a := <test><?pi test?></test> return count($a//processing-instruction())'
@@ -103,7 +110,7 @@ public class EvalTest {
         assertEquals("1", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalInline() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := document{<test><a><b/></a></test>}
@@ -115,7 +122,7 @@ public class EvalTest {
         assertEquals("3", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testEvalWithContextVariable() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/><b/></test>
@@ -130,7 +137,7 @@ public class EvalTest {
         assertEquals("true", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testEvalSupplyingContext() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/></test>
@@ -145,7 +152,7 @@ public class EvalTest {
         assertEquals("true", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void testEvalSupplyingContextAndVariable() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/></test>
@@ -160,8 +167,8 @@ public class EvalTest {
         final String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
     }
-    
-    @Test
+
+    @org.junit.jupiter.api.Test
     public void testEvalSupplyingContextItem() throws XPathException, XMLDBException {
         final String query = """
                 let $context := 'London'
@@ -172,8 +179,8 @@ public class EvalTest {
         final String r = (String) result.getResource(0).getContent();
         assertEquals("London", r);
     }
-    
-    @Test
+
+    @org.junit.jupiter.api.Test
     public void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String query =
@@ -184,8 +191,8 @@ public class EvalTest {
             "util:eval($q)";
         existEmbeddedServer.executeQuery(query);
     }
-    
-    @Test
+
+    @org.junit.jupiter.api.Test
     public void evalInContextWithPreDeclaredNamespaceAcrossLocalFunctionBoundary() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String query =
@@ -199,29 +206,31 @@ public class EvalTest {
             "local:process($q)";
         existEmbeddedServer.executeQuery(query);
     }
-    
-    //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
-    @Test(expected=XMLDBException.class)
-    public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() throws XMLDBException {
-        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
-        final String processorModule =
-                "xquery version \"1.0\";\r\n" +
-                "module namespace processor = \"http://processor\";\r\n" +
-                "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
-                "declare function processor:process($q as xs:string) {\r\n" +
-                "\tutil:eval($q)\r\n" +
-                "};";
-        
-        writeModule(testHome, "processor.xqm", processorModule);
-        
-        final String query =
-            "xquery version \"1.0\";\r\n" +
-            "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";\r\n" +
-            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
-            "let $q := \"/db:article\" return\r\n" +
-            "processor:process($q)";
 
-        existEmbeddedServer.executeQuery(query);
+    //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
+    @org.junit.jupiter.api.Test
+    public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() {
+        assertThrows(XMLDBException.class, () -> {
+            Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+            final String processorModule =
+                    "xquery version \"1.0\";\r\n" +
+                            "module namespace processor = \"http://processor\";\r\n" +
+                            "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
+                            "declare function processor:process($q as xs:string) {\r\n" +
+                            "\tutil:eval($q)\r\n" +
+                            "};";
+
+            writeModule(testHome, "processor.xqm", processorModule);
+
+            final String query =
+                    "xquery version \"1.0\";\r\n" +
+                            "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";\r\n" +
+                            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
+                            "let $q := \"/db:article\" return\r\n" +
+                            "processor:process($q)";
+
+            existEmbeddedServer.executeQuery(query);
+        });
     }
 
     /**
@@ -231,7 +240,7 @@ public class EvalTest {
      * namespaces being present in the XQueryContext the next time
      * the same query was executed
      */
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalWithMissingVariableReferenceShouldReportTheSameErrorEachTime() throws XMLDBException {
         final String testHomeName = "testEvalWithMissingVariableReferenceShouldReportTheSameErrorEachTime";
         final Collection testHome = createCollection(testHomeName);
@@ -261,7 +270,7 @@ public class EvalTest {
             executeModule(testHome, testModuleName);
         } catch(final XMLDBException e) {
             final Throwable cause = e.getCause();
-            assertTrue(cause instanceof XPathException);
+            assertInstanceOf(XPathException.class, cause);
             assertEquals(ErrorCodes.XPDY0002, ((XPathException) cause).getErrorCode());
         }
 
@@ -270,11 +279,11 @@ public class EvalTest {
             executeModule(testHome, testModuleName);
         } catch(final XMLDBException e) {
             final Throwable cause = e.getCause();
-            assertTrue(cause instanceof XPathException);
+            assertInstanceOf(XPathException.class, cause);
             assertEquals(ErrorCodes.XPDY0002, ((XPathException)cause).getErrorCode());
         }
     }
-    
+
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
         if (collection == null) {
@@ -287,7 +296,7 @@ public class EvalTest {
         return collection;
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalAndSerialize() throws XMLDBException {
         final String query = """
                 let $query := "<elem1>hello</elem1>"
@@ -298,7 +307,7 @@ public class EvalTest {
         assertEquals("<elem1>hello</elem1>", r.getContent());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalAndSerializeDefaultOptions() throws XMLDBException {
         String query = """
                 let $query := "<elem1>hello</elem1>"
@@ -321,7 +330,7 @@ public class EvalTest {
         assertEquals("hello", r.getContent());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalAndSerializeJson() throws XMLDBException {
         String query = """
                 let $query := "<outer><elem1>hello</elem1></outer>"
@@ -332,7 +341,7 @@ public class EvalTest {
         assertEquals("{\"elem1\":\"hello\"}", r.getContent());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalAndSerializeAdaptive() throws XMLDBException {
         String query = """
                 let $query := 'map { "key": "value"}'
@@ -343,7 +352,7 @@ public class EvalTest {
         assertEquals("map{\"key\":\"value\"}", r.getContent());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalAndSerializeSubsequence() throws XMLDBException {
         final String query = """
                 let $query := "for $i in (1 to 10) return <i>{$i}</i>"
@@ -354,7 +363,7 @@ public class EvalTest {
         assertEquals("<i>1</i><i>2</i><i>3</i><i>4</i>", r.getContent());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalErrorInfo() {
         final String query = """
                 let $query := "let $msg := 'some error message'
@@ -374,7 +383,7 @@ public class EvalTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void evalPassErrorInfo() {
         final String query = """
                 let $query := "let $msg := 'some error message'
@@ -393,7 +402,7 @@ public class EvalTest {
             assertTrue(e.getMessage().contains("column 5"));
         }
     }
-    
+
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
         BinaryResource res = collection.createResource(modulename, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");

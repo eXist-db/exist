@@ -24,8 +24,8 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
@@ -51,7 +51,7 @@ public class FragmentsTest extends ConcurrentTestBase {
         return "C1";
     }
 
-    @Before
+    @BeforeEach
     public void createC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         if (rootCol.getChildCollection(SECOND_QUERY_COLLECTION) != null) {
@@ -60,7 +60,7 @@ public class FragmentsTest extends ConcurrentTestBase {
         DBUtils.addCollection(rootCol, SECOND_QUERY_COLLECTION);
     }
 
-    @After
+    @AfterEach
     public void removeC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);

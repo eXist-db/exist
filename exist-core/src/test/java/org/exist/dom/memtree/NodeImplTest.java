@@ -25,9 +25,9 @@ package org.exist.dom.memtree;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NodeImplTest {
 

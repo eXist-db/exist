@@ -24,12 +24,12 @@ package org.exist.xquery.functions.validate;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests for the validation:jing() function with SCHs.
@@ -46,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ParseXsdNokTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
@@ -54,7 +55,7 @@ public class ParseXsdNokTest {
             "<validation mode=\"no\"/>" +
             "</collection>";
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareResources() throws Exception {
 
         // Switch off validation
@@ -75,7 +76,7 @@ public class ParseXsdNokTest {
         }
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
@@ -87,7 +88,7 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_invalid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
@@ -99,7 +100,7 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_valid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
@@ -111,7 +112,7 @@ public class ParseXsdNokTest {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_invalid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";

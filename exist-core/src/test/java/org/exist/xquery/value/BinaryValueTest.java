@@ -22,22 +22,21 @@
 package org.exist.xquery.value;
 
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
 import org.exist.xquery.XPathException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class BinaryValueTest {
 
     @Test

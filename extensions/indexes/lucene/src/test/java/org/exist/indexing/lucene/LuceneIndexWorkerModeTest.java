@@ -22,17 +22,17 @@
 package org.exist.indexing.lucene;
 
 import org.exist.indexing.StreamListener.ReindexMode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LuceneIndexWorkerModeTest {
 
@@ -50,9 +50,9 @@ public class LuceneIndexWorkerModeTest {
         @SuppressWarnings("unchecked")
         final List<Object> nodesToWrite = (List<Object>) getField(worker, "nodesToWrite");
         final int cachedNodesSize = (Integer) getField(worker, "cachedNodesSize");
-        assertSame("STORE should reuse and clear existing nodesToWrite list", existing, nodesToWrite);
-        assertTrue("STORE should clear nodesToWrite list", nodesToWrite.isEmpty());
-        assertEquals("STORE should reset cached nodes size", 0, cachedNodesSize);
+        assertSame(existing, nodesToWrite, "STORE should reuse and clear existing nodesToWrite list");
+        assertTrue(nodesToWrite.isEmpty(), "STORE should clear nodesToWrite list");
+        assertEquals(0, cachedNodesSize, "STORE should reset cached nodes size");
     }
 
     @Test
@@ -63,8 +63,8 @@ public class LuceneIndexWorkerModeTest {
 
         @SuppressWarnings("unchecked")
         final Set<Object> nodesToRemove = (Set<Object>) getField(worker, "nodesToRemove");
-        assertNotNull("REMOVE_SOME_NODES should initialize removal set", nodesToRemove);
-        assertTrue("newly initialized removal set should be empty", nodesToRemove.isEmpty());
+        assertNotNull(nodesToRemove, "REMOVE_SOME_NODES should initialize removal set");
+        assertTrue(nodesToRemove.isEmpty(), "newly initialized removal set should be empty");
     }
 
     @Test

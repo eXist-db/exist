@@ -21,13 +21,13 @@
  */
 package org.exist.storage.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Random;
 
 public class VariableByteStreamTest {
 
@@ -35,7 +35,7 @@ public class VariableByteStreamTest {
     
 	private long[] values = new long[1000 * 3];
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Random rand = new Random(System.currentTimeMillis()); 
 		for(int i = 0; i < SIZE * 3; i++) {

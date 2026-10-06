@@ -37,17 +37,17 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.exist.xmldb.XmldbURI.ROOT_COLLECTION;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 public class FnCollectionSecurityTest {
 
     private static final String TEST_USER_1 = "docTestUser1";
@@ -63,7 +63,7 @@ public class FnCollectionSecurityTest {
     private static final String TEST_SUB_COLLECTION_2 = TEST_COLLECTION_2 + "/child2";
     private static final String TEST_SUB_COLLECTION_2_2 = TEST_SUB_COLLECTION_2 + "/child2_2";
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     /**
@@ -82,7 +82,7 @@ public class FnCollectionSecurityTest {
      *
      * Creates a new user: docTestUser1
      */
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException {
 
         // as system user
@@ -150,81 +150,87 @@ public class FnCollectionSecurityTest {
         }
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void cannotAccessRestrictedCollection() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
-        // as docTestUser1 user
-        final String query = "fn:collection('" + TEST_COLLECTION_SYSTEM_ONLY + "')";
+    @Test
+    public void cannotAccessRestrictedCollection() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            // as docTestUser1 user
+            final String query = "fn:collection('" + TEST_COLLECTION_SYSTEM_ONLY + "')";
 
-        final BrokerPool pool = server.getBrokerPool();
-        final SecurityManager securityManager = pool.getSecurityManager();
-        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
+            final BrokerPool pool = server.getBrokerPool();
+            final SecurityManager securityManager = pool.getSecurityManager();
+            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
-        try (final DBBroker broker = pool.get(Optional.of(testUser1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            final XQuery xqueryService = pool.getXQueryService();
-            final Sequence result = xqueryService.execute(broker, query, null);
-            fail("Expected PermissionDeniedException via XPathException");
+            try (final DBBroker broker = pool.get(Optional.of(testUser1));
+                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final XQuery xqueryService = pool.getXQueryService();
+                final Sequence result = xqueryService.execute(broker, query, null);
+                fail("Expected PermissionDeniedException via XPathException");
 
-            transaction.commit();
-        } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
-                throw (PermissionDeniedException) e.getCause();
-            } else {
-                throw e;
+                transaction.commit();
+            } catch (final XPathException e) {
+                if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+                    throw (PermissionDeniedException) e.getCause();
+                } else {
+                    throw e;
+                }
             }
-        }
+        });
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void cannotAccessCollectionInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException {
+    @Test
+    public void cannotAccessCollectionInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
+        assertThrows(PermissionDeniedException.class, () -> {
 
-        // as docTestUser1 user
-        final String query = "fn:collection('" + TEST_SUB_COLLECTION_1_1 + "')";
+            // as docTestUser1 user
+            final String query = "fn:collection('" + TEST_SUB_COLLECTION_1_1 + "')";
 
-        final BrokerPool pool = server.getBrokerPool();
-        final SecurityManager securityManager = pool.getSecurityManager();
-        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
+            final BrokerPool pool = server.getBrokerPool();
+            final SecurityManager securityManager = pool.getSecurityManager();
+            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
-        try (final DBBroker broker = pool.get(Optional.of(testUser1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            final XQuery xqueryService = pool.getXQueryService();
-            final Sequence result = xqueryService.execute(broker, query, null);
-            fail("Expected PermissionDeniedException via XPathException");
+            try (final DBBroker broker = pool.get(Optional.of(testUser1));
+                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final XQuery xqueryService = pool.getXQueryService();
+                final Sequence result = xqueryService.execute(broker, query, null);
+                fail("Expected PermissionDeniedException via XPathException");
 
-            transaction.commit();
-        } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
-                throw (PermissionDeniedException) e.getCause();
-            } else {
-                throw e;
+                transaction.commit();
+            } catch (final XPathException e) {
+                if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+                    throw (PermissionDeniedException) e.getCause();
+                } else {
+                    throw e;
+                }
             }
-        }
+        });
     }
 
-    @Test(expected=PermissionDeniedException.class)
-    public void cannotAccessCollectionInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException {
+    @Test
+    public void cannotAccessCollectionInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
+        assertThrows(PermissionDeniedException.class, () -> {
 
-        // as docTestUser1 user
-        final String query = "fn:collection('" + TEST_SUB_COLLECTION_2_2 + "')";
+            // as docTestUser1 user
+            final String query = "fn:collection('" + TEST_SUB_COLLECTION_2_2 + "')";
 
-        final BrokerPool pool = server.getBrokerPool();
-        final SecurityManager securityManager = pool.getSecurityManager();
-        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
+            final BrokerPool pool = server.getBrokerPool();
+            final SecurityManager securityManager = pool.getSecurityManager();
+            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
-        try (final DBBroker broker = pool.get(Optional.of(testUser1));
-                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            final XQuery xqueryService = pool.getXQueryService();
-            final Sequence result = xqueryService.execute(broker, query, null);
-            fail("Expected PermissionDeniedException via XPathException");
+            try (final DBBroker broker = pool.get(Optional.of(testUser1));
+                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final XQuery xqueryService = pool.getXQueryService();
+                final Sequence result = xqueryService.execute(broker, query, null);
+                fail("Expected PermissionDeniedException via XPathException");
 
-            transaction.commit();
-        } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
-                throw (PermissionDeniedException) e.getCause();
-            } else {
-                throw e;
+                transaction.commit();
+            } catch (final XPathException e) {
+                if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+                    throw (PermissionDeniedException) e.getCause();
+                } else {
+                    throw e;
+                }
             }
-        }
+        });
     }
 
     private static void createUser(final SecurityManager securityManager, final DBBroker broker, final String username) throws PermissionDeniedException, EXistException {

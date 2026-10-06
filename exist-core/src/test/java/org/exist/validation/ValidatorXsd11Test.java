@@ -25,20 +25,20 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.security.AuthenticationException;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link Validator#validateParse(InputStream, String, String)} (the org.exist.xmlrpc.RpcConnection
@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ValidatorXsd11Test {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
             propertiesBuilder().build(), true, true);
 
@@ -89,8 +89,8 @@ public class ValidatorXsd11Test {
 
             final ValidationReport report = validate(instance, documentBaseUri);
 
-            assertTrue("conforming instance against an XSD-1.1-only schema (via schemaLocation hint) should be valid: "
-                    + describeFailure(report), report.isValid());
+            assertTrue(report.isValid(), "conforming instance against an XSD-1.1-only schema (via schemaLocation hint) should be valid: "
+                    + describeFailure(report));
         } finally {
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));
             Files.deleteIfExists(tempDir);
@@ -108,7 +108,7 @@ public class ValidatorXsd11Test {
 
             final ValidationReport report = validate(instance, documentBaseUri);
 
-            assertFalse("instance violating the xs:assert should not be valid", report.isValid());
+            assertFalse(report.isValid(), "instance violating the xs:assert should not be valid");
         } finally {
             Files.deleteIfExists(tempDir.resolve("schema.xsd"));
             Files.deleteIfExists(tempDir);

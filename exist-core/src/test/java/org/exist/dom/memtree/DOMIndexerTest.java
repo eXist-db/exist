@@ -21,13 +21,14 @@
  */
 package org.exist.dom.memtree;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 
 import org.exist.collections.Collection;
@@ -49,20 +50,19 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests the serializing of constructed in-memory fragments.
  * 
  * @author wolf
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class DOMIndexerTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML =

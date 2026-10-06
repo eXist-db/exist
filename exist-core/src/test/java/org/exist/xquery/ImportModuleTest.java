@@ -51,8 +51,7 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
@@ -63,17 +62,22 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ImportModuleTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     /**
@@ -889,7 +893,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -977,7 +981,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1065,7 +1069,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1122,7 +1126,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1204,7 +1208,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1286,7 +1290,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1372,7 +1376,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1524,7 +1528,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }
@@ -1700,7 +1704,7 @@ public class ImportModuleTest {
                     .checkForSimilar()
                     .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), diff.toString());
 
             transaction.commit();
         }

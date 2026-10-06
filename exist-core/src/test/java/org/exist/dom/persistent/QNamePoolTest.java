@@ -24,10 +24,10 @@ package org.exist.dom.persistent;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * {@link QNamePool#add} must hand back a QName with exactly the name type and prefix asked for.
@@ -54,7 +54,7 @@ public class QNamePoolTest {
         }
         for (int i = 0; i < NAMES; i++) {
             final QName element = pool.add(ElementValue.ELEMENT, "", "name" + i, null);
-            assertEquals("name type of element 'name" + i + "'", ElementValue.ELEMENT, element.getNameType());
+            assertEquals(ElementValue.ELEMENT, element.getNameType(), "name type of element 'name" + i + "'");
         }
     }
 
@@ -66,7 +66,7 @@ public class QNamePoolTest {
         }
         for (int i = 0; i < NAMES; i++) {
             final QName attribute = pool.add(ElementValue.ATTRIBUTE, "", "name" + i, null);
-            assertEquals("name type of attribute 'name" + i + "'", ElementValue.ATTRIBUTE, attribute.getNameType());
+            assertEquals(ElementValue.ATTRIBUTE, attribute.getNameType(), "name type of attribute 'name" + i + "'");
         }
     }
 
@@ -78,7 +78,7 @@ public class QNamePoolTest {
         }
         for (int i = 0; i < NAMES; i++) {
             final QName qname = pool.add(ElementValue.ATTRIBUTE, Namespaces.XML_NS, "name" + i, "xml");
-            assertEquals("prefix of attribute 'name" + i + "'", "xml", qname.getPrefix());
+            assertEquals("xml", qname.getPrefix(), "prefix of attribute 'name" + i + "'");
         }
     }
 

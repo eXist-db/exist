@@ -21,12 +21,12 @@
  */
 package org.exist.dom.memtree;
 
-import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -40,13 +40,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-@RunWith(ParallelRunner.class)
+@Execution(ExecutionMode.CONCURRENT)
 public class MemtreeTest {
 
     private final static String XML =
@@ -388,33 +389,33 @@ public class MemtreeTest {
             doc = parse(is);
         }
 
-        assertTrue(doc.getNode(0) instanceof DocumentImpl);                 // the document node
-        assertTrue(doc.getNode(1) instanceof CommentImpl);                  // <!-- comment before doc 1 -->
-        assertTrue(doc.getNode(2) instanceof ProcessingInstructionImpl);    // <?pi-before-doc-1?>
-        assertTrue(doc.getNode(3) instanceof CommentImpl);                  // <!-- comment before doc 2 -->
-        assertTrue(doc.getNode(4) instanceof ProcessingInstructionImpl);    // <?pi-before-doc-2?>
-        assertTrue(doc.getNode(5) instanceof ElementImpl);                  // doc-element
-        assertTrue(doc.getNode(6) instanceof TextImpl);                     // doc-element/text()[1]
-        assertTrue(doc.getNode(7) instanceof CommentImpl);                  // <!-- comment before e1 -->
-        assertTrue(doc.getNode(8) instanceof TextImpl);                     // doc-element/text()[2]
-        assertTrue(doc.getNode(9) instanceof ElementImpl);                  // e1
-        assertTrue(doc.getNode(10) instanceof TextImpl);                    // e1/text()[1]
-        assertTrue(doc.getNode(11) instanceof ProcessingInstructionImpl);   // <?pi-before-e1_1?>
-        assertTrue(doc.getNode(12) instanceof TextImpl);                    // e1/text()[2]
-        assertTrue(doc.getNode(13) instanceof ElementImpl);                 // e1_1
-        assertTrue(doc.getNode(14) instanceof TextImpl);                    // e1_1/text()[1]
-        assertTrue(doc.getNode(15) instanceof TextImpl);                    // e1/text()[3]
-        assertTrue(doc.getNode(16) instanceof ElementImpl);                 // e1_2
-        assertTrue(doc.getNode(17) instanceof TextImpl);                    // e1_2/text()[1]
-        assertTrue(doc.getNode(18) instanceof TextImpl);                    // e1/text()[4]
-        assertTrue(doc.getNode(19) instanceof TextImpl);                    // doc-element/text()[3]
-        assertTrue(doc.getNode(20) instanceof CommentImpl);                 // <!-- comment after e1 -->
-        assertTrue(doc.getNode(21) instanceof TextImpl);                    // doc-element/text()[4]
-        assertTrue(doc.getNode(22) instanceof ProcessingInstructionImpl);   // <?pi-after-doc-1?>
-        assertTrue(doc.getNode(23) instanceof CommentImpl);                 // <!-- comment after doc 1 -->
-        assertTrue(doc.getNode(24) instanceof ProcessingInstructionImpl);   // <?pi-after-doc-2?>
-        assertTrue(doc.getNode(25) instanceof CommentImpl);                 // <!-- comment after doc 2 -->
-        assertTrue(doc.getNode(26) instanceof ProcessingInstructionImpl);   // <?pi-after-doc-3?>
+        assertInstanceOf(DocumentImpl.class, doc.getNode(0));                 // the document node
+        assertInstanceOf(CommentImpl.class, doc.getNode(1));                  // <!-- comment before doc 1 -->
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(2));    // <?pi-before-doc-1?>
+        assertInstanceOf(CommentImpl.class, doc.getNode(3));                  // <!-- comment before doc 2 -->
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(4));    // <?pi-before-doc-2?>
+        assertInstanceOf(ElementImpl.class, doc.getNode(5));                  // doc-element
+        assertInstanceOf(TextImpl.class, doc.getNode(6));                     // doc-element/text()[1]
+        assertInstanceOf(CommentImpl.class, doc.getNode(7));                  // <!-- comment before e1 -->
+        assertInstanceOf(TextImpl.class, doc.getNode(8));                     // doc-element/text()[2]
+        assertInstanceOf(ElementImpl.class, doc.getNode(9));                  // e1
+        assertInstanceOf(TextImpl.class, doc.getNode(10));                    // e1/text()[1]
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(11));   // <?pi-before-e1_1?>
+        assertInstanceOf(TextImpl.class, doc.getNode(12));                    // e1/text()[2]
+        assertInstanceOf(ElementImpl.class, doc.getNode(13));                 // e1_1
+        assertInstanceOf(TextImpl.class, doc.getNode(14));                    // e1_1/text()[1]
+        assertInstanceOf(TextImpl.class, doc.getNode(15));                    // e1/text()[3]
+        assertInstanceOf(ElementImpl.class, doc.getNode(16));                 // e1_2
+        assertInstanceOf(TextImpl.class, doc.getNode(17));                    // e1_2/text()[1]
+        assertInstanceOf(TextImpl.class, doc.getNode(18));                    // e1/text()[4]
+        assertInstanceOf(TextImpl.class, doc.getNode(19));                    // doc-element/text()[3]
+        assertInstanceOf(CommentImpl.class, doc.getNode(20));                 // <!-- comment after e1 -->
+        assertInstanceOf(TextImpl.class, doc.getNode(21));                    // doc-element/text()[4]
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(22));   // <?pi-after-doc-1?>
+        assertInstanceOf(CommentImpl.class, doc.getNode(23));                 // <!-- comment after doc 1 -->
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(24));   // <?pi-after-doc-2?>
+        assertInstanceOf(CommentImpl.class, doc.getNode(25));                 // <!-- comment after doc 2 -->
+        assertInstanceOf(ProcessingInstructionImpl.class, doc.getNode(26));   // <?pi-after-doc-3?>
     }
 
     @Test
@@ -440,140 +441,140 @@ public class MemtreeTest {
 
         // children of <!-- comment before doc 1 -->
         final Node commentBeforeDoc1 = docChildren.item(0);
-        assertTrue(commentBeforeDoc1 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentBeforeDoc1);
         assertEquals(0, commentBeforeDoc1.getChildNodes().getLength());
 
         // children of <?pi-before-doc-1?>
         final Node piBeforeDoc1 = docChildren.item(1);
-        assertTrue(piBeforeDoc1 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piBeforeDoc1);
         assertEquals(0, piBeforeDoc1.getChildNodes().getLength());
 
         // children of <!-- comment before doc 2 -->
         final Node commentBeforeDoc2 = docChildren.item(2);
-        assertTrue(commentBeforeDoc2 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentBeforeDoc2);
         assertEquals(0, commentBeforeDoc2.getChildNodes().getLength());
 
         // children of <?pi-before-doc-2?>
         final Node piBeforeDoc2 = docChildren.item(3);
-        assertTrue(piBeforeDoc2 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piBeforeDoc2);
         assertEquals(0, piBeforeDoc2.getChildNodes().getLength());
 
         // children of doc-element
         final Node docElement = docChildren.item(4);
-        assertTrue(docElement instanceof ElementImpl);
+        assertInstanceOf(ElementImpl.class, docElement);
         assertEquals("doc-element", docElement.getLocalName());
         final NodeList docElementChildren = docElement.getChildNodes();
         assertEquals(7, docElementChildren.getLength());
 
         // children of doc-element/text()[1]
         final Node docElementText1 = docElementChildren.item(0);
-        assertTrue(docElementText1 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, docElementText1);
         assertEquals(0, docElementText1.getChildNodes().getLength());
 
         // children of <!-- comment before e1 -->
         final Node commentBeforeE1 = docElementChildren.item(1);
-        assertTrue(commentBeforeE1 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentBeforeE1);
         assertEquals(0, commentBeforeE1.getChildNodes().getLength());
 
         // children of doc-element/text()[2]
         final Node docElementText2 = docElementChildren.item(2);
-        assertTrue(docElementText2 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, docElementText2);
         assertEquals(0, docElementText2.getChildNodes().getLength());
 
         // children of e1
         final Node e1 = docElementChildren.item(3);
-        assertTrue(e1 instanceof ElementImpl);
+        assertInstanceOf(ElementImpl.class, e1);
         assertEquals("e1", e1.getLocalName());
         final NodeList e1Children = e1.getChildNodes();
         assertEquals(7, e1Children.getLength());
 
         // children of e1/text()[1]
         final Node e1Text1 = e1Children.item(0);
-        assertTrue(e1Text1 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e1Text1);
         assertEquals(0, e1Text1.getChildNodes().getLength());
 
         // children of <?pi-before-e1_1?>
         final Node piBeforeE11 = e1Children.item(1);
-        assertTrue(piBeforeE11 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piBeforeE11);
         assertEquals(0, piBeforeE11.getChildNodes().getLength());
 
         // children of e1/text()[2]
         final Node e1Text2 = e1Children.item(2);
-        assertTrue(e1Text2 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e1Text2);
         assertEquals(0, e1Text2.getChildNodes().getLength());
 
         // children of e1_1
         final Node e11 = e1Children.item(3);
-        assertTrue(e11 instanceof ElementImpl);
+        assertInstanceOf(ElementImpl.class, e11);
         assertEquals("e1_1", e11.getLocalName());
         final NodeList e11Children = e11.getChildNodes();
         assertEquals(1, e11Children.getLength());
 
         // children of e1_1/text()[1]
         final Node e11Text1 = e11Children.item(0);
-        assertTrue(e11Text1 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e11Text1);
         assertEquals(0, e11Text1.getChildNodes().getLength());
 
         // children of e1/text()[2]
         final Node e1Text3 = e1Children.item(4);
-        assertTrue(e1Text3 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e1Text3);
         assertEquals(0, e1Text3.getChildNodes().getLength());
 
         // children of e1_2
         final Node e12 = e1Children.item(5);
-        assertTrue(e12 instanceof ElementImpl);
+        assertInstanceOf(ElementImpl.class, e12);
         assertEquals("e1_2", e12.getLocalName());
         final NodeList e12Children = e12.getChildNodes();
         assertEquals(1, e12Children.getLength());
 
         // children of e1_2/text()[1]
         final Node e12Text1 = e12Children.item(0);
-        assertTrue(e12Text1 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e12Text1);
         assertEquals(0, e12Text1.getChildNodes().getLength());
 
         // children of e1/text()[4]
         final Node e1Text4 = e1Children.item(6);
-        assertTrue(e1Text4 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, e1Text4);
         assertEquals(0, e1Text4.getChildNodes().getLength());
 
         // children of doc-element/text()[3]
         final Node docElementText3 = docElementChildren.item(4);
-        assertTrue(docElementText3 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, docElementText3);
         assertEquals(0, docElementText3.getChildNodes().getLength());
 
         // children of <!-- comment after e1 -->
         final Node commentAfterE1 = docElementChildren.item(5);
-        assertTrue(commentAfterE1 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentAfterE1);
         assertEquals(0, commentAfterE1.getChildNodes().getLength());
 
         // children of doc-element/text()[4]
         final Node docElementText4 = docElementChildren.item(6);
-        assertTrue(docElementText4 instanceof TextImpl);
+        assertInstanceOf(TextImpl.class, docElementText4);
         assertEquals(0, docElementText4.getChildNodes().getLength());
 
         // children of <?pi-after-doc-1?>
         final Node piAfterDoc1 = docChildren.item(5);
-        assertTrue(piAfterDoc1 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piAfterDoc1);
         assertEquals(0, piAfterDoc1.getChildNodes().getLength());
 
         // children of <!-- comment after doc 1 -->
         final Node commentAfterDoc1 = docChildren.item(6);
-        assertTrue(commentAfterDoc1 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentAfterDoc1);
         assertEquals(0, commentAfterDoc1.getChildNodes().getLength());
 
         // children of <?pi-after-doc-2?>
         final Node piAfterDoc2 = docChildren.item(7);
-        assertTrue(piAfterDoc2 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piAfterDoc2);
         assertEquals(0, piAfterDoc2.getChildNodes().getLength());
 
         // children of <!-- comment after doc 2 -->
         final Node commentAfterDoc2 = docChildren.item(8);
-        assertTrue(commentAfterDoc2 instanceof CommentImpl);
+        assertInstanceOf(CommentImpl.class, commentAfterDoc2);
         assertEquals(0, commentAfterDoc2.getChildNodes().getLength());
 
         // children of <?pi-after-doc-2?>
         final Node piAfterDoc3 = docChildren.item(9);
-        assertTrue(piAfterDoc3 instanceof ProcessingInstructionImpl);
+        assertInstanceOf(ProcessingInstructionImpl.class, piAfterDoc3);
         assertEquals(0, piAfterDoc3.getChildNodes().getLength());
     }
 

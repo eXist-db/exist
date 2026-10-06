@@ -22,28 +22,29 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.Project;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServerTaskTest extends AbstractTaskTest {
 
     private static final String PROP_ANT_TEST_DATA_BACKUP_DIR = "test.data.backup.dir";
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Nullable
     @Override
@@ -54,7 +55,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     @Test
     public void backup() throws IOException {
         final Project project = buildFileRule.getProject();
-        final Path backupDir = temporaryFolder.newFolder().toPath();
+        final Path backupDir = newFolder(temporaryFolder, "junit").toPath();
         project.setProperty(PROP_ANT_TEST_DATA_BACKUP_DIR, backupDir.toAbsolutePath().toString());
 
         buildFileRule.executeTarget("backup");
@@ -80,7 +81,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     @Test
     public void backupRestore() throws IOException {
         final Project project = buildFileRule.getProject();
-        final Path backupDir = temporaryFolder.newFolder().toPath();
+        final Path backupDir = newFolder(temporaryFolder, "junit").toPath();
         project.setProperty(PROP_ANT_TEST_DATA_BACKUP_DIR, backupDir.toAbsolutePath().toString());
 
         buildFileRule.executeTarget("backup");
@@ -91,5 +92,22 @@ public class ServerTaskTest extends AbstractTaskTest {
     @Test
     public void shutdown() {
         buildFileRule.executeTarget("shutdown");
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            if (result.isDirectory()) {
+                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
+                // helper reuses a fixed subDirs name across repeated/parameterized invocations
+                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
+                // colliding with the previous call's directory.
+                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
+            } else {
+                throw new IOException("Couldn't create folders " + root);
+            }
+        }
+        return result;
     }
 }

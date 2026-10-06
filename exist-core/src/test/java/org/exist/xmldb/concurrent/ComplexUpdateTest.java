@@ -23,7 +23,7 @@ package org.exist.xmldb.concurrent;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ComplexUpdateAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.modules.XMLResource;
 
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	private static final String XML =
 		"<TEST><USER-SESSION-DATA version=\"0\"/></TEST>";
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
         final XMLResource res = getTestCollection().createResource("R01.xml", XMLResource.class);
         res.setContent(XML);

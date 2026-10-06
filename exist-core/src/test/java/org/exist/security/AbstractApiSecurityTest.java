@@ -21,13 +21,14 @@
  */
 package org.exist.security;
 
-import org.junit.After;
-
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -110,7 +111,7 @@ public abstract class AbstractApiSecurityTest {
     protected abstract void createBinResource(String resourceUri, byte[] content, String uid, String pwd) throws ApiException;
     
     
-    @Before
+    @BeforeEach
     public void setup() throws ApiException {
         
         chmodCol("/db", "rwxr-xr-x", ADMIN_DB_USER, ADMIN_DB_PWD); //ensure /db is always 755
@@ -141,7 +142,7 @@ public abstract class AbstractApiSecurityTest {
         chownRes(TEST_BIN_DOC1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws ApiException {
         removeCol(TEST_COLLECTION1_NAME, ADMIN_DB_USER, ADMIN_DB_PWD);
 

@@ -22,27 +22,20 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.Project;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.annotation.Nullable;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URL;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
-
-@RunWith(Parameterized.class)
 public class BaseTaskTest extends AbstractTaskTest {
 
     private static final String PROP_ANT_TEST_DATA_TASK_NAME  = "test.data.task.name";
-
-    @Parameter
     public String taskName;
 
-    @Parameters
     public static Iterable<? extends Object> data() {
         return Arrays.asList(
                 UserTask.class.getSimpleName(),
@@ -79,8 +72,9 @@ public class BaseTaskTest extends AbstractTaskTest {
         return getClass().getResource("base.xml");
     }
 
-    @Test
-    public void taskAvailable() {
+    @MethodSource("data") @ParameterizedTest
+    public void taskAvailable(String taskName) {
+        initBaseTaskTest(taskName);
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TASK_NAME, taskName);
 
@@ -88,5 +82,9 @@ public class BaseTaskTest extends AbstractTaskTest {
 
         final String result = project.getProperty(PROP_ANT_TEST_DATA_RESULT);
         assertTrue(Boolean.parseBoolean(result));
+    }
+
+    public void initBaseTaskTest(String taskName) {
+        this.taskName = taskName;
     }
 }

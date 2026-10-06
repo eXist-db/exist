@@ -33,7 +33,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -42,7 +42,7 @@ import static org.easymock.EasyMock.createStrictControl;
 import static org.easymock.EasyMock.expect;
 import static org.exist.storage.FluentBrokerAPI.uri;
 import static org.exist.storage.lock.Lock.LockMode.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FluentBrokerAPITest {
 

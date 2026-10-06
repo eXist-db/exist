@@ -40,9 +40,10 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author wolf
@@ -107,7 +108,7 @@ public class CollectionTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
+    @AfterEach
     public void stopDb() {
         BrokerPool.FORCE_CORRUPTION = false;
         existEmbeddedServer.stopDb();

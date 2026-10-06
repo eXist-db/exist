@@ -22,13 +22,13 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression tests for QT4 / XQTS 3.1 prod-DirElemContent.namespace
@@ -45,7 +45,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ElementConstructorAttrNamespaceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
@@ -60,10 +60,10 @@ public class ElementConstructorAttrNamespaceTest {
         final String out = result.getResource(0).getContent().toString();
         // The attribute must survive the copy: its namespace URI is
         // http://www.example.com/parent1 and its local name is attr1.
-        assertTrue("attribute attr1 must be present in: " + out,
-                out.contains(":attr1=\"attr1\""));
-        assertTrue("source namespace must be declared on the new element: " + out,
-                out.contains("http://www.example.com/parent1"));
+        assertTrue(out.contains(":attr1=\"attr1\""),
+                "attribute attr1 must be present in: " + out);
+        assertTrue(out.contains("http://www.example.com/parent1"),
+                "source namespace must be declared on the new element: " + out);
     }
 
     /** Constr-inscope-4: two attributes with conflicting prefixes copied via enclosed expr. */
@@ -78,12 +78,12 @@ public class ElementConstructorAttrNamespaceTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
         assertEquals(1, result.getSize());
         final String out = result.getResource(0).getContent().toString();
-        assertTrue("attr1 must be present: " + out, out.contains(":attr1=\"attr1\""));
-        assertTrue("attr2 must be present: " + out, out.contains(":attr2=\"attr2\""));
-        assertTrue("parent1 namespace must be declared: " + out,
-                out.contains("http://www.example.com/parent1"));
-        assertTrue("parent2 namespace must be declared: " + out,
-                out.contains("http://www.example.com/parent2"));
+        assertTrue(out.contains(":attr1=\"attr1\""), "attr1 must be present: " + out);
+        assertTrue(out.contains(":attr2=\"attr2\""), "attr2 must be present: " + out);
+        assertTrue(out.contains("http://www.example.com/parent1"),
+                "parent1 namespace must be declared: " + out);
+        assertTrue(out.contains("http://www.example.com/parent2"),
+                "parent2 namespace must be declared: " + out);
     }
 
     /** Simpler reproducer: rename in-scope namespace using a single copied attribute. */
@@ -95,8 +95,8 @@ public class ElementConstructorAttrNamespaceTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
         assertEquals(1, result.getSize());
         final String out = result.getResource(0).getContent().toString();
-        assertTrue("attribute k must be present: " + out, out.contains(":k=\"v\""));
-        assertTrue("source URI A must be retained on the constructed element: " + out,
-                out.contains("http://example.com/A"));
+        assertTrue(out.contains(":k=\"v\""), "attribute k must be present: " + out);
+        assertTrue(out.contains("http://example.com/A"),
+                "source URI A must be retained on the constructed element: " + out);
     }
 }

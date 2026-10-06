@@ -22,12 +22,12 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XQueryService;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression tests for {@link FunXmlToJson} when the input is an element node
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class FunXmlToJsonTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer SERVER = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test

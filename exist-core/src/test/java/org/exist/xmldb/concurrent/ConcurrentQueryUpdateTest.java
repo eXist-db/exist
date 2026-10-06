@@ -26,18 +26,18 @@ import java.util.List;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryUpdateAction;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		final Collection col = getTestCollection();
 		final XMLResource res = col.createResource("testappend.xml", XMLResource.class);

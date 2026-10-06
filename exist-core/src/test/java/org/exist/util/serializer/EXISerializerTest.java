@@ -29,15 +29,15 @@ import static org.easymock.EasyMock.matches;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.OutputStream;
 import java.util.List;
 
 import org.easymock.Capture;
 import org.exist.dom.QName;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 
 import com.siemens.ct.exi.main.api.sax.SAXEncoder;
@@ -48,7 +48,7 @@ public class EXISerializerTest {
 	private OutputStream mockOutputStream;
 	private SAXEncoder mockEncoder;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		mockOutputStream = createMock(OutputStream.class);
 		serializer = new EXISerializer(mockOutputStream);

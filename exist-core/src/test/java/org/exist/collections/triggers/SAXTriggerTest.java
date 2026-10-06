@@ -21,8 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import static org.junit.Assert.*;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
@@ -30,7 +28,9 @@ import org.exist.storage.BrokerPool;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -39,10 +39,12 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SAXTriggerTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String DOCUMENT1_CONTENT = 
@@ -79,7 +81,7 @@ public class SAXTriggerTest {
 
     private final static String testCollection = "/db/triggers";
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void test() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
@@ -98,7 +100,7 @@ public class SAXTriggerTest {
         assertEquals(DOCUMENT1_CONTENT, AnotherTrigger.sb.toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void saxEventModifications() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
@@ -115,7 +117,7 @@ public class SAXTriggerTest {
         assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
@@ -131,7 +133,7 @@ public class SAXTriggerTest {
         assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
 
-    @After
+    @AfterEach
     public void cleanDB() throws XMLDBException {
         final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
         if (config != null) {
@@ -151,7 +153,7 @@ public class SAXTriggerTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
@@ -162,7 +164,7 @@ public class SAXTriggerTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }

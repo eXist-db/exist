@@ -51,25 +51,29 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class XQueryContextAttributesTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -132,10 +136,10 @@ public class XQueryContextAttributesTest {
                 // get the context of the library module
                 final Module[] libraryModules = mainQueryContext.getModules("http://mod1");
                 assertEquals(1, libraryModules.length);
-                assertTrue(libraryModules[0] instanceof ExternalModule);
+                assertInstanceOf(ExternalModule.class, libraryModules[0]);
                 final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
                 final XQueryContext libraryQueryContext = libraryModule.getContext();
-                assertTrue(libraryQueryContext instanceof ModuleContext);
+                assertInstanceOf(ModuleContext.class, libraryQueryContext);
 
                 libraryQueryContext.setAttribute("attr1", "value1");
                 libraryQueryContext.setAttribute("attr2", "value2");
@@ -150,7 +154,7 @@ public class XQueryContextAttributesTest {
 
             final XQueryContext escapedMainQueryContext = escapedContexts._1;
             final ModuleContext escapedLibraryQueryContext = escapedContexts._2;
-            assertTrue(escapedMainQueryContext != escapedLibraryQueryContext);
+            assertNotSame(escapedMainQueryContext, escapedLibraryQueryContext);
 
             assertNull(escapedMainQueryContext.getAttribute("attr1"));
             assertNull(escapedMainQueryContext.getAttribute("attr2"));

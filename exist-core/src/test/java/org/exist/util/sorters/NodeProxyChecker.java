@@ -22,8 +22,8 @@
 
 package org.exist.util.sorters;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.exist.dom.persistent.NodeProxy;
 
@@ -82,6 +82,6 @@ class NodeProxyChecker extends SortMethodChecker {
 	 * This method asserts single values
 	 */
 	void checkValue(int idx, int v) {
-		assertEquals("@" + idx, v, ((SortTestNodeProxy) a[idx]).val);
+		assertEquals(v, ((SortTestNodeProxy) a[idx]).val, "@" + idx);
 	}
 }

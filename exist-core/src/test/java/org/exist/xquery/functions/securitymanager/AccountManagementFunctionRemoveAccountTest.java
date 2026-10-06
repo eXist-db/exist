@@ -34,36 +34,42 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AccountManagementFunctionRemoveAccountTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
-    @Test(expected = PermissionDeniedException.class)
-    public void cannotDeleteSystemAccount() throws XPathException, PermissionDeniedException, EXistException, AuthenticationException {
-        final BrokerPool pool = existWebServer.getBrokerPool();
-        final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin)));
+    @Test
+    public void cannotDeleteSystemAccount() throws XPathException, EXistException, AuthenticationException {
+        assertThrows(PermissionDeniedException.class, () -> {
+            final BrokerPool pool = existWebServer.getBrokerPool();
+            final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin)));
+        });
     }
 
-    @Test(expected = PermissionDeniedException.class)
-    public void cannotDeleteDbaAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.DBA_USER));
+    @Test
+    public void cannotDeleteDbaAccount() throws XPathException, EXistException {
+        assertThrows(PermissionDeniedException.class, () ->
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.DBA_USER)));
     }
 
-    @Test(expected = PermissionDeniedException.class)
-    public void cannotDeleteGuestAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.GUEST_USER));
+    @Test
+    public void cannotDeleteGuestAccount() throws XPathException, EXistException {
+        assertThrows(PermissionDeniedException.class, () ->
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.GUEST_USER)));
     }
 
-    @Test(expected = PermissionDeniedException.class)
-    public void cannotDeleteUnknownAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.UNKNOWN_USER));
+    @Test
+    public void cannotDeleteUnknownAccount() throws XPathException, EXistException {
+        assertThrows(PermissionDeniedException.class, () ->
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.UNKNOWN_USER)));
     }
 
     private Sequence xqueryRemoveAccount(final String username) throws XPathException, PermissionDeniedException, EXistException {

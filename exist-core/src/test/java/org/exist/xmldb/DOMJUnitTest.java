@@ -21,8 +21,8 @@
  */
 package org.exist.xmldb;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,8 +33,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /** A test case for accessing DOMS remotely
  * @author <a href="mailto:pierrick.brihaye@free.fr">jmv
@@ -49,7 +49,7 @@ public class DOMJUnitTest extends RemoteDBTest {
 		return getUri() + XmldbURI.ROOT_COLLECTION;
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		System.setProperty("exist.initdb", "true");
 		Class<?> dbc = Class.forName(DB_DRIVER);

@@ -26,23 +26,23 @@ import org.exist.security.Subject;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.Optional;
 import java.util.concurrent.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BrokerPoolTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
@@ -52,16 +52,16 @@ public class BrokerPoolTest {
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(guestUser))) {
 
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
 
             //take a broker with the system user
             final Subject sysUser = pool.getSecurityManager().getSystemSubject();
             try (final DBBroker broker2 = pool.get(Optional.of(sysUser))) {
-                assertEquals("Expected `SYSTEM` user, but was: " + broker2.getCurrentSubject().getName(), sysUser.getId(), broker2.getCurrentSubject().getId());
+                assertEquals(sysUser.getId(), broker2.getCurrentSubject().getId(), "Expected `SYSTEM` user, but was: " + broker2.getCurrentSubject().getName());
             }
 
             //ensure that after releasing the broker, the user has been returned to the guest user
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
         }
     }
 
@@ -72,15 +72,15 @@ public class BrokerPoolTest {
         final Subject sysUser = pool.getSecurityManager().getSystemSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(sysUser))) {
 
-            assertEquals("Expected `SYSTEM` user, but was: " + broker1.getCurrentSubject().getName(), sysUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(sysUser.getId(), broker1.getCurrentSubject().getId(), "Expected `SYSTEM` user, but was: " + broker1.getCurrentSubject().getName());
 
             //take a broker without changing the user
             try (final DBBroker broker2 = pool.getBroker()) {
-                assertEquals("Expected `SYSTEM` user, but was: " + broker2.getCurrentSubject().getName(), sysUser.getId(), broker2.getCurrentSubject().getId());
+                assertEquals(sysUser.getId(), broker2.getCurrentSubject().getId(), "Expected `SYSTEM` user, but was: " + broker2.getCurrentSubject().getName());
             }
 
             //ensure that after releasing the broker, the user is still the SYSTEM user
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), sysUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(sysUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
         }
     }
 
@@ -92,15 +92,15 @@ public class BrokerPoolTest {
 
             final Subject guestUser = pool.getSecurityManager().getGuestSubject();
 
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
 
             //take a broker without changing the user
             try (final DBBroker broker2 = pool.getBroker()) {
-                assertEquals("Expected `guest` user, but was: " + broker2.getCurrentSubject().getName(), guestUser.getId(), broker2.getCurrentSubject().getId());
+                assertEquals(guestUser.getId(), broker2.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker2.getCurrentSubject().getName());
             }
 
             //ensure that after releasing the broker, the user is still the SYSTEM user
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
         }
     }
 
@@ -111,14 +111,14 @@ public class BrokerPoolTest {
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(guestUser))) {
 
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
 
             //perform an XML:DB operation as the SYSTEM user
             final Subject sysUser = pool.getSecurityManager().getSystemSubject();
             new LocalCollection(sysUser, pool, XmldbURI.ROOT_COLLECTION_URI);
 
             //ensure that after releasing the broker, the user has been returned to the guest user
-            assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
+            assertEquals(guestUser.getId(), broker1.getCurrentSubject().getId(), "Expected `guest` user, but was: " + broker1.getCurrentSubject().getName());
         }
     }
 

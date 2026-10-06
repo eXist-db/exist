@@ -21,20 +21,20 @@
  */
 package org.exist.storage;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.exist.test.ExistEmbeddedServer;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:ohumbel@gmail.com">Otmar Humbel</a>
  */
 public class BrokerPoolNoRecoveryTest {
 
-    @Rule
+    @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(createConfigProperties(), true, true);
 

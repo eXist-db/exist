@@ -21,12 +21,13 @@
  */
 package org.exist.security;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.io.IOException;
 import java.util.Random;
 
 import static org.easymock.EasyMock.expect;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -35,18 +36,19 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
+@Execution(ExecutionMode.CONCURRENT)
 @SuppressWarnings("OctalInteger")
-@RunWith(ParallelRunner.class)
 public class UnixStylePermissionTest {
 
     @Test
@@ -365,7 +367,7 @@ public class UnixStylePermissionTest {
     private void assertTestSafeExecutable(final int inputMode, final int expectedMode) {
         final int permission = UnixStylePermission.safeSetExecutable(inputMode);
         final String message = Integer.toOctalString(expectedMode) + "<>" + Integer.toOctalString(permission);
-        assertEquals(message, expectedMode, permission);
+        assertEquals(expectedMode, permission, message);
     }
 
     @Test
