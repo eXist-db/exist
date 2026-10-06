@@ -203,11 +203,12 @@ function rec:all-four-functions-agree-on-a-divergent-construct() {
 };
 
 (:~
- : ;j applies to an indexed predicate too: Java reads the class as a union, so both elements match.
- : The range index's path still matches a translation of the pattern, so it is not used for ;j.
+ : An indexed predicate gives the same answers as a value: XPath's class subtraction without ;j,
+ : and Java's union, which matches both elements, with it.
  :)
 declare
-    %test:assertEquals(2)
+    %test:assertEquals(2, 1)
 function rec:semicolon-j-applies-to-an-indexed-predicate() {
-    count(doc($rec:COLLECTION || "/data.xml")//e[matches(., '^[a-z-[aeiou]]$', ';j')])
+    count(doc($rec:COLLECTION || "/data.xml")//e[matches(., '^[a-z-[aeiou]]$', ';j')]),
+    count(doc($rec:COLLECTION || "/data.xml")//e[matches(., '^[a-z-[aeiou]]$')])
 };
