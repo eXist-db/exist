@@ -101,11 +101,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile);
+        assertRead(MUST_EXIST, testFile);
     }
 
     @Test
-    public void storeAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+    public void storeAndLoadIsRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeAndLoad();
         existEmbeddedServer.restart();
@@ -128,11 +128,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     @Test
-    public void storeWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void storeWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -156,11 +156,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     @Test
-    public void storeThenDeleteAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+    public void storeThenDeleteAndLoadIsRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -184,11 +184,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
+    public void storeWithoutCommitThenDeleteAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -212,11 +212,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile);
+        assertRead(MUST_EXIST, testFile);
     }
 
     @Test
-    public void storeThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void storeThenDeleteWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -240,11 +240,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void storeWithoutCommitThenDeleteWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -272,11 +272,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     @Test
-    public void deleteAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+    public void deleteAndLoadIsRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         deleteAndLoad();
         existEmbeddedServer.restart();
@@ -304,11 +304,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile);
+        assertRead(MUST_EXIST, testFile);
     }
 
     @Test
-    public void deleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void deleteWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         deleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -340,11 +340,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile2, testFilename);
+        assertRead(MUST_EXIST, testFile2, testFilename);
     }
 
     @Test
-    public void replaceAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+    public void replaceAndLoadIsRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceAndLoad();
         existEmbeddedServer.restart();
@@ -376,11 +376,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile);
+        assertRead(MUST_EXIST, testFile);
     }
 
     @Test
-    public void replaceWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void replaceWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -413,11 +413,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile2, testFilename);
+        assertRead(MUST_NOT_EXIST, testFile2, testFilename);
     }
 
     @Test
-    public void replaceThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
+    public void replaceThenDeleteAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -487,7 +487,7 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_NOT_EXIST, testFile);
+        assertRead(MUST_NOT_EXIST, testFile);
     }
 
     /**
@@ -528,7 +528,7 @@ public abstract class AbstractRecoverTest {
      */
     @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
-    public void replaceWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
+    public void replaceWithoutCommitThenDeleteAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -561,11 +561,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile2, testFilename);
+        assertRead(MUST_EXIST, testFile2, testFilename);
     }
 
     @Test
-    public void replaceThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
+    public void replaceThenDeleteWithoutCommitAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -598,11 +598,11 @@ public abstract class AbstractRecoverTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        read(MUST_EXIST, testFile);
+        assertRead(MUST_EXIST, testFile);
     }
 
     @Test
-    public void replaceWithoutCommitThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException,
+    public void replaceWithoutCommitThenDeleteWithoutCommitAndLoadIsRepeatable() throws LockException,
             SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -688,9 +688,9 @@ public abstract class AbstractRecoverTest {
      * @param shouldExist true if the document should exist in the database, false if the document should not exist
      * @param file The file that was previously stored
      */
-    private void read(final boolean shouldExist, final Path file)
+    private void assertRead(final boolean shouldExist, final Path file)
             throws EXistException, PermissionDeniedException, IOException {
-        read(shouldExist, file, FileUtils.fileName(file));
+        assertRead(shouldExist, file, FileUtils.fileName(file));
     }
 
     /**
@@ -700,9 +700,9 @@ public abstract class AbstractRecoverTest {
      * @param file The file that was previously stored
      * @param dbFilename The name of the file to read from the database
      */
-    private void read(final boolean shouldExist, final Path file, final String dbFilename)
+    private void assertRead(final boolean shouldExist, final Path file, final String dbFilename)
             throws EXistException, PermissionDeniedException, IOException {
-        read(shouldExist, new FileInputSource(file), dbFilename);
+        assertRead(shouldExist, new FileInputSource(file), dbFilename);
     }
 
     /**
@@ -712,7 +712,7 @@ public abstract class AbstractRecoverTest {
      * @param data The data that was previously stored
      * @param dbFilename The name of the file to read from the database
      */
-    protected void read(final boolean shouldExist, final InputSource data, final String dbFilename)
+    protected void assertRead(final boolean shouldExist, final InputSource data, final String dbFilename)
             throws EXistException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

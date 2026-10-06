@@ -24,7 +24,6 @@ package org.exist.management.client;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class JMXTokenProviderTest {
 
     @TempDir
-    public File temporaryFolder;
+    Path temporaryFolder;
 
     private static JMXtoXML clientReturning(final String dataDir) {
         return new JMXtoXML() {
@@ -69,7 +68,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getDataDirUsesMBeanValueWhenAvailable() throws IOException {
-        final Path dataDir = newFolder(temporaryFolder, "mbean-data-dir").toPath();
+        final Path dataDir = Files.createDirectories(temporaryFolder.resolve("mbean-data-dir"));
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
         assertEquals(Optional.of(dataDir), provider.getDataDir());
@@ -77,7 +76,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getDataDirFallsBackWhenMBeanReturnsNull() throws IOException {
-        final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
+        final Path fallback = Files.createDirectories(temporaryFolder.resolve("fallback-data-dir"));
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(null), fallback);
 
         assertEquals(Optional.of(fallback), provider.getDataDir());
@@ -92,7 +91,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getDataDirFallsBackWhenMBeanLookupThrows() throws IOException {
-        final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
+        final Path fallback = Files.createDirectories(temporaryFolder.resolve("fallback-data-dir"));
         final JMXtoXML client = clientThrowing(new NullPointerException("no MBean connection"));
         final JMXTokenProvider provider = new JMXTokenProvider(client, fallback);
 
@@ -117,7 +116,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getTokenCreatesAndPersistsNewTokenWhenFileAbsent() throws IOException {
-        final Path dataDir = newFolder(temporaryFolder, "new-token-dir").toPath();
+        final Path dataDir = Files.createDirectories(temporaryFolder.resolve("new-token-dir"));
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
         final Optional<String> token = provider.getToken();
@@ -141,7 +140,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getTokenReadsExistingTokenRatherThanCreatingNew() throws IOException {
-        final Path dataDir = newFolder(temporaryFolder, "existing-token-dir").toPath();
+        final Path dataDir = Files.createDirectories(temporaryFolder.resolve("existing-token-dir"));
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties existing = new Properties();
         existing.setProperty("token", "existing-token-value");
@@ -156,7 +155,7 @@ public class JMXTokenProviderTest {
 
     @Test
     void getTokenRegeneratesTokenWhenExistingFileHasNoTokenProperty() throws IOException {
-        final Path dataDir = newFolder(temporaryFolder, "corrupt-token-dir").toPath();
+        final Path dataDir = Files.createDirectories(temporaryFolder.resolve("corrupt-token-dir"));
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties withoutTokenKey = new Properties();
         withoutTokenKey.setProperty("not-the-token-key", "irrelevant");
@@ -177,18 +176,4 @@ public class JMXTokenProviderTest {
         assertEquals(token.get(), persisted.getProperty("token"));
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }

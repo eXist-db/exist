@@ -32,7 +32,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,7 +62,7 @@ public class BTreeTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public File temporaryFolder;
+    Path temporaryFolder;
 
     @org.junit.jupiter.api.Test
     void simpleUpdates() throws DBException, IOException, TerminatedException {
@@ -361,7 +360,7 @@ public class BTreeTest {
 
     @BeforeEach
     void initialize() throws IOException {
-        file = newFile(temporaryFolder, "test.dbx").toPath();
+        file = Files.createFile(temporaryFolder.resolve("test.dbx"));
         assertTrue(Files.exists(file));
     }
 
@@ -440,9 +439,4 @@ public class BTreeTest {
         }
     }
 
-    private static File newFile(File parent, String child) throws IOException {
-        File result = new File(parent, child);
-        result.createNewFile();
-        return result;
-    }
 }

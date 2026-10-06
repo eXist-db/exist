@@ -45,10 +45,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +71,7 @@ public class XMLDBBackupTest {
     private static final String COLLECTION_NAME = "test-xmldb-backup-restore";
 
     @TempDir
-    public static File tempFolder;
+    Path tempFolder;
 
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
@@ -192,7 +192,7 @@ public class XMLDBBackupTest {
     }
 
     private Path backup(final String filename, final XmldbURI collectionUri) throws IOException, XMLDBException, SAXException {
-        final Path backupFile = newFile(tempFolder, filename).toPath();
+        final Path backupFile = Files.createFile(tempFolder.resolve(filename));
         final Backup backup = new Backup(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD,
                 backupFile,
                 collectionUri,
@@ -260,11 +260,6 @@ public class XMLDBBackupTest {
         }
     }
 
-    private static File newFile(File parent, String child) throws IOException {
-        File result = new File(parent, child);
-        result.createNewFile();
-        return result;
-    }
 
     public void initXMLDBBackupTest(String apiName, String baseUri, boolean deduplicateBlobs) {
         this.apiName = apiName;

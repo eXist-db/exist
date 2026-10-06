@@ -23,7 +23,6 @@ package org.exist.backup;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -82,7 +81,7 @@ public class SystemExportImportTest {
     public boolean zip;
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -141,7 +140,7 @@ public class SystemExportImportTest {
             assertNotNull(test);
 
             final SystemExport sysexport = new SystemExport(broker, transaction, null, null, direct);
-            final String backupDir = newFolder(temporaryFolder, "junit").getAbsolutePath();
+            final String backupDir = Files.createDirectories(temporaryFolder.resolve("junit")).toAbsolutePath().toString();
             file = sysexport.export(backupDir, false, zip, null);
 
             transaction.commit();
@@ -253,20 +252,6 @@ public class SystemExportImportTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 
     public void initSystemExportImportTest(String apiName, boolean direct, boolean zip) {
         this.apiName = apiName;

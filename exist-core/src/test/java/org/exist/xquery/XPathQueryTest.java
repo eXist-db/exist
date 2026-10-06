@@ -69,7 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class XPathQueryTest {
 
     @TempDir
-    public static File tempFolder;
+    Path tempFolder;
 
     @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
@@ -2259,7 +2259,7 @@ public class XPathQueryTest {
     @Test
     void cdataMemtreeDom() throws XMLDBException, IOException, ReflectiveOperationException {
         final String docName = "cdata.xml";
-        final Path tempFile = File.createTempFile("junit", null, tempFolder).toPath();
+        final Path tempFile = Files.createTempFile(tempFolder, "junit", null);
         Files.write(tempFile, Arrays.asList(cdata_xml));
 
         final XQueryService service = getQueryService();

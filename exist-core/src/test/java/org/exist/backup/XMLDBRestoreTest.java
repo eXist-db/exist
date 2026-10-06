@@ -44,7 +44,6 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -55,6 +54,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -84,7 +84,7 @@ public class XMLDBRestoreTest {
     };
 
     @TempDir
-    public static File tempFolder;
+    Path tempFolder;
 
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
@@ -236,7 +236,7 @@ public class XMLDBRestoreTest {
     @Disabled("Not yet supported")
     @Test
     void restoreUserWithGroupsFromExistRealm() throws IOException, XMLDBException {
-        final Path backupPath = newFolder(tempFolder, "junit").toPath();
+        final Path backupPath = Files.createDirectories(tempFolder.resolve("junit"));
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve("exist").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 8);
     }
@@ -248,7 +248,7 @@ public class XMLDBRestoreTest {
     @Disabled("Not yet supported")
     @Test
     void restoreUserWithGroupsFromSecurityCollection() throws IOException, XMLDBException {
-        final Path backupPath = newFolder(tempFolder, "junit").toPath();
+        final Path backupPath = Files.createDirectories(tempFolder.resolve("junit"));
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 9);
     }
@@ -260,7 +260,7 @@ public class XMLDBRestoreTest {
     @Disabled("Not yet supported")
     @Test
     void restoreUserWithGroupsFromSystemCollection() throws IOException, XMLDBException {
-        final Path backupPath = newFolder(tempFolder, "junit").toPath();
+        final Path backupPath = Files.createDirectories(tempFolder.resolve("junit"));
         final Path restorePath = backupPath.resolve("db").resolve("system").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 10);
     }
@@ -271,7 +271,7 @@ public class XMLDBRestoreTest {
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
     @Test
     void restoreUserWithGroupsFromDbCollection() throws IOException, XMLDBException {
-        final Path backupPath = newFolder(tempFolder, "junit").toPath();
+        final Path backupPath = Files.createDirectories(tempFolder.resolve("junit"));
         final Path restorePath = backupPath.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         restoreUserWithGroups(backupPath, restorePath, 11);
     }
@@ -321,15 +321,15 @@ public class XMLDBRestoreTest {
         }
     }
 
-    private static Path createZipBackupWithValidContent() throws IOException {
+    private Path createZipBackupWithValidContent() throws IOException {
         final Path dbContentsFile = createBackupWithValidContent();
         final Path dbDir = dbContentsFile.getParent();
         return zipDirectory(dbDir);
     }
 
-    private static Path createBackupWithValidContent() throws IOException {
+    private Path createBackupWithValidContent() throws IOException {
 
-        final Path backupDir = newFolder(tempFolder, "junit").toPath();
+        final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
         final Path db = Files.createDirectories(backupDir.resolve("db"));
         final Path col1 = Files.createDirectories(db.resolve(COLLECTION1_NAME));
 
@@ -358,14 +358,14 @@ public class XMLDBRestoreTest {
         return dbContentsFile;
     }
 
-    private static Path createZipBackupWithInvalidContent() throws IOException {
+    private Path createZipBackupWithInvalidContent() throws IOException {
         final Path dbContentsFile = createBackupWithInvalidContent();
         final Path dbDir = dbContentsFile.getParent();
         return zipDirectory(dbDir);
     }
 
-    private static Path createBackupWithInvalidContent() throws IOException {
-        final Path backupDir = newFolder(tempFolder, "junit").toPath();
+    private Path createBackupWithInvalidContent() throws IOException {
+        final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
         final Path col1 = Files.createDirectories(backupDir.resolve("db").resolve("col1"));
 
         final String contents =
@@ -395,14 +395,14 @@ public class XMLDBRestoreTest {
         return contentsFile;
     }
 
-    private static Path createZipBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
+    private Path createZipBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
         final Path dbContentsFile = createBackupWithDifferentAdminPassword(backupPassword);
         final Path dbDir = dbContentsFile.getParent();
         return zipDirectory(dbDir);
     }
 
-    private static Path createBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
-        final Path backupDir = newFolder(tempFolder, "junit").toPath();
+    private Path createBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
+        final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
         final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
 
         final String contents =
@@ -431,8 +431,8 @@ public class XMLDBRestoreTest {
         return contentsFile;
     }
 
-    private static Path createBackupWithUserWithoutPrimaryGroup(final String username) throws IOException {
-        final Path backupDir = newFolder(tempFolder, "junit").toPath();
+    private Path createBackupWithUserWithoutPrimaryGroup(final String username) throws IOException {
+        final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
         final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
 
         final String contents =
@@ -462,8 +462,8 @@ public class XMLDBRestoreTest {
         return contentsFile;
     }
 
-    private static Path createBackupWithUserInNoSuchGroup(final String username) throws IOException {
-        final Path backupDir = newFolder(tempFolder, "junit").toPath();
+    private Path createBackupWithUserInNoSuchGroup(final String username) throws IOException {
+        final Path backupDir = Files.createDirectories(tempFolder.resolve("junit"));
         final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
 
         final String contents =
@@ -604,8 +604,8 @@ public class XMLDBRestoreTest {
         return digest;
     }
 
-    private static Path zipDirectory(final Path dir) throws IOException {
-        final Path zipFile = File.createTempFile("backup", ".zip", tempFolder).toPath();
+    private Path zipDirectory(final Path dir) throws IOException {
+        final Path zipFile = Files.createTempFile(tempFolder, "backup", ".zip");
         try (final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(zipFile))) {
             Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
                 @Override
@@ -673,18 +673,4 @@ public class XMLDBRestoreTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
-                // uniquely-suffixed sibling instead of colliding with the earlier directory
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }
