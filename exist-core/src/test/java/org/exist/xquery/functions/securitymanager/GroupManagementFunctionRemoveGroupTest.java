@@ -133,39 +133,34 @@ public class GroupManagementFunctionRemoveGroupTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void deleteUsersPersonalPrimaryGroup() throws EXistException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existWebServer.getBrokerPool();
-            final SecurityManager sm = pool.getSecurityManager();
+    public void deleteUsersPersonalPrimaryGroup() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final SecurityManager sm = pool.getSecurityManager();
 
-            // create user with personal group as primary group
-            try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
-                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-                createUser(broker, sm, USER1_NAME, USER1_PWD);
-                transaction.commit();
-            }
+        // create user with personal group as primary group
+        try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            createUser(broker, sm, USER1_NAME, USER1_PWD);
+            transaction.commit();
+        }
 
-            // check that the user is as we expect
-            String user1PrimaryGroup = null;
-            try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
-                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-                final Account user1 = sm.getAccount(USER1_NAME);
-                user1PrimaryGroup = user1.getPrimaryGroup();
-                assertEquals(USER1_NAME, user1PrimaryGroup);
-                assertArrayEquals(new String[]{USER1_NAME}, user1.getGroups());
+        // check that the user is as we expect
+        final String user1PrimaryGroup;
+        try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            final Account user1 = sm.getAccount(USER1_NAME);
+            user1PrimaryGroup = user1.getPrimaryGroup();
+            assertEquals(USER1_NAME, user1PrimaryGroup);
+            assertArrayEquals(new String[]{USER1_NAME}, user1.getGroups());
 
-                transaction.commit();
-            }
+            transaction.commit();
+        }
 
-            // attempt to remove the primary group of the user
-            try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
-                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-                sm.deleteGroup(user1PrimaryGroup);
-                fail("Should have received: PermissionDeniedException: Account 'user1' still has 'user1' as their primary group!");
-
-                transaction.commit();
-            }
-        });
+        // attempt to remove the primary group of the user: Account 'user1' still has 'user1' as their primary group
+        try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            assertThrows(PermissionDeniedException.class, () -> sm.deleteGroup(user1PrimaryGroup));
+        }
     }
 
     @org.junit.jupiter.api.Test

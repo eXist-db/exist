@@ -80,11 +80,9 @@ public class SymbolTableTest {
     
     @Test
     public void getSymbol_for_localName_throws_exception_when_name_is_empty_string() throws IOException, BrokerPoolServiceException {
-        assertThrows(IllegalArgumentException.class, () -> {
-            final SymbolTable symbolTable = createSymbolTable(createTempDir());
-            symbolTable.getSymbol("");
-            symbolTable.close();
-        });
+        final SymbolTable symbolTable = createSymbolTable(createTempDir());
+        assertThrows(IllegalArgumentException.class, () -> symbolTable.getSymbol(""));
+        symbolTable.close();
     }
 
     @Test

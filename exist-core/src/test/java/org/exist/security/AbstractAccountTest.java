@@ -108,14 +108,12 @@ public class AbstractAccountTest {
 
     @Test
     public void assertCanModifyAccountFailsWhenUserIsNull() throws ConfigurationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
-            AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
 
-            TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
+        TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
 
-            account.assertCanModifyAccount(null);
-        });
+        assertThrows(PermissionDeniedException.class, () -> account.assertCanModifyAccount(null));
     }
 
     @Test
@@ -139,23 +137,21 @@ public class AbstractAccountTest {
 
     @Test
     public void assertCanModifyAccountFailsWhenUserIsNotDba() throws ConfigurationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
-            AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
-            Account mockAccount = EasyMock.createMock(Account.class);
-            TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
+        Account mockAccount = EasyMock.createMock(Account.class);
+        TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
 
-            //expectations
-            expect(mockAccount.hasDbaRole()).andReturn(Boolean.FALSE);
-            expect(mockAccount.getName()).andReturn("test").times(2);
+        //expectations
+        expect(mockAccount.hasDbaRole()).andReturn(Boolean.FALSE);
+        expect(mockAccount.getName()).andReturn("test").times(2);
 
-            replay(mockAccount);
+        replay(mockAccount);
 
-            //test
-            account.assertCanModifyAccount(mockAccount);
+        //test
+        assertThrows(PermissionDeniedException.class, () -> account.assertCanModifyAccount(mockAccount));
 
-            verify(mockAccount);
-        });
+        verify(mockAccount);
     }
 
     @Test
@@ -180,23 +176,21 @@ public class AbstractAccountTest {
 
     @Test
     public void assertCanModifyAccountFailsWhenUserIsNotSame() throws ConfigurationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
-            AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
-            Account mockAccount = EasyMock.createMock(Account.class);
-            TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
+        Account mockAccount = EasyMock.createMock(Account.class);
+        TestableAbstractAccount account = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testAccount");
 
-            //expectations
-            expect(mockAccount.hasDbaRole()).andReturn(Boolean.FALSE);
-            expect(mockAccount.getName()).andReturn("otherAccount").times(2);
+        //expectations
+        expect(mockAccount.hasDbaRole()).andReturn(Boolean.FALSE);
+        expect(mockAccount.getName()).andReturn("otherAccount").times(2);
 
-            replay(mockAccount);
+        replay(mockAccount);
 
-            //test
-            account.assertCanModifyAccount(mockAccount);
+        //test
+        assertThrows(PermissionDeniedException.class, () -> account.assertCanModifyAccount(mockAccount));
 
-            verify(mockAccount);
-        });
+        verify(mockAccount);
     }
 
     public class TestableAbstractAccount extends AbstractAccount {

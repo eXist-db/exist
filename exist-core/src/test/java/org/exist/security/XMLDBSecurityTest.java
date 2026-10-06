@@ -73,72 +73,66 @@ public class XMLDBSecurityTest {
     public void worldCreateCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final CollectionManagementService cms = test.getService(CollectionManagementService.class);
-            cms.createCollection("createdByGuest");
-        });
+        allowOthersToOpenTestCollection();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final CollectionManagementService cms = test.getService(CollectionManagementService.class);
+        assertThrows(XMLDBException.class, () -> cms.createCollection("createdByGuest"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") // fails since guest has no write permissions
     public void worldAddResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final Resource resource = test.createResource("createdByGuest", XMLResource.class);
-            resource.setContent("<testMe/>");
-            test.storeResource(resource);
-        });
+        allowOthersToOpenTestCollection();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.createResource("createdByGuest", XMLResource.class);
+        resource.setContent("<testMe/>");
+        assertThrows(XMLDBException.class, () -> test.storeResource(resource));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") // fails since guest has no write permissions
     public void worldRemoveCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "guest", "guest");
-            final CollectionManagementService cms = root.getService(CollectionManagementService.class);
-            cms.removeCollection("securityTest1");
-        });
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "guest", "guest");
+        final CollectionManagementService cms = root.getService(CollectionManagementService.class);
+        assertThrows(XMLDBException.class, () -> cms.removeCollection("securityTest1"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") // fails since guest has no write permissions
     public void worldChmodCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final UserManagementService ums = test.getService(UserManagementService.class);
-            // grant myself all rights ;-)
-            ums.chmod(0777);
-        });
+        allowOthersToOpenTestCollection();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final UserManagementService ums = test.getService(UserManagementService.class);
+        // grant myself all rights ;-)
+        assertThrows(XMLDBException.class, () -> ums.chmod(0777));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") // fails since guest has no write permissions
     public void worldChmodResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
-            // grant myself all rights ;-)
-            ums.chmod(resource, 0777);
-        });
+        allowOthersToOpenTestCollection();
+        allowOthersToReadTestResource();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
+        // grant myself all rights ;-)
+        assertThrows(XMLDBException.class, () -> ums.chmod(resource, 0777));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") // fails since guest has no write permissions
     public void worldChownCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final UserManagementService ums = test.getService(UserManagementService.class);
-            final Account guest = ums.getAccount("guest");
-            // make myself the owner ;-)
-            ums.chown(guest, "guest");
-        });
+        allowOthersToOpenTestCollection();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final UserManagementService ums = test.getService(UserManagementService.class);
+        final Account guest = ums.getAccount("guest");
+        // make myself the owner ;-)
+        assertThrows(XMLDBException.class, () -> ums.chown(guest, "guest"));
     }
 
     /**
@@ -148,14 +142,14 @@ public class XMLDBSecurityTest {
     public void worldChownResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
-            // grant myself all rights ;-)
-            final Account test2 = ums.getAccount("guest");
-            ums.chown(resource, test2, "guest");
-        });
+        allowOthersToOpenTestCollection();
+        allowOthersToReadTestResource();
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
+        // grant myself all rights ;-)
+        final Account test2 = ums.getAccount("guest");
+        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2, "guest"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -186,11 +180,9 @@ public class XMLDBSecurityTest {
     public void groupRemoveCollectionCanNotWriteParent(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "test2", "test2");
-            final CollectionManagementService cms = root.getService(CollectionManagementService.class);
-            cms.removeCollection("securityTest1");
-        });
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "test2", "test2");
+        final CollectionManagementService cms = root.getService(CollectionManagementService.class);
+        assertThrows(XMLDBException.class, () -> cms.removeCollection("securityTest1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -207,14 +199,12 @@ public class XMLDBSecurityTest {
     public void groupChmodCollectionAsNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
 
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // grant myself all rights ;-)
-            ums.chmod(07777);
-        });
+        // grant myself all rights ;-)
+        assertThrows(XMLDBException.class, () -> ums.chmod(07777));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -233,13 +223,11 @@ public class XMLDBSecurityTest {
     public void groupChmodResourceAsNotOwnerAndNotDBA(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
-            // grant myself all rights ;-)
-            ums.chmod(resource, 0777);
-        });
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
+        // grant myself all rights ;-)
+        assertThrows(XMLDBException.class, () -> ums.chmod(resource, 0777));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -304,14 +292,12 @@ public class XMLDBSecurityTest {
     public void ownerChownUidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to change uid ownership of /db/securityTest1 to the test2 user
-            final Account test2 = ums.getAccount("test2");
-            ums.chown(test2);
-        });
+        // attempt to change uid ownership of /db/securityTest1 to the test2 user
+        final Account test2 = ums.getAccount("test2");
+        assertThrows(XMLDBException.class, () -> ums.chown(test2));
     }
 
     /**
@@ -326,13 +312,11 @@ public class XMLDBSecurityTest {
     public void ownerChownGidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to change gid ownership of /db/securityTest1 to the guest group
-            ums.chgrp("guest");
-        });
+        // attempt to change gid ownership of /db/securityTest1 to the guest group
+        assertThrows(XMLDBException.class, () -> ums.chgrp("guest"));
     }
 
     /**
@@ -346,14 +330,12 @@ public class XMLDBSecurityTest {
     public void groupMemberChownUidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to take uid ownership of /db/securityTest1
-            final Account test2 = ums.getAccount("test2");
-            ums.chown(test2);
-        });
+        // attempt to take uid ownership of /db/securityTest1
+        final Account test2 = ums.getAccount("test2");
+        assertThrows(XMLDBException.class, () -> ums.chown(test2));
     }
 
     /**
@@ -391,13 +373,11 @@ public class XMLDBSecurityTest {
     public void groupMemberChownGidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to have user 'test2' take gid ownership of /db/securityTest1 (which is owner by test1:users)
-            ums.chgrp("test2-only");
-        });
+        // attempt to have user 'test2' take gid ownership of /db/securityTest1 (which is owner by test1:users)
+        assertThrows(XMLDBException.class, () -> ums.chgrp("test2-only"));
     }
 
     /**
@@ -412,13 +392,11 @@ public class XMLDBSecurityTest {
     public void groupNonMemberChownGidCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to take gid ownership of /db/securityTest1
-            ums.chgrp("guest");
-        });
+        // attempt to take gid ownership of /db/securityTest1
+        assertThrows(XMLDBException.class, () -> ums.chgrp("guest"));
     }
 
     /**
@@ -473,15 +451,13 @@ public class XMLDBSecurityTest {
     public void ownerChownUidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to change uid ownership of /db/securityTest1/test.xml to the test2 user
-            final Account test2 = ums.getAccount("test2");
-            ums.chown(resource, test2);
-        });
+        // attempt to change uid ownership of /db/securityTest1/test.xml to the test2 user
+        final Account test2 = ums.getAccount("test2");
+        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2));
     }
 
     /**
@@ -496,14 +472,12 @@ public class XMLDBSecurityTest {
     public void ownerChownGidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to change gid ownership of /db/securityTest1/test.xml to the guest group
-            ums.chgrp(resource, "guest");
-        });
+        // attempt to change gid ownership of /db/securityTest1/test.xml to the guest group
+        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "guest"));
     }
 
 
@@ -518,15 +492,13 @@ public class XMLDBSecurityTest {
     public void groupMemberChownUidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to take uid ownership of /db/securityTest1/test.xml
-            final Account test2 = ums.getAccount("test2");
-            ums.chown(resource, test2);
-        });
+        // attempt to take uid ownership of /db/securityTest1/test.xml
+        final Account test2 = ums.getAccount("test2");
+        assertThrows(XMLDBException.class, () -> ums.chown(resource, test2));
     }
 
     /**
@@ -565,14 +537,12 @@ public class XMLDBSecurityTest {
     public void groupMemberChownGidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to have user 'test2' take gid ownership of /db/securityTest1/test.xml (which is owned by test1:users)
-            ums.chgrp(resource, "test2-only");
-        });
+        // attempt to have user 'test2' take gid ownership of /db/securityTest1/test.xml (which is owned by test1:users)
+        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "test2-only"));
     }
 
     /**
@@ -587,14 +557,12 @@ public class XMLDBSecurityTest {
     public void groupNonMemberChownGidResource(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final Resource resource = test.getResource("test.xml");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            // attempt to take gid ownership of /db/securityTest1/test.xml
-            ums.chgrp(resource, "guest");
-        });
+        // attempt to take gid ownership of /db/securityTest1/test.xml
+        assertThrows(XMLDBException.class, () -> ums.chgrp(resource, "guest"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -615,15 +583,13 @@ public class XMLDBSecurityTest {
     public void cannotOpenCollectionWithoutExecute(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-rw-rw-");
-            test.close();
+        ums.chmod("rw-rw-rw-");
+        test.close();
 
-            DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-        });
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -644,15 +610,13 @@ public class XMLDBSecurityTest {
     public void cannotOpenRootCollectionWithoutExecute(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-rw-rw-");
-            test.close();
+        ums.chmod("rw-rw-rw-");
+        test.close();
 
-            DatabaseManager.getCollection(getBaseUri() + "/db", "test1", "test1");
-        });
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db", "test1", "test1"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -686,17 +650,15 @@ public class XMLDBSecurityTest {
     public void cannotListCollectionResourcesWithoutRead(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("-wx-wx-wx");
-            test.close();
+        ums.chmod("-wx-wx-wx");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            test.listResources();
-        });
+        assertThrows(XMLDBException.class, () -> reopened.listResources());
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -716,17 +678,15 @@ public class XMLDBSecurityTest {
     public void cannotListCollectionSubCollectionsWithoutRead(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("-wx-wx-wx");
-            test.close();
+        ums.chmod("-wx-wx-wx");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            test.listChildCollections();
-        });
+        assertThrows(XMLDBException.class, () -> reopened.listChildCollections());
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -749,18 +709,14 @@ public class XMLDBSecurityTest {
     public void cannotReadXmlResourceWithoutExecutePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-------");
-            test.close();
+        ums.chmod("rw-------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-
-            final Resource resource = test.getResource("test.xml");
-            assertEquals("<test/>", resource.getContent());
-        });
+        // without execute permission on the parent collection the collection cannot even be opened
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -783,18 +739,14 @@ public class XMLDBSecurityTest {
     public void cannotReadBinaryResourceWithoutExecutePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-------");
-            test.close();
+        ums.chmod("rw-------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-
-            final Resource resource = test.getResource("test.bin");
-            assertArrayEquals("binary-test".getBytes(), (byte[]) resource.getContent());
-        });
+        // without execute permission on the parent collection the collection cannot even be opened
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -818,19 +770,16 @@ public class XMLDBSecurityTest {
     public void cannotReadXmlResourceWithoutReadPermission(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            Resource resource = test.getResource("test.xml");
-            ums.chmod(resource, "-wx------");
-            test.close();
+        Resource resource = test.getResource("test.xml");
+        ums.chmod(resource, "-wx------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            resource = test.getResource("test.xml");
-            assertEquals("<test/>", resource.getContent());
-        });
+        assertThrows(XMLDBException.class, () -> reopened.getResource("test.xml"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -854,19 +803,16 @@ public class XMLDBSecurityTest {
     public void cannotReadBinaryResourceWithoutReadPermission(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            Resource resource = test.getResource("test.bin");
-            ums.chmod(resource, "-wx------");
-            test.close();
+        Resource resource = test.getResource("test.bin");
+        ums.chmod(resource, "-wx------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            resource = test.getResource("test.bin");
-            assertArrayEquals("binary-test".getBytes(), (byte[]) resource.getContent());
-        });
+        assertThrows(XMLDBException.class, () -> reopened.getResource("test.bin"));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -891,19 +837,17 @@ public class XMLDBSecurityTest {
     public void cannotCreateXmlResourceWithoutWritePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("--x------");
-            test.close();
+        ums.chmod("--x------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            final Resource resource = test.createResource("other.xml", XMLResource.class);
-            resource.setContent("<other/>");
-            test.storeResource(resource);
-        });
+        final Resource resource = reopened.createResource("other.xml", XMLResource.class);
+        resource.setContent("<other/>");
+        assertThrows(XMLDBException.class, () -> reopened.storeResource(resource));
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to a helper that asserts internally
@@ -928,19 +872,17 @@ public class XMLDBSecurityTest {
     public void cannotCreateBinaryResourceWithoutWritePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("--x------");
-            test.close();
+        ums.chmod("--x------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            final Resource resource = test.createResource("other.bin", BinaryResource.class);
-            resource.setContent("binary".getBytes());
-            test.storeResource(resource);
-        });
+        final Resource resource = reopened.createResource("other.bin", BinaryResource.class);
+        resource.setContent("binary".getBytes());
+        assertThrows(XMLDBException.class, () -> reopened.storeResource(resource));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -970,22 +912,14 @@ public class XMLDBSecurityTest {
     public void cannotUpdateXmlResourceWithoutExecutePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-------");
-            test.close();
+        ums.chmod("rw-------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-
-            Resource resource = test.getResource("test.xml");
-            assertEquals("<test/>", resource.getContent());
-
-            // attempt to pdate the resource
-            resource.setContent("<testing/>");
-            test.storeResource(resource);
-        });
+        // without execute permission on the parent collection the collection cannot even be opened
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -1015,22 +949,14 @@ public class XMLDBSecurityTest {
     public void cannotUpdateBinaryResourceWithoutExecutePermissionOnParentCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            ums.chmod("rw-------");
-            test.close();
+        ums.chmod("rw-------");
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-
-            Resource resource = test.getResource("test.bin");
-            assertArrayEquals("binary-test".getBytes(), (byte[]) resource.getContent());
-
-            //attempt to update the resource
-            resource.setContent("testing".getBytes());
-            test.storeResource(resource);
-        });
+        // without execute permission on the parent collection the collection cannot even be opened
+        assertThrows(XMLDBException.class, () -> DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -1097,28 +1023,25 @@ public class XMLDBSecurityTest {
     public void cannotExecuteXQueryWithoutExecutePermission(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
-            final UserManagementService ums = test.getService(UserManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = test.getService(UserManagementService.class);
 
-            final String xquery = "<xquery>{ 1 + 2 }</xquery>";
-            Resource xqueryResource = test.createResource("test.xquery", BinaryResource.class);
-            xqueryResource.setContent(xquery);
-            test.storeResource(xqueryResource);
+        final String xquery = "<xquery>{ 1 + 2 }</xquery>";
+        Resource xqueryResource = test.createResource("test.xquery", BinaryResource.class);
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
 
-            ums.chmod(xqueryResource, "rw-------"); //execute only on xquery
-            test.close();
+        ums.chmod(xqueryResource, "rw-------"); //execute only on xquery
+        test.close();
 
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            xqueryResource = test.getResource("test.xquery");
-            assertEquals(xquery, new String((byte[]) xqueryResource.getContent()));
+        xqueryResource = reopened.getResource("test.xquery");
+        assertEquals(xquery, new String((byte[]) xqueryResource.getContent()));
 
-            //execute the stored XQuery
-            final EXistXPathQueryService queryService = test.getService(EXistXPathQueryService.class);
-            final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
-            assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
-        });
+        //execute the stored XQuery
+        final EXistXPathQueryService queryService = reopened.getService(EXistXPathQueryService.class);
+        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest1/test.xquery"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -1247,32 +1170,29 @@ public class XMLDBSecurityTest {
     public void copyCollectionWithResourcesDestExistsDestIsNotWritable(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
-            EXistCollectionManagementService cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
+        EXistCollectionManagementService cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
 
-            //create collection owned by "test1", and group "users" in /db/securityTest3
-            Collection source = cms.createCollection("source");
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
 
-            //create resource owned by "test1", and group "users" in /db/securityTest3/source
-            Resource resSource = source.createResource("source1.xml", XMLResource.class);
-            resSource.setContent("<test/>");
-            source.storeResource(resSource);
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.class);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
 
-            resSource = source.createResource("source2.xml", XMLResource.class);
-            resSource.setContent("<test/>");
-            source.storeResource(resSource);
+        resSource = source.createResource("source2.xml", XMLResource.class);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
 
-            //pre-create the destination with default mode (0755)
-            //so that it is not writable by 'test3' user
-            final Collection dest = cms.createCollection("copy-of-source");
+        //pre-create the destination with default mode (0755)
+        //so that it is not writable by 'test3' user
+        final Collection dest = cms.createCollection("copy-of-source");
 
-
-            //as the 'test3' user copy the collection
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
-            cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
-            cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
-        });
+        //as the 'test3' user copy the collection
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
+        final EXistCollectionManagementService reopenedCms = (EXistCollectionManagementService) reopened.getService(CollectionManagementService.class);
+        assertThrows(XMLDBException.class, () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
     }
 
     /**
@@ -1305,51 +1225,36 @@ public class XMLDBSecurityTest {
     public void copyCollectionWithResourcesDestResourceExistsDestResourceIsNotWritable(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
-            EXistCollectionManagementService cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test1", "test1");
+        EXistCollectionManagementService cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
 
-            //create collection owned by "test1", and group "users" in /db/securityTest3
-            Collection source = cms.createCollection("source");
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
 
-            //create resource owned by "test1", and group "users" in /db/securityTest3/source
-            Resource resSource = source.createResource("source1.xml", XMLResource.class);
-            resSource.setContent("<test1/>");
-            source.storeResource(resSource);
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.class);
+        resSource.setContent("<test1/>");
+        source.storeResource(resSource);
 
-            resSource = source.createResource("source2.xml", XMLResource.class);
-            resSource.setContent("<test2/>");
-            source.storeResource(resSource);
+        resSource = source.createResource("source2.xml", XMLResource.class);
+        resSource.setContent("<test2/>");
+        source.storeResource(resSource);
 
-            //pre-create the destination and set writable by all
-            final Collection dest = cms.createCollection("copy-of-source");
-            UserManagementService ums = dest.getService(UserManagementService.class);
-            ums.chmod(0777);
+        //pre-create the destination and set writable by all
+        final Collection dest = cms.createCollection("copy-of-source");
+        UserManagementService ums = dest.getService(UserManagementService.class);
+        ums.chmod(0777);
 
-            //pre-create a destination resource and set no access to group and others
-            Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.class);
-            resDestSource1.setContent("<old/>");
-            dest.storeResource(resDestSource1);
-            ums.chmod(resDestSource1, 0700);
+        //pre-create a destination resource and set no access to group and others
+        Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.class);
+        resDestSource1.setContent("<old/>");
+        dest.storeResource(resDestSource1);
+        ums.chmod(resDestSource1, 0700);
 
-
-            //as the 'test3' user copy the collection
-            test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
-            cms = (EXistCollectionManagementService) test.getService(CollectionManagementService.class);
-            cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
-
-            final Collection copyOfSource = test.getChildCollection("copy-of-source");
-            assertNotNull(copyOfSource);
-            assertEquals(2, copyOfSource.listResources().size());
-
-            final Resource resCopyOfSource1 = copyOfSource.getResource("source1.xml");
-            assertEquals("<test1/>", resCopyOfSource1.getContent().toString());
-
-            final Resource resCopyOfSource2 = copyOfSource.getResource("source2.xml");
-            assertEquals("<test2/>", resCopyOfSource2.getContent().toString());
-
-            //TODO check perms are/areNot preserved? on the replaced resource
-        });
+        //as the 'test3' user copy the collection
+        final Collection reopened = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
+        final EXistCollectionManagementService reopenedCms = (EXistCollectionManagementService) reopened.getService(CollectionManagementService.class);
+        assertThrows(XMLDBException.class, () -> reopenedCms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source"));
 
         //TODO check perms are/areNot preserved? on the replaced resource
     }
@@ -1821,37 +1726,34 @@ public class XMLDBSecurityTest {
     public void nonSetUidXQueryCannotWriteRestrictedCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
-            final long timestamp = System.currentTimeMillis();
-            final String content = "<not_setuid>" + timestamp + "</not_setuid>";
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<not_setuid>" + timestamp + "</not_setuid>";
 
-            //create an XQuery /db/securityTest1/not_setuid.xquery
-            final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'not_setuid.xml', " + content + ")";
-            Resource xqueryResource = test.createResource("not_setuid.xquery", BinaryResource.class);
-            xqueryResource.setContent(xquery);
-            test.storeResource(xqueryResource);
+        //create an XQuery /db/securityTest1/not_setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'not_setuid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("not_setuid.xquery", BinaryResource.class);
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
 
-            //set the xquery to be owned by 'test1' and do NOT set it 'setuid', and do set it 'rx' by 'users' group so 'test2' can execute it!
-            UserManagementService ums = test.getService(UserManagementService.class);
-            xqueryResource = test.getResource("not_setuid.xquery");
-            ums.chmod(xqueryResource, 00750); //NOT SETUID
+        //set the xquery to be owned by 'test1' and do NOT set it 'setuid', and do set it 'rx' by 'users' group so 'test2' can execute it!
+        UserManagementService ums = test.getService(UserManagementService.class);
+        xqueryResource = test.getResource("not_setuid.xquery");
+        ums.chmod(xqueryResource, 00750); //NOT SETUID
 
-            //create a collection for the XQuery to write into
-            final CollectionManagementService cms = test.getService(CollectionManagementService.class);
-            final Collection colForSetUid = cms.createCollection("forSetUidWrite");
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = test.getService(CollectionManagementService.class);
+        final Collection colForSetUid = cms.createCollection("forSetUidWrite");
 
-            //only allow the user 'test1' to write into the collection
-            ums = colForSetUid.getService(UserManagementService.class);
-            ums.chmod(0700);
+        //only allow the user 'test1' to write into the collection
+        ums = colForSetUid.getService(UserManagementService.class);
+        ums.chmod(0700);
 
-            //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
-            final Collection test2 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
-            final EXistXPathQueryService queryService = test2.getService(EXistXPathQueryService.class);
-            final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery");
-            assertFalse("/db/securityTest1/forSetUidWrite/not_setuid.xml".equals(result.getResource(0).getContent()));
-        });
+        //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
+        final Collection test2 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
+        final EXistXPathQueryService queryService = test2.getService(EXistXPathQueryService.class);
+        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -1898,37 +1800,34 @@ public class XMLDBSecurityTest {
     public void nonSetGidXQueryCannotWriteRestrictedCollection(String apiName, String baseUri) throws XMLDBException {
         initXMLDBSecurityTest(apiName, baseUri);
         setup();
-        assertThrows(XMLDBException.class, () -> {
-            final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test1", "test1");
 
-            final long timestamp = System.currentTimeMillis();
-            final String content = "<not_setgid>" + timestamp + "</not_setgid>";
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<not_setgid>" + timestamp + "</not_setgid>";
 
-            //create an XQuery /db/securityTest1/not_setgid.xquery
-            final String xquery = "xmldb:store('/db/securityTest2/forSetGidWrite', 'not_setgid.xml', " + content + ")";
-            Resource xqueryResource = test.createResource("not_setgid.xquery", BinaryResource.class);
-            xqueryResource.setContent(xquery);
-            test.storeResource(xqueryResource);
+        //create an XQuery /db/securityTest1/not_setgid.xquery
+        final String xquery = "xmldb:store('/db/securityTest2/forSetGidWrite', 'not_setgid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("not_setgid.xquery", BinaryResource.class);
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
 
-            //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
-            UserManagementService ums = test.getService(UserManagementService.class);
-            xqueryResource = test.getResource("not_setgid.xquery");
-            ums.chmod(xqueryResource, 00705); //NOT setgid
+        //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
+        UserManagementService ums = test.getService(UserManagementService.class);
+        xqueryResource = test.getResource("not_setgid.xquery");
+        ums.chmod(xqueryResource, 00705); //NOT setgid
 
-            //create a collection for the XQuery to write into
-            final CollectionManagementService cms = test.getService(CollectionManagementService.class);
-            final Collection colForSetUid = cms.createCollection("forSetGidWrite");
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = test.getService(CollectionManagementService.class);
+        final Collection colForSetUid = cms.createCollection("forSetGidWrite");
 
-            //only allow the group 'users' to write into the collection
-            ums = colForSetUid.getService(UserManagementService.class);
-            ums.chmod(0070);
+        //only allow the group 'users' to write into the collection
+        ums = colForSetUid.getService(UserManagementService.class);
+        ums.chmod(0070);
 
-            //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
-            final Collection test3 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test3", "test3");
-            final EXistXPathQueryService queryService = test3.getService(EXistXPathQueryService.class);
-            final ResourceSet result = queryService.executeStoredQuery("/db/securityTest2/not_setgid.xquery");
-            assertFalse("/db/securityTest2/forSetGidWrite/not_setgid.xml".equals(result.getResource(0).getContent()));
-        });
+        //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
+        final Collection test3 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test3", "test3");
+        final EXistXPathQueryService queryService = test3.getService(EXistXPathQueryService.class);
+        assertThrows(XMLDBException.class, () -> queryService.executeStoredQuery("/db/securityTest2/not_setgid.xquery"));
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
@@ -2187,6 +2086,21 @@ public class XMLDBSecurityTest {
      * 11) Creates the Collection '/db/securityTest2' owned by 'test1':'users' with permissions rwxrwxr-x (0775)
      * 12) Creates the Collection '/db/securityTest3' owned by 'test3':'guest' with permissions rwxrwxrwx (0777)
      */
+    /**
+     * The fixture gives /db/securityTest1 the mode 0770, so the world cannot even open it. Tests that check what the
+     * world is not allowed to do inside the collection need it to be openable, or they only check the open.
+     */
+    private void allowOthersToOpenTestCollection() throws XMLDBException {
+        final Collection admin = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        admin.getService(UserManagementService.class).chmod(0771);
+    }
+
+    /** The fixture gives /db/securityTest1/test.xml the mode 0770, so the world cannot even look it up. */
+    private void allowOthersToReadTestResource() throws XMLDBException {
+        final Collection admin = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        admin.getService(UserManagementService.class).chmod(admin.getResource("test.xml"), 0774);
+    }
+
     private void setup() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         UserManagementService ums = root.getService(UserManagementService.class);

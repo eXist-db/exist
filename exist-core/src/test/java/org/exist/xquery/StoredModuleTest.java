@@ -170,25 +170,21 @@ public class StoredModuleTest {
 //    "};";
 
     @org.junit.jupiter.api.Test
-    public void testModule23MissingRelativeContext() {
-        assertThrows(XMLDBException.class, () -> {
-            String collection2Name = "module2";
-            String collection3Name = "module2/module3";
+    public void testModule23MissingRelativeContext() throws XMLDBException {
+        String collection2Name = "module2";
+        String collection3Name = "module2/module3";
 
-            String query = "import module namespace mod2 = 'urn:module2' " +
-                    "at  'module2/module2.xqm'; " +
-                    "mod2:showMe()";
+        String query = "import module namespace mod2 = 'urn:module2' " +
+                "at  'module2/module2.xqm'; " +
+                "mod2:showMe()";
 
-            Collection c2 = createCollection(collection2Name);
-            writeModule(c2, "module2.xqm", module2);
+        Collection c2 = createCollection(collection2Name);
+        writeModule(c2, "module2.xqm", module2);
 
-            Collection c3 = createCollection(collection3Name);
-            writeModule(c3, "module3.xqm", module3a);
+        Collection c3 = createCollection(collection3Name);
+        writeModule(c3, "module3.xqm", module3a);
 
-            ResourceSet rs = existEmbeddedServer.executeQuery(query);
-            String r = (String) rs.getResource(0).getContent();
-            assertEquals("hi from module 3a", r);
-        });
+        assertThrows(XMLDBException.class, () -> existEmbeddedServer.executeQuery(query));
     }
 
     @org.junit.jupiter.api.Test 
