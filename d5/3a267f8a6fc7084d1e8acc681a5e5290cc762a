@@ -1,0 +1,27 @@
+exist-core/src/test/java/org/exist/storage/ConcurrentStoreTest.java
+  s_d5ac7bf05ec2fb::t_811952f30a5d30 44,60
+exist-core/src/test/java/org/exist/storage/ReindexRecoveryTest.java
+  s_d5ac7bf05ec2fb::t_21236e237e3e89 46,62
+exist-core/src/test/java/org/exist/storage/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_093b018db00dc5 44,64
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_914ad483de920c 47,83
+exist-core/src/test/java/org/exist/util/io/VirtualTempPathTest.java
+  s_d5ac7bf05ec2fb::t_3e53f8350ee475 25,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d53a267f8a6fc7084d1e8acc681a5e5290cc762a",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
