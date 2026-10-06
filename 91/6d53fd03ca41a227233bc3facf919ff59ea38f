@@ -1,0 +1,45 @@
+exist-core/src/test/java/org/exist/xmldb/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_21225d26bffd14 52-54,232,250-253
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/IdFunctionTest.java
+  s_d5ac7bf05ec2fb::t_ac6dcfbacef923 37-38,40,51-52,58,95,97,107,142,144,156,195,197
+exist-core/src/test/java/org/exist/xquery/functions/system/GetRunningXQueriesTest.java
+  s_d5ac7bf05ec2fb::t_040f71428900f9 33-35,43,48
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpDtdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_6be0a20ff5b759 31-33,109,117,125,133,147,155,162,167
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_b747721ac130aa 31-33,130,138,146,154,162,170,197,202,207,212,220,228,235,239
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxvTest.java
+  s_d5ac7bf05ec2fb::t_ba6e995a653706 34-36,94,103,107,116,120,129,133,142
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingOnvdlTest.java
+  s_d5ac7bf05ec2fb::t_cde953eadbfb6f 27-29,101,110,120,128,136,144,163,168
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingRelaxNgTest.java
+  s_d5ac7bf05ec2fb::t_35ece6d915fc48 30-32,92,100,108,116,124,132,140,147,154,159
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingSchematronTest.java
+  s_d5ac7bf05ec2fb::t_6edd3497cad542 30-32,83,106,114,122,129,134
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingXsdTest.java
+  s_d5ac7bf05ec2fb::t_8a7256ddf1d170 30-32,82,90,98,106,113,118
+exist-core/src/test/java/org/exist/xquery/functions/validate/NativeSchemaJaxpCatalogGapTest.java
+  s_d5ac7bf05ec2fb::t_1955bf074166b0 39-41,158,179-180
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseDtdNokTest.java
+  s_d5ac7bf05ec2fb::t_a2b7843bf477d8 30-32,81,89,93,100,104,112,116,124
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseXsdNokTest.java
+  s_d5ac7bf05ec2fb::t_dc9f9e8a2d39c6 30-32,81,89,93,101,105,113,117,125
+exist-core/src/test/java/org/exist/xquery/functions/validate/TournamentSchemaLanguageComparisonTest.java
+  s_d5ac7bf05ec2fb::t_bd36c2712d442c 30-32,102,112,123,129,135,140,144,149-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "916d53fd03ca41a227233bc3facf919ff59ea38f",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
