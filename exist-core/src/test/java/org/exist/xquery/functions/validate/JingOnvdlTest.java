@@ -24,12 +24,11 @@ package org.exist.xquery.functions.validate;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.BeforeEach;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
-
-import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.ResourceSet;
 
@@ -97,54 +96,54 @@ public class JingOnvdlTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void onvdl_valid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
+    public void onvdlValid() throws IOException, SAXException, XMLDBException {
         final String query = "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                 "return " +
                 "validation:jing-report($a,$b)";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void onvdl_invalid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
+    public void onvdlInvalid() throws IOException, SAXException, XMLDBException {
         final String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                     "return " +
                     "validation:jing-report($a,$b)";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
 
     @org.junit.jupiter.api.Test
-    public void onvdl_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void onvdlStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/valid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void onvdl_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void onvdlStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/invalid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void onvdl_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void onvdlAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void onvdl_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    public void onvdlAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
@@ -157,13 +156,5 @@ public class JingOnvdlTest {
         assertEquals(1, results.getSize());
         assertEquals("true", results.getResource(0).getContent().toString(),
                 query);
-    }
-
-    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
     }
 }

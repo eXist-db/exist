@@ -21,23 +21,22 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -97,7 +96,7 @@ public class NativeSchemaJaxpCatalogGapTest {
     private static String nativeSchemaFileUri;
 
     @BeforeAll
-    public static void prepareResources() throws XMLDBException, IOException {
+    public static void prepareResources() throws XMLDBException {
         nativeSchemaPath = resolveSchemaPath();
         assertTrue(Files.exists(nativeSchemaPath),
                 """
@@ -154,7 +153,7 @@ public class NativeSchemaJaxpCatalogGapTest {
                     '%s')
                 """.formatted(nativeSchemaFileUri, XSD_1_1);
         final String report = executeOne(query);
-        assertXpathEvaluatesTo("invalid", "//status/text()", report);
+        assertThat(report, hasXPath("//status/text()", equalTo("invalid")));
         assertTrue(report.contains("cvc-assertion") || report.contains("count(*)"),
                 "expected xs:assert failure, got: " + report);
     }
@@ -175,8 +174,8 @@ public class NativeSchemaJaxpCatalogGapTest {
     }
 
     private static void assertReportStatus(final String query, final String expected)
-            throws XMLDBException, SAXException, IOException, XpathException {
-        assertXpathEvaluatesTo(expected, "//status/text()", executeOne(query));
+            throws XMLDBException {
+        assertThat(executeOne(query), hasXPath("//status/text()", equalTo(expected)));
     }
 
     private static String executeOne(final String query) throws XMLDBException {
