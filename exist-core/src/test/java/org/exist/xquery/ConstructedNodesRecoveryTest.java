@@ -102,7 +102,7 @@ public class ConstructedNodesRecoveryTest {
 			"<grapefruit colour=\"yellow\"/>" +
 		"</fruit>";
 
-	// we don't use @ClassRule/@Rule as we want to force corruption in some tests
+	// started and stopped by the tests themselves, not by an extension, as some tests force corruption
 	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	/**

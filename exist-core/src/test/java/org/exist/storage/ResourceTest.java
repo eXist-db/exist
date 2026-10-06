@@ -59,7 +59,7 @@ public class ResourceTest {
     private final static String EMPTY_BINARY_FILE = "";
     private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach

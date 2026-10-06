@@ -59,7 +59,7 @@ import java.util.Optional;
  */
 public class RemoveCollectionIT {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String generateXQ =

@@ -58,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class Recovery3Test {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
@@ -178,10 +178,8 @@ public class Recovery3Test {
         File result = new File(root, subFolder);
         if (!result.mkdirs()) {
             if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
+                // repeated or parameterized calls can share a root and reuse subDirs, so fall back to a
+                // uniquely-suffixed sibling instead of colliding with the earlier directory
                 result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
             } else {
                 throw new IOException("Couldn't create folders " + root);

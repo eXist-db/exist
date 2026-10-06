@@ -66,7 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class Recovery2Test {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static Path getXmlDir() {
