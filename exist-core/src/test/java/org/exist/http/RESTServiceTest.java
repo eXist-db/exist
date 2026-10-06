@@ -48,6 +48,8 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -65,9 +67,6 @@ import org.xmlunit.diff.Diff;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -510,9 +509,8 @@ try {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires non-Windows platform")
     void testPutPlus() throws IOException {
-        assumeTrue(not(containsString("win")).matches(System.getProperty("os.name").toLowerCase()), "Requires non-Windows platform");
-
         final int r = uploadDataPlus();
         assertEquals(HttpStatus.CREATED_201, r, "Server returned response code " + r);
 
@@ -813,13 +811,13 @@ try {
         doPut(TEST_MODULE, "module.xq", HttpStatus.CREATED_201);
         doPut(TEST_XQUERY, "test.xq", HttpStatus.CREATED_201);
 
-        doStoredQuery(false, false);
+        assertStoredQuery(false, false);
 
         // cached:
-        doStoredQuery(true, false);
+        assertStoredQuery(true, false);
 
         // cached and wrapped:
-        doStoredQuery(true, true);
+        assertStoredQuery(true, true);
     }
 
     @Test
@@ -1710,6 +1708,10 @@ try {
 
     @Test
     void getDocWithXslPi() throws IOException {
+        assertDocWithXslPi();
+    }
+
+    private void assertDocWithXslPi() throws IOException {
         final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI);
         final HttpURLConnection connect = getConnection(docWithXslPiUri);
         try {
@@ -1750,10 +1752,10 @@ try {
     }
 
     @Test
-    void getDocWithXslPi_twice() throws IOException {
+    void getDocWithXslPiTwice() throws IOException {
         // NOTE(AR) doing this twice revealed an issue with the Serializer not being correctly reset
-        getDocWithXslPi();
-        getDocWithXslPi();
+        assertDocWithXslPi();
+        assertDocWithXslPi();
     }
 
     @Test
@@ -1868,7 +1870,7 @@ try {
         }
     }
 
-    private void doStoredQuery(final boolean cacheHeader, final boolean wrap) throws IOException {
+    private void assertStoredQuery(final boolean cacheHeader, final boolean wrap) throws IOException {
 
         String uri = getCollectionUri() + "/test.xq?p=Hello";
         if(wrap) {
