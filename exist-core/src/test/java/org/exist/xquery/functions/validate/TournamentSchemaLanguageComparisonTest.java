@@ -21,23 +21,22 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -98,54 +97,38 @@ public class TournamentSchemaLanguageComparisonTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, IOException {
         // No xsi:schemaLocation hint on the instance -- resolved purely by Tournament.xsd's
         // targetNamespace via directory-search, the same mechanism JaxpXsdCatalogTest's
         // xsd_searched_* tests use. See the class javadoc for why this is "invalid".
-        executeAndEvaluateMessage("validation:jaxp-report( doc('/db/tournament/1.5/Tournament-valid.xml'), false(), " +
-                        "xs:anyURI('/db/tournament/1.5/') )", "invalid",
-                "cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.");
+        final String r = QueryResults.single(existEmbeddedServer, "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-valid.xml'), false(), " +
+                        "xs:anyURI('/db/tournament/1.5/') )");
+        assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
+        assertThat(r, hasXPath("//message/text()", equalTo("cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, XpathException, IOException {
+    public void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, IOException {
         // Bare XSD structural validation cannot see the Singles/nbrParticipants-vs-nbrTeams
         // co-occurrence constraint -- proven here by getting the exact same verdict and error as
         // the "valid" document above, despite the co-occurrence violation. Only the accompanying
         // Schematron rules (tested separately in JingSchematronTest) catch that constraint.
-        executeAndEvaluateMessage("validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), false(), " +
-                        "xs:anyURI('/db/tournament/1.5/') )", "invalid",
-                "cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.");
+        final String r = QueryResults.single(existEmbeddedServer, "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), false(), " +
+                        "xs:anyURI('/db/tournament/1.5/') )");
+        assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
+        assertThat(r, hasXPath("//message/text()", equalTo("cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.")));
     }
 
     @org.junit.jupiter.api.Test
-    public void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, XpathException, IOException {
-        executeAndEvaluate("validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
-                "doc('/db/tournament/1.5/Tournament.rng') )", "valid");
+    public void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, IOException {
+        assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
+                "doc('/db/tournament/1.5/Tournament.rng') )"), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, XpathException, IOException {
+    public void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, IOException {
         // Same co-occurrence limitation as the XSD case above, for RELAX NG.
-        executeAndEvaluate("validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
-                "doc('/db/tournament/1.5/Tournament.rng') )", "valid");
-    }
-
-    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
-    }
-
-    private void executeAndEvaluateMessage(final String query, final String expectedValue, final String expectedMessage)
-            throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
-        assertXpathEvaluatesTo(expectedMessage, "//message/text()", r);
+        assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
+                "doc('/db/tournament/1.5/Tournament.rng') )"), hasXPath("//status/text()", equalTo("valid")));
     }
 }

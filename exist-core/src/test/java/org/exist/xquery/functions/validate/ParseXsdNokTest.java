@@ -21,20 +21,19 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -77,7 +76,7 @@ public class ParseXsdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
+    public void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
@@ -85,11 +84,11 @@ public class ParseXsdNokTest {
         assertEquals(1, results.getSize());
 
         final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo("valid", "//status/text()", r);
+        assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
+    public void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_invalid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
@@ -97,11 +96,11 @@ public class ParseXsdNokTest {
         assertEquals(1, results.getSize());
 
         final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo("invalid", "//status/text()", r);
+        assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
+    public void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_valid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 
@@ -109,11 +108,11 @@ public class ParseXsdNokTest {
         assertEquals(1, results.getSize());
 
         final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo("valid", "//status/text()", r);
+        assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
+    public void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_invalid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
 
@@ -121,6 +120,6 @@ public class ParseXsdNokTest {
         assertEquals(1, results.getSize());
 
         final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo("invalid", "//status/text()", r);
+        assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
     }
 }

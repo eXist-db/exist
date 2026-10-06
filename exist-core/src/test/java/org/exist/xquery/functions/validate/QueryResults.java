@@ -19,30 +19,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.functions.system;
+package org.exist.xquery.functions.validate;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
-import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-public class GetRunningXQueriesTest {
+/**
+ * What the validation tests share: run a query that is expected to return one
+ * item and hand back its serialized content for the test to assert on.
+ */
+final class QueryResults {
 
-    @RegisterExtension
-    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+    private QueryResults() {
+    }
 
-    @Test
-    public void caller() throws XMLDBException {
-        final ResourceSet result = existXmldbEmbeddedServer.executeQuery("system:get-running-xqueries()");
-        assertNotNull(result);
-        final String resultDoc = (String) result.getResource(0).getContent();
+    static String single(final ExistXmldbEmbeddedServer server, final String query) throws XMLDBException {
+        final ResourceSet results = server.executeQuery(query);
+        assertEquals(1, results.getSize());
 
-        assertThat(resultDoc, hasXPath("count(//@caller)", equalTo("1")));
+        return (String) results.getResource(0).getContent();
     }
 }

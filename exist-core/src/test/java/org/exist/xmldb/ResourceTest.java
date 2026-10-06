@@ -33,7 +33,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -50,6 +49,9 @@ import org.junit.jupiter.api.BeforeEach;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -71,7 +73,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
 public class ResourceTest {
 
@@ -228,7 +229,7 @@ public class ResourceTest {
     }
     
     @org.junit.jupiter.api.Test
-    public void setContentAsSourceXml() throws XMLDBException, SAXException, IOException, XpathException {
+    public void setContentAsSourceXml() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
@@ -246,10 +247,10 @@ public class ResourceTest {
         final XMLResource newDoc = (XMLResource) testCollection.getResource("source.xml");
         final String newDocXml = (String) newDoc.getContent();
         
-        assertXpathEvaluatesTo("Title1", "/test/title/text()", newDocXml);
-        assertXpathEvaluatesTo("2", "count(/test/para)", newDocXml);
-        assertXpathEvaluatesTo("Paragraph3", "/test/para[1]/text()", newDocXml);
-        assertXpathEvaluatesTo("Paragraph4", "/test/para[2]/text()", newDocXml);
+        assertThat(newDocXml, hasXPath("/test/title/text()", equalTo("Title1")));
+        assertThat(newDocXml, hasXPath("count(/test/para)", equalTo("2")));
+        assertThat(newDocXml, hasXPath("/test/para[1]/text()", equalTo("Paragraph3")));
+        assertThat(newDocXml, hasXPath("/test/para[2]/text()", equalTo("Paragraph4")));
     }
 
     @org.junit.jupiter.api.Test

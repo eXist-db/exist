@@ -23,10 +23,6 @@ package org.exist.xquery.functions.securitymanager;
 
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.easymock.EasyMock;
 
 import org.exist.dom.memtree.DocumentImpl;
@@ -38,10 +34,12 @@ import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.Test;
 
 import static org.easymock.EasyMock.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -50,12 +48,14 @@ import java.util.Map;
 @Execution(ExecutionMode.CONCURRENT)
 public class IdFunctionTest {
 
+    private static final Map<String, String> NAMESPACES = Map.of("sm", "http://exist-db.org/xquery/securitymanager");
+
     /**
      * Test of eval method, of class IdFunction.
      * when real and effective users are different
      */
     @Test
-    public void differingRealAndEffectiveUsers() throws XPathException, XpathException {
+    public void differingRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])
@@ -90,18 +90,11 @@ public class IdFunctionTest {
 
         assertEquals(1, result.getItemCount());
 
-        final XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        final Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("sm", "http://exist-db.org/xquery/securitymanager");
-        xpathEngine.setNamespaceContext(new SimpleNamespaceContext(namespaces));
-
         final DocumentImpl resultDoc = (DocumentImpl)result.itemAt(0);
 
-        final String actualRealUsername = xpathEngine.evaluate("/sm:id/sm:real/sm:username", resultDoc);
-        assertEquals(realUsername, actualRealUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:real/sm:username", equalTo(realUsername)).withNamespaceContext(NAMESPACES));
 
-        final String actualEffectiveUsername = xpathEngine.evaluate("/sm:id/sm:effective/sm:username", resultDoc);
-        assertEquals(effectiveUsername, actualEffectiveUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:effective/sm:username", equalTo(effectiveUsername)).withNamespaceContext(NAMESPACES));
 
         verify(mckEffectiveUser, mckRealUser, mckContext);
     }
@@ -111,7 +104,7 @@ public class IdFunctionTest {
      * when real and effective users are the same
      */
     @Test
-    public void sameRealAndEffectiveUsers() throws XPathException, XpathException {
+    public void sameRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])
@@ -144,18 +137,11 @@ public class IdFunctionTest {
 
         assertEquals(1, result.getItemCount());
 
-        final XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        final Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("sm", "http://exist-db.org/xquery/securitymanager");
-        xpathEngine.setNamespaceContext(new SimpleNamespaceContext(namespaces));
-
         final DocumentImpl resultDoc = (DocumentImpl)result.itemAt(0);
 
-        final String actualRealUsername = xpathEngine.evaluate("/sm:id/sm:real/sm:username", resultDoc);
-        assertEquals(username, actualRealUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:real/sm:username", equalTo(username)).withNamespaceContext(NAMESPACES));
 
-        final String actualEffectiveUsername = xpathEngine.evaluate("/sm:id/sm:effective/sm:username", resultDoc);
-        assertEquals("", actualEffectiveUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:effective/sm:username", equalTo("")).withNamespaceContext(NAMESPACES));
 
         verify(mckUser, mckContext);
     }
@@ -167,7 +153,7 @@ public class IdFunctionTest {
      * without setUid.
      */
     @Test
-    public void differingByGroupRealAndEffectiveUsers() throws XPathException, XpathException {
+    public void differingByGroupRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])
@@ -204,18 +190,11 @@ public class IdFunctionTest {
 
         assertEquals(1, result.getItemCount());
 
-        final XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        final Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("sm", "http://exist-db.org/xquery/securitymanager");
-        xpathEngine.setNamespaceContext(new SimpleNamespaceContext(namespaces));
-
         final DocumentImpl resultDoc = (DocumentImpl)result.itemAt(0);
 
-        final String actualRealUsername = xpathEngine.evaluate("/sm:id/sm:real/sm:username", resultDoc);
-        assertEquals(realUsername, actualRealUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:real/sm:username", equalTo(realUsername)).withNamespaceContext(NAMESPACES));
 
-        final String actualEffectiveUsername = xpathEngine.evaluate("/sm:id/sm:effective/sm:username", resultDoc);
-        assertEquals(effectiveUsername, actualEffectiveUsername);
+        assertThat(resultDoc, hasXPath("/sm:id/sm:effective/sm:username", equalTo(effectiveUsername)).withNamespaceContext(NAMESPACES));
 
         verify(mckEffectiveUser, mckRealUser, mckContext);
     }
