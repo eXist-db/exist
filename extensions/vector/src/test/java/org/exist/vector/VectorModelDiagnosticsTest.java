@@ -32,36 +32,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class VectorModelDiagnosticsTest {
+class VectorModelDiagnosticsTest {
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         VectorModelDiagnostics.invalidateCache();
     }
 
     @Test
-    public void cachesModelSnapshotWithinTtl() {
+    void cachesModelSnapshotWithinTtl() {
         final var first = VectorModelDiagnostics.collectModels();
         final var second = VectorModelDiagnostics.collectModels();
         assertSame(first, second);
     }
 
     @Test
-    public void refreshModelsRebuildsSnapshot() {
+    void refreshModelsRebuildsSnapshot() {
         final var first = VectorModelDiagnostics.collectModels();
         final var refreshed = VectorModelDiagnostics.refreshModels();
         assertEquals(first.size(), refreshed.size());
     }
 
     @Test
-    public void modelCountUsesSingleSnapshot() {
+    void modelCountUsesSingleSnapshot() {
         final int count = VectorModelDiagnostics.getModelCount();
         final int ready = VectorModelDiagnostics.getReadyModelCount();
         assertTrue(count >= ready);
     }
 
     @Test
-    public void diagnosticsMatchesModelsFunctionIds() {
+    void diagnosticsMatchesModelsFunctionIds() {
         final Set<String> diagnosticIds = new HashSet<>();
         for (final VectorModelInfo model : VectorModelDiagnostics.collectModels()) {
             diagnosticIds.add(model.getId());

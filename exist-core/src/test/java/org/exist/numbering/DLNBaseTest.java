@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class DLNBaseTest {
+class DLNBaseTest {
 
     @Test
-    public void DLNByteArrayConstructor_roundTrip() {
+    void DLNByteArrayConstructor_roundTrip() {
         final DLNBase dlnBase = new DLNBase();
 
         for(int i = 0; i < 100; i++) {

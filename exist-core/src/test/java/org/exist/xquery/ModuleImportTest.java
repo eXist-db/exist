@@ -91,7 +91,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryWithoutLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryWithoutLocation() throws EXistException, PermissionDeniedException {
         final Sequence expected = new StringValue("xs:integer");
 
         final String query = "import module namespace functx='http://www.functx.com';" +
@@ -101,7 +101,7 @@ public class ModuleImportTest {
         assertThatXQResult(actual, equalTo(expected));
     }
     @Test
-    public void importLibraryFromDbLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryFromDbLocation() throws EXistException, PermissionDeniedException {
         final Sequence expected = new StringValue("xs:integer");
 
         final String query = "import module namespace functx='http://www.functx.com'" +
@@ -113,7 +113,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryFromXMLDBLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryFromXMLDBLocation() throws EXistException, PermissionDeniedException {
         final Sequence expected = new StringValue("xs:integer");
 
         final String query = "import module namespace functx='http://www.functx.com'" +
@@ -125,7 +125,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryFromXMLDBLocationDoubleSlash() throws EXistException, PermissionDeniedException {
+    void importLibraryFromXMLDBLocationDoubleSlash() throws EXistException, PermissionDeniedException {
         final Sequence expected = new StringValue("xs:integer");
 
         final String query = "import module namespace functx='http://www.functx.com'" +
@@ -137,7 +137,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryFromExistXMLDBLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryFromExistXMLDBLocation() throws EXistException, PermissionDeniedException {
         final Sequence expected = new StringValue("xs:integer");
 
         final String query = "import module namespace functx='http://www.functx.com'" +
@@ -149,7 +149,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryFromUnknownLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryFromUnknownLocation() throws EXistException, PermissionDeniedException {
 
         final String query = "import module namespace functx='http://www.functx.com'" +
                 " at 'unknown:///db/system/repo/functx-1.0.1/functx/functx.xq';" +
@@ -160,7 +160,7 @@ public class ModuleImportTest {
     }
 
     @Test
-    public void importLibraryFromRelativeLocation() throws EXistException, PermissionDeniedException {
+    void importLibraryFromRelativeLocation() throws EXistException, PermissionDeniedException {
         final String query = "import module namespace functx='http://www.functx.com'" +
                 " at './functx.xq';" +
                 "functx:atomic-type(4)";

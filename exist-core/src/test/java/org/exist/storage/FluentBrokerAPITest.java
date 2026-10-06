@@ -44,12 +44,12 @@ import static org.exist.storage.FluentBrokerAPI.uri;
 import static org.exist.storage.lock.Lock.LockMode.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FluentBrokerAPITest {
+class FluentBrokerAPITest {
 
     private static final XmldbURI TEST_COLLECTION_URI = uri("/db/fluent-broker-api-test");
 
     @Test
-    public void all() throws PermissionDeniedException, EXistException, LockException {
+    void all() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
         final long collectionCreated = 1234;
         final long docLastModified = 5678;
@@ -99,7 +99,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void collectionOnly() throws PermissionDeniedException, EXistException, LockException {
+    void collectionOnly() throws PermissionDeniedException, EXistException, LockException {
         final long collectionCreated = 1234;
 
         final IMocksControl ctrl = createStrictControl();
@@ -131,7 +131,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void collectionAndDocOnly() throws PermissionDeniedException, EXistException, LockException {
+    void collectionAndDocOnly() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
 
         final IMocksControl ctrl = createStrictControl();
@@ -171,7 +171,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void docOnly() throws PermissionDeniedException, EXistException, LockException {
+    void docOnly() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
         final long docLastModified = 5678;
 
@@ -211,7 +211,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void collectionThenCollectionAndDoc() throws PermissionDeniedException, EXistException, LockException {
+    void collectionThenCollectionAndDoc() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
         final long collectionCreated = 1234;
 
@@ -255,7 +255,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void collectionThenDoc() throws PermissionDeniedException, EXistException, LockException {
+    void collectionThenDoc() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
         final long collectionCreated = 1234;
         final long docLastModified = 5678;
@@ -300,7 +300,7 @@ public class FluentBrokerAPITest {
     }
 
     @Test
-    public void collectionAndDocThenDoc() throws PermissionDeniedException, EXistException, LockException {
+    void collectionAndDocThenDoc() throws PermissionDeniedException, EXistException, LockException {
         final XmldbURI docUri = uri("all-test.xml");
         final long docLastModified = 5678;
 

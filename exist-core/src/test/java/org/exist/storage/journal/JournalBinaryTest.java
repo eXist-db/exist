@@ -86,7 +86,7 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
     private static Path testFile2 = null;
 
     @BeforeAll
-    public static void storeTempBinaryDocs() throws IOException {
+    static void storeTempBinaryDocs() throws IOException {
         testFile1 = temporaryFolder.toPath().resolve("blob1.bin");
         Files.write(testFile1, Arrays.asList("blob1"), CREATE_NEW);
 

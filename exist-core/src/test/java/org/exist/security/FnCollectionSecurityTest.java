@@ -83,7 +83,7 @@ public class FnCollectionSecurityTest {
      * Creates a new user: docTestUser1
      */
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException {
 
         // as system user
         final BrokerPool pool = server.getBrokerPool();
@@ -115,7 +115,7 @@ public class FnCollectionSecurityTest {
     }
 
     @Test
-    public void canAccessRoot() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
+    void canAccessRoot() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
         // as docTestUser1 user
         final String query = "fn:collection('" + ROOT_COLLECTION + "')";
 
@@ -133,7 +133,7 @@ public class FnCollectionSecurityTest {
     }
 
     @Test
-    public void canAccessCollection() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
+    void canAccessCollection() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
         // as docTestUser1 user
         final String query = "fn:collection('" + TEST_COLLECTION_ALL + "')";
 
@@ -151,7 +151,7 @@ public class FnCollectionSecurityTest {
     }
 
     @Test
-    public void cannotAccessRestrictedCollection() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
+    void cannotAccessRestrictedCollection() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
         final String query = "fn:collection('" + TEST_COLLECTION_SYSTEM_ONLY + "')";
         final BrokerPool pool = server.getBrokerPool();
         final SecurityManager securityManager = pool.getSecurityManager();
@@ -176,7 +176,7 @@ public class FnCollectionSecurityTest {
     }
 
     @Test
-    public void cannotAccessCollectionInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
+    void cannotAccessCollectionInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
         final String query = "fn:collection('" + TEST_SUB_COLLECTION_1_1 + "')";
         final BrokerPool pool = server.getBrokerPool();
         final SecurityManager securityManager = pool.getSecurityManager();
@@ -201,7 +201,7 @@ public class FnCollectionSecurityTest {
     }
 
     @Test
-    public void cannotAccessCollectionInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
+    void cannotAccessCollectionInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
         final String query = "fn:collection('" + TEST_SUB_COLLECTION_2_2 + "')";
         final BrokerPool pool = server.getBrokerPool();
         final SecurityManager securityManager = pool.getSecurityManager();

@@ -46,7 +46,7 @@ import java.util.Map;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class IdFunctionTest {
+class IdFunctionTest {
 
     private static final Map<String, String> NAMESPACES = Map.of("sm", "http://exist-db.org/xquery/securitymanager");
 
@@ -55,7 +55,7 @@ public class IdFunctionTest {
      * when real and effective users are different
      */
     @Test
-    public void differingRealAndEffectiveUsers() throws XPathException {
+    void differingRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])
@@ -104,7 +104,7 @@ public class IdFunctionTest {
      * when real and effective users are the same
      */
     @Test
-    public void sameRealAndEffectiveUsers() throws XPathException {
+    void sameRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])
@@ -153,7 +153,7 @@ public class IdFunctionTest {
      * without setUid.
      */
     @Test
-    public void differingByGroupRealAndEffectiveUsers() throws XPathException {
+    void differingByGroupRealAndEffectiveUsers() throws XPathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
                 .addMockedMethod("pushDocumentContext")
                 .addMockedMethod("getDocumentBuilder", new Class[0])

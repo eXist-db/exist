@@ -34,17 +34,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author cgeorg
  */
-public class AnyURITest {
+class AnyURITest {
 
-	@Test
-    public void fullyEscapedStringToXmldbURI() throws XPathException {
+    @Test
+    void fullyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME;
         AnyURIValue anyUri = new AnyURIValue(escaped);
         assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test
-    public void fullyEscapedStringToURI() throws XPathException {
+    void fullyEscapedStringToURI() throws XPathException {
         URI uri = TestConstants.SPECIAL_URI.getXmldbURI();
         String escaped = TestConstants.SPECIAL_NAME;
         AnyURIValue anyUri = new AnyURIValue(escaped);
@@ -56,14 +56,14 @@ public class AnyURITest {
      */
     @Disabled
     @Test
-    public void partiallyEscapedStringToXmldbURI() throws XPathException {
+    void partiallyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
         AnyURIValue anyUri = new AnyURIValue(escaped);
         assertEquals(TestConstants.SPECIAL_URI, anyUri.toXmldbURI());
     }
 
     @Test
-    public void partiallyEscapedStringToURI() throws XPathException {
+    void partiallyEscapedStringToURI() throws XPathException {
         URI uri = TestConstants.SPECIAL_URI.getXmldbURI();
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
         AnyURIValue anyUri = new AnyURIValue(escaped);

@@ -26,13 +26,13 @@ import org.exist.dom.persistent.NodeImpl;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class NodePoolTest {
+class NodePoolTest {
 
     /**
      * Make sure the NodePool doesn't grow beyond its bounds.
      */
     @Test
-    public void testPool() {
+    void testPool() {
         NodePool pool = NodePool.getInstance();
         NodeImpl nodes[] = new NodeImpl[100];
 

@@ -49,13 +49,13 @@ public class PathExprAtomicRhsTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void store() throws XMLDBException {
+    static void store() throws XMLDBException {
         embedded.executeQuery(
                 "xmldb:store('/db', 'pathexpr-issue798.xml', <a><b/><b/></a>)");
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         try {
             embedded.executeQuery("xmldb:remove('/db', 'pathexpr-issue798.xml')");
         } catch (final XMLDBException ignored) {
@@ -65,7 +65,7 @@ public class PathExprAtomicRhsTest {
 
     /** In-memory baseline: //b/3 returns one 3 per b element. */
     @Test
-    public void inMemoryAtomicRhsIteratesPerItem() throws XMLDBException {
+    void inMemoryAtomicRhsIteratesPerItem() throws XMLDBException {
         final ResourceSet rs = embedded.executeQuery(
                 "count((<a><b/><b/></a>)//b/3)");
         assertEquals("2", rs.getResource(0).getContent());
@@ -73,7 +73,7 @@ public class PathExprAtomicRhsTest {
 
     /** Persistent input must iterate identically to in-memory. The bug. */
     @Test
-    public void persistentAtomicRhsIteratesPerItem() throws XMLDBException {
+    void persistentAtomicRhsIteratesPerItem() throws XMLDBException {
         final ResourceSet rs = embedded.executeQuery(
                 "count(doc('/db/pathexpr-issue798.xml')//b/3)");
         assertEquals("2", rs.getResource(0).getContent());
@@ -81,7 +81,7 @@ public class PathExprAtomicRhsTest {
 
     /** Both forms must return the same sequence content. */
     @Test
-    public void inMemoryAndPersistentAgree() throws XMLDBException {
+    void inMemoryAndPersistentAgree() throws XMLDBException {
         final ResourceSet inMem = embedded.executeQuery(
                 "string-join((for $x in (<a><b/><b/></a>)//b/3 return string($x)), ',')");
         final ResourceSet stored = embedded.executeQuery(
@@ -95,7 +95,7 @@ public class PathExprAtomicRhsTest {
      * with the same parent: //b/.. should de-dup to one a element.
      */
     @Test
-    public void nodeRhsStillDedupes() throws XMLDBException {
+    void nodeRhsStillDedupes() throws XMLDBException {
         final ResourceSet rs = embedded.executeQuery(
                 "count(doc('/db/pathexpr-issue798.xml')//b/..)");
         assertEquals("1", rs.getResource(0).getContent());

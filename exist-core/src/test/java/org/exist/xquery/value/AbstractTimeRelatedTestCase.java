@@ -40,7 +40,7 @@ public abstract class AbstractTimeRelatedTestCase {
         TimeUtils.getInstance().resetLocalTimezoneOffset();
     }
 
-    protected void checkMinMaxFails(DurationValue a, DurationValue b) {
+    protected void assertMinMaxFails(DurationValue a, DurationValue b) {
         try {
             a.max(null, b);
             fail(a + " max " + b + " succeeded");

@@ -92,7 +92,7 @@ public class TriggerConfigTest {
     public String testCollection;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void storeDocument(String testCollection) {
+    void storeDocument(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -113,7 +113,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void removeDocument(String testCollection) {
+    void removeDocument(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -137,7 +137,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void removeTriggers(String testCollection) {
+    void removeTriggers(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -158,7 +158,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void updateTriggers(String testCollection) {
+    void updateTriggers(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -185,7 +185,7 @@ public class TriggerConfigTest {
     }
 
     @AfterEach
-    public void cleanDB() {
+    void cleanDB() {
         try {
             Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
             if (config != null) {
@@ -208,7 +208,7 @@ public class TriggerConfigTest {
     }
 
     @BeforeAll
-    public static void initDB() throws XMLDBException {
+    static void initDB() throws XMLDBException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
 
@@ -219,7 +219,7 @@ public class TriggerConfigTest {
     }
 
     @AfterAll
-    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 

@@ -49,7 +49,7 @@ public class LocalXMLResourceDOMTest {
     private static String TEST_RESOURCE_NAME = "doc1.xml";
 
     @BeforeAll
-    public static void setup() throws XMLDBException {
+    static void setup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
                 .getService(CollectionManagementService.class);
@@ -65,7 +65,7 @@ public class LocalXMLResourceDOMTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
                 .getService(CollectionManagementService.class);
@@ -74,7 +74,7 @@ public class LocalXMLResourceDOMTest {
     }
 
     @Test
-    public void testEnhancer01() throws XMLDBException {
+    void testEnhancer01() throws XMLDBException {
         final String query = "doc('" + TestConstants.TEST_COLLECTION_URI.getRawCollectionPath() + "/" + TEST_RESOURCE_NAME + "')//properties[property[@key eq 'type'][text() eq 'Table']]";
 
         final ResourceSet rs1 = existEmbeddedServer.executeQuery(query);
@@ -93,7 +93,7 @@ public class LocalXMLResourceDOMTest {
     }
 
     @Test
-    public void testEnhancer02() throws XMLDBException {
+    void testEnhancer02() throws XMLDBException {
 
         final ResourceSet rs1 = existEmbeddedServer.executeQuery(
                 "doc('" + TestConstants.TEST_COLLECTION_URI.getRawCollectionPath() + "/" + TEST_RESOURCE_NAME + "')//properties/property[@key='type' and text()='Table']"

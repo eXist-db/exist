@@ -37,8 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		final Collection col = getTestCollection();
 		final XMLResource res = col.createResource("testappend.xml", XMLResource.class);
 		res.setContent("<root><node id=\"1\"/></root>");

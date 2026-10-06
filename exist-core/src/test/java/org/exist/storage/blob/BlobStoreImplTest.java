@@ -83,7 +83,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void addUnique() throws IOException {
+    void addUnique() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -110,7 +110,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void addDuplicates() throws IOException {
+    void addDuplicates() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -134,7 +134,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void getNonExistent() throws IOException {
+    void getNonExistent() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -154,7 +154,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void get() throws IOException {
+    void get() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -173,7 +173,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void with() throws IOException {
+    void with() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -195,7 +195,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void removeUnique() throws IOException {
+    void removeUnique() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -228,7 +228,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void removeDuplicates() throws IOException {
+    void removeDuplicates() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -264,7 +264,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void compactPersistentReferences() throws IOException {
+    void compactPersistentReferences() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -314,7 +314,7 @@ public class BlobStoreImplTest {
      * {@link BlobStore#copy(Txn, BlobId)}.
      */
     @Test
-    public void blindCopy() throws IOException {
+    void blindCopy() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -335,7 +335,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void copy() throws IOException {
+    void copy() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 
@@ -366,7 +366,7 @@ public class BlobStoreImplTest {
     }
 
     @Test
-    public void copyRemove() throws IOException {
+    void copyRemove() throws IOException {
         final Path blobDbx = temporaryFolder.toPath().resolve("blob.dbx");
         final Path blobDir = newFolder(temporaryFolder, "blob").toPath();
 

@@ -36,10 +36,10 @@ import org.exist.xquery.value.DoubleValue;
 import org.junit.jupiter.api.Test;
 
 
-public class ValueIndexFactoryTest {
+class ValueIndexFactoryTest {
 
     @Test
-    public void negativeNumbersComparison() throws EXistException {
+    void negativeNumbersComparison() throws EXistException {
 
         // -8.6...
         final byte[] data1 = encodeDouble(-8.612328);
@@ -52,7 +52,7 @@ public class ValueIndexFactoryTest {
     }
 
     @Test
-    public void numbersComparison() throws EXistException {
+    void numbersComparison() throws EXistException {
 
         // 8.6...
         final byte[] data1 = encodeDouble(8.612328);
@@ -65,7 +65,7 @@ public class ValueIndexFactoryTest {
     }
 
     @Test
-    public void negativeNumbersComparison2() throws EXistException {
+    void negativeNumbersComparison2() throws EXistException {
 
         // 8.6...
         final byte[] data1 = encodeDouble(8.612328);
@@ -78,7 +78,7 @@ public class ValueIndexFactoryTest {
     }
 
     @Test
-    public void roundTripDecimal() throws EXistException {
+    void roundTripDecimal() throws EXistException {
         BigDecimal dec = new BigDecimal("123456789123456789123456789123456789.123456789123456789123456789");
 
         byte data[] = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
@@ -90,7 +90,7 @@ public class ValueIndexFactoryTest {
     }
 
     @Test
-    public void roundTripDouble() throws EXistException {
+    void roundTripDouble() throws EXistException {
         final double[] values = {-8.612328, -1.0, 0.0, 1.0, 8.612328};
         for (final double d : values) {
             final byte[] data = ValueIndexFactory.serialize(new DoubleValue(d), 0);
@@ -101,7 +101,7 @@ public class ValueIndexFactoryTest {
     }
 
     @Test
-    public void doubleOrderingComprehensive() throws EXistException {
+    void doubleOrderingComprehensive() throws EXistException {
         final double[] ordered = {-8.612328, -1.0, 0.0, 1.0, 8.612328};
         final byte[][] encoded = new byte[ordered.length][];
         for (int i = 0; i < ordered.length; i++) {

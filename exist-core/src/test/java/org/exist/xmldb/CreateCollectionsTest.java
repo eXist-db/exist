@@ -61,7 +61,7 @@ public class CreateCollectionsTest  {
     private final static String TEST_COLLECTION = "testCreateCollection";
 
     @BeforeEach
-    public void setUp() throws XMLDBException {
+    void setUp() throws XMLDBException {
         //create a test collection
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection test = cms.createCollection(TEST_COLLECTION);
@@ -73,20 +73,20 @@ public class CreateCollectionsTest  {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);
     }
 
     @org.junit.jupiter.api.Test
-    public void rootCollectionHasNoParent() throws XMLDBException {
+    void rootCollectionHasNoParent() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
         assertNull(root.getParentCollection(), "root collection has no parent");
     }
 
     @org.junit.jupiter.api.Test
-    public void collectionMustProvideAtLeastOneService() throws XMLDBException {
+    void collectionMustProvideAtLeastOneService() throws XMLDBException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final List<Class<? extends Service>> expectedServiceTypes = Arrays.asList(CollectionManagementService.class,
                 DatabaseInstanceManager.class, EXistCollectionManagementService.class, EXistRestoreService.class,
@@ -99,7 +99,7 @@ public class CreateCollectionsTest  {
     }
 
     @org.junit.jupiter.api.Test
-    public void createCollection_hasNoSubCollections_andIsOpen() throws XMLDBException {
+    void createCollection_hasNoSubCollections_andIsOpen() throws XMLDBException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
         final Collection testCollection = service.createCollection("test");
@@ -110,7 +110,7 @@ public class CreateCollectionsTest  {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeSamplesShakespeare() throws XMLDBException, IOException, URISyntaxException {
+    void storeSamplesShakespeare() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
         final Collection testCollection = service.createCollection("test");
@@ -140,7 +140,7 @@ public class CreateCollectionsTest  {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeRemoveStoreResource() throws XMLDBException, IOException, URISyntaxException {
+    void storeRemoveStoreResource() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
         final Collection testCollection = service.createCollection("test");
@@ -171,7 +171,7 @@ public class CreateCollectionsTest  {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeBinaryResource() throws XMLDBException, IOException, URISyntaxException {
+    void storeBinaryResource() throws XMLDBException, IOException, URISyntaxException {
         Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService service = colTest.getService(CollectionManagementService.class);
         Collection testCollection = service.createCollection("test");
@@ -204,7 +204,7 @@ public class CreateCollectionsTest  {
     }
 
     @org.junit.jupiter.api.Test
-    public void testMultipleCreates() throws XMLDBException {
+    void testMultipleCreates() throws XMLDBException {
         
         Collection testCol = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService cms = testCol.getService(CollectionManagementService.class);

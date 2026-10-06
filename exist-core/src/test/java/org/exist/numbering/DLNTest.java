@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Random;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class DLNTest {
+class DLNTest {
 
     private class TestItem implements Comparable<TestItem> {
         int id;
@@ -60,7 +60,7 @@ public class DLNTest {
     private final static int ITEMS_TO_TEST = 10000;
 
     @Test
-    public void singleId() {
+    void singleId() {
         Random rand = new Random();
         TestItem items[] = new TestItem[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
@@ -82,7 +82,7 @@ public class DLNTest {
     }
 
     @Test
-    public void sort() {
+    void sort() {
         Random rand = new Random();
         DLN items[] = new DLN[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
@@ -95,7 +95,7 @@ public class DLNTest {
     }
 
     @Test
-    public void create() {
+    void create() {
         DLN dln = new DLN();
         for (int i = 1; i < 500000; i++) {
             dln.incrementLevelId();
@@ -104,7 +104,7 @@ public class DLNTest {
     }
 
     @Test
-    public void levelIds() {
+    void levelIds() {
         DLN dln = new DLN("1.33.56.2.98.1.27");
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         
@@ -161,7 +161,7 @@ public class DLNTest {
     }
 
     @Test
-    public void relations() {
+    void relations() {
     	DLN root = new DLN("1.3");
     	DLN descendant = new DLN("1.3.1");
 
@@ -250,7 +250,7 @@ public class DLNTest {
     }
 
     @Test
-    public void insertion() {
+    void insertion() {
         DLN left = new DLN("1.1"); 
         DLN right = (DLN) left.insertNode(null);
         assertEquals("1.2", right.toString());

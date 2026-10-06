@@ -78,13 +78,13 @@ public class RecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         // restore the flag in-case of a test failure
         BrokerPool.FORCE_CORRUPTION = false;
     }
 
     @org.junit.jupiter.api.Test
-    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
+    void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
 
         // store, commit, and then remove without committing (remove should be undone during next recovery!)
         storeAndCommit_removeNoCommit(existEmbeddedServer.getBrokerPool());

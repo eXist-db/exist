@@ -87,7 +87,7 @@ public class MoveOverwriteResourceTest {
      * index
      */
     @Test
-    public void moveAndOverwriteXML() throws Exception  {
+    void moveAndOverwriteXML() throws Exception  {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final DefaultDocumentSet docs = new DefaultDocumentSet();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

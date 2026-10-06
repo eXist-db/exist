@@ -70,7 +70,7 @@ public class AuditTrailSessionListenerTest {
      * on the XQuery document when creating a session
      */
     @Test
-    public void sessionCreated() throws EXistException, PermissionDeniedException {
+    void sessionCreated() throws EXistException, PermissionDeniedException {
         final HttpSessionEvent httpSessionEvent = createMock(HttpSessionEvent.class);
         final HttpSession httpSession = createMock(HttpSession.class);
         expect(httpSessionEvent.getSession()).andReturn(httpSession);
@@ -99,7 +99,7 @@ public class AuditTrailSessionListenerTest {
      * on the XQuery document when destroying a session
      */
     @Test
-    public void sessionDestroyed() throws EXistException, PermissionDeniedException {
+    void sessionDestroyed() throws EXistException, PermissionDeniedException {
         final HttpSessionEvent httpSessionEvent = createMock(HttpSessionEvent.class);
         final HttpSession httpSession = createMock(HttpSession.class);
         expect(httpSessionEvent.getSession()).andReturn(httpSession);
@@ -124,7 +124,7 @@ public class AuditTrailSessionListenerTest {
     }
 
     @BeforeAll
-    public static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
+    static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         storeScripts();
         System.setProperty(AuditTrailSessionListener.REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY, CREATE_SCRIPT_PATH);
         System.setProperty(AuditTrailSessionListener.REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY, DESTROYED_SCRIPT_PATH);
@@ -143,7 +143,7 @@ public class AuditTrailSessionListenerTest {
     }
 
     @AfterAll
-    public static void teardown() throws TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void teardown() throws TriggerException, PermissionDeniedException, EXistException, IOException {
         System.clearProperty(AuditTrailSessionListener.REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY);
         System.clearProperty(AuditTrailSessionListener.REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY);
         removeScripts();

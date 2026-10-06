@@ -59,7 +59,7 @@ public class JaxpParseTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse_validate")) {
@@ -79,13 +79,13 @@ public class JaxpParseTest {
     }
 
     @BeforeEach
-    public void clearGrammarCache() throws XMLDBException {
+    void clearGrammarCache() throws XMLDBException {
         final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
     @org.junit.jupiter.api.Test
-    public void parseAndFillDefaults() throws XMLDBException {
+    void parseAndFillDefaults() throws XMLDBException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);
         assertEquals("defaultTest", result);

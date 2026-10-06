@@ -52,7 +52,7 @@ public class LazyCacheTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test
-    public void putOnLazilyCreatedCache() throws XPathException, PermissionDeniedException, EXistException {
+    void putOnLazilyCreatedCache() throws XPathException, PermissionDeniedException, EXistException {
         Sequence result = executeQuery("cache:put('foo', 'bar', 'baz1')");
         assertNotNull(result);
         assertTrue(result.isEmpty());

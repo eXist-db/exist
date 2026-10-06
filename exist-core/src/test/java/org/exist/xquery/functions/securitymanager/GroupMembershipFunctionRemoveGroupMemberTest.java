@@ -54,7 +54,7 @@ public class GroupMembershipFunctionRemoveGroupMemberTest {
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void cannotRemoveAllGroupsFromUserAsOwner() throws XPathException, EXistException, AuthenticationException {
+    void cannotRemoveAllGroupsFromUserAsOwner() throws XPathException, EXistException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final Subject owner = pool.getSecurityManager().authenticate(USER1_NAME, USER1_NAME);
         assertThrows(PermissionDeniedException.class, () ->
@@ -66,7 +66,7 @@ public class GroupMembershipFunctionRemoveGroupMemberTest {
     }
 
     @Test
-    public void cannotRemoveAllGroupsFromUserAsDBA() throws XPathException, EXistException, AuthenticationException {
+    void cannotRemoveAllGroupsFromUserAsDBA() throws XPathException, EXistException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         assertThrows(PermissionDeniedException.class, () ->
@@ -78,7 +78,7 @@ public class GroupMembershipFunctionRemoveGroupMemberTest {
     }
 
     @BeforeEach
-    public void setup() throws EXistException, PermissionDeniedException, XPathException {
+    void setup() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
 

@@ -73,7 +73,7 @@ public class BaseTaskTest extends AbstractTaskTest {
     }
 
     @MethodSource("data") @ParameterizedTest
-    public void taskAvailable(String taskName) {
+    void taskAvailable(String taskName) {
         initBaseTaskTest(taskName);
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TASK_NAME, taskName);

@@ -55,7 +55,7 @@ public class JingRelaxNgTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void prepareResources() throws XMLDBException, IOException {
+    static void prepareResources() throws XMLDBException, IOException {
 
         final String noValidation = "<?xml version='1.0'?>" +
                 "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
@@ -78,7 +78,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rng_stored_valid_boolean() throws XMLDBException {
+    void rngStoredValidBoolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
@@ -87,9 +87,9 @@ public class JingRelaxNgTest {
         assertEquals("true", results.getResource(0).getContent().toString(),
                 query);
     }
-    
+
     @org.junit.jupiter.api.Test
-    public void rngStoredValid() throws XMLDBException, SAXException, IOException {
+    void rngStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
@@ -97,7 +97,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rngStoredInvalid() throws XMLDBException, SAXException, IOException {
+    void rngStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
@@ -105,7 +105,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rngAnyuriValid() throws XMLDBException, SAXException, IOException {
+    void rngAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
@@ -113,7 +113,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rngAnyuriInvalid() throws XMLDBException, SAXException, IOException {
+    void rngAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
@@ -121,7 +121,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rncStoredValid() throws XMLDBException, SAXException, IOException {
+    void rncStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
@@ -129,7 +129,7 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rncStoredInvalid() throws XMLDBException, SAXException, IOException {
+    void rncStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
@@ -137,14 +137,14 @@ public class JingRelaxNgTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rncAnyuriValid() throws XMLDBException, SAXException, IOException {
+    void rncAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void rncAnyuriInvalid() throws XMLDBException, SAXException, IOException {
+    void rncAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));

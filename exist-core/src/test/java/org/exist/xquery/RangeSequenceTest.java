@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class RangeSequenceTest {
+class RangeSequenceTest {
 
     private final RangeSequence rangeSequence = new RangeSequence(new IntegerValue(1), new IntegerValue(99));
 
     @Test
-    public void iterate_loop() {
+    void iterate_loop() {
         final SequenceIterator it = rangeSequence.iterate();
         int count = 0;
         while (it.hasNext()) {
@@ -46,7 +46,7 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    void iterate_skip_loop() {
         final SequenceIterator it = rangeSequence.iterate();
 
         assertEquals(99, it.skippable());
@@ -65,7 +65,7 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    void iterate_loop_skip_loop() {
         final SequenceIterator it = rangeSequence.iterate();
 
         int len = 20;
@@ -92,7 +92,7 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void iterateInReverse_loop() {
+    void iterateInReverse_loop() {
         final SequenceIterator it = rangeSequence.iterateInReverse();
         int count = 0;
         while (it.hasNext()) {
@@ -104,7 +104,7 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void iterateInReverse_skip_loop() {
+    void iterateInReverse_skip_loop() {
         final SequenceIterator it = rangeSequence.iterateInReverse();
 
         assertEquals(99, it.skippable());
@@ -123,7 +123,7 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void iterateInReverse_loop_skip_loop() {
+    void iterateInReverse_loop_skip_loop() {
         final SequenceIterator it = rangeSequence.iterateInReverse();
 
         int len = 20;
@@ -150,12 +150,12 @@ public class RangeSequenceTest {
     }
 
     @Test
-    public void itemAt_last() throws XPathException {
+    void itemAt_last() throws XPathException {
         assertEquals(99, rangeSequence.itemAt(98).toJavaObject(Integer.class).intValue());
     }
 
     @Test
-    public void itemAt_afterEnd() {
+    void itemAt_afterEnd() {
         assertNull(rangeSequence.itemAt(99));
     }
 }

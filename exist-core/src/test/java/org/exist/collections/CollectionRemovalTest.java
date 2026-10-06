@@ -88,7 +88,7 @@ public class CollectionRemovalTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @org.junit.jupiter.api.Test
-    public void failingRemoveCollection()
+    void failingRemoveCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
@@ -113,7 +113,7 @@ public class CollectionRemovalTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void removeCollection()
+    void removeCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
@@ -175,7 +175,7 @@ public class CollectionRemovalTest {
     }
 
     @BeforeAll
-    public static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         // initialize XML:DB driver
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         final Database database = (Database) cl.newInstance();
@@ -183,7 +183,7 @@ public class CollectionRemovalTest {
     }
 
     @BeforeEach
-    public void initDB() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    void initDB() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -225,7 +225,7 @@ public class CollectionRemovalTest {
     }
 
     @AfterEach
-    public void clearDB() throws XMLDBException {
+    void clearDB() throws XMLDBException {
         final org.xmldb.api.base.Collection root =
                 DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);

@@ -30,10 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class TimestampedReferenceTest {
+class TimestampedReferenceTest {
 
     @Test
-    public void setIfExpired_expired() {
+    void setIfExpired_expired() {
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, "Original");
         assertEquals("Original", timestampedReference.get());
 
@@ -42,7 +42,7 @@ public class TimestampedReferenceTest {
     }
 
     @Test
-    public void setIfExpired_notExpired() {
+    void setIfExpired_notExpired() {
         final long firstTimestamp = System.nanoTime();
 
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, "Original");
@@ -53,7 +53,7 @@ public class TimestampedReferenceTest {
     }
 
     @Test
-    public void setIfExpiredOrNull_expired() {
+    void setIfExpiredOrNull_expired() {
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, "Original");
         assertEquals("Original", timestampedReference.get());
 
@@ -62,7 +62,7 @@ public class TimestampedReferenceTest {
     }
 
     @Test
-    public void setIfExpiredOrNull_notExpired() {
+    void setIfExpiredOrNull_notExpired() {
         final long firstTimestamp = System.nanoTime();
 
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, "Original");
@@ -73,7 +73,7 @@ public class TimestampedReferenceTest {
     }
 
     @Test
-    public void setIfExpiredOrNull_expiredAndNull() {
+    void setIfExpiredOrNull_expiredAndNull() {
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true);
         assertNull(timestampedReference.get());
 
@@ -82,7 +82,7 @@ public class TimestampedReferenceTest {
     }
 
     @Test
-    public void setIfExpiredOrNull_notExpiredAndNull() {
+    void setIfExpiredOrNull_notExpiredAndNull() {
         final long firstTimestamp = System.nanoTime();
 
         final TimestampedReference<String> timestampedReference = new TimestampedReference<>(true, null);

@@ -89,7 +89,7 @@ public class ForBoundXmlIdRegressionTest {
     private static final XmldbURI COL_RANGE = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-N");
 
     @BeforeAll
-    public static void setupCollections() throws Exception {
+    static void setupCollections() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             createCollectionAndStore(pool, broker, COL_LEGACY, CONFIG_LEGACY_ONLY);
@@ -98,21 +98,21 @@ public class ForBoundXmlIdRegressionTest {
     }
 
     @AfterAll
-    public static void teardownCollections() {
+    static void teardownCollections() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         cleanup(pool, COL_LEGACY);
         cleanup(pool, COL_RANGE);
     }
 
     @Test
-    public void legacyAutoIndexOnlyReturnsExpectedHits() throws Exception {
+    void legacyAutoIndexOnlyReturnsExpectedHits() throws Exception {
         final long[] hits = runScenario(COL_LEGACY, N_KEYS);
         assertEquals(1, hits[0], "L literal expected 1 hit");
         assertEquals(N_KEYS, hits[1], "L for-bound expected " + N_KEYS + " hits");
     }
 
     @Test
-    public void rangeIndexConfiguredReturnsCorrectHits() throws Exception {
+    void rangeIndexConfiguredReturnsCorrectHits() throws Exception {
         final long[] hits = runScenario(COL_RANGE, N_KEYS);
         assertEquals(1, hits[0], "N literal expected 1 hit");
         assertEquals(N_KEYS, hits[1], "N for-bound expected " + N_KEYS + " hits");

@@ -53,7 +53,7 @@ public class JingXsdTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void prepareResources() throws XMLDBException, IOException {
+    static void prepareResources() throws XMLDBException, IOException {
         final String noValidation = "<?xml version='1.0'?>" +
                 "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
                 "    <validation mode='no'/>" +
@@ -77,7 +77,7 @@ public class JingXsdTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredValid() throws XMLDBException, SAXException, IOException {
+    void xsdStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
@@ -85,7 +85,7 @@ public class JingXsdTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredInvalid() throws XMLDBException, SAXException, IOException {
+    void xsdStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
@@ -93,7 +93,7 @@ public class JingXsdTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriValid() throws XMLDBException, SAXException, IOException {
+    void xsdAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
@@ -101,7 +101,7 @@ public class JingXsdTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriInvalid() throws XMLDBException, SAXException, IOException {
+    void xsdAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";

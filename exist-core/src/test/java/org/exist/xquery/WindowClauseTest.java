@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
-public class WindowClauseTest {
+class WindowClauseTest {
 
     @Test
     void simpleWindowConditions() throws RecognitionException, XPathException, TokenStreamException {

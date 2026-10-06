@@ -155,7 +155,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void absSimpleREST() throws IOException {
+    void absSimpleREST() throws IOException {
         // path needs to indicate indent and wrap is off
         final String uri = getRestUri() + "/test_simple.xml?_indent=no&_wrap=no";
 
@@ -179,7 +179,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void relSimpleREST1() throws IOException {
+    void relSimpleREST1() throws IOException {
         final String uri = getRestUri() + "/test_relative1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -199,7 +199,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void relSimpleREST2() throws IOException {
+    void relSimpleREST2() throws IOException {
         // path needs to indicate indent and wrap is off
         final String uri = getRestUri() + "/test_relative2.xml?_indent=no&_wrap=no";
 
@@ -220,7 +220,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void xpointerREST3() throws IOException {
+    void xpointerREST3() throws IOException {
         final String uri = getRestUri() + "/test_xpointer1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -240,7 +240,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void xpointerREST4() throws IOException {
+    void xpointerREST4() throws IOException {
         final String uri = getRestUri() + "/test_xpointer2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -260,7 +260,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void fallback1() throws IOException {
+    void fallback1() throws IOException {
         final String uri = getRestUri() + "/test_fallback1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -280,7 +280,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void relParentPathFromSubcollectionXML() throws IOException {
+    void relParentPathFromSubcollectionXML() throws IOException {
         final String uri = getRestUri() + "/modules/test_rel_parent.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -301,7 +301,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void fallback2() throws IOException {
+    void fallback2() throws IOException {
         final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -355,13 +355,13 @@ public class XIncludeSerializerTest {
         return client;
     }
 
-   //TODO create reader for xml
+    //TODO create reader for xml
     /*
      * SetUp / TearDown functions
      *
      */
     @BeforeAll
-    public static void startDB() throws XmlRpcException, MalformedURLException {
+    static void startDB() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = getClient();
         final List<Object> params = new ArrayList<>();
         params.add(XINCLUDE_COLLECTION.toString());

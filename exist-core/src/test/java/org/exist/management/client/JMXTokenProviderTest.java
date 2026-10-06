@@ -68,7 +68,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getDataDirUsesMBeanValueWhenAvailable() throws IOException {
+    void getDataDirUsesMBeanValueWhenAvailable() throws IOException {
         final Path dataDir = newFolder(temporaryFolder, "mbean-data-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
@@ -76,7 +76,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getDataDirFallsBackWhenMBeanReturnsNull() throws IOException {
+    void getDataDirFallsBackWhenMBeanReturnsNull() throws IOException {
         final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(null), fallback);
 
@@ -84,14 +84,14 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getDataDirIsEmptyWhenMBeanReturnsNullAndNoFallback() {
+    void getDataDirIsEmptyWhenMBeanReturnsNullAndNoFallback() {
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(null));
 
         assertEquals(Optional.empty(), provider.getDataDir());
     }
 
     @Test
-    public void getDataDirFallsBackWhenMBeanLookupThrows() throws IOException {
+    void getDataDirFallsBackWhenMBeanLookupThrows() throws IOException {
         final Path fallback = newFolder(temporaryFolder, "fallback-data-dir").toPath();
         final JMXtoXML client = clientThrowing(new NullPointerException("no MBean connection"));
         final JMXTokenProvider provider = new JMXTokenProvider(client, fallback);
@@ -100,7 +100,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getDataDirIsEmptyWhenMBeanLookupThrowsAndNoFallback() {
+    void getDataDirIsEmptyWhenMBeanLookupThrowsAndNoFallback() {
         final JMXtoXML client = clientThrowing(new NullPointerException("no MBean connection"));
         final JMXTokenProvider provider = new JMXTokenProvider(client);
 
@@ -108,7 +108,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getTokenIsEmptyWhenDataDirCannotBeResolved() {
+    void getTokenIsEmptyWhenDataDirCannotBeResolved() {
         // Mirrors system:get-jmx-token()'s construction: no fallback, MBean unavailable.
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(null));
 
@@ -116,7 +116,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getTokenCreatesAndPersistsNewTokenWhenFileAbsent() throws IOException {
+    void getTokenCreatesAndPersistsNewTokenWhenFileAbsent() throws IOException {
         final Path dataDir = newFolder(temporaryFolder, "new-token-dir").toPath();
         final JMXTokenProvider provider = new JMXTokenProvider(clientReturning(dataDir.toString()));
 
@@ -140,7 +140,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getTokenReadsExistingTokenRatherThanCreatingNew() throws IOException {
+    void getTokenReadsExistingTokenRatherThanCreatingNew() throws IOException {
         final Path dataDir = newFolder(temporaryFolder, "existing-token-dir").toPath();
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties existing = new Properties();
@@ -155,7 +155,7 @@ public class JMXTokenProviderTest {
     }
 
     @Test
-    public void getTokenRegeneratesTokenWhenExistingFileHasNoTokenProperty() throws IOException {
+    void getTokenRegeneratesTokenWhenExistingFileHasNoTokenProperty() throws IOException {
         final Path dataDir = newFolder(temporaryFolder, "corrupt-token-dir").toPath();
         final Path tokenFile = dataDir.resolve("jmxservlet.token");
         final Properties withoutTokenKey = new Properties();

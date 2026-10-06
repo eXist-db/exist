@@ -34,10 +34,10 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class OrderedValueSequenceTest {
+class OrderedValueSequenceTest {
 
     @Test
-    public void iterate_loop() throws XPathException {
+    void iterate_loop() throws XPathException {
         final OrderedValueSequence orderedValueSequence = mockOrderedValueSequence(99);
 
         final SequenceIterator it = orderedValueSequence.iterate();
@@ -51,7 +51,7 @@ public class OrderedValueSequenceTest {
     }
 
     @Test
-    public void iterate_skip_loop() throws XPathException {
+    void iterate_skip_loop() throws XPathException {
         final OrderedValueSequence orderedValueSequence = mockOrderedValueSequence(99);
         final SequenceIterator it = orderedValueSequence.iterate();
 
@@ -71,7 +71,7 @@ public class OrderedValueSequenceTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() throws XPathException {
+    void iterate_loop_skip_loop() throws XPathException {
         final OrderedValueSequence orderedValueSequence = mockOrderedValueSequence(99);
         final SequenceIterator it = orderedValueSequence.iterate();
 

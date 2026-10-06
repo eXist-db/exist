@@ -56,10 +56,10 @@ import java.net.URISyntaxException;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class RegistryFunctionsTest {
+class RegistryFunctionsTest {
 
     @Test
-    public void outputMediaType() throws URISyntaxException, TransformerException, IOException, SAXException, SerializationAnnotationException {
+    void outputMediaType() throws URISyntaxException, TransformerException, IOException, SAXException, SerializationAnnotationException {
 
         //test setup
         final String internetMediaType = "application/octet-stream";
@@ -101,7 +101,7 @@ public class RegistryFunctionsTest {
     }
 
     @Test
-    public void outputMethod() throws SerializationAnnotationException, TransformerException, IOException, SAXException {
+    void outputMethod() throws SerializationAnnotationException, TransformerException, IOException, SAXException {
         //test setup
         final String methodStr = "html5";
         final MethodAnnotation method = new MethodAnnotation();

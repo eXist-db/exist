@@ -37,10 +37,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class TextImplTest {
+class TextImplTest {
 
     @Test
-    public void setData() {
+    void setData() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -63,7 +63,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void setData_empty() {
+    void setData_empty() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -86,7 +86,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void setData_shrink() {
+    void setData_shrink() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -109,7 +109,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void setData_expand() {
+    void setData_expand() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -132,7 +132,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void appendData() {
+    void appendData() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -158,7 +158,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void appendData_empty() {
+    void appendData_empty() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -184,7 +184,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void insertData_start() {
+    void insertData_start() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -210,7 +210,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void insertData_middle() {
+    void insertData_middle() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -236,7 +236,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void insertData_end() {
+    void insertData_end() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -262,7 +262,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void insertData_pastEnd() {
+    void insertData_pastEnd() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -281,7 +281,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void insertData_empty() {
+    void insertDataEmpty() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -307,7 +307,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_shrink() {
+    void replaceDataShrink() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -330,7 +330,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_start() {
+    void replaceDataStart() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -356,7 +356,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_middle() {
+    void replaceDataMiddle() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -382,7 +382,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_end() {
+    void replaceDataEnd() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -408,7 +408,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_pastEnd() {
+    void replaceDataPastEnd() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -427,7 +427,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_empty() {
+    void replaceDataEmpty() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("p", null, null), null);
@@ -453,7 +453,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_longArg() {
+    void replaceDataLongArg() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("address", null, null), null);
@@ -470,7 +470,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void replaceData_untilEnd() {
+    void replaceDataUntilEnd() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("address", null, null), null);
@@ -487,7 +487,7 @@ public class TextImplTest {
     }
 
     @Test
-    public void deleteData() {
+    void deleteData() {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         builder.startElement(new QName("address", null, null), null);

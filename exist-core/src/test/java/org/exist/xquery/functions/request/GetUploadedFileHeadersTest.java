@@ -53,7 +53,7 @@ import org.xmldb.api.modules.BinaryResource;
  * alignment), and each file's Content-Type / Content-Disposition (looked up case-insensitively,
  * since header-name casing is the servlet container's to decide).</p>
  */
-public class GetUploadedFileHeadersTest extends RESTTest {
+class GetUploadedFileHeadersTest extends RESTTest {
 
     private static final String XQUERY =
             """
@@ -75,7 +75,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     private static Collection root;
 
     @BeforeAll
-    public static void beforeClass() throws XMLDBException {
+    static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         final BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
@@ -86,13 +86,13 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @AfterAll
-    public static void afterClass() throws XMLDBException {
+    static void afterClass() throws XMLDBException {
         final BinaryResource res = (BinaryResource) root.getResource(XQUERY_FILENAME);
         root.removeResource(res);
     }
 
     @Test
-    public void singleFileExposesItsHeaders() throws IOException {
+    void singleFileExposesItsHeaders() throws IOException {
         final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
                 .textPart("param1", "value1")
                 .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
@@ -106,7 +106,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @Test
-    public void plainFormFieldHasNoFileHeaders() throws IOException {
+    void plainFormFieldHasNoFileHeaders() throws IOException {
         final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
                 .textPart("param1", "value1")
                 .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
@@ -117,7 +117,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @Test
-    public void multipleFilesEachHaveHeadersPositionallyAligned() throws IOException {
+    void multipleFilesEachHaveHeadersPositionallyAligned() throws IOException {
         final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
                 .formPart("fileUpload", "first.xml", filePart("<a/>", MediaType.APPLICATION_XML))
                 .formPart("fileUpload", "second.json", filePart("{}", MediaType.APPLICATION_JSON))
@@ -134,7 +134,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @Test
-    public void nonExistentParameterReturnsEmpty() throws IOException {
+    void nonExistentParameterReturnsEmpty() throws IOException {
         final MultipartBodyPublisher body = MultipartBodyPublisher.newBuilder()
                 .formPart("fileUpload", "helloworld.txt", filePart("hello world", MediaType.TEXT_PLAIN))
                 .build();
@@ -144,7 +144,7 @@ public class GetUploadedFileHeadersTest extends RESTTest {
     }
 
     @Test
-    public void nonMultipartRequestReturnsEmpty() throws IOException {
+    void nonMultipartRequestReturnsEmpty() throws IOException {
         // A plain GET is not a multipart request, so request:get-uploaded-file-headers() must be empty.
         final HttpRequest get = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME + "?inspect=fileUpload"))
                 .GET()

@@ -67,7 +67,7 @@ public class Recovery3Test {
     private final static int RESOURCE_COUNT = 150;
 
     @Test
-    public void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final Path dir = newFolder(tempFolder, "recovery3-data").toPath();
         for (int i = 0; i < RESOURCE_COUNT; i++) {
             Files.write(dir.resolve("doc" + i + ".xml"),
@@ -169,7 +169,7 @@ public class Recovery3Test {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb(true);
     }
 

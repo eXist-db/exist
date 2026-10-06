@@ -42,54 +42,54 @@ import org.xml.sax.Attributes;
 
 import com.siemens.ct.exi.main.api.sax.SAXEncoder;
 
-public class EXISerializerTest {
+class EXISerializerTest {
 
 	private EXISerializer serializer;
 	private OutputStream mockOutputStream;
 	private SAXEncoder mockEncoder;
-	
-	@BeforeEach
-	public void setUp() throws Exception {
+
+    @BeforeEach
+    void setUp() throws Exception {
 		mockOutputStream = createMock(OutputStream.class);
 		serializer = new EXISerializer(mockOutputStream);
 		mockEncoder = createMock(SAXEncoder.class);
 		serializer.setEncoder(mockEncoder);
 	}
-	
-	@Test
-	public void testStartDocument() throws Exception {
+
+    @Test
+    void testStartDocument() throws Exception {
 		mockEncoder.startDocument();
 		replay(mockEncoder);
 		serializer.startDocument();
 		verify(mockEncoder);
 	}
-	
-	@Test
-	public void testEndDocument() throws Exception {
+
+    @Test
+    void testEndDocument() throws Exception {
 		mockEncoder.endDocument();
 		replay(mockEncoder);
 		serializer.endDocument();
 		verify(mockEncoder);
 	}
-	
-	@Test
-	public void testStartPrefixMapping() throws Exception {
+
+    @Test
+    void testStartPrefixMapping() throws Exception {
 		mockEncoder.startPrefixMapping("prefix", "uri");
 		replay(mockEncoder);
 		serializer.startPrefixMapping("prefix", "uri");
 		verify(mockEncoder);
 	}
-	
-	@Test
-	public void testEndPrefixMapping() throws Exception {
+
+    @Test
+    void testEndPrefixMapping() throws Exception {
 		mockEncoder.endPrefixMapping("prefix");
 		replay(mockEncoder);
 		serializer.endPrefixMapping("prefix");
 		verify(mockEncoder);
 	}
-	
-	@Test
-	public void testStartElement() throws Exception {
+
+    @Test
+    void testStartElement() throws Exception {
 		QName testQName = new QName("local", "uri", "prefix");
 		AttrList testAttrList = new AttrList();
 		testAttrList.addAttribute(new QName("local", "uri"), "value");
@@ -103,18 +103,18 @@ public class EXISerializerTest {
 		assertEquals("uri", capturedAttributeList.getFirst().getURI(0));
 		assertEquals("value", capturedAttributeList.getFirst().getValue(0));
 	}
-	
-	@Test
-	public void testEndElement() throws Exception {
+
+    @Test
+    void testEndElement() throws Exception {
 		QName testQName = new QName("local", "uri", "prefix");
 		mockEncoder.endElement(matches("uri"), matches("local"), (String)isNull());
 		replay(mockEncoder);
 		serializer.endElement(testQName);
 		verify(mockEncoder);
 	}
-	
-	@Test
-	public void testCharacters() throws Exception {
+
+    @Test
+    void testCharacters() throws Exception {
 		String testString = "test";
 		CharSequence testSeq = testString;
 		mockEncoder.characters(aryEq(testString.toCharArray()), eq(0), eq(testString.length()));

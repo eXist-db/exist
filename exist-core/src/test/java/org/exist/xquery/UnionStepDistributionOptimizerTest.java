@@ -91,7 +91,7 @@ public class UnionStepDistributionOptimizerTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void loadFixture() throws XMLDBException {
+    static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         final Collection coll = cms.createCollection(COLLECTION_NAME);
@@ -101,7 +101,7 @@ public class UnionStepDistributionOptimizerTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         cms.removeCollection(COLLECTION_NAME);
@@ -132,13 +132,13 @@ public class UnionStepDistributionOptimizerTest {
 
     /** {@code //(book | journal)} should match all books and journals. */
     @Test
-    public void binaryUnionUnderDescendant() throws XMLDBException {
+    void binaryUnionUnderDescendant() throws XMLDBException {
         assertCount(3, "$d//(book | journal)");
     }
 
     /** {@code /library/(book | article)} reaches one of each at the top level. */
     @Test
-    public void binaryUnionUnderChild() throws XMLDBException {
+    void binaryUnionUnderChild() throws XMLDBException {
         assertCount(3, "$d/library/(book | article)");
     }
 
@@ -149,7 +149,7 @@ public class UnionStepDistributionOptimizerTest {
      * (one nested inside the journal, one top-level) = 5.
      */
     @Test
-    public void naryUnionThreeBranches() throws XMLDBException {
+    void naryUnionThreeBranches() throws XMLDBException {
         assertCount(5, "$d//(book | journal | article)");
     }
 
@@ -158,7 +158,7 @@ public class UnionStepDistributionOptimizerTest {
      * helper. Fixture: 4 titles + 4 authors + 5 paras + 3 chapters = 16.
      */
     @Test
-    public void naryUnionFourBranches() throws XMLDBException {
+    void naryUnionFourBranches() throws XMLDBException {
         assertCount(16, "$d//(title | author | para | chapter)");
     }
 
@@ -168,13 +168,13 @@ public class UnionStepDistributionOptimizerTest {
      * a direct child {@code <title>} (b1, b2, j1, a1).
      */
     @Test
-    public void unionWithSuffixStep() throws XMLDBException {
+    void unionWithSuffixStep() throws XMLDBException {
         assertCount(4, "$d//(book | journal | article)/title");
     }
 
     /** {@code /library/(book | journal)/title} — prefix and trailing step. */
     @Test
-    public void unionWithPrefixAndSuffix() throws XMLDBException {
+    void unionWithPrefixAndSuffix() throws XMLDBException {
         assertCount(3, "$d/library/(book | journal)/title");
     }
 
@@ -184,7 +184,7 @@ public class UnionStepDistributionOptimizerTest {
      * expressions inside predicates evaluable.
      */
     @Test
-    public void unionInsidePredicate() throws XMLDBException {
+    void unionInsidePredicate() throws XMLDBException {
         assertOptimizerParity("$d//book[(title | author)]");
     }
 
@@ -201,7 +201,7 @@ public class UnionStepDistributionOptimizerTest {
      * issue when the right-hand side is a sequence literal).
      */
     @Test
-    public void unionStepInsidePredicatePath() throws XMLDBException {
+    void unionStepInsidePredicatePath() throws XMLDBException {
         assertCount(2, "$d//book[exists(chapter/(para | title))]");
     }
 
@@ -210,13 +210,13 @@ public class UnionStepDistributionOptimizerTest {
      * per-branch filtering.
      */
     @Test
-    public void unionWithFilteredBranches() throws XMLDBException {
+    void unionWithFilteredBranches() throws XMLDBException {
         assertCount(2, "$d//(book[@id='b1'] | journal[@id='j1'])");
     }
 
     /** Attribute axis branches: {@code //(@id | @n)}. */
     @Test
-    public void attributeUnionUnderDescendant() throws XMLDBException {
+    void attributeUnionUnderDescendant() throws XMLDBException {
         assertCount(7, "$d//(@id | @n)");
     }
 
@@ -225,7 +225,7 @@ public class UnionStepDistributionOptimizerTest {
      * prefix includes a variable reference and a descendant-or-self step.
      */
     @Test
-    public void unionUnderVariableContextPath() throws XMLDBException {
+    void unionUnderVariableContextPath() throws XMLDBException {
         assertOptimizerParity("$d/library//(book | journal)");
     }
 
@@ -234,7 +234,7 @@ public class UnionStepDistributionOptimizerTest {
      * return the existing branch's matches (just b1).
      */
     @Test
-    public void emptyUnionBranchProducesNoMatch() throws XMLDBException {
+    void emptyUnionBranchProducesNoMatch() throws XMLDBException {
         assertCount(1, "$d//(book[@id='b1'] | nonexistent)");
     }
 
@@ -244,7 +244,7 @@ public class UnionStepDistributionOptimizerTest {
      * applies and each branch gets the outer descendant prefix.
      */
     @Test
-    public void nestedPathInsideUnionBranch() throws XMLDBException {
+    void nestedPathInsideUnionBranch() throws XMLDBException {
         assertCount(3, "$d//(book/title | journal/title)");
     }
 
@@ -253,7 +253,7 @@ public class UnionStepDistributionOptimizerTest {
      * distributed form must preserve this ordering.
      */
     @Test
-    public void unionPreservesDocumentOrder() throws XMLDBException {
+    void unionPreservesDocumentOrder() throws XMLDBException {
         final XQueryService svc = server.getRoot().getService(XQueryService.class);
         final String body = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') "
                 + "return string-join($d//(book | journal | article)/@id, ',')";
@@ -268,7 +268,7 @@ public class UnionStepDistributionOptimizerTest {
      * path's parent is not a {@code RewritableExpression}.
      */
     @Test
-    public void unionInsideForLoopBody() throws XMLDBException {
+    void unionInsideForLoopBody() throws XMLDBException {
         assertOptimizerParity(
                 "for $b in $d//book return $b//(title | chapter/para)");
     }
@@ -279,7 +279,7 @@ public class UnionStepDistributionOptimizerTest {
      * {@code RewritableExpression}.
      */
     @Test
-    public void unionInsideFunctionCallArgument() throws XMLDBException {
+    void unionInsideFunctionCallArgument() throws XMLDBException {
         assertOptimizerParity("count($d//(book | journal | article))");
     }
 
@@ -288,7 +288,7 @@ public class UnionStepDistributionOptimizerTest {
      * distributed Union still dedups (per {@code CombiningExpression} eval).
      */
     @Test
-    public void redundantUnionDeduped() throws XMLDBException {
+    void redundantUnionDeduped() throws XMLDBException {
         assertCount(2, "$d//(book | book)");
     }
 
@@ -300,7 +300,7 @@ public class UnionStepDistributionOptimizerTest {
      * called.
      */
     @Test
-    public void fundocsShapeMixedBranches() throws XMLDBException {
+    void fundocsShapeMixedBranches() throws XMLDBException {
         final String body = """
                 let $d := doc('/db/%s/%s')
                 return $d//(
@@ -355,7 +355,7 @@ public class UnionStepDistributionOptimizerTest {
      * Union" regressions.
      */
     @Test
-    public void parensFormDistributesToUnionShape() throws XMLDBException {
+    void parensFormDistributesToUnionShape() throws XMLDBException {
         final EXistXQueryService svc = server.getRoot().getService(EXistXQueryService.class);
         final String prefix = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') return ";
         final String parens = OPTIMIZE + prefix
@@ -483,7 +483,7 @@ public class UnionStepDistributionOptimizerTest {
      * <p>(Mirrors a regression caught by xmlts {@code UnionInPath} tests.)
      */
     @Test
-    public void unionWithNonNodeReturningSuffix() throws XMLDBException {
+    void unionWithNonNodeReturningSuffix() throws XMLDBException {
         assertOptimizerParity(
                 "let $a := <el><el1/><el2 att='val'/><el3/></el> "
                         + "return $a/el2/(@*[1]|@*[1])/string()");
@@ -505,7 +505,7 @@ public class UnionStepDistributionOptimizerTest {
      * existing single-module tests share one static context throughout.
      */
     @Test
-    public void unionDistributionPreservesImportedModuleStaticContext() throws XMLDBException {
+    void unionDistributionPreservesImportedModuleStaticContext() throws XMLDBException {
         final String moduleCollName = COLLECTION_NAME + "-mod";
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);

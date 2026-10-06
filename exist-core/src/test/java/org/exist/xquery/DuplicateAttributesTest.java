@@ -80,7 +80,7 @@ public class DuplicateAttributesTest {
      * Add attribute to element which already has an attribute of that name.
      */
     @Test
-    public void appendStoredAttrFail() throws XMLDBException {
+    void appendStoredAttrFail() throws XMLDBException {
         XQueryService xqs = testCollection.getService(XQueryService.class);
         String query =
                 """
@@ -94,7 +94,7 @@ public class DuplicateAttributesTest {
      * Add attribute to element which has no conflicting attributes.
      */
     @Test
-    public void appendStoredAttrOK() {
+    void appendStoredAttrOK() {
         try {
             XQueryService xqs = testCollection.getService(XQueryService.class);
             String query =
@@ -116,7 +116,7 @@ public class DuplicateAttributesTest {
      * attribute of that name.
      */
     @Test
-    public void appendConstrAttr() throws XMLDBException {
+    void appendConstrAttr() throws XMLDBException {
         XQueryService xqs = testCollection.getService(XQueryService.class);
         String query =
                 """
@@ -132,7 +132,7 @@ public class DuplicateAttributesTest {
      * attribute of that name (using idref).
      */
     @Test
-    public void appendIdref() throws XMLDBException {
+    void appendIdref() throws XMLDBException {
         XQueryService xqs = testCollection.getService(XQueryService.class);
         String query =
                 "<results>{fn:idref(('id1', 'id2'), doc('/db/test/docdtd.xml')/IDS)}</results>";
@@ -140,7 +140,7 @@ public class DuplicateAttributesTest {
     }
 
     @BeforeAll
-    public static void setup() throws XMLDBException {
+    static void setup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
@@ -159,7 +159,7 @@ public class DuplicateAttributesTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");
     }

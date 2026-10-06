@@ -44,6 +44,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * @author wolf
@@ -91,7 +92,7 @@ public class StoredModuleTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testQuery() throws Exception {
+    void testQuery() throws Exception {
 
         Collection c = createCollection("test");
         writeModule(c, "test.xqm", MODULE);
@@ -109,12 +110,12 @@ public class StoredModuleTest {
         for (String col : cols) {
             xqService.declareVariable("itg-modules:coll", col);
             ResourceSet result = xqService.execute(compiledQuery);
-            result.getResource(0).getContent();
+            assertDoesNotThrow(() -> result.getResource(0).getContent());
         }
     }
 
     @org.junit.jupiter.api.Test
-    public void testModule1() throws Exception {
+    void testModule1() throws Exception {
         String collectionName = "module1";
         String module = "module namespace mod1 = 'urn:module1';" +
                 "declare function mod1:showMe() as xs:string {" +
@@ -170,7 +171,7 @@ public class StoredModuleTest {
 //    "};";
 
     @org.junit.jupiter.api.Test
-    public void testModule23MissingRelativeContext() throws XMLDBException {
+    void testModule23MissingRelativeContext() throws XMLDBException {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
 
@@ -187,8 +188,8 @@ public class StoredModuleTest {
         assertThrows(XMLDBException.class, () -> existEmbeddedServer.executeQuery(query));
     }
 
-    @org.junit.jupiter.api.Test 
-    public void testRelativeImportDb() throws Exception {
+    @org.junit.jupiter.api.Test
+    void testRelativeImportDb() throws Exception {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
 
@@ -219,8 +220,8 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @org.junit.jupiter.api.Test 
-    public void testRelativeImportFile() throws Exception {
+    @org.junit.jupiter.api.Test
+    void testRelativeImportFile() throws Exception {
         final String collection2Name = "module2";
         final String collection3Name = "module3";
 
@@ -256,7 +257,7 @@ public class StoredModuleTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testCircularImports() throws XMLDBException {
+    void testCircularImports() throws XMLDBException {
         
         final String index_module = 
                 "import module namespace module1 = \"http://test/module1\" at \"xmldb:exist:///db/testCircular/module1.xqy\";" +
@@ -304,11 +305,11 @@ public class StoredModuleTest {
         writeModule(testHome, "impl.xqy", impl_module);
         writeModule(testHome, "controller.xqy", controller_module);
 
-        existEmbeddedServer.executeQuery(index_module);
+        assertDoesNotThrow(() -> existEmbeddedServer.executeQuery(index_module));
     }
 
     @org.junit.jupiter.api.Test
-    public void testLocalVariableDeclarationCallsLocalFunction() throws XMLDBException {
+    void testLocalVariableDeclarationCallsLocalFunction() throws XMLDBException {
         final String index_module =
             "xquery version \"1.0\";" +
             "import module namespace xqmvc = \"http://scholarsportal.info/xqmvc/core\" at \"xmldb:exist:///db/testLocalVariableDeclaration/module1.xqm\";" +
@@ -328,11 +329,11 @@ public class StoredModuleTest {
         Collection testHome = createCollection("testLocalVariableDeclaration");
         writeModule(testHome, "module1.xqm", module1_module);
 
-        existEmbeddedServer.executeQuery(index_module);
+        assertDoesNotThrow(() -> existEmbeddedServer.executeQuery(index_module));
     }
-    
+
     @org.junit.jupiter.api.Test
-    public void dyanmicModuleImport_for_same_namespace() throws XMLDBException {
+    void dyanmicModuleImportForSameNamespace() throws XMLDBException {
         
         Collection testHome = createCollection("testDynamicModuleImport");
         

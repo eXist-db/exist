@@ -27,16 +27,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CompatibleJavaVersionCheckTest {
+class CompatibleJavaVersionCheckTest {
 
     @Test
-    public void extractNoVersionComponents() {
+    void extractNoVersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.empty());
         assertFalse(maybeComponents.isPresent());
     }
 
     @Test
-    public void extractJava8VersionComponents() {
+    void extractJava8VersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("1.8.0_292"));
         assertTrue(maybeComponents.isPresent());
         final int[] components = maybeComponents.get();
@@ -48,7 +48,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava9VersionComponents() {
+    void extractJava9VersionComponents() {
         Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("9.0.4"));
         assertTrue(maybeComponents.isPresent());
         int[] components = maybeComponents.get();
@@ -68,7 +68,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava10VersionComponents() {
+    void extractJava10VersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("10"));
         assertTrue(maybeComponents.isPresent());
         final int[] components = maybeComponents.get();
@@ -77,7 +77,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava11VersionComponents() {
+    void extractJava11VersionComponents() {
         Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("11"));
         assertTrue(maybeComponents.isPresent());
         int[] components = maybeComponents.get();
@@ -94,7 +94,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava12VersionComponents() {
+    void extractJava12VersionComponents() {
         Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("12.0.1"));
         assertTrue(maybeComponents.isPresent());
         int[] components = maybeComponents.get();
@@ -113,7 +113,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava13VersionComponents() {
+    void extractJava13VersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("13.0.2"));
         assertTrue(maybeComponents.isPresent());
         final int[] components = maybeComponents.get();
@@ -124,7 +124,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava14VersionComponents() {
+    void extractJava14VersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("14.0.2"));
         assertTrue(maybeComponents.isPresent());
         final int[] components = maybeComponents.get();
@@ -135,7 +135,7 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void extractJava15VersionComponents() {
+    void extractJava15VersionComponents() {
         final Optional<int[]> maybeComponents = CompatibleJavaVersionCheck.extractJavaVersionComponents(Optional.of("15.0.3"));
         assertTrue(maybeComponents.isPresent());
         final int[] components = maybeComponents.get();
@@ -146,85 +146,85 @@ public class CompatibleJavaVersionCheckTest {
     }
 
     @Test
-    public void checkNoVersion() throws StartException {
+    void checkNoVersion() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.empty());
     }
 
     @Test
-    public void checkJava8() throws StartException {
+    void checkJava8() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("1.8.0_292"));
     }
 
     @Test
-    public void checkJava9() throws StartException {
+    void checkJava9() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("9.0.4"));
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("9.0.7.1"));
     }
 
     @Test
-    public void checkJava10() throws StartException {
+    void checkJava10() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("10"));
     }
 
     @Test
-    public void checkJava11() throws StartException {
+    void checkJava11() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("11"));
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("11.0.11"));
     }
 
     @Test
-    public void checkJava12() {
+    void checkJava12() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.1")));
     }
 
     @Test
-    public void checkJava12BellSoft() {
+    void checkJava12BellSoft() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("12.0.2-BellSoft")));
     }
 
     @Test
-    public void checkJava13() {
+    void checkJava13() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("13.0.2")));
     }
 
     @Test
-    public void checkJava14() {
+    void checkJava14() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("14.0.2")));
     }
 
     @Test
-    public void checkJava1500() {
+    void checkJava1500() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.0")));
     }
 
     @Test
-    public void checkJava1501() {
+    void checkJava1501() {
         assertThrows(StartException.class, () ->
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.1")));
     }
 
     @Test
-    public void checkJava15_0_2() throws StartException {
+    void checkJava15_0_2() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.2"));
     }
 
     @Test
-    public void checkJava15_0_3() throws StartException {
+    void checkJava15_0_3() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.3"));
     }
 
     @Test
-    public void checkJava21() throws StartException {
+    void checkJava21() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("21.0.6"));
     }
 
     @Test
-    public void checkJava25() throws StartException {
+    void checkJava25() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("25.0.1"));
     }
 }

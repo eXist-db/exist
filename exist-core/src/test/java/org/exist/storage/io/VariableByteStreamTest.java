@@ -29,14 +29,14 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Random;
 
-public class VariableByteStreamTest {
+class VariableByteStreamTest {
 
     private final static int SIZE = 1000;
     
 	private long[] values = new long[1000 * 3];
 
-	@BeforeEach
-	public void setUp() {
+    @BeforeEach
+    void setUp() {
 		Random rand = new Random(System.currentTimeMillis()); 
 		for(int i = 0; i < SIZE * 3; i++) {
 			values[i++] = rand.nextInt();
@@ -45,8 +45,8 @@ public class VariableByteStreamTest {
 		}
 	}
 
-	@Test
-	public void inOutLong() throws IOException {
+    @Test
+    void inOutLong() throws IOException {
 		VariableByteOutputStream os = new VariableByteOutputStream();
 		for(int i = 0; i < SIZE * 3; i++) {
 			os.writeLong(values[i++]);
@@ -69,8 +69,8 @@ public class VariableByteStreamTest {
 		}
 	}
 
-	@Test
-	public void copyTo() throws IOException {
+    @Test
+    void copyTo() throws IOException {
 		Random rand = new Random(System.currentTimeMillis());
 		int valuesWritten = 0;
 		int dataLen = 0;

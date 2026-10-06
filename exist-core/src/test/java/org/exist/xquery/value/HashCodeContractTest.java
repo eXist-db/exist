@@ -39,12 +39,12 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  * and xs:boolean. The xs:duration family is closed by PR #6333. The string and
  * date/time clusters already satisfy the contract (covered here as guards).
  */
-public class HashCodeContractTest {
+class HashCodeContractTest {
 
     // --- Numeric same-key cluster: cross-type spec equality must imply hash equality ---
 
     @Test
-    public void integerEqualsDecimalSharesHashCode() {
+    void integerEqualsDecimalSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue d = new DecimalValue(new BigDecimal("1"));
         assertEquals(i, d);
@@ -52,7 +52,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void integerEqualsDecimalWithTrailingZerosSharesHashCode() {
+    void integerEqualsDecimalWithTrailingZerosSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue d = new DecimalValue(new BigDecimal("1.0"));
         assertEquals(i, d);
@@ -60,7 +60,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void integerEqualsDoubleSharesHashCode() {
+    void integerEqualsDoubleSharesHashCode() {
         final AtomicValue i = new IntegerValue(BigInteger.ONE);
         final AtomicValue dbl = new DoubleValue(1.0);
         assertEquals(i, dbl);
@@ -68,7 +68,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void decimalEqualsDoubleSharesHashCode() {
+    void decimalEqualsDoubleSharesHashCode() {
         final AtomicValue d = new DecimalValue(new BigDecimal("1.0"));
         final AtomicValue dbl = new DoubleValue(1.0);
         assertEquals(d, dbl);
@@ -76,7 +76,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void doubleEqualsFloatSharesHashCode() {
+    void doubleEqualsFloatSharesHashCode() {
         final AtomicValue dbl = new DoubleValue(1.0);
         final AtomicValue f = new FloatValue(1.0f);
         assertEquals(dbl, f);
@@ -84,7 +84,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void positiveInfinitySharesHashCodeAcrossDoubleAndFloat() {
+    void positiveInfinitySharesHashCodeAcrossDoubleAndFloat() {
         final AtomicValue dbl = new DoubleValue(Double.POSITIVE_INFINITY);
         final AtomicValue f = new FloatValue(Float.POSITIVE_INFINITY);
         assertEquals(dbl, f);
@@ -92,7 +92,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void negativeInfinitySharesHashCodeAcrossDoubleAndFloat() {
+    void negativeInfinitySharesHashCodeAcrossDoubleAndFloat() {
         final AtomicValue dbl = new DoubleValue(Double.NEGATIVE_INFINITY);
         final AtomicValue f = new FloatValue(Float.NEGATIVE_INFINITY);
         assertEquals(dbl, f);
@@ -100,7 +100,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void distinctIntegersHaveDistinctHashCodes() {
+    void distinctIntegersHaveDistinctHashCodes() {
         // Probabilistic: distinct small integers should not collide.
         assertNotEquals(new IntegerValue(BigInteger.valueOf(1)).hashCode(),
                 new IntegerValue(BigInteger.valueOf(2)).hashCode());
@@ -109,7 +109,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void integerHashCodeIsDeterministicAcross100Iterations() {
+    void integerHashCodeIsDeterministicAcross100Iterations() {
         final int reference = new IntegerValue(BigInteger.valueOf(12345)).hashCode();
         for (int i = 0; i < 100; i++) {
             assertEquals(reference, new IntegerValue(BigInteger.valueOf(12345)).hashCode());
@@ -117,7 +117,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void doubleHashCodeIsDeterministicAcross100Iterations() {
+    void doubleHashCodeIsDeterministicAcross100Iterations() {
         final int reference = new DoubleValue(3.14159).hashCode();
         for (int i = 0; i < 100; i++) {
             assertEquals(reference, new DoubleValue(3.14159).hashCode());
@@ -127,7 +127,7 @@ public class HashCodeContractTest {
     // --- Boolean: non-singleton instances must hash by value, not identity ---
 
     @Test
-    public void newBooleanInstancesShareHashCode() {
+    void newBooleanInstancesShareHashCode() {
         final AtomicValue a = new BooleanValue(true);
         final AtomicValue b = new BooleanValue(true);
         assertEquals(a, b);
@@ -135,7 +135,7 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void booleanSingletonAndNewInstanceShareHashCode() {
+    void booleanSingletonAndNewInstanceShareHashCode() {
         final AtomicValue a = BooleanValue.TRUE;
         final AtomicValue b = new BooleanValue(true);
         assertEquals(a, b);
@@ -143,14 +143,14 @@ public class HashCodeContractTest {
     }
 
     @Test
-    public void booleanTrueAndFalseHaveDistinctHashCodes() {
+    void booleanTrueAndFalseHaveDistinctHashCodes() {
         assertNotEquals(BooleanValue.TRUE.hashCode(), BooleanValue.FALSE.hashCode());
     }
 
     // --- Codepoint same-key cluster (regression guard) ---
 
     @Test
-    public void stringEqualsStringSharesHashCode() {
+    void stringEqualsStringSharesHashCode() {
         final AtomicValue a = new StringValue("foo");
         final AtomicValue b = new StringValue("foo");
         assertEquals(a, b);

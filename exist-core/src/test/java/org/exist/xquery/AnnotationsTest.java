@@ -50,14 +50,14 @@ public class AnnotationsTest {
     public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
 
     @AfterAll
-    public static void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         // testCollection.removeResource( testCollection .getResource(file_name));
         TestUtils.cleanupDB();
     }
@@ -66,9 +66,9 @@ public class AnnotationsTest {
         return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
     }
 
-    
+
     @Test
-    public void annotation() throws XMLDBException {
+    void annotation() throws XMLDBException {
         
         final String TEST_VALUE_CONSTANT = "hello world";
         
@@ -88,9 +88,9 @@ public class AnnotationsTest {
         Resource res = result.getIterator().nextResource();
         assertEquals(TEST_VALUE_CONSTANT, res.getContent());
     }
-    
+
     @Test
-    public void annotationWithLiterals() throws XMLDBException {
+    void annotationWithLiterals() throws XMLDBException {
         
         final String TEST_VALUE_CONSTANT = "hello world";
         
@@ -110,9 +110,9 @@ public class AnnotationsTest {
         Resource res = result.getIterator().nextResource();
         assertEquals(TEST_VALUE_CONSTANT, res.getContent());
     }
-    
+
     @Test
-    public void annotationInXMLNamespaceFails() throws XMLDBException {
+    void annotationInXMLNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 
@@ -128,9 +128,9 @@ public class AnnotationsTest {
         final XPathQueryService service = getQueryService();
         assertThrows(XMLDBException.class, () -> service.query(query));
     }
-    
+
     @Test
-    public void annotationInXMLSchemaNamespaceFails() throws XMLDBException {
+    void annotationInXMLSchemaNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 
@@ -146,9 +146,9 @@ public class AnnotationsTest {
         final XPathQueryService service = getQueryService();
         assertThrows(XMLDBException.class, () -> service.query(query));
     }
-    
+
     @Test
-    public void annotationInXMLSchemaInstanceNamespaceFails() throws XMLDBException {
+    void annotationInXMLSchemaInstanceNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 
@@ -164,9 +164,9 @@ public class AnnotationsTest {
         final XPathQueryService service = getQueryService();
         assertThrows(XMLDBException.class, () -> service.query(query));
     }
-    
+
     @Test
-    public void annotationInXPathFunctionsNamespaceFails() throws XMLDBException {
+    void annotationInXPathFunctionsNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 
@@ -182,9 +182,9 @@ public class AnnotationsTest {
         final XPathQueryService service = getQueryService();
         assertThrows(XMLDBException.class, () -> service.query(query));
     }
-    
+
     @Test
-    public void annotationInXPathFunctionsMathNamespaceFails() throws XMLDBException {
+    void annotationInXPathFunctionsMathNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 
@@ -200,9 +200,9 @@ public class AnnotationsTest {
         final XPathQueryService service = getQueryService();
         assertThrows(XMLDBException.class, () -> service.query(query));
     }
-    
+
     @Test
-    public void annotationInXQueryOptionsNamespaceFails() throws XMLDBException {
+    void annotationInXQueryOptionsNamespaceFails() throws XMLDBException {
 
         final String TEST_VALUE_CONSTANT = "hello world";
 

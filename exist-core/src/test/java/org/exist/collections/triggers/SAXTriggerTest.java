@@ -82,7 +82,7 @@ public class SAXTriggerTest {
     private final static String testCollection = "/db/triggers";
 
     @org.junit.jupiter.api.Test
-    public void test() throws EXistException, XMLDBException {
+    void test() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
         db.registerDocumentTrigger(AnotherTrigger.class);
@@ -101,7 +101,7 @@ public class SAXTriggerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void saxEventModifications() throws EXistException, XMLDBException {
+    void saxEventModifications() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
         db.registerDocumentTrigger(StoreTrigger.class);
@@ -118,7 +118,7 @@ public class SAXTriggerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
+    void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
         final IndexQueryService idxConf = root.getService(IndexQueryService.class);
@@ -134,7 +134,7 @@ public class SAXTriggerTest {
     }
 
     @AfterEach
-    public void cleanDB() throws XMLDBException {
+    void cleanDB() throws XMLDBException {
         final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
         if (config != null) {
             CollectionManagementService mgmt = config.getService(CollectionManagementService.class);
@@ -154,7 +154,7 @@ public class SAXTriggerTest {
     }
 
     @BeforeAll
-    public static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
+    static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
 
@@ -165,7 +165,7 @@ public class SAXTriggerTest {
     }
 
     @AfterAll
-    public static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

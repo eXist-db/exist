@@ -43,7 +43,7 @@ public class TestDiscoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void discoveryReturnsTestListForSingleTestFile() {
+    void discoveryReturnsTestListForSingleTestFile() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Path path = Path.of(RESOURCES + "single-test.xqm").toAbsolutePath();
         final XQueryTestRunner.XQueryTestInfo info = XQueryTestRunner.runDiscovery(pool, path);
@@ -60,7 +60,7 @@ public class TestDiscoveryTest {
      * would be discovered under one name and reported under another.
      */
     @Test
-    public void discoveringWithTheDatabaseAndByCompilingGiveTheSameNames() throws TestInitializationException {
+    void discoveringWithTheDatabaseAndByCompilingGiveTheSameNames() throws TestInitializationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         for (final String file : List.of("single-test.xqm", "hyphenated-prefix.xqm")) {
             final Path path = Path.of(RESOURCES + file).toAbsolutePath();

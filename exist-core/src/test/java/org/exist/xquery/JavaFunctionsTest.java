@@ -53,7 +53,7 @@ public class JavaFunctionsTest {
      * called properly
      */
     @Test
-    public void lists() throws XPathException {
+    void lists() throws XPathException {
         try {
             String query = "declare namespace list='java:java.util.ArrayList'; " +
                     "let $list := list:new() " +
@@ -74,7 +74,7 @@ public class JavaFunctionsTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         //Check the configuration file to see if Java binding is enabled
         //if it is not enabled then we expect an exception when trying to
         //perform Java binding.

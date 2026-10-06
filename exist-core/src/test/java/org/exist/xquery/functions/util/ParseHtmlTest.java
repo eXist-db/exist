@@ -46,7 +46,7 @@ public class ParseHtmlTest {
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void parseHtml() throws EXistException, PermissionDeniedException, XPathException {
+    void parseHtml() throws EXistException, PermissionDeniedException, XPathException {
         final String query = "util:parse-html(\"<p>hello <img src='1.jpg'></p>\")";
 
         final XQuery xquery = server.getBrokerPool().getXQueryService();

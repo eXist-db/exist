@@ -67,7 +67,7 @@ public class XQueryFunctionsTest {
     private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 
     @Test
-    public void arguments() throws XMLDBException {
+    void arguments() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("declare function local:testAnyURI($uri as xs:string) as xs:string { " +
                 "concat('Successfully processed as xs:string : ',$uri) " +
                 "}; " +
@@ -91,7 +91,7 @@ public class XQueryFunctionsTest {
      * with the rounding value typed xs:integer
      */
     @Test
-    public void roundHtE_INTEGER() throws XMLDBException {
+    void roundHtE_INTEGER() throws XMLDBException {
         String query = "fn:round-half-to-even( xs:integer('1'), 0 )";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
@@ -113,7 +113,7 @@ public class XQueryFunctionsTest {
      * with the rounding value typed xs:double
      */
     @Test
-    public void roundHtE_DOUBLE() throws XMLDBException {
+    void roundHtE_DOUBLE() throws XMLDBException {
         /* List of Values to test with Rounding */
         String[] testvalues =
                 {"0.5", "1.5", "2.5", "3.567812E+3", "4.7564E-3", "35612.25"};
@@ -134,7 +134,7 @@ public class XQueryFunctionsTest {
      * Tests the XQuery-XPath function fn:tokenize()
      */
     @Test
-    public void tokenize() throws XMLDBException {
+    void tokenize() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("count ( tokenize('a/b' , '/') )");
         String r = (String) result.getResource(0).getContent();
         assertEquals("2", r);
@@ -168,7 +168,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void deepEqual() throws XMLDBException {
+    void deepEqual() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $res := ('a', 'b')" +
                         "let $reference := ('a', 'b')" +
@@ -178,7 +178,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void compare() throws XPathException, XMLDBException {
+    void compare() throws XPathException, XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("fn:compare(\"Strasse\", \"Stra\u00DFe\")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("-1", r);
@@ -193,7 +193,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void distinctValues() throws XMLDBException {
+    void distinctValues() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c := distinct-values(('a', 'a')); $c");
         String r = (String) result.getResource(0).getContent();
         assertEquals("a", r);
@@ -212,7 +212,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void sum() throws XMLDBException {
+    void sum() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c := sum((1, 2)); $c");
         String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
@@ -228,7 +228,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void avg() throws XMLDBException {
+    void avg() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("avg((2, 2))");
         String r = (String) result.getResource(0).getContent();
         assertEquals("2", r);
@@ -269,7 +269,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void min() throws XPathException, XMLDBException {
+    void min() throws XPathException, XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("min((1, 2))");
         String r = (String) result.getResource(0).getContent();
         assertEquals("1", r);
@@ -346,7 +346,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void exclusiveLock() throws XMLDBException {
+    void exclusiveLock() throws XMLDBException {
         String query = """
                 let $query1 := (<a/>)
                 let $query2 := (2, 3)
@@ -398,7 +398,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void utilEval1() throws XMLDBException {
+    void utilEval1() throws XMLDBException {
         String query = "<a><b/></a>/util:eval('*')";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1, result.getSize());
@@ -408,7 +408,7 @@ public class XQueryFunctionsTest {
      * @see {http://sourceforge.net/tracker/index.php?func=detail&aid=1629363&group_id=17691&atid=117691}
      */
     @Test
-    public void utilEval2() throws XMLDBException {
+    void utilEval2() throws XMLDBException {
         String query = "let $context := <item/> " +
                 "return util:eval(\"<result>{$context}</result>\")";
         // TODO check result
@@ -417,7 +417,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void utilEvalForFunction() throws XMLDBException {
+    void utilEvalForFunction() throws XMLDBException {
 
         String query = """
                 declare function local:home()
@@ -432,7 +432,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void sharedLock() throws XMLDBException {
+    void sharedLock() throws XMLDBException {
         String query = """
                 let $query1 := (<a/>)
                 let $query2 := (2, 3)
@@ -484,7 +484,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void encodeForURI() throws XMLDBException {
+    void encodeForURI() throws XMLDBException {
         String string = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
         String expected = "http%3A%2F%2Fwww.example.com%2F00%2FWeather%2FCA%2FLos%2520Angeles%23ocean";
         String query = "encode-for-uri(\"" + string + "\")";
@@ -514,7 +514,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void iriToURI() throws XMLDBException {
+    void iriToURI() throws XMLDBException {
         String string = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
         String expected = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
         String query = "iri-to-uri(\"" + string + "\")";
@@ -539,7 +539,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void escapeHTMLURI() throws XMLDBException {
+    void escapeHTMLURI() throws XMLDBException {
         String string = "http://www.example.com/00/Weather/CA/Los Angeles#ocean";
         String expected = "http://www.example.com/00/Weather/CA/Los Angeles#ocean";
         String query = "escape-html-uri(\"" + string + "\")";
@@ -566,7 +566,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName() throws XMLDBException {
+    void localName() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b></b></a>" +
                         "return fn:local-name($a)");
@@ -575,7 +575,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName_empty() throws XMLDBException {
+    void localName_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "fn:local-name(())");
         final String r = (String) result.getResource(0).getContent();
@@ -583,7 +583,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName_emptyElement() throws XMLDBException {
+    void localName_emptyElement() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:local-name(c)");
         final String r = (String) result.getResource(0).getContent();
@@ -591,7 +591,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName_emptyText() throws XMLDBException {
+    void localName_emptyText() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:local-name(text())");
         final String r = (String) result.getResource(0).getContent();
@@ -599,7 +599,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName_contextItem() throws XMLDBException {
+    void localName_contextItem() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/fn:local-name()");
@@ -608,7 +608,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void localName_contextItem_empty() throws XMLDBException {
+    void localName_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:local-name()");
@@ -616,7 +616,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name() throws XPathException, XMLDBException {
+    void name() throws XPathException, XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b></b></a>" +
                         "return fn:name($a)");
@@ -625,7 +625,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name_empty() throws XMLDBException {
+    void name_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "fn:name(())");
         final String r = (String) result.getResource(0).getContent();
@@ -633,7 +633,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name_emptyElement() throws XMLDBException {
+    void name_emptyElement() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:name(c)");
         final String r = (String) result.getResource(0).getContent();
@@ -641,7 +641,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name_emptyText() throws XMLDBException {
+    void name_emptyText() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:local-name(text())");
         final String r = (String) result.getResource(0).getContent();
@@ -649,7 +649,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name_contextItem() throws XMLDBException {
+    void name_contextItem() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/fn:name()");
@@ -658,7 +658,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void name_contextItem_empty() throws XMLDBException {
+    void name_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:name()");
@@ -666,7 +666,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void dateTimeConstructor() throws XMLDBException {
+    void dateTimeConstructor() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $date := xs:date('2007-05-02+02:00') " +
                         "return dateTime($date, xs:time('15:12:52.421+02:00'))"
@@ -676,7 +676,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void currentDateTime() throws XMLDBException {
+    void currentDateTime() throws XMLDBException {
         //Do not use this test around midnight on the last day of a month ;-)
         ResourceSet result = existEmbeddedServer.executeQuery(
                 "('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', " +
@@ -703,7 +703,7 @@ public class XQueryFunctionsTest {
      * no millesecs available. Special value was returned.
      */
     @Test
-    public void secondsFromDateTime() throws XMLDBException {
+    void secondsFromDateTime() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("seconds-from-dateTime(xs:dateTime(\"2005-12-22T13:35:21.000\") )");
         String r = (String) result.getResource(0).getContent();
         assertEquals("21", r);
@@ -714,7 +714,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void resolveQName() throws XMLDBException {
+    void resolveQName() throws XMLDBException {
         String query = "declare namespace a=\"aes\"; " +
                 "declare namespace n=\"ns1\"; " +
                 "declare variable $d := <c xmlns:x=\"ns1\"><d>x:test</d></c>; " +
@@ -736,7 +736,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void namespaceURI() throws XMLDBException {
+    void namespaceURI() throws XMLDBException {
         String query = "let $var := <a xmlns='aaa'/> " +
                 "return " +
                 "$var[fn:namespace-uri() = 'aaa']/fn:namespace-uri()";
@@ -757,7 +757,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void namespaceURI_contextItem() throws XMLDBException {
+    void namespaceURI_contextItem() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><exist:b/></a>" +
                         "return $a/exist:b/fn:namespace-uri()");
@@ -766,7 +766,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void namespaceURI_contextItem_empty() throws XMLDBException {
+    void namespaceURI_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/exist:b/c/fn:namespace-uri()");
@@ -774,7 +774,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void prefixFromQName() throws XMLDBException {
+    void prefixFromQName() throws XMLDBException {
         String query = "declare namespace foo = \"http://example.org\"; " +
                 "declare namespace FOO = \"http://example.org\"; " +
                 "fn:prefix-from-QName(xs:QName(\"foo:bar\"))";
@@ -784,7 +784,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void stringJoin() throws XMLDBException {
+    void stringJoin() throws XMLDBException {
         String query = "let $s := ('','a','b','') " +
                 "return string-join($s,'/')";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
@@ -793,7 +793,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void nodeName() throws XMLDBException {
+    void nodeName() throws XMLDBException {
         final String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "for $b in $a/b[fn:node-name(.) = xs:QName('b')] return $b";
 
@@ -802,28 +802,28 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void noeName_empty() throws XMLDBException {
+    void noeName_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "fn:node-name(())");
         assertEquals(0, result.getSize());
     }
 
     @Test
-    public void nodeName_emptyElement() throws XMLDBException {
+    void nodeName_emptyElement() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:node-name(c)");
         assertEquals(0, result.getSize());
     }
 
     @Test
-    public void nodeName_emptyText() throws XMLDBException {
+    void nodeName_emptyText() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:node-name(text())");
         assertEquals(0, result.getSize());
     }
 
     @Test
-    public void nodeName_contextItem() throws XMLDBException {
+    void nodeName_contextItem() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/fn:node-name()");
@@ -832,7 +832,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void nodeName_contextItem_empty() throws XMLDBException {
+    void nodeName_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:node-name()");
@@ -840,7 +840,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void data0() throws XMLDBException {
+    void data0() throws XMLDBException {
         final String query = "let $a := <a><b>1</b><b>1</b></a> " +
                 "for $b in $a/b[data() = '1'] return $b";
 
@@ -849,7 +849,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void data0_atomization() throws XMLDBException {
+    void data0_atomization() throws XMLDBException {
         final String query = "(<a>1<b>2</b>three</a>, <four>4</four>)/data()";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
@@ -859,7 +859,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void data1() throws XMLDBException {
+    void data1() throws XMLDBException {
         final String query = "let $a := <a><b>1</b><b>1</b></a> " +
                 "for $b in $a/b[data() = '1'] return $b";
 
@@ -868,7 +868,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void data1_atomization() throws XMLDBException {
+    void data1_atomization() throws XMLDBException {
         final String query = "data((<a>1<b>2</b>three</a>, <four>4</four>, xs:integer(5)))";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
@@ -879,7 +879,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void ceiling() throws XMLDBException {
+    void ceiling() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "return $a/b[abs(ceiling(.))]";
 
@@ -888,7 +888,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void concat() throws XMLDBException {
+    void concat() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "return $a/b[concat('+', ., '+') = '+-2+']";
 
@@ -897,7 +897,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void documentURI() throws XMLDBException {
+    void documentURI() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "return $a/b[empty(document-uri(.))]";
 
@@ -906,7 +906,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void implicitTimezone() throws XMLDBException {
+    void implicitTimezone() throws XMLDBException {
         String query = "declare option exist:implicit-timezone 'PT3H';" +
                 "implicit-timezone()";
 
@@ -917,7 +917,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void exists() throws XMLDBException {
+    void exists() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "return $a/b[exists(.)]";
 
@@ -927,7 +927,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void floor() throws XMLDBException {
+    void floor() throws XMLDBException {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
                 "return $a/b[abs(floor(.))]";
 
@@ -940,7 +940,7 @@ public class XQueryFunctionsTest {
      * which should return false, no exception thrown
      */
     @Test
-    public void collectionAvailable1() throws XMLDBException {
+    void collectionAvailable1() throws XMLDBException {
         //remove the test collection if it already exists
         String collectionName = "testCollectionAvailable1";
         String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
@@ -961,7 +961,7 @@ public class XQueryFunctionsTest {
      * no exception thrown
      */
     @Test
-    public void collectionAvailable2() throws XMLDBException {
+    void collectionAvailable2() throws XMLDBException {
         //add the test collection
         String collectionName = "testCollectionAvailable2";
         String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
@@ -992,7 +992,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void base64BinaryCast() throws XMLDBException, URISyntaxException {
+    void base64BinaryCast() throws XMLDBException, URISyntaxException {
         final String TEST_BINARY_COLLECTION = "testBinary";
         final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
         final String BINARY_RESOURCE_FILENAME = "logo.jpg";
@@ -1029,7 +1029,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void defaultLanguage() throws XMLDBException {
+    void defaultLanguage() throws XMLDBException {
 
         final ResourceSet result = existEmbeddedServer.executeQuery("default-language()");
         assertEquals(1, result.getSize());
@@ -1038,7 +1038,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void enclosedExpression() throws XMLDBException {
+    void enclosedExpression() throws XMLDBException {
         ResourceSet result = existEmbeddedServer.executeQuery("<abc>{()}{123}</abc>");
         assertEquals(1, result.getSize());
         String text = (String) result.getResource(0).getContent();

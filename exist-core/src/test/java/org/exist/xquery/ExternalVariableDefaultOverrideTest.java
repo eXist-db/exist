@@ -42,7 +42,7 @@ public class ExternalVariableDefaultOverrideTest {
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void suppliedValueOverridesDefault() throws XMLDBException {
+    void suppliedValueOverridesDefault() throws XMLDBException {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("greeting", "supplied");
         final ResourceSet result = service.query(
@@ -52,7 +52,7 @@ public class ExternalVariableDefaultOverrideTest {
     }
 
     @Test
-    public void typedSuppliedValueOverridesDefault() throws XMLDBException {
+    void typedSuppliedValueOverridesDefault() throws XMLDBException {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("n", 21);
         final ResourceSet result = service.query(
@@ -62,7 +62,7 @@ public class ExternalVariableDefaultOverrideTest {
     }
 
     @Test
-    public void defaultUsedWhenNotSupplied() throws XMLDBException {
+    void defaultUsedWhenNotSupplied() throws XMLDBException {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         final ResourceSet result = service.query(
                 "declare variable $absent external := 'default'; $absent");
@@ -71,7 +71,7 @@ public class ExternalVariableDefaultOverrideTest {
     }
 
     @Test
-    public void missingRequiredExternalStillErrors() throws XMLDBException {
+    void missingRequiredExternalStillErrors() throws XMLDBException {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         try {
             service.query("declare variable $required external; $required");
@@ -82,7 +82,7 @@ public class ExternalVariableDefaultOverrideTest {
     }
 
     @Test
-    public void plainGlobalInitializerUnaffected() throws XMLDBException {
+    void plainGlobalInitializerUnaffected() throws XMLDBException {
         final XQueryService service = server.getRoot().getService(XQueryService.class);
         final ResourceSet result = service.query("declare variable $x := 'internal'; $x");
         assertEquals(1, result.getSize());

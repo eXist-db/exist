@@ -33,69 +33,69 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
+class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 
-	@Test
-	public void create1() {
+    @Test
+    void create1() {
         assertThrows(XPathException.class, () -> {
             new YearMonthDurationValue("P1D");
         });
     }
 
-	@Test
-	public void create2() {
+    @Test
+    void create2() {
         assertThrows(XPathException.class, () -> {
             new YearMonthDurationValue("PT1H");
         });
     }
 
-	@Test
-	public void create3() {
+    @Test
+    void create3() {
         assertThrows(XPathException.class, () -> {
             new YearMonthDurationValue("PT1M");
         });
     }
 
-	@Test
-	public void create4() {
+    @Test
+    void create4() {
         assertThrows(XPathException.class, () -> {
             new YearMonthDurationValue("PT1S");
         });
     }
 
-	@Test
-	public void stringFormat1() throws XPathException {
+    @Test
+    void stringFormat1() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("P1Y2M");
 		assertEquals("P1Y2M", dv.getStringValue());
 	}
 
-	@Test
-	public void stringFormat2() throws XPathException {
+    @Test
+    void stringFormat2() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("P1Y25M");
 		assertEquals("P3Y1M", dv.getStringValue());
 	}
 
-	@Test
-	public void stringFormat3() throws XPathException {
+    @Test
+    void stringFormat3() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("P0Y");
 		assertEquals("P0M", dv.getStringValue());
 	}
 
-	@Test
-	public void convert1() throws XPathException {
+    @Test
+    void convert1() throws XPathException {
 		final YearMonthDurationValue ymdv = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv = (DurationValue) ymdv.convertTo(Type.DURATION);
 		assertEquals("P1Y2M", dv.getStringValue());
 	}
 
-	@Test
-	public void convert2() throws XPathException {
+    @Test
+    void convert2() throws XPathException {
 		final YearMonthDurationValue ymdv = new YearMonthDurationValue("P1Y2M");
 		assertEquals("PT0S", ymdv.convertTo(Type.DAY_TIME_DURATION).getStringValue());
 	}
 
-	@Test
-	public void getPart1() throws XPathException {
+    @Test
+    void getPart1() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("P1Y2M");
 		assertEquals(1, dv.getPart(DurationValue.YEAR));
 		assertEquals(2, dv.getPart(DurationValue.MONTH));
@@ -105,8 +105,8 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals(0, dv.getSeconds(), 0);
 	}
 
-	@Test
-	public void getPart2() throws XPathException {
+    @Test
+    void getPart2() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("-P1Y2M");
 		assertEquals(-1, dv.getPart(DurationValue.YEAR));
 		assertEquals(-2, dv.getPart(DurationValue.MONTH));
@@ -116,30 +116,30 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals(0, dv.getSeconds(), 0);
 	}
 
-	@Test
-	public void getType() throws XPathException {
+    @Test
+    void getType() throws XPathException {
 		final DurationValue dv = new YearMonthDurationValue("P1Y2M");
 		assertEquals(Type.YEAR_MONTH_DURATION, dv.getType());
 	}
 
-	@Test
-	public void compare1() throws XPathException {
+    @Test
+    void compare1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y3M");
 		assertEquals(-1, dv1.compareTo(null, dv2));
 		assertEquals(+1, dv2.compareTo(null, dv1));
 	}
 
-	@Test
-	public void compare2() throws XPathException {
+    @Test
+    void compare2() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y2M");
 		assertEquals(0, dv1.compareTo(null, dv2));
 		assertEquals(0, dv2.compareTo(null, dv1));
 	}
 
-	@Test
-	public void compare3() throws XPathException {
+    @Test
+    void compare3() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y3M");
 		assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
@@ -150,8 +150,8 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertTrue(dv1.compareTo(null, Comparison.LTEQ, dv2));
 	}
 
-	@Test
-	public void compare4() throws XPathException {
+    @Test
+    void compare4() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y2M");
 		assertTrue(dv1.compareTo(null, Comparison.EQ, dv2));
@@ -162,8 +162,8 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertTrue(dv1.compareTo(null, Comparison.LTEQ, dv2));
 	}
 
-	@Test
-	public void minMax1() throws XPathException {
+    @Test
+    void minMax1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P1Y2M");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y3M");
 		assertDurationEquals(dv2, dv1.max(null, dv2));
@@ -172,8 +172,8 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertDurationEquals(dv1, dv2.min(null, dv1));
 	}
 
-	@Test
-	public void plus1() throws XPathException {
+    @Test
+    void plus1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P2Y11M");
 		final DurationValue dv2 = new YearMonthDurationValue("P3Y3M");
 		final DurationValue dv3 = new YearMonthDurationValue("P6Y2M");
@@ -181,16 +181,16 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertDurationEquals(dv3, dv2.plus(dv1));
 	}
 
-	@Test
-	public void minus1() throws XPathException {
+    @Test
+    void minus1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P2Y11M");
 		final DurationValue dv2 = new YearMonthDurationValue("P3Y3M");
 		final DurationValue dv3 = new YearMonthDurationValue("-P4M");
 		assertDurationEquals(dv3, dv1.minus(dv2));
 	}
 
-	@Test
-	public void mult1() throws XPathException {
+    @Test
+    void mult1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P2Y11M");
 		final DecimalValue f = new DecimalValue("2.3");
 		final DurationValue dv2 = new YearMonthDurationValue("P6Y9M");
@@ -198,16 +198,16 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertDurationEquals(dv2, f.mult(dv1));
 	}
 
-	@Test
-	public void div1() throws XPathException {
+    @Test
+    void div1() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P2Y11M");
 		final DecimalValue f = new DecimalValue("1.5");
 		final DurationValue dv2 = new YearMonthDurationValue("P1Y11M");
 		assertDurationEquals(dv2, dv1.div(f));
 	}
 
-	@Test
-	public void div2() throws XPathException {
+    @Test
+    void div2() throws XPathException {
 		final DurationValue dv1 = new YearMonthDurationValue("P3Y4M");
 		final DurationValue dv2 = new YearMonthDurationValue("-P1Y4M");
 		assertEquals(-2.5, ((Double) dv1.div(dv2).toJavaObject(Double.class)).doubleValue(), 0);

@@ -51,7 +51,7 @@ public class ElementConstructorAttrNamespaceTest {
 
     /** Constr-inscope-3: prefix on the new constructor conflicts with the copied attribute's prefix. */
     @Test
-    public void copiedAttributeWithConflictingPrefixIsPreserved() throws XMLDBException {
+    void copiedAttributeWithConflictingPrefixIsPreserved() throws XMLDBException {
         final String xquery = """
                 for $x in <parent1 xmlns:foo="http://www.example.com/parent1" foo:attr1="attr1"/>
                 return <new xmlns:foo="http://www.example.com">{$x//@*:attr1}</new>""";
@@ -68,7 +68,7 @@ public class ElementConstructorAttrNamespaceTest {
 
     /** Constr-inscope-4: two attributes with conflicting prefixes copied via enclosed expr. */
     @Test
-    public void multipleCopiedAttributesWithConflictingPrefixesArePreserved() throws XMLDBException {
+    void multipleCopiedAttributesWithConflictingPrefixesArePreserved() throws XMLDBException {
         final String xquery = """
                 for $x in <inscope>
                             <parent1 xmlns:foo="http://www.example.com/parent1" foo:attr1="attr1"/>
@@ -88,7 +88,7 @@ public class ElementConstructorAttrNamespaceTest {
 
     /** Simpler reproducer: rename in-scope namespace using a single copied attribute. */
     @Test
-    public void copiedAttributeNamespaceRebindsPrefix() throws XMLDBException {
+    void copiedAttributeNamespaceRebindsPrefix() throws XMLDBException {
         final String xquery = """
                 let $src := <s xmlns:foo="http://example.com/A" foo:k="v"/>
                 return <out xmlns:foo="http://example.com/B">{$src/@*}</out>""";

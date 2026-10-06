@@ -35,23 +35,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class MemoryContentsImplTest {
+class MemoryContentsImplTest {
     private byte[] buf;
     private MemoryContents contents;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         buf = new byte[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         contents = MemoryContentsImpl.createWithInitialBlocks(2);
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(0, contents.size());
     }
 
     @Test
-    public void writeAtEnd() throws IOException {
+    void writeAtEnd() throws IOException {
         assertEquals(2, contents.writeAtEnd(buf, 0, 2));
         assertEquals(2, contents.size());
         assertEquals(2, contents.writeAtEnd(buf, 2, 2));
@@ -59,13 +59,13 @@ public class MemoryContentsImplTest {
     }
 
     @Test
-    public void write() throws IOException {
+    void write() throws IOException {
         assertEquals(8, contents.write(buf, 2L, 0, 8));
         assertEquals(10, contents.size());
     }
 
     @Test
-    public void read() throws IOException {
+    void read() throws IOException {
         byte[] dst = new byte[10];
         assertEquals(10, contents.write(buf, 0L, 0, 10));
         assertEquals(5, contents.read(dst, 0L, 2, 5));
@@ -76,7 +76,7 @@ public class MemoryContentsImplTest {
     }
 
     @Test
-    public void transferTo() throws IOException {
+    void transferTo() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int length = buf.length;
 
@@ -87,7 +87,7 @@ public class MemoryContentsImplTest {
     }
 
     @Test
-    public void bigWriteAndRead() throws IOException {
+    void bigWriteAndRead() throws IOException {
         // set up phase
         Random random = new Random();
         int length = 1024 * 1024 + 1024;

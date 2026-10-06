@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class CollectionURITest {
+class CollectionURITest {
 
-	@Test
-	public void append() {
+    @Test
+    void append() {
 		CollectionURI uri = new CollectionURI("/db");
 		uri.append("test1");
         assertEquals(uri, new CollectionURI("/db/test1"));
@@ -49,7 +49,7 @@ public class CollectionURITest {
     }
 
     @Test
-    public void remove() {
+    void remove() {
         CollectionURI uri = new CollectionURI("/db/test1/test2");
         uri.removeLastSegment();
         assertEquals(uri, new CollectionURI("/db/test1"));

@@ -32,10 +32,10 @@ import static org.exist.xquery.Cardinality.*;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class CardinalityTest {
+class CardinalityTest {
 
     @Test
-    public void atLeastOne() {
+    void atLeastOne() {
         assertFalse(EMPTY_SEQUENCE.atLeastOne());
         assertFalse(ZERO_OR_ONE.atLeastOne());
         assertTrue(ONE_OR_MORE.atLeastOne());
@@ -43,7 +43,7 @@ public class CardinalityTest {
     }
 
     @Test
-    public void atMostOne() {
+    void atMostOne() {
         assertTrue(EMPTY_SEQUENCE.atMostOne());
         assertTrue(ZERO_OR_ONE.atMostOne());
         assertFalse(ONE_OR_MORE.atMostOne());
@@ -51,7 +51,7 @@ public class CardinalityTest {
     }
 
     @Test
-    public void isSubCardinalityOrEqualOf() {
+    void isSubCardinalityOrEqualOf() {
         isSubCardinalityOrEqualOf(EMPTY_SEQUENCE, EMPTY_SEQUENCE);
         notSubCardinalityOrEqualOf(EMPTY_SEQUENCE, EXACTLY_ONE);
         isSubCardinalityOrEqualOf(EMPTY_SEQUENCE, ZERO_OR_ONE);
@@ -94,7 +94,7 @@ public class CardinalityTest {
     }
 
     @Test
-    public void isSuperCardinalityOf() {
+    void isSuperCardinalityOf() {
         isSuperCardinalityOrEqualOf(EMPTY_SEQUENCE, EMPTY_SEQUENCE);
         notSuperCardinalityOrEqualOf(EMPTY_SEQUENCE, EXACTLY_ONE);
         notSuperCardinalityOrEqualOf(EMPTY_SEQUENCE, ZERO_OR_ONE);
@@ -137,7 +137,7 @@ public class CardinalityTest {
     }
 
     @Test
-    public void superCardinalityOf() {
+    void superCardinalityOf() {
         assertEquals(EMPTY_SEQUENCE, Cardinality.superCardinalityOf(EMPTY_SEQUENCE, EMPTY_SEQUENCE));
         assertEquals(ZERO_OR_ONE, Cardinality.superCardinalityOf(EMPTY_SEQUENCE, EXACTLY_ONE));
         assertEquals(ZERO_OR_ONE, Cardinality.superCardinalityOf(EMPTY_SEQUENCE, ZERO_OR_ONE));

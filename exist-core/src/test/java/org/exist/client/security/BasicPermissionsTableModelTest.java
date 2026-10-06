@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BasicPermissionsTableModelTest {
-    
+class BasicPermissionsTableModelTest {
+
     @Test
-    public void getMode() throws PermissionDeniedException {
+    void getMode() throws PermissionDeniedException {
         
         final int modes[] = {
             0,

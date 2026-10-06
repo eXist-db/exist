@@ -73,7 +73,7 @@ public class ConcurrencyTest {
            xmldb:remove(util:collection-name($resource), util:document-name($resource))""";
 
     @Test
-	public void runTasks() {
+    void runTasks() {
         final ExecutorService executorRemove = newFixedThreadPool(CONCURRENT_THREADS, "concurrencyTest-remove");
         final ExecutorService executorQuery = newFixedThreadPool(CONCURRENT_THREADS, "concurrencyTest-query");
 
@@ -146,7 +146,7 @@ public class ConcurrencyTest {
     }
 
     @BeforeAll
-    public static void initDB() throws XMLDBException {
+    static void initDB() throws XMLDBException {
         final CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         try (final Collection test = mgmt.createCollection("test")) {
 
@@ -164,7 +164,7 @@ public class ConcurrencyTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final CollectionManagementService cmgr = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cmgr.removeCollection("test");
     }

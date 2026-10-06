@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class JSONObjectTest {
+class JSONObjectTest {
 
     @Test
-    public void simpleValue() throws IOException {
+    void simpleValue() throws IOException {
         final JSONObject root = new JSONObject("root");
         final JSONObject node = new JSONObject("hello");
         node.addObject(new JSONValue("adam"));
@@ -47,7 +47,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void simpleValue_indent() throws IOException {
+    void simpleValue_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
         final JSONObject node = new JSONObject("hello");
@@ -62,7 +62,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void simpleLiteral() throws IOException {
+    void simpleLiteral() throws IOException {
         final JSONObject root = new JSONObject("root");
         final JSONObject node = new JSONObject("hello");
         final JSONValue literalValue = new JSONValue("1");
@@ -77,7 +77,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void simpleLiteral_indent() throws IOException {
+    void simpleLiteral_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
         final JSONObject node = new JSONObject("hello");
@@ -94,7 +94,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void simpleArray() throws IOException {
+    void simpleArray() throws IOException {
         final JSONObject root = new JSONObject("root");
 
         final JSONObject node = new JSONObject("hello");
@@ -112,7 +112,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void simpleArray_indent() throws IOException {
+    void simpleArray_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
 
@@ -133,7 +133,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalArray() throws IOException {
+    void literalArray() throws IOException {
         final JSONObject root = new JSONObject("root");
 
         final JSONObject node = new JSONObject("hello");
@@ -155,7 +155,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalArray_indent() throws IOException {
+    void literalArray_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
 
@@ -180,7 +180,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void forcedArray() throws IOException {
+    void forcedArray() throws IOException {
         final JSONObject root = new JSONObject("root");
 
         final JSONObject node = new JSONObject("hello");
@@ -195,7 +195,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void forcedArray_indent() throws IOException {
+    void forcedArray_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
 
@@ -212,7 +212,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void forcedSimpleArray() throws IOException {
+    void forcedSimpleArray() throws IOException {
         final JSONObject root = new JSONObject("root");
 
         final JSONObject node = new JSONObject("hello");
@@ -232,7 +232,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void forcedSimpleArray_indent() throws IOException {
+    void forcedSimpleArray_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
 
@@ -255,7 +255,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalInArrayOfOne() throws IOException {
+    void literalInArrayOfOne() throws IOException {
         final JSONObject root = new JSONObject("root");
 
         final JSONObject node = new JSONObject("intarray");
@@ -272,7 +272,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalInArrayOfOne_indent() throws IOException {
+    void literalInArrayOfOne_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
 
@@ -291,7 +291,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalInRawArrayOfOne() throws IOException {
+    void literalInRawArrayOfOne() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
         root.setSerializationDataType(JSONNode.SerializationDataType.AS_LITERAL);
@@ -306,7 +306,7 @@ public class JSONObjectTest {
     }
 
     @Test
-    public void literalInRawArrayOfOne_indent() throws IOException {
+    void literalInRawArrayOfOne_indent() throws IOException {
         final JSONObject root = new JSONObject("root");
         root.setIndent(true);
         root.setSerializationType(JSONNode.SerializationType.AS_ARRAY);

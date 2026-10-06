@@ -89,7 +89,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     private static Path testFile2 = null;
 
     @BeforeAll
-    public static void storeTempXmlDocs() throws IOException {
+    static void storeTempXmlDocs() throws IOException {
         testFile1 = temporaryFolder.toPath().resolve("JournalXmlTest.doc1.xml");
         Files.write(testFile1, Arrays.asList("<element1>text1</element1>"), CREATE_NEW);
 
@@ -98,7 +98,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     }
 
     @Test
-    public void largeJournalEntry_nonCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    void largeJournalEntry_nonCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer
@@ -127,7 +127,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     }
 
     @Test
-    public void largeJournalEntry_corrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    void largeJournalEntry_corrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer

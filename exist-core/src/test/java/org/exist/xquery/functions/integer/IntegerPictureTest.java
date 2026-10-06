@@ -32,16 +32,16 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class IntegerPictureTest {
+class IntegerPictureTest {
 
     @Test
-    public void pictureEmpty() {
+    void pictureEmpty() {
         assertThrows(XPathException.class, () ->
             IntegerPicture.fromString(""));
     }
 
     @Test
-    public void picture() throws XPathException {
+    void picture() throws XPathException {
         IntegerPicture picture = IntegerPicture.fromString("123,2345,34567,6789;00;c(variation)t");
         assertEquals("primary=123,2345,34567,6789;00::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,5,,)::group=Group(0,4,;)::group=Group(0,2,)", picture.toString());
         picture = IntegerPicture.fromString("#23,345,567,789;c(variation)t");
@@ -67,7 +67,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void format() throws XPathException {
+    void format() throws XPathException {
         assertEquals("0", fmt("1", 0L));
         assertEquals("00", fmt("12", 0L));
         assertEquals("000", fmt("123", 0L));
@@ -76,13 +76,13 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatCardinalModifier() throws XPathException {
+    void formatCardinalModifier() throws XPathException {
         //c for cardinal is the default, but we still need to recognize it
         assertEquals("1", fmt("1;c", 1L));
     }
 
     @Test
-    public void formatNegative() throws XPathException {
+    void formatNegative() throws XPathException {
         assertEquals("-1", fmt("1", -1L));
         assertEquals("-01", fmt("12", -1L));
         assertEquals("-001", fmt("123", -1L));
@@ -91,7 +91,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatRegular() throws XPathException {
+    void formatRegular() throws XPathException {
         assertEquals("1,23,45,67,89", fmt("12,34", 123456789L));
         assertEquals("1,23,45,67,89", fmt("12,34,56", 123456789L));
         assertEquals("12345,67?89", fmt("12,34?56", 123456789L));
@@ -100,7 +100,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatOptional() throws XPathException {
+    void formatOptional() throws XPathException {
         assertEquals("009", fmt("#234", 9L));
         assertEquals("123456789", fmt("#234", 123456789L));
         assertEquals("000,0009", fmt("#234,1234", 9L));
@@ -109,7 +109,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatOptionalOrdinal() throws XPathException {
+    void formatOptionalOrdinal() throws XPathException {
         assertEquals("001st", fmt("#234;o", 1L));
         assertEquals("009th", fmt("#234;o", 9L));
         assertEquals("123456789th", fmt("#234;o", 123456789L));
@@ -119,7 +119,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatDefaultFamily() throws XPathException {
+    void formatDefaultFamily() throws XPathException {
         final StringBuilder sb = new StringBuilder();
         sb.append("#234567");
         assertEquals(7, sb.length());
@@ -127,7 +127,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void formatNonDefaultDigitFamilies() throws XPathException {
+    void formatNonDefaultDigitFamilies() throws XPathException {
 
         // All the code point families that exist in DigitsIntegerPicture
         final int[] range = new int[]{0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6, 0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10, 0x104a0, 0x11066, 0x110f0, 0x11136, 0x111d0, 0x112f0, 0x11450, 0x114d0, 0x11650, 0x116c0, 0x11730, 0x118e0, 0x11c50, 0x16a60, 0x16b50, 0x1d7ce, 0x1d7d8, 0x1d7e2, 0x1d7ec, 0x1d7f6, 0x1e950};
@@ -164,7 +164,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void conflictingDigitFamilies() {
+    void conflictingDigitFamilies() {
         final StringBuilder sb = new StringBuilder();
         for (final int family : new int[]{0x104a0, 0x30}) {
             final char[] chars = Character.toChars(family + 3);
@@ -180,7 +180,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void optionalSignsAfterMandatorySigns() throws XPathException {
+    void optionalSignsAfterMandatorySigns() throws XPathException {
         assertEquals("0|005", fmt("##|#3|456", 5L));
         assertEquals("0|05", fmt("##|#3|45", 5L));
         assertEquals("5|67|89", fmt("##|#3|45", 56789L));
@@ -209,7 +209,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void separatorAtEndIsIllegal() throws XPathException {
+    void separatorAtEndIsIllegal() throws XPathException {
         assertEquals("0+5", fmt("1+1", 5L));
         try {
             fmt("1+", 0L);
@@ -220,7 +220,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void separatorAtStartIsIllegal() throws XPathException {
+    void separatorAtStartIsIllegal() throws XPathException {
         assertEquals("0+5", fmt("1+1", 5L));
         try {
             fmt("|1", 0L);
@@ -231,7 +231,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void multiSeparator() {
+    void multiSeparator() {
         try {
             assertEquals("0|005", fmt("#3||456", 5L));
             fail("The picture " + "#3||456" + " should not be valid.");
@@ -241,13 +241,13 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void fromDefault() throws XPathException {
+    void fromDefault() throws XPathException {
         assertEquals("1500000", fmt("#a", 1500000L));
         assertEquals("15th", fmt("#a;o", 15L));
     }
 
     @Test
-    public void alphaUpperDigitFormat() throws XPathException {
+    void alphaUpperDigitFormat() throws XPathException {
         assertEquals("E", fmt("A", 5L));
         assertEquals("Y", fmt("A", 25L));
         assertEquals("Z", fmt("A", 26L));
@@ -268,7 +268,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void alphaLowerDigitFormat() throws XPathException {
+    void alphaLowerDigitFormat() throws XPathException {
         assertEquals("e", fmt("a", 5L));
         assertEquals("y", fmt("a", 25L));
         assertEquals("z", fmt("a", 26L));
@@ -289,12 +289,12 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void romanLowerDigitFormat() throws XPathException {
+    void romanLowerDigitFormat() throws XPathException {
         assertEquals("v", fmt("i", 5L));
     }
 
     @Test
-    public void romanUpperDigitFormat() throws XPathException {
+    void romanUpperDigitFormat() throws XPathException {
         assertEquals("V", fmt("I", 5L));
         assertEquals("MDCCCLXVIII", fmt("I", 1868L));
         assertEquals("MCMLXXXIV", fmt("I", 1984L));
@@ -304,7 +304,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void wordLowerDigitFormat() throws XPathException {
+    void wordLowerDigitFormat() throws XPathException {
         assertEquals("five", fmt("w", 5L));
         assertEquals("fifteen", fmt("w", 15L));
         assertEquals("fünfzehn", fmt("w", 15L, "de"));
@@ -313,7 +313,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void wordModifiers() throws XPathException {
+    void wordModifiers() throws XPathException {
         assertEquals("Première", fmt("Ww;o", 1L, "fr"));
         assertEquals("Deuxième", fmt("Ww;o", 2L, "fr"));
         assertEquals("five", fmt("w", 5L));
@@ -353,7 +353,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void wordUpperDigitFormat() throws XPathException {
+    void wordUpperDigitFormat() throws XPathException {
         assertEquals("FIVE", fmt("W", 5L));
         assertEquals("FIFTEEN", fmt("W", 15L));
         assertEquals("FIFTEEN", fmt("W", 15L, "unknown"));
@@ -361,14 +361,14 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void wordTitleCaseDigitFormat() throws XPathException {
+    void wordTitleCaseDigitFormat() throws XPathException {
         assertEquals("Five", fmt("Ww", 5L));
         assertEquals("Fifteen", fmt("Ww", 15L));
         assertEquals("Two thousand five hundred ninety-eight", fmt("Ww", 2598L, "en"));
     }
 
     @Test
-    public void modifier() throws XPathException {
+    void modifier() throws XPathException {
         FormatModifier formatModifier = new FormatModifier("c(maschile)t");
         assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
         assertEquals(FormatModifier.LetterSequence.TRADITIONAL, formatModifier.letterSequence);
@@ -413,7 +413,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void modifierFailTest() {
+    void modifierFailTest() {
         modifierFail("b");
         modifierFail("ba");
         modifierFail("bt");
@@ -430,7 +430,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void separators() throws XPathException {
+    void separators() throws XPathException {
         assertEquals("1500000", fmt("#", 1500000L));
         assertEquals("12,500:000", fmt("0,000:000", 12500000L));
         assertEquals("12,500,000", fmt("0,000,000", 12500000L));
@@ -439,17 +439,17 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void falllback() throws XPathException {
+    void falllback() throws XPathException {
         assertEquals("1234", fmt("&#xa;", 1234L));
     }
 
     @Test
-    public void greek() throws XPathException {
+    void greek() throws XPathException {
         assertEquals("\u03b2", fmt("\u03b1", 2L));
     }
 
     @Test
-    public void math() throws XPathException {
+    void math() throws XPathException {
         char[] chars = Character.toChars(0x1D7D8);
         StringBuilder sb = new StringBuilder();
         for (final char c : chars) sb.append(c);
@@ -467,7 +467,7 @@ public class IntegerPictureTest {
     }
 
     @Test
-    public void numberings() throws XPathException {
+    void numberings() throws XPathException {
         assertEquals("①", fmt("①", 1L));
         assertEquals("⑮", fmt("①", 15L));
         assertEquals("⑳", fmt("①", 20L));
@@ -476,7 +476,7 @@ public class IntegerPictureTest {
 
 
 
-    @Test public void deutsch() throws XPathException {
+    @Test void deutsch() throws XPathException {
 
         assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
         assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
@@ -486,7 +486,7 @@ public class IntegerPictureTest {
         assertEquals("Ersten", fmt("Ww;o(-en)", 1L, "de"));
     }
 
-    @Test public void italiano() throws XPathException {
+    @Test void italiano() throws XPathException {
 
         assertEquals("Quinto", fmt("Ww;o(-o)", 5L, "it"));
         assertEquals("Quinta", fmt("Ww;o(-a)", 5L, "it"));
@@ -494,26 +494,26 @@ public class IntegerPictureTest {
 
     @Disabled("kanji is not yet implemented")
     @Test
-    public void kanji() throws XPathException {
+    void kanji() throws XPathException {
         //System.err.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
         assertEquals("一", fmt("\u4e00", 1L));
     }
 
     //format-integer(11, 'Ww', '@*!+%')
     @Test
-    public void badLanguage() throws XPathException {
+    void badLanguage() throws XPathException {
         assertEquals("One hundred twenty-three", fmt("Ww", 123L, "@*!+%"));
     }
 
     @Test
-    public void fallback() throws XPathException {
+    void fallback() throws XPathException {
         final char[] hexChar = Character.toChars(0xa);
         assertEquals("1", fmt(String.valueOf(hexChar), 1L));
     }
 
     //format-integer(123456789, '000,00,00')
     @Test
-    public void formatFix() throws XPathException {
+    void formatFix() throws XPathException {
         assertEquals("12345,67,89", fmt("000,00,00", 123456789L));
     }
 }

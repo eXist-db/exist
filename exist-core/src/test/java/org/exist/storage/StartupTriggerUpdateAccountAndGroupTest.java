@@ -85,7 +85,7 @@ public class StartupTriggerUpdateAccountAndGroupTest {
      * BrokerPool named-instance lookup blowing up.
      */
     @Test
-    public void updateAccount() throws DatabaseConfigurationException, EXistException, IOException {
+    void updateAccount() throws DatabaseConfigurationException, EXistException, IOException {
         assertTrue(TestStartupTrigger.updateAccountCompleted);
     }
 
@@ -94,7 +94,7 @@ public class StartupTriggerUpdateAccountAndGroupTest {
      * BrokerPool named-instance lookup blowing up.
      */
     @Test
-    public void updateGroup() throws DatabaseConfigurationException, EXistException, IOException {
+    void updateGroup() throws DatabaseConfigurationException, EXistException, IOException {
         assertTrue(TestStartupTrigger.updateGroupCompleted);
     }
 

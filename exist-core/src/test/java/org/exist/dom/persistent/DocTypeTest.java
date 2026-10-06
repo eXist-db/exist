@@ -89,7 +89,7 @@ public class DocTypeTest {
 	private static Collection root = null;
 
     @org.junit.jupiter.api.Test
-	public void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {
+    void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		final TransactionManager transact = pool.getTransactionManager();
 
@@ -125,7 +125,7 @@ public class DocTypeTest {
 	}
 
     @org.junit.jupiter.api.Test
-	public void docType_usingString() throws EXistException, PermissionDeniedException, SAXException {
+    void docType_usingString() throws EXistException, PermissionDeniedException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final LockedDocument lockedDoc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")),LockMode.READ_LOCK)) {
@@ -152,8 +152,8 @@ public class DocTypeTest {
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeAll
-    public static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
+    @BeforeAll
+    static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 	    final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -171,7 +171,7 @@ public class DocTypeTest {
 	}
 
     @AfterAll
-    public static void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+    static void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 	    final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

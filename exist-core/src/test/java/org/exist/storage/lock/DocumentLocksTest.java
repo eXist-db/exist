@@ -50,7 +50,7 @@ import java.util.function.Supplier;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class DocumentLocksTest {
+class DocumentLocksTest {
 
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
 
@@ -62,7 +62,7 @@ public class DocumentLocksTest {
      * a read lock at the same time
      */
     @Test
-    public void multipleReaders() throws LockException, InterruptedException, ExecutionException {
+    void multipleReaders() throws LockException, InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI docUri = XmldbURI.create("/db/x/y/z/1.xml");
 
@@ -106,7 +106,7 @@ public class DocumentLocksTest {
      * holds the write lock when the second thread attempts to acquire it
      */
     @Test
-    public void singleWriter() throws LockException, InterruptedException, ExecutionException {
+    void singleWriter() throws LockException, InterruptedException, ExecutionException {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI docUri = XmldbURI.create("/db/x/y/z/1.xml");
 

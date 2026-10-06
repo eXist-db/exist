@@ -92,7 +92,7 @@ public class QuantifiedMatchOptimizerTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void loadFixture() throws XMLDBException {
+    static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         final Collection coll = cms.createCollection(COLLECTION_NAME);
@@ -106,7 +106,7 @@ public class QuantifiedMatchOptimizerTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         cms.removeCollection(COLLECTION_NAME);
@@ -153,12 +153,12 @@ public class QuantifiedMatchOptimizerTest {
 
     /** The control for {@link #optimizedIndexUses}: the direct spelling is known to pre-select. */
     @Test
-    public void theDirectFormReachesTheIndexAtRunTime() throws XMLDBException {
+    void theDirectFormReachesTheIndexAtRunTime() throws XMLDBException {
         assertTrue(optimizedIndexUses("$d//speech[matches(speaker, '^CLAUD')]") > 0);
     }
 
     @Test
-    public void theQuantifiedFormReachesTheIndex() throws XMLDBException {
+    void theQuantifiedFormReachesTheIndex() throws XMLDBException {
         final String dump = plan("$d//speech[some $s in speaker satisfies matches($s, '^HAM')]");
         assertTrue(dump.contains(OPTIMIZE_PRAGMA_MARKER),
                 "some ... satisfies matches(...) should be wrapped in the optimize pragma. Plan:\n" + dump);
@@ -166,13 +166,13 @@ public class QuantifiedMatchOptimizerTest {
 
     /** The pragma in the plan must also pre-select from the index when the query runs. */
     @Test
-    public void theQuantifiedFormReachesTheIndexAtRunTime() throws XMLDBException {
+    void theQuantifiedFormReachesTheIndexAtRunTime() throws XMLDBException {
         assertTrue(optimizedIndexUses("$d//speech[some $s in speaker satisfies matches($s, '^HAM')]") > 0);
     }
 
     /** A pattern held in a variable other than the bound one is evaluated outside the quantifier. */
     @Test
-    public void aPatternInAnotherVariableReachesTheIndex() throws XMLDBException {
+    void aPatternInAnotherVariableReachesTheIndex() throws XMLDBException {
         final String body = "let $p := '^HAM' return $d//speech[some $s in speaker satisfies matches($s, $p)]";
         assertTrue(optimizedIndexUses(body) > 0);
         assertEquals(2, count(body, true));
@@ -183,7 +183,7 @@ public class QuantifiedMatchOptimizerTest {
      * itself. A speech whose matching speaker is not the one the binding selects must not qualify.
      */
     @Test
-    public void onlyTheBoundItemsAreChecked() throws XMLDBException {
+    void onlyTheBoundItemsAreChecked() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker[1] satisfies matches($s, '^HOR')]";
         assertEquals(count(body, false), count(body, true));
         assertEquals(0, count(body, true));
@@ -194,7 +194,7 @@ public class QuantifiedMatchOptimizerTest {
      * to know about the ones that do not.
      */
     @Test
-    public void theEveryFormIsLeftAlone() throws XMLDBException {
+    void theEveryFormIsLeftAlone() throws XMLDBException {
         final String dump = plan("$d//speech[every $s in speaker satisfies matches($s, '^HAM')]");
         assertFalse(dump.contains(OPTIMIZE_PRAGMA_MARKER),
                 "every ... satisfies must not be optimized through the index. Plan:\n" + dump);
@@ -207,7 +207,7 @@ public class QuantifiedMatchOptimizerTest {
      * sees.
      */
     @Test
-    public void aDisjunctionInSatisfiesIsLeftAlone() throws XMLDBException {
+    void aDisjunctionInSatisfiesIsLeftAlone() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker satisfies (matches($s, '^HAM') or $s = 'CLAUDIUS')]";
         final String dump = plan(body);
         assertFalse(dump.contains(OPTIMIZE_PRAGMA_MARKER),
@@ -221,7 +221,7 @@ public class QuantifiedMatchOptimizerTest {
      * variable cannot be hoisted -- the variable is not in scope there.
      */
     @Test
-    public void aPatternReferencingTheBoundVariableIsLeftAlone() throws XMLDBException {
+    void aPatternReferencingTheBoundVariableIsLeftAlone() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker satisfies matches($s, $s)]";
         final String dump = plan(body);
         assertFalse(dump.contains(OPTIMIZE_PRAGMA_MARKER),
@@ -235,7 +235,7 @@ public class QuantifiedMatchOptimizerTest {
      * the expression visitors do not see into.
      */
     @Test
-    public void aPatternReferencingTheBoundVariableInANestedQuantifierIsLeftAlone() throws XMLDBException {
+    void aPatternReferencingTheBoundVariableInANestedQuantifierIsLeftAlone() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker satisfies "
                 + "matches($s, if (some $z in (1, 2) satisfies matches($s, '^H')) then '^HAM' else '^CLAUD')]";
         assertEquals(0, optimizedIndexUses(body));
@@ -245,7 +245,7 @@ public class QuantifiedMatchOptimizerTest {
 
     /** Optimized and unoptimized runs must agree. */
     @Test
-    public void optimizedAgreesWithUnoptimized() throws XMLDBException {
+    void optimizedAgreesWithUnoptimized() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker satisfies matches($s, '^HAM')]";
         assertEquals(count(body, false), count(body, true));
         assertEquals(2, count(body, true));
@@ -253,7 +253,7 @@ public class QuantifiedMatchOptimizerTest {
 
     /** A speech with several speakers is found when any one of them matches. */
     @Test
-    public void anyOneOfSeveralBoundItemsMatching() throws XMLDBException {
+    void anyOneOfSeveralBoundItemsMatching() throws XMLDBException {
         final String body = "$d//speech[some $s in speaker satisfies matches($s, '^HOR')]";
         assertEquals(count(body, false), count(body, true));
         assertEquals(1, count(body, true));
@@ -261,7 +261,7 @@ public class QuantifiedMatchOptimizerTest {
 
     /** The optimization must not change which nodes come back, only how they are found. */
     @Test
-    public void theIndexedAndUnindexedSpellingsSelectTheSameSpeeches() throws XMLDBException {
+    void theIndexedAndUnindexedSpellingsSelectTheSameSpeeches() throws XMLDBException {
         final String quantified = "$d//speech[some $s in speaker satisfies matches($s, '^CLAUD')]/line/string()";
         final XQueryService svc = server.getRoot().getService(XQueryService.class);
         final ResourceSet rs = svc.query(OPTIMIZE + docPrefix() + quantified);

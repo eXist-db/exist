@@ -41,10 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * (e.g. a webapp not exploded on disk), which threw an unhandled {@link NullPointerException} instead
  * of letting the caller report a clean "not found".
  */
-public class XSLTServletGetCurrentDirTest {
+class XSLTServletGetCurrentDirTest {
 
     @Test
-    public void nullPathTranslatedAndNullRealPathReturnsNullInsteadOfNPE() throws ServletException {
+    void nullPathTranslatedAndNullRealPathReturnsNullInsteadOfNPE() throws ServletException {
         final ServletContext mockContext = createNiceMock(ServletContext.class);
         expect(mockContext.getRealPath(anyString())).andReturn(null).anyTimes();
         replay(mockContext);

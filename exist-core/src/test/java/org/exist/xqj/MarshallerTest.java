@@ -87,7 +87,7 @@ public class MarshallerTest {
     
     
     @Test
-    public void atomicValues() throws EXistException, XPathException, SAXException, XMLStreamException {
+    void atomicValues() throws EXistException, XPathException, SAXException, XMLStreamException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             ValueSequence values = new ValueSequence(3);
@@ -114,7 +114,7 @@ public class MarshallerTest {
     
 
     @Test
-    public void nodes() throws EXistException, PermissionDeniedException, SAXException, XPathException, XMLStreamException {
+    void nodes() throws EXistException, PermissionDeniedException, SAXException, XPathException, XMLStreamException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             DocumentImpl doc = (DocumentImpl) broker.getXMLResource(TEST_COLLECTION_URI.append("test.xml"));
@@ -137,7 +137,7 @@ public class MarshallerTest {
     }
     
     @Test
-    public void streamToNodeTest() throws XMLStreamException {
+    void streamToNodeTest() throws XMLStreamException {
         Node n = Marshaller.streamToNode(TEST_DOC);
         StringWriter writer = new StringWriter();
 //            SAXSerializer serializer = 
@@ -151,7 +151,7 @@ public class MarshallerTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -167,7 +167,7 @@ public class MarshallerTest {
     }
 
     @AfterAll
-    public static void shutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void shutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

@@ -61,13 +61,13 @@ public class DatabaseInsertResourcesNoValidationTest {
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
 
     @BeforeAll
-    public static void startup() throws Exception {
+    static void startup() throws Exception {
         //create the collections we need for these tests
         createTestCollections();
     }
 
     @AfterAll
-    public static void shutdown() throws Exception {
+    static void shutdown() throws Exception {
         removeTestCollections();
     }
 
@@ -118,7 +118,7 @@ public class DatabaseInsertResourcesNoValidationTest {
      * Insert all documents into database, switch of validation.
      */
     @Test
-    public void insertValidationResources_xsd() throws IOException {
+    void insertValidationResources_xsd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 
@@ -144,7 +144,7 @@ public class DatabaseInsertResourcesNoValidationTest {
     }
 
     @Test
-    public void insertValidationResources_dtd() throws IOException {
+    void insertValidationResources_dtd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 
@@ -170,7 +170,7 @@ public class DatabaseInsertResourcesNoValidationTest {
     }
 
     @Test
-    public void insertValidationResource_dtd_badDocType() throws IOException {
+    void insertValidationResource_dtd_badDocType() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 

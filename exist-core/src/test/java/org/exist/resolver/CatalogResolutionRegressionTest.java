@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * default SAX validation pipeline ({@code org.exist.xquery.functions.validation.Jaxp}) use to parse
  * documents.
  */
-public class CatalogResolutionRegressionTest {
+class CatalogResolutionRegressionTest {
 
     /**
      * Regression test for <a href="https://github.com/eXist-db/exist/issues/1975">#1975</a>:
@@ -61,7 +61,7 @@ public class CatalogResolutionRegressionTest {
      * mechanism elsewhere in the test suite.
      */
     @Test
-    public void catalogResolvesPublicEntityWithNoBaseUri() throws Exception {
+    void catalogResolvesPublicEntityWithNoBaseUri() throws Exception {
         final Path tempDir = Files.createTempDirectory("catalog-1975-test");
         try {
             final Path dtd = tempDir.resolve("greeting.dtd");
@@ -96,7 +96,7 @@ public class CatalogResolutionRegressionTest {
      * ResolverFactory} never sets, relying on the library default of {@code false}.
      */
     @Test @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void catalogWithoutMatchingEntryDoesNotFetchUnmatchedRemoteSystemId() throws Exception {
+    void catalogWithoutMatchingEntryDoesNotFetchUnmatchedRemoteSystemId() throws Exception {
         final Path tempDir = Files.createTempDirectory("catalog-2476-test");
         try {
             final Path catalog = tempDir.resolve("catalog.xml");

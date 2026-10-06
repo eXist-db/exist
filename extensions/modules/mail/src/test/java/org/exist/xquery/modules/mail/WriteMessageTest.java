@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class WriteMessageTest {
+class WriteMessageTest {
 
     private static final String CHARSET = "UTF-8";
     private static final String XML_DOC1_NAME = "doc1.xml";
@@ -81,7 +81,7 @@ public class WriteMessageTest {
     private static final String SUBJECT = "some email with subject: " + UUIDGenerator.getUUIDversion4();
 
     @Test
-    public void writeTextMessage() throws IOException {
+    void writeTextMessage() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
 
         final SendEmailFunction.Mail mail = createMail();
@@ -100,7 +100,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeTextMessageWithXmlAttachment() throws IOException {
+    void writeTextMessageWithXmlAttachment() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
         final SendEmailFunction.Mail mail = createMail();
         mail.setText(messageText);
@@ -133,7 +133,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeTextMessageWithBinaryAttachment() throws IOException {
+    void writeTextMessageWithBinaryAttachment() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
         final SendEmailFunction.Mail mail = createMail();
         mail.setText(messageText);
@@ -166,7 +166,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeTextMessageWithXmlAndBinaryAttachments() throws IOException {
+    void writeTextMessageWithXmlAndBinaryAttachments() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
         final SendEmailFunction.Mail mail = createMail();
         mail.setText(messageText);
@@ -208,7 +208,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlMessage() throws IOException {
+    void writeHtmlMessage() throws IOException {
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -232,7 +232,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlMessageWithXmlAttachment() throws IOException {
+    void writeHtmlMessageWithXmlAttachment() throws IOException {
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -272,7 +272,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlMessageWithBinaryAttachment() throws IOException {
+    void writeHtmlMessageWithBinaryAttachment() throws IOException {
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -312,7 +312,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlMessageWithXmlAndBinaryAttachments() throws IOException {
+    void writeHtmlMessageWithXmlAndBinaryAttachments() throws IOException {
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
         final String htmlHeading = UUIDGenerator.getUUIDversion4();
         final String htmlMessageText = UUIDGenerator.getUUIDversion4();
@@ -361,7 +361,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlAndTextMessage() throws IOException {
+    void writeHtmlAndTextMessage() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
 
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
@@ -401,7 +401,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlAndTextMessageWithXmlAttachment() throws IOException {
+    void writeHtmlAndTextMessageWithXmlAttachment() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
 
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
@@ -457,7 +457,7 @@ public class WriteMessageTest {
     }
 
     @Test
-    public void writeHtmlAndTextMessageWithBinaryAttachment() throws IOException {
+    void writeHtmlAndTextMessageWithBinaryAttachment() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
 
         final String htmlTitle = UUIDGenerator.getUUIDversion4();
@@ -514,7 +514,7 @@ public class WriteMessageTest {
 
 
     @Test
-    public void writeHtmlAndTextMessageWithXmlAndBinaryAttachments() throws IOException {
+    void writeHtmlAndTextMessageWithXmlAndBinaryAttachments() throws IOException {
         final String messageText = UUIDGenerator.getUUIDversion4();
 
         final String htmlTitle = UUIDGenerator.getUUIDversion4();

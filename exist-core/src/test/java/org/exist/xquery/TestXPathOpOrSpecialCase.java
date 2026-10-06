@@ -50,17 +50,17 @@ public class TestXPathOpOrSpecialCase {
 
 	/** Database test collection (<code>/db/blah</code>). */
 	private Collection testCollection;
-	
-	@BeforeEach
-	public void setUp() throws Exception 
+
+    @BeforeEach
+    void setUp() throws Exception
 	{
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("blah");
         assertNotNull(testCollection);
     }
 
-	@AfterEach
-	public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
 		final CollectionManagementService service =
 				existEmbeddedServer.getRoot().getService(
 						CollectionManagementService.class);
@@ -68,13 +68,13 @@ public class TestXPathOpOrSpecialCase {
 		testCollection = null;
 	}
 
-	/**
-	 * Given an essentially empty XML document at path <code>/db/blah/blah.xml</code>,
-	 * query the document with a bogus predicate containing an <code>or<code> operation;
-	 * expect <code>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</code>.
-	 */
-	@org.junit.jupiter.api.Test
-	public void verifyOpOrInPredicate() throws Exception
+    /**
+     * Given an essentially empty XML document at path <code>/db/blah/blah.xml</code>,
+     * query the document with a bogus predicate containing an <code>or<code> operation;
+     * expect <code>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</code>.
+     */
+    @org.junit.jupiter.api.Test
+    void verifyOpOrInPredicate() throws Exception
 	{
 		try
 		{

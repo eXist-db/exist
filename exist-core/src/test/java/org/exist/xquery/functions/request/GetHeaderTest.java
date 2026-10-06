@@ -43,29 +43,29 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
-public class GetHeaderTest extends RESTTest {
+class GetHeaderTest extends RESTTest {
 
 	private final static String HTTP_HEADER_NAME = "header1";
 	private final static String xquery = "<request-header name=\""
 			+ HTTP_HEADER_NAME + "\">{request:get-header(\"" + HTTP_HEADER_NAME
 			+ "\")}</request-header>";
 
-	@Test
-	public void testGetNoHeader() throws IOException, SAXException {
-		testGetHeader(null);
+    @Test
+    void testGetNoHeader() throws IOException, SAXException {
+		assertGetHeader(null);
 	}
 
-	@Test
-	public void testEmptyHeader() throws IOException, SAXException {
-		testGetHeader("");
+    @Test
+    void testEmptyHeader() throws IOException, SAXException {
+		assertGetHeader("");
 	}
 
-	@Test
-	public void testHeaderValue() throws IOException, SAXException {
-		testGetHeader("value1");
+    @Test
+    void testHeaderValue() throws IOException, SAXException {
+		assertGetHeader("value1");
 	}
 
-	private void testGetHeader(String headerValue) throws IOException {
+	private void assertGetHeader(String headerValue) throws IOException {
 		final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no")).GET();
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");

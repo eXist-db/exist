@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @see <a href="https://github.com/eXist-db/exist/issues/2529">#2529</a>
  */
-public class XQueryWatchDogTest {
+class XQueryWatchDogTest {
 
     private XQueryWatchDog createWatchDog() {
         final XQueryContext context = EasyMock.createMockBuilder(XQueryContext.class)
@@ -58,35 +58,35 @@ public class XQueryWatchDogTest {
     }
 
     @Test
-    public void setTimeoutFromOptionNegativeOneDisablesTimeout() throws Exception {
+    void setTimeoutFromOptionNegativeOneDisablesTimeout() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         watchDog.setTimeoutFromOption(timeoutOption("-1"));
         assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
     }
 
     @Test
-    public void setTimeoutFromOptionZeroDisablesTimeout() throws Exception {
+    void setTimeoutFromOptionZeroDisablesTimeout() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         watchDog.setTimeoutFromOption(timeoutOption("0"));
         assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
     }
 
     @Test
-    public void setTimeoutFromOptionPositiveValueSetsTimeout() throws Exception {
+    void setTimeoutFromOptionPositiveValueSetsTimeout() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         watchDog.setTimeoutFromOption(timeoutOption("30000"));
         assertEquals(30000L, getTimeout(watchDog));
     }
 
     @Test
-    public void setTimeoutFromOptionNegativeValueDisablesTimeout() throws Exception {
+    void setTimeoutFromOptionNegativeValueDisablesTimeout() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         watchDog.setTimeoutFromOption(timeoutOption("-500"));
         assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
     }
 
     @Test
-    public void setTimeoutFromOptionNonNumericThrowsException() throws Exception {
+    void setTimeoutFromOptionNonNumericThrowsException() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         Option timeoutOption = timeoutOption("abc");
         assertThrows(XPathException.class, () ->
@@ -94,7 +94,7 @@ public class XQueryWatchDogTest {
     }
 
     @Test
-    public void setTimeoutFromOptionMultipleValuesThrowsException() throws Exception {
+    void setTimeoutFromOptionMultipleValuesThrowsException() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         Option timeoutOption = timeoutOption("100 200");
         assertThrows(XPathException.class, () ->
@@ -102,7 +102,7 @@ public class XQueryWatchDogTest {
     }
 
     @Test
-    public void proceedDoesNotThrowWhenTimeoutDisabledViaOption() throws Exception {
+    void proceedDoesNotThrowWhenTimeoutDisabledViaOption() throws Exception {
         final XQueryWatchDog watchDog = createWatchDog();
         watchDog.setTimeoutFromOption(timeoutOption("-1"));
         // Should not throw TerminatedException even though startTime is in the past
@@ -111,7 +111,7 @@ public class XQueryWatchDogTest {
     }
 
     @Test
-    public void proceedThrowsTimeoutWhenElapsedExceedsLimit() throws Exception {
+    void proceedThrowsTimeoutWhenElapsedExceedsLimit() throws Exception {
         final Expression expr = EasyMock.createNiceMock(Expression.class);
         EasyMock.expect(expr.getLine()).andReturn(1).anyTimes();
         EasyMock.expect(expr.getColumn()).andReturn(1).anyTimes();
