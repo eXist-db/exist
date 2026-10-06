@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/util/sorters/SortTest.java
+  s_3e30a8da43b49c::t_da04ed8137ea7c 75,86,95,104,113,141,167
+exist-core/src/test/java/org/exist/util/sorters/SortComparatorTest.java
+  s_3e30a8da43b49c::t_da04ed8137ea7c 62,73,102,128,153,180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "99571e72a6c997bd1b0e45dc353a922cb843b6cc",
+  "prompts": {},
+  "sessions": {
+    "s_3e30a8da43b49c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f0757b4e1ffeCuw281t3TMddov",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

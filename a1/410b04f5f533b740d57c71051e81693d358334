@@ -1,0 +1,21 @@
+exist-core-jmh/pom.xml
+  s_e7f7c831c628d7::t_0881f3068281af 92-93,200-201,203-206
+exist-indexes-jmh/pom.xml
+  s_e7f7c831c628d7::t_a7d18229f4216c 92-97,156-157,167-170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a1410b04f5f533b740d57c71051e81693d358334",
+  "prompts": {},
+  "sessions": {
+    "s_e7f7c831c628d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39545968-53ff-4ac4-8816-b6635949b8cb",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
