@@ -1,0 +1,25 @@
+extensions/indexes/lucene/pom.xml
+  s_d5ac7bf05ec2fb::t_c7407eb0683ba4 151-165
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java
+  s_d5ac7bf05ec2fb::t_5049a0f00d1b98 57-59,69-70,224,234,240,245,255,261,482,499
+extensions/indexes/ngram/pom.xml
+  s_d5ac7bf05ec2fb::t_dc3a2beb8e3109 73-87
+extensions/indexes/ngram/src/test/java/org/exist/indexing/ngram/MatchListenerTest.java
+  s_d5ac7bf05ec2fb::t_179c569beb09a0 24-26,32,64-67,72-80,332,364-365,378,390,399,408,417,427,437,447,457,468,486-487,493,513-514
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0cf3f6ea7ab0bfe630a86854efd0714d383afd06",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
