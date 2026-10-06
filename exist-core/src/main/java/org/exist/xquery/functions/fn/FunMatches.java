@@ -256,11 +256,37 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (mayUseJavaEngine()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
         if (contextQName != null && Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING)) {
             return contextSequence;
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Whether the flags may select Java's regular-expression engine with {@code ;j}, which the index
+     * paths, still matching a translation of the pattern into Java syntax, do not honor: true unless
+     * they are absent or a literal without it.
+     */
+    private boolean mayUseJavaEngine() {
+        if (getSignature().getArgumentCount() < 3) {
+            return false;
+        }
+        if (Optimizer.unwrapOperand(getArgument(2)) instanceof final LiteralValue literal) {
+            try {
+                return usesJavaEngine(literal.getValue().getStringValue());
+            } catch (final XPathException e) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    private String flagsArgument(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        return getSignature().getArgumentCount() == 3 ? getArgument(2).eval(contextSequence, contextItem).getStringValue() : "";
     }
 
     @Override
@@ -409,11 +435,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
                 if (context.isProfilingEnabled()) {
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");
                 }
-                if (input.isEmpty()) {
-                    result = Sequence.EMPTY_SEQUENCE;
-                } else {
-                    result = evalWithIndex(contextSequence, contextItem, input);
-                }
+                result = input.isEmpty() ? Sequence.EMPTY_SEQUENCE : evalNodeSet(contextSequence, contextItem, input);
                 if (context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                             PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start);
@@ -474,6 +496,29 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             return BooleanValue.valueOf(preselectResult.contains(node));
         }
         return evalGeneric(contextSequence, contextItem, input);
+    }
+
+    /**
+     * Selects the nodes of a stored node set that match: through the index, or, when the flags ask for
+     * Java's engine with {@code ;j}, which the index path does not honor, by matching each node's value.
+     */
+    private Sequence evalNodeSet(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
+        if (usesJavaEngine(flagsArgument(contextSequence, contextItem))) {
+            return matchNodesOnValue(contextSequence, contextItem, input.toNodeSet());
+        }
+        return evalWithIndex(contextSequence, contextItem, input);
+    }
+
+    private Sequence matchNodesOnValue(final Sequence contextSequence, final Item contextItem, final NodeSet nodes) throws XPathException {
+        final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        final String flags = flagsArgument(contextSequence, contextItem);
+        final Sequence result = new ExtArrayNodeSet();
+        for (final NodeProxy node : nodes) {
+            if (matchXmlRegex(node.getStringValue(), pattern, flags)) {
+                result.add(node);
+            }
+        }
+        return result;
     }
 
     private Sequence evalWithIndex(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {

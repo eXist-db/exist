@@ -43,7 +43,6 @@ import static org.exist.xquery.regex.SaxonRegex.*;
  */
 public class FunReplace extends BasicFunction {
 
-	/** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
 	private static final QName FS_REPLACE_NAME = new QName("replace", Function.BUILTIN_FUNCTION_NS);
 
 	private static final String FS_REPLACE_DESCRIPTION =
