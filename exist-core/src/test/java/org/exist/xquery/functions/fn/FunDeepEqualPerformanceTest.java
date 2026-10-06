@@ -51,8 +51,26 @@ public class FunDeepEqualPerformanceTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
+    /** Runs of a query before it is timed, so that compilation and class loading are not measured. */
+    private static final int WARM_UPS = 2;
+
+    /** Timed runs of a query; the fastest one counts. */
+    private static final int RUNS = 5;
+
     private static final String STORED_EQUAL_TREES =
             "fn:deep-equal(doc('/db/deep-equal-perf-a.xml'), doc('/db/deep-equal-perf-b.xml'))";
+
+    private static final String STORED_ROOT_MISMATCH =
+            "fn:deep-equal(doc('/db/deep-equal-perf-a.xml'), doc('/db/deep-equal-perf-c.xml'))";
+
+    /**
+     * Visits every node and attribute of the two stored documents of {@link #STORED_EQUAL_TREES} without
+     * comparing them: the yardstick for how long a pass over this much stored data takes on this machine.
+     */
+    private static final String STORED_TRAVERSAL = """
+            count(doc('/db/deep-equal-perf-a.xml')//node()) + count(doc('/db/deep-equal-perf-b.xml')//node())
+            + count(doc('/db/deep-equal-perf-a.xml')//@*) + count(doc('/db/deep-equal-perf-b.xml')//@*)
+            """;
 
     private static final String LARGE_EQUAL_TREES = """
             declare function local:tree($depth, $breadth) {
@@ -67,6 +85,22 @@ public class FunDeepEqualPerformanceTest {
             let $a := local:tree(4, 10)
             let $b := local:tree(4, 10)
             return fn:deep-equal($a, $b)
+            """;
+
+    /** Builds the trees of {@link #LARGE_EQUAL_TREES} and only counts their elements: the construction cost alone. */
+    private static final String LARGE_TREES_CONSTRUCT_ONLY = """
+            declare function local:tree($depth, $breadth) {
+                if ($depth eq 0) then
+                    <leaf id="x" type="t">value</leaf>
+                else
+                    <branch id="b" depth="{$depth}">{
+                        for $i in 1 to $breadth
+                        return local:tree($depth - 1, $breadth)
+                    }</branch>
+            };
+            let $a := local:tree(4, 10)
+            let $b := local:tree(4, 10)
+            return count($a//*) + count($b//*)
             """;
 
     private static final String LARGE_TREES_DIFFER_AT_LEAF = """
@@ -126,7 +160,9 @@ public class FunDeepEqualPerformanceTest {
                         }</branch>
                 };
                 xmldb:store("/db", "deep-equal-perf-a.xml", local:tree(5, 8)),
-                xmldb:store("/db", "deep-equal-perf-b.xml", local:tree(5, 8))
+                xmldb:store("/db", "deep-equal-perf-b.xml", local:tree(5, 8)),
+                (: same size, another name at the root: the comparison is decided by the first element :)
+                xmldb:store("/db", "deep-equal-perf-c.xml", <otherroot>{ local:tree(5, 8)/node() }</otherroot>)
                 """);
     }
 
@@ -136,21 +172,38 @@ public class FunDeepEqualPerformanceTest {
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("""
                 xmldb:remove("/db", "deep-equal-perf-a.xml"),
-                xmldb:remove("/db", "deep-equal-perf-b.xml")
+                xmldb:remove("/db", "deep-equal-perf-b.xml"),
+                xmldb:remove("/db", "deep-equal-perf-c.xml")
                 """);
     }
 
-    private long timeQuery(final String xquery) throws XMLDBException {
+    /**
+     * The time of the fastest of {@link #RUNS} runs after {@link #WARM_UPS} warm-ups. Noise from a busy
+     * machine or a cold JIT only ever makes a run slower, so the minimum is the stable figure; the tests
+     * compare two such figures taken one after the other instead of checking a fixed number of
+     * milliseconds, which depends on the machine (the same query took 1.0 s on a CI runner and 50 ms
+     * on a laptop).
+     */
+    private long fastestNanos(final String xquery) throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
-        // Warm-up to amortise compilation/class-loading cost.
-        xqs.query(xquery);
-        final long start = System.nanoTime();
-        final ResourceSet rs = xqs.query(xquery);
-        final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
-        // Sanity-check the result: every query above returns one boolean.
-        assertEquals(1, rs.getSize());
-        return elapsedMs;
+        for (int i = 0; i < WARM_UPS; i++) {
+            xqs.query(xquery);
+        }
+        long fastest = Long.MAX_VALUE;
+        for (int i = 0; i < RUNS; i++) {
+            final long start = System.nanoTime();
+            final ResourceSet rs = xqs.query(xquery);
+            final long elapsed = System.nanoTime() - start;
+            // Sanity-check the result: every query above returns one value.
+            assertEquals(1, rs.getSize());
+            fastest = Math.min(fastest, elapsed);
+        }
+        return fastest;
+    }
+
+    private static String ms(final long nanos) {
+        return String.format("%.1f ms", nanos / 1_000_000.0);
     }
 
     private boolean queryResult(final String xquery) throws XMLDBException {
@@ -164,15 +217,19 @@ public class FunDeepEqualPerformanceTest {
     public void deepEqualOnLargeEqualTreesIsFast() throws XMLDBException {
         // In-memory case (memtree) -- the streaming fast path does not
         // apply here; memtree's linked-list sibling traversal is already
-        // O(N) and the legacy recursion is the right path. Sanity check.
+        // O(N) and the legacy recursion is the right path. Constructing the
+        // two trees is most of the time, so the yardstick is the same query
+        // without the comparison: a comparison that is no longer linear in
+        // the size of the trees would dwarf it.
         assertTrue(queryResult(LARGE_EQUAL_TREES));
-        final long elapsedMs = timeQuery(LARGE_EQUAL_TREES);
-        System.out.println("[GH-4050] in-memory equal 10k-element trees: " + elapsedMs + "ms");
-        final long threshold = 3000L;
+        final long comparing = fastestNanos(LARGE_EQUAL_TREES);
+        final long constructing = fastestNanos(LARGE_TREES_CONSTRUCT_ONLY);
+        System.out.println("[GH-4050] in-memory equal 10k-element trees: " + ms(comparing)
+                + " (construction alone " + ms(constructing) + ")");
         assertTrue(
-                elapsedMs <= threshold,
-                "fn:deep-equal on 10,000-element in-memory equal trees took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms)");
+                comparing <= 5 * constructing,
+                "fn:deep-equal on 10,000-element in-memory equal trees took " + ms(comparing)
+                        + ", more than 5 times the " + ms(constructing) + " that constructing them takes");
     }
 
     @Test
@@ -181,34 +238,46 @@ public class FunDeepEqualPerformanceTest {
         // Pre-fix every getFirstChild / getNextSibling on a stored
         // ElementImpl acquires a broker and walks the parent's children
         // via a fresh XMLStreamReader, making compareContents quadratic
-        // in sibling count. The reporter measured ~9000 ms in 2021.
-        // Post-fix the streaming comparator iterates the BTree node
-        // stream once per document at storage speed; on this 10k-element
-        // synthetic the win is ~20x (124 ms observed locally).
+        // in sibling count. Post-fix the streaming comparator iterates the
+        // BTree node stream once per document at storage speed. The yardstick
+        // is a plain pass over the same two documents on the same machine:
+        // the streaming comparator needs about a third of it, the quadratic
+        // version many times more (see the commit that introduced this check).
         assertTrue(queryResult(STORED_EQUAL_TREES));
-        final long elapsedMs = timeQuery(STORED_EQUAL_TREES);
-        System.out.println("[GH-4050] stored equal 10k-element docs (6 attrs/elem): " + elapsedMs + "ms");
-        // Generous threshold to tolerate CI variance while still catching a
-        // regression that puts us back into multi-second territory.
-        final long threshold = 5000L;
+        final long comparing = fastestNanos(STORED_EQUAL_TREES);
+        final long traversing = fastestNanos(STORED_TRAVERSAL);
+        System.out.println("[GH-4050] stored equal 10k-element docs (6 attrs/elem): " + ms(comparing)
+                + " (a pass over both documents " + ms(traversing) + ")");
         assertTrue(
-                elapsedMs <= threshold,
-                "fn:deep-equal on stored 10,000-element docs took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); GH-4050 regression?");
+                comparing <= 2 * traversing,
+                "fn:deep-equal on stored 10,000-element docs took " + ms(comparing)
+                        + ", more than twice the " + ms(traversing) + " of a plain pass over the same documents;"
+                        + " GH-4050 regression?");
     }
 
     @Test
     public void deepEqualOnRootMismatchStillShortCircuits() throws XMLDBException {
-        // Top-level name mismatch: in-memory case (memtree). The legacy
-        // path bails on the first compareNames mismatch.
-        assertFalse(queryResult(LARGE_TREES_DIFFER_AT_ROOT));
-        final long elapsedMs = timeQuery(LARGE_TREES_DIFFER_AT_ROOT);
-        System.out.println("[GH-4050] deep-equal on root-mismatched 10k-element trees: " + elapsedMs + "ms");
-        final long threshold = 1500L;
+        // Top-level name mismatch on stored documents of the same size as the
+        // equal pair: the streaming comparator decides on the first element, so
+        // it must not take anything like the time of the full comparison. Stored
+        // documents are used because nothing has to be constructed there, which
+        // would otherwise be most of the time (an in-memory version of this test
+        // measured the construction of the trees, not the comparison).
+        assertFalse(queryResult(STORED_ROOT_MISMATCH));
+        final long mismatching = fastestNanos(STORED_ROOT_MISMATCH);
+        final long comparing = fastestNanos(STORED_EQUAL_TREES);
+        System.out.println("[GH-4050] deep-equal on root-mismatched stored docs: " + ms(mismatching)
+                + " (full comparison " + ms(comparing) + ")");
         assertTrue(
-                elapsedMs <= threshold,
-                "Root-mismatch fn:deep-equal took " + elapsedMs
-                        + "ms (threshold " + threshold + "ms); pre-check ordering broken?");
+                mismatching * 10 <= comparing,
+                "Root-mismatch fn:deep-equal took " + ms(mismatching) + ", more than a tenth of the "
+                        + ms(comparing) + " of a full comparison; pre-check ordering broken?");
+    }
+
+    @Test
+    public void deepEqualOnInMemoryRootMismatchIsFalse() throws XMLDBException {
+        // Correctness gate for the in-memory path (no timing: see the test above).
+        assertFalse(queryResult(LARGE_TREES_DIFFER_AT_ROOT));
     }
 
     @Test
