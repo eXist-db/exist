@@ -1,0 +1,37 @@
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpDtdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_c9d6a8c069ecc6 109,113,117,121,125,129,133,137,147,151,155,159,162,166
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_5725bc50439690 130,134,138,142,146,150,154,158,162,166,170,174,197,207,224,232,235,238
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxvTest.java
+  s_d5ac7bf05ec2fb::t_f0527a58625798 94,107,120,133
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingOnvdlTest.java
+  s_d5ac7bf05ec2fb::t_1aa103f7c1a22c 101,106,110,115,120,124,128,132,136,140,144,148,163,167
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingRelaxNgTest.java
+  s_d5ac7bf05ec2fb::t_ceda90321671db 92,96,100,104,108,112,116,120,124,128,132,136,140,143,147,150,153,157
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingSchematronTest.java
+  s_d5ac7bf05ec2fb::t_be9bba6004b555 83,88,106,110,114,118,122,126,129,133
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingXsdTest.java
+  s_d5ac7bf05ec2fb::t_c6b7b236238ec4 82,86,90,94,98,102,106,110,113,117
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseDtdNokTest.java
+  s_d5ac7bf05ec2fb::t_c4b8b9cc3a7e0a 81,93,104,116
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseXsdNokTest.java
+  s_d5ac7bf05ec2fb::t_ce1cfb8c9fdabd 81,93,105,117
+exist-core/src/test/java/org/exist/xquery/functions/validate/TournamentSchemaLanguageComparisonTest.java
+  s_d5ac7bf05ec2fb::t_3af073fb06167e 106-109,118-121,126-127,133-134,137,141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7bd182ec1bc5d9b2e27fac9a8c5838aabd393989",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
