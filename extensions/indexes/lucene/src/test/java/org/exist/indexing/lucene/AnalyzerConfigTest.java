@@ -75,18 +75,16 @@ public class AnalyzerConfigTest {
 
     @Test
     public void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException {
-        assertThrows(AnalyzerConfig.ParameterException.class, () -> {
-            final String strParam =
-                    """
-                            <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
-                                <value>'</value>
-                                <value/>
-                                <value>’</value>
-                            </param>""";
-
-            final Element elemParam = parse(strParam).getDocumentElement();
-            AnalyzerConfig.getConstructorParameter(elemParam);
-        });
+        final String strParam =
+                """
+                        <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
+                            <value>'</value>
+                            <value/>
+                            <value>’</value>
+                        </param>""";
+        final Element elemParam = parse(strParam).getDocumentElement();
+        assertThrows(AnalyzerConfig.ParameterException.class, () ->
+            AnalyzerConfig.getConstructorParameter(elemParam));
     }
 
     @Test

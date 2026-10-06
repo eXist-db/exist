@@ -202,12 +202,11 @@ public class TextImplTest {
 
     @Test
     public void insertData_pastEnd() {
-        assertThrows(DOMException.class, () -> {
-            final TextImpl text = new TextImpl("hello");
-            assertEquals("hello", text.getTextContent());
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () ->
 
-            text.insertData(10, "world");
-        });
+            text.insertData(10, "world"));
     }
 
     @Test
@@ -257,12 +256,11 @@ public class TextImplTest {
 
     @Test
     public void replaceData_pastEnd() {
-        assertThrows(DOMException.class, () -> {
-            final TextImpl text = new TextImpl("hello");
-            assertEquals("hello", text.getTextContent());
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+        assertThrows(DOMException.class, () ->
 
-            text.insertData(10, "world");
-        });
+            text.insertData(10, "world"));
     }
 
     @Test

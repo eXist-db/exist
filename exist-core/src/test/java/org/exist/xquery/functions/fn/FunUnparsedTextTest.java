@@ -152,12 +152,11 @@ public class FunUnparsedTextTest {
 
     @Test
     public void unparsedTextLinesNoDataStream() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        final String text = "hello, the time is: " + System.currentTimeMillis();
+        final String textUri = "http://from-dynamic-context/doc1";
+        final String query = "fn:unparsed-text-lines('" + textUri + "')";
         assertThrows(XPathException.class, () -> {
-            final BrokerPool pool = BrokerPool.getInstance();
-
-            final String text = "hello, the time is: " + System.currentTimeMillis();
-            final String textUri = "http://from-dynamic-context/doc1";
-            final String query = "fn:unparsed-text-lines('" + textUri + "')";
 
             try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
                 final XQueryContext context = new XQueryContext(pool);
