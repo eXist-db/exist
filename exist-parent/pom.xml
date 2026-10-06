@@ -612,11 +612,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.xmlunit</groupId>
-                <artifactId>xmlunit-legacy</artifactId>
-                <version>${xmlunit.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.junit</groupId>
