@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/test/XmlStringDiffMatcherTest.java
+  s_d5ac7bf05ec2fb::t_bee6dbae920af2 1-141
+exist-core/src/test/java/org/exist/test/XmlStringDiffMatcher.java
+  s_d5ac7bf05ec2fb::t_aa228695d8eca5 39,46-49,52,67-77,104-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0687eb76ac2243bfed780f398c2b749b2bcf8de7",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
