@@ -41,14 +41,14 @@ public class DocumentUpdateTest {
 
 	private static final String TEST_COLLECTION_NAME = "testup";
     private Collection testCollection;
-    
+
     /**
      * Test if the doc, collection and document functions are correctly
      * notified upon document updates. Call a function once on the empty collection, 
      * then call it again after a document was added, and compare the results.
      */
-	@Test
-    public void update() throws XMLDBException {
+    @Test
+    void update() throws XMLDBException {
     	String imports = 
     		"""
             import module namespace xdb='http://exist-db.org/xquery/xmldb';
@@ -134,7 +134,7 @@ public class DocumentUpdateTest {
     }
 
     @Test
-    public void updateAttribute() throws XMLDBException {
+    void updateAttribute() throws XMLDBException {
         String query1="let $content :="
                 +"<A><B><C d=\"xxx\">ccc1</C><C d=\"yyy\" e=\"zzz\">ccc2</C></B></A> "
                 +"let $uri := xmldb:store(\"/db/\", \"marktest7.xml\", $content) "
@@ -160,14 +160,14 @@ public class DocumentUpdateTest {
     }
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;

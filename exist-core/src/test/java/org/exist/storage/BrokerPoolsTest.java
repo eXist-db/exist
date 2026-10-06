@@ -47,7 +47,7 @@ public class BrokerPoolsTest {
     public File temporaryFolder;
 
     @Test
-    public void shutdownConcurrent() throws InterruptedException, ExecutionException, EXistException, DatabaseConfigurationException, IOException {
+    void shutdownConcurrent() throws InterruptedException, ExecutionException, EXistException, DatabaseConfigurationException, IOException {
         final int testThreads = 5;
         final CountDownLatch shutdownLatch = new CountDownLatch(1);
         final CountDownLatch acquiredLatch = new CountDownLatch(testThreads);

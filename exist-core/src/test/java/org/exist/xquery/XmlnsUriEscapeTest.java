@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * DirectConElemNamespace-3, -4, -5, -6,
  * K2-DirectConElemNamespace-59, -65, -75.
  */
-public class XmlnsUriEscapeTest extends XQueryCompilationTest {
+class XmlnsUriEscapeTest extends XQueryCompilationTest {
 
     private static String stringResult(final Either<XPathException, Sequence> r) throws XPathException {
         assertTrue(r.isRight(), "query returned an error: " + (r.isLeft() ? r.left().get().getMessage() : ""));
@@ -55,63 +55,63 @@ public class XmlnsUriEscapeTest extends XQueryCompilationTest {
     }
 
     @Test
-    public void escapeQuotInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void escapeQuotInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // K2 DirectConElemNamespace-4 shape: "" -> "
         final String query = "namespace-uri(<p:e xmlns:p=\"http://ns.example.com/ns?val=\"\"asd\"/>)";
         assertEquals("http://ns.example.com/ns?val=\"asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void multipleEscapeQuotInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void multipleEscapeQuotInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // DirectConElemNamespace-3 shape: """""" -> """
         final String query = "namespace-uri(<p:e xmlns:p=\"http://ns.example.com/ns?val=\"\"\"\"\"\"asd\"/>)";
         assertEquals("http://ns.example.com/ns?val=\"\"\"asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void escapeAposInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void escapeAposInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // DirectConElemNamespace-5 shape: '''''' -> '''
         final String query = "namespace-uri(<p:e xmlns:p='http://ns.example.com/ns?val=''''''asd'/>)";
         assertEquals("http://ns.example.com/ns?val='''asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void escapeAposInDefaultXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void escapeAposInDefaultXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // DirectConElemNamespace-6 shape: '' -> ' (default xmlns)
         final String query = "namespace-uri(<e xmlns='http://ns.example.com/ns?val=''asd'/>)";
         assertEquals("http://ns.example.com/ns?val='asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void doubleBracesInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void doubleBracesInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // K2-DirectConElemNamespace-59 shape: {{{{{{}}}}}} -> {{{}}}
         final String query = "namespace-uri(<p:e xmlns:p=\"http://example.com/{{{{{{}}}}}}asd\"/>)";
         assertEquals("http://example.com/{{{}}}asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void mixedDoubleBracesInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void mixedDoubleBracesInPrefixedXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // K2-DirectConElemNamespace-65 shape: {{}}{{{{}}}} -> {}{{}}
         final String query = "namespace-uri-for-prefix(\"p\", <e xmlns:p=\"http://example.com/{{}}{{{{}}}}\"/>)";
         assertEquals("http://example.com/{}{{}}", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void doubleBracesInDefaultXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void doubleBracesInDefaultXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // K2-DirectConElemNamespace-75 shape: {{1}} -> {1}
         final String query = "namespace-uri(<e xmlns=\"http://example.com/{{1}}\"/>)";
         assertEquals("http://example.com/{1}", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void predefinedEntityRefInXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void predefinedEntityRefInXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // &quot; entity ref expansion in xmlns URI
         final String query = "namespace-uri(<p:e xmlns:p=\"http://example.com/?val=&quot;asd\"/>)";
         assertEquals("http://example.com/?val=\"asd", stringResult(executeQuery(query)));
     }
 
     @Test
-    public void ampersandEntityRefInXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
+    void ampersandEntityRefInXmlnsUri() throws EXistException, PermissionDeniedException, XPathException {
         // &amp; entity ref expansion in xmlns URI
         final String query = "namespace-uri(<p:e xmlns:p=\"http://example.com/?a=1&amp;b=2\"/>)";
         assertEquals("http://example.com/?a=1&b=2", stringResult(executeQuery(query)));

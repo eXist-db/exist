@@ -52,25 +52,25 @@ public class NumericOpPromotionTest {
 	private static final IntegerValue ZERO = new IntegerValue(0), ONE = new IntegerValue(1);
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerDiv(String typeName, ComputableValue operand) throws XPathException {
+    void integerDiv(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.div(ONE));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerMult(String typeName, ComputableValue operand) throws XPathException {
+    void integerMult(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.mult(ONE));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerPlus(String typeName, ComputableValue operand) throws XPathException {
+    void integerPlus(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.plus(ZERO));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerMinus(String typeName, ComputableValue operand) throws XPathException {
+    void integerMinus(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.minus(ZERO));
 	}

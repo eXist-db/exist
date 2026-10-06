@@ -115,7 +115,7 @@ public class XUpdateTest {
     private Collection col = null;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void xupdate(String testName, String sourceFile) throws Exception {
+    void xupdate(String testName, String sourceFile) throws Exception {
         initXUpdateTest(testName, sourceFile);
         startup();
 
@@ -200,7 +200,7 @@ public class XUpdateTest {
     }
 
     @AfterEach
-    public void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         removeDocument();
 
         TestUtils.cleanupDB();

@@ -73,26 +73,26 @@ public class InScopeNamespaceCompileTest {
     }
 
     @Test
-    public void intersectResolvesPrefix()
+    void intersectResolvesPrefix()
             throws EXistException, PermissionDeniedException, Exception {
         // mirrors XQTS fn-intersect-node-args-016
         compileWithAtomicPrefix("(/atomic:root/atomic:integer) intersect (/atomic:root/atomic:integer)");
     }
 
     @Test
-    public void unionResolvesPrefix() throws Exception {
+    void unionResolvesPrefix() throws Exception {
         // mirrors XQTS fn-union-node-args-016
         compileWithAtomicPrefix("(/atomic:root/atomic:integer) union (/atomic:root/atomic:integer)");
     }
 
     @Test
-    public void exceptResolvesPrefix() throws Exception {
+    void exceptResolvesPrefix() throws Exception {
         // mirrors XQTS fn-except-node-args-016
         compileWithAtomicPrefix("(/atomic:root/atomic:integer) except (/atomic:root/atomic:integer)");
     }
 
     @Test
-    public void plainPathResolvesPrefix() throws Exception {
+    void plainPathResolvesPrefix() throws Exception {
         // baseline: a plain path expression must work too
         compileWithAtomicPrefix("/atomic:root/atomic:integer");
     }

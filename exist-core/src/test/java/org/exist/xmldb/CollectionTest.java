@@ -38,19 +38,19 @@ public class CollectionTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeEach
-    public void setup() throws XMLDBException {
+    void setup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.createCollection(TestConstants.SPECIAL_NAME);
     }
 
     @AfterEach
-    public void cleanup() throws XMLDBException {
+    void cleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TestConstants.SPECIAL_NAME);
     }
 
     @Test
-    public void testRead() throws XMLDBException {
+    void testRead() throws XMLDBException {
         final Collection test = existEmbeddedServer.getRoot().getChildCollection(TestConstants.SPECIAL_NAME);
         assertNotNull(test);
     }

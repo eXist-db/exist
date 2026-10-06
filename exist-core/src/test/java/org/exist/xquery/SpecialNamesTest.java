@@ -43,7 +43,7 @@ public class SpecialNamesTest {
 	private String query;
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                 CollectionManagementService.class);
@@ -52,7 +52,7 @@ public class SpecialNamesTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                         CollectionManagementService.class);
@@ -127,7 +127,7 @@ public class SpecialNamesTest {
     }
 
     @Test
-    public void attributes() throws XMLDBException {
+    void attributes() throws XMLDBException {
         XQueryService service = getQueryService();
         @SuppressWarnings("unused")
         ResourceSet result;

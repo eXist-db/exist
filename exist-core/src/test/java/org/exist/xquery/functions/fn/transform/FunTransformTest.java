@@ -33,7 +33,7 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FunTransformTest {
+class FunTransformTest {
 
     @Test
     void versionNumbers() throws Transform.PendingException {
@@ -61,14 +61,14 @@ public class FunTransformTest {
     }
 
     @Test
-    public void emptyResolution() throws XPathException, URISyntaxException {
+    void emptyResolution() throws XPathException, URISyntaxException {
         var base = new AnyURIValue("");
         var relative = new AnyURIValue("path/to/functions1.xsl");
         assertEquals(new AnyURIValue("path/to/functions1.xsl"), URIResolution.resolveURI(relative, base));
     }
 
     @Test
-    public void resolution() throws XPathException, URISyntaxException {
+    void resolution() throws XPathException, URISyntaxException {
         var base = new AnyURIValue("xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl");
         var relative = new AnyURIValue("functions1.xsl");
         assertEquals(new AnyURIValue("xmldb:exist:/db/apps/fn_transform/functions1.xsl"),
@@ -115,7 +115,7 @@ public class FunTransformTest {
     }
 
     @Test
-    public void resolutionAgainstDatabasePath() throws XPathException, URISyntaxException {
+    void resolutionAgainstDatabasePath() throws XPathException, URISyntaxException {
         final AnyURIValue relative = new AnyURIValue("functions1.xsl");
 
         // a database path has no scheme, yet it is an absolute location within the database
@@ -139,7 +139,7 @@ public class FunTransformTest {
     }
 
     @Test
-    public void resolutionAgainstCollection() throws XPathException, URISyntaxException {
+    void resolutionAgainstCollection() throws XPathException, URISyntaxException {
         final AnyURIValue relative = new AnyURIValue("functions1.xsl");
 
         // the last segment of a collection has no extension, so it is kept when resolving against it
@@ -175,7 +175,7 @@ public class FunTransformTest {
      * @throws TransformerException
      */
     @Test
-    public void resolverObject() throws TransformerException {
+    void resolverObject() throws TransformerException {
         var resolver = new URIResolution.CompileTimeURIResolver(new XQueryContext(), null) {
             @Override protected SourceWithLocation resolveDocument(final String location) {
                 return new SourceWithLocation("RESOLVED::" + location);

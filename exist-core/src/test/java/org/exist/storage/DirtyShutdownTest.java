@@ -54,9 +54,9 @@ public class DirtyShutdownTest {
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
-    
+
     @Test
-    public void run() throws ExecutionException, InterruptedException {
+    void run() throws ExecutionException, InterruptedException {
         final ExecutorService service = Executors.newSingleThreadExecutor();
         final Callable<Void> callable = () -> {
             storeRepeatedly();

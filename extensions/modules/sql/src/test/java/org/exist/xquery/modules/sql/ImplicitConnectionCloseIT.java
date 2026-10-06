@@ -106,7 +106,7 @@ public class ImplicitConnectionCloseIT {
     private Context ctx = null;
 
     @BeforeEach
-    public void setupJndiEnvironment() throws NamingException {
+    void setupJndiEnvironment() throws NamingException {
         final Properties properties = new Properties();
         properties.setProperty(JNDI_DS_NAME + ".type", StubDataSource.class.getName());
         properties.setProperty(JNDI_DS_NAME + ".javaxNamingSpiObjectFactory", StubDataSourceFactory.class.getName());
@@ -121,7 +121,7 @@ public class ImplicitConnectionCloseIT {
     }
 
     @AfterEach
-    public void teardownJndiEnvironment() throws NamingException {
+    void teardownJndiEnvironment() throws NamingException {
         ctx.unbind(JNDI_DS_NAME);
         ctx.close();
 
@@ -129,7 +129,7 @@ public class ImplicitConnectionCloseIT {
     }
 
     @Test
-    public void getJndiConnectionIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getJndiConnectionIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                 "sql:get-jndi-connection(\"" + JNDI_DS_NAME + "\", \"" + STUB_JDBC_USER + "\", \"" + STUB_JDBC_PASSWORD + "\")";
@@ -173,7 +173,7 @@ public class ImplicitConnectionCloseIT {
     }
 
     @Test
-    public void getJndiConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, SAXException {
+    void getJndiConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, SAXException {
         final String moduleQuery =
                 "module namespace mymodule = \"http://mymodule.com\";\n" +
                         "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +

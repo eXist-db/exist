@@ -42,7 +42,7 @@ public class PortalRedirectTest extends AbstractHttpTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
-    public void portalRootServesLandingPageWithExistRedirect() throws IOException {
+    void portalRootServesLandingPageWithExistRedirect() throws IOException {
         final HttpRequest request = HttpRequest.newBuilder(URI.create(portalUri(existWebServer))).GET().build();
         final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, request));
 

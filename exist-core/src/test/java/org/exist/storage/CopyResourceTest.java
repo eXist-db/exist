@@ -114,7 +114,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -124,7 +124,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -134,7 +134,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
         Thread.sleep(5);
@@ -146,7 +146,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
         Thread.sleep(5);
@@ -158,7 +158,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -168,7 +168,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -178,7 +178,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
         Thread.sleep(5);
@@ -190,7 +190,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
         Thread.sleep(5);
@@ -202,7 +202,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_NEW_DOC);
         checkAttributes(USER2_NEW_DOC, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -212,7 +212,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
         checkAttributes(USER2_NEW_BIN_DOC, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -222,7 +222,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2LastModified = getLastModified(USER2_DOC2);
         Thread.sleep(5);
@@ -234,7 +234,7 @@ public class CopyResourceTest {
      * As owner user copy {@link #USER1_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_DOC3} owned by someone else.
      */
     @org.junit.jupiter.api.Test
-    public void copyXmlToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyXmlToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc3LastModified = getLastModified(USER2_DOC3);
         Thread.sleep(5);
@@ -246,7 +246,7 @@ public class CopyResourceTest {
      * As owner user copy {@link #USER1_BIN_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_BIN_DOC3} owned by someone else.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyBinaryToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc3LastModified = getLastModified(USER2_DOC3);
         Thread.sleep(5);
@@ -258,7 +258,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER2_BIN_DOC2);
         Thread.sleep(5);
@@ -271,7 +271,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(user1, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
@@ -283,7 +283,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
@@ -295,7 +295,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
         Thread.sleep(5);
@@ -308,7 +308,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
         Thread.sleep(5);
@@ -321,7 +321,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
@@ -333,7 +333,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
@@ -345,7 +345,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
         Thread.sleep(5);
@@ -358,7 +358,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
         Thread.sleep(5);
@@ -371,7 +371,7 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(user2, PRESERVE, USER1_DOC1, USER2_NEW_DOC);
@@ -383,7 +383,7 @@ public class CopyResourceTest {
      * some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    void copyPreserveBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
@@ -395,7 +395,7 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2Created = getCreated(USER2_DOC2);
         Thread.sleep(5);
@@ -408,7 +408,7 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @org.junit.jupiter.api.Test
-    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2Created = getCreated(USER2_BIN_DOC2);
         Thread.sleep(5);
@@ -481,7 +481,7 @@ public class CopyResourceTest {
     }
 
     @BeforeAll
-    public static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
@@ -499,7 +499,7 @@ public class CopyResourceTest {
     }
 
     @BeforeEach
-    public void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
+    void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
 
         // create user1 resources
@@ -566,7 +566,7 @@ public class CopyResourceTest {
     }
 
     @AfterEach
-    public void teardown() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
+    void teardown() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -594,7 +594,7 @@ public class CopyResourceTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));

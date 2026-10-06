@@ -73,14 +73,14 @@ public class ExtDocTest {
     }
 
     @AfterEach
-    public void removeExtDoc() {
+    void removeExtDoc() {
         if (externalDoc != null) {
             FileUtils.deleteQuietly(externalDoc);
         }
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parse(String docName, String docContent, Path externalDoc) throws XMLDBException, IOException {
+    void parse(String docName, String docContent, Path externalDoc) throws XMLDBException, IOException {
         initExtDocTest(docName, docContent, externalDoc);
         storeExtDoc();
         final URI docUri = this.externalDoc.toUri();

@@ -42,7 +42,7 @@ public class VectorStoreImplTest {
     private VectorStoreImpl store;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final VectorStore vectorStore = pool.getVectorStore();
         assertNotNull(vectorStore);
@@ -52,7 +52,7 @@ public class VectorStoreImplTest {
     }
 
     @Test
-    public void entryCountTracksPutAndRemove() throws Exception {
+    void entryCountTracksPutAndRemove() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager mgr = pool.getTransactionManager();
         final NodeId nodeId = pool.getNodeFactory().createInstance();
@@ -79,7 +79,7 @@ public class VectorStoreImplTest {
     }
 
     @Test
-    public void removeByDocumentAdjustsEntryCount() throws Exception {
+    void removeByDocumentAdjustsEntryCount() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager mgr = pool.getTransactionManager();
         final NodeId nodeId1 = pool.getNodeFactory().createInstance(1);
@@ -100,7 +100,7 @@ public class VectorStoreImplTest {
     }
 
     @Test
-    public void resetEntryCountCacheForcesRescan() throws Exception {
+    void resetEntryCountCacheForcesRescan() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager mgr = pool.getTransactionManager();
         final NodeId nodeId = pool.getNodeFactory().createInstance();

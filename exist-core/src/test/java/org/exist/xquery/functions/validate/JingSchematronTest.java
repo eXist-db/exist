@@ -60,7 +60,7 @@ public class JingSchematronTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/tournament")) {
@@ -80,7 +80,7 @@ public class JingSchematronTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sch15StoredValid() throws XMLDBException, SAXException, IOException {
+    void sch15StoredValid() throws XMLDBException, SAXException, IOException {
         String query = "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
@@ -89,7 +89,7 @@ public class JingSchematronTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sch_15_stored_valid_boolean() throws XMLDBException {
+    void sch15StoredValidBoolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
@@ -103,7 +103,7 @@ public class JingSchematronTest {
 
     @org.junit.jupiter.api.Test
 
-    public void sch15StoredInvalid() throws XMLDBException, SAXException, IOException {
+    void sch15StoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
@@ -111,7 +111,7 @@ public class JingSchematronTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sch15AnyuriValid() throws XMLDBException, SAXException, IOException {
+    void sch15AnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
@@ -119,7 +119,7 @@ public class JingSchematronTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sch15AnyuriInvalid() throws XMLDBException, SAXException, IOException {
+    void sch15AnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";

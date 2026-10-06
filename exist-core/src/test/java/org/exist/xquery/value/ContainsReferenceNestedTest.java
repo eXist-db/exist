@@ -53,7 +53,7 @@ public class ContainsReferenceNestedTest {
     public static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void valueSequenceDetectsItemNestedInMap() throws Exception {
+    void valueSequenceDetectsItemNestedInMap() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
@@ -72,7 +72,7 @@ public class ContainsReferenceNestedTest {
     }
 
     @Test
-    public void arrayListValueSequenceDetectsItemNestedInMap() throws Exception {
+    void arrayListValueSequenceDetectsItemNestedInMap() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
@@ -91,7 +91,7 @@ public class ContainsReferenceNestedTest {
     }
 
     @Test
-    public void subSequenceDetectsItemNestedInMap() throws Exception {
+    void subSequenceDetectsItemNestedInMap() throws Exception {
         final BrokerPool pool = SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());

@@ -65,7 +65,7 @@ public class CDataIntergationTest extends AbstractHttpTest {
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
 
     @Test
-    public void cdataRestApi() throws IOException {
+    void cdataRestApi() throws IOException {
         final String uri = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db";
         final String docUri = uri + "/rest-cdata-test.xml";
 
@@ -88,7 +88,7 @@ public class CDataIntergationTest extends AbstractHttpTest {
     }
 
     @Test
-    public void cdataXmlDbApi() throws XMLDBException {
+    void cdataXmlDbApi() throws XMLDBException {
         final String docName = "xmldb-cdata-test.xml";
         final Database database = new DatabaseImpl();
         DatabaseManager.registerDatabase(database);

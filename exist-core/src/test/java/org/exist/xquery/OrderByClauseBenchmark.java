@@ -82,7 +82,7 @@ public class OrderByClauseBenchmark {
     }
 
     @Test
-    public void benchmark() throws XMLDBException {
+    void benchmark() throws XMLDBException {
         Assumptions.assumeTrue(
                 Boolean.getBoolean("exist.run.benchmarks"),
                 "Benchmark skipped by default. Re-run with -Dexist.run.benchmarks=true");

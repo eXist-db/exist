@@ -43,7 +43,7 @@ public class EntitiesTest {
 	private String query;
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                 CollectionManagementService.class);
@@ -52,7 +52,7 @@ public class EntitiesTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                         CollectionManagementService.class);
@@ -127,7 +127,7 @@ public class EntitiesTest {
     }
 
     @Test
-    public void attributeConstructor() throws XMLDBException {
+    void attributeConstructor() throws XMLDBException {
         XQueryService service = getQueryService();
         @SuppressWarnings("unused")
         ResourceSet result;
@@ -147,7 +147,7 @@ public class EntitiesTest {
     }
 
     @Test
-    public void stringConstructor() throws XMLDBException {
+    void stringConstructor() throws XMLDBException {
         XQueryService service = getQueryService();
         @SuppressWarnings("unused")
         ResourceSet result;
@@ -161,7 +161,7 @@ public class EntitiesTest {
     }
 
     @Test
-    public void uriConstructor() throws XMLDBException {
+    void uriConstructor() throws XMLDBException {
         XQueryService service = getQueryService();
         ResourceSet result;
 

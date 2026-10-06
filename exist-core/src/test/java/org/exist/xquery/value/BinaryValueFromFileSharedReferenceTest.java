@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * deferred {@code xmldb:store} could read it, surfacing as
  * "error while obtaining length of binary value ..." caused by "Underlying channel has been closed".</p>
  */
-public class BinaryValueFromFileSharedReferenceTest {
+class BinaryValueFromFileSharedReferenceTest {
 
     /**
      * Models {@code enterEnclosedExpr()} (incrementSharedReferences) followed by {@code exitEnclosedExpr()}
@@ -52,7 +52,7 @@ public class BinaryValueFromFileSharedReferenceTest {
      * be released by the final cleanup {@code close()}.
      */
     @Test
-    public void survivesEnclosedExpressionWhenShared() throws Exception {
+    void survivesEnclosedExpressionWhenShared() throws Exception {
         final byte[] content = "multipart upload payload".getBytes(UTF_8);
         final Path file = Files.createTempFile("bvff-shared", ".bin");
         try {
@@ -85,7 +85,7 @@ public class BinaryValueFromFileSharedReferenceTest {
      * preserving the eager-cleanup behavior of {@code exitEnclosedExpr()}.
      */
     @Test
-    public void closesWhenNotShared() throws Exception {
+    void closesWhenNotShared() throws Exception {
         final Path file = Files.createTempFile("bvff-unshared", ".bin");
         try {
             Files.write(file, "payload".getBytes(UTF_8));

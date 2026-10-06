@@ -54,12 +54,12 @@ public class XQSuiteTearDownErrorTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void createCollection() throws XMLDBException {
+    static void createCollection() throws XMLDBException {
         embedded.executeQuery("xmldb:create-collection('/db', 'test-6422')");
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         try {
             embedded.executeQuery("xmldb:remove('" + COLLECTION + "')");
         } catch (final XMLDBException ignored) {
@@ -67,7 +67,7 @@ public class XQSuiteTearDownErrorTest {
     }
 
     @Test
-    public void cleanTearDownProducesNoMarker() throws XMLDBException {
+    void cleanTearDownProducesNoMarker() throws XMLDBException {
         final String module = """
                 xquery version "3.1";
                 module namespace t = "http://exist-db.org/xquery/test/6422-clean";
@@ -85,7 +85,7 @@ public class XQSuiteTearDownErrorTest {
     }
 
     @Test
-    public void throwingTearDownIsSurfaced() throws XMLDBException {
+    void throwingTearDownIsSurfaced() throws XMLDBException {
         final String module = """
                 xquery version "3.1";
                 module namespace t = "http://exist-db.org/xquery/test/6422-throw";
@@ -115,7 +115,7 @@ public class XQSuiteTearDownErrorTest {
     }
 
     @Test
-    public void throwingSetUpAndTearDownBothSurfaced() throws XMLDBException {
+    void throwingSetUpAndTearDownBothSurfaced() throws XMLDBException {
         // Both setUp and tearDown throw. The original behaviour reported
         // setUp's error and dropped tearDown's; now both must appear.
         final String module = """

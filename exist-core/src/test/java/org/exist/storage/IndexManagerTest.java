@@ -54,8 +54,8 @@ public class IndexManagerTest {
   @RegisterExtension
   public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-  @Test
-  public void configurationChangeRuntime() throws Exception  {
+    @Test
+    void configurationChangeRuntime() throws Exception  {
     final BrokerPool pool = existEmbeddedServer.getBrokerPool();
     try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
       pool.getIndexManager().registerIndex(new TestIndex());

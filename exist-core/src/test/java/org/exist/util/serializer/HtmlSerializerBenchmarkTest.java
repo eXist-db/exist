@@ -45,7 +45,7 @@ import java.util.Properties;
  * counts only charAt-based calls — this lets us prove the algorithmic
  * improvement without having to revert the patch.
  */
-public class HtmlSerializerBenchmarkTest {
+class HtmlSerializerBenchmarkTest {
 
     private static final String LOREM =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
@@ -127,7 +127,7 @@ public class HtmlSerializerBenchmarkTest {
     }
 
     @Test
-    public void rawTextFastPath() throws TransformerException, IOException {
+    void rawTextFastPath() throws TransformerException, IOException {
         // Compare per-char writes between an empty <script> and a <script> with
         // many '<' chars in its body. Without the raw-text fast path each '<'
         // breaks the bulk run and emits a per-char write; with the fast path
@@ -195,7 +195,7 @@ public class HtmlSerializerBenchmarkTest {
     }
 
     @Test
-    public void compareAgainstPerCharWriter() throws TransformerException, IOException {
+    void compareAgainstPerCharWriter() throws TransformerException, IOException {
         // Warm-up — let JIT compile the hot path
         for (int i = 0; i < 5; i++) {
             try (java.io.OutputStreamWriter w = newProductionLikeWriter()) { run(w); }
@@ -234,7 +234,7 @@ public class HtmlSerializerBenchmarkTest {
     }
 
     @Test
-    public void htmlSerializationHotPath() throws TransformerException, IOException {
+    void htmlSerializationHotPath() throws TransformerException, IOException {
         // Warm-up
         for (int i = 0; i < 3; i++) {
             run(new CountingWriter());

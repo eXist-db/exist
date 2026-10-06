@@ -72,7 +72,7 @@ public class CollectionOrderTest {
      * Ensures that when iterating over Collections the order of iteration is always the same
      */
     @Test
-    public void collectionOrderIsOldestInsertedFirst() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void collectionOrderIsOldestInsertedFirst() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         final List<String> subCollectionNames1 = generateRandomNames(SUB_COLLECTION_COUNT / 2);
@@ -98,7 +98,7 @@ public class CollectionOrderTest {
      * and that this persists across restarts of database
      */
     @Test
-    public void collectionOrderIsOldestInsertedFirst_persistedOverRestart() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, DatabaseConfigurationException {
+    void collectionOrderIsOldestInsertedFirst_persistedOverRestart() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, DatabaseConfigurationException {
         BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final List<String> subCollectionNames1 = generateRandomNames(SUB_COLLECTION_COUNT);
         createSubCollections(pool, subCollectionNames1);
@@ -141,7 +141,7 @@ public class CollectionOrderTest {
      * Ensures that when iterating over Documents the order of iteration is always the same
      */
     @Test
-    public void documentOrderIsOldestInsertedFirst() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    void documentOrderIsOldestInsertedFirst() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         final List<String> documentNames1 = generateRandomNames(DOCUMENT_COUNT / 2);
@@ -369,7 +369,7 @@ public class CollectionOrderTest {
     }
 
     @BeforeEach
-    public void createTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void createTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -379,7 +379,7 @@ public class CollectionOrderTest {
     }
 
     @AfterEach
-    public void removeTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeTestCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {

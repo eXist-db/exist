@@ -43,7 +43,7 @@ public class DbStoreTest {
     private final static String TEST_COLLECTION = "testAnyUri";
 
     @Test
-    public final void simpleTest() throws XMLDBException {
+    final void simpleTest() throws XMLDBException {
         final Collection rootCol = existEmbeddedServer.getRoot();
         Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
         if (testCol == null) {

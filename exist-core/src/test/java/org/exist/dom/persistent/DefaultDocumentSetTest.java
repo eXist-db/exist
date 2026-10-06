@@ -39,10 +39,10 @@ import static org.easymock.EasyMock.verify;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DefaultDocumentSetTest {
+class DefaultDocumentSetTest {
 
     @Test
-    public void contains_leftRight() {
+    void contains_leftRight() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -73,7 +73,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_nonOptimized_leftRight() {
+    void contains_nonOptimized_leftRight() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -99,7 +99,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_nonOptimized_rightLeft() {
+    void contains_nonOptimized_rightLeft() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -127,7 +127,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_noMatch() {
+    void contains_noMatch() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -155,7 +155,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_nonOptimized_noMatch_leftRight() {
+    void contains_nonOptimized_noMatch_leftRight() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -180,7 +180,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_nonOptimized_noMatch_rightLeft() {
+    void contains_nonOptimized_noMatch_rightLeft() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -204,7 +204,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void contains_emptySet() {
+    void contains_emptySet() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -229,7 +229,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void equalDocs() {
+    void equalDocs() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -262,7 +262,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void equalDocs_noMatch() {
+    void equalDocs_noMatch() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -293,7 +293,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void equalDocs_nonOptimized() {
+    void equalDocs_nonOptimized() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -321,7 +321,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void equalDocs_nonOptimized_noMatch() {
+    void equalDocs_nonOptimized_noMatch() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);
@@ -347,7 +347,7 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
-    public void equalDocs_emptySet() {
+    void equalDocs_emptySet() {
         final Collection col = mockCollection(1);
 
         final DocumentImpl doc1 = mockDoc(col, 1);

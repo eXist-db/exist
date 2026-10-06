@@ -72,7 +72,7 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
     }
 
     @Test
-    public void cannotExpandExternalEntitiesWhenDisabled() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
+    void cannotExpandExternalEntitiesWhenDisabled() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
 
         // create a temporary file on disk that contains secret info

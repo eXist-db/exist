@@ -218,19 +218,19 @@ public class IndexerTest {
 
     @Disabled("Whitespace handling in mixed content, see #6156")
     @org.junit.jupiter.api.Test
-    public void retrieve_preserve_mixed_ws() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
+    void retrieve_preserve_mixed_ws() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
 		//Nodes 1, 7 and 13 are not in mixed-contents and should not be preserved. They are the spaces between elements x and y, y and z, and z and x.
         assertEquals(RESULT_PRESERVE_MIXED_WS_XML, store_and_retrieve_ws_mixed_content_value(true, XML, XQUERY));
     }
 
     @Disabled("Whitespace handling in mixed content, see #6156")
     @org.junit.jupiter.api.Test
-    public void retrieve_no_preserve_mixed_ws() throws EXistException, PermissionDeniedException, IOException, LockException, AuthenticationException, SAXException, XPathException {
+    void retrieve_no_preserve_mixed_ws() throws EXistException, PermissionDeniedException, IOException, LockException, AuthenticationException, SAXException, XPathException {
         assertEquals(RESULT_NO_PRESERVE_MIXED_WS_XML, store_and_retrieve_ws_mixed_content_value(false, XML, XQUERY));
     }
-    
+
     @org.junit.jupiter.api.Test
-    public void retrieve_xslt_preserve_mixed_ws() throws EXistException, PermissionDeniedException, IOException, LockException, AuthenticationException, SAXException, XPathException {
+    void retrieve_xslt_preserve_mixed_ws() throws EXistException, PermissionDeniedException, IOException, LockException, AuthenticationException, SAXException, XPathException {
         assertEquals(RESULT_XML_XSLT, store_and_retrieve_ws_mixed_content_value(true, XML_XSLT, XQUERY_XSLT));
     }
 }

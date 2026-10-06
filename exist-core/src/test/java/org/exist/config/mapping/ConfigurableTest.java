@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigurableTest {
+class ConfigurableTest {
 
 	String config1 = "" +
 			"<instance xmlns='http://exist-db.org/Configuration'>" +
@@ -45,9 +45,9 @@ public class ConfigurableTest {
 					//XXX: "<subconfig key='2' secret='secret2'/>"+
 				"</mappedConfig> " +
 			"</instance>";
-	
-	@Test
-	public void simple() throws Exception {
+
+    @Test
+    void simple() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);

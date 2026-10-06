@@ -54,7 +54,7 @@ public class LocalCollectionTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void setup() throws XMLDBException {
+    static void setup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
                 .getService(CollectionManagementService.class);
@@ -63,7 +63,7 @@ public class LocalCollectionTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
                 .getService(CollectionManagementService.class);
@@ -72,7 +72,7 @@ public class LocalCollectionTest {
     }
 
     @Test
-    public void getServices() throws XMLDBException {
+    void getServices() throws XMLDBException {
         final List<Class<? extends Service>> expectedServiceTypes = Arrays.asList(CollectionManagementService.class,
                 DatabaseInstanceManager.class, EXistCollectionManagementService.class, EXistRestoreService.class,
                 EXistUserManagementService.class, IndexQueryService.class, UserManagementService.class,
@@ -87,32 +87,32 @@ public class LocalCollectionTest {
     }
 
     @Test
-    public void getChildCollectionCount() throws XMLDBException {
+    void getChildCollectionCount() throws XMLDBException {
         assertThat(testCollection.getChildCollectionCount()).isZero();
     }
 
     @Test
-    public void getPropertyWithDefault() throws XMLDBException {
+    void getPropertyWithDefault() throws XMLDBException {
         assertThat(testCollection.getProperty("myProperty", "theDefault")).isEqualTo("theDefault");
     }
 
     @Test
-    public void hasService(){
+    void hasService(){
         assertThat(testCollection.hasService(XPathQueryService.class)).isTrue();
     }
 
     @Test
-    public void findService(){
+    void findService(){
         assertThat(testCollection.findService(XPathQueryService.class).get()).isNotNull();
     }
 
     @Test
-    public void getService() throws XMLDBException {
+    void getService() throws XMLDBException {
         assertThat(testCollection.getService(XPathQueryService.class)).isNotNull();
     }
 
     @Test
-    public void registerProvders() {
+    void registerProvders() {
         LocalCollection localCollection = (LocalCollection)testCollection;
         ServiceProviderCache.ProviderRegistry registry = createMock(ServiceProviderCache.ProviderRegistry.class);
 
@@ -135,30 +135,30 @@ public class LocalCollectionTest {
     }
 
     @Test
-    public void listChildCollections() throws XMLDBException {
+    void listChildCollections() throws XMLDBException {
         assertThat(testCollection.listChildCollections()).isEmpty();
     }
 
     @Test
-    public void getChildCollections() throws XMLDBException {
+    void getChildCollections() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
         assertThat(localCollection.getChildCollections()).isEmpty();
     }
 
     @Test
-    public void listResources() throws XMLDBException {
+    void listResources() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
         assertThat(localCollection.listResources()).isEmpty();
     }
 
     @Test
-    public void getResources() throws XMLDBException {
+    void getResources() throws XMLDBException {
         LocalCollection localCollection = (LocalCollection)testCollection;
         assertThat(localCollection.getResources()).isEmpty();
     }
 
     @Test
-    public void getCreationTime() throws XMLDBException {
+    void getCreationTime() throws XMLDBException {
         assertThat(testCollection.getCreationTime()).isNotNull();
     }
 }

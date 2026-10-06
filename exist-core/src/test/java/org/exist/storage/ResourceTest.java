@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author wessels
  */
-public class ResourceTest {
+class ResourceTest {
     
     private final static String EMPTY_BINARY_FILE = "";
     private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
@@ -63,12 +63,12 @@ public class ResourceTest {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         BrokerPool.stopAll(false);
     }
 
     @Test
-    public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -136,7 +136,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void storeAndRead2() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    void storeAndRead2() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
     	store(pool);
@@ -192,12 +192,12 @@ public class ResourceTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

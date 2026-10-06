@@ -40,10 +40,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
-public class CountExpressionTest {
+class CountExpressionTest {
 
     @Test
-    public void countTest() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void countTest() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = """
                 xquery version "3.1";
                 for $p in $products

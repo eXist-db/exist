@@ -41,10 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class LsnTest {
+class LsnTest {
 
     @Test
-    public void compareTo() {
+    void compareTo() {
         assertEquals(0, Lsn.LSN_INVALID.compareTo(Lsn.LSN_INVALID));
         assertEquals(-1, Lsn.LSN_INVALID.compareTo(new Lsn((short)0, 0)));
         assertEquals(1, new Lsn((short)0, 0).compareTo(Lsn.LSN_INVALID));
@@ -70,7 +70,7 @@ public class LsnTest {
     }
 
     @Test
-    public void equalsTo() {
+    void equalsTo() {
         assertTrue(Lsn.LSN_INVALID.equals(Lsn.LSN_INVALID));
         assertTrue(Lsn.LSN_INVALID.equals(new Lsn((short)-1, -1)));
         assertTrue(new Lsn((short)-1, -1).equals(Lsn.LSN_INVALID));

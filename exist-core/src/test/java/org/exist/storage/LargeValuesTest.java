@@ -70,7 +70,7 @@ public class LargeValuesTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @org.junit.jupiter.api.Test
-    public void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {
+    void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {
         storeDocuments();
         restart();
         remove();
@@ -199,7 +199,7 @@ public class LargeValuesTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

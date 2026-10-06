@@ -40,10 +40,10 @@ import static org.easymock.EasyMock.verify;
  * @author aretter
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class XQueryURLRewriteTest
+class XQueryURLRewriteTest
 {
     @Test
-    public void adjustPathForSourceLookup_fullXmldbUri() {
+    void adjustPathForSourceLookup_fullXmldbUri() {
         XQueryURLRewrite rewriter = new XQueryURLRewrite();
 
 
@@ -56,7 +56,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void adjustPathForSourceLookup_dbUri() {
+    void adjustPathForSourceLookup_dbUri() {
         XQueryURLRewrite rewriter = new XQueryURLRewrite();
 
 
@@ -69,7 +69,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void adjustPathForSourceLookup_fsUri() {
+    void adjustPathForSourceLookup_fsUri() {
         XQueryURLRewrite rewriter = new XQueryURLRewrite();
 
 
@@ -82,7 +82,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void requestWrapper_copiesRequestParams() {
+    void requestWrapper_copiesRequestParams() {
 
         final Map<String, String[]> testParameterMap = new HashMap<String, String[]>();
         testParameterMap.put("paramName1", new String[] {"value1", "value1.1"});
@@ -109,7 +109,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void requestWrapper_addsParamAftercopiesRequestParams() {
+    void requestWrapper_addsParamAftercopiesRequestParams() {
 
         final Map<String, String[]> testParameterMap = new HashMap<String, String[]>();
         testParameterMap.put("paramName1", new String[] {"value1", "value1.1"});
@@ -144,7 +144,7 @@ public class XQueryURLRewriteTest
     }
 
     @Test
-    public void getServletPathSafelyReturnsServletPath() {
+    void getServletPathSafelyReturnsServletPath() {
         HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
 
         // XQueryURLRewrite is always mapped with url-pattern "/*" (see web.xml), a
@@ -168,7 +168,7 @@ public class XQueryURLRewriteTest
      * javadoc) -- see https://github.com/eXist-db/exist/issues/6618.
      */
     @Test
-    public void getServletPathSafelyToleratesAmbiguousUriException() {
+    void getServletPathSafelyToleratesAmbiguousUriException() {
         HttpServletRequest mockHttpServletRequest = EasyMock.createMock(HttpServletRequest.class);
 
         expect(mockHttpServletRequest.getServletPath())

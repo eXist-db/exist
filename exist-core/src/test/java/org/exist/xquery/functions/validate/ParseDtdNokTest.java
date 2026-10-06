@@ -55,7 +55,7 @@ public class ParseDtdNokTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/hamlet")) {
@@ -76,7 +76,7 @@ public class ParseDtdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredValid() throws XMLDBException {
+    void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
@@ -88,7 +88,7 @@ public class ParseDtdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdStoredInvalid() throws XMLDBException {
+    void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
@@ -99,7 +99,7 @@ public class ParseDtdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriValid() throws XMLDBException {
+    void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
@@ -111,7 +111,7 @@ public class ParseDtdNokTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xsdAnyuriInvalid() throws XMLDBException {
+    void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 

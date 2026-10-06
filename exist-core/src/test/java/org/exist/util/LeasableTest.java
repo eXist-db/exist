@@ -28,11 +28,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LeasableTest {
+class LeasableTest {
 
 
     @Test
-    public void fromCloseable() {
+    void fromCloseable() {
         AutoCloseable autoCloseable = EasyMock.mock(AutoCloseable.class);
 
         Leasable<AutoCloseable> leasable = Leasable.fromCloseable(autoCloseable);

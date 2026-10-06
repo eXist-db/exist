@@ -52,7 +52,7 @@ public class GetJmxTokenTest {
     public static final ExistXmldbEmbeddedServer dba = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void dbaCanGetToken() throws XMLDBException {
+    void dbaCanGetToken() throws XMLDBException {
         final ResourceSet result = dba.executeQuery("system:get-jmx-token()");
         assertEquals(1, result.getSize());
 
@@ -61,7 +61,7 @@ public class GetJmxTokenTest {
     }
 
     @Test
-    public void tokenIsStableAcrossCalls() throws XMLDBException {
+    void tokenIsStableAcrossCalls() throws XMLDBException {
         final ResourceSet first = dba.executeQuery("system:get-jmx-token()");
         final ResourceSet second = dba.executeQuery("system:get-jmx-token()");
 
@@ -69,7 +69,7 @@ public class GetJmxTokenTest {
     }
 
     @Test
-    public void tokenFileChangesAreReflectedOnNextCall() throws XMLDBException, IOException {
+    void tokenFileChangesAreReflectedOnNextCall() throws XMLDBException, IOException {
         final ResourceSet before = dba.executeQuery("system:get-jmx-token()");
         final String originalToken = (String) before.getResource(0).getContent();
 
@@ -105,7 +105,7 @@ public class GetJmxTokenTest {
     }
 
     @Test
-    public void guestIsDenied() throws XMLDBException {
+    void guestIsDenied() throws XMLDBException {
         final Collection guestRoot = DatabaseManager.getCollection(LOCAL_DB, TestUtils.GUEST_DB_USER, TestUtils.GUEST_DB_PWD);
         final EXistXQueryService guestQueryService = guestRoot.getService(EXistXQueryService.class);
 

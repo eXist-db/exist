@@ -40,8 +40,8 @@ public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	private static final String FILES_DIR = "/home/wolf/xml/movies";
 	private static final String QUERY0 = "collection('" + XmldbURI.ROOT_COLLECTION + "')/movie";
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		final Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		assertNotNull(c1);
 	}

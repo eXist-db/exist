@@ -34,49 +34,49 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * whether a response body should be returned as XML (parsed), string, or binary.
  * This is the critical behavior difference from the old implementation.</p>
  */
-public class ContentTypeHelperTest {
+class ContentTypeHelperTest {
 
     // ========================================================================
     // XML detection
     // ========================================================================
 
     @Test
-    public void applicationXmlIsXml() {
+    void applicationXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("application/xml"));
     }
 
     @Test
-    public void textXmlIsXml() {
+    void textXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("text/xml"));
     }
 
     @Test
-    public void applicationAtomXmlIsXml() {
+    void applicationAtomXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("application/atom+xml"));
     }
 
     @Test
-    public void applicationSoapXmlIsXml() {
+    void applicationSoapXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("application/soap+xml"));
     }
 
     @Test
-    public void applicationXsltXmlIsXml() {
+    void applicationXsltXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("application/xslt+xml"));
     }
 
     @Test
-    public void applicationSvgXmlIsXml() {
+    void applicationSvgXmlIsXml() {
         assertTrue(ContentTypeHelper.isXml("image/svg+xml"));
     }
 
     @Test
-    public void xmlWithCharsetIsXml() {
+    void xmlWithCharsetIsXml() {
         assertTrue(ContentTypeHelper.isXml("application/xml; charset=utf-8"));
     }
 
     @Test
-    public void xmlCaseInsensitive() {
+    void xmlCaseInsensitive() {
         assertTrue(ContentTypeHelper.isXml("APPLICATION/XML"));
     }
 
@@ -85,22 +85,22 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void textHtmlIsHtml() {
+    void textHtmlIsHtml() {
         assertTrue(ContentTypeHelper.isHtml("text/html"));
     }
 
     @Test
-    public void textHtmlWithCharsetIsHtml() {
+    void textHtmlWithCharsetIsHtml() {
         assertTrue(ContentTypeHelper.isHtml("text/html; charset=utf-8"));
     }
 
     @Test
-    public void applicationXhtmlIsHtml() {
+    void applicationXhtmlIsHtml() {
         assertTrue(ContentTypeHelper.isHtml("application/xhtml+xml"));
     }
 
     @Test
-    public void htmlCaseInsensitive() {
+    void htmlCaseInsensitive() {
         assertTrue(ContentTypeHelper.isHtml("TEXT/HTML"));
     }
 
@@ -109,62 +109,62 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void textPlainIsText() {
+    void textPlainIsText() {
         assertTrue(ContentTypeHelper.isText("text/plain"));
     }
 
     @Test
-    public void textCssIsText() {
+    void textCssIsText() {
         assertTrue(ContentTypeHelper.isText("text/css"));
     }
 
     @Test
-    public void textCsvIsText() {
+    void textCsvIsText() {
         assertTrue(ContentTypeHelper.isText("text/csv"));
     }
 
     @Test
-    public void applicationJsonIsText() {
+    void applicationJsonIsText() {
         assertTrue(ContentTypeHelper.isText("application/json"));
     }
 
     @Test
-    public void applicationJsonWithCharsetIsText() {
+    void applicationJsonWithCharsetIsText() {
         assertTrue(ContentTypeHelper.isText("application/json; charset=utf-8"));
     }
 
     @Test
-    public void applicationVndApiJsonIsText() {
+    void applicationVndApiJsonIsText() {
         assertTrue(ContentTypeHelper.isText("application/vnd.api+json"));
     }
 
     @Test
-    public void applicationLdJsonIsText() {
+    void applicationLdJsonIsText() {
         assertTrue(ContentTypeHelper.isText("application/ld+json"));
     }
 
     @Test
-    public void applicationJavascriptIsText() {
+    void applicationJavascriptIsText() {
         assertTrue(ContentTypeHelper.isText("application/javascript"));
     }
 
     @Test
-    public void applicationEcmascriptIsText() {
+    void applicationEcmascriptIsText() {
         assertTrue(ContentTypeHelper.isText("application/ecmascript"));
     }
 
     @Test
-    public void textJavascriptIsText() {
+    void textJavascriptIsText() {
         assertTrue(ContentTypeHelper.isText("text/javascript"));
     }
 
     @Test
-    public void applicationFormUrlencodedIsText() {
+    void applicationFormUrlencodedIsText() {
         assertTrue(ContentTypeHelper.isText("application/x-www-form-urlencoded"));
     }
 
     @Test
-    public void textCaseInsensitive() {
+    void textCaseInsensitive() {
         assertTrue(ContentTypeHelper.isText("APPLICATION/JSON"));
     }
 
@@ -173,34 +173,34 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void imagePngIsBinary() {
+    void imagePngIsBinary() {
         assertFalse(ContentTypeHelper.isText("image/png"), "image/png should not be text");
         assertFalse(ContentTypeHelper.isXml("image/png"), "image/png should not be xml");
         assertFalse(ContentTypeHelper.isHtml("image/png"), "image/png should not be html");
     }
 
     @Test
-    public void applicationOctetStreamIsBinary() {
+    void applicationOctetStreamIsBinary() {
         assertFalse(ContentTypeHelper.isText("application/octet-stream"));
     }
 
     @Test
-    public void applicationPdfIsBinary() {
+    void applicationPdfIsBinary() {
         assertFalse(ContentTypeHelper.isText("application/pdf"));
     }
 
     @Test
-    public void applicationZipIsBinary() {
+    void applicationZipIsBinary() {
         assertFalse(ContentTypeHelper.isText("application/zip"));
     }
 
     @Test
-    public void audioMpegIsBinary() {
+    void audioMpegIsBinary() {
         assertFalse(ContentTypeHelper.isText("audio/mpeg"));
     }
 
     @Test
-    public void videoMp4IsBinary() {
+    void videoMp4IsBinary() {
         assertFalse(ContentTypeHelper.isText("video/mp4"));
     }
 
@@ -210,13 +210,13 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void applicationXmlIsNotText() {
+    void applicationXmlIsNotText() {
         assertFalse(ContentTypeHelper.isText("application/xml"),
                 "XML should be parsed, not returned as text");
     }
 
     @Test
-    public void textHtmlIsNotText() {
+    void textHtmlIsNotText() {
         assertFalse(ContentTypeHelper.isText("text/html"),
                 "HTML should be parsed, not returned as text");
     }
@@ -226,31 +226,31 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void extractMediaTypeStripsCharset() {
+    void extractMediaTypeStripsCharset() {
         assertEquals("application/json",
                 ContentTypeHelper.extractMediaType("application/json; charset=utf-8"));
     }
 
     @Test
-    public void extractMediaTypeTrimsWhitespace() {
+    void extractMediaTypeTrimsWhitespace() {
         assertEquals("text/plain",
                 ContentTypeHelper.extractMediaType("  text/plain  "));
     }
 
     @Test
-    public void extractMediaTypeLowercases() {
+    void extractMediaTypeLowercases() {
         assertEquals("application/json",
                 ContentTypeHelper.extractMediaType("Application/JSON"));
     }
 
     @Test
-    public void extractMediaTypeHandlesNull() {
+    void extractMediaTypeHandlesNull() {
         assertEquals("application/octet-stream",
                 ContentTypeHelper.extractMediaType(null));
     }
 
     @Test
-    public void extractMediaTypeHandlesEmpty() {
+    void extractMediaTypeHandlesEmpty() {
         assertEquals("application/octet-stream",
                 ContentTypeHelper.extractMediaType(""));
     }
@@ -260,37 +260,37 @@ public class ContentTypeHelperTest {
     // ========================================================================
 
     @Test
-    public void extractCharsetFromContentType() {
+    void extractCharsetFromContentType() {
         assertEquals("utf-8",
                 ContentTypeHelper.extractCharset("text/plain; charset=utf-8"));
     }
 
     @Test
-    public void extractCharsetCaseInsensitive() {
+    void extractCharsetCaseInsensitive() {
         assertEquals("utf-8",
                 ContentTypeHelper.extractCharset("text/plain; Charset=UTF-8"));
     }
 
     @Test
-    public void extractCharsetDefaultsToUtf8() {
+    void extractCharsetDefaultsToUtf8() {
         assertEquals("utf-8",
                 ContentTypeHelper.extractCharset("text/plain"));
     }
 
     @Test
-    public void extractCharsetHandlesNull() {
+    void extractCharsetHandlesNull() {
         assertEquals("utf-8",
                 ContentTypeHelper.extractCharset(null));
     }
 
     @Test
-    public void extractCharsetWithQuotes() {
+    void extractCharsetWithQuotes() {
         assertEquals("utf-8",
                 ContentTypeHelper.extractCharset("text/plain; charset=\"utf-8\""));
     }
 
     @Test
-    public void extractCharsetIso8859() {
+    void extractCharsetIso8859() {
         assertEquals("iso-8859-1",
                 ContentTypeHelper.extractCharset("text/plain; charset=iso-8859-1"));
     }

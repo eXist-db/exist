@@ -62,7 +62,7 @@ public class VectorSearchEmbeddingTest {
         <articles><article><title>Hello world</title></article><article><title>Machine learning</title></article></articles>""";
 
     @Test
-    public void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
+    void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
         assumeTrue(hasEmbeddingModel(),
             "ONNX model not found: skipping embedding test. Download to target/onnx-models/all-MiniLM-L6-v2, run with -Dexist.home=<repo-root>");
 

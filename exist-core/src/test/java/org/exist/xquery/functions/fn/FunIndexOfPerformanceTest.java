@@ -55,24 +55,24 @@ public class FunIndexOfPerformanceTest {
     }
 
     @Test
-    public void smallSequenceStrings() throws XMLDBException {
+    void smallSequenceStrings() throws XMLDBException {
         assertEquals("1 4", executeOne(
                 "string-join(fn:index-of((\"a\", \"sport\", \"and\", \"a\", \"pastime\"), \"a\"), ' ')"));
     }
 
     @Test
-    public void smallSequenceIntegers() throws XMLDBException {
+    void smallSequenceIntegers() throws XMLDBException {
         assertEquals("2 4",
                 executeOne("string-join(fn:index-of((15, 40, 25, 40, 10), 40), ' ')"));
     }
 
     @Test
-    public void emptySource() throws XMLDBException {
+    void emptySource() throws XMLDBException {
         assertEquals("0", executeOne("count(fn:index-of((), 1))"));
     }
 
     @Test
-    public void noMatch() throws XMLDBException {
+    void noMatch() throws XMLDBException {
         assertEquals("0", executeOne("count(fn:index-of((1, 2, 3), 99))"));
     }
 
@@ -82,7 +82,7 @@ public class FunIndexOfPerformanceTest {
      * as the linear scan would.
      */
     @Test
-    public void repeatedLookupsAgainstStableSource() throws XMLDBException {
+    void repeatedLookupsAgainstStableSource() throws XMLDBException {
         final String query =
                 "let $seq := (for $i in 1 to 100 return $i, 1, 50, 100) "
                         + "return string-join("
@@ -94,7 +94,7 @@ public class FunIndexOfPerformanceTest {
 
     /** Cross-numeric-type equality must still match (xs:integer vs xs:double). */
     @Test
-    public void crossNumericTypeEquality() throws XMLDBException {
+    void crossNumericTypeEquality() throws XMLDBException {
         // Build a longer sequence so the threshold is exceeded and the cache
         // kicks in; the trailing search term is xs:double, the sequence
         // contains xs:integer values.
@@ -106,7 +106,7 @@ public class FunIndexOfPerformanceTest {
 
     /** NaN never matches itself under eq, even at scale. */
     @Test
-    public void nanNeverMatches() throws XMLDBException {
+    void nanNeverMatches() throws XMLDBException {
         final String query =
                 "let $seq := (for $i in 1 to 50 return xs:double($i), xs:double('NaN')) "
                         + "return count(fn:index-of($seq, xs:double('NaN')))";
@@ -115,7 +115,7 @@ public class FunIndexOfPerformanceTest {
 
     /** Source containing duplicates must report all positions in ascending order. */
     @Test
-    public void duplicatesReportAllPositions() throws XMLDBException {
+    void duplicatesReportAllPositions() throws XMLDBException {
         final String query =
                 "let $seq := (for $i in 1 to 50 return ($i, $i)) "
                         + "return string-join(fn:index-of($seq, 7), ',')";
@@ -125,7 +125,7 @@ public class FunIndexOfPerformanceTest {
 
     /** Issue #3682 reproducer (variant 1 — FLWOR distinct-values + index-of). */
     @Test
-    public void issue3682FlworVariantCompletesQuickly() throws XMLDBException {
+    void issue3682FlworVariantCompletesQuickly() throws XMLDBException {
         final int n = 5000;
         final String query =
                 "let $seq := (1 to " + n + ", 1) "
@@ -156,7 +156,7 @@ public class FunIndexOfPerformanceTest {
      * that regression.
      */
     @Test
-    public void lengthPreservingMutationReturnsCorrectPositions() throws XMLDBException {
+    void lengthPreservingMutationReturnsCorrectPositions() throws XMLDBException {
         final String query = """
                 let $seq := (1 to 1000)
                 return string-join(
@@ -178,7 +178,7 @@ public class FunIndexOfPerformanceTest {
 
     /** Issue #3682 variant 3 (predicate filter using count(index-of)). */
     @Test
-    public void issue3682PredicateVariantCompletesQuickly() throws XMLDBException {
+    void issue3682PredicateVariantCompletesQuickly() throws XMLDBException {
         final int n = 5000;
         final String query =
                 "let $seq := (1 to " + n + ", 1) "

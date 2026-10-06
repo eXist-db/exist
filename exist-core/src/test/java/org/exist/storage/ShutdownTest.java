@@ -50,7 +50,7 @@ public class ShutdownTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-	public void shutdown() throws EXistException, LockException, SAXException, PermissionDeniedException, XPathException, IOException {
+    void shutdown() throws EXistException, LockException, SAXException, PermissionDeniedException, XPathException, IOException {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
 		}

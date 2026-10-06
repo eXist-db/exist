@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class MainTest {
+class MainTest {
 
     /**
      * Regression test for the 7.0.0-beta3 macOS dock-launch failure
@@ -37,21 +37,21 @@ public class MainTest {
      * throw on the empty input.
      */
     @Test
-    public void stripFirstElementOnEmptyArrayReturnsEmpty() {
+    void stripFirstElementOnEmptyArrayReturnsEmpty() {
         final String[] result = Main.stripFirstElement(new String[0]);
         assertNotNull(result);
         assertEquals(0, result.length);
     }
 
     @Test
-    public void stripFirstElementOnSingleElementReturnsEmpty() {
+    void stripFirstElementOnSingleElementReturnsEmpty() {
         final String[] result = Main.stripFirstElement(new String[]{"jetty"});
         assertNotNull(result);
         assertEquals(0, result.length);
     }
 
     @Test
-    public void stripFirstElementOnMultipleElementsDropsFirst() {
+    void stripFirstElementOnMultipleElementsDropsFirst() {
         final String[] result = Main.stripFirstElement(new String[]{"jetty", "a", "b"});
         assertArrayEquals(new String[]{"a", "b"}, result);
     }

@@ -118,7 +118,7 @@ public class StoredQueryLockReleaseTest {
     }
 
     @BeforeAll
-    public static void setup() throws Exception {
+    static void setup() throws Exception {
         executor = Executors.newCachedThreadPool();
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
 
@@ -135,12 +135,12 @@ public class StoredQueryLockReleaseTest {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         executor.shutdownNow();
     }
 
     @Test @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void restSaveDuringExecutionCompletes() throws Exception {
+    void restSaveDuringExecutionCompletes() throws Exception {
         store(REST_QUERY, awaitQuery(REST_STARTED, REST_RELEASE), MimeType.XQUERY_TYPE);
 
         final Future<Response> running = executor.submit(() -> get(REST_QUERY));
@@ -176,7 +176,7 @@ public class StoredQueryLockReleaseTest {
     }
 
     @Test @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void xmlRpcSaveDuringExecutionCompletes() throws Exception {
+    void xmlRpcSaveDuringExecutionCompletes() throws Exception {
         store(RPC_QUERY, awaitQuery(RPC_STARTED, RPC_RELEASE), MimeType.XQUERY_TYPE);
 
         final Future<Map<String, Object>> running = executor.submit(() -> executeStoredQuery(RPC_QUERY));

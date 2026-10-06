@@ -26,41 +26,42 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  *
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
-public class HexBinaryValueTypeTest {
-    
+class HexBinaryValueTypeTest {
+
     @Test
-    public void verifyNotMultipleOf2CharsFails() {
+    void verifyNotMultipleOf2CharsFails() {
         TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
         assertThrows(XPathException.class, () ->
             hexType.verifyString("010010101"));
     }
 
     @Test
-    public void verify_multipleOfChars_passes() throws XPathException {
+    void verifyMultipleOfCharsPasses() throws XPathException {
         TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-        hexType.verifyString("01001010");
+        assertDoesNotThrow(() -> hexType.verifyString("01001010"));
     }
 
     @Test
-    public void verifyNotValidCharsFails() {
+    void verifyNotValidCharsFails() {
         TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
         assertThrows(XPathException.class, () ->
             hexType.verifyString("true"));
     }
 
     @Test
-    public void verify_validChars_passes() throws XPathException {
+    void verifyValidCharsPasses() throws XPathException {
         TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();
-        hexType.verifyString("0fb7");
+        assertDoesNotThrow(() -> hexType.verifyString("0fb7"));
     }
 
     @Test
-    public void format_upperCases() throws XPathException {
+    void formatUpperCases() throws XPathException {
         final String hexString = "0fb7";
 
         TestableHexBinaryValueType hexType = new TestableHexBinaryValueType();

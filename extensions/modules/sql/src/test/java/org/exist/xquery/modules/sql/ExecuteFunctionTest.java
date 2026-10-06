@@ -47,14 +47,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Unit Tests for sql:execute
  */
-public class ExecuteFunctionTest {
+class ExecuteFunctionTest {
 
     // the function that will be tested
     final static QName functionName = new QName("execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
 
 
     @Test
-    public void testStringEncoding() throws SQLException, XPathException {
+    void testStringEncoding() throws SQLException, XPathException {
 
         // mocks a simple SQL query returning a single string and checks the result
 
@@ -128,7 +128,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testEmptyParameters() throws SQLException, XPathException {
+    void testEmptyParameters() throws SQLException, XPathException {
 
         // mocks a simple SQL prepared statement with one parameter
         // is filled with an empty xsl:param element
@@ -217,7 +217,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testSQLException() throws SQLException, XPathException {
+    void testSQLException() throws SQLException, XPathException {
 
         // mocks a simple SQL prepared statement with one parameter that fails on execution
         // and verifies the error message
@@ -323,7 +323,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testMissingParamType() throws SQLException {
+    void testMissingParamType() throws SQLException {
 
         // mocks a simple SQL prepared statement with one parameter that lacks a type attribute.
         // This should throw an informative error.
@@ -383,7 +383,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testEncodingInErrorMessage() throws SQLException, XPathException {
+    void testEncodingInErrorMessage() throws SQLException, XPathException {
 
         // mocks a failing SQL query returning a single string and
         // checks the resulting error report
@@ -453,7 +453,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testSQLXMLFreeCalled() throws Exception {
+    void testSQLXMLFreeCalled() throws Exception {
         DBBroker broker = mock(DBBroker.class);
         BrokerPool brokerPool = mock(BrokerPool.class);
         XMLReaderPool xmlReaderPool = mock(XMLReaderPool.class);

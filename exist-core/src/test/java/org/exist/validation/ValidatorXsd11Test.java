@@ -80,7 +80,7 @@ public class ValidatorXsd11Test {
             """;
 
     @Test
-    public void conformingInstanceAgainstXsd11SchemaViaLocationHintIsValid() throws Exception {
+    void conformingInstanceAgainstXsd11SchemaViaLocationHintIsValid() throws Exception {
         final Path tempDir = Files.createTempDirectory("validator-xsd11-conform-test");
         try {
             Files.writeString(tempDir.resolve("schema.xsd"), XSD_1_1_ONLY_SCHEMA, UTF_8);
@@ -98,7 +98,7 @@ public class ValidatorXsd11Test {
     }
 
     @Test
-    public void violatingInstanceAgainstXsd11SchemaViaLocationHintIsNotValid() throws Exception {
+    void violatingInstanceAgainstXsd11SchemaViaLocationHintIsNotValid() throws Exception {
         final Path tempDir = Files.createTempDirectory("validator-xsd11-violate-test");
         try {
             Files.writeString(tempDir.resolve("schema.xsd"), XSD_1_1_ONLY_SCHEMA, UTF_8);

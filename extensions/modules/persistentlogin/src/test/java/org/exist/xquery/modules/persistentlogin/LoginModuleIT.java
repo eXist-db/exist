@@ -67,7 +67,7 @@ public class LoginModuleIT {
     private static HttpClient client;
 
     @BeforeAll
-    public static void beforeClass() throws XMLDBException {
+    static void beforeClass() throws XMLDBException {
         final int port = existWebServer.getPort();
         final String uri = "xmldb:exist://localhost:" + port + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
         XMLDBException lastException = null;
@@ -107,7 +107,7 @@ public class LoginModuleIT {
     }
 
     @AfterAll
-    public static void afterClass() throws Exception {
+    static void afterClass() throws Exception {
         if (root != null) {
             final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
             if (res != null) {
@@ -117,7 +117,7 @@ public class LoginModuleIT {
     }
 
     @Test
-    public void loginAndLogout() throws IOException {
+    void loginAndLogout() throws IOException {
         // not logged in
         doGet(null, TestUtils.GUEST_DB_USER);
 

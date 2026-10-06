@@ -64,8 +64,8 @@ public class LexerTest {
 	@RegisterExtension
 	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@Test
-	public void query() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException {
+    @Test
+    void query() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException {
 		String query =
 			"//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
 				+ "\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002']";

@@ -53,7 +53,7 @@ public class UpdateInsertTriggersDefragTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build(), true, true);
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -68,7 +68,7 @@ public class UpdateInsertTriggersDefragTest {
     }
 
     @Test
-    public void triggerDefragAfterUpdate() throws Exception {
+    void triggerDefragAfterUpdate() throws Exception {
         final String updateQuery = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//list";
         assertQuery(updateQuery, updateResults ->
             assertTrue(updateResults.isEmpty(), "Update expression returns an empty sequence")

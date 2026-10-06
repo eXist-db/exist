@@ -53,27 +53,27 @@ public class ExpressionVisitorTraversalTest {
             new ExistEmbeddedServer(true, true);
 
     @Test
-    public void generalComparison() throws Exception {
+    void generalComparison() throws Exception {
         assertFindsFunction("upper-case('test') = 'TEST'", "upper-case");
     }
 
     @Test
-    public void andExpr() throws Exception {
+    void andExpr() throws Exception {
         assertFindsFunction("true() and false()", "true");
     }
 
     @Test
-    public void orExpr() throws Exception {
+    void orExpr() throws Exception {
         assertFindsFunction("true() or false()", "true");
     }
 
     @Test
-    public void castExpr() throws Exception {
+    void castExpr() throws Exception {
         assertFindsFunction("number('42') cast as xs:integer", "number");
     }
 
     @Test
-    public void filterExpr() throws Exception {
+    void filterExpr() throws Exception {
         assertFindsFunction("(1, 2, 3)[last()]", "last");
     }
 

@@ -30,12 +30,12 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class UpdateInsertTest extends AbstractTestUpdate {
+class UpdateInsertTest extends AbstractTestUpdate {
 
     private static final String EOL = System.getProperty("line.separator");
 
     @Test
-    public void insertNamespacedAttribute() throws XMLDBException {
+    void insertNamespacedAttribute() throws XMLDBException {
         final String docName = "pathNs2.xml";
         final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test/>");
@@ -56,7 +56,7 @@ public class UpdateInsertTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void insertPrecedingAttribute() throws XMLDBException {
+    void insertPrecedingAttribute() throws XMLDBException {
         final String tempId = "tmp-1512257166656";
         final String doc =
         "<annotation-list>" + EOL +
@@ -86,7 +86,7 @@ public class UpdateInsertTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void insertInMemoryDocument() throws XMLDBException {
+    void insertInMemoryDocument() throws XMLDBException {
         final String doc = "<empty/>";
 
         final String docName = "empty.xml";

@@ -70,7 +70,7 @@ public class CollectionStoreTest {
     private static final String TEST_BIN_DOC = "test " + System.currentTimeMillis();
 
     @Test
-    public void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool =  existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -103,12 +103,12 @@ public class CollectionStoreTest {
     }
 
     @Test
-    public void storeBinary() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void storeBinary() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         storeBinary(PreserveType.NO_PRESERVE);
     }
 
     @Test
-    public void storeBinary_preserveOnCopy() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void storeBinary_preserveOnCopy() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         storeBinary(PreserveType.PRESERVE);
     }
 

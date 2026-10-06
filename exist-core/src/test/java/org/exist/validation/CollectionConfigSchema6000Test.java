@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @see <a href="https://github.com/eXist-db/exist/issues/6000">#6000</a>
  */
-public class CollectionConfigSchema6000Test {
+class CollectionConfigSchema6000Test {
 
     /**
      * Minimal collection.xconf with range field lacking @type.
@@ -67,7 +67,7 @@ public class CollectionConfigSchema6000Test {
         """;
 
     @Test
-    public void xsdAcceptsFieldWithoutType() throws Exception {
+    void xsdAcceptsFieldWithoutType() throws Exception {
         final Path schemaPath = resolveSchemaPath();
         assertTrue(Files.exists(schemaPath),
             "Schema not found at " + schemaPath + " (run from repo root: mvn test -pl exist-core)");

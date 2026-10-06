@@ -72,7 +72,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * response:stream is used to return Base64 encoded binary.
      */
     @Test
-    public void readAndStreamBinarySax() throws IOException, JAXBException {
+    void readAndStreamBinarySax() throws IOException, JAXBException {
         final byte[] data = randomData(1024 * 1024);  // 1MB
         final Path tmpInFile = createTemporaryFile(data);
 
@@ -92,7 +92,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * response:stream-binary is used to return raw binary.
      */
     @Test
-    public void readAndStreamBinaryRaw() throws IOException, JAXBException {
+    void readAndStreamBinaryRaw() throws IOException, JAXBException {
         final byte[] data = randomData(1024 * 1024);  // 1MB
         final Path tmpInFile = createTemporaryFile(data);
 

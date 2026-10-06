@@ -66,7 +66,7 @@ public class CopyCollectionRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
+    void storeAndRead() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
 
@@ -77,7 +77,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @Test
-    public void storeAndReadAborted() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
+    void storeAndReadAborted() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
 
@@ -88,7 +88,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @Test
-    public void storeAndReadXmldb() throws DatabaseConfigurationException, XMLDBException, EXistException, IOException {
+    void storeAndReadXmldb() throws DatabaseConfigurationException, XMLDBException, EXistException, IOException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
@@ -105,7 +105,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @Test
-    public void copyToSubCollection() throws Exception {
+    void copyToSubCollection() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         assertThrows(PermissionDeniedException.class, () -> {
@@ -265,7 +265,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

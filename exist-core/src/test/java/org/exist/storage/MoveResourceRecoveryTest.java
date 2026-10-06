@@ -65,7 +65,7 @@ public class MoveResourceRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @org.junit.jupiter.api.Test
-    public void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
+    void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
 
@@ -76,7 +76,7 @@ public class MoveResourceRecoveryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
+    void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
 
@@ -87,7 +87,7 @@ public class MoveResourceRecoveryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, URISyntaxException {
+    void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, URISyntaxException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
@@ -258,7 +258,7 @@ public class MoveResourceRecoveryTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

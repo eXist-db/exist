@@ -50,7 +50,7 @@ public class AxisPerformanceRegressionTest {
     private static final int ROUNDS = 5;
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         // 1500 <a> elements, each with 20 <b> children -> 30,000 <b> total.
         // 19 of each <a>'s 20 children have a preceding-sibling <b>; same for
         // following. So count for both predicates is 28,500. With the bug
@@ -68,7 +68,7 @@ public class AxisPerformanceRegressionTest {
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("xmldb:remove(\"/db\", \"axis-perf-test.xml\")");
@@ -87,7 +87,7 @@ public class AxisPerformanceRegressionTest {
     }
 
     @Test
-    public void followingSiblingMatchesPrecedingSiblingCount() throws XMLDBException {
+    void followingSiblingMatchesPrecedingSiblingCount() throws XMLDBException {
         final ResourceSet preceding = execute(
                 "count(doc(\"" + DOC_PATH + "\")//b[preceding-sibling::b])");
         final ResourceSet following = execute(
@@ -101,7 +101,7 @@ public class AxisPerformanceRegressionTest {
     }
 
     @Test
-    public void followingSiblingPerformanceCloseToPrecedingSibling() throws XMLDBException {
+    void followingSiblingPerformanceCloseToPrecedingSibling() throws XMLDBException {
         // Warm-up - first run pays index/parsing costs we don't want to measure.
         execute("count(doc(\"" + DOC_PATH + "\")//b[preceding-sibling::b])");
         execute("count(doc(\"" + DOC_PATH + "\")//b[following-sibling::b])");

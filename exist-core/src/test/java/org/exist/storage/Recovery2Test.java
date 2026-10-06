@@ -55,16 +55,16 @@ import org.xml.sax.SAXException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * Test recovery after a forced database corruption.
- * store() must run before read() - they share DB state.
- *
- * @author wolf
- */
+* Test recovery after a forced database corruption.
+* store() must run before read() - they share DB state.
+*
+* @author wolf
+*/
 /**
  * Test recovery after a forced database corruption.
  * Single test method: store with FORCE_CORRUPTION, stop (preserving storage), restart, verify recovery.
  */
-public class Recovery2Test {
+class Recovery2Test {
 
     // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -79,7 +79,7 @@ public class Recovery2Test {
     }
 
     @Test
-    public void storeThenRecoverAndRead() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
+    void storeThenRecoverAndRead() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
         // Phase 1: store with forced corruption (simulates crash during write)
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDb();
@@ -138,7 +138,7 @@ public class Recovery2Test {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         try {
             existEmbeddedServer.stopDb(true);
         } catch (final IllegalStateException e) {

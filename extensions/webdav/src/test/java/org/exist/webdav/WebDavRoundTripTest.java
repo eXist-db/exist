@@ -68,12 +68,12 @@ public class WebDavRoundTripTest {
     private static String prevPropfindMethodXmlSize = null;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         prevPropfindMethodXmlSize = System.setProperty("org.exist.webdav.PROPFIND_METHOD_XML_SIZE", "exact");
     }
 
     @AfterAll
-    public static void cleanup() throws Exception {
+    static void cleanup() throws Exception {
         try {
             deleteStoredDocuments();
         } finally {
@@ -86,35 +86,35 @@ public class WebDavRoundTripTest {
     }
 
     @Test
-    public void getDocTypeDefault() throws Exception {
+    void getDocTypeDefault() throws Exception {
         // webdav.properties does not set indent, so no newline is written after the doctype
         assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\"><bookmap id=\"bookmap-1\"/>",
                 roundTrip("test-with-doctype.xml", XML_WITH_DOCTYPE, "application/xml"));
     }
 
     @Test
-    public void getXmlDeclDefault() throws Exception {
+    void getXmlDeclDefault() throws Exception {
         // webdav.properties sets omit-xml-declaration=yes
         assertEquals("<bookmap id=\"bookmap-2\"/>", roundTrip("test-with-xmldecl.xml", XML_WITH_XMLDECL, "application/xml"));
     }
 
     @Test
-    public void cdataWebDavApi() throws Exception {
+    void cdataWebDavApi() throws Exception {
         assertEquals(CDATA_XML, roundTrip("webdav-cdata-test.xml", CDATA_XML, "application/xml"));
     }
 
     @Test
-    public void storeAndRetrieveBinDocument() throws Exception {
+    void storeAndRetrieveBinDocument() throws Exception {
         assertEquals("0123456789", roundTrip("webdav-roundtrip-test.bin", "0123456789", "application/octet-stream"));
     }
 
     @Test
-    public void namespacesPreserved() throws Exception {
+    void namespacesPreserved() throws Exception {
         assertEquals(XML_WITH_NAMESPACES, roundTrip("webdav-namespaces-test.xml", XML_WITH_NAMESPACES, "application/xml"));
     }
 
     @Test
-    public void nonAsciiPreserved() throws Exception {
+    void nonAsciiPreserved() throws Exception {
         assertEquals(XML_WITH_NON_ASCII, roundTrip("webdav-non-ascii-test.xml", XML_WITH_NON_ASCII, "application/xml"));
     }
 

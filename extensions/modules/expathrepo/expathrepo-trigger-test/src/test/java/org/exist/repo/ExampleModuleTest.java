@@ -50,7 +50,7 @@ public class ExampleModuleTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(false, true);
 
     @Test
-    public void helloWorld() throws XPathException, PermissionDeniedException, EXistException {
+    void helloWorld() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
                 """
                 declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
@@ -71,7 +71,7 @@ public class ExampleModuleTest {
     }
 
     @Test
-    public void sayHello() throws XPathException, PermissionDeniedException, EXistException {
+    void sayHello() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
                 """
                 declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
@@ -92,7 +92,7 @@ public class ExampleModuleTest {
     }
 
     @Test
-    public void sayHello_noName() throws XPathException, PermissionDeniedException, EXistException {
+    void sayHello_noName() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
                 """
                 declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
@@ -113,7 +113,7 @@ public class ExampleModuleTest {
     }
 
     @Test
-    public void add() throws XPathException, PermissionDeniedException, EXistException {
+    void add() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
                 """
                 declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";

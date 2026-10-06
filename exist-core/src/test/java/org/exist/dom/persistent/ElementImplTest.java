@@ -35,10 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Created by aretter on 25/04/2017.
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class ElementImplTest {
+class ElementImplTest {
 
     @Test
-    public void isSameNode_sameElement() {
+    void isSameNode_sameElement() {
         final DocumentImpl doc = EasyMock.createMock(DocumentImpl.class);
         expect(doc.getDocId()).andReturn(21).times(2);
 
@@ -54,7 +54,7 @@ public class ElementImplTest {
     }
 
     @Test
-    public void isSameNode_differentText() {
+    void isSameNode_differentText() {
         final DocumentImpl doc = EasyMock.createMock(DocumentImpl.class);
 
         replay(doc);
@@ -73,7 +73,7 @@ public class ElementImplTest {
     }
 
     @Test
-    public void isSameNode_differentTextDifferentDoc() {
+    void isSameNode_differentTextDifferentDoc() {
         final DocumentImpl doc = EasyMock.createMock(DocumentImpl.class);
         expect(doc.getDocId()).andReturn(21);
 
@@ -96,7 +96,7 @@ public class ElementImplTest {
     }
 
     @Test
-    public void isSameNode_nonText() {
+    void isSameNode_nonText() {
         final DocumentImpl doc = EasyMock.createMock(DocumentImpl.class);
 
         replay(doc);

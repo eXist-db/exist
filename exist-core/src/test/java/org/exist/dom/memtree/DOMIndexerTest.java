@@ -99,7 +99,7 @@ public class DOMIndexerTest {
         "   <result>{$a/title, $a/f:name, $a}</result>";
 
     @Test
-    public void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
+    void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
@@ -117,7 +117,7 @@ public class DOMIndexerTest {
     }
 
     @Test
-    public void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException {
+    void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final StringWriter out = new StringWriter()) {

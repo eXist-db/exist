@@ -50,7 +50,7 @@ public class TransformerFactoryAllocatorTest {
     public String transformerFactoryClass;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getTransformerFactory(String transformerFactoryClass) {
+    void getTransformerFactory(String transformerFactoryClass) {
         initTransformerFactoryAllocatorTest(transformerFactoryClass);
 
         final  Hashtable<String,Object> testAttributes = new Hashtable<String,Object>();

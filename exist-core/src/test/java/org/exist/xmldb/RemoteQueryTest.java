@@ -50,12 +50,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
 
-public class RemoteQueryTest extends RemoteDBTest {
+class RemoteQueryTest extends RemoteDBTest {
 	private Collection testCollection;
 	private Collection xmlrpcCollection;
 
-	@Test
-	public void resourceSet() throws XMLDBException {
+    @Test
+    void resourceSet() throws XMLDBException {
 		String query = "//SPEECH[SPEAKER = 'HAMLET']";
 		XQueryService service = testCollection.getService(XQueryService.class);
 		service.setProperty("highlight-matches", "none");
@@ -70,8 +70,8 @@ public class RemoteQueryTest extends RemoteDBTest {
 		}
 	}
 
-	@Test
-	public void externalVar() throws XMLDBException {
+    @Test
+    void externalVar() throws XMLDBException {
         String query = XmlRpcTest.QUERY_MODULE_DATA;
         XQueryService service = testCollection.getService(XQueryService.class);
         service.setProperty("highlight-matches", "none");
@@ -92,8 +92,8 @@ public class RemoteQueryTest extends RemoteDBTest {
         }
 	}
 
-	@BeforeEach
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, URISyntaxException, IOException {
+    @BeforeEach
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, URISyntaxException, IOException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -126,8 +126,8 @@ public class RemoteQueryTest extends RemoteDBTest {
         xmlrpcCollection.storeResource(br);
 	}
 
-	@AfterEach
-	public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (!((EXistCollection) testCollection).isRemoteCollection()) {
             DatabaseInstanceManager dim =
                     testCollection.getService(DatabaseInstanceManager.class);

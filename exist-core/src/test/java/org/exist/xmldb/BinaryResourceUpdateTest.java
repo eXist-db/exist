@@ -53,7 +53,7 @@ public class BinaryResourceUpdateTest  {
     private URL xmlFile;
 
     @Test
-    public void updateBinary() throws XMLDBException, URISyntaxException {
+    void updateBinary() throws XMLDBException, URISyntaxException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = testCollection.createResource("test1.xml", BinaryResource.class);
             binaryResource.setContent(Path.of(binFile.toURI()));
@@ -73,7 +73,7 @@ public class BinaryResourceUpdateTest  {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -84,7 +84,7 @@ public class BinaryResourceUpdateTest  {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         //delete the test collection
         final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);

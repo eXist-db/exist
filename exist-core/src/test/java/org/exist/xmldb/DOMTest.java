@@ -72,7 +72,7 @@ public class DOMTest {
 	 * - shutdownDB with the DatabaseInstanceManager
 	 */
 	@Test
-	public void test1() throws XMLDBException {
+	void test1() throws XMLDBException {
 
 
 		CollectionManagementService cms =
@@ -111,7 +111,7 @@ public class DOMTest {
 	 * - simple access via getContentAsDOM()
 	 * */
 	@Test
-	public void test2() throws XMLDBException, ReflectiveOperationException, ParserConfigurationException, IOException {
+	void test2() throws XMLDBException, ReflectiveOperationException, ParserConfigurationException, IOException {
 		for (int i = 0; i < 2; i++) {
 			XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
 			if (resource == null) {
@@ -145,7 +145,7 @@ public class DOMTest {
 	
 	/** like test 2 but add attribute and text as well */
 	@Test
-	public void test3() throws XMLDBException, ParserConfigurationException {
+	void test3() throws XMLDBException, ParserConfigurationException {
 		Collection coll = existEmbeddedServer.getRoot();
 		XMLResource resource =
 			coll.createResource(
@@ -178,12 +178,12 @@ public class DOMTest {
 
 	/** like test 3 but uses the DOM as input to an (identity) XSLT transform */
 	@Test
-	public void test4_getContentAsString() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
+	void test4_getContentAsString() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
 		_test4(false);
 	}
 
 	@Test
-	public void test4_getContentAsDOM() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
+	void test4_getContentAsDOM() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
 		_test4(true);
 	}
 

@@ -52,10 +52,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  * the class was a private nested type with no way to construct or call it directly. Now that it
  * is a top-level (if package-private) class, this is possible.
  */
-public class CachingResponseWrapperTest {
+class CachingResponseWrapperTest {
 
     @Test
-    public void getWriterThenGetOutputStreamThrowsIllegalStateException() throws Exception {
+    void getWriterThenGetOutputStreamThrowsIllegalStateException() throws Exception {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         wrapper.getWriter();
 
@@ -68,7 +68,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void getOutputStreamThenGetWriterThrowsIllegalStateException() throws Exception {
+    void getOutputStreamThenGetWriterThrowsIllegalStateException() throws Exception {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         wrapper.getOutputStream();
 
@@ -81,7 +81,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void getWriterCalledTwiceIsIdempotent() throws Exception {
+    void getWriterCalledTwiceIsIdempotent() throws Exception {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         final PrintWriter first = wrapper.getWriter();
         final PrintWriter second = wrapper.getWriter();
@@ -91,7 +91,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void getOutputStreamCalledTwiceIsIdempotent() throws Exception {
+    void getOutputStreamCalledTwiceIsIdempotent() throws Exception {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         final ServletOutputStream first = wrapper.getOutputStream();
         final ServletOutputStream second = wrapper.getOutputStream();
@@ -101,7 +101,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setHeaderBuffersWhileCaching() throws Exception {
+    void setHeaderBuffersWhileCaching() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -112,7 +112,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void addHeaderBuffersWhileCaching() throws Exception {
+    void addHeaderBuffersWhileCaching() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -123,7 +123,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void cacheFalseModeAppliesHeadersImmediately() throws Exception {
+    void cacheFalseModeAppliesHeadersImmediately() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, false);
 
@@ -133,7 +133,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void flushReplaysBufferedHeadersInOrder() throws Exception {
+    void flushReplaysBufferedHeadersInOrder() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -148,7 +148,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void flushDerivesContentLengthFromActualBytesNotBufferedHeader() throws Exception {
+    void flushDerivesContentLengthFromActualBytesNotBufferedHeader() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -165,7 +165,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void contentTypeFirstWriteWins() throws Exception {
+    void contentTypeFirstWriteWins() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -178,7 +178,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setPassthroughHeaderTunnelsThroughNestedWrappers() {
+    void setPassthroughHeaderTunnelsThroughNestedWrappers() {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper inner = new CachingResponseWrapper(real, false);
         final CachingResponseWrapper outer = new CachingResponseWrapper(inner, true);
@@ -192,7 +192,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setIntHeaderAndAddIntHeaderBufferWhileCaching() throws Exception {
+    void setIntHeaderAndAddIntHeaderBufferWhileCaching() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -206,7 +206,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setDateHeaderAndAddDateHeaderBufferWhileCaching() throws Exception {
+    void setDateHeaderAndAddDateHeaderBufferWhileCaching() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -220,7 +220,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void intAndDateHeadersApplyImmediatelyWhenNotCaching() {
+    void intAndDateHeadersApplyImmediatelyWhenNotCaching() {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, false);
 
@@ -231,7 +231,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setContentLengthGuardedWhileCaching() {
+    void setContentLengthGuardedWhileCaching() {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.setContentLength(42);
@@ -243,7 +243,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setContentLengthLongGuardedWhileCaching() {
+    void setContentLengthLongGuardedWhileCaching() {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.setContentLengthLong(42L);
@@ -256,7 +256,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void flushBufferGuardedWhileCaching() throws Exception {
+    void flushBufferGuardedWhileCaching() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper caching = new CachingResponseWrapper(real, true);
         caching.flushBuffer();
@@ -269,7 +269,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void setStatusMirrorsAndDelegatesImmediatelyRegardlessOfCaching() {
+    void setStatusMirrorsAndDelegatesImmediatelyRegardlessOfCaching() {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -282,7 +282,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void sendErrorMirrorsStatusAndDelegatesImmediately() throws Exception {
+    void sendErrorMirrorsStatusAndDelegatesImmediately() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -293,7 +293,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void sendErrorWithoutMessageMirrorsStatusAndDelegatesImmediately() throws Exception {
+    void sendErrorWithoutMessageMirrorsStatusAndDelegatesImmediately() throws Exception {
         final RecordingResponse real = new RecordingResponse();
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(real, true);
 
@@ -304,7 +304,7 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void getDataReturnsBufferedBytesBeforeFlush() throws Exception {
+    void getDataReturnsBufferedBytesBeforeFlush() throws Exception {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         wrapper.getOutputStream().write("payload".getBytes());
 
@@ -312,14 +312,14 @@ public class CachingResponseWrapperTest {
     }
 
     @Test
-    public void getDataReturnsNullWhenNothingWasWritten() {
+    void getDataReturnsNullWhenNothingWasWritten() {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
 
         assertNull(wrapper.getData());
     }
 
     @Test
-    public void getContentTypeReflectsBufferedValueBeforeFlush() {
+    void getContentTypeReflectsBufferedValueBeforeFlush() {
         final CachingResponseWrapper wrapper = new CachingResponseWrapper(new RecordingResponse(), true);
         wrapper.setContentType("text/html");
 

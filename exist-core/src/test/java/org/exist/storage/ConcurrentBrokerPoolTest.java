@@ -61,7 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ConcurrentBrokerPoolTest {
+class ConcurrentBrokerPoolTest {
 
     private final ThreadGroup threadGroup = new ThreadGroup("concurrentBrokerPoolTest");
     private final AtomicInteger threadNum = new AtomicInteger();
@@ -81,7 +81,7 @@ public class ConcurrentBrokerPoolTest {
      *   3. Returns the instance to the global BrokerPools
      */
     @Test
-    public void multiInstanceStore() throws InterruptedException, ExecutionException, DatabaseConfigurationException, PermissionDeniedException, EXistException, IOException, URISyntaxException {
+    void multiInstanceStore() throws InterruptedException, ExecutionException, DatabaseConfigurationException, PermissionDeniedException, EXistException, IOException, URISyntaxException {
         final ThreadFactory threadFactory = runnable -> new Thread(threadGroup, runnable, "leaseStoreRelease-" + threadNum.getAndIncrement());
         final ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS, threadFactory);
 

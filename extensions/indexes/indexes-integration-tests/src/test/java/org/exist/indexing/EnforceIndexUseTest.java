@@ -92,7 +92,7 @@ public class EnforceIndexUseTest {
             </root>""";
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws Throwable {
+    void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws Throwable {
         initEnforceIndexUseTest(enforceIndexUseValue, expectedSearchCount);
         setup();
         //query and expand
@@ -167,7 +167,7 @@ public class EnforceIndexUseTest {
     }
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

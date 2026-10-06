@@ -40,7 +40,7 @@ public class MemtreeInXQueryTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
 
     @org.junit.jupiter.api.Test
-    public void pi_attributes() throws XMLDBException {
+    void pi_attributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
                     processing-instruction{"ok"}{"ok"},
@@ -57,7 +57,7 @@ public class MemtreeInXQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void pi_children() throws XMLDBException {
+    void pi_children() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
                     processing-instruction{"ok"}{"ok"},
@@ -74,7 +74,7 @@ public class MemtreeInXQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void pi_descendantAttributes() throws XMLDBException {
+    void pi_descendantAttributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
                     processing-instruction{"ok"}{"ok"},
@@ -91,7 +91,7 @@ public class MemtreeInXQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attr_attributes() throws XMLDBException {
+    void attr_attributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document {
                     element a {
@@ -109,7 +109,7 @@ public class MemtreeInXQueryTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attr_children() throws XMLDBException {
+    void attr_children() throws XMLDBException {
         final String xquery = """
                 let $doc := document {
                     element a {
