@@ -1,0 +1,33 @@
+exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java
+  s_d5ac7bf05ec2fb::t_160584b24b472f 35-36,178,198,219,239,259,279,300
+exist-core/src/test/java/org/exist/w3c/tests/TestCase.java
+  s_d5ac7bf05ec2fb::t_85f6143e469efa 40-42,284-285
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java
+  s_d5ac7bf05ec2fb::t_1dec56a5cdcfc6 58-59,604,607,610,613,674-676,728,731,734,737,790,799,836,838,994,1112-1113,1117,1119,1156-1157,1165-1166,1172-1173,1178-1179,1184-1185,1197-1198,1259-1260,1331,1735,1751,2034,2036,2342
+exist-core/src/test/java/org/exist/xquery/XQueryProcessingInstructionTest.java
+  s_d5ac7bf05ec2fb::t_212d8e1764d14a 30-32,54
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  s_d5ac7bf05ec2fb::t_6f5403138d77db 67-69,267-268,549,555,561,567,595,1061,1284,1294,1468,2052,2191
+exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java
+  s_d5ac7bf05ec2fb::t_de9864ec9ebb5d 24-25,83
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpParseTest.java
+  s_d5ac7bf05ec2fb::t_c298d43cee74c0 31-32,103
+exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java
+  s_d5ac7bf05ec2fb::t_ea85f8b9123fb7 36-37,83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ec65a6bc4df31c9227ec726444e6185e0df67614",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
