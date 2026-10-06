@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/dom/persistent/QNamePoolTest.java
+  s_d5ac7bf05ec2fb::t_8f10168afb9b34 27,29-30,57,69,81
+exist-core/src/test/java/org/exist/xmldb/SerializationTest.java
+  s_d5ac7bf05ec2fb::t_86c10d05424874 300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db3818291e6e35b1aac2e4faffb21171caa681aa",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
