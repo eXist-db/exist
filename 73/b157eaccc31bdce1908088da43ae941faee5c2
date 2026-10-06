@@ -1,0 +1,29 @@
+exist-core/src/test/java/org/exist/repo/ExistRepositoryConcurrencyTest.java
+  s_d5ac7bf05ec2fb::t_bd1657308718a6 1-215
+exist-core/src/main/java/org/exist/repo/Deployment.java
+  s_d5ac7bf05ec2fb::t_b0a165c6c5583c 247
+exist-core/src/main/java/org/exist/repo/ExistRepository.java
+  s_d5ac7bf05ec2fb::t_40bcb43f01cf20 49-50,69-70,95-110,155-163,168-247
+exist-services/src/main/java/org/exist/repo/PackageService.java
+  s_d5ac7bf05ec2fb::t_34a11fdcb84bc7 225
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/InstallFunction.java
+  s_d5ac7bf05ec2fb::t_9fad2508c0e051 101,109
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/RemoveFunction.java
+  s_d5ac7bf05ec2fb::t_aa864ee16b8a34 74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "73b157eaccc31bdce1908088da43ae941faee5c2",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
