@@ -1,0 +1,36 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPFilterEscapeTest.java
+  s_fb0ea4df23c056::t_95ea53c937acd8 1-19,21-41,43,46-53,55-56,58,61,63,65,67
+  s_fb0ea4df23c056::t_d68f358e8b2844 20
+  s_fb0ea4df23c056::t_5a3a8d469d618c 42,44-45,54,57,60,64
+  s_fb0ea4df23c056::t_47d6f6ed63484d 59
+  s_fb0ea4df23c056::t_ba072ef2cb3772 62,66
+extensions/security/ldap/src/main/java/org/exist/security/realm/ldap/LDAPRealm.java
+  s_fb0ea4df23c056::t_ec2f235b73f989 733-739
+  s_d83678d4636c5b::t_b20c3aaf498552 745-758,1252-1256
+extensions/security/activedirectory/src/main/java/org/exist/security/realm/activedirectory/ActiveDirectoryRealm.java
+  s_d83678d4636c5b::t_41d06e3a6deab8 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8118cf2873958d00594f30e0fbbc1e1b3d0195b9",
+  "prompts": {},
+  "sessions": {
+    "s_d83678d4636c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8a8905f-224a-4206-a7a5-f02a9f11406d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_fb0ea4df23c056": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f222ef02bffe8lRdgCid0o93q2",
+        "model": "qwen3.8:27b-mlx"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
