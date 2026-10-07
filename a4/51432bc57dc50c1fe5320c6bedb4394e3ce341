@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/request/GetCookieValueDecodeTest.java
+  s_65f5254d20b9ea::t_67c1d89124a00b 30,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a451432bc57dc50c1fe5320c6bedb4394e3ce341",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
