@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/Issue873RegressionTest.java
+  s_9236ac166605fd::t_9004c2f741ed59 96-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a56b6006132af175bbd8c3ec98074b14eac96608",
+  "prompts": {},
+  "sessions": {
+    "s_9236ac166605fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38699338-9a73-4c1f-bf65-530d6c33f2e0",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

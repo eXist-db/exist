@@ -1,0 +1,26 @@
+exist-core/src/main/java/org/exist/xquery/BindingExpression.java
+  s_9236ac166605fd::t_19704565810e3f 181-194
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/Issue873RegressionTest.java
+  s_9236ac166605fd::t_f924bbb0afbd48 1-46,71-72,74-206
+  s_9236ac166605fd::t_eab5369884fb8c 47-70,73
+exist-core/src/main/java/org/exist/xquery/pragmas/Optimize.java
+  s_9236ac166605fd::t_5b88c170900842 181-190
+exist-core/src/main/java/org/exist/xquery/FilteredExpression.java
+  s_9236ac166605fd::t_0c0889a321e6cc 147-173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d2e55d24f734b4659fcae77ce7774f12dcb1dc1c",
+  "prompts": {},
+  "sessions": {
+    "s_9236ac166605fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38699338-9a73-4c1f-bf65-530d6c33f2e0",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
