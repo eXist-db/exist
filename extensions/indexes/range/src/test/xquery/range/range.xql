@@ -495,7 +495,8 @@ function rt:remove-document() {
     return (
         doc($rt:COLLECTION || "/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string(),
         let $null := xmldb:remove($rt:COLLECTION, "test2.xml") return $null,
-        doc($rt:COLLECTION || "/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string()
+        collection($rt:COLLECTION)/range:field-eq("address-name", "Berta Muh")
+            [ends-with(document-uri(root(.)), "/test2.xml")]/city/string()
     )
 };
 

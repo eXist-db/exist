@@ -90,10 +90,10 @@ function deploy:install-uninstall() {
     let $stored := xmldb:store("/db/deployment-test", "dtest-1.0", $zip)
     let $deployed := repo:install-and-deploy-from-db($stored)
     let $inList := exists(repo:list()[. = "http://exist-db.org/apps/dtest"])
-    let $avail1 := exists(doc("/db/apps/dtest/test.xml")/*)
+    let $avail1 := doc-available("/db/apps/dtest/test.xml")
     let $undeploy := repo:undeploy("http://exist-db.org/apps/dtest")
     let $remove := repo:remove("http://exist-db.org/apps/dtest")
-    let $avail2 := exists(collection("/db/apps/dtest")/*)
+    let $avail2 := xmldb:collection-available("/db/apps/dtest")
     return (
         $deployed/@result/string(),
         $inList,
@@ -111,14 +111,14 @@ function deploy:no-overwrite-installed() {
     let $zip := compression:zip($deploy:entries, false())
     let $stored := xmldb:store("/db/deployment-test", "dtest-1.0", $zip)
     let $deployed1 := repo:install-and-deploy-from-db($stored)
-    let $avail1 := exists(doc("/db/apps/dtest/expath-pkg.xml")/*)
+    let $avail1 := doc-available("/db/apps/dtest/expath-pkg.xml")
     let $zip := compression:zip($deploy:entries-overwrite, false())
     let $stored := xmldb:store("/db/deployment-test", "dtest-1.0", $zip)
     let $deployed2 := repo:install-and-deploy-from-db($stored)
-    let $avail2 := exists(doc("/db/apps/dtest/test.xml")/*)
+    let $avail2 := doc-available("/db/apps/dtest/test.xml")
     let $undeploy := repo:undeploy("http://exist-db.org/apps/dtest")
     let $remove := repo:remove("http://exist-db.org/apps/dtest")
-    let $avail3 := exists(collection("/db/apps/dtest")/*)
+    let $avail3 := xmldb:collection-available("/db/apps/dtest")
     return (
         $deployed1/@result/string(), 
         $deployed2/@result/string(), 
@@ -137,16 +137,16 @@ function deploy:overwrite-installed() {
     let $zip := compression:zip($deploy:entries, false())
     let $stored := xmldb:store("/db/deployment-test", "dtest-1.0", $zip)
     let $deployed1 := repo:install-and-deploy-from-db($stored)
-    let $avail1 := exists(doc("/db/apps/dtest/expath-pkg.xml")/*)
+    let $avail1 := doc-available("/db/apps/dtest/expath-pkg.xml")
     let $undeploy1 := repo:undeploy("http://exist-db.org/apps/dtest")
     let $remove1 := repo:remove("http://exist-db.org/apps/dtest")
     let $zip := compression:zip($deploy:entries-overwrite, false())
     let $stored := xmldb:store("/db/deployment-test", "dtest-1.0", $zip)
     let $deployed2 := repo:install-and-deploy-from-db($stored)
-    let $avail2 := exists(doc("/db/apps/dtest/test-new.xml")/*)
+    let $avail2 := doc-available("/db/apps/dtest/test-new.xml")
     let $undeploy2 := repo:undeploy("http://exist-db.org/apps/dtest")
     let $remove2 := repo:remove("http://exist-db.org/apps/dtest")
-    let $avail3 := exists(collection("/db/apps/dtest")/*)
+    let $avail3 := xmldb:collection-available("/db/apps/dtest")
     return (
         $deployed1/@result/string(),
         $undeploy1/@result/string(),
@@ -169,12 +169,12 @@ function deploy:install-uninstall-library() {
     let $deployed := repo:install-and-deploy-from-db($stored)
     let $inList := exists(repo:list()[. = "http://exist-db.org/apps/dtest"])
     (: Library packages are not deployed into the db :)
-    let $avail1 := exists(collection("/db/apps/dtest")/*)
+    let $avail1 := xmldb:collection-available("/db/apps/dtest")
     (: But files can be retrieved from repository :)
     let $avail2 := exists(repo:get-resource("http://exist-db.org/apps/dtest", "test.xml"))
     let $undeploy := repo:undeploy("http://exist-db.org/apps/dtest")
     let $remove := repo:remove("http://exist-db.org/apps/dtest")
-    let $avail3 := exists(collection("/db/apps/dtest")/*)
+    let $avail3 := xmldb:collection-available("/db/apps/dtest")
     return (
         $deployed/@result/string(),
         $inList,

@@ -351,7 +351,8 @@ public class DeadlockIT {
 				buf.append("//chapter/section[@id = 'sect1']");
 			}
 			
-			String query = buf.toString();
+			// resources may be removed concurrently by other tasks, so a failed retrieval is expected
+			String query = "try { " + buf + " } catch err:FODC0002 { () }";
 			try {
 				org.xmldb.api.base.Collection testCollection = DatabaseManager
 						.getCollection("xmldb:exist://" + collection, "admin", null);

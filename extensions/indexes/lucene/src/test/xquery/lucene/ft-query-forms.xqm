@@ -681,9 +681,9 @@ function qrys:index-keys-by-qname-s() {
     return deep-equal($result, <terms><t>sechs</t><t>second</t><t>sieben</t><t>sluta</t><t>som</t><t>stycket</t></terms>)
 };
 
-(:~ index-keys test 3: non-existent collection :)
+(:~ index-keys test 3: non-existent collection raises err:FODC0002 :)
 declare
-    %test:assertTrue
+    %test:assertError("err:FODC0002")
 function qrys:index-keys-nonexistent-collection() {
     let $callback := util:function(xs:QName("qrys:key"), 2),
         $result := <terms>{ collection("/db/does/not/exist")/util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index") }</terms>

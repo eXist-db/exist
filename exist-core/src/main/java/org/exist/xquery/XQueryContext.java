@@ -136,7 +136,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
     public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
     public static final String PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL = "xquery.raise-error-on-failed-retrieval";
-    public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = false;
+    public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = true;
     public static final String PROPERTY_ENFORCE_INDEX_USE = "xquery.enforce-index-use";
 
     //TODO : move elsewhere ?
@@ -3332,7 +3332,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         // Switch: raiseErrorOnFailedRetrieval
         this.raiseErrorOnFailedRetrieval =
-                config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE);
+                config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
 
         // Get map of built-in modules
         final Map<String, Class<Module>> builtInModules =
