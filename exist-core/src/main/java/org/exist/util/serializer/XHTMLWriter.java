@@ -718,6 +718,15 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     /**
+     * The html method has no CDATA sections (W3C XSLT and XQuery Serialization 3.1 section 7.1),
+     * except in XML islands, which are the elements that are not HTML elements.
+     */
+    @Override
+    protected boolean supportsCdataSections() {
+        return !isHtmlMethod() || shouldUseCdataSections();
+    }
+
+    /**
      * Processing-instruction serialization for HTML method (pre-HTML5).
      * Per W3C XSLT and XQuery Serialization 3.1 § 7.1.5, the HTML output
      * method emits PIs as {@code <?target data>} (no closing {@code ?>});
