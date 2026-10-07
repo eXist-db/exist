@@ -1,0 +1,37 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/Issue873RegressionTest.java
+  s_9236ac166605fd::t_9004c2f741ed59 100-107
+  s_65f5254d20b9ea::t_085b30ef7e5f2a 27-31,43-44,83,86,147,150,153,157
+exist-indexes-jmh/src/main/resources/org/exist/indexing/jmh/letbound-source-collection.xconf
+  s_9236ac166605fd::t_011f0ee4f36bf1 1-31
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LetBoundSourceLuceneBenchmark.java
+  s_9236ac166605fd::t_77dcad1fe9f711 114-120,127,132,137
+  s_9236ac166605fd::t_e14feabdc922ae 1-64,67-69,88-90,94-113,125-126,128-131,133-136,138-238
+  s_9236ac166605fd::t_abb3a9079de86c 65-66,70-87,91-93
+  s_9236ac166605fd::t_ff7adaf302c9a0 121-124
+exist-indexes-jmh/README.md
+  s_9236ac166605fd::t_eeb996dd511d45 30-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4968690c5905cbc187afb929859ea24479e5aa84",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_9236ac166605fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38699338-9a73-4c1f-bf65-530d6c33f2e0",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
