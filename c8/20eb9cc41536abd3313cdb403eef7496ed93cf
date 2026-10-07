@@ -1,0 +1,21 @@
+schema/security-manager.xsd
+  s_54d639260895ce::t_99a0b22b5fe745 66-78,80-126,128-144
+  s_54d639260895ce::t_069420cf15fee6 8
+  s_54d639260895ce::t_7cd57f13c39b98 79,127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c820eb9cc41536abd3313cdb403eef7496ed93cf",
+  "prompts": {},
+  "sessions": {
+    "s_54d639260895ce": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d35d9f28-6f08-44c5-b599-0a097640e89f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
