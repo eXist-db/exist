@@ -1,0 +1,22 @@
+exist-services/src/main/java/org/exist/repo/PackageService.java
+  s_ad3b189073b544::t_5839f934cdaaeb 286-287
+exist-core/src/main/java/org/exist/repo/RepoPackageLoader.java
+  s_ad3b189073b544::t_c977c187b37091 26
+  s_ad3b189073b544::t_f0b6ed5fc04f75 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "92568b4138d1f012a1c9c1aeb22d4ca42f3baacf",
+  "prompts": {},
+  "sessions": {
+    "s_ad3b189073b544": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a691a0b-a7f1-41b1-9ba6-0de0deb07515",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
