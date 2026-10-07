@@ -23,10 +23,10 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -34,7 +34,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@code fn:matches} has three evaluation paths -- a value, a predicate over stored nodes with no
@@ -52,7 +52,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class MatchesPathAgreementTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String COLLECTION_NAME = "matches-path-agreement";
@@ -70,7 +70,7 @@ public class MatchesPathAgreementTest {
         "e", "b", "_", "ж", "٣", "7", "abc", "abc\n", "a", "-", "1x", "HAM 42 ophelia"
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final Collection col = root.getService(CollectionManagementService.class).createCollection(COLLECTION_NAME);
@@ -85,7 +85,7 @@ public class MatchesPathAgreementTest {
         col.storeResource(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         server.getRoot().getService(CollectionManagementService.class).removeCollection(COLLECTION_NAME);
     }
@@ -99,12 +99,9 @@ public class MatchesPathAgreementTest {
     /** Asserts the XPath answer on all three paths for one pattern. */
     private void assertAllPaths(final String pattern, final long expected) throws XMLDBException {
         final String p = "'" + pattern + "'";
-        assertEquals("value path: " + pattern, expected,
-                count("count(doc('" + DOC + "')//e/plain/string()[matches(., " + p + ")])"));
-        assertEquals("node scan: " + pattern, expected,
-                count("count(doc('" + DOC + "')//e[matches(plain, " + p + ")])"));
-        assertEquals("index scan: " + pattern, expected,
-                count("count(doc('" + DOC + "')//e[matches(indexed, " + p + ")])"));
+        assertEquals(expected, count("count(doc('" + DOC + "')//e/plain/string()[matches(., " + p + ")])"), "value path: " + pattern);
+        assertEquals(expected, count("count(doc('" + DOC + "')//e[matches(plain, " + p + ")])"), "node scan: " + pattern);
+        assertEquals(expected, count("count(doc('" + DOC + "')//e[matches(indexed, " + p + ")])"), "index scan: " + pattern);
     }
 
     /** Java reads [a-z-[aeiou]] as a union and would also match "e" and "a". */
