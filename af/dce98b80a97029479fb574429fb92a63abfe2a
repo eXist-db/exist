@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/util/serializer/XHTMLWriter.java
+  s_1244e4159adea4::t_1b6fd8e53ac04b 720-728
+exist-core/src/main/java/org/exist/util/serializer/XMLWriter.java
+  s_1244e4159adea4::t_8728fe011562ec 107-115,626,637
+exist-core/src/test/java/org/exist/util/serializer/HtmlCdataWriterTest.java
+  s_1244e4159adea4::t_d217a1c75f7e1e 1-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "afdce98b80a97029479fb574429fb92a63abfe2a",
+  "prompts": {},
+  "sessions": {
+    "s_1244e4159adea4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "624da5d4-6d3e-4cad-8741-644979d6d006",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
