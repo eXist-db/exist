@@ -1,0 +1,19 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPFilterEscapeTest.java
+  s_65f5254d20b9ea::t_17583dedfcf353 24,26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dffd559590feb505a5c96ea13d2cc51fa6485690",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
