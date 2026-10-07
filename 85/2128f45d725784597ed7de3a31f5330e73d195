@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java
+  s_65f5254d20b9ea::t_26acaf6b69a9c9 45-50,61-64,66-67,70,73,76,88,99,163,191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "852128f45d725784597ed7de3a31f5330e73d195",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
