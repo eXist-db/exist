@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/config/ConfigurationImplPropertyMapTest.java
+  s_65f5254d20b9ea::t_feac67b69a666d 28-29,32-33,114-115,124-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "34dbf7c37c6b08fdfb27e6a089eb72efe7f16fce",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
