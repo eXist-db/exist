@@ -1,0 +1,27 @@
+extensions/exquery/restxq/src/main/resources/META-INF/services/org.exist.http.ExQueryRequestAdapterFactory
+  s_234b7d09f851e4::t_cc1df4cac9c38d 1
+exist-core/src/main/java/org/exist/http/ExQueryRequestAdapterFactory.java
+  s_234b7d09f851e4::t_885fcb3f18f54c 1-60
+extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/adapters/HttpServletRequestAdapter.java
+  s_234b7d09f851e4::t_f64ffc829bf1af 37
+  s_234b7d09f851e4::t_09c9c43f6e909e 276-290
+exist-core/src/main/java/org/exist/http/RESTServer.java
+  s_234b7d09f851e4::t_939c8e7515ba1e 155-165
+  s_234b7d09f851e4::t_982a381e3d4240 1925,1927-1929,1932
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "847a8325206cd674dc5ae2ea4bbf65f2cd5fe901",
+  "prompts": {},
+  "sessions": {
+    "s_234b7d09f851e4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f586f122-389d-4bd7-a380-fdeb2390e497",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
