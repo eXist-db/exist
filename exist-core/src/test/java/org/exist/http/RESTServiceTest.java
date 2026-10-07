@@ -1338,6 +1338,50 @@ try {
     }
 
     /**
+     * The method of a POST envelope takes precedence over the query's own output:method, for
+     * the serialized body as well as for the media type: an envelope asking for XML around a
+     * query that declares JSON must not send a JSON body as application/xml.
+     */
+    @Test
+    public void postQueryEnvelopeMethodOverridesInQueryMethod() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" method="xml">
+                    <text><![CDATA[
+                        declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                        declare option output:method "json";
+                        <root><a>1</a></root>
+                    ]]></text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(query);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("application/xml", contentType, "Server returned content type " + contentType);
+
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("<a>1</a>"), "Expected an XML body, got: " + response);
+            assertFalse(response.trim().startsWith("{"), "Expected an XML body, got: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
      * An explicit media-type must be honored for JSON results rather than being
      * overridden by the application/json default.
      */
@@ -1360,6 +1404,74 @@ try {
                 writer.write(queryJson);
             }
 
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("application/vnd.api+json", contentType, "Server returned content type " + contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * A stored query that declares output:method itself must be served as JSON, not XML.
+     *
+     * XQuery.execute() merges the query's own serialization options into the output
+     * properties under the W3C `method` key, where the REST layer's own key is
+     * `output-as`. Dispatching on `output-as` alone sent the result to the XML writer,
+     * so a JSON body went out as application/xml.
+     */
+    @Test
+    public void storedQueryInQueryJsonMethod() throws IOException {
+        final String xquery = """
+                xquery version "3.1";
+                declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "json";
+                <root><a>1</a></root>""";
+        doPut(xquery, "inquery-json.xq", HttpStatus.CREATED_201);
+
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json.xq");
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("application/json", contentType, "Server returned content type " + contentType);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * An in-query output:media-type must be honored alongside an in-query output:method.
+     */
+    @Test
+    public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
+        final String xquery = """
+                xquery version "3.1";
+                declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "json";
+                declare option output:media-type "application/vnd.api+json";
+                <root><a>1</a></root>""";
+        doPut(xquery, "inquery-json-mediatype.xq", HttpStatus.CREATED_201);
+
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json-mediatype.xq");
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
             connect.connect();
             final int r = connect.getResponseCode();
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
