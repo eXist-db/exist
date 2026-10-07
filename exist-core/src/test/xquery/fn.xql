@@ -26,6 +26,8 @@ xquery version "3.1";
  :)
 module namespace fnt="http://exist-db.org/xquery/test/fn";
 
+import module namespace sm="http://exist-db.org/xquery/securitymanager";
+import module namespace system="http://exist-db.org/xquery/system";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
 declare variable $fnt:composed := '&#x00C5;&#x0073;&#x0074;&#x0072;&#x00F6;&#x006D;';
@@ -38,7 +40,9 @@ function fnt:store() {
     return
         (
             xmldb:store($col, "test.xml", <books><book/></books>),
-            xmldb:store($col, "test.bin", "some binary", "application/octet-stream")
+            xmldb:store($col, "test.bin", "some binary", "application/octet-stream"),
+            xmldb:store($col, "private.xml", <private/>),
+            sm:chmod(xs:anyURI($col || "/private.xml"), "rw-------")
         )
 };
 
@@ -108,6 +112,57 @@ declare
     %test:assertEmpty
 function fnt:doc-does-not-return-element-node($filename as xs:string) {
     fn:doc("/db/fn-test/" || $filename)/book
+};
+
+declare
+    %test:assertEmpty
+function fnt:doc-empty-sequence() {
+    fn:doc(())
+};
+
+declare
+    %test:args("no-such-file.xml")
+    %test:assertError("err:FODC0002")
+function fnt:doc-missing($filename as xs:string) {
+    fn:doc("/db/fn-test/" || $filename)
+};
+
+declare
+    %test:args("test.bin")
+    %test:assertError("err:FODC0002")
+function fnt:doc-binary($filename as xs:string) {
+    fn:doc("/db/fn-test/" || $filename)
+};
+
+declare
+    %test:args("\adamretter")
+    %test:assertError("err:FODC0005")
+function fnt:doc-invalid-uri($uri as xs:string) {
+    fn:doc($uri)
+};
+
+declare
+    %test:assertError("err:FODC0002")
+function fnt:doc-permission-denied() {
+    system:as-user("guest", "guest", fn:doc("/db/fn-test/private.xml"))
+};
+
+declare
+    %test:assertFalse
+function fnt:doc-available-permission-denied() {
+    system:as-user("guest", "guest", fn:doc-available("/db/fn-test/private.xml"))
+};
+
+declare
+    %test:assertError("err:FODC0002")
+function fnt:collection-missing() {
+    fn:collection("/db/fn-test/no-such-collection")
+};
+
+declare
+    %test:assertEquals(2)
+function fnt:collection-existing() {
+    count(fn:collection("/db/fn-test"))
 };
 
 declare
