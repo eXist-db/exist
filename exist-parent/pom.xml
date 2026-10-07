@@ -135,7 +135,7 @@
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
         <jetty.version>12.1.13</jetty.version>
         <log4j.version>2.26.1</log4j.version>
-        <lucene.version>10.5.1</lucene.version>
+        <lucene.version>10.5.2</lucene.version>
         <lz4-java.version>1.12.0</lz4-java.version>
         <nekohtml.version>3.0.4</nekohtml.version>
         <saxon.version>12.5</saxon.version>
