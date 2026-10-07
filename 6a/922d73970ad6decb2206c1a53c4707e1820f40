@@ -1,0 +1,19 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPAccountCachingIT.java
+  s_65f5254d20b9ea::t_8daf65ebd6197f 25-26,44-46,56,94,99,158,161-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6a922d73970ad6decb2206c1a53c4707e1820f40",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
