@@ -1,0 +1,65 @@
+exist-core/src/test/java/org/exist/http/servlets/NonAsciiCookieRoundTripTest.java
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 117,128
+  s_65f5254d20b9ea::t_33507363ccaf0d 26-29,41-42,62,79,98,118-125,130-133
+exist-core/src/main/java/org/exist/http/servlets/HttpResponseWrapper.java
+  s_f93ed6eda7a79b::t_2f97c06e590938 60
+  s_f93ed6eda7a79b::t_62edcb38c27bd2 278
+  s_f93ed6eda7a79b::t_c6389262f1ee2b 238-252,256-262,275-276
+  s_f93ed6eda7a79b::t_c5241ba839a192 31,35
+  s_f93ed6eda7a79b::t_6351467abc7e68 65,72,80
+  s_c1937cd8749564::t_7100bfc2db6828 254,263-266,269-274,277
+  s_c1937cd8749564::t_7ca4898bb7d236 267-268
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingWireTest.java
+  s_f93ed6eda7a79b::t_8d4533594ebe52 225-226
+  s_f93ed6eda7a79b::t_00b5a37ce48272 211-212,218-224
+  s_65f5254d20b9ea::t_8934617d87d518 26-29,42-43,57,71,90,111,119-120
+exist-core/src/main/java/org/exist/xquery/functions/request/GetCookieValue.java
+  s_f93ed6eda7a79b::t_a0326f0409be0f 90,110-112,114-116
+  s_f93ed6eda7a79b::t_b2dc44f02e3667 38,41
+  s_c1937cd8749564::t_c8f29c88145240 91-109,113
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_f93ed6eda7a79b::t_a91c9f11507ae7 92,102-106,109
+  s_f93ed6eda7a79b::t_7ff3e41fdfc7dd 173
+  s_f93ed6eda7a79b::t_db7bf74abfcbfb 110
+  s_f93ed6eda7a79b::t_6ec1631425f0a5 44-57
+  s_f93ed6eda7a79b::t_2720a48f01998a 29,31
+  s_c1937cd8749564::t_7022348c170e3a 113-140,143-145,148-149
+  s_c1937cd8749564::t_0d36492ec1a6a5 141-142,147
+  s_65f5254d20b9ea::t_d301e5f1c7c23c 27,39-41,107-108,146,174-175,178-179
+exist-core/src/test/java/org/exist/xquery/functions/request/GetCookieValueDecodeTest.java
+  s_c1937cd8749564::t_ff622a91458c46 1-29,31-36,38-50,53,56-57,59-96
+  s_c1937cd8749564::t_339e90d73bb15e 51-52,54-55,58
+  s_65f5254d20b9ea::t_67c1d89124a00b 30,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ece2b3dd6b97f918473570a2d1d39906f1f5e41f",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_c1937cd8749564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6a1969f5-b156-4017-b6a0-3565eea84d79",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_f93ed6eda7a79b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e1d0fe12-1637-47b7-9c84-3f0e827abe6e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
