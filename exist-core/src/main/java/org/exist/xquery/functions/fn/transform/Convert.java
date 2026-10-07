@@ -128,6 +128,9 @@ class Convert {
             if (Type.subTypeOf(itemType, Type.ANY_ATOMIC_TYPE)) {
                 return ofAtomic((AtomicValue) item);
             } else if (Type.subTypeOf(itemType, Type.NODE)) {
+                if (item instanceof NodeProxy nodeProxy) {
+                    return ofNode(nodeProxy.getNode());
+                }
                 return ofNode((Node) item);
             } else if (Type.subTypeOf(itemType, Type.MAP_ITEM)) {
                 return ofMap((AbstractMapType) item);
