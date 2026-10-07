@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/launcher/LauncherWrapper.java
+  s_057db35e4d626e::t_83352b9bfefe02 182-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f64c0538815c0e5ab92564d0917b21198a8faf62",
+  "prompts": {},
+  "sessions": {
+    "s_057db35e4d626e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d098492-80f8-475a-9242-9398c5410f52",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
