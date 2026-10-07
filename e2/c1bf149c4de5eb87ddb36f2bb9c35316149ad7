@@ -1,0 +1,31 @@
+.github/scripts/prepare-governance-context.sh
+  s_317cce2b58cb91::t_ad89c17925e16a 16-19,27-29
+  s_317cce2b58cb91::t_f194f0f071f344 30-31
+exist-core/src/test/java/org/exist/config/ConfigurationImplPropertyMapTest.java
+  s_317cce2b58cb91::t_5e4f8dc6f556ce 70,79,91,98,116,126,142,154
+  s_65f5254d20b9ea::t_feac67b69a666d 28-29,32-33,114-115,124-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e2c1bf149c4de5eb87ddb36f2bb9c35316149ad7",
+  "prompts": {},
+  "sessions": {
+    "s_317cce2b58cb91": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6ff14749-d6e3-4a2e-ad2c-88210a3f2e1a",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
