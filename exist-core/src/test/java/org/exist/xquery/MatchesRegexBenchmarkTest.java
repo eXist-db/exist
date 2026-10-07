@@ -23,11 +23,11 @@ package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -39,8 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end timing for {@code fn:matches} on each of its evaluation paths, so that a change of
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class MatchesRegexBenchmarkTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String COLLECTION_NAME = "benchmark-matches-regex";
@@ -78,13 +78,13 @@ public class MatchesRegexBenchmarkTest {
         {"class-subtraction", "[A-Z-[AEIOU]]{3,}"},
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void assumeBenchmarks() {
-        Assume.assumeTrue("Benchmarks are disabled. Set -Dexist.run.benchmarks=true to enable.",
-                Boolean.getBoolean("exist.run.benchmarks"));
+        Assumptions.assumeTrue(Boolean.getBoolean("exist.run.benchmarks"),
+                "Benchmarks are disabled. Set -Dexist.run.benchmarks=true to enable.");
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws XMLDBException {
         if (!Boolean.getBoolean("exist.run.benchmarks")) {
             return;
@@ -107,7 +107,7 @@ public class MatchesRegexBenchmarkTest {
         col.storeResource(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws XMLDBException {
         if (!Boolean.getBoolean("exist.run.benchmarks")) {
             return;
@@ -121,8 +121,8 @@ public class MatchesRegexBenchmarkTest {
         for (final String[] p : PATTERNS) {
             counts.put(p[0], time("index-scan", p[0], "count(doc('" + DOC + "')//e[matches(indexed, '" + p[1] + "')])"));
         }
-        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
-        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
+        assertEquals(PATTERNS.length, counts.size(), "every pattern was timed");
+        assertTrue(counts.values().stream().allMatch(c -> c >= 0), "every query returned a count");
     }
 
     @Test
@@ -131,8 +131,8 @@ public class MatchesRegexBenchmarkTest {
         for (final String[] p : PATTERNS) {
             counts.put(p[0], time("node-scan", p[0], "count(doc('" + DOC + "')//e[matches(plain, '" + p[1] + "')])"));
         }
-        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
-        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
+        assertEquals(PATTERNS.length, counts.size(), "every pattern was timed");
+        assertTrue(counts.values().stream().allMatch(c -> c >= 0), "every query returned a count");
     }
 
     @Test
@@ -141,8 +141,8 @@ public class MatchesRegexBenchmarkTest {
         for (final String[] p : PATTERNS) {
             counts.put(p[0], time("value-path", p[0], "count(for $s in doc('" + DOC + "')//plain/string() return $s[matches(., '" + p[1] + "')])"));
         }
-        assertEquals("every pattern was timed", PATTERNS.length, counts.size());
-        assertTrue("every query returned a count", counts.values().stream().allMatch(c -> c >= 0));
+        assertEquals(PATTERNS.length, counts.size(), "every pattern was timed");
+        assertTrue(counts.values().stream().allMatch(c -> c >= 0), "every query returned a count");
     }
 
     /** Times the query and returns its count; the measured runs must all return the same count. */
