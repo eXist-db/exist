@@ -26,10 +26,10 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.test.KnownFailuresRatchet;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,7 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Cross-surface resource-naming conformance harness (PR A).
@@ -93,7 +93,7 @@ public class ResourceNamingConformanceTest {
     /** The five predefined XML entities, for {@link #unescapeXml}. */
     private static final Pattern XML_ENTITY = Pattern.compile("&(amp|lt|gt|quot|apos);");
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String TEST_COLLECTION = "/db/naming-conformance-test";
@@ -187,14 +187,14 @@ public class ResourceNamingConformanceTest {
             "XMLRPC>XMLRPC:hash"
     );
 
-    @BeforeClass
+    @BeforeAll
     public static void createTestCollection() {
-        // HttpClient is AutoCloseable (Java 21); created here and closed in @AfterClass below.
+        // HttpClient is AutoCloseable (Java 21); created here and closed in @AfterAll below.
         http = HttpClient.newHttpClient();
         freshCollection();
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestCollection() {
         restDelete(TEST_COLLECTION);
         http.close();

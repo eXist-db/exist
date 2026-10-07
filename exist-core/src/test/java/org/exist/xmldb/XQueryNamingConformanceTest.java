@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,10 +33,10 @@ import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.value.Sequence;
 import org.exist.test.KnownFailuresRatchet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * XQuery-accessor resource-naming conformance — the XQuery-side companion to the cross-surface HTTP harness
@@ -63,7 +63,7 @@ import org.junit.Test;
  */
 public class XQueryNamingConformanceTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     private static final String RES_COLL = "/db/naming-xq-res";
@@ -118,13 +118,13 @@ public class XQueryNamingConformanceTest {
             "coll:raw:文書.xml:get-child-collections"
     );
 
-    @Before
+    @BeforeEach
     public void openBroker() throws Exception {
         final BrokerPool pool = server.getBrokerPool();
         broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
     }
 
-    @After
+    @AfterEach
     public void closeBroker() {
         if (broker != null) {
             broker.close();

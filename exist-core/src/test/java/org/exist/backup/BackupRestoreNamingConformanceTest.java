@@ -22,17 +22,17 @@
 package org.exist.backup;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.exist.TestUtils;
 import org.exist.backup.restore.listener.LogRestoreListener;
@@ -50,15 +50,13 @@ import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Backup &rarr; restore round-trip conformance for awkward resource names.
@@ -84,13 +82,12 @@ import org.junit.runners.Parameterized.Parameters;
  * <p>Parameterized over {@link SystemExport}'s direct / non-direct modes and plain / zip, mirroring
  * {@link SystemExportImportTest}.</p>
  */
-@RunWith(Parameterized.class)
 public class BackupRestoreNamingConformanceTest {
 
-    @ClassRule
-    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/backup-naming-conformance");
@@ -114,23 +111,12 @@ public class BackupRestoreNamingConformanceTest {
     private static final String BINARY_NAME = "résumé.bin";
     private static final byte[] BINARY_CONTENT = "binary résumé payload".getBytes(UTF_8);
 
-    @Parameter
-    public String apiName;
-
-    @Parameter(value = 1)
-    public boolean direct;
-
-    @Parameter(value = 2)
-    public boolean zip;
-
-    @Parameters(name = "{0} zip:{2}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"direct", true, false},
-                {"non-direct", false, false},
-                {"direct", true, true},
-                {"non-direct", false, true}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("direct", true, false),
+                Arguments.of("non-direct", false, false),
+                Arguments.of("direct", true, true),
+                Arguments.of("non-direct", false, true));
     }
 
     /** Unique XML content per resource, so the byte-for-byte comparison is meaningful and any collision shows. */
@@ -145,7 +131,7 @@ public class BackupRestoreNamingConformanceTest {
         return URIUtils.encodeXmldbUriFor(TEST_COLLECTION.toString() + "/" + humanName).lastSegment();
     }
 
-    @Before
+    @BeforeEach
     public void storeCorpus() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -167,7 +153,7 @@ public class BackupRestoreNamingConformanceTest {
         }
     }
 
-    @After
+    @AfterEach
     public void removeCorpus() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -180,29 +166,30 @@ public class BackupRestoreNamingConformanceTest {
         }
     }
 
-    @Test
-    public void awkwardNamesSurviveBackupRestore() throws Exception {
+    @ParameterizedTest(name = "{0} zip:{2}")
+    @MethodSource("data")
+    public void awkwardNamesSurviveBackupRestore(final String apiName, final boolean direct, final boolean zip) throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         // snapshot the stored (key -> content) state BEFORE the round-trip
         final Map<String, String> before = snapshot(pool);
-        printMapping("before backup", before);
+        printMapping(apiName, zip, "before backup", before);
 
         // setup-integrity: every corpus name must have stored as its own distinct key in this path, so the
         // round-trip below genuinely exercises all of them (not fewer after an accidental store-time clash).
-        assertEquals("setup stored fewer resources than the corpus — a name clashed on the way in; see the "
-                        + "printed mapping", XML_NAMES.size() + 1, before.size());
+        assertEquals(XML_NAMES.size() + 1, before.size(),
+                "setup stored fewer resources than the corpus — a name clashed on the way in; see the printed mapping");
 
         // export a full backup
         final Path backup;
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn txn = pool.getTransactionManager().beginTransaction()) {
             final SystemExport export = new SystemExport(broker, txn, null, null, direct);
-            backup = export.export(temporaryFolder.newFolder().getAbsolutePath(), false, zip, null);
+            backup = export.export(temporaryFolder.toAbsolutePath().toString(), false, zip, null);
             txn.commit();
         }
         // SystemExport.export returns null, rather than throwing, when the export itself fails
-        assertNotNull("SystemExport.export returned no backup: the export failed (direct=" + direct + ", zip=" + zip + ")", backup);
+        assertNotNull(backup, "SystemExport.export returned no backup: the export failed (direct=" + direct + ", zip=" + zip + ")");
 
         // wipe the collection
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -219,12 +206,12 @@ public class BackupRestoreNamingConformanceTest {
 
         // snapshot AFTER the round-trip
         final Map<String, String> after = snapshot(pool);
-        printMapping("after restore", after);
+        printMapping(apiName, zip, "after restore", after);
 
         // the round-trip must be faithful: the same stored keys, each with byte-for-byte identical content,
         // none dropped, renamed, or collided.
-        assertEquals("backup -> restore changed the set of stored resource names", before.keySet(), after.keySet());
-        assertEquals("backup -> restore did not reproduce every resource's content byte-for-byte", before, after);
+        assertEquals(before.keySet(), after.keySet(), "backup -> restore changed the set of stored resource names");
+        assertEquals(before, after, "backup -> restore did not reproduce every resource's content byte-for-byte");
     }
 
     /** stored-key -&gt; content for every document under the test collection (XML serialized; binary as a UTF-8 string). */
@@ -233,7 +220,7 @@ public class BackupRestoreNamingConformanceTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn txn = pool.getTransactionManager().beginTransaction()) {
             final Collection test = broker.getCollection(TEST_COLLECTION);
-            assertNotNull("test collection missing", test);
+            assertNotNull(test, "test collection missing");
             for (final Iterator<DocumentImpl> it = test.iterator(broker); it.hasNext(); ) {
                 final DocumentImpl doc = it.next();
                 final String key = doc.getFileURI().toString();       // the exact stored key
@@ -262,7 +249,7 @@ public class BackupRestoreNamingConformanceTest {
         }
     }
 
-    private void printMapping(final String phase, final Map<String, String> snapshot) {
+    private void printMapping(final String apiName, final boolean zip, final String phase, final Map<String, String> snapshot) {
         final StringBuilder sb = new StringBuilder("\n=== Backup/restore naming conformance (")
                 .append(apiName).append(", zip:").append(zip).append(") — ").append(phase).append(" ===\n");
         for (final String key : snapshot.keySet()) {
