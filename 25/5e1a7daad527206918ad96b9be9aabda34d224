@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_65f5254d20b9ea::t_d301e5f1c7c23c 27,39-41,107-108,146,174-175,178-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "255e1a7daad527206918ad96b9be9aabda34d224",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
