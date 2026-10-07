@@ -1364,18 +1364,18 @@ try {
 
             connect.connect();
             final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
 
             String contentType = connect.getContentType();
             final int semicolon = contentType.indexOf(';');
             if (semicolon > 0) {
                 contentType = contentType.substring(0, semicolon).trim();
             }
-            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+            assertEquals("application/xml", contentType, "Server returned content type " + contentType);
 
             final String response = readResponse(connect.getInputStream());
-            assertTrue("Expected an XML body, got: " + response, response.contains("<a>1</a>"));
-            assertFalse("Expected an XML body, got: " + response, response.trim().startsWith("{"));
+            assertTrue(response.contains("<a>1</a>"), "Expected an XML body, got: " + response);
+            assertFalse(response.trim().startsWith("{"), "Expected an XML body, got: " + response);
         } finally {
             connect.disconnect();
         }
@@ -1442,14 +1442,14 @@ try {
             connect.setRequestMethod("GET");
             connect.connect();
             final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
 
             String contentType = connect.getContentType();
             final int semicolon = contentType.indexOf(';');
             if (semicolon > 0) {
                 contentType = contentType.substring(0, semicolon).trim();
             }
-            assertEquals("Server returned content type " + contentType, "application/json", contentType);
+            assertEquals("application/json", contentType, "Server returned content type " + contentType);
         } finally {
             connect.disconnect();
         }
@@ -1474,14 +1474,14 @@ try {
             connect.setRequestMethod("GET");
             connect.connect();
             final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
 
             String contentType = connect.getContentType();
             final int semicolon = contentType.indexOf(';');
             if (semicolon > 0) {
                 contentType = contentType.substring(0, semicolon).trim();
             }
-            assertEquals("Server returned content type " + contentType, "application/vnd.api+json", contentType);
+            assertEquals("application/vnd.api+json", contentType, "Server returned content type " + contentType);
         } finally {
             connect.disconnect();
         }
