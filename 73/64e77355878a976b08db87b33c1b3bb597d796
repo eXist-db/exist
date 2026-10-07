@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java
+  s_65f5254d20b9ea::t_ec484210f6d2e2 44-49,58-59,61-62,65,68,71,83,94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7364e77355878a976b08db87b33c1b3bb597d796",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
