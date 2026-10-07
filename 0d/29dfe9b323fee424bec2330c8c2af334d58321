@@ -1,0 +1,27 @@
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_aafb51b014f7aa::t_63571b0794b492 36-39
+exist-core/src/test/java/org/exist/http/servlets/SchemaServletTest.java
+  s_aafb51b014f7aa::t_2f3b6cf332e4f9 1-81,83-161
+  s_aafb51b014f7aa::t_0580ac25173fc6 82
+exist-jetty-config/src/main/resources/webapp/WEB-INF/web.xml
+  s_aafb51b014f7aa::t_63571b0794b492 183-190
+  s_aafb51b014f7aa::t_9f8b9f24a5377f 182
+exist-core/src/main/java/org/exist/http/servlets/SchemaServlet.java
+  s_aafb51b014f7aa::t_80407a0ffd9e9e 1-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0d29dfe9b323fee424bec2330c8c2af334d58321",
+  "prompts": {},
+  "sessions": {
+    "s_aafb51b014f7aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2516c14f-fe00-496e-b2f8-74142682967b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

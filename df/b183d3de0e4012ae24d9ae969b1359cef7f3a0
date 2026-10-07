@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_aafb51b014f7aa::t_b74c4c30dcc8da 1521-1522
+  s_aafb51b014f7aa::t_63571b0794b492 40,81,222,256-258,357,566-567,571,578-582,588-589,593-594,604-605,632-635,654-656,1253-1255,1260,1265,1279,1289,1293,1296-1298,1512-1520,1598-1604
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_aafb51b014f7aa::t_63571b0794b492 58-59
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_aafb51b014f7aa::t_63571b0794b492 146
+exist-core/src/main/java/org/exist/xquery/ModuleRegistration.java
+  s_aafb51b014f7aa::t_691f68b76ba675 1-45
+exist-core/src/test/java/org/exist/util/ConfigurationTest.java
+  s_aafb51b014f7aa::t_63571b0794b492 24-26,34,37,118-168
+  s_aafb51b014f7aa::t_b2fe5e9eb9ac1b 169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dfb183d3de0e4012ae24d9ae969b1359cef7f3a0",
+  "prompts": {},
+  "sessions": {
+    "s_aafb51b014f7aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2516c14f-fe00-496e-b2f8-74142682967b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

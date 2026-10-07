@@ -1,0 +1,19 @@
+extensions/vector/src/test/java/org/exist/vector/VectorExtensionHookWiringTest.java
+  s_234b7d09f851e4::t_4c92a8ef7d9289 1-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "096bdd94a984ff8d93462450a9cc614361de0191",
+  "prompts": {},
+  "sessions": {
+    "s_234b7d09f851e4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f586f122-389d-4bd7-a380-fdeb2390e497",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

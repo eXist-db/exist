@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/xquery/functions/util/ModuleInfo.java
+  s_aafb51b014f7aa::t_63571b0794b492 89-90,97-98,122-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d8125d66c0ce2c9e6af88256160c42393a9512e6",
+  "prompts": {},
+  "sessions": {
+    "s_aafb51b014f7aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2516c14f-fe00-496e-b2f8-74142682967b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

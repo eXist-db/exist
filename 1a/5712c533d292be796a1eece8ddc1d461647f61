@@ -1,0 +1,62 @@
+exist-core/src/test/xquery/system/registered-modules.xqm
+  s_aafb51b014f7aa::t_81489d5ac81618 44,50-51,57,64-65,74-75,81-82
+  s_aafb51b014f7aa::t_d19b446bf62b07 68-70,73,80
+  s_aafb51b014f7aa::t_74d8f473dbf09d 1-43,45-49,52-56,58-63,66-67,71-72,76-79,83-91
+exist-core/src/main/java/org/exist/xquery/functions/system/GetRegisteredModules.java
+  s_aafb51b014f7aa::t_ccb34414355839 1-99,104-108,167-187
+  s_aafb51b014f7aa::t_8f83d47034ce01 100-103,109-166
+exist-core/src/main/java/org/exist/xquery/functions/system/GetConfigurationProperty.java
+  s_aafb51b014f7aa::t_acdd4b1d2c9deb 25,31,36,45-50,56-58,61,64,77-80,82-83,88-90
+  s_aafb51b014f7aa::t_333b1f01588d5b 1-24,26-30,32-35,37-44,51-55,59-60,62-63,65-76,81,84-87,91-94
+exist-core/src/main/java/org/exist/xquery/functions/system/GetRegisteredIndexes.java
+  s_aafb51b014f7aa::t_8a1347f0b55b05 1-87
+exist-core/src/test/xquery/system/get-configuration-schema-version.xqm
+  s_aafb51b014f7aa::t_d83d6b69b46658 41
+  s_aafb51b014f7aa::t_d7ce5366bc8cc2 1-40,42-52
+exist-core/src/main/java/org/exist/xquery/functions/system/GetConfiguration.java
+  s_aafb51b014f7aa::t_d52ad34c1a3138 62
+  s_aafb51b014f7aa::t_c1241ac0e9edd4 1-61,63-64
+exist-core/src/test/xquery/system/registered-indexes.xqm
+  s_aafb51b014f7aa::t_46796c26666791 43,49
+  s_aafb51b014f7aa::t_f468dc3ea2d2b1 52-56
+  s_aafb51b014f7aa::t_173236f953d9f9 1-42,44-48,50-51,57-64
+exist-core/src/main/java/org/exist/xquery/functions/system/ConfigurationRedactor.java
+  s_aafb51b014f7aa::t_4fe9406367b7a0 1-29,32-34,36-76,98-100,119-121,124-128,130-155
+  s_aafb51b014f7aa::t_8569d269780f76 101-118,129
+  s_aafb51b014f7aa::t_fa3d5a6a7977de 123
+  s_aafb51b014f7aa::t_ecfc74a9f23ef8 77-84,86-96
+  s_aafb51b014f7aa::t_a6caf5d17b473d 35
+  s_aafb51b014f7aa::t_69afe9d0728986 30-31
+  s_aafb51b014f7aa::t_634ed9d9be6f3a 122
+  s_aafb51b014f7aa::t_616cd7cae02936 97
+  s_aafb51b014f7aa::t_4489a083ad7f56 85
+exist-core/src/test/xquery/system/get-configuration.xqm
+  s_aafb51b014f7aa::t_e54bc21594ef46 53-57
+  s_aafb51b014f7aa::t_9e80d47f2558a2 76
+  s_aafb51b014f7aa::t_12086b9525fed7 36,41
+  s_aafb51b014f7aa::t_cdfaedd0ee61bc 1-35,37-40,42-52,58-75,77
+exist-core/src/main/java/org/exist/xquery/functions/system/SystemModule.java
+  s_aafb51b014f7aa::t_63571b0794b492 90-98
+exist-core/src/test/java/org/exist/xquery/functions/system/ConfigurationRedactorTest.java
+  s_aafb51b014f7aa::t_fcc121f7912149 1-109
+exist-core/src/main/java/org/exist/xquery/functions/system/GetConfigurationSchemaVersion.java
+  s_aafb51b014f7aa::t_8afff7bf9a2f56 32,35
+  s_aafb51b014f7aa::t_bb4959b43d418a 51
+  s_aafb51b014f7aa::t_1652607a98c7a1 1-31,33-34,36-50,52-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1a5712c533d292be796a1eece8ddc1d461647f61",
+  "prompts": {},
+  "sessions": {
+    "s_aafb51b014f7aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2516c14f-fe00-496e-b2f8-74142682967b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
