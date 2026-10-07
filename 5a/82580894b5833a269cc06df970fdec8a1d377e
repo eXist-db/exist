@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/AccessUtilTest.java
+  s_65f5254d20b9ea::t_a5cdc61da5b894 25,32-33,56-59,73-76,97-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5a82580894b5833a269cc06df970fdec8a1d377e",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
