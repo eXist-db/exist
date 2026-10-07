@@ -30,8 +30,8 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -40,7 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * An attribute copied into a constructed element keeps its namespace, whatever its prefix means on
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AttributeNamespaceFixupTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     private static final String EX = "http://www.example.com";
@@ -100,7 +100,7 @@ public class AttributeNamespaceFixupTest {
 
     private static void assertAttributeIn(final String serialized, final String uri, final String localName) throws Exception {
         final Attr attr = parse(serialized).getAttributeNodeNS(uri, localName);
-        assertNotNull("@" + localName + " must be in " + uri + "; got " + serialized, attr);
+        assertNotNull(attr, "@" + localName + " must be in " + uri + "; got " + serialized);
     }
 
     /**
