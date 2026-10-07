@@ -29,6 +29,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
@@ -39,6 +40,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Implements the built-in fn:doc() function.
@@ -55,7 +59,11 @@ public class FunDoc extends Function {
         new FunctionSignature(
             new QName("doc", Function.BUILTIN_FUNCTION_NS),
             "Returns the document node of $document-uri. " +
-            XMLDBModule.ANY_URI,
+            XMLDBModule.ANY_URI +
+            " Raises err:FODC0002 if the document cannot be retrieved or parsed, unless" +
+            " raise-error-on-failed-retrieval is disabled in conf.xml, in which case the empty sequence" +
+            " is returned for a missing document. Raises err:FODC0005 if $document-uri is not a valid URI." +
+            " The result is not stable: the document may be modified by other transactions while the query runs.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("document-uri", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The document URI")
@@ -98,21 +106,32 @@ public class FunDoc extends Function {
                 //return cached;
             //}
             try {
-                result = DocUtils.getDocument(this.context, path, this);
-                if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
-                    throw new XPathException(this, ErrorCodes.FODC0002,
-                        "Can not access '" + path + "'", arg);
-                }
-                //TODO: we still need a final decision about this. Also check base-uri.
-                //if (result == Sequence.EMPTY_SEQUENCE)
-                    //throw new XPathException(this, path + " is not an XML document");
-                final DocumentSet docs = result.getDocumentSet();
-                if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
-                    // only cache node sets (which have a non-empty document set)
-                    registerUpdateListener();
-                }
-            } catch (final Exception e) {
+                new URI(path);
+            } catch (final URISyntaxException e) {
                 throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg, e);
+            }
+
+            try {
+                result = DocUtils.getDocument(this.context, path, this);
+            } catch (final PermissionDeniedException e) {
+                throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), arg, e);
+            } catch (final XPathException e) {
+                // failures to retrieve or parse the resource without a more specific error code
+                if (e.getErrorCode() == ErrorCodes.ERROR) {
+                    throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), arg, e);
+                }
+                throw e;
+            }
+
+            if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
+                throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Can not access '" + path + "'", arg);
+            }
+
+            final DocumentSet docs = result.getDocumentSet();
+            if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
+                // only cache node sets (which have a non-empty document set)
+                registerUpdateListener();
             }
         }
         if (context.getProfiler().isEnabled()) 
