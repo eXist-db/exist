@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xmlrpc/GetDocumentHtmlCdataTest.java
+  s_1244e4159adea4::t_94019df0680170 1-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f4c0ef403385610faccce05fd7e96b8ec9fddfba",
+  "prompts": {},
+  "sessions": {
+    "s_1244e4159adea4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "624da5d4-6d3e-4cad-8741-644979d6d006",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
