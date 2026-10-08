@@ -527,7 +527,6 @@ public class ExistDocument extends ExistResource {
         // use WRITE_LOCK if moving or if src and dest collection are the same
         final LockMode srcCollectionLockMode = mode == Mode.MOVE
                 || destCollectionUri.equals(xmldbUri.removeLastSegment()) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
-        DocumentImpl srcDocument = null;
 
         // Need to split path into collection and document name
         final XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
@@ -535,47 +534,48 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
+        // lock the destination Collection, then the source Collection, and only then the document: see moveOrCopyResource in RpcConnection
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
                 final Txn txn = txnManager.beginTransaction();
-                final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
+                final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
 
             // Open collection if possible, else abort
-            if (srcCollection == null) {
-                txnManager.abort(txn);
-                return; // TODO throw
-            }
-
-            // Open document if possible, else abort
-            srcDocument = srcCollection.getDocument(broker, srdDocumentUri);
-            if (srcDocument == null) {
-                LOG.debug("No resource found for path: {}", xmldbUri);
+            if (destCollection == null) {
+                LOG.debug("Destination collection {} does not exist.", destCollectionUri);
                 txnManager.abort(txn);
                 return;
             }
 
             // Open collection if possible, else abort
-            try (final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
-                if (destCollection == null) {
-                    LOG.debug("Destination collection {} does not exist.", xmldbUri);
+            try (final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
+                if (srcCollection == null) {
                     txnManager.abort(txn);
-                    return;
+                    return; // TODO throw
                 }
 
+                // Open document if possible, else abort
+                try (final LockedDocument lockedSrcDocument = srcCollection.getDocumentWithLock(broker, srdDocumentUri, LockMode.WRITE_LOCK)) {
+                    if (lockedSrcDocument == null) {
+                        LOG.debug("No resource found for path: {}", xmldbUri);
+                        txnManager.abort(txn);
+                        return;
+                    }
+                    final DocumentImpl srcDocument = lockedSrcDocument.getDocument();
 
-                // Perform actial move/copy
-                if (mode == Mode.COPY) {
-                    broker.copyResource(txn, srcDocument, destCollection, newNameUri);
+                    // Perform actual move/copy
+                    if (mode == Mode.COPY) {
+                        broker.copyResource(txn, srcDocument, destCollection, newNameUri);
 
-                } else {
-                    broker.moveResource(txn, srcDocument, destCollection, newNameUri);
-                }
+                    } else {
+                        broker.moveResource(txn, srcDocument, destCollection, newNameUri);
+                    }
 
+                    // Commit change
+                    txnManager.commit(txn);
 
-                // Commit change
-                txnManager.commit(txn);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Document {}d successfully", mode);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Document {}d successfully", mode);
+                    }
                 }
             }
         } catch (LockException e) {

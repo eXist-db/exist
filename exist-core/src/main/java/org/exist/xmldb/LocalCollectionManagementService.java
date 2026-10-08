@@ -136,9 +136,10 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
             newName = name;
         }
 
+        // lock the destination Collection before the source Collection: see moveOrCopyCollection in RpcConnection
         withDb((broker, transaction) ->
-                modify(broker, transaction, srcPath).apply((source, b1, t1) ->
-                        modify(b1, t1, destPath).apply((destination, b2, t2) -> {
+                modify(broker, transaction, destPath).apply((destination, b1, t1) ->
+                        modify(b1, t1, srcPath).apply((source, b2, t2) -> {
                             b2.moveCollection(t2, source, destination, newName);
                             return null;
                         })
@@ -226,9 +227,10 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
             newName = name;
         }
 
+        // lock the destination Collection before the source Collection: see moveOrCopyCollection in RpcConnection
         withDb((broker, transaction) ->
-                read(broker, transaction, srcPath).apply((source, b1, t1) ->
-                        modify(b1, t1, destPath).apply((destination, b2, t2) -> {
+                modify(broker, transaction, destPath).apply((destination, b1, t1) ->
+                        read(b1, t1, srcPath).apply((source, b2, t2) -> {
                             try {
                                 b2.copyCollection(t2, source, destination, newName, preserve);
                                 return null;

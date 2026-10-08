@@ -3209,9 +3209,16 @@ public class RpcConnection implements RpcAPI {
         final LockMode srcCollectionMode = move
                 || collUri.equals(destUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
 
+        /*
+         * Lock the destination Collection before the source Collection. Copying takes a READ_LOCK on the source,
+         * which puts an INTENTION_READ on each of its ancestors; if the destination is one of them (e.g. /db), taking
+         * its WRITE_LOCK afterwards would have to upgrade that INTENTION_READ, and two threads doing so, or one doing
+         * so while others wait to write the same Collection, wait for each other. Taking the WRITE_LOCK first means
+         * the source's locks are then covered by it.
+         */
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(srcCollectionMode, broker, transaction, collUri).apply((source, broker1, transaction1) ->
-                        this.<Boolean>writeCollection(broker1, transaction1, destUri).apply((destination, broker2, transaction2) -> {
+                this.<Boolean>writeCollection(broker, transaction, destUri).apply((destination, broker1, transaction1) ->
+                        this.<Boolean>withCollection(srcCollectionMode, broker1, transaction1, collUri).apply((source, broker2, transaction2) -> {
                             if (move) {
                                 broker2.moveCollection(transaction2, source, destination, newName);
                             } else {

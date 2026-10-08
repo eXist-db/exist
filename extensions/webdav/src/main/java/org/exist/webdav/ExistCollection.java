@@ -374,25 +374,26 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
+        // lock the destination Collection before the source Collection: see moveOrCopyCollection in RpcConnection
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
                 final Txn txn = txnManager.beginTransaction();
-                final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
+                final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
 
             // Open collection if possible, else abort
-            if (srcCollection == null) {
+            if (destCollection == null) {
+                LOG.debug("Destination collection {} does not exist.", destCollectionUri);
                 txnManager.abort(txn);
-                return; // TODO throw
+                return; // TODO throw?
             }
 
             // Open collection if possible, else abort
-            try(final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
-                if (destCollection == null) {
-                    LOG.debug("Destination collection {} does not exist.", xmldbUri);
+            try (final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
+                if (srcCollection == null) {
                     txnManager.abort(txn);
-                    return; // TODO throw?
+                    return; // TODO throw
                 }
 
-                // Perform actial move/copy
+                // Perform actual move/copy
                 if (mode == Mode.COPY) {
                     broker.copyCollection(txn, srcCollection, destCollection, newNameUri);
 
