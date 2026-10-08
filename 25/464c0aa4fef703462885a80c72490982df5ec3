@@ -1,0 +1,51 @@
+extensions/vector/src/test/java/org/exist/vector/VectorExtensionHookWiringTest.java
+  s_234b7d09f851e4::t_4c92a8ef7d9289 1-25,28,30-48,50-80,82-85
+  s_65f5254d20b9ea::t_f6998eaa2768c3 26-27,29,49,81
+exist-core/src/main/java/org/exist/storage/vector/VectorExtensionHook.java
+  s_234b7d09f851e4::t_28a6bedc4c2197 25,39-50
+exist-core/src/main/java/org/exist/xquery/functions/system/GetRegisteredModules.java
+  s_234b7d09f851e4::t_e9b9f0885d2347 95-106,111-113,116
+  s_234b7d09f851e4::t_22b0697b35ff06 51
+  s_234b7d09f851e4::t_ca1de0227512da 35
+exist-core/src/main/java/org/exist/xquery/LiveModules.java
+  s_234b7d09f851e4::t_646fc9443bd36d 1-114
+exist-core/src/main/java/org/exist/xquery/functions/util/ModuleInfo.java
+  s_234b7d09f851e4::t_b4ab374b966ae4 257-258,269-270
+  s_234b7d09f851e4::t_4ede34a29155ac 36
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_0fd1152b34335f::t_da2a9976826777 9
+schema/controller-config.xsd
+  s_0fd1152b34335f::t_25335d5248bac4 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "25464c0aa4fef703462885a80c72490982df5ec3",
+  "prompts": {},
+  "sessions": {
+    "s_0fd1152b34335f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a9e5eb57-ccb1-4c8f-b890-6fee634a5bf6",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_234b7d09f851e4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f586f122-389d-4bd7-a380-fdeb2390e497",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
