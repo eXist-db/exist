@@ -1,0 +1,21 @@
+extensions/modules/http-client/src/main/java/org/exist/xquery/modules/httpclient/ResponseHandler.java
+  s_3639337c32bdfa::t_866af712a98d26 44,220-227
+extensions/modules/http-client/src/test/java/org/exist/xquery/modules/httpclient/SendRequestFunctionTest.java
+  s_3639337c32bdfa::t_faaf2969927323 70-71,75-76,121-133,329-335,524-546
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d772686951f074b626b0a0dfa761f93b96cddd11",
+  "prompts": {},
+  "sessions": {
+    "s_3639337c32bdfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a8909c2-96b5-4ae7-9f09-381e93c24eda",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
