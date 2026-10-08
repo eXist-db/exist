@@ -1,0 +1,29 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPRealmEscapeSearchAttributeTest.java
+  s_3639337c32bdfa::t_866d082cf6d380 1-44
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_3639337c32bdfa::t_8a3ca281b74543 1191
+extensions/security/ldap/src/main/java/org/exist/security/realm/ldap/LDAPRealm.java
+  s_3639337c32bdfa::t_8b84ccd5468526 739,742,744-745
+exist-core/src/main/java/org/exist/http/servlets/XQueryServlet.java
+  s_3639337c32bdfa::t_a877ed1c0d817e 645,650,657-681
+  s_3639337c32bdfa::t_8b84ccd5468526 63
+  s_3639337c32bdfa::t_3c9720cf4584f7 682
+exist-core/src/test/java/org/exist/http/servlets/XQueryServletEscapeHtmlTest.java
+  s_3639337c32bdfa::t_866d082cf6d380 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a84a19dacdcd77f8d1e177a2af2a1f137fa1e68b",
+  "prompts": {},
+  "sessions": {
+    "s_3639337c32bdfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a8909c2-96b5-4ae7-9f09-381e93c24eda",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
