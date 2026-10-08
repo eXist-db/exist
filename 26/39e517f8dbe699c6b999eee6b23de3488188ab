@@ -1,0 +1,19 @@
+mvnw.cmd
+  s_0fd1152b34335f::t_07bcff78905f4c 1-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2639e517f8dbe699c6b999eee6b23de3488188ab",
+  "prompts": {},
+  "sessions": {
+    "s_0fd1152b34335f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a9e5eb57-ccb1-4c8f-b890-6fee634a5bf6",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
