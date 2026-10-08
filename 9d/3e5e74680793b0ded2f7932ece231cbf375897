@@ -1,0 +1,19 @@
+exist-core/src/test/xquery/transform/catalog.xql
+  s_67d908719320ef::t_351d53edabe40c 102-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9d3e5e74680793b0ded2f7932ece231cbf375897",
+  "prompts": {},
+  "sessions": {
+    "s_67d908719320ef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4c1156f-a703-4894-9b5d-bf8e823d5fa7",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
