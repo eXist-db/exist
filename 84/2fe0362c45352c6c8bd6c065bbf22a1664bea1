@@ -1,0 +1,21 @@
+exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml
+  s_0fd1152b34335f::t_da2a9976826777 9
+schema/controller-config.xsd
+  s_0fd1152b34335f::t_25335d5248bac4 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "842fe0362c45352c6c8bd6c065bbf22a1664bea1",
+  "prompts": {},
+  "sessions": {
+    "s_0fd1152b34335f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a9e5eb57-ccb1-4c8f-b890-6fee634a5bf6",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
