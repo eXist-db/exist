@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xqj/Marshaller.java
+  s_3639337c32bdfa::t_8daff2ecd0526c 154,161,343,388,424-438
+exist-core/src/test/java/org/exist/xqj/MarshallerTest.java
+  s_3639337c32bdfa::t_ef6987c26b97eb 139-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6a38b0d57db4e495d9992514596feadb123fa6c7",
+  "prompts": {},
+  "sessions": {
+    "s_3639337c32bdfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a8909c2-96b5-4ae7-9f09-381e93c24eda",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
