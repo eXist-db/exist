@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xmldb/RemoteXMLResource.java
+  s_3639337c32bdfa::t_5bdb1c43a8dfe1 211-215,258-261
+exist-core/src/test/java/org/exist/xmldb/RemoteXMLResourceXxeTest.java
+  s_3639337c32bdfa::t_57165dd9773f01 1-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a8367d776b09e1e63a007e5fa2193586c192c604",
+  "prompts": {},
+  "sessions": {
+    "s_3639337c32bdfa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a8909c2-96b5-4ae7-9f09-381e93c24eda",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
