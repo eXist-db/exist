@@ -245,7 +245,70 @@ public class URIUtils {
 
 		return new String(buf.buf, 0, buf.count);
 	}
-	
+
+	/**
+	 * Decodes a percent-encoded URI path component back to its literal form, the inverse of
+	 * {@link #urlEncodeUtf8(String)} (which {@code xmldb:encode-uri} uses, and which encodes a space as
+	 * {@code %20}) and of {@link #encodeForURI(String)}. Each {@code %XX} escape is decoded to a byte;
+	 * consecutive escapes are interpreted together as a UTF-8 byte sequence. Every other character is
+	 * left unchanged.
+	 *
+	 * Unlike {@link #urlDecodeUtf8(String)} (which wraps {@link java.net.URLDecoder} and therefore
+	 * follows application/x-www-form-urlencoded rules), this method treats {@code '+'} as a literal
+	 * plus sign, per RFC 3986. This is required for round-tripping names through the xmldb URI
+	 * functions (see eXist-db/exist#1824, #44): {@code decodeForURI(urlEncodeUtf8(s))} and
+	 * {@code decodeForURI(encodeForURI(s))} equal {@code s} for every {@code s}.
+	 *
+	 * <p>This is deliberately a standalone percent-decoder rather than a call to
+	 * {@link java.net.URI#getPath()}. {@code java.net.URI} is unsuitable as a general decoder for the
+	 * arbitrary strings that {@code xmldb:decode}/{@code xmldb:decode-uri} accept: it throws
+	 * {@code URISyntaxException} on inputs that are perfectly valid here (a literal space, a trailing
+	 * or malformed {@code %}, characters such as <code>{</code> or <code>}</code>), and worse, it
+	 * <em>silently truncates</em> at {@code '?'} and {@code '#'} (parsing the remainder as a query or
+	 * fragment) — losing data with no error. For any non-null string, this decoder never throws and
+	 * never truncates: any {@code '%'} not followed by two hex digits is preserved verbatim. See
+	 * {@code URIUtilsTest}.</p>
+	 *
+	 * <p>It is not {@code org.apache.commons.codec.net.PercentCodec} either, which throws on such a
+	 * {@code '%'} rather than preserving it.</p>
+	 *
+	 * @param uriComponent the percent-encoded path component to decode; not null.
+	 *
+	 * @return the decoded path component.
+	 */
+	public static String decodeForURI(final String uriComponent) {
+		if (uriComponent.indexOf('%') == -1) {
+			// fast path: nothing percent-encoded, nothing to decode
+			return uriComponent;
+		}
+
+		final int len = uriComponent.length();
+		final StringBuilder out = new StringBuilder(len);
+		final java.io.ByteArrayOutputStream pending = new java.io.ByteArrayOutputStream();
+
+		int i = 0;
+		while (i < len) {
+			final char c = uriComponent.charAt(i);
+			final int high = c == '%' && i + 2 < len ? Character.digit(uriComponent.charAt(i + 1), 16) : -1;
+			final int low = high != -1 ? Character.digit(uriComponent.charAt(i + 2), 16) : -1;
+			if (low != -1) {
+				pending.write((high << 4) | low);
+				i += 3;
+			} else {
+				if (pending.size() > 0) {
+					out.append(pending.toString(UTF_8));
+					pending.reset();
+				}
+				out.append(c);
+				i++;
+			}
+		}
+		if (pending.size() > 0) {
+			out.append(pending.toString(UTF_8));
+		}
+		return out.toString();
+	}
+
 	public static String iriToURI(String uriPart) {
 		String result = urlEncodeUtf8(uriPart);
 		result = result.replaceAll("%23", "#");
@@ -332,6 +395,10 @@ public class URIUtils {
 	 * This method decodes the provided uri for human readability.  The
 	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
 	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
+	 *
+	 * <p>{@link java.net.URLDecoder} follows application/x-www-form-urlencoded rules, so it decodes a
+	 * literal {@code '+'} as a space: that is wrong for a collection or resource name, which may contain
+	 * a {@code '+'}. Use {@link #decodeForURI(String)} to decode a URI path component.</p>
 	 * 
 	 * @param uri The uri to decode
 	 * @return The decoded value of the supplied uri
@@ -344,6 +411,10 @@ public class URIUtils {
 	 * This method decodes the provided uri for human readability.  The
 	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
 	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
+	 *
+	 * <p>{@link java.net.URLDecoder} follows application/x-www-form-urlencoded rules, so it decodes a
+	 * literal {@code '+'} as a space: that is wrong for a collection or resource name, which may contain
+	 * a {@code '+'}. Use {@link #decodeForURI(String)} to decode a URI path component.</p>
 	 * 
 	 * @param uri The uri to decode
 	 * @return The decoded value of the supplied uri
