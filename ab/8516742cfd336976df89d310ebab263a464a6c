@@ -1,0 +1,21 @@
+exist-core/src/test/java/org/exist/storage/blob/BlobStoreImplTest.java
+  s_d5ac7bf05ec2fb::t_3fd1624d27c8e9 277
+exist-core/src/test/java/org/exist/storage/UpdateRecoverTest.java
+  s_d5ac7bf05ec2fb::t_7086c18caa853d 107,427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ab8516742cfd336976df89d310ebab263a464a6c",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
