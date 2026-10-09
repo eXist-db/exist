@@ -36,7 +36,12 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -113,6 +118,45 @@ public class VectorSearchEmbeddingIT {
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
             + "count(vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")?*)");
         assertEquals(384, result.itemAt(0).toJavaObject(Integer.class).intValue());
+    }
+
+    /**
+     * The output tensor is owned by the ONNX {@code Result}; closing it a second time makes
+     * onnxruntime log "Closing an already closed tensor." at WARN on every embedding call.
+     */
+    @Test
+    public void embedDoesNotCloseTensorsTwice() throws XPathException, PermissionDeniedException, EXistException {
+        final List<String> warnings = new CopyOnWriteArrayList<>();
+        // onnxruntime logs through java.util.logging; keep a strong reference so the logger
+        // (and the handler attached to it) is not garbage collected mid-test.
+        final Logger onnxLogger = Logger.getLogger("ai.onnxruntime");
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(final LogRecord record) {
+                warnings.add(record.getMessage());
+            }
+
+            @Override
+            public void flush() {
+                // nothing is buffered: publish() records straight into the list
+            }
+
+            @Override
+            public void close() {
+                // nothing to release: the list is local to the test
+            }
+        };
+        onnxLogger.addHandler(handler);
+        try {
+            executeQuery(
+                "xquery version \"3.1\";\n"
+                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+                + "(vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\"),"
+                + " vector:embed-batch((\"Machine learning\", \"Quantum physics\"), \"" + MODEL + "\", \"" + MODEL_PATH + "\"))");
+        } finally {
+            onnxLogger.removeHandler(handler);
+        }
+        assertTrue(warnings.isEmpty(), "onnxruntime logged: " + warnings);
     }
 
     @Test
