@@ -33,6 +33,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -81,7 +82,8 @@ public class WhereClause extends AbstractFLWORClause {
                 in.isPersistentSet() &&
                 !Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
                 //We might not be sure of the return type at this level
-                Type.subTypeOf(whereExpr.returnsType(), Type.ITEM)) {
+                Type.subTypeOf(whereExpr.returnsType(), Type.ITEM) &&
+                canEvalInSingleStep()) {
             if (!in.isCached()) {
                 BindingExpression.setContext(getExpressionId(), in);
             }
@@ -131,6 +133,148 @@ public class WhereClause extends AbstractFLWORClause {
             }
         }
         return super.preEval(in);
+    }
+
+    /**
+     * Determines if the where expression can be evaluated in a single step for the
+     * whole input sequence of the outer "for" clause, instead of once per item.
+     *
+     * For the single step evaluation, the variable of the outer "for" clause is bound
+     * to the whole input sequence, and the result of the where expression is mapped back
+     * to the input items via the context of its nodes. This is only correct if the where
+     * expression navigates from that variable; if the variable is used as a value, e.g.
+     * as a comparison key in a predicate, the where expression would see all input items
+     * at once instead of just the current one. Variables bound by clauses between the
+     * outer "for" clause and this where clause do not have a value yet at all.
+     *
+     * See https://github.com/eXist-db/exist/issues/2204
+     *
+     * @return true if the where expression may be evaluated in a single step.
+     */
+    private boolean canEvalInSingleStep() {
+        final Set<QName> unboundVars = new HashSet<>();
+        FLWORClause clause = getPreviousClause();
+        while (clause != null) {
+            if (clause instanceof ForExpr forExpr) {
+                if (forExpr.getPositionalVariable() != null) {
+                    unboundVars.add(forExpr.getPositionalVariable());
+                }
+                if (forExpr.isOuterFor()) {
+                    return onlyNavigatesFrom(whereExpr, forExpr.getVariable(), unboundVars, true);
+                }
+                unboundVars.add(forExpr.getVariable());
+            } else if (clause instanceof LetExpr letExpr) {
+                unboundVars.add(letExpr.getVariable());
+            } else if (!(clause instanceof WhereClause)) {
+                // other clauses may rebind variables
+                return false;
+            }
+            clause = clause.getPreviousClause();
+        }
+        return false;
+    }
+
+    /**
+     * Checks that the variable is only referenced in navigating positions of the expression.
+     *
+     * Unknown expressions are rejected, so that the single step evaluation is only used
+     * when it is known to be correct.
+     *
+     * @param expr the expression to check.
+     * @param var the name of the variable bound to the whole input sequence.
+     * @param unboundVars the names of variables which must not be referenced at all.
+     * @param navigating true if expr is in a position from which the result is navigated.
+     *
+     * @return true if the variable is only referenced in navigating positions.
+     */
+    private static boolean onlyNavigatesFrom(final Expression expr, final QName var, final Set<QName> unboundVars, final boolean navigating) {
+        if (expr instanceof VariableReference ref) {
+            if (ref.getName().equals(var)) {
+                return navigating;
+            }
+            return !unboundVars.contains(ref.getName());
+
+        } else if (expr instanceof LiteralValue) {
+            return true;
+
+        } else if (expr instanceof LocationStep step) {
+            return allOnlyNavigateFrom(step.getPredicates(), var, unboundVars);
+
+        } else if (expr instanceof Predicate || expr instanceof SequenceConstructor) {
+            for (int i = 0; i < expr.getSubExpressionCount(); i++) {
+                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, false)) {
+                    return false;
+                }
+            }
+            return true;
+
+        } else if (expr instanceof InternalFunctionCall functionCall) {
+            return onlyNavigatesFrom(functionCall.getFunction(), var, unboundVars, navigating);
+
+        } else if (expr instanceof GeneralComparison comparison) {
+            // the comparison selects nodes from its left operand
+            return onlyNavigatesFrom(comparison.getLeft(), var, unboundVars, navigating)
+                    && onlyNavigatesFrom(comparison.getRight(), var, unboundVars, false);
+
+        } else if (expr instanceof LogicalOp logicalOp) {
+            return onlyNavigatesFrom(logicalOp.getLeft(), var, unboundVars, navigating)
+                    && onlyNavigatesFrom(logicalOp.getRight(), var, unboundVars, navigating);
+
+        } else if (expr instanceof BinaryOp binaryOp) {
+            return onlyNavigatesFrom(binaryOp.getLeft(), var, unboundVars, false)
+                    && onlyNavigatesFrom(binaryOp.getRight(), var, unboundVars, false);
+
+        } else if (expr instanceof Function function) {
+            // the result of a function is not mapped back to the input items
+            for (int i = 0; i < function.getArgumentCount(); i++) {
+                if (!onlyNavigatesFrom(function.getArgument(i), var, unboundVars, false)) {
+                    return false;
+                }
+            }
+            return true;
+
+        } else if (expr instanceof FilteredExpression filtered) {
+            // the result of a filter expression is not mapped back to the input items
+            return onlyNavigatesFrom(filtered.getExpression(), var, unboundVars, false)
+                    && allOnlyNavigateFrom(filtered.getPredicates().toArray(new Predicate[0]), var, unboundVars);
+
+        } else if (expr instanceof DebuggableExpression debuggable) {
+            return onlyNavigatesFrom(debuggable.getFirst(), var, unboundVars, navigating);
+
+        } else if (expr instanceof ExtensionExpression extension) {
+            return onlyNavigatesFrom(extension.getExpression(), var, unboundVars, navigating);
+
+        } else if (expr instanceof Atomize atomize) {
+            return onlyNavigatesFrom(atomize.getExpression(), var, unboundVars, navigating);
+
+        } else if (expr instanceof DynamicCardinalityCheck check) {
+            return onlyNavigatesFrom(check.getExpression(), var, unboundVars, navigating);
+
+        } else if (expr instanceof DynamicTypeCheck || expr instanceof UntypedValueCheck) {
+            return onlyNavigatesFrom(expr.getSubExpression(0), var, unboundVars, navigating);
+
+        } else if (expr.getClass() == PathExpr.class) {
+            // the steps after the first one navigate from the result of the first one
+            for (int i = 0; i < expr.getSubExpressionCount(); i++) {
+                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, navigating && i == 0)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean allOnlyNavigateFrom(@Nullable final Predicate[] predicates, final QName var, final Set<QName> unboundVars) {
+        if (predicates != null) {
+            for (final Predicate predicate : predicates) {
+                if (!onlyNavigatesFrom(predicate, var, unboundVars, false)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
