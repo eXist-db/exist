@@ -22,10 +22,10 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -33,9 +33,9 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * {@code fn:matches} is declared {@code matches($input as xs:string?, ...)}, so supplying more
@@ -65,11 +65,11 @@ public class FunMatchesCardinalityTest {
             </data>
             """;
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    @BeforeClass
+    @BeforeAll
     public static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
@@ -79,7 +79,7 @@ public class FunMatchesCardinalityTest {
         coll.storeResource(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
@@ -96,7 +96,7 @@ public class FunMatchesCardinalityTest {
             fail("expected XPTY0004 for: " + xquery);
         } catch (final XMLDBException e) {
             final String message = String.valueOf(e.getMessage());
-            assertTrue("expected XPTY0004, got: " + message, message.contains("XPTY0004"));
+            assertTrue(message.contains("XPTY0004"), "expected XPTY0004, got: " + message);
         }
     }
 
