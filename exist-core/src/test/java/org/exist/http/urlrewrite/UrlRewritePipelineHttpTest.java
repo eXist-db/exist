@@ -372,6 +372,41 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // header must survive a controller.xql -> view.xql handover.
     // ================================================================================
 
+    /**
+     * A module reached through a controller forward that declares output:method "json" answers with its own
+     * JSON serialization, not the REST result envelope; see https://github.com/eXist-db/exist/issues/6815
+     */
+    @Test
+    public void forwardedModuleDeclaringJsonMethodAnswersWithItsOwnJson() throws IOException {
+        final String coll = "json-forward";
+        storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", """
+                xquery version "3.1";
+                declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+                declare variable $exist:controller external;
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="{$exist:controller}/map.xql"/>
+                </dispatch>
+                """);
+        storeAppsDoc(coll, "map.xql", "application/xquery", """
+                xquery version "3.1";
+                declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "json";
+                declare option output:media-type "application/json";
+                map { "saved": true() }
+                """);
+
+        final HttpRequest request = authenticatedRequest(
+                URI.create(getServerUri(existWebServer) + "/apps/" + coll + "/save"),
+                TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .GET()
+                .build();
+        final HttpResponseResult result = withHttpClient(client -> executeForStatusAndBody(client, request));
+        assertEquals(HTTP_OK, result.statusCode());
+        assertTrue(result.headers().firstValue("Content-Type").orElse("").startsWith("application/json"),
+                "Content-Type: " + result.headers().firstValue("Content-Type").orElse(null));
+        assertEquals("{\"saved\":true}", result.body().replaceAll("\\s", ""));
+    }
+
     @Test
     public void ifModifiedSinceValueSurvivesViewHandover() throws IOException {
         final String coll = "ims-with-view";

@@ -2874,40 +2874,23 @@ public class RESTServer {
         } else {
             effectiveHowmany = 0;
         }
-        final String method = serializationMethod(outputProperties);
-        // the serializer reads the W3C method itself: make it agree with the writer chosen here
-        outputProperties.setProperty(OutputKeys.METHOD, method);
-
-        if ("json".equals(method)) {
+        /*
+         * The REST-specific output-as is set from the method attribute of a <query> envelope. Only that selects
+         * the REST layer's own JSON writer, which wraps the result in an envelope. A method the query declares
+         * itself (output:method, merged into these properties under the W3C method key) is left to the
+         * serializer, which can represent maps and arrays; see https://github.com/eXist-db/exist/issues/6815
+         */
+        final String restMethod = outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY);
+        if ("json".equals(restMethod)) {
             writeResultJSON(response, broker, results, effectiveHowmany, start, outputProperties, timings.compilation(), timings.execution());
         } else {
+            if (restMethod != null) {
+                // the envelope's method takes precedence over the query's own output:method
+                outputProperties.setProperty(OutputKeys.METHOD, restMethod);
+            }
             writeResultXML(response, broker, results, effectiveHowmany, start, typed, outputProperties, wrap, timings);
         }
 
-    }
-
-    /**
-     * Determine the serialization method for a result.
-     *
-     * Two properties can carry it, and both must be honored. The REST-specific
-     * `output-as` is set from the `method` attribute of a `<query>` envelope, and
-     * takes precedence. The W3C `method` property is what
-     * XQueryContext.checkOptions() writes when the query itself declares
-     * `output:method` — which XQuery.execute() merges into these same
-     * properties after evaluation. Reading only `output-as` meant an in-query
-     * `declare option output:method "json"` selected the XML writer, so the
-     * JSON body went out under the XML media type.
-     *
-     * @param outputProperties the serialization properties for this result
-     *
-     * @return the serialization method, defaulting to xml
-     */
-    private static String serializationMethod(final Properties outputProperties) {
-        final String restMethod = outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY);
-        if (restMethod != null) {
-            return restMethod;
-        }
-        return outputProperties.getProperty(OutputKeys.METHOD, "xml");
     }
 
     private static String getEncoding(final Properties outputProperties) {
@@ -2927,6 +2910,12 @@ public class RESTServer {
             final String encoding = getEncoding(outputProperties);
             if (!response.containsHeader("Content-Type")) {
                 String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+                if (!wrap && "json".equals(outputProperties.getProperty(OutputKeys.METHOD))
+                        && (mimeType == null || MimeType.XML_TYPE.getName().equals(mimeType))) {
+                    // the default media type is the XML one: a query declaring output:method "json"
+                    // without a media type of its own is served as JSON
+                    mimeType = MimeType.JSON_TYPE.getName();
+                }
                 if (mimeType != null) {
                     final int semicolon = mimeType.indexOf(';');
                     if (semicolon != Constants.STRING_NOT_FOUND) {

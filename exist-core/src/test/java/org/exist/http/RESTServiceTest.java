@@ -26,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
@@ -1420,71 +1421,135 @@ try {
     }
 
     /**
-     * A stored query that declares output:method itself must be served as JSON, not XML.
+     * A stored query that declares output:method "json" is served with its own JSON
+     * serialization, as application/json.
      *
      * XQuery.execute() merges the query's own serialization options into the output
-     * properties under the W3C `method` key, where the REST layer's own key is
-     * `output-as`. Dispatching on `output-as` alone sent the result to the XML writer,
-     * so a JSON body went out as application/xml.
+     * properties under the W3C `method` key. The REST layer's own JSON writer, chosen by
+     * `output-as` (the `method` of a `<query>` envelope), wraps the result in a REST
+     * envelope and cannot represent maps or arrays, so it must not be used for the
+     * query's own `method`; but the media type must still be JSON.
+     *
+     * See https://github.com/eXist-db/exist/issues/6815
      */
     @Test
-    public void storedQueryInQueryJsonMethod() throws IOException {
-        final String xquery = """
-                xquery version "3.1";
-                declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
-                declare option output:method "json";
-                <root><a>1</a></root>""";
-        doPut(xquery, "inquery-json.xq", HttpStatus.CREATED_201);
+    public void storedQueryInQueryJsonMethodElement() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-element.xq", "<root><a>1</a></root>", null);
+        assertEquals("application/json", response.contentType());
+        assertEquals("{\"a\":\"1\"}", withoutWhitespace(response.body()));
+    }
 
-        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json.xq");
+    @Test
+    public void storedQueryInQueryJsonMethodMap() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map.xq", "map { \"saved\": true() }", null);
+        assertEquals("application/json", response.contentType());
+        assertEquals("{\"saved\":true}", withoutWhitespace(response.body()));
+    }
+
+    @Test
+    public void storedQueryInQueryJsonMethodArray() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-array.xq", "array { 1, 2 }", null);
+        assertEquals("application/json", response.contentType());
+        assertEquals("[1,2]", withoutWhitespace(response.body()));
+    }
+
+    @Test
+    public void storedQueryInQueryJsonMethodString() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-string.xq", "\"hello\"", null);
+        assertEquals("application/json", response.contentType());
+        assertEquals("\"hello\"", withoutWhitespace(response.body()));
+    }
+
+    /**
+     * An in-query output:media-type is honored alongside an in-query output:method.
+     */
+    @Test
+    public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-mediatype.xq", "<root><a>1</a></root>", "application/vnd.api+json");
+        assertEquals("application/vnd.api+json", response.contentType());
+        assertEquals("{\"a\":\"1\"}", withoutWhitespace(response.body()));
+    }
+
+    /**
+     * The query from https://github.com/eXist-db/exist/issues/6815: a map, with output:media-type
+     * "application/json" declared as well.
+     */
+    @Test
+    public void storedQueryInQueryJsonMapWithJsonMediaType() throws IOException {
+        final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map-mediatype.xq", "map { \"saved\": true() }", "application/json");
+        assertEquals("application/json", response.contentType());
+        assertEquals("{\"saved\":true}", withoutWhitespace(response.body()));
+    }
+
+    /**
+     * A `<query method="json">` envelope asks for the REST layer's own JSON: the result
+     * envelope, with each node serialized as XML text, whatever the query declares.
+     */
+    @Test
+    public void postQueryEnvelopeJsonMethodAnswersWithEnvelope() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
+                    <text><![CDATA[<root><a>1</a></root>]]></text>
+                </query>""";
+        final HttpURLConnection connect = getConnection(getCollectionUri());
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.setRequestMethod("GET");
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(query);
+            }
+
             connect.connect();
             final int r = connect.getResponseCode();
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+            assertEquals("application/json", mediaType(connect.getContentType()));
 
-            String contentType = connect.getContentType();
-            final int semicolon = contentType.indexOf(';');
-            if (semicolon > 0) {
-                contentType = contentType.substring(0, semicolon).trim();
-            }
-            assertEquals("application/json", contentType, "Server returned content type " + contentType);
+            // the serialized node may be indented, which shows as escaped newlines in the JSON string
+            final String body = withoutWhitespace(readResponse(connect.getInputStream())).replace("\\n", "");
+            assertTrue(body.startsWith("{\"start\":1,\"count\":1,\"hits\":1,"), "Expected the REST envelope, got: " + body);
+            assertTrue(body.endsWith("\"data\":\"<root><a>1</a></root>\"}"), "Expected the node serialized as XML text in data, got: " + body);
         } finally {
             connect.disconnect();
         }
     }
 
+    private record StoredQueryResponse(String contentType, String body) {
+    }
+
     /**
-     * An in-query output:media-type must be honored alongside an in-query output:method.
+     * Stores a query that declares output:method "json" (and the media type, if given) and GETs it.
      */
-    @Test
-    public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
+    private StoredQueryResponse getStoredJsonQuery(final String name, final String result, @Nullable final String mediaType) throws IOException {
+        final String mediaTypeOption = mediaType == null ? "" : "declare option output:media-type \"" + mediaType + "\";\n";
         final String xquery = """
                 xquery version "3.1";
                 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
                 declare option output:method "json";
-                declare option output:media-type "application/vnd.api+json";
-                <root><a>1</a></root>""";
-        doPut(xquery, "inquery-json-mediatype.xq", HttpStatus.CREATED_201);
+                """ + mediaTypeOption + result;
+        doPut(xquery, name, HttpStatus.CREATED_201);
 
-        final HttpURLConnection connect = getConnection(getCollectionUri() + "/inquery-json-mediatype.xq");
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/" + name);
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("GET");
             connect.connect();
             final int r = connect.getResponseCode();
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
-
-            String contentType = connect.getContentType();
-            final int semicolon = contentType.indexOf(';');
-            if (semicolon > 0) {
-                contentType = contentType.substring(0, semicolon).trim();
-            }
-            assertEquals("application/vnd.api+json", contentType, "Server returned content type " + contentType);
+            return new StoredQueryResponse(mediaType(connect.getContentType()), readResponse(connect.getInputStream()));
         } finally {
             connect.disconnect();
         }
+    }
+
+    private static String mediaType(final String contentType) {
+        final int semicolon = contentType.indexOf(';');
+        return semicolon > 0 ? contentType.substring(0, semicolon).trim() : contentType;
+    }
+
+    private static String withoutWhitespace(final String s) {
+        return s.replaceAll("\\s", "");
     }
 
     /**
