@@ -26,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -1436,28 +1437,28 @@ try {
     public void storedQueryInQueryJsonMethodElement() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-element.xq", "<root><a>1</a></root>", null);
         assertEquals("application/json", response.contentType());
-        assertEquals("{\"a\":\"1\"}", withoutWhitespace(response.body()));
+        assertEquals("{\"a\":\"1\"}", response.body());
     }
 
     @Test
     public void storedQueryInQueryJsonMethodMap() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map.xq", "map { \"saved\": true() }", null);
         assertEquals("application/json", response.contentType());
-        assertEquals("{\"saved\":true}", withoutWhitespace(response.body()));
+        assertEquals("{\"saved\":true}", response.body());
     }
 
     @Test
     public void storedQueryInQueryJsonMethodArray() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-array.xq", "array { 1, 2 }", null);
         assertEquals("application/json", response.contentType());
-        assertEquals("[1,2]", withoutWhitespace(response.body()));
+        assertEquals("[1,2]", response.body());
     }
 
     @Test
     public void storedQueryInQueryJsonMethodString() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-string.xq", "\"hello\"", null);
         assertEquals("application/json", response.contentType());
-        assertEquals("\"hello\"", withoutWhitespace(response.body()));
+        assertEquals("\"hello\"", response.body());
     }
 
     /**
@@ -1467,7 +1468,7 @@ try {
     public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-mediatype.xq", "<root><a>1</a></root>", "application/vnd.api+json");
         assertEquals("application/vnd.api+json", response.contentType());
-        assertEquals("{\"a\":\"1\"}", withoutWhitespace(response.body()));
+        assertEquals("{\"a\":\"1\"}", response.body());
     }
 
     /**
@@ -1478,7 +1479,7 @@ try {
     public void storedQueryInQueryJsonMapWithJsonMediaType() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map-mediatype.xq", "map { \"saved\": true() }", "application/json");
         assertEquals("application/json", response.contentType());
-        assertEquals("{\"saved\":true}", withoutWhitespace(response.body()));
+        assertEquals("{\"saved\":true}", response.body());
     }
 
     /**
@@ -1490,6 +1491,9 @@ try {
         final String query = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
                     <text><![CDATA[<root><a>1</a></root>]]></text>
+                    <properties>
+                        <property name="indent" value="no"/>
+                    </properties>
                 </query>""";
         final HttpURLConnection connect = getConnection(getCollectionUri());
         try {
@@ -1506,10 +1510,11 @@ try {
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
             assertEquals("application/json", mediaType(connect.getContentType()));
 
-            // the serialized node may be indented, which shows as escaped newlines in the JSON string
-            final String body = withoutWhitespace(readResponse(connect.getInputStream())).replace("\\n", "");
-            assertTrue(body.startsWith("{\"start\":1,\"count\":1,\"hits\":1,"), "Expected the REST envelope, got: " + body);
-            assertTrue(body.endsWith("\"data\":\"<root><a>1</a></root>\"}"), "Expected the node serialized as XML text in data, got: " + body);
+            // the envelope's own layout and timings vary, so match its fields rather than the whole body
+            final String body = readResponse(connect.getInputStream());
+            assertTrue(Pattern.compile("\"hits\"\\s*:\\s*1").matcher(body).find(), "Expected the REST envelope, got: " + body);
+            assertTrue(Pattern.compile("\"data\"\\s*:\\s*\"<root><a>1</a></root>\"").matcher(body).find(),
+                    "Expected the node serialized as XML text in data, got: " + body);
         } finally {
             connect.disconnect();
         }
@@ -1519,7 +1524,8 @@ try {
     }
 
     /**
-     * Stores a query that declares output:method "json" (and the media type, if given) and GETs it.
+     * Stores a query that declares output:method "json", output:indent "no" (so that its body can be compared
+     * exactly) and the media type, if given, and GETs it.
      */
     private StoredQueryResponse getStoredJsonQuery(final String name, final String result, @Nullable final String mediaType) throws IOException {
         final String mediaTypeOption = mediaType == null ? "" : "declare option output:media-type \"" + mediaType + "\";\n";
@@ -1527,6 +1533,7 @@ try {
                 xquery version "3.1";
                 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
                 declare option output:method "json";
+                declare option output:indent "no";
                 """ + mediaTypeOption + result;
         doPut(xquery, name, HttpStatus.CREATED_201);
 
@@ -1537,7 +1544,10 @@ try {
             connect.connect();
             final int r = connect.getResponseCode();
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
-            return new StoredQueryResponse(mediaType(connect.getContentType()), readResponse(connect.getInputStream()));
+            // read the body as sent: readResponse() re-joins its lines with CRLF
+            try (final InputStream is = connect.getInputStream()) {
+                return new StoredQueryResponse(mediaType(connect.getContentType()), new String(is.readAllBytes(), UTF_8));
+            }
         } finally {
             connect.disconnect();
         }
@@ -1546,10 +1556,6 @@ try {
     private static String mediaType(final String contentType) {
         final int semicolon = contentType.indexOf(';');
         return semicolon > 0 ? contentType.substring(0, semicolon).trim() : contentType;
-    }
-
-    private static String withoutWhitespace(final String s) {
-        return s.replaceAll("\\s", "");
     }
 
     /**

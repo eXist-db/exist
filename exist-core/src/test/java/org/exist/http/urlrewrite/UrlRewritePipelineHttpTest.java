@@ -392,6 +392,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
                 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
                 declare option output:method "json";
                 declare option output:media-type "application/json";
+                declare option output:indent "no";
                 map { "saved": true() }
                 """);
 
@@ -404,7 +405,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         assertEquals(HTTP_OK, result.statusCode());
         assertTrue(result.headers().firstValue("Content-Type").orElse("").startsWith("application/json"),
                 "Content-Type: " + result.headers().firstValue("Content-Type").orElse(null));
-        assertEquals("{\"saved\":true}", result.body().replaceAll("\\s", ""));
+        assertEquals("{\"saved\":true}", result.body());
     }
 
     @Test
