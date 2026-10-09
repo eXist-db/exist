@@ -1,0 +1,206 @@
+/*
+ * Copyright (C) 2014, Evolved Binary Ltd
+ *
+ * This file was originally ported from FusionDB to eXist-db by
+ * Evolved Binary, for the benefit of the eXist-db Open Source community.
+ * Only the ported code as it appears in this file, at the time that
+ * it was contributed to eXist-db, was re-licensed under The GNU
+ * Lesser General Public License v2.1 only for use in eXist-db.
+ *
+ * This license grant applies only to a snapshot of the code as it
+ * appeared when ported, it does not offer or infer any rights to either
+ * updates of this source code or access to the original source code.
+ *
+ * The GNU Lesser General Public License v2.1 only license follows.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * Copyright (C) 2014, Evolved Binary Ltd
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xquery.functions.util;
+
+import org.exist.EXistException;
+import org.exist.ExistSystemProperties;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
+public class SystemPropertyTest {
+
+    @Parameter(0)
+    public String testTypeName;
+
+    @Parameter(1)
+    public String confFileName;
+
+    @Parameter(2)
+    public boolean shouldReturnEmptySequence;
+
+    private ExistEmbeddedServer existEmbeddedServer = null;
+
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "non-secure", null, false },
+                { "secure", "conf.xml", true }
+        });
+    }
+
+    @BeforeEach
+    public void setup() throws URISyntaxException, DatabaseConfigurationException, EXistException, IOException {
+        if (confFileName == null) {
+            existEmbeddedServer = new ExistEmbeddedServer(true, true);
+        } else {
+            final Path confFile = Paths.get(getClass().getResource(confFileName).toURI());
+            existEmbeddedServer = new ExistEmbeddedServer(null, confFile, null, true, true);
+        }
+        existEmbeddedServer.startDb();
+    }
+
+    @AfterEach
+    public void teardown() {
+        if (existEmbeddedServer != null) {
+            existEmbeddedServer.stopDb();
+        }
+        existEmbeddedServer = null;
+    }
+
+    @Test
+    public void availableSystemProperties() throws EXistException, XPathException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            final String query = "util:available-system-properties()";
+            final Sequence result = xqueryService.execute(broker, query, null);
+            assertFalse(result.isEmpty());
+
+            final Set<String> set = new HashSet<>(result.getItemCount());
+            for (int i = 0; i < result.getItemCount(); i++) {
+                set.add(result.itemAt(i).getStringValue());
+            }
+
+            assertTrue(set.contains(ExistSystemProperties.PROP_PRODUCT_VERSION));
+
+            if (shouldReturnEmptySequence) {
+                assertFalse(set.contains("os.name"));
+            } else {
+                assertTrue(set.contains("os.name"));
+            }
+        }
+    }
+
+    @Test
+    public void systemProperty() throws EXistException, XPathException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            String query = "util:system-property('" + ExistSystemProperties.PROP_PRODUCT_NAME + "')";
+            Sequence result = xqueryService.execute(broker, query, null);
+            assertEquals(1, result.getItemCount());
+
+            query = "util:system-property('os.name')";
+            result = xqueryService.execute(broker, query, null);
+
+            if (shouldReturnEmptySequence) {
+                assertTrue(result.isEmpty());
+            } else {
+                assertFalse(result.isEmpty());
+            }
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343054210">
+     *     line-o's review comment on PR #6721</a> asking for a test that a specific rule can
+     *     "overrule" the generic denial.
+     */
+    @Test
+    public void systemPropertySpecificRuleOverridesGenericDenial() throws EXistException, XPathException, PermissionDeniedException {
+        assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            // "os.name" is only covered by the "*" -> "admins" wildcard; the system subject
+            // (a DBA) is not a member of "admins", so it remains denied
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "java.version" has a specific "requiresGroup=dba" rule, which takes precedence
+            // over the wildcard and grants the DBA access
+            result = xqueryService.execute(broker, "util:system-property('java.version')", null);
+            assertFalse(result.isEmpty());
+        }
+    }
+
+    /**
+     * Only the "secure" fixture configures per-name access rules, so this is not
+     * applicable to the "non-secure" fixture.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/pull/6721#pullrequestreview-5343093364">
+     *     line-o's review comment on PR #6721</a> asking for a test covering the default use
+     *     case of allowing an additional group to read a single property.
+     */
+    @Test
+    public void systemPropertyAdditionalGroupGrantsAccess() throws EXistException, XPathException, PermissionDeniedException {
+        assumeTrue(shouldReturnEmptySequence);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xqueryService = pool.getXQueryService();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
+
+            // the guest subject is in neither "admins" nor "dba", so the "*" wildcard denies it
+            Sequence result = xqueryService.execute(broker, "util:system-property('os.name')", null);
+            assertTrue(result.isEmpty());
+
+            // "os.arch" has a specific "requiresGroup=guest" rule granting the guest group access
+            result = xqueryService.execute(broker, "util:system-property('os.arch')", null);
+            assertFalse(result.isEmpty());
+        }
+    }
+}
