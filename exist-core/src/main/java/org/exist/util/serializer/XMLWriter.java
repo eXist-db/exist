@@ -105,6 +105,15 @@ public class XMLWriter implements SerializerWriter {
     }
 
     /**
+     * Returns false where the output method has no CDATA sections, so that a CDATA node from a
+     * stored document is not written out as one. Subclasses (e.g. XHTMLWriter for the HTML method)
+     * can override this; the default allows them.
+     */
+    protected boolean supportsCdataSections() {
+        return true;
+    }
+
+    /**
      * Returns the namespace URI of the current (innermost) element,
      * or null if no element is on the stack.
      */
@@ -614,7 +623,7 @@ public class XMLWriter implements SerializerWriter {
             closeStartTag(false);
         }
 
-        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization && supportsCdataSections()) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("<![CDATA[");
                 this.cdataSetionElement = true;
@@ -625,7 +634,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void endCdataSection() throws TransformerException {
-        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization && supportsCdataSections()) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("]]>");
                 this.cdataSetionElement = false;
