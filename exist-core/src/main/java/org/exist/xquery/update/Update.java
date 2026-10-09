@@ -53,6 +53,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
@@ -182,7 +183,7 @@ public class Update extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 transaction.commit();
-            } catch (final LockException | EXistException | TriggerException e) {
+            } catch (final LockException | EXistException | TriggerException | DOMException e) {
                 throw new XPathException(this, e.getMessage(), e);
             } finally {
                 unlockDocuments();
