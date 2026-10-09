@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -100,6 +101,7 @@ import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.EXistCollectionManagementService;
+import org.exist.xmldb.CollectionCloseUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.ExtendedResource;
@@ -1612,6 +1614,11 @@ public class InteractiveClient {
      * @throws XMLDBException in case of error writing to the database
      */
     protected synchronized boolean parseZip(final Path zipPath) throws XMLDBException {
+        // base walks into subcollections of `current` as zip entries are processed; it must be
+        // closed whenever it moves on to a new collection, except when it's `current` itself,
+        // which is the interactive session's own collection and outlives this method.
+        Collection base = current;
+        String baseStr = "";
         try (final ZipFile zfile = new ZipFile(zipPath.toFile())) {
             if (current instanceof Observable observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
@@ -1623,8 +1630,6 @@ public class InteractiveClient {
             final Enumeration<? extends ZipEntry> e = zfile.entries();
             int number = 0;
 
-            Collection base = current;
-            String baseStr = "";
             while (e.hasMoreElements()) {
                 number++;
                 final ZipEntry ze = e.nextElement();
@@ -1642,6 +1647,7 @@ public class InteractiveClient {
                             .append(pathSteps[i]);
                 }
                 if (!currStr.toString().equals(baseStr)) {
+                    closeIfOwn(current, base);
                     base = current;
                     for (int i = 0; i < pathSteps.length - 1; i++) {
                         Collection c = base.getChildCollection(pathSteps[i]);
@@ -1649,6 +1655,7 @@ public class InteractiveClient {
                             final EXistCollectionManagementService mgtService = base.getService(EXistCollectionManagementService.class);
                             c = mgtService.createCollection(XmldbURI.xmldbUriFor(pathSteps[i]));
                         }
+                        closeIfOwn(current, base);
                         base = c;
                     }
                     if (base instanceof Observable observable && options.verbose) {
@@ -1684,8 +1691,22 @@ public class InteractiveClient {
             errorln("uri syntax exception parsing a ZIP entry from " + zipPath + ": " + e.getMessage(), e);
         } catch (final IOException e) {
             errorln("could not parse ZIP file " + zipPath.toAbsolutePath() + ": " + e.getMessage(), e);
+        } finally {
+            closeIfOwn(current, base);
         }
         return true;
+    }
+
+    /**
+     * Closes {@code candidate} unless it is {@code borrowed} -- a collection owned by
+     * something outside the current operation (e.g. the interactive session's own
+     * {@link #current} collection) -- or {@code null}. A close failure is logged rather
+     * than thrown, since it's cleanup of an already-superseded or already-returned
+     * collection, not a reason to fail whatever operation produced it.
+     */
+    private static void closeIfOwn(final Collection borrowed, @Nullable final Collection candidate) {
+        CollectionCloseUtil.closeIfOwn(borrowed, candidate,
+                e -> consoleErr("Unable to close collection: " + e.getMessage(), e));
     }
 
     /**
@@ -1771,11 +1792,15 @@ public class InteractiveClient {
             // maybe a depth or recurs flag could be added here
             final Collection childCollection = c;
             try (final Stream<Path> children = Files.list(file)) {
+                // forEach is synchronous, so recursion under childCollection has fully
+                // completed by the time this try block exits -- safe to close below.
                 children.forEach(child -> store(childCollection, child, upload));
             } catch (final IOException e) {
                 final String msg = "Impossible to upload " + file.toAbsolutePath() + ": " + e.getMessage();
                 upload.showMessage(msg);
                 consoleErr(msg, e);
+            } finally {
+                closeIfOwn(collection, childCollection);
             }
 
             return;

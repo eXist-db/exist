@@ -262,6 +262,7 @@ public class JMXtoXML {
         final ThreadFactory jmxPingFactory = new NamedThreadFactory(instance, "jmx.ping");
         final ExecutorService executorService = Executors.newSingleThreadExecutor(jmxPingFactory);
         final Future<Long> futurePing = executorService.submit(new Ping(instance, connection));
+        executorService.shutdown();
 
         while (true) {
             try {
