@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -219,6 +220,25 @@ public class DocTest {
                     .build();
 
             assertFalse(diff.hasDifferences(), diff.toString());
+        }
+    }
+
+    /**
+     * W3C XQTS K2-BaseURIProlog-3: an unusable static base URI must raise a fn:doc error code.
+     */
+    @org.junit.jupiter.api.Test
+    public void doc_invalidStaticBaseUri() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        final String query = "declare base-uri \"c:\\windows\"; fn:doc(\"example.com.xml\")";
+
+        try (final DBBroker broker = pool.getBroker()) {
+            final XQueryContext context = new XQueryContext(pool);
+            final XQuery xqueryService = pool.getXQueryService();
+            final XPathException e = assertThrows(XPathException.class, () -> {
+                final CompiledXQuery compiled = xqueryService.compile(context, query);
+                xqueryService.execute(broker, compiled, null);
+            });
+            assertEquals(ErrorCodes.FODC0005, e.getErrorCode(), e.getMessage());
         }
     }
 

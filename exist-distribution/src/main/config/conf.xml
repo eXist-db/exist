@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.7.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.8.0">
 
     <!-- 
         Configures the database backend.
@@ -937,17 +937,19 @@
                 properly define indexes and if you forget to specify an index on
                 a particular collection, it will be missing in the results.
             - raise-error-on-failed-retrieval
-                Set to "yes" if a call to doc(), xmldb:document(), collection() or 
-                xmldb:xcollection() should raise an error (FODC0002) when an 
-                XML resource can not be retrieved.
-                Set to "no" if a call to doc(), xmldb:document(), collection() or 
-                xmldb:xcollection() should return an empty sequence when an 
-                XML resource can not be retrieved. 
+                Set to "yes" (default) if a call to doc(), collection() or
+                xmldb:xcollection() should raise an error (FODC0002) when an
+                XML resource or collection can not be retrieved, as required by
+                the XQuery and XPath Functions specification.
+                Set to "no" if such a call should return an empty sequence
+                instead. This is a legacy option for applications that test for
+                the existence of a resource with doc() or collection(); use
+                doc-available() or xmldb:collection-available() instead.
     -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no"
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="strict"
-            raise-error-on-failed-retrieval="no">
+            raise-error-on-failed-retrieval="yes">
         
         <builtin-modules>
 
