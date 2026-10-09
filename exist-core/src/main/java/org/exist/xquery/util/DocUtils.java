@@ -218,7 +218,14 @@ public class DocUtils {
         // check if the loaded documents should remain locked
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         try {
-            final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+            final XmldbURI baseURI;
+            try {
+                baseURI = context.getBaseURI().toXmldbURI();
+            } catch (final XPathException e) {
+                // an unusable static base URI means $uri cannot be resolved to a valid URI
+                throw new XPathException(expression, ErrorCodes.FODC0005,
+                        "Cannot resolve '" + path + "' against the static base URI: " + e.getMessage(), e);
+            }
             final XmldbURI pathUri;
             if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
                 // relative collection Path: add the current base URI
