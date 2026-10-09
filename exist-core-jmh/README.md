@@ -17,6 +17,7 @@ JMH micro-benchmarks for `exist-core` (and the Lucene index extension, which sev
 | `LucenePhraseQueryBenchmark` | `org.exist.indexing.lucene` | Query-time Lucene phrase lookup over many small documents ([#2812](https://github.com/eXist-db/exist/issues/2812)) |
 | `ReindexDeleteStrategyBenchmark` | `org.exist.indexing.lucene` | Reindex-time Lucene delete strategies for mixed document shapes |
 | `UtilExpandHighlightingBenchmark` | `org.exist.indexing.lucene` | `util:expand` match-highlighting cost vs. highlighting off, single-hit and batch ([#5738](https://github.com/eXist-db/exist/issues/5738), [#6387](https://github.com/eXist-db/exist/issues/6387)) |
+| `UtilExpandHighlightingColdCacheBenchmark` | `org.exist.indexing.lucene` | First-call `util:expand` match-highlighting cost after an index change, i.e. with a cold term-rewrite cache, single-hit and batch ([#6318](https://github.com/eXist-db/exist/pull/6318)) |
 
 ## Running
 

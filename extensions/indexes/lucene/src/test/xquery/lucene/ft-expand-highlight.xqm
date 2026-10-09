@@ -80,6 +80,9 @@ declare variable $feh:DATA as document-node() := document {
             <form type="lemma"><orth>bword99</orth></form>
             <sense><def>Definition for bword99. Mentions aword42 inside an unrelated entry.</def></sense>
         </entry>
+        <entry xml:id="e100">
+            <sense><def>Definition for cwordearly.</def></sense>
+        </entry>
     </dict>
 };
 
@@ -131,4 +134,19 @@ declare %test:assertTrue function feh:batch-expand-matches-per-hit-for-loop() {
     let $for-loop-count := sum(for $h in $hits return count(util:expand($h)//exist:match))
     let $batch-count := count(util:expand($hits)//exist:match)
     return $batch-count eq $for-loop-count and $batch-count ge 1
+};
+
+(:~
+ : The term-rewrite cache must not serve stale terms. A wildcard query is
+ : rewritten against the terms in the index at the time of the rewrite; a
+ : term added by a later store must still be highlighted when the same
+ : wildcard query is expanded again.
+ :)
+declare %test:assertEquals("1/1") function feh:wildcard-highlights-term-stored-after-first-expand() {
+    let $coll := "/db/" || $feh:COLL
+    let $before := count(util:expand(collection($coll)//entry[ft:query(., "cword*")])//exist:match)
+    let $stored := xmldb:store($coll, "late.xml",
+        <dict><entry xml:id="e200"><sense><def>Added later: cwordlate.</def></sense></entry></dict>)
+    let $after := count(util:expand(doc($stored)//entry[ft:query(., "cword*")])//exist:match)
+    return $before || "/" || $after
 };

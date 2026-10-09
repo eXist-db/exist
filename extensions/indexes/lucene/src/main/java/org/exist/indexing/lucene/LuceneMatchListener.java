@@ -63,6 +63,7 @@ import org.apache.lucene.util.AttributeSource.State;
 public class LuceneMatchListener extends AbstractMatchListener {
 
     private static final Logger LOG = LogManager.getLogger(LuceneMatchListener.class);
+    private static final int QUERY_TERM_CACHE_MAX = 32;
 
     private Match match;
     private Map<Object, Query> termMap;
@@ -77,11 +78,16 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * re-rewrite the same wildcard/prefix queries on every input node. The cache is keyed
      * by Query identity (Lucene Query.equals is content-based, so semantically equal
      * queries share an entry) and is bounded to avoid unbounded growth across long-lived
-     * brokers. */
-    private static final int QUERY_TERM_CACHE_MAX = 32;
-    private final Cache<Query, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
+     * brokers. The listener is reused across queries by its LuceneIndexWorker, and a
+     * rewrite is only valid for the index content it was made against, so each entry is
+     * also keyed by the index's {@link LuceneIndex#getModificationCount() modification count}:
+     * after the index changes, the old entries are no longer looked up, and age out. */
+    private final Cache<QueryTermKey, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
             .maximumSize(QUERY_TERM_CACHE_MAX)
             .build();
+
+    private record QueryTermKey(Query query, long modificationCount) {
+    }
 
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
@@ -376,14 +382,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
      *
      * <p>For #5738: the per-Query cache lets batch util:expand($hits) reuse rewritten
      * terms across hits. Without this cache every reset() reopened the IndexReader and
-     * re-enumerated terms (slow for wildcard/prefix queries on large corpora).
+     * re-enumerated terms (slow for wildcard/prefix queries on large corpora). The reader is
+     * only acquired for queries that have no rewrite cached for the index's current
+     * modification count.
      *
      * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
      * @see <a href="https://github.com/eXist-db/exist/issues/5738">Issue #5738</a>
      */
     private void getTerms() {
-        // Collect unique queries from the proxy's match list. The cache shortcut applies
-        // when every query is already cached - the common case in batch util:expand calls.
+        // Collect unique queries from the proxy's match list. When every query is already
+        // cached for the index's current content - the common case in batch util:expand
+        // calls - the reader is not needed at all.
         final Set<Query> uniqueQueries = collectUniqueLuceneQueries();
         if (uniqueQueries.isEmpty()) {
             termMap = Collections.emptyMap();
@@ -392,10 +401,18 @@ public class LuceneMatchListener extends AbstractMatchListener {
         final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
                 ? Collections.emptySet()
                 : config.getConfiguredFieldNames();
+
+        // read before the reader is acquired: a rewrite made from a reader that also shows
+        // later changes is only fresher than the count it is cached under
+        final long modificationCount = index.getModificationCount();
+        final Map<Query, Map<Object, Query>> queryTerms = new HashMap<>();
         final List<Query> uncachedQueries = new ArrayList<>();
         for (final Query q : uniqueQueries) {
-            if (queryTermCache.getIfPresent(q) == null) {
+            final Map<Object, Query> cached = queryTermCache.getIfPresent(new QueryTermKey(q, modificationCount));
+            if (cached == null) {
                 uncachedQueries.add(q);
+            } else {
+                queryTerms.put(q, cached);
             }
         }
         if (!uncachedQueries.isEmpty()) {
@@ -404,7 +421,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     for (final Query q : uncachedQueries) {
                         final Map<Object, Query> rawTerms = new HashMap<>();
                         LuceneUtil.extractTerms(q, rawTerms, reader, true);
-                        queryTermCache.put(q, rawTerms);
+                        queryTermCache.put(new QueryTermKey(q, modificationCount), rawTerms);
+                        queryTerms.put(q, rawTerms);
                     }
                     return null;
                 });
@@ -414,7 +432,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 return;
             }
         }
-        termMap = buildTermMap(uniqueQueries, excludedFields);
+        termMap = buildTermMap(uniqueQueries, queryTerms, excludedFields);
     }
 
     /**
@@ -437,15 +455,11 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * configured-field exclusion at the end so different listener instances with different
      * configs share the same cached rawTerms.
      */
-    private Map<Object, Query> buildTermMap(final Set<Query> queries, final Set<String> excludedFields) {
+    private Map<Object, Query> buildTermMap(final Set<Query> queries, final Map<Query, Map<Object, Query>> queryTerms,
+            final Set<String> excludedFields) {
         final Map<Object, Query> result = new TreeMap<>();
         for (final Query q : queries) {
-            final Map<Object, Query> rawTerms = queryTermCache.getIfPresent(q);
-            if (rawTerms == null) {
-                // Race against eviction is impossible here (single-threaded reset()), but be
-                // defensive in case the cache size becomes 0 in some future revision.
-                continue;
-            }
+            final Map<Object, Query> rawTerms = queryTerms.get(q);
             for (final Map.Entry<Object, Query> e : rawTerms.entrySet()) {
                 if (e.getKey() instanceof Term term && !excludedFields.contains(term.field())) {
                     result.put(term.text(), e.getValue());
