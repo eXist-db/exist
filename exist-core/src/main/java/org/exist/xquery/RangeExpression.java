@@ -50,8 +50,23 @@ public class RangeExpression extends PathExpr {
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
-        start.analyze(contextInfo);
-        end.analyze(contextInfo);
+        // Operands of range expression are non-updating contexts
+        final AnalyzeContextInfo startInfo = new AnalyzeContextInfo(contextInfo);
+        startInfo.addFlag(NON_UPDATING_CONTEXT);
+        start.analyze(startInfo);
+        final AnalyzeContextInfo endInfo = new AnalyzeContextInfo(contextInfo);
+        endInfo.addFlag(NON_UPDATING_CONTEXT);
+        end.analyze(endInfo);
+    }
+
+    /**
+     * A range holds from zero integers ({@code 2 to 1}) upward. The inherited PathExpr answer is
+     * {@code EMPTY_SEQUENCE}, because the operands are held in {@link #start} and {@link #end}
+     * rather than as steps, and that would make {@code 1 to 10} statically vacuous.
+     */
+    @Override
+    public Cardinality getCardinality() {
+        return Cardinality.ZERO_OR_MORE;
     }
 
     /**

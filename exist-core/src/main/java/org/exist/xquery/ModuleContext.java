@@ -45,6 +45,7 @@ import java.util.Map;
 
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.xquf.PendingUpdateList;
 
 
 /**
@@ -330,6 +331,21 @@ public class ModuleContext extends XQueryContext {
     @Override
     public Profiler getProfiler() {
         return parentContext.getProfiler();
+    }
+
+    /**
+     * The pending update list is query-wide, like the other state delegated here. A library
+     * module's own list would collect the primitives of its updating functions where the query
+     * never applies them.
+     */
+    @Override
+    public PendingUpdateList getPendingUpdateList() {
+        return parentContext.getPendingUpdateList();
+    }
+
+    @Override
+    public void setPendingUpdateList(final PendingUpdateList pul) {
+        parentContext.setPendingUpdateList(pul);
     }
 
     @Override
