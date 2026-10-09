@@ -186,38 +186,37 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public Map<String, String> getPropertyMap(String name) {
+        // Deliberately never consults props/hasProperty()/getProperty(): those are the
+        // single-valued scalar cache built by cache(), which indexes every child element by
+        // local name regardless of what it turns out to represent, and offer no reliable way to
+        // tell a map-style, multi-valued property (e.g. <metadata key="...">) from an ordinary
+        // scalar one bearing the same element name. Configurator.java only ever calls this method
+        // for a field it already knows -- via the annotated Java field's declared type -- is
+        // Map-typed, so this scan is authoritative on its own (see GH #5904).
         final Map<String, String> map = new HashMap<>();
 
-        if (hasProperty(name)) {
-            map.put(name, getProperty(name));
-            return map;
-        }
-        
         Node child = element.getFirstChild();
         while (child != null) {
-            
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
 
-                final Element el = (Element) child;
+            // advance before any possible `continue` below, so a skipped/malformed
+            // element can never leave `child` unchanged and loop forever
+            final Node current = child;
+            child = child.getNextSibling();
+
+            if (current.getNodeType() == Node.ELEMENT_NODE) {
+
+                final Element el = (Element) current;
 
                 final String ns = el.getNamespaceURI();
                 if (name.equals( el.getLocalName() ) && ns != null && NS.equals( ns )) {
-                    
-                    if(!el.hasAttributes()){
-                        continue;
-                    }
-                    
-                    final NamedNodeMap attrs = el.getAttributes();
- 
-                    if (attrs.getLength() != 1) {
-                        continue;
-                    }
-                    
-                    Node attr = attrs.getNamedItem("key");
-                    
+
+                    // match on the "key" attribute alone -- an incidental extra attribute on a
+                    // malformed/hand-edited entry must not hide an otherwise well-formed one
+                    Node attr = el.getAttributes().getNamedItem("key");
+
                     if (attr == null)
                         continue;
-                    
+
                     final String key = attr.getNodeValue();
                     final String value = el.getTextContent();
 
@@ -226,7 +225,6 @@ public class ConfigurationImpl implements Configuration {
                     }
                 }
             }
-            child = child.getNextSibling();
         }
 
         return map;

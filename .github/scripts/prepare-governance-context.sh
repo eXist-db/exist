@@ -13,12 +13,20 @@ OUT="${2:-${WORKSPACE}/target/governance}"
 mkdir -p "${OUT}/base"
 
 if [[ -n "${GITHUB_BASE_REF:-}" ]]; then
-  git fetch --depth=1 origin "${GITHUB_BASE_REF}" 2>/dev/null || true
+  # Full fetch — do not use --depth=1. A shallow tip for the base branch breaks
+  # `git merge-base` against the PR merge commit that actions/checkout checks out
+  # (merge-base returns empty → this script exits under set -e).
+  git fetch origin "${GITHUB_BASE_REF}" 2>/dev/null || true
   BASE="$(git merge-base HEAD "origin/${GITHUB_BASE_REF}")"
 elif [[ -n "${GITHUB_EVENT_BEFORE:-}" && "${GITHUB_EVENT_BEFORE}" != "0000000000000000000000000000000000000000" ]]; then
   BASE="${GITHUB_EVENT_BEFORE}"
 else
   BASE="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
+fi
+
+if [[ -z "${BASE}" ]]; then
+  echo "error: could not resolve governance diff base (GITHUB_BASE_REF=${GITHUB_BASE_REF:-})" >&2
+  exit 1
 fi
 
 # Every tracked schema/*.xsd's content as it existed at BASE, one file per
