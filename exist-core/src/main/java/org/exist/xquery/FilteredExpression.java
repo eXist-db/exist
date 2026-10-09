@@ -98,50 +98,89 @@ public class FilteredExpression extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
 
-        final Sequence result;
-        final Sequence seq = expression.eval(contextSequence, contextItem);
-        if (seq.isEmpty()) {
-            result = Sequence.EMPTY_SEQUENCE;
-        } else {
-            final Predicate pred = predicates.getFirst();
-            context.setContextSequencePosition(0, seq);
-            // If the current step is an // abbreviated step, we have to treat the predicate
-            // specially to get the context position right. //a[1] translates 
-            //to /descendant-or-self::node()/a[1], so we need to return the
-            //1st a from any parent of a.
-            // If the predicate is known to return a node set, no special treatment is required.
-            if (abbreviated && (pred.getExecutionMode() != Predicate.ExecutionMode.NODE ||
-                    !seq.isPersistentSet())) {
-                result = new ValueSequence();
-                if (seq.isPersistentSet()) {
-                    final NodeSet contextSet = seq.toNodeSet();
-                    final Sequence outerSequence = contextSet.getParents(getExpressionId());
-                    for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-                        final NodeValue node = (NodeValue) i.nextItem();
-                        final Sequence newContextSeq =
-                            contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT,
-                            getExpressionId());
-                        final Sequence temp = processPredicate(outerSequence, newContextSeq);
-                        result.addAll(temp);
-                    }
-                } else {
-                    final MemoryNodeSet nodes = seq.toMemNodeSet();
-                    final Sequence outerSequence = nodes.getParents(new AnyNodeTest());
-                    for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-                        final NodeValue node = (NodeValue) i.nextItem();
-                        final Sequence newSet = nodes.getChildrenForParent((NodeImpl) node);
-                        final Sequence temp = processPredicate(outerSequence, newSet);
-                        result.addAll(temp);
-                    }
-                }
-            } else {
-                result = processPredicate(contextSequence, seq);
-            }
-        }
+        final Sequence result = filter(contextSequence, expression.eval(contextSequence, contextItem));
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
         return result;
+    }
+
+    /**
+     * Evaluate this filtered expression's predicates directly against an
+     * already-computed candidate sequence, without re-evaluating
+     * {@link #expression}.
+     *
+     * <p>Used by {@link org.exist.xquery.pragmas.Optimize#eval} when
+     * {@link #expression} is a plain {@link VariableReference}: unlike a
+     * {@link LocationStep}, {@link VariableReference#eval} ignores whatever
+     * contextSequence it is called with and always returns the variable's
+     * full bound value. Calling the normal {@link #eval} in that situation
+     * would silently discard an index pre-selected {@code NodeSet} and force
+     * the predicate to be re-evaluated across the full, unfiltered variable
+     * value (GH-873).
+     *
+     * @param outerContextSequence the outer dynamic context to evaluate the
+     *                              predicates against, e.g. for {@code position()}/{@code last()}
+     * @param preselected           the pre-selected candidate sequence to filter, in
+     *                              place of {@code expression}'s own value
+     */
+    public Sequence evalOnPreselected(final Sequence outerContextSequence, final Sequence preselected) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", preselected);
+        }
+        final Sequence result = filter(outerContextSequence, preselected);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+        return result;
+    }
+
+    /**
+     * Apply this filtered expression's predicates to {@code seq}, handling the
+     * {@code abbreviated}-step grouping-by-parent case the same way for both
+     * {@link #eval} and {@link #evalOnPreselected}.
+     */
+    private Sequence filter(@Nullable final Sequence contextSequence, final Sequence seq) throws XPathException {
+        if (seq.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final Predicate pred = predicates.getFirst();
+        context.setContextSequencePosition(0, seq);
+        // If the current step is an // abbreviated step, we have to treat the predicate
+        // specially to get the context position right. //a[1] translates
+        //to /descendant-or-self::node()/a[1], so we need to return the
+        //1st a from any parent of a.
+        // If the predicate is known to return a node set, no special treatment is required.
+        if (abbreviated && (pred.getExecutionMode() != Predicate.ExecutionMode.NODE ||
+                !seq.isPersistentSet())) {
+            final Sequence result = new ValueSequence();
+            if (seq.isPersistentSet()) {
+                final NodeSet contextSet = seq.toNodeSet();
+                final Sequence outerSequence = contextSet.getParents(getExpressionId());
+                for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                    final NodeValue node = (NodeValue) i.nextItem();
+                    final Sequence newContextSeq =
+                        contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT,
+                        getExpressionId());
+                    final Sequence temp = processPredicate(outerSequence, newContextSeq);
+                    result.addAll(temp);
+                }
+            } else {
+                final MemoryNodeSet nodes = seq.toMemNodeSet();
+                final Sequence outerSequence = nodes.getParents(new AnyNodeTest());
+                for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                    final NodeValue node = (NodeValue) i.nextItem();
+                    final Sequence newSet = nodes.getChildrenForParent((NodeImpl) node);
+                    final Sequence temp = processPredicate(outerSequence, newSet);
+                    result.addAll(temp);
+                }
+            }
+            return result;
+        } else {
+            return processPredicate(contextSequence, seq);
+        }
     }
 
     private Sequence processPredicate(@Nullable Sequence contextSequence, Sequence seq) throws XPathException {
