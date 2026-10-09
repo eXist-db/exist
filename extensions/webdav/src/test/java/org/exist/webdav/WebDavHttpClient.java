@@ -42,7 +42,9 @@ final class WebDavHttpClient {
     WebDavHttpClient(final int port, final String username, final String password) {
         this.collectionUri = "http://localhost:" + port + "/webdav/db/";
         this.authorizationHeader = basicAuthorization(username, password);
+        // HTTP/1.1, so that the Host header is sent: the server checks that a COPY or MOVE Destination is on the same host
         this.client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
     }
@@ -69,6 +71,27 @@ final class WebDavHttpClient {
         final HttpRequest request = HttpRequest.newBuilder(documentUri(name))
                 .DELETE()
                 .header("Authorization", authorizationHeader)
+                .build();
+        return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+    }
+
+    int makeCollection(final String name) throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(documentUri(name))
+                .method("MKCOL", HttpRequest.BodyPublishers.noBody())
+                .header("Authorization", authorizationHeader)
+                .build();
+        return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+    }
+
+    /**
+     * Sends a COPY or MOVE of {@code source} to {@code destination}, both relative to /db.
+     */
+    int copyOrMove(final String method, final String source, final String destination) throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(documentUri(source))
+                .method(method, HttpRequest.BodyPublishers.noBody())
+                .header("Authorization", authorizationHeader)
+                .header("Destination", documentUri(destination).toString())
+                .header("Overwrite", "F")
                 .build();
         return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
     }
