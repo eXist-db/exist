@@ -1,0 +1,19 @@
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorSearchEmbeddingIT.java
+  s_5812e1c1ef8116::t_c7c4dcb666b5ac 39,41-44,123-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a59c56221b7cda82dc4fc13b7618aa0106aed1e6",
+  "prompts": {},
+  "sessions": {
+    "s_5812e1c1ef8116": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1654c10d-4848-4818-b2e8-a3d22dcf8612",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
