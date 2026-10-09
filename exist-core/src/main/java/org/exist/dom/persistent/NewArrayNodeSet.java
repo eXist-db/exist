@@ -621,15 +621,32 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     /**
-     * Records that this call has stamped {@code nodes[idx]}, so a later reference in the same call
-     * sees it as a duplicate exactly as reading the proxy's own context used to.
+     * Stamps {@code nodes[idx]} with {@code reference} as its context for this evaluation, and records
+     * the context id this call stamped it with, so that a later reference in the same call sees it as a
+     * duplicate.
+     *
+     * <p>The id recorded is the one applied here, not read back off the proxy: {@code addContextNode}
+     * appends to the proxy's context chain, so its head may still be a context left by an earlier
+     * evaluation. Nothing is recorded when nothing is stamped: with {@code IGNORE_CONTEXT}, or with
+     * {@code NO_CONTEXT_ID} when the reference has no context to copy.</p>
      *
      * @param stamped the per-call record of stamps applied so far
-     * @param idx the index into {@link #nodes} of the node just stamped
+     * @param idx the index into {@link #nodes} of the node to stamp
+     * @param reference the context node
+     * @param contextId the context id of the current evaluation
      */
-    private void recordStamp(final Map<Integer, Integer> stamped, final int idx) {
-        if (nodes[idx].getContext() != null) {
-            stamped.put(idx, nodes[idx].getContext().getContextId());
+    private void stampContext(final Map<Integer, Integer> stamped, final int idx, final NodeProxy reference, final int contextId) {
+        if (Expression.IGNORE_CONTEXT == contextId) {
+            return;
+        }
+        if (Expression.NO_CONTEXT_ID == contextId) {
+            NodeProxy.propagatePredicateContextFrom(nodes[idx], reference, contextId);
+            if (reference.getContext() != null) {
+                stamped.put(idx, reference.getContext().getContextId());
+            }
+        } else {
+            nodes[idx].addContextNode(contextId, reference);
+            stamped.put(idx, contextId);
         }
     }
 
@@ -691,14 +708,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                         continue;
                     }
 
-                    if(Expression.IGNORE_CONTEXT != contextId) {
-                        if(Expression.NO_CONTEXT_ID == contextId) {
-                            NodeProxy.propagatePredicateContextFrom(nodes[i], reference, contextId);
-                        } else {
-                            nodes[i].addContextNode(contextId, reference);
-                        }
-                    }
-                    recordStamp(stamped, i);
+                    stampContext(stamped, i, reference, contextId);
                     result.add(nodes[i]);
                 }
             }
@@ -774,14 +784,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                         continue;
                     }
 
-                    if(Expression.IGNORE_CONTEXT != contextId) {
-                        if(Expression.NO_CONTEXT_ID == contextId) {
-                            NodeProxy.propagatePredicateContextFrom(nodes[i], reference, contextId);
-                        } else {
-                            nodes[i].addContextNode(contextId, reference);
-                        }
-                    }
-                    recordStamp(stamped, i);
+                    stampContext(stamped, i, reference, contextId);
                     result.add(nodes[i]);
                 }
             }
@@ -824,14 +827,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                             continue;
                         }
 
-                        if(Expression.IGNORE_CONTEXT != contextId) {
-                            if(Expression.NO_CONTEXT_ID == contextId) {
-                                NodeProxy.propagatePredicateContextFrom(nodes[j], reference, contextId);
-                            } else {
-                                nodes[j].addContextNode(contextId, reference);
-                            }
-                        }
-                        recordStamp(stamped, j);
+                        stampContext(stamped, j, reference, contextId);
                         result.add(nodes[j]);
                     }
                     if(n == position) {
@@ -878,14 +874,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                             continue;
                         }
 
-                        if(Expression.IGNORE_CONTEXT != contextId) {
-                            if(Expression.NO_CONTEXT_ID == contextId) {
-                                NodeProxy.propagatePredicateContextFrom(nodes[j], reference, contextId);
-                            } else {
-                                nodes[j].addContextNode(contextId, reference);
-                            }
-                        }
-                        recordStamp(stamped, j);
+                        stampContext(stamped, j, reference, contextId);
                         result.add(nodes[j]);
                     }
                     if(n == position) {
