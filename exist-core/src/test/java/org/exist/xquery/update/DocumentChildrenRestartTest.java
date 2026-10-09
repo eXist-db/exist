@@ -38,8 +38,8 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ import java.util.Optional;
 
 import static org.exist.test.Util.executeQuery;
 import static org.exist.test.Util.withCompiledQuery;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Nodes inserted around the document element of a stored document are still there, in order, after the
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class DocumentChildrenRestartTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI DOCUMENT_URI = XmldbURI.create("document-children.xml");
