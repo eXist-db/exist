@@ -241,6 +241,36 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
 
             </xsl:stylesheet>""";
 
+    private static final String XMLNS_TEST_COLLECTION = "/db/apps/test-xslt-xml-namespace-attribute";
+
+    private static final String XMLNS_CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+            declare variable $exist:root external;
+            declare variable $exist:controller external;
+
+            if (ends-with($exist:resource, '.xml')) then
+                <exist:dispatch>
+                    <exist:view>
+                        <exist:forward servlet="XSLTServlet">
+                            <exist:set-attribute name="xslt.stylesheet" value="{$exist:root}{$exist:controller}/identity.xsl"/>
+                        </exist:forward>
+                    </exist:view>
+                    <exist:cache-control cache="no"/>
+                </exist:dispatch>
+            else
+                ()""";
+
+    private static final String XMLNS_IDENTITY_XSL = """
+            <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                <xsl:mode on-no-match="shallow-copy"/>
+            </xsl:stylesheet>""";
+
+    private static final String XMLNS_TEST_XML = """
+            <test>
+               <strange xml:id="strange" xml:base="./"/>
+            </test>""";
+
     private static final String SH_TEST_COLLECTION = "/db/apps/test-set-header-view-pipeline";
 
     private static final String SH_CONTROLLER_XQ = """
@@ -610,6 +640,47 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
         assertOk(result);
         assertTrue(result.body().contains("Hello Bob"),
                 "Response should contain the XSLT-transformed output");
+    }
+
+    // ================================================================================
+    // URLRewriteXSLTXmlNamespaceAttributeTest: #3417 -- a document with an xml:-prefixed
+    // attribute (e.g. xml:id, xml:base) forwarded through XSLTServlet must come back with
+    // that attribute intact, not with the reserved xml namespace rebound to a bogus prefix.
+    // ================================================================================
+
+    @BeforeClass
+    public static void setupXmlNamespaceAttributeTest() throws Exception {
+        final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + XMLNS_TEST_COLLECTION;
+
+        storeViaRest(restUrl + "/controller.xql", XMLNS_CONTROLLER_XQ, "application/xquery");
+        storeViaRest(restUrl + "/identity.xsl", XMLNS_IDENTITY_XSL, "application/xslt+xml");
+        storeViaRest(restUrl + "/test.xml", XMLNS_TEST_XML, "application/xml");
+
+        chmodRwxrxrx(XMLNS_TEST_COLLECTION, "controller.xql");
+    }
+
+    @AfterClass
+    public static void teardownXmlNamespaceAttributeTest() throws Exception {
+        deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + XMLNS_TEST_COLLECTION);
+    }
+
+    @Test
+    public void xmlNamespacedAttributesSurviveXsltServletPassThrough() throws IOException {
+        final String url = "http://localhost:" + existWebServer.getPort()
+                + "/exist/apps/test-xslt-xml-namespace-attribute/test.xml";
+
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
+        final AbstractHttpTest.HttpResponseResult result =
+                AbstractHttpTest.executeForStatusAndBody(AbstractHttpTest.newHttpClient(), request);
+
+        assertOk(result);
+        final String body = result.body();
+        assertTrue("xml:id attribute should survive the XSLTServlet pass-through: " + body,
+                body.contains("xml:id=\"strange\""));
+        assertTrue("xml:base attribute should survive the XSLTServlet pass-through: " + body,
+                body.contains("xml:base=\"./\""));
+        assertTrue("the reserved xml namespace must not be rebound to a bogus prefix: " + body,
+                !body.contains("xm:id") && !body.contains("xm:base"));
     }
 
     // ================================================================================
