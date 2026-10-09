@@ -128,11 +128,13 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   }
 
   private float[] extractSentenceEmbedding(final Result result) throws Exception {
-    try (final OnnxTensor tensor = (OnnxTensor) result.get(0)) {
-      final float[][] data = (float[][]) tensor.getValue();
-      if (data != null && data.length > 0 && data[0].length == dimension) {
-        return data[0];
-      }
+    // The Result owns its output tensors and closes them with embed()'s try-with-resources;
+    // closing the tensor here too makes onnxruntime log "Closing an already closed tensor."
+    // on every call. getValue() copies into a Java array, so it is safe to read from here.
+    final OnnxTensor tensor = (OnnxTensor) result.get(0);
+    final float[][] data = (float[][]) tensor.getValue();
+    if (data != null && data.length > 0 && data[0].length == dimension) {
+      return data[0];
     }
     return null;
   }
@@ -154,13 +156,13 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   }
 
   private float[] meanPool(final Result result, final int seqLen, final long[] attentionMask) throws Exception {
-    try (final OnnxTensor tensor = findHiddenStateTensor(result)) {
-      final float[][][] hidden = (float[][][]) tensor.getValue();
-      if (hidden == null || hidden.length == 0 || hidden[0].length == 0 || hidden[0][0].length != dimension) {
-        return null;
-      }
-      return computeMeanPool(hidden[0], seqLen, attentionMask);
+    // Owned and closed by the Result, see extractSentenceEmbedding.
+    final OnnxTensor tensor = findHiddenStateTensor(result);
+    final float[][][] hidden = (float[][][]) tensor.getValue();
+    if (hidden == null || hidden.length == 0 || hidden[0].length == 0 || hidden[0][0].length != dimension) {
+      return null;
     }
+    return computeMeanPool(hidden[0], seqLen, attentionMask);
   }
 
   private OnnxTensor findHiddenStateTensor(final Result result) {
