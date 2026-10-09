@@ -1,0 +1,19 @@
+extensions/vector/src/main/java/org/exist/vector/OnnxVectorProvider.java
+  s_5812e1c1ef8116::t_7063d11f6071ca 188-194,216-220,222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0c58c514574121a45bcb9efc36c0ac8ce63458ad",
+  "prompts": {},
+  "sessions": {
+    "s_5812e1c1ef8116": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1654c10d-4848-4818-b2e8-a3d22dcf8612",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
