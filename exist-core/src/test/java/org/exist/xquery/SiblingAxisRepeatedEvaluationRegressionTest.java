@@ -22,15 +22,15 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Regression test for issue #6690. An axis step with a name test returned the correct result on
@@ -48,11 +48,14 @@ import static org.junit.Assert.assertEquals;
  */
 public class SiblingAxisRepeatedEvaluationRegressionTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String TEST_DOC = "/db/i6690.xml";
+
+    /** Two context nodes, t:a and t:b, that share the siblings t:first and t:target. */
+    private static final String SHARED_DOC = "/db/i6690-shared.xml";
 
     private static final String PROLOG = "xquery version \"3.1\"; declare namespace t=\"urn:example\"; ";
 
@@ -64,7 +67,7 @@ public class SiblingAxisRepeatedEvaluationRegressionTest {
     private static final String VIA_PATH =
             "let $n := (doc('" + TEST_DOC + "')/t:root//t:target)[1] ";
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestDocument() throws XMLDBException {
         query("""
                 xmldb:store('/db', 'i6690.xml',
@@ -73,11 +76,19 @@ public class SiblingAxisRepeatedEvaluationRegressionTest {
                         <t:wrap><t:a/><t:target/></t:wrap>
                     </t:root>)
                 """);
+        query("""
+                xmldb:store('/db', 'i6690-shared.xml',
+                    <t:root xmlns:t="urn:example">
+                        <t:key>K1</t:key>
+                        <t:wrap><t:first/><t:a/><t:b/><t:target/></t:wrap>
+                    </t:root>)
+                """);
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'i6690.xml')");
+        query("xmldb:remove('/db', 'i6690-shared.xml')");
     }
 
     private static String query(final String xquery) throws XMLDBException {
@@ -132,6 +143,47 @@ public class SiblingAxisRepeatedEvaluationRegressionTest {
     @Test
     public void ancestorNameTestIsStable() throws XMLDBException {
         assertEquals("1,1,1,1", fourTimes(VIA_PREDICATE, "/ancestor::t:wrap"));
+    }
+
+    /**
+     * Evaluates {@code <pair>/<step>} for the pair bound via a predicate and via a plain path, alternately,
+     * four times each, returning e.g. "1,1,1,1,1,1,1,1". Both context nodes of the pair share the sibling,
+     * so each evaluation sees it twice in one call.
+     */
+    private static String sharedSiblingEightTimes(final String step) throws XMLDBException {
+        return query(PROLOG
+                + "let $viaPredicate := doc('" + SHARED_DOC + "')//t:key[. = 'K1']/ancestor::t:root//(t:a | t:b) "
+                + "let $viaPath := doc('" + SHARED_DOC + "')/t:root/t:wrap/(t:a | t:b) "
+                + "return string-join(for $i in 1 to 4 return (string(count($viaPredicate" + step + ")), "
+                + "string(count($viaPath" + step + "))), ',')");
+    }
+
+    @Test
+    public void followingSiblingSharedByTwoContextNodesIsStable() throws XMLDBException {
+        assertEquals("1,1,1,1,1,1,1,1", sharedSiblingEightTimes("/following-sibling::t:target"));
+    }
+
+    @Test
+    public void precedingSiblingSharedByTwoContextNodesIsStable() throws XMLDBException {
+        assertEquals("1,1,1,1,1,1,1,1", sharedSiblingEightTimes("/preceding-sibling::t:first"));
+    }
+
+    @Test
+    public void followingSharedByTwoContextNodesIsStable() throws XMLDBException {
+        assertEquals("1,1,1,1,1,1,1,1", sharedSiblingEightTimes("/following::t:target"));
+    }
+
+    @Test
+    public void precedingSharedByTwoContextNodesIsStable() throws XMLDBException {
+        assertEquals("1,1,1,1,1,1,1,1", sharedSiblingEightTimes("/preceding::t:first"));
+    }
+
+    /** In a predicate, the shared sibling must be found for the predicate's context node, every time. */
+    @Test
+    public void sharedSiblingInPredicateIsStable() throws XMLDBException {
+        assertEquals("1,1,1,1", query(PROLOG
+                + "let $root := doc('" + SHARED_DOC + "')//t:key[. = 'K1']/ancestor::t:root "
+                + "return string-join(for $i in 1 to 4 return string(count($root//t:wrap[(t:a | t:b)/following-sibling::t:target])), ',')"));
     }
 
     /** A name that matches no sibling must stay empty, not become non-empty. */
