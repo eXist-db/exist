@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java
+  s_d5ac7bf05ec2fb::t_fe19bcc844d97b 50,77-82,109-122,131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1c5b5e23ef38ba0c1cfeebf4061ebb16a46ef87f",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
