@@ -636,6 +636,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     options.configureParser(parser.getConfiguration());
                     query = parser.parse(queryStr);
                     query = AnalyzingQueryRewriter.rewrite(query, analyzer);
+                    query = options.applyPhraseAsNear(query);
                 }
                 query = filterByIndexType(query, field);
                 final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
@@ -812,6 +813,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryString);
             query = AnalyzingQueryRewriter.rewrite(query, analyzer);
+            query = options.applyPhraseAsNear(query);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     returnAncestor, searcher, query, config);
             return resultSet;
@@ -1200,6 +1202,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryText);
             query = AnalyzingQueryRewriter.rewrite(query, searchAnalyzer);
+            query = options.applyPhraseAsNear(query);
 
             // extract all used fields from query
             final String[] fields;

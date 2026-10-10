@@ -24,10 +24,7 @@ package org.exist.xquery.modules.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.exist.Namespaces;
@@ -250,63 +247,33 @@ public class Field extends BasicFunction {
             for (final SequenceIterator si = text.iterate(); si.hasNext(); ) {
                 final int nodeNr = builder.startElement(Namespaces.EXIST_NS, "field", "exist:field", null);
                 final String content = si.nextItem().getStringValue();
-                int currentPos = 0;
+                final int[] currentPos = {0};
                 try (final Reader reader = new StringReader(content);
                      final TokenStream tokenStream = analyzer.tokenStream(fieldName, reader);
                      final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
                     stream.reset();
                     while (stream.incrementToken()) {
-                        String token = stream.getAttribute(CharTermAttribute.class).toString();
+                        final String token = stream.getAttribute(CharTermAttribute.class).toString();
                         final Query query = terms.get(token);
                         if (query != null) {
-                            if (query instanceof PhraseQuery phraseQuery) {
-                                final Term phraseTerms[] = phraseQuery.getTerms();
-                                if (token.equals(phraseTerms[0].text())) {
-                                    // Scan the following text and collect tokens to see
-                                    // if they are part of the phrase.
-                                    stream.mark();
-                                    int t = 1;
-                                    OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                    final int startOffset = offset.startOffset();
-                                    int endOffset = offset.endOffset();
-                                    while (stream.incrementToken() && t < phraseTerms.length) {
-                                        token = stream.getAttribute(CharTermAttribute.class).toString();
-                                        if (token.equals(phraseTerms[t].text())) {
-                                            offset = stream.getAttribute(OffsetAttribute.class);
-                                            endOffset = offset.endOffset();
-                                            t++;
-                                            if (t == phraseTerms.length) {
-                                                break;
-                                            }
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                    if (t == phraseTerms.length) {
-                                        if (currentPos < startOffset) {
-                                            builder.characters(content.substring(currentPos, startOffset));
-                                        }
-                                        builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                        builder.characters(content.substring(startOffset, endOffset));
-                                        builder.endElement();
-                                        currentPos = endOffset;
-                                    }
-                                } // End of phrase handling
-                            } else {
-                                final OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                if (currentPos < offset.startOffset()) {
-                                    builder.characters(content.substring(currentPos, offset.startOffset()));
+                            // Phrase and near/proximity queries need special handling to avoid
+                            // marking partial matches; both forms are matched the same slop-aware
+                            // way so that string ('"a b"~n') and XML (<near slop="n">) queries
+                            // highlight identically, see #833.
+                            LuceneUtil.highlightToken(stream, token, query, (start, end) -> {
+                                if (currentPos[0] < start) {
+                                    builder.characters(content.substring(currentPos[0], start));
                                 }
                                 builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                builder.characters(content.substring(offset.startOffset(), offset.endOffset()));
+                                builder.characters(content.substring(start, end));
                                 builder.endElement();
-                                currentPos = offset.endOffset();
-                            }
+                                currentPos[0] = end;
+                            });
                         }
                     }
                 }
-                if (currentPos < content.length() - 1)  {
-                    builder.characters(content.substring(currentPos));
+                if (currentPos[0] < content.length() - 1)  {
+                    builder.characters(content.substring(currentPos[0]));
                 }
                 builder.endElement();
                 result.add(builder.getDocument().getNode(nodeNr));
