@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/util/serializer/HtmlSerializerBenchmarkTest.java
+  s_d5ac7bf05ec2fb::t_b7033cbd91d3f7 59,207-219,232,274-296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d613c13849a0f7ff48927f7f8a6d0d9e03b8475",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

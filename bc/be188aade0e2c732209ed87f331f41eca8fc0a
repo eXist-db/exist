@@ -1,0 +1,42 @@
+exist-core/src/test/xquery/axes-persistent-nodes.xqm
+  s_d5ac7bf05ec2fb::t_11902edb7de915 51-56,60,62,68,95,107,114,126,133,145,173,185,192,204,211,223
+exist-core/src/test/xquery/guest.xql
+  s_d5ac7bf05ec2fb::t_9117b873baeca9 27-32,36-37,42,54,60,66,72
+exist-core/src/test/xquery/npt.xqm
+  s_d5ac7bf05ec2fb::t_644531666baa99 45-50,54-55,61,73,86,98,110,122
+exist-core/src/test/xquery/question-marks-in-contains-function.xql
+  s_d5ac7bf05ec2fb::t_0e88467059f653 56-61,65-68,74-75,81,89,97,105
+exist-core/src/test/xquery/system/get-main-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_29ed927b16e4cd 39,46-51,55-56,59-60,67
+exist-core/src/test/xquery/system/get-module-load-path.xqm
+  s_d5ac7bf05ec2fb::t_7702ca3998228c 39,46-51,55-56,59-60,67
+exist-core/src/test/xquery/xquery3/higher-order.xqm
+  s_d5ac7bf05ec2fb::t_4465764b226c8e 37-42,46,65,309,428
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_d5ac7bf05ec2fb::t_c8ae711b9f99f5 204-209,223-227,235-236,622,641,655-656
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_d5ac7bf05ec2fb::t_41589d9a23b088 65-67
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunDeepEqualPerformanceTest.java
+  s_d5ac7bf05ec2fb::t_e78abe292917ef 63-74,90-105,163-165,175-176,180-187,190-206,220-223,225-228,230-232,241-245,247-250,252-255,260-270,272-280
+  s_d5ac7bf05ec2fb::t_02a7ac19c4df38 54-59
+exist-core/src/test/java/org/exist/test/XmlStringDiffMatcherTest.java
+  s_d5ac7bf05ec2fb::t_bee6dbae920af2 1-141
+exist-core/src/test/java/org/exist/test/XmlStringDiffMatcher.java
+  s_d5ac7bf05ec2fb::t_aa228695d8eca5 39,46-49,52,67-77,104-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bcbe188aade0e2c732209ed87f331f41eca8fc0a",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

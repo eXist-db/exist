@@ -1,0 +1,19 @@
+exist-core/src/test/java/xquery/xmldb/XMLDBTests.java
+  s_6df02666b194e3::t_66d6ed5d920248 26,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ade722d3a2a921c9cd39577afa5502d9a91d49d",
+  "prompts": {},
+  "sessions": {
+    "s_6df02666b194e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772d4147-37e7-43d5-89e9-cf664ce9e0c8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

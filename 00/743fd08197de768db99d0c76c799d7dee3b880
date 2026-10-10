@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/xquery/FollowingAxisPositionRegressionTest.java
+  s_d5ac7bf05ec2fb::t_37ffe565e5cc9f 59,162-175,181
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  s_d5ac7bf05ec2fb::t_b18fed26ae2ce0 2174
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpParseTest.java
+  s_d5ac7bf05ec2fb::t_43bd96c84cab44 88
+exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java
+  s_d5ac7bf05ec2fb::t_0660e28853ed4b 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00743fd08197de768db99d0c76c799d7dee3b880",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
