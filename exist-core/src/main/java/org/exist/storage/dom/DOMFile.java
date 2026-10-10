@@ -1240,6 +1240,12 @@ public class DOMFile extends BTree implements Lockable {
 
     @Override
     protected void unlinkPages(final Page page) throws IOException {
+        if (page != null) {
+            // An owner's current page must not outlive the page: once it is on the free list it can be handed
+            // to another owner, and the next add() of this owner would append to a page it no longer owns
+            final long freed = page.getPageNum();
+            pages.values().removeIf(pageNum -> pageNum == freed);
+        }
         super.unlinkPages(page);
     }
 
