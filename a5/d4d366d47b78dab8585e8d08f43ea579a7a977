@@ -1,0 +1,59 @@
+exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java
+  s_d5ac7bf05ec2fb::t_a8e6194b1b1aec 158,182,202,223,243,263,283
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java
+  s_d5ac7bf05ec2fb::t_f8447172f6a124 595,661,720,777,825,918,1087,1134,1304,1727,1743,2023,2324
+exist-core/src/test/java/org/exist/xquery/XQueryProcessingInstructionTest.java
+  s_d5ac7bf05ec2fb::t_8b23f17d906440 44
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  s_d5ac7bf05ec2fb::t_df74b0ba9cf862 232,531,571,909,1267,1453,2047,3166,3181
+exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java
+  s_d5ac7bf05ec2fb::t_e43a9140f5e35e 68
+exist-core/src/test/java/org/exist/xmldb/ResourceTest.java
+  s_d5ac7bf05ec2fb::t_0e5b2a47087893 232
+exist-core/src/test/java/org/exist/xquery/functions/system/GetRunningXQueriesTest.java
+  s_d5ac7bf05ec2fb::t_f907cf0ea2497a 41
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpDtdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_9587c0a40d62ee 112,120,128,136,150,158
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpXsdCatalogTest.java
+  s_d5ac7bf05ec2fb::t_93fa17495b300f 62,133,141,149,157,165,173,196,206,223,231
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxvTest.java
+  s_d5ac7bf05ec2fb::t_85e3013b868a48 92,105,118,131
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingOnvdlTest.java
+  s_d5ac7bf05ec2fb::t_a6a9b33b64c95c 99,104,108,113,122,130,138,146
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingRelaxNgTest.java
+  s_d5ac7bf05ec2fb::t_8e39b276268cd8 96,104,112,120,128,136,143,150
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingSchematronTest.java
+  s_d5ac7bf05ec2fb::t_2aa8da254be6af 88,110,118,126
+exist-core/src/test/java/org/exist/xquery/functions/validate/JingXsdTest.java
+  s_d5ac7bf05ec2fb::t_caf0037f752ecb 56,84,92,100,108
+exist-core/src/test/java/org/exist/xquery/functions/validate/NativeSchemaJaxpCatalogGapTest.java
+  s_d5ac7bf05ec2fb::t_f895214e52ba65 99,177
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseDtdNokTest.java
+  s_d5ac7bf05ec2fb::t_2d4a421070b3f1 79,91,102,114
+exist-core/src/test/java/org/exist/xquery/functions/validate/ParseXsdNokTest.java
+  s_d5ac7bf05ec2fb::t_e39643c8ba1c3c 79,91,103,115
+exist-core/src/test/java/org/exist/xquery/functions/validate/QueryResults.java
+  s_d5ac7bf05ec2fb::t_5164230a8b1152 1-45
+exist-core/src/test/java/org/exist/xquery/functions/validate/TournamentSchemaLanguageComparisonTest.java
+  s_d5ac7bf05ec2fb::t_fcbe195590af68 104,116,124,131
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java
+  s_d5ac7bf05ec2fb::t_c8e8496c58b0f5 503,543
+extensions/indexes/ngram/src/test/java/org/exist/indexing/ngram/MatchListenerTest.java
+  s_d5ac7bf05ec2fb::t_d194039e222304 522,574
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5d4d366d47b78dab8585e8d08f43ea579a7a977",
+  "prompts": {},
+  "sessions": {
+    "s_d5ac7bf05ec2fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96073ac5-11b2-46b6-ac5a-c0bcbf2b13d9",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
