@@ -110,13 +110,36 @@ final class SuiteRun {
      * Give the threads of abandoned files a chance to stop before the database is shut down under them.
      */
     private void awaitAbandonedThreads() throws InterruptedException {
-        final long deadline = System.nanoTime() + settings.hangGrace().toNanos();
-        for (final FileRun run : runs) {
-            if (run.state.get() == State.ABANDONED && run.thread != null) {
-                final long remainingMillis = Math.max(0, (deadline - System.nanoTime()) / 1_000_000);
-                run.thread.join(remainingMillis);
+        final List<Thread> abandoned = runs.stream()
+                .filter(run -> run.state.get() == State.ABANDONED && run.thread != null)
+                .map(run -> run.thread)
+                .toList();
+        awaitTermination(abandoned, settings.hangGrace());
+    }
+
+    /**
+     * Waits for the threads to end, for at most {@code grace} in all, not for each of them.
+     * <p>
+     * A thread that is stuck in a lock does not end when it is interrupted, so the first such thread uses up
+     * the whole time. The threads after it must then not be waited for at all: {@code Thread.join(0)} does not
+     * mean "do not wait", it means "wait forever".
+     *
+     * @param threads the threads to wait for
+     * @param grace how long to wait in all
+     *
+     * @return true if all the threads have ended
+     */
+    static boolean awaitTermination(final List<Thread> threads, final Duration grace) throws InterruptedException {
+        final long deadline = System.nanoTime() + grace.toNanos();
+        boolean allEnded = true;
+        for (final Thread thread : threads) {
+            final long remainingNanos = deadline - System.nanoTime();
+            if (remainingNanos > 0) {
+                thread.join(Duration.ofNanos(remainingNanos));
             }
+            allEnded &= !thread.isAlive();
         }
+        return allEnded;
     }
 
     private void watch() {
