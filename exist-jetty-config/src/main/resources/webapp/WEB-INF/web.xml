@@ -180,6 +180,15 @@
     </servlet>
 
     <!--
+        SchemaServlet serves eXist's native config-file XSDs from $EXIST_HOME/schema/,
+        unauthenticated, for external tooling (IDE plugins, editors). See #6563.
+    -->
+    <servlet>
+        <servlet-name>SchemaServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.SchemaServlet</servlet-class>
+    </servlet>
+
+    <!--
         XQueryServlet generates HTML from an XQuery file.
     -->
     <servlet>

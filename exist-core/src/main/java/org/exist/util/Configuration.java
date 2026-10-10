@@ -36,6 +36,8 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
 import org.exist.util.io.ContentFilePool;
 import org.exist.xquery.Expression;
+import org.exist.xquery.ModuleFactory;
+import org.exist.xquery.ModuleRegistration;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
@@ -50,6 +52,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import org.exist.Indexer;
+import org.exist.indexing.IndexFactory;
 import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
@@ -75,10 +78,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -212,6 +219,7 @@ import static org.exist.xquery.XQueryContext.PROPERTY_BUILT_IN_MODULES;
 import static org.exist.xquery.XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING;
 import static org.exist.xquery.XQueryContext.PROPERTY_ENFORCE_INDEX_USE;
 import static org.exist.xquery.XQueryContext.PROPERTY_MODULE_PARAMETERS;
+import static org.exist.xquery.XQueryContext.PROPERTY_MODULE_REGISTRATIONS;
 import static org.exist.xquery.XQueryContext.PROPERTY_STATIC_MODULE_MAP;
 import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE;
 import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL;
@@ -230,6 +238,7 @@ import static org.exist.xslt.TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRI
 
 public class Configuration implements ErrorHandler {
     public static final String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    public static final String PROPERTY_VECTOR_MODELS = "vector.models";
     private static final String PRP_DETAILS = "{}: {}";
     private static final Logger LOG = LogManager.getLogger(Configuration.class); //Logger
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
@@ -243,6 +252,9 @@ public class Configuration implements ErrorHandler {
 
     protected Optional<Path> configFilePath = Optional.empty();
     protected Optional<Path> existHome = Optional.empty();
+
+    /** The parsed conf.xml document, retained for {@code system:get-configuration()} et al. */
+    private Document configurationDocument;
 
     public Configuration() throws DatabaseConfigurationException {
         this(DatabaseImpl.CONF_XML, Optional.empty());
@@ -342,6 +354,7 @@ public class Configuration implements ErrorHandler {
             reader.parse(src);
 
             final Document doc = adapter.getDocument();
+            this.configurationDocument = doc;
 
             SchemaVersion.logDocumentVersion(LOG, doc.getDocumentElement(), SchemaVersion.CONF,
                     configFilePath.map(p -> "conf.xml (" + p + ")").orElse("conf.xml"));
@@ -374,6 +387,8 @@ public class Configuration implements ErrorHandler {
             configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHomePath, element));
             // RPC server
             configureElement(doc, "rpc-server", this::configureRpcServer);
+            // Vector model registry
+            configureElement(doc, "vector-models", this::configureVectorModels);
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
@@ -548,28 +563,49 @@ public class Configuration implements ErrorHandler {
         final Map<String, Class<?>> classMap = new HashMap<>();
         final Map<String, String> knownMappings = new HashMap<>();
         final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<>();
-        loadModuleClasses(xquery, classMap, knownMappings, moduleParameters);
+        final Map<String, ModuleRegistration> moduleRegistrations = new LinkedHashMap<>();
+        loadModuleClasses(xquery, classMap, knownMappings, moduleParameters, moduleRegistrations);
         setProperty(PROPERTY_BUILT_IN_MODULES, classMap);
         setProperty(PROPERTY_STATIC_MODULE_MAP, knownMappings);
         setProperty(PROPERTY_MODULE_PARAMETERS, moduleParameters);
+        setProperty(PROPERTY_MODULE_REGISTRATIONS, List.copyOf(moduleRegistrations.values()));
     }
 
     /**
      * Read list of built-in modules from the configuration. This method will only make sure
      * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
      *
-     * @param xquery           configuration root
-     * @param modulesClassMap  map containing all classes of modules
-     * @param modulesSourceMap map containing all source uris to external resources
+     * @param xquery              configuration root
+     * @param modulesClassMap     map containing all classes of modules
+     * @param modulesSourceMap    map containing all source uris to external resources
+     * @param moduleRegistrations provenance record per Java module uri (active and
+     *                            {@code enabled="no"}-suppressed), for {@code system:get-registered-modules()}
      * @throws DatabaseConfigurationException if one of the modules is configured incorrectly
      */
     private void loadModuleClasses(final Element xquery,
                                    final Map<String, Class<?>> modulesClassMap,
                                    final Map<String, String> modulesSourceMap,
-                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters
+                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters,
+                                   final Map<String, ModuleRegistration> moduleRegistrations
     ) throws DatabaseConfigurationException {
         // add the standard function module
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
+        moduleRegistrations.put(XPATH_FUNCTIONS_NS, new ModuleRegistration(XPATH_FUNCTIONS_NS,
+                org.exist.xquery.functions.fn.FnModule.class.getName(), ModuleRegistration.SOURCE_BUILT_IN, true));
+
+        // SPI-discovered modules: any JAR on the classpath that provides a ModuleFactory
+        // implementation in META-INF/services/org.exist.xquery.ModuleFactory is auto-registered.
+        // conf.xml entries processed below can override or suppress these entries.
+        ServiceLoader.load(ModuleFactory.class, Configuration.class.getClassLoader())
+                .forEach(factory -> {
+                    final String uri = factory.getNamespaceURI();
+                    if (!modulesClassMap.containsKey(uri)) {
+                        modulesClassMap.put(uri, factory.getModuleClass());
+                        moduleRegistrations.put(uri, new ModuleRegistration(uri,
+                                factory.getModuleClass().getName(), ModuleRegistration.SOURCE_SPI, true));
+                        LOG.debug("Auto-registered module '{}' via ModuleFactory SPI", uri);
+                    }
+                });
 
         // add other modules specified in configuration
         configureElement(xquery, XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME, builtIn -> {
@@ -589,9 +625,14 @@ public class Configuration implements ErrorHandler {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
-                // enabled="no" disables the module without removing it from conf.xml
+                // enabled="no" disables the module; also suppresses any SPI-discovered entry
                 if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
                     LOG.debug("Module '{}' is disabled via enabled=\"no\", skipping", uri);
+                    modulesClassMap.remove(uri);
+                    final ModuleRegistration existing = moduleRegistrations.get(uri);
+                    final String disabledClass = existing != null ? existing.className() : elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+                    final String disabledSource = existing != null ? existing.source() : ModuleRegistration.SOURCE_CONF_XML;
+                    moduleRegistrations.put(uri, new ModuleRegistration(uri, disabledClass, disabledSource, false));
                     continue;
                 }
 
@@ -610,6 +651,9 @@ public class Configuration implements ErrorHandler {
                     // Store class if thw module class actually exists
                     if (moduleClass != null) {
                         modulesClassMap.put(uri, moduleClass);
+                        // explicit conf.xml entry always wins over an SPI-discovered one
+                        moduleRegistrations.put(uri, new ModuleRegistration(uri, moduleClass.getName(),
+                                ModuleRegistration.SOURCE_CONF_XML, true));
                     }
 
                     LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
@@ -1202,35 +1246,56 @@ public class Configuration implements ErrorHandler {
         // index modules
         final NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
 
-        if (modules.getLength() == 0) {
-            return;
+        // full registry: active AND enabled="no"-suppressed entries, for system:get-registered-indexes()
+        final List<IndexModuleConfig> registry = new ArrayList<>();
+        final Set<String> confXmlIds = new HashSet<>();
+
+        if (modules.getLength() > 0) {
+            final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
+
+            for (int i = 0; i < module.getLength(); i++) {
+                final Element elem = (Element) module.item(i);
+                final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
+                confXmlIds.add(id);
+
+                // enabled="no" disables the index module without removing it from conf.xml
+                if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
+                    LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", id);
+                    registry.add(new IndexModuleConfig(id, elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE), elem, false, IndexModuleConfig.SOURCE_CONF_XML));
+                    continue;
+                }
+
+                final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
+
+                if (className.isEmpty()) {
+                    throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
+                }
+
+                if (id.isEmpty()) {
+                    throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
+                }
+
+                registry.add(new IndexModuleConfig(id, className, elem, true, IndexModuleConfig.SOURCE_CONF_XML));
+            }
         }
-        final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
-        final List<IndexModuleConfig> modConfigList = new ArrayList<>();
 
-        for (int i = 0; i < module.getLength(); i++) {
-            final Element elem = (Element) module.item(i);
-
-            // enabled="no" disables the index module without removing it from conf.xml
-            if ("no".equalsIgnoreCase(elem.getAttribute("enabled"))) {
-                LOG.debug("Index module '{}' is disabled via enabled=\"no\", skipping", elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE));
+        // SPI: auto-discover index modules whose id is not explicitly listed in conf.xml
+        for (final IndexFactory factory : ServiceLoader.load(IndexFactory.class, Configuration.class.getClassLoader())) {
+            final String id = factory.getDefaultId();
+            if (id == null || id.isBlank()) {
+                LOG.warn("IndexFactory {} returned a null or blank default id; skipping SPI registration", factory.getClass().getName());
                 continue;
             }
-
-            final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
-            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
-
-            if (className.isEmpty()) {
-                throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
+            if (confXmlIds.contains(id)) {
+                continue;
             }
-
-            if (id.isEmpty()) {
-                throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
-            }
-
-            modConfigList.add(new IndexModuleConfig(id, className, elem));
+            LOG.debug("SPI-registered index module: {} ({})", id, factory.getIndexClass().getName());
+            registry.add(new IndexModuleConfig(id, factory.getIndexClass().getName(), null, true, IndexModuleConfig.SOURCE_SPI));
         }
-        setProperty(IndexManager.PROPERTY_INDEXER_MODULES, modConfigList.toArray(new IndexModuleConfig[0]));
+
+        final List<IndexModuleConfig> active = registry.stream().filter(IndexModuleConfig::enabled).toList();
+        setProperty(IndexManager.PROPERTY_INDEXER_MODULES, active.toArray(new IndexModuleConfig[0]));
+        setProperty(IndexManager.PROPERTY_INDEXER_MODULES_REGISTRY, List.copyOf(registry));
     }
 
     private void configureValidation(final Optional<Path> dbHome, final Element validation) {
@@ -1345,6 +1410,25 @@ public class Configuration implements ErrorHandler {
         });
     }
 
+    private void configureVectorModels(final Element vectorModels) {
+        if ("no".equalsIgnoreCase(vectorModels.getAttribute("enabled"))) {
+            return;
+        }
+        final NodeList models = vectorModels.getElementsByTagName("model");
+        final Map<String, String[]> entries = new HashMap<>();
+        for (int i = 0; i < models.getLength(); i++) {
+            final Element model = (Element) models.item(i);
+            final String id = model.getAttribute("id");
+            final String path = model.getAttribute("path");
+            final String dimension = model.getAttribute("dimension");
+            if (id.isEmpty() || path.isEmpty()) {
+                continue;
+            }
+            entries.put(id.trim(), new String[]{path.trim(), dimension.trim()});
+        }
+        setProperty(PROPERTY_VECTOR_MODELS, entries);
+    }
+
     /**
      * Gets the value of a configuration attribute
      * <p>
@@ -1425,6 +1509,17 @@ public class Configuration implements ErrorHandler {
         return configFilePath;
     }
 
+    /**
+     * The effective, parsed {@code conf.xml} document — as loaded, not necessarily identical
+     * to the file on disk. Used by {@code system:get-configuration()} and
+     * {@code system:get-configuration-property()}.
+     *
+     * @return the parsed configuration document
+     */
+    public Document getConfigurationDocument() {
+        return configurationDocument;
+    }
+
     public Optional<Path> getExistHome() {
         return existHome;
     }
@@ -1500,7 +1595,20 @@ public class Configuration implements ErrorHandler {
     public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
     }
 
-    public record IndexModuleConfig(String id, String className, Element config) {
+    /**
+     * @param config {@code conf.xml} {@code <module>} element, or {@code null} for an
+     *               SPI-discovered or built-in entry with no matching {@code conf.xml} element
+     * @param enabled whether the index module is currently active ({@code false} if
+     *                suppressed via {@code enabled="no"})
+     * @param source how the index module was registered: {@link #SOURCE_BUILT_IN} (always
+     *               present, e.g. the structural index), {@link #SOURCE_SPI} (auto-discovered
+     *               via {@link org.exist.indexing.IndexFactory}), or {@link #SOURCE_CONF_XML}
+     *               (explicit {@code <module>} entry)
+     */
+    public record IndexModuleConfig(String id, String className, Element config, boolean enabled, String source) {
+        public static final String SOURCE_BUILT_IN = "built-in";
+        public static final String SOURCE_SPI = "spi";
+        public static final String SOURCE_CONF_XML = "conf.xml";
     }
 
 }

@@ -251,4 +251,9 @@ public class ImageModule extends AbstractInternalModule {
             this.value = value;
         }
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return ImageModule.class; }
+    }
 }

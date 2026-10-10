@@ -153,4 +153,9 @@ public class XMLDBModule extends AbstractInternalModule {
     static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE_URI; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return XMLDBModule.class; }
+    }
 }
