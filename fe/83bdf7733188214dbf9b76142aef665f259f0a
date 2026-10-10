@@ -1,0 +1,27 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_6df02666b194e3::t_8997aa92a9c62b 64-73
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSchedulingTest.java
+  s_6df02666b194e3::t_e98d88158868f6 60,64,69,73,79,173-185
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteSettings.java
+  s_6df02666b194e3::t_a220b304325a52 48-50,62-68
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_6df02666b194e3::t_6e9ccb7d0b19f3 42,46,50,54,58,62,66,71-72
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_6df02666b194e3::t_148cea8c7e3d2f 88,104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe83bdf7733188214dbf9b76142aef665f259f0a",
+  "prompts": {},
+  "sessions": {
+    "s_6df02666b194e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772d4147-37e7-43d5-89e9-cf664ce9e0c8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
