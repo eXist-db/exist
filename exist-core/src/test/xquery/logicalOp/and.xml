@@ -29,8 +29,8 @@
         <author>Dmitriy Shabanov</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="test"/>
-        <store collection="/db/test" name="text1.xml">
+        <create-collection parent="/db" name="test-and"/>
+        <store collection="/db/test-and" name="text1.xml">
             <set>
 				<msg id="1">
     				<inform priority="normal">
@@ -48,16 +48,16 @@
     			</msg>
 			</set>
         </store>
-        <store collection="/db/test" name="text2.xml">
+        <store collection="/db/test-and" name="text2.xml">
             <a a1="1"/>
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/test"/>
+        <remove-collection collection="/db/test-and"/>
     </tearDown>
     <test output="xml">
         <task>and under predicate</task>
-        <code>collection("/db/test")//msg[./inform[@priority = "normal" and ./person = "Peter" and ./read-by = "Alex"]]</code>
+        <code>collection("/db/test-and")//msg[./inform[@priority = "normal" and ./person = "Peter" and ./read-by = "Alex"]]</code>
         <expected>
 			<msg id="1">
 				<inform priority="normal">
@@ -69,14 +69,14 @@
     </test>
     <test output="xml">
         <task>and under predicate</task>
-        <code>collection("/db/test")//a[@a1 = 1 and true()]</code>
+        <code>collection("/db/test-and")//a[@a1 = 1 and true()]</code>
         <expected>
             <a a1="1"/>
         </expected>
     </test>
     <test output="xml">
         <task>and under predicate</task>
-        <code>collection("/db/test")//a[@a1 = 1 and @a1 = 1 and true()]</code>
+        <code>collection("/db/test-and")//a[@a1 = 1 and @a1 = 1 and true()]</code>
         <expected>
             <a a1="1"/>
         </expected>

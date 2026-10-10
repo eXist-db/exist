@@ -34,21 +34,21 @@
         <author>Ron Van den Branden</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="coll"/>
-        <store collection="/db/coll" name="test.xml">
+        <create-collection parent="/db" name="coll-self-axis"/>
+        <store collection="/db/coll-self-axis" name="test.xml">
             <test>test</test>
         </store>
-        <store collection="/db/coll" name="test2.xml">
+        <store collection="/db/coll-self-axis" name="test2.xml">
             <p>Hello <q>world!</q></p>
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/coll-self-axis"/>
     </tearDown>
     <test output="xml">
         <task>[bare context] self axis in location step, abbreviated</task>
         <code><![CDATA[
-            collection('/db/coll')//test/.
+            collection('/db/coll-self-axis')//test/.
             ]]></code>
         <expected>
             <test>test</test>
@@ -57,7 +57,7 @@
     <test output="xml">
         <task>[bare context] self axis in location step, full</task>
         <code><![CDATA[
-            collection('/db/coll')//test/self::*
+            collection('/db/coll-self-axis')//test/self::*
             ]]></code>
         <expected>
             <test>test</test>
@@ -66,7 +66,7 @@
     <test output="xml">
         <task>[bare context] self axis in location step, full with name test</task>
         <code><![CDATA[
-            collection('/db/coll')//test/self::test
+            collection('/db/coll-self-axis')//test/self::test
             ]]></code>
         <expected>
             <test>test</test>
@@ -75,7 +75,7 @@
     <test output="xml">
         <task>[bare context] self axis in predicate, abbreviated</task>
         <code><![CDATA[
-            collection('/db/coll')//test[.]
+            collection('/db/coll-self-axis')//test[.]
             ]]></code>
         <expected>
             <test>test</test>
@@ -84,7 +84,7 @@
     <test output="xml">
         <task>[bare context] self axis in predicate, full</task>
         <code><![CDATA[
-            collection('/db/coll')//test[self::*]
+            collection('/db/coll-self-axis')//test[self::*]
             ]]></code>
         <expected>
             <test>test</test>
@@ -93,7 +93,7 @@
     <test output="xml">
         <task>[bare context] self axis in predicate, full with name test</task>
         <code><![CDATA[
-            collection('/db/coll')//test[self::test]
+            collection('/db/coll-self-axis')//test[self::test]
             ]]></code>
         <expected>
             <test>test</test>
@@ -103,7 +103,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in location step, abbreviated</task>
         <code><![CDATA[
-            (collection('/db/coll')//test/.)
+            (collection('/db/coll-self-axis')//test/.)
             ]]></code>
         <expected>
             <test>test</test>
@@ -112,7 +112,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in location step, full</task>
         <code><![CDATA[
-            (collection('/db/coll')//test/self::*)
+            (collection('/db/coll-self-axis')//test/self::*)
             ]]></code>
         <expected>
             <test>test</test>
@@ -121,7 +121,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in location step, full with name test</task>
         <code><![CDATA[
-            (collection('/db/coll')//test/self::test)
+            (collection('/db/coll-self-axis')//test/self::test)
             ]]></code>
         <expected>
             <test>test</test>
@@ -130,7 +130,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in predicate, abbreviated</task>
         <code><![CDATA[
-            (collection('/db/coll')//test)[.]
+            (collection('/db/coll-self-axis')//test)[.]
             ]]></code>
         <expected>
             <test>test</test>
@@ -139,7 +139,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in predicate, full</task>
         <code><![CDATA[
-            (collection('/db/coll')//test)[self::*]
+            (collection('/db/coll-self-axis')//test)[self::*]
             ]]></code>
         <expected>
             <test>test</test>
@@ -148,7 +148,7 @@
     <test output="xml">
         <task>[parenthesized context] self axis in predicate, full with name test</task>
         <code><![CDATA[
-            (collection('/db/coll')//test)[self::test]
+            (collection('/db/coll-self-axis')//test)[self::test]
             ]]></code>
         <expected>
             <test>test</test>
@@ -232,7 +232,7 @@
     <test output="text">
         <task>If expression with boolean "or" used with bang operator</task>
         <code>
-        let $doc := collection('/db/coll')/p
+        let $doc := collection('/db/coll-self-axis')/p
         return
             $doc/node() ! (
                 if (ancestor::p or ancestor::x) then

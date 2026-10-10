@@ -28,6 +28,8 @@ module namespace t="http://exist-db.org/xquery/test/xqsuite";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+import module namespace system="http://exist-db.org/xquery/system";
+
 declare
     %test:assertXPath("/name[. = 'Item1']")
 function t:xpath() {
@@ -254,4 +256,26 @@ declare
 ')
 function t:assertEquals-normalize-annotation-whitespace() as element(span) {
     <span type="xml">Success!</span>
+};
+
+(:~
+ : A %test:stats test that throws must not leave the recording of statistics switched on for the tests after it.
+ : The two tests below depend on each other and are named so that they run in this order, in declaration order
+ : and in alphabetical order alike.
+ :)
+declare
+    %test:stats
+    %test:assertError("err:FOER0000")
+function t:stats-1-test-that-throws() {
+    error()
+};
+
+(: switching tracing off does not forget what was recorded, so clear first: a call made now is only recorded if tracing is still on :)
+declare
+    %test:assertEquals(0)
+function t:stats-2-tracing-is-off-after-a-test-that-threw() {
+    let $cleared := system:clear-query-trace()
+    (: not a constant: a call on a literal may be evaluated before the query runs and never be traced :)
+    let $call := abs(count((1, 2, 3)))
+    return count(system:query-trace()/*)
 };

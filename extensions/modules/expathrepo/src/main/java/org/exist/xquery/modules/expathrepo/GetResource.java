@@ -65,7 +65,7 @@ public class GetResource extends BasicFunction {
 		Optional<ExistRepository> repo = context.getRepository();
 		if (repo.isPresent()) {
 		    try {
-                for (Packages pp : repo.get().getParentRepo().listPackages()) {
+                for (Packages pp : repo.get().listPackages()) {
                     final Package pkg = pp.latest();
                     if (pkg.getName().equals(pkgName)) {
                         try {

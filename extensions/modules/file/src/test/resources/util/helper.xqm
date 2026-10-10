@@ -33,28 +33,34 @@ declare variable $helper:path-separator := util:system-property("file.separator"
 
 (:
 /db
-    /file-module-test
+    /<the collection passed in>
         /data
             test-data.xml
         test-text.txt
         test-query.xq
         bin
 :)
-declare function helper:setup-db() as empty-sequence() {
+declare function helper:setup-db($collection as xs:string) as empty-sequence() {
     let $_ := (
-        xmldb:create-collection("/db", $fixtures:collection-name),
-        helper:create-db-resource($fixtures:collection, "test-text.txt", $fixtures:TXT),
-        helper:create-db-resource($fixtures:collection, "test-query.xq", $fixtures:XQY),
-        helper:create-db-resource($fixtures:collection, "bin", $fixtures:BIN),
+        helper:create-db-collection($collection),
+        helper:create-db-resource($collection, "test-text.txt", $fixtures:TXT),
+        helper:create-db-resource($collection, "test-query.xq", $fixtures:XQY),
+        helper:create-db-resource($collection, "bin", $fixtures:BIN),
 
-        xmldb:create-collection($fixtures:collection, $fixtures:child-collection-name),
-        helper:create-db-resource($fixtures:child-collection, "test-data.xml", $fixtures:XML)
+        xmldb:create-collection($collection, $fixtures:child-collection-name),
+        helper:create-db-resource($collection || "/" || $fixtures:child-collection-name, "test-data.xml", $fixtures:XML)
     )
     return ()
 };
 
-declare function helper:clear-db() {
-    xmldb:remove($fixtures:collection)
+(: creates a collection directly below /db, given its absolute path :)
+declare function helper:create-db-collection($collection as xs:string) as empty-sequence() {
+    let $_ := xmldb:create-collection("/db", substring-after($collection, "/db/"))
+    return ()
+};
+
+declare function helper:clear-db($collection as xs:string) {
+    xmldb:remove($collection)
 };
 
 declare function helper:create-db-resource($collection as xs:string, $resource as xs:string, $content as item()) as empty-sequence() {
@@ -127,10 +133,6 @@ declare function helper:get-updated-from-sync-result ($result as element(file:sy
 
 declare function helper:list-files-and-directories ($directory as xs:string) as xs:string* {
     file:list($directory)//(file:file|file:directory)/@name/string()
-};
-
-declare function helper:sync-with-options ($directory as xs:string, $options as item()?) as element(file:sync) {
-    file:sync($fixtures:collection, $directory, $options)/*
 };
 
 declare function helper:assert-sync-result (

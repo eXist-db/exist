@@ -36,28 +36,35 @@ declare function lib:path() {
 ]``;
 
 declare variable $test-system-get-module-load-path:main := ``[xquery version "3.1";
-import module namespace lib="//lib" at 'xmldb:exist:///db/test/lib/lib.xqm';
+(: The URI of a static import and the value of an annotation have to be literals: keep them in step with $test-system-get-module-load-path:COLLECTION_NAME. :)
+import module namespace lib="//lib" at 'xmldb:exist:///db/test-module-load-path/lib/lib.xqm';
 
 system:get-module-load-path(),
 lib:path()
 ]``;
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $test-system-get-module-load-path:COLLECTION_NAME := "test-module-load-path";
+
+(:~ Full path of the collection of this file. :)
+declare variable $test-system-get-module-load-path:COLLECTION := "/db/" || $test-system-get-module-load-path:COLLECTION_NAME;
+
 declare
     %test:setUp
 function test-system-get-module-load-path:setup() {
-    let $testCol := xmldb:create-collection("/db", "test")
-    let $indexCol := xmldb:create-collection("/db/test", "lib")
+    let $testCol := xmldb:create-collection("/db", $test-system-get-module-load-path:COLLECTION_NAME)
+    let $indexCol := xmldb:create-collection($test-system-get-module-load-path:COLLECTION, "lib")
     return
         (
-            xmldb:store("/db/test", "main.xq", $test-system-get-module-load-path:main),
-            xmldb:store("/db/test/lib", "lib.xqm", $test-system-get-module-load-path:lib)
+            xmldb:store($test-system-get-module-load-path:COLLECTION, "main.xq", $test-system-get-module-load-path:main),
+            xmldb:store($test-system-get-module-load-path:COLLECTION || "/lib", "lib.xqm", $test-system-get-module-load-path:lib)
         )
 };
 
 declare
     %test:tearDown
 function test-system-get-module-load-path:tearDown() {
-    xmldb:remove("/db/test")
+    xmldb:remove($test-system-get-module-load-path:COLLECTION)
 };
 
 declare
@@ -74,7 +81,7 @@ function test-system-get-module-load-path:in-evaluated-string() {
 };
 
 declare
-    %test:assertEquals("xmldb:exist:///db/test/lib")
+    %test:assertEquals("xmldb:exist:///db/test-module-load-path/lib")
 function test-system-get-module-load-path:in-imported-library() {
     let $eval-load-paths := util:eval($test-system-get-module-load-path:main)
     return tail($eval-load-paths)

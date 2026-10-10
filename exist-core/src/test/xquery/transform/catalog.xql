@@ -99,3 +99,44 @@ function tc:fn-transform-resolves-document-call-via-catalog() {
         "source-node": <in>bonjourno</in>
     })?output
 };
+
+(:~ A collection of its own, so that this file does not depend on the others run beside it. :)
+declare variable $tc:collection-name := "transform-catalog-relative-import";
+declare variable $tc:collection := "/db/" || $tc:collection-name;
+
+declare
+    %test:setUp
+function tc:setup() {
+    xmldb:create-collection("/db", $tc:collection-name),
+    xmldb:store($tc:collection, "lib.xsl",
+        <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+            xmlns:lib="urn:exist-db:test:transform-catalog" exclude-result-prefixes="lib" version="3.0">
+            <xsl:function name="lib:greet">
+                <out>hello</out>
+            </xsl:function>
+        </xsl:stylesheet>, "application/xslt+xml"),
+    xmldb:store($tc:collection, "main.xsl",
+        <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+            xmlns:lib="urn:exist-db:test:transform-catalog" exclude-result-prefixes="lib" version="3.0">
+            <xsl:import href="lib.xsl"/>
+            <xsl:template match="/">
+                <xsl:sequence select="lib:greet()"/>
+            </xsl:template>
+        </xsl:stylesheet>, "application/xslt+xml")
+};
+
+declare
+    %test:tearDown
+function tc:cleanup() {
+    xmldb:remove($tc:collection)
+};
+
+(:~
+ : A relative xsl:import in a stylesheet stored in the database resolves against the stylesheet's
+ : own location, although the system catalog is asked first and is configured here.
+ :)
+declare
+    %test:assertEquals("<out>hello</out>")
+function tc:legacy-transform-resolves-relative-import-in-database() {
+    transform:transform(<in>bonjourno</in>, xs:anyURI("xmldb:exist://" || $tc:collection || "/main.xsl"), ())
+};

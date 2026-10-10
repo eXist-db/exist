@@ -22,6 +22,7 @@
 
 package org.exist.test.runner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -32,7 +33,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.opentest4j.AssertionFailedError;
+import org.junit.jupiter.api.AssertionFailureBuilder;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -46,6 +47,9 @@ import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
 
 public class ExtTestFailureFunction extends JUnitIntegrationFunction {
+
+    /** the most characters of an expected or an actual value that go into a failure */
+    static final int MAX_VALUE_LENGTH = 4000;
 
     @Nullable
     private final Path sourcePath;
@@ -83,12 +87,17 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             // Short one-line for logs (filename only)
             final String shortFileName = fileName != null ? lastPathSegment(fileName) : null;
             final String shortLocation = shortFileName != null ? shortFileName + (lineNumber > 0 ? ":" + lineNumber : "") : null;
-            String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
-            if (shortFileName != null && lineNumber > 0) {
-                oneLine += "\n\tat (" + shortFileName + ":" + lineNumber + ")";
-            }
+            final String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
             XQueryFailureLog.log(oneLine);
-            final AssertionError failureReason = new AssertionFailedError(oneLine, expectedToString(expected), actualToString(actual));
+
+            // The builder puts the two values into the message too ("... ==> expected: <x> but was: <y>"),
+            // because the surefire report and the console keep only the message and the stack trace, and drop
+            // the values that an AssertionFailedError carries separately (which only an IDE shows).
+            final AssertionError failureReason = AssertionFailureBuilder.assertionFailure()
+                    .message(oneLine)
+                    .expected(abbreviate(expectedToString(expected)))
+                    .actual(abbreviate(actualToString(actual)))
+                    .build();
 
             // Stack trace for IDE navigation. IntelliJ linkifies short "filename:line" in stack traces
             // but not absolute paths; use short filename so the stack line becomes clickable.
@@ -107,6 +116,19 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * @param value an expected or actual value as a string
+     *
+     * @return the value, or its start and how long it was in all if it is longer than {@link #MAX_VALUE_LENGTH},
+     * so that one very large result cannot flood the report
+     */
+    static String abbreviate(final String value) {
+        if (value.length() <= MAX_VALUE_LENGTH) {
+            return value;
+        }
+        return StringUtils.abbreviate(value, "... [truncated, " + value.length() + " characters in all]", MAX_VALUE_LENGTH);
     }
 
     /**

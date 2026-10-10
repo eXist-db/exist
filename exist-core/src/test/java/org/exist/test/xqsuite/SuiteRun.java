@@ -26,9 +26,11 @@ import org.exist.xquery.XQueryWatchDog;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.reporting.ReportEntry;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -38,6 +40,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Runs the test files of one {@link XQSuite} against a running database, and fails any file that hangs.
@@ -59,6 +62,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * shutting down the engine bounds that shutdown, see {@link XQSuiteTestEngine}.
  */
 final class SuiteRun {
+    /** how many of the slowest files the time summary names */
+    private static final int SLOWEST_FILES_SHOWN = 3;
+
     private final SuiteDescriptor suite;
     private final EngineExecutionListener listener;
     private final BrokerPool brokerPool;
@@ -99,6 +105,7 @@ final class SuiteRun {
             for (final FileRun run : runs) {
                 run.awaitSettled();
             }
+            printTimeSummary();
         } finally {
             watcher.interrupt();
             threads.shutdown();
@@ -107,16 +114,76 @@ final class SuiteRun {
     }
 
     /**
+     * Says once, when the suite is done, how long its files took. Printing a line as each file ends would
+     * put it into the output of whichever test is running at that moment, which with files running side by
+     * side is a test of another file; the per-file times stay available as report entries.
+     */
+    private void printTimeSummary() {
+        final List<FileTime> times = runs.stream()
+                .filter(run -> run.millis >= 0)
+                .map(run -> new FileTime(run.file.getDisplayName(), run.millis))
+                .toList();
+        if (!times.isEmpty()) {
+            System.out.println(timeSummary(suite.suiteClass().getSimpleName(), times, SLOWEST_FILES_SHOWN));
+        }
+    }
+
+    /** how long one file of a suite took */
+    record FileTime(String file, long millis) {
+    }
+
+    /**
+     * @param suiteName the simple name of the suite class
+     * @param times the time of each file that completed
+     * @param slowest how many of the slowest files to name
+     *
+     * @return one line: the number of files, the time they took in all, and the slowest files
+     */
+    static String timeSummary(final String suiteName, final List<FileTime> times, final int slowest) {
+        final long total = times.stream().mapToLong(FileTime::millis).sum();
+        final String slowestFiles = times.stream()
+                .sorted(Comparator.comparingLong(FileTime::millis).reversed().thenComparing(FileTime::file))
+                .limit(slowest)
+                .map(t -> t.file() + " " + t.millis() + " ms")
+                .collect(Collectors.joining(", "));
+        return "XQSuite " + suiteName + ": " + times.size() + (times.size() == 1 ? " file, " : " files, ")
+                + total + " ms in all, slowest: " + slowestFiles;
+    }
+
+    /**
      * Give the threads of abandoned files a chance to stop before the database is shut down under them.
      */
     private void awaitAbandonedThreads() throws InterruptedException {
-        final long deadline = System.nanoTime() + settings.hangGrace().toNanos();
-        for (final FileRun run : runs) {
-            if (run.state.get() == State.ABANDONED && run.thread != null) {
-                final long remainingMillis = Math.max(0, (deadline - System.nanoTime()) / 1_000_000);
-                run.thread.join(remainingMillis);
+        final List<Thread> abandoned = runs.stream()
+                .filter(run -> run.state.get() == State.ABANDONED && run.thread != null)
+                .map(run -> run.thread)
+                .toList();
+        awaitTermination(abandoned, settings.hangGrace());
+    }
+
+    /**
+     * Waits for the threads to end, for at most {@code grace} in all, not for each of them.
+     * <p>
+     * A thread that is stuck in a lock does not end when it is interrupted, so the first such thread uses up
+     * the whole time. The threads after it must then not be waited for at all: {@code Thread.join(0)} does not
+     * mean "do not wait", it means "wait forever".
+     *
+     * @param threads the threads to wait for
+     * @param grace how long to wait in all
+     *
+     * @return true if all the threads have ended
+     */
+    static boolean awaitTermination(final List<Thread> threads, final Duration grace) throws InterruptedException {
+        final long deadline = System.nanoTime() + grace.toNanos();
+        boolean allEnded = true;
+        for (final Thread thread : threads) {
+            final long remainingNanos = deadline - System.nanoTime();
+            if (remainingNanos > 0) {
+                thread.join(Duration.ofNanos(remainingNanos));
             }
+            allEnded &= !thread.isAlive();
         }
+        return allEnded;
     }
 
     private void watch() {
@@ -145,6 +212,8 @@ final class SuiteRun {
         private final CountDownLatch settled = new CountDownLatch(1);
         private volatile long lastActivityNanos = System.nanoTime();
         private volatile Thread thread;
+        /** how long the file took, or -1 while it has not completed (an abandoned file never does) */
+        private volatile long millis = -1;
 
         FileRun(final FileDescriptor file) {
             this.file = file;
@@ -164,6 +233,7 @@ final class SuiteRun {
             thread = Thread.currentThread();
             touch();
             state.set(State.RUNNING);
+            final long startNanos = System.nanoTime();
             listener.executionStarted(file);
 
             Throwable failure = null;
@@ -176,6 +246,8 @@ final class SuiteRun {
             // the watcher may have abandoned the file meanwhile, in which case everything has been reported
             if (state.compareAndSet(State.RUNNING, State.DONE)) {
                 events.completeOutstanding(failure);
+                millis = Duration.ofNanos(System.nanoTime() - startNanos).toMillis();
+                listener.reportingEntryPublished(file, ReportEntry.from("file-time-ms", Long.toString(millis)));
                 listener.executionFinished(file, failure == null ? TestExecutionResult.successful() : TestExecutionResult.failed(failure));
                 settle();
             }

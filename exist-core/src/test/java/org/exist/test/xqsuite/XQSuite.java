@@ -56,9 +56,34 @@ public @interface XQSuite {
     /**
      * Run the test files of the suite concurrently, against the one embedded database, with at most
      * {@link XQSuiteSettings#PARALLELISM} files at a time. The tests within a file always run one
-     * after the other. Only set this if the files do not depend on or disturb each other's data.
+     * after the other.
+     * <p>
+     * Only set this if the files do not depend on or disturb each other's data:
+     * <ul>
+     * <li>A file that stores data uses a collection name that no other file uses, derived from its own
+     * file name (for example {@code test-guest} for {@code guest.xql}), and does the same for any other
+     * global name it creates, such as index fields or accounts. The name is declared once, as a variable
+     * of the file, and used everywhere else; only the URI of a static import and the values of annotations
+     * have to be literals.</li>
+     * <li>It does not rely on database-wide state such as accounts or the contents of {@code /db}.</li>
+     * <li>Its queries are scoped to its own collection. An index function such as {@code range:field-eq}
+     * or {@code ft:query} called without a context searches every collection that has the index, so it
+     * also finds the data of another file that happens to run at the same moment. A second collection
+     * with the same index and other data in the setUp of the file (a "bystander") makes such a query
+     * fail every time and not only occasionally.</li>
+     * </ul>
      *
      * @return true to run the files of the suite concurrently
      */
     boolean parallel() default false;
+
+    /**
+     * Marks a suite that only exists to be run by a test of the engine itself (a file that hangs, for
+     * example), with {@link XQSuiteSettings#FIXTURES} set. Any other run, however it selects classes (a
+     * {@code -Dtest} wildcard that also matches nested classes, a package or classpath scan of an IDE),
+     * skips it, so that it is not reported as a failing suite of the module.
+     *
+     * @return true for a suite that is only run by the test that sets it up
+     */
+    boolean fixture() default false;
 }

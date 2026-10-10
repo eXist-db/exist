@@ -23,7 +23,6 @@ package org.exist.xslt;
 
 import org.exist.repo.PkgXsltModuleURIResolver;
 import org.exist.storage.BrokerPool;
-import org.exist.util.EXistURISchemeURIResolver;
 import org.exist.util.SaxonConfiguration;
 import org.exist.util.URIResolverHierarchy;
 import org.xmlresolver.Resolver;
@@ -59,18 +58,19 @@ public class XsltURIResolverHelper {
         // HTTP requests for registered package names (e.g. http://www.functx.com/functx.xsl)
         brokerPool.getExpathRepo().map(repo -> resolvers.add(new PkgXsltModuleURIResolver(repo)));
 
-        if (base != null) {
-            // database resolver
-            resolvers.add(new EXistURIResolver(brokerPool, base));
-        }
-
         // System catalog (webapp/WEB-INF/catalog.xml by default, see conf.xml's entity-resolver
         // config) -- lets xsl:import/xsl:include be redirected to a local resource the same way
-        // catalogs already work for the Xerces/JAXP validation pipeline. Tried before the default
-        // resolver so a catalog-redirected local copy wins over a live network fetch (#350).
+        // catalogs already work for the Xerces/JAXP validation pipeline. Tried before the database
+        // resolver, which also fetches absolute URLs over the network, and before the default resolver,
+        // so a catalog-redirected local copy wins over a live network fetch (#350).
         final Resolver catalogResolver = SaxonConfiguration.resolveCatalogResolver(brokerPool.getConfiguration());
         if (catalogResolver != null) {
             resolvers.add(catalogResolver);
+        }
+
+        if (base != null) {
+            // database resolver
+            resolvers.add(new EXistURIResolver(brokerPool, base));
         }
 
         // default resolver

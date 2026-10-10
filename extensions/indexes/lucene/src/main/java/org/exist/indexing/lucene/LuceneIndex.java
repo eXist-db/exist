@@ -26,7 +26,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.exist.indexing.lucene.analyzers.FieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -68,8 +67,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Directory taxoDirectory;
 
     protected Analyzer defaultAnalyzer;
-    protected Map<String, Analyzer> fieldAnalyzers;
-    protected PerFieldAnalyzerWrapper fieldAnalyzerWrapper;
+    protected FieldAnalyzerWrapper fieldAnalyzerWrapper;
 
     protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
@@ -134,8 +132,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             directory = FSDirectory.open(dir);
             taxoDirectory = FSDirectory.open(taxoDir);
 
-            fieldAnalyzers = new HashMap<>();
-            fieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, fieldAnalyzers);
+            fieldAnalyzerWrapper = new FieldAnalyzerWrapper(defaultAnalyzer);
             final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(fieldAnalyzerWrapper);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
@@ -214,9 +211,23 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
      * with custom analyzers (e.g. WhitespaceAnalyzer) per config.
      */
     public void addFieldAnalyzer(String field, Analyzer analyzer) {
-        if (fieldAnalyzers != null && field != null && analyzer != null) {
-            fieldAnalyzers.put(field, analyzer);
+        if (fieldAnalyzerWrapper != null && field != null && analyzer != null) {
+            fieldAnalyzerWrapper.addAnalyzer(field, analyzer);
         }
+    }
+
+    /**
+     * Adds a document with the given analyzers for its fields, which are used for this document only and
+     * whatever other threads register for the same field names in the meantime.
+     *
+     * @param writer the index writer
+     * @param document the document to add
+     * @param analyzers the analyzer of each field of the document that has one of its own
+     *
+     * @throws IOException if the document cannot be added
+     */
+    public void addDocument(final IndexWriter writer, final Iterable<? extends IndexableField> document, final Map<String, Analyzer> analyzers) throws IOException {
+        fieldAnalyzerWrapper.withAnalyzers(analyzers, () -> writer.addDocument(document));
     }
 
     public IndexWriter getWriter() throws IOException {

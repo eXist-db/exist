@@ -98,28 +98,28 @@ function pc:cleanup() {
 declare
 %test:assertEquals(2)
 function pc:prefixed-attribute-indexed() {
-    count(range:index-keys-for-field("wwp-attr", function($k, $n) { $k }, 10))
+    count(collection($pc:COLLECTION)/range:index-keys-for-field("wwp-attr", function($k, $n) { $k }, 10))
 };
 
 (: Unprefixed attribute condition should also index matching elements :)
 declare
 %test:assertEquals(2)
 function pc:ncname-attribute-indexed() {
-    count(range:index-keys-for-field("ncname-attr", function($k, $n) { $k }, 10))
+    count(collection($pc:COLLECTION)/range:index-keys-for-field("ncname-attr", function($k, $n) { $k }, 10))
 };
 
 (: Prefixed attribute condition should return correct values :)
 declare
 %test:assertXPath("$result = 'A Peep at the Pilgrims' and $result = 'A peep at the pilgrims in sixteen hundred thirty-six.'")
 function pc:prefixed-attribute-values() {
-    range:index-keys-for-field("wwp-attr", function($k, $n) { $k }, 10)
+    collection($pc:COLLECTION)/range:index-keys-for-field("wwp-attr", function($k, $n) { $k }, 10)
 };
 
 (: Unprefixed attribute condition should return correct values :)
 declare
 %test:assertXPath("$result = 'A Peep at the Pilgrims' and $result = 'A peep at the pilgrims in sixteen hundred thirty-six.'")
 function pc:ncname-attribute-values() {
-    range:index-keys-for-field("ncname-attr", function($k, $n) { $k }, 10)
+    collection($pc:COLLECTION)/range:index-keys-for-field("ncname-attr", function($k, $n) { $k }, 10)
 };
 
 (: Optimizer should rewrite predicate on prefixed attribute :)

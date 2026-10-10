@@ -36,6 +36,8 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $syse:suite := "syse";
 
+declare variable $syse:collection := "/db/file-module-test-sync-serialize";
+
 declare variable $syse:simple-file-name := "simple-data.xml";
 declare variable $syse:complex-file-name := "complex-data.xml";
 
@@ -43,9 +45,9 @@ declare
     %test:setUp
 function syse:setup() as empty-sequence() {
     let $_ := (
-        xmldb:create-collection("/db", $fixtures:collection-name),
-        helper:create-db-resource($fixtures:collection, $syse:simple-file-name, $fixtures:XML),
-        helper:create-db-resource($fixtures:collection, $syse:complex-file-name, $fixtures:COMPLEX_XML)
+        helper:create-db-collection($syse:collection),
+        helper:create-db-resource($syse:collection, $syse:simple-file-name, $fixtures:XML),
+        helper:create-db-resource($syse:collection, $syse:complex-file-name, $fixtures:COMPLEX_XML)
     )
     return ()
 };
@@ -53,7 +55,7 @@ function syse:setup() as empty-sequence() {
 declare
     %test:tearDown
 function syse:tear-down() {
-    helper:clear-db(),
+    helper:clear-db($syse:collection),
     helper:clear-suite-fs($syse:suite)
 };
 
@@ -62,7 +64,7 @@ declare
 function syse:defaults() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         ()
     )
@@ -86,7 +88,7 @@ declare
 function syse:indent-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"indent": false()}
     )
@@ -110,7 +112,7 @@ declare
 function syse:indent-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"indent": true()}
     )
@@ -134,7 +136,7 @@ declare
 function syse:omit-xml-declaration-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"omit-xml-declaration": false()}
     )
@@ -158,7 +160,7 @@ declare
 function syse:omit-xml-declaration-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"omit-xml-declaration": true()}
     )
@@ -180,7 +182,7 @@ declare
 function syse:unindented-no-declaration() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{
             "omit-xml-declaration": true(),
@@ -205,7 +207,7 @@ declare
 function syse:insert-final-newline-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{ xs:QName("exist:insert-final-newline"): true() }
     )
@@ -229,7 +231,7 @@ declare
 function syse:insert-final-newline-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{ xs:QName("exist:insert-final-newline"): false() }
     )

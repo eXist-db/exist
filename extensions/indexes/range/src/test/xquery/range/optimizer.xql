@@ -186,7 +186,7 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
-(: Minimal config for range-test-range (placeName only) – ot:equality-field-nested-explicit uses this; rt:equality-field-nested passes here. :)
+(: Minimal config for range-optimizer-copy (placeName only) – ot:equality-field-nested-explicit uses this; rt:equality-field-nested passes here. :)
 declare variable $ot:RANGE_TEST_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -201,6 +201,12 @@ declare variable $ot:RANGE_TEST_CONFIG :=
         </index>
     </collection>;
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $ot:COPY_COLLECTION_NAME := "range-optimizer-copy";
+
+(:~ Full path of the collection of this file. :)
+declare variable $ot:COPY_COLLECTION := "/db/" || $ot:COPY_COLLECTION_NAME;
+
 declare
     %test:setUp
 function ot:setup() {
@@ -213,12 +219,12 @@ function ot:setup() {
      xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
      xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS),
      xmldb:reindex($ot:COLLECTION),
-     (: range-test-range for ot:equality-field-nested-explicit – rt:equality-field-nested passes here :)
-     xmldb:create-collection("/db/system/config/db", "range-test-range"),
-     xmldb:create-collection("/db", "range-test-range"),
-     xmldb:store("/db/system/config/db/range-test-range", "collection.xconf", $ot:RANGE_TEST_CONFIG),
-     xmldb:store("/db/range-test-range", "nested.xml", $ot:DATA_NESTED),
-     xmldb:reindex("/db/range-test-range"))
+     (: range-optimizer-copy for ot:equality-field-nested-explicit – rt:equality-field-nested passes here :)
+     xmldb:create-collection("/db/system/config/db", $ot:COPY_COLLECTION_NAME),
+     xmldb:create-collection("/db", $ot:COPY_COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $ot:COPY_COLLECTION_NAME, "collection.xconf", $ot:RANGE_TEST_CONFIG),
+     xmldb:store($ot:COPY_COLLECTION, "nested.xml", $ot:DATA_NESTED),
+     xmldb:reindex($ot:COPY_COLLECTION))
 };
 
 declare
@@ -226,8 +232,8 @@ declare
 function ot:cleanup() {
     xmldb:remove($ot:COLLECTION),
     xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME),
-    xmldb:remove("/db/range-test-range"),
-    xmldb:remove("/db/system/config/db/range-test-range")
+    xmldb:remove($ot:COPY_COLLECTION),
+    xmldb:remove("/db/system/config/db/" || $ot:COPY_COLLECTION_NAME)
 };
 
 declare
@@ -604,7 +610,7 @@ function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
 };
 
-(: Path form: @type, @subtype, [.=$name] should optimize to range:field-eq. Uses range-test-range (same config/data as explicit). :)
+(: Path form: @type, @subtype, [.=$name] should optimize to range:field-eq. Uses range-optimizer-copy (same config/data as explicit). :)
 declare
     %test:args("main", "official", "Hofthiergarten")
     %test:assertEquals("Hofthiergarten")
@@ -613,7 +619,7 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    collection($ot:COPY_COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
 
 (:~
@@ -621,7 +627,7 @@ function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $na
  : Uses explicit range:field-eq; path form in ot:equality-field-nested should optimize to this.
  : @see ot:equality-field-nested (path form)
  : @see rt:equality-field-nested in range.xql (explicit form on range-test-range)
- : Uses range-test-range (same config/data) to verify the pattern; optimizertest may not have placeName indexed yet when this runs.
+ : Uses range-optimizer-copy (same config/data) to verify the pattern; optimizertest may not have placeName indexed yet when this runs.
  :)
 declare
     %test:args("main", "official", "Hofthiergarten")
@@ -631,8 +637,8 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function ot:equality-field-nested-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    (: Use range-test-range: same placeName config and DATA_NESTED as ot; rt:equality-field-nested passes there :)
-    collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    (: Use range-optimizer-copy: same placeName config and DATA_NESTED as ot; rt:equality-field-nested passes there :)
+    collection($ot:COPY_COLLECTION)//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
 };
 
 (:~
@@ -646,8 +652,8 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten", "Dorfprozelten")
 function ot:equality-field-nested-path-equals-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    let $path-result := collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
-    let $explicit-result := collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    let $path-result := collection($ot:COPY_COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    let $explicit-result := collection($ot:COPY_COLLECTION)//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
     return ($path-result, $explicit-result)
 };
 

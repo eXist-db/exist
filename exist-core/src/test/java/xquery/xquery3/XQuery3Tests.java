@@ -23,12 +23,15 @@ package xquery.xquery3;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+/**
+ * The files of this suite run concurrently, see {@link org.exist.test.xqsuite.XQSuite#parallel()} for what they must not share.
+ */
+@XQSuite(value = {
         "src/test/xquery/xquery3",
         "src/test/xquery/xquery3/transform",
         "src/test/xquery/transform",
         // To add an individual test or only run a specific set of tests -
         //"src/test/xquery/xquery3/serialize.xql",
-})
+}, parallel = true)
 public class XQuery3Tests {
 }

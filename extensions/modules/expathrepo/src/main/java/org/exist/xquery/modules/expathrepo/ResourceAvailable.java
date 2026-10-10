@@ -75,7 +75,7 @@ public class ResourceAvailable extends BasicFunction {
         }
 
         try {
-            for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+            for (final Packages pp : repo.get().listPackages()) {
                 final Package pkg = pp.latest();
                 if (pkg.getName().equals(pkgName)) {
                     try {

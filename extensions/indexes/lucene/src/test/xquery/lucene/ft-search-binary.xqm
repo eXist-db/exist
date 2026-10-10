@@ -141,16 +141,18 @@ declare %test:assertEquals("/db/lucene-test-binary/test.txt") function ftb:check
 
 (: --- Plain-ft-functions (term range, get-field, search) --- :)
 declare %test:assertEquals("/db/lucene-test-binary-plain/data1.txt /db/lucene-test-binary-plain/data2.txt") function ftb:search-title-text() {
-    string-join(data(ft:search($ftb:COLL_PLAIN || "/", "title:text")//@uri), ' ')
+    (: the hits come in the order of their score, which depends on the statistics of the whole index, so the uris are sorted :)
+    string-join(sort(data(ft:search($ftb:COLL_PLAIN || "/", "title:text")//@uri)), ' ')
 };
 
-(: Plain-ft-functions parity: explicit root /db path search :)
+(: Plain-ft-functions parity: explicit root /db path search; only the hits in this file's collection are kept, because
+   other files index documents of their own, and the uris are sorted, see search-title-text :)
 declare %test:assertEquals("/db/lucene-test-binary-plain/data1.txt /db/lucene-test-binary-plain/data2.txt") function ftb:search-title-text-db() {
-    string-join(data(ft:search("/db/", "title:text")//@uri), ' ')
+    string-join(sort(data(ft:search("/db/", "title:text")//@uri[starts-with(., $ftb:COLL_PLAIN || "/")])), ' ')
 };
 
 declare %test:assertEquals("/db/lucene-test-binary-plain/data3.txt /db/lucene-test-binary-plain/data4.txt") function ftb:search-title-foobar() {
-    string-join(data(ft:search($ftb:COLL_PLAIN || "/", "title:foobar")//@uri), ' ')
+    string-join(sort(data(ft:search($ftb:COLL_PLAIN || "/", "title:foobar")//@uri)), ' ')
 };
 
 (: Plain-ft-functions: ft:search on a single doc should only return that doc :)
@@ -159,7 +161,7 @@ declare %test:assertEquals("/db/lucene-test-binary-plain/data3.txt") function ft
 };
 
 declare %test:assertEquals("/db/lucene-test-binary-plain/data3.txt /db/lucene-test-binary-plain/data4.txt") function ftb:search-title-foobar-two-paths() {
-    string-join(data(ft:search(($ftb:COLL_PLAIN || "/data3.txt", $ftb:COLL_PLAIN || "/data4.txt"), "title:foobar")//@uri), ' ')
+    string-join(sort(data(ft:search(($ftb:COLL_PLAIN || "/data3.txt", $ftb:COLL_PLAIN || "/data4.txt"), "title:foobar")//@uri)), ' ')
 };
 
 declare %test:assertEquals("/db/lucene-test-binary-plain/data4.txt") function ftb:search-para-foobaar() {

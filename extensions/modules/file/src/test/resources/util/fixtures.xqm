@@ -111,10 +111,7 @@ declare variable $fixtures:mod-date-2 := $fixtures:now + xs:dayTimeDuration('PT2
 
 (: collections :)
 
-declare variable $fixtures:collection-name := "file-module-test";
 declare variable $fixtures:child-collection-name := "data";
-declare variable $fixtures:collection := "/db/" || $fixtures:collection-name;
-declare variable $fixtures:child-collection := $fixtures:collection || "/" || $fixtures:child-collection-name;
 
 (: file sync results :)
 

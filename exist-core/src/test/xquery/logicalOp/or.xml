@@ -29,8 +29,8 @@
         <author>Csaba Dery</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="test"/>
-        <store collection="/db/test" name="text1.xml">
+        <create-collection parent="/db" name="test-or"/>
+        <store collection="/db/test-or" name="text1.xml">
 			<group id="group2">
     			<msg id="msg1">
         			<text>Context</text>
@@ -40,7 +40,7 @@
     			</msg>
 			</group>
         </store>
-        <store collection="/db/test" name="text2.xml">
+        <store collection="/db/test-or" name="text2.xml">
 			<group id="group1">
     			<msg id="msg1">
         			<text>Context</text>
@@ -52,17 +52,17 @@
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/test"/>
+        <remove-collection collection="/db/test-or"/>
     </tearDown>
     <test output="text">
         <task>| construction</task>
-        <code>count((collection("/db/test")/group[@id="group1"] | collection("/db/test")/group[@id="group2"])/msg[@owner="owner" or not(@owner)])</code>
+        <code>count((collection("/db/test-or")/group[@id="group1"] | collection("/db/test-or")/group[@id="group2"])/msg[@owner="owner" or not(@owner)])</code>
         <expected>3</expected>
     </test>
     <!-- 
     <test output="text">
         <task>or construction</task>
-        <code>count(collection("/db/test")/group[@id="group1" or @id="group2"]/msg[@owner="owner" or not(@owner)])</code>
+        <code>count(collection("/db/test-or")/group[@id="group1" or @id="group2"]/msg[@owner="owner" or not(@owner)])</code>
         <expected>3</expected>
     </test>
      -->

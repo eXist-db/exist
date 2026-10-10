@@ -34,10 +34,16 @@ module namespace ho = "http://exist-db.org/xquery/test/higher-order";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 
+(:~ Name of the collection of this file, unique among the files of the suite. :)
+declare variable $ho:COLLECTION_NAME := "xq3-higher-order";
+
+(:~ Full path of the collection of this file. :)
+declare variable $ho:COLLECTION := "/db/" || $ho:COLLECTION_NAME;
+
 declare
     %test:setUp
 function ho:setup() {
-    let $col := xmldb:create-collection("/db", "xq3-test")
+    let $col := xmldb:create-collection("/db", $ho:COLLECTION_NAME)
     return
         xmldb:store($col, "test1.xql",
             'module namespace ex2="http://exist-db.org/xquery/ex2";
@@ -56,7 +62,7 @@ declare function ex2:fold-left(
 declare
     %test:tearDown
 function ho:cleanup() {
-    xmldb:remove("/db/xq3-test")
+    xmldb:remove($ho:COLLECTION)
 };
 
 declare
@@ -300,7 +306,7 @@ declare
 function ho:calling-function-in-imported-module() {
     util:eval('
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist://' || $ho:COLLECTION || '/test1.xql";
 
 let $f1 := ex2:fold-left#3
 return
@@ -419,7 +425,7 @@ function ho:fn-function-lookup-on-imported-module() {
     util:eval('xquery version "3.0";
 
 import module namespace ex2="http://exist-db.org/xquery/ex2"
-at "xmldb:exist:///db/xq3-test/test1.xql";
+at "xmldb:exist://' || $ho:COLLECTION || '/test1.xql";
 
 let $f1 := function-lookup(xs:QName("ex2:fold-left"), 3)
 return
