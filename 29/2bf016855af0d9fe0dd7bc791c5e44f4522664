@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteCancellationTest.java
+  s_6df02666b194e3::t_0a709e324ff548 56,61,104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "292bf016855af0d9fe0dd7bc791c5e44f4522664",
+  "prompts": {},
+  "sessions": {
+    "s_6df02666b194e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "772d4147-37e7-43d5-89e9-cf664ce9e0c8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
