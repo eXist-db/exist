@@ -39,36 +39,37 @@ class XQSuiteTestEngineTest {
 
     private static final String FIXTURES = "src/test/resources/org/exist/test/runner/";
 
-    @XQSuite(FIXTURES + "single-test.xqm")
+    @XQSuite(value = FIXTURES + "single-test.xqm", fixture = true)
     static class SingleTest {
     }
 
-    @XQSuite(FIXTURES + "failing-assertion.xqm")
+    @XQSuite(value = FIXTURES + "failing-assertion.xqm", fixture = true)
     static class FailingAssertion {
     }
 
-    @XQSuite(FIXTURES + "failing-both.xqm")
+    @XQSuite(value = FIXTURES + "failing-both.xqm", fixture = true)
     static class FailingBoth {
     }
 
-    @XQSuite(FIXTURES + "failing-serialization.xqm")
+    @XQSuite(value = FIXTURES + "failing-serialization.xqm", fixture = true)
     static class FailingSerialization {
     }
 
-    @XQSuite(FIXTURES + "no-tests.xqm")
+    @XQSuite(value = FIXTURES + "no-tests.xqm", fixture = true)
     static class NoTests {
     }
 
-    @XQSuite(FIXTURES + "hyphenated-prefix.xqm")
+    @XQSuite(value = FIXTURES + "hyphenated-prefix.xqm", fixture = true)
     static class HyphenatedPrefix {
     }
 
-    @XQSuite("src/test/resources/does/not/exist.xqm")
+    @XQSuite(value = "src/test/resources/does/not/exist.xqm", fixture = true)
     static class MissingFile {
     }
 
     private static EngineExecutionResults run(final Class<?> suite) {
-        return EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite)).execute();
+        return EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite))
+                .configurationParameter(XQSuiteSettings.FIXTURES, "true").execute();
     }
 
     private static List<Throwable> failures(final EngineExecutionResults results) {
