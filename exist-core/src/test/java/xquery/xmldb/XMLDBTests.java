@@ -23,8 +23,8 @@ package xquery.xmldb;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+@XQSuite(value = {
         "src/test/xquery/xmldb"
-})
+}, parallel = true)
 public class XMLDBTests {
 }
