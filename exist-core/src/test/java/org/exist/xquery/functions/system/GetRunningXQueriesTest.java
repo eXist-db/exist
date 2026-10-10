@@ -21,17 +21,16 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.IOException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class GetRunningXQueriesTest {
 
@@ -39,11 +38,11 @@ public class GetRunningXQueriesTest {
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void caller() throws XMLDBException, XpathException, IOException, SAXException {
+    void caller() throws XMLDBException {
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery("system:get-running-xqueries()");
         assertNotNull(result);
         final String resultDoc = (String) result.getResource(0).getContent();
 
-        assertXpathEvaluatesTo("1", "count(//@caller)", resultDoc);
+        assertThat(resultDoc, hasXPath("count(//@caller)", equalTo("1")));
     }
 }

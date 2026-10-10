@@ -67,14 +67,14 @@ public class StartupLockingTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach
-    public void addListener() {
+    void addListener() {
         lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
         while(!lockCountListener.isRegistered()) {}
     }
 
     @AfterEach
-    public void removeListener() {
+    void removeListener() {
         if (lockCountListener.isRegistered()) {
             lockTable.deregisterListener(lockCountListener);
             while (lockCountListener.isRegistered()) {}
@@ -90,7 +90,7 @@ public class StartupLockingTest {
      *   2) A bug has been introduced in {@link org.exist.storage.lock.LockManager}
      */
     @org.junit.jupiter.api.Test
-    public void noCollectionLocksAfterStartup() throws InterruptedException {
+    void noCollectionLocksAfterStartup() throws InterruptedException {
         lockTable.deregisterListener(lockCountListener);
 
         // wait for the listener to be deregistered
@@ -110,7 +110,7 @@ public class StartupLockingTest {
      * as before the call was made
      */
     @org.junit.jupiter.api.Test
-    public void getOrCreateCollectionDoesNotGainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
+    void getOrCreateCollectionDoesNotGainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
         lockTable.deregisterListener(lockCountListener);
 
         // wait for the listener to be deregistered

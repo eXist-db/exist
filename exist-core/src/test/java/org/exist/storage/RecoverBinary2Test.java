@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RecoverBinary2Test {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static Path getBinaryResourcesDir() {
@@ -63,7 +63,7 @@ public class RecoverBinary2Test {
     }
 
     @Test
-    public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -166,7 +166,7 @@ public class RecoverBinary2Test {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb(true);
     }
 

@@ -32,7 +32,6 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,16 +63,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class RecoverBinaryTest extends AbstractRecoverTest {
 
     @TempDir
-    public static File temporaryFolder;
+    static Path temporaryFolder;
     private static Path testFile1 = null;
     private static Path testFile2 = null;
 
     @BeforeAll
-    public static void storeTempBinaryDocs() throws IOException {
-        testFile1 = temporaryFolder.toPath().resolve("blob1.bin");
+    static void storeTempBinaryDocs() throws IOException {
+        testFile1 = temporaryFolder.resolve("blob1.bin");
         Files.write(testFile1, Arrays.asList("blob1"), CREATE_NEW);
 
-        testFile2 = temporaryFolder.toPath().resolve("blob2.bin");
+        testFile2 = temporaryFolder.resolve("blob2.bin");
         Files.write(testFile2, Arrays.asList("blob2"), CREATE_NEW);
     }
 

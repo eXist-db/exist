@@ -240,7 +240,7 @@ public class XQueryTrigger2Test {
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
     @BeforeEach
-    public void setup() throws XMLDBException {
+    void setup() throws XMLDBException {
         CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -262,7 +262,7 @@ public class XQueryTrigger2Test {
     }
 
     @AfterEach
-    public void cleanup() throws XMLDBException {
+    void cleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
 
@@ -273,7 +273,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by storing a new Document  */
     @Test
-    public void documentCreate() throws XMLDBException {
+    void documentCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -300,7 +300,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Document Update */
     @Test
-    public void documentUpdate() throws XMLDBException {
+    void documentUpdate() throws XMLDBException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -337,7 +337,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Document Delete */
     @Test
-    public void documentDelete() throws XMLDBException {
+    void documentDelete() throws XMLDBException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -370,9 +370,9 @@ public class XQueryTrigger2Test {
         assertEquals(4, result.getSize());
     }
 
-	/** test a trigger fired by creating a new Binary Document  */
+    /** test a trigger fired by creating a new Binary Document  */
     @Test
-    public void documentBinaryCreate() throws XMLDBException {
+    void documentBinaryCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -402,7 +402,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Binary Document Delete */
     @Test
-    public void documentBinaryDelete() throws XMLDBException {
+    void documentBinaryDelete() throws XMLDBException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -440,7 +440,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionCreate() throws XMLDBException {
+    void collectionCreate() throws XMLDBException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -465,7 +465,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionCopy() throws XMLDBException, URISyntaxException {
+    void collectionCopy() throws XMLDBException, URISyntaxException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -508,7 +508,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionMove() throws XMLDBException, URISyntaxException {
+    void collectionMove() throws XMLDBException, URISyntaxException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -551,7 +551,7 @@ public class XQueryTrigger2Test {
 
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionDelete() throws XMLDBException {
+    void collectionDelete() throws XMLDBException {
         final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
@@ -581,7 +581,7 @@ public class XQueryTrigger2Test {
     }
 
     @Test
-    public void storeDocumentInvalidTriggerForPrepare() throws XMLDBException {
+    void storeDocumentInvalidTriggerForPrepare() throws XMLDBException {
         final BinaryResource invalidModule = testCollection.createResource(MODULE_NAME, BinaryResource.class);
         ((EXistResource)invalidModule).setMimeType("application/xquery");
         invalidModule.setContent(INVALID_MODULE.getBytes());

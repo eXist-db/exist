@@ -56,7 +56,6 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,21 +83,21 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     private static final int TEXT_PAGE_SIZE = 4032;
 
     @TempDir
-    public static File temporaryFolder;
+    static Path temporaryFolder;
     private static Path testFile1 = null;
     private static Path testFile2 = null;
 
     @BeforeAll
-    public static void storeTempXmlDocs() throws IOException {
-        testFile1 = temporaryFolder.toPath().resolve("JournalXmlTest.doc1.xml");
+    static void storeTempXmlDocs() throws IOException {
+        testFile1 = temporaryFolder.resolve("JournalXmlTest.doc1.xml");
         Files.write(testFile1, Arrays.asList("<element1>text1</element1>"), CREATE_NEW);
 
-        testFile2 = temporaryFolder.toPath().resolve("JournalXmlTest.doc2.xml");
+        testFile2 = temporaryFolder.resolve("JournalXmlTest.doc2.xml");
         Files.write(testFile2, Arrays.asList("<element2>text2</element2>"), CREATE_NEW);
     }
 
     @Test
-    public void largeJournalEntry_nonCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    void largeJournalEntryNonCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer
@@ -127,7 +126,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     }
 
     @Test
-    public void largeJournalEntry_corrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    void largeJournalEntryCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer

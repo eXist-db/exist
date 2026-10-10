@@ -46,13 +46,13 @@ public class TransformTest {
     private static final String TEST_COLLECTION_NAME = "transform-test";
 
     private Collection testCollection;
-    
+
     /**
      * Tests relative path resolution when parsing stylesheets in
      * the transform:transform function.
      */
     @Test
-    public void transform() throws XMLDBException {
+    void transform() throws XMLDBException {
         String query =
             "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
             "let $xml := <empty/>\n" +
@@ -86,7 +86,7 @@ public class TransformTest {
     }
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                     CollectionManagementService.class);
@@ -150,7 +150,7 @@ public class TransformTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         Collection root =
             DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         CollectionManagementService service =

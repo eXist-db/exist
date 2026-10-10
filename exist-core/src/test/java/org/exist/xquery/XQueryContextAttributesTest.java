@@ -77,7 +77,7 @@ public class XQueryContextAttributesTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void attributesOfMainModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
+    void attributesOfMainModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -109,7 +109,7 @@ public class XQueryContextAttributesTest {
     }
 
     @Test
-    public void attributesOfLibraryModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
+    void attributesOfLibraryModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {

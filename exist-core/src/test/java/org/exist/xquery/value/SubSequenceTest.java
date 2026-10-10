@@ -32,14 +32,15 @@
  */
 package org.exist.xquery.value;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.xquery.RangeSequence;
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -53,21 +54,21 @@ public class SubSequenceTest {
     private static final long RANGE_START = 1;
     private static final long RANGE_END = 99;
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"0 until 10",      0,    10,   0},
-                {"1 until 10",      1,    10,  99},
-                {"1 until 11",      1,    11,  99},
-                {"10 until 20",    10,    20,  99},
-                {"11 until 20",    11,    20,  98},
-                {"11 until 21",    11,    21,  80},
-                {"89 until 99",    89,    99,  98},
-                {"90 until 99",    90,    99,  99},
-                {"90 until 100",   90,   100,  99},
-                {"99 until 109",   99,   109,  99},
-                {"100 until 109", 100,   109,   5},
-                {"100 until 110", 100,   110,   0},
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("0 until 10",      0,    10,   0),
+            Arguments.of("1 until 10",      1,    10,  99),
+            Arguments.of("1 until 11",      1,    11,  99),
+            Arguments.of("10 until 20",    10,    20,  99),
+            Arguments.of("11 until 20",    11,    20,  98),
+            Arguments.of("11 until 21",    11,    21,  80),
+            Arguments.of("89 until 99",    89,    99,  98),
+            Arguments.of("90 until 99",    90,    99,  99),
+            Arguments.of("90 until 100",   90,   100,  99),
+            Arguments.of("99 until 109",   99,   109,  99),
+            Arguments.of("100 until 109", 100,   109,   5),
+            Arguments.of("100 until 110", 100,   110,   0)
+        );
     }
     public String subSequenceStartEndName;
     public long fromInclusive;
@@ -81,37 +82,37 @@ public class SubSequenceTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt0(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt0(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(0);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt1(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt1(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(1);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt2(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt2(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(2);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt8(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt8(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(8);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt9(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt9(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(9);
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void itemAt10(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
+    void itemAt10(String subSequenceStartEndName, long fromInclusive, int toExclusive, int expectedSubsequenceLength) throws XPathException {
         initSubSequenceTest(subSequenceStartEndName, fromInclusive, toExclusive, expectedSubsequenceLength);
         assertItemAt(10);
     }

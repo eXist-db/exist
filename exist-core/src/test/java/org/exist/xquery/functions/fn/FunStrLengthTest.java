@@ -35,7 +35,7 @@ public class FunStrLengthTest {
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test
-    public void contextItemWithinPredicate() throws XMLDBException {
+    void contextItemWithinPredicate() throws XMLDBException {
         final XPathQueryService queryService = server.getRoot().getService(XPathQueryService.class);
 
         ResourceSet results = null;

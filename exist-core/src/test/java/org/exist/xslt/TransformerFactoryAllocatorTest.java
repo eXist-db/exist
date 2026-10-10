@@ -21,11 +21,12 @@
  */
 package org.exist.xslt;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.stream.Stream;
 import org.exist.util.Configuration;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -42,15 +43,15 @@ import static org.easymock.EasyMock.replay;
  */
 public class TransformerFactoryAllocatorTest {
 
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "net.sf.saxon.TransformerFactoryImpl" }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("net.sf.saxon.TransformerFactoryImpl")
+        );
     }
     public String transformerFactoryClass;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void getTransformerFactory(String transformerFactoryClass) {
+    void getTransformerFactory(String transformerFactoryClass) {
         initTransformerFactoryAllocatorTest(transformerFactoryClass);
 
         final  Hashtable<String,Object> testAttributes = new Hashtable<String,Object>();

@@ -44,15 +44,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class GetReleaseBrokerDeadlocksTest {
+class GetReleaseBrokerDeadlocksTest {
 
 	private static final Logger LOG = LogManager.getLogger(GetReleaseBrokerDeadlocksTest.class);
 	
 	private static Random rd = new Random();
 
-	@Test
-	@Disabled("Deadlock test — hangs indefinitely")
-	public void exterServiceMode() {
+    @Test
+    @Disabled("Deadlock test — hangs indefinitely")
+    void exterServiceMode() {
 		try { 
 	        Configuration config = new Configuration();
 	        config.setProperty(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE);
@@ -99,9 +99,9 @@ public class GetReleaseBrokerDeadlocksTest {
 		}
 	}
 
-	@Test
-	@Disabled("Deadlock test — hangs indefinitely")
-	public void testingGetReleaseCycle() {
+    @Test
+    @Disabled("Deadlock test — hangs indefinitely")
+    void testingGetReleaseCycle() {
 		boolean debug = false;
 		try { 
 	        Configuration config = new Configuration();

@@ -35,7 +35,7 @@ import org.xmldb.api.modules.XMLResource;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOrSelfNodeKindTest {
+class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOrSelfNodeKindTest {
 
     private static final String TEST_DOCUMENT_NAME = "PersistentDescendantOrSelfNodeKindTest.xml";
 
@@ -51,7 +51,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
     }
 
     @BeforeAll
-    public static void storeTestDoc() throws XMLDBException {
+    static void storeTestDoc() throws XMLDBException {
         final Collection root =  existEmbeddedServer.getRoot();
         final XMLResource res = root.createResource(TEST_DOCUMENT_NAME, XMLResource.class);
         res.setContent(TEST_DOCUMENT);
@@ -59,7 +59,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
     }
 
     @AfterAll
-    public static void removeTestDoc() throws XMLDBException {
+    static void removeTestDoc() throws XMLDBException {
         final Collection root =  existEmbeddedServer.getRoot();
         final Resource res = root.getResource(TEST_DOCUMENT_NAME);
         root.removeResource(res);

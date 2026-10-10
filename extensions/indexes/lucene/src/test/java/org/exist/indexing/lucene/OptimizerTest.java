@@ -83,7 +83,7 @@ public class OptimizerTest {
     private static Collection testCollection;
 
     @org.junit.jupiter.api.Test
-    public void simplePredicates() throws XMLDBException {
+    void simplePredicates() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')]", false);
         execute("//SPEECH[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
 
@@ -119,7 +119,7 @@ public class OptimizerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void twoPredicates() throws XMLDBException {
+    void twoPredicates() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
         execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", false);
@@ -127,7 +127,7 @@ public class OptimizerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void booleanOperator() throws XMLDBException {
+    void booleanOperator() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
         execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);
         execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
@@ -177,7 +177,7 @@ public class OptimizerTest {
             true);
 
     @BeforeAll
-    public static void initDatabase() throws XMLDBException, IOException {
+    static void initDatabase() throws XMLDBException, IOException {
         CollectionManagementService service = server.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
         Assertions.assertNotNull(testCollection);

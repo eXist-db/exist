@@ -93,7 +93,7 @@ public class DocTest {
     private Collection test = null;
 
     @BeforeEach
-    public void setUp() throws XMLDBException {
+    void setUp() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         //Creates the 'test' collection
         test = cms.createCollection("test");
@@ -109,7 +109,7 @@ public class DocTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         //Creates the 'test' collection
         cms.removeCollection("test");
@@ -130,7 +130,7 @@ public class DocTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testURIResolveWithEval() throws XMLDBException {
+    void testURIResolveWithEval() throws XMLDBException {
         String query = "util:eval(xs:anyURI('/db/test/test.xq'), false(), ())";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
 
@@ -157,7 +157,7 @@ public class DocTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void doc_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
+    void doc_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
@@ -189,7 +189,7 @@ public class DocTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void doc_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
+    void doc_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
@@ -223,7 +223,7 @@ public class DocTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void docAvailable_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
+    void docAvailable_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
@@ -245,7 +245,7 @@ public class DocTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void docAvailable_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
+    void docAvailable_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";

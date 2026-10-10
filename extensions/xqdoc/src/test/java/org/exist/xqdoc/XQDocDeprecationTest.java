@@ -54,7 +54,7 @@ public class XQDocDeprecationTest {
 
     /** Both arities carry the notice, reachable via util:describe-function. */
     @Test
-    public void describeFunctionReportsDeprecation() throws XMLDBException {
+    void describeFunctionReportsDeprecation() throws XMLDBException {
         final String deprecated = query(NS
                 + "string-join(util:describe-function(xs:QName('xqdm:scan'))//deprecated, '|')");
         assertTrue(deprecated.contains("Deprecated for removal"),
@@ -65,7 +65,7 @@ public class XQDocDeprecationTest {
 
     /** The same notice is reachable via inspect:inspect-module. */
     @Test
-    public void inspectModuleReportsDeprecation() throws XMLDBException {
+    void inspectModuleReportsDeprecation() throws XMLDBException {
         final String deprecated = query(NS + "string((inspect:inspect-module-uri(xs:anyURI('"
                 + MODULE_URI + "'))//function[@name='xqdm:scan']/deprecated)[1])");
         assertTrue(deprecated.contains("Deprecated for removal"),
@@ -74,7 +74,7 @@ public class XQDocDeprecationTest {
 
     /** The module's own description carries the notice too. */
     @Test
-    public void moduleDescriptionReportsDeprecation() throws XMLDBException {
+    void moduleDescriptionReportsDeprecation() throws XMLDBException {
         final String description = query(NS
                 + "string(inspect:inspect-module-uri(xs:anyURI('" + MODULE_URI + "'))/description)");
         assertTrue(description.contains("DEPRECATED FOR REMOVAL"),
@@ -85,7 +85,7 @@ public class XQDocDeprecationTest {
 
     /** Deprecated is not disabled: the function is still resolvable in a default configuration. */
     @Test
-    public void functionRemainsAvailable() throws XMLDBException {
+    void functionRemainsAvailable() throws XMLDBException {
         assertTrue(Boolean.parseBoolean(
                 query(NS + "exists(util:describe-function(xs:QName('xqdm:scan')))")));
     }

@@ -37,10 +37,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class ByteBufferInputStreamTest {
+class ByteBufferInputStreamTest {
 
     @Test
-    public void available() throws IOException {
+    void available() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -50,7 +50,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void availableIsZeroAfterClose() throws IOException {
+    void availableIsZeroAfterClose() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -62,7 +62,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void availableAfterRead() throws IOException {
+    void availableAfterRead() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -76,7 +76,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readByteByByteCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
+    void readByteByByteCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -91,7 +91,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readMultipleBytesCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
+    void readMultipleBytesCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -108,7 +108,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readMultipleBytesPastAvailable() throws IOException {
+    void readMultipleBytesPastAvailable() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -123,9 +123,9 @@ public class ByteBufferInputStreamTest {
         //bytes past the available should still be 0
         assertArrayEquals(new byte[]{0,0}, subArray(readData, testData.length, 2));
     }
-    
+
     @Test
-    public void readMultipleBytesSpecificCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
+    void readMultipleBytesSpecificCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -141,7 +141,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readMultipleBytesSpecificPastAvailable() throws IOException {
+    void readMultipleBytesSpecificPastAvailable() throws IOException {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
@@ -158,67 +158,56 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readSingleByteAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+    void readSingleByteAfterCloseThrowsException() {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
+        assertThrows(IOException.class, () ->
 
             //should throw IOException
-            is.read();
-        });
+            is.read());
     }
 
     @Test
-    public void readMultipleBytesAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+    void readMultipleBytesAfterCloseThrowsException() {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
-
-            byte readBuf[] = new byte[2];
+        byte readBuf[] = new byte[2];
+        assertThrows(IOException.class, () ->
             //should throw IOException
-            is.read(readBuf);
-        });
+            is.read(readBuf));
     }
 
     @Test
-    public void readMultipleBytesSpecificAfterCloseThrowsException() {
-        assertThrows(IOException.class, () -> {
-            final byte testData[] = "test data".getBytes();
-            final ByteBuffer buf = ByteBuffer.wrap(testData);
-
-            InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
-
-            try {
+    void readMultipleBytesSpecificAfterCloseThrowsException() {
+        final byte testData[] = "test data".getBytes();
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try {
                 is.close();
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
-
-            byte readBuf[] = new byte[2];
+        byte readBuf[] = new byte[2];
+        assertThrows(IOException.class, () ->
 
             //should throw IOException
-            is.read(readBuf, 0, 2);
-        });
+            is.read(readBuf, 0, 2));
     }
 
     @Test
-    public void readMultipleBytesInLoop() throws IOException {
+    void readMultipleBytesInLoop() throws IOException {
 
         //generate 1KB of test data
         Random random = new Random();
@@ -241,7 +230,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readMultipleBytesSpecificInLoop() throws IOException {
+    void readMultipleBytesSpecificInLoop() throws IOException {
 
         //generate 1KB of test data
         Random random = new Random();
@@ -266,7 +255,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void markReturnsTrue() {
+    void markReturnsTrue() {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));

@@ -88,28 +88,28 @@ public class ImportLocalStylesheetTest {
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(true, false, true, getConfigFile());
 
     @org.junit.jupiter.api.Test
-    public void fromRegisteredImportUri() throws XMLDBException {
+    void fromRegisteredImportUri() throws XMLDBException {
         final String xquery = getQuery("http://www.functx.com/functx.xsl");
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @org.junit.jupiter.api.Test
-    public void fromDbLocationWithoutScheme() throws XMLDBException {
+    void fromDbLocationWithoutScheme() throws XMLDBException {
         final String xquery = getQuery(XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @org.junit.jupiter.api.Test
-    public void fromDbLocationWithXmldbScheme() throws XMLDBException {
+    void fromDbLocationWithXmldbScheme() throws XMLDBException {
         final String xquery = getQuery("xmldb:" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @org.junit.jupiter.api.Test
-    public void fromDbLocationWithXmldbSchemeDoubleSlash() throws XMLDBException {
+    void fromDbLocationWithXmldbSchemeDoubleSlash() throws XMLDBException {
         final String xquery = getQuery("xmldb://" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
@@ -117,14 +117,14 @@ public class ImportLocalStylesheetTest {
 
     @org.junit.jupiter.api.Test
     @Disabled("xmldb:exist: single-colon URI scheme not recognized")
-    public void fromXmldbExistScheme() throws XMLDBException {
+    void fromXmldbExistScheme() throws XMLDBException {
         final String xquery = getQuery("xmldb:exist:" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @org.junit.jupiter.api.Test
-    public void fromXmldbExistSchemeDoubleSlash() throws XMLDBException {
+    void fromXmldbExistSchemeDoubleSlash() throws XMLDBException {
         final String xquery = getQuery("xmldb:exist://" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);

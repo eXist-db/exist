@@ -22,11 +22,13 @@
 
 package org.exist.dom.memtree;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -44,22 +46,21 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Arrays;
 
 @Execution(ExecutionMode.CONCURRENT)
 public class MemtreeBuilderTest {
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "namespaceAware", true },
-                { "namespaceIgnorant", false }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("namespaceAware", true),
+            Arguments.of("namespaceIgnorant", false)
+        );
     }
     public String parameterizedTestsName;
     public boolean namespaceAware;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parseSimple(String parameterizedTestsName, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
+    void parseSimple(String parameterizedTestsName, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
         initMemtreeBuilderTest(parameterizedTestsName, namespaceAware);
         final String doc = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
         final DocumentImpl parsedDoc = parse(doc);

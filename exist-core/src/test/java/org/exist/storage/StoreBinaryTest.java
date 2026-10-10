@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class StoreBinaryTest {
 
     @org.junit.jupiter.api.Test
-    public void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, SAXException, DatabaseConfigurationException {
+    void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, SAXException, DatabaseConfigurationException {
 
         final String xqueryMimeType = "application/xquery";
         final String xqueryFilename = "script.xql";
@@ -79,7 +79,7 @@ public class StoreBinaryTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void removeTestResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeTestResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

@@ -63,7 +63,7 @@ public class DLNStorageTest {
             "</test>";
 
     @org.junit.jupiter.api.Test
-    public void nodeStorage() throws Exception {
+    void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
@@ -121,7 +121,7 @@ public class DLNStorageTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setUp() throws Exception {
+    static void setUp() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -138,7 +138,7 @@ public class DLNStorageTest {
     }
 
     @AfterAll
-    public static void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

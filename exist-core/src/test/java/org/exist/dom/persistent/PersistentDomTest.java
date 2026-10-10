@@ -100,7 +100,7 @@ public class PersistentDomTest {
 
 
     @Test
-    public void mixed_childNodes() throws EXistException, PermissionDeniedException, IOException, SAXException {
+    void mixed_childNodes() throws EXistException, PermissionDeniedException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -158,7 +158,7 @@ public class PersistentDomTest {
     }
 
     @Test
-    public void mixed_siblings() throws EXistException, PermissionDeniedException, IOException, SAXException {
+    void mixed_siblings() throws EXistException, PermissionDeniedException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -274,7 +274,7 @@ public class PersistentDomTest {
     }
 
     @Test
-    public void documentElement_previousSibling_simple() throws EXistException, PermissionDeniedException {
+    void documentElement_previousSibling_simple() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -304,7 +304,7 @@ public class PersistentDomTest {
     }
 
     @Test
-    public void documentElement_nextSibling_simple() throws EXistException, PermissionDeniedException {
+    void documentElement_nextSibling_simple() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -334,7 +334,7 @@ public class PersistentDomTest {
     }
 
     @Test
-    public void cdata() throws EXistException, PermissionDeniedException, IOException, SAXException {
+    void cdata() throws EXistException, PermissionDeniedException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -454,7 +454,7 @@ public class PersistentDomTest {
     }
 
     @BeforeAll
-    public static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
+    static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -475,7 +475,7 @@ public class PersistentDomTest {
     }
 
     @AfterAll
-    public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {

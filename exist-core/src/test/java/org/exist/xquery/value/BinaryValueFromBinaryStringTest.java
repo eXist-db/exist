@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class BinaryValueFromBinaryStringTest {
+class BinaryValueFromBinaryStringTest {
 
     @Test
     void getInputStream() throws XPathException, IOException {

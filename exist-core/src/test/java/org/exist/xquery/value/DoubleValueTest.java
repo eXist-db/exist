@@ -29,10 +29,10 @@ import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class DoubleValueTest {
+class DoubleValueTest {
 
     @Test
-    public void convertToInteger() throws XPathException {
+    void convertToInteger() throws XPathException {
         final double value = -2147483649d;
         final DoubleValue doubleValue = new DoubleValue(value);
 
@@ -43,7 +43,7 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void getInt() throws XPathException {
+    void getInt() throws XPathException {
         final double value = -2147483649d;
         final DoubleValue doubleValue = new DoubleValue(value);
 
@@ -51,7 +51,7 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void getLong() throws XPathException {
+    void getLong() throws XPathException {
         final double value = -2147483649d;
         final DoubleValue doubleValue = new DoubleValue(value);
 
@@ -59,31 +59,23 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void toJavaObjectIntLowerBound() {
-        assertThrows(XPathException.class, () -> {
-            final double value = -2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
-            final DoubleValue doubleValue = new DoubleValue(value);
+    void toJavaObjectIntLowerBound() {
+        final double value = -2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
+        final DoubleValue doubleValue = new DoubleValue(value);
 
-            doubleValue.toJavaObject(int.class);
-
-            fail("xs:double value is out of bounds for xs:int");
-        });
+        assertThrows(XPathException.class, () -> doubleValue.toJavaObject(int.class));
     }
 
     @Test
-    public void toJavaObjectIntUpperBound() {
-        assertThrows(XPathException.class, () -> {
-            final double value = 2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
-            final DoubleValue doubleValue = new DoubleValue(value);
+    void toJavaObjectIntUpperBound() {
+        final double value = 2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
+        final DoubleValue doubleValue = new DoubleValue(value);
 
-            doubleValue.toJavaObject(int.class);
-
-            fail("xs:double value is out of bounds for xs:int");
-        });
+        assertThrows(XPathException.class, () -> doubleValue.toJavaObject(int.class));
     }
 
     @Test
-    public void toJavaObject_int() throws XPathException {
+    void toJavaObjectInt() throws XPathException {
         final double value = -2147483648d;
         final DoubleValue doubleValue = new DoubleValue(value);
 
@@ -94,7 +86,7 @@ public class DoubleValueTest {
     }
 
     @Test
-    public void toJavaObject_long() throws XPathException {
+    void toJavaObjectLong() throws XPathException {
         final double value = -2147483649d;
         final DoubleValue doubleValue = new DoubleValue(value);
 

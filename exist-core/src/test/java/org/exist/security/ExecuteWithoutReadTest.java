@@ -100,7 +100,7 @@ public class ExecuteWithoutReadTest {
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, TriggerException {
+    static void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, TriggerException {
         final BrokerPool pool = server.getBrokerPool();
         final SecurityManager securityManager = pool.getSecurityManager();
 
@@ -127,7 +127,7 @@ public class ExecuteWithoutReadTest {
     // --- 1. the caller may read AND execute the query: failures are disclosed in full ---
 
     @Test
-    public void readAndExecuteValidQueryReturnsItsResult() throws Exception {
+    void readAndExecuteValidQueryReturnsItsResult() throws Exception {
         chmodAll(READ_AND_EXECUTE);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -139,7 +139,7 @@ public class ExecuteWithoutReadTest {
     }
 
     @Test
-    public void readAndExecuteSyntaxErrorIsDisclosedInFull() throws Exception {
+    void readAndExecuteSyntaxErrorIsDisclosedInFull() throws Exception {
         chmodAll(READ_AND_EXECUTE);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -153,7 +153,7 @@ public class ExecuteWithoutReadTest {
     }
 
     @Test
-    public void readAndExecuteRuntimeErrorIsDisclosedInFull() throws Exception {
+    void readAndExecuteRuntimeErrorIsDisclosedInFull() throws Exception {
         chmodAll(READ_AND_EXECUTE);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -167,7 +167,7 @@ public class ExecuteWithoutReadTest {
     // --- 2. the caller may only execute the query: it runs, but failures are generic ---
 
     @Test
-    public void executeOnlyValidQueryReturnsTheSameResult() throws Exception {
+    void executeOnlyValidQueryReturnsTheSameResult() throws Exception {
         chmodAll(EXECUTE_ONLY);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -180,7 +180,7 @@ public class ExecuteWithoutReadTest {
     }
 
     @Test
-    public void executeOnlySyntaxErrorIsGeneric() throws Exception {
+    void executeOnlySyntaxErrorIsGeneric() throws Exception {
         chmodAll(EXECUTE_ONLY);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -192,7 +192,7 @@ public class ExecuteWithoutReadTest {
     }
 
     @Test
-    public void executeOnlyRuntimeErrorIsGeneric() throws Exception {
+    void executeOnlyRuntimeErrorIsGeneric() throws Exception {
         chmodAll(EXECUTE_ONLY);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -211,7 +211,7 @@ public class ExecuteWithoutReadTest {
      * protects a query served from the XQuery pool, whose context was primed by another user.
      */
     @Test
-    public void executeOnlyRuntimeErrorIsGenericEvenWhenOnlyXQueryExecuteSetsTheLevel() throws Exception {
+    void executeOnlyRuntimeErrorIsGenericEvenWhenOnlyXQueryExecuteSetsTheLevel() throws Exception {
         chmodAll(EXECUTE_ONLY);
 
         try (final DBBroker broker = testUserBroker()) {
@@ -229,7 +229,7 @@ public class ExecuteWithoutReadTest {
      * syntax error of a query it cannot read, which is exactly the leak this mechanism exists to stop.
      */
     @Test
-    public void aLoaderWhichDoesNotSetTheLevelBeforeCompilingLeaksTheSyntaxError() throws Exception {
+    void aLoaderWhichDoesNotSetTheLevelBeforeCompilingLeaksTheSyntaxError() throws Exception {
         chmodAll(EXECUTE_ONLY);
 
         try (final DBBroker broker = testUserBroker()) {

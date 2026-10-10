@@ -59,7 +59,7 @@ public class TwoDatabasesTest {
     private static Path config2File;
 
     @BeforeAll
-    public static void prepare() throws URISyntaxException {
+    static void prepare() throws URISyntaxException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
             Path lf = Path.of("log42j.xml");
@@ -86,7 +86,7 @@ public class TwoDatabasesTest {
     private Subject user2;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         user1 = pool1.getSecurityManager().getSystemSubject();
         try(final DBBroker broker1 = pool1.get(Optional.of(user1))) {
@@ -103,7 +103,7 @@ public class TwoDatabasesTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+    void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         put();
         get();
     }

@@ -30,27 +30,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class ByteTest {
-    
+class ByteTest {
+
     @Test
-    public void testOver() {
+    void testOver() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("128", Type.BYTE);
         });
     }
-    
+
     @Test
-    public void testPositiveLimit() throws XPathException {
+    void testPositiveLimit() throws XPathException {
         new IntegerValue("127", Type.BYTE);
     }
-    
+
     @Test
-    public void testNegativeLimit() throws XPathException {
+    void testNegativeLimit() throws XPathException {
         new IntegerValue("-128", Type.BYTE);
     }
-    
+
     @Test
-    public void testUnder() {
+    void testUnder() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("-129", Type.BYTE);
         });

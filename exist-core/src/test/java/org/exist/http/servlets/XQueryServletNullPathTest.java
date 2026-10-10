@@ -74,7 +74,7 @@ public class XQueryServletNullPathTest {
 
     /** Stores a resource ONLY in the database -- there is deliberately no file on disk for it. */
     @BeforeAll
-    public static void storeDatabaseOnlyResource() throws Exception {
+    static void storeDatabaseOnlyResource() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -92,7 +92,7 @@ public class XQueryServletNullPathTest {
     }
 
     @Test
-    public void nullPathTranslatedFallsBackToDatabaseResourceAndExecutesIt() throws Exception {
+    void nullPathTranslatedFallsBackToDatabaseResourceAndExecutesIt() throws Exception {
         final XQueryServlet servlet = newInitializedServlet();
 
         // Simulates a request forwarded to the database-only resource stored above: as in the
@@ -115,7 +115,7 @@ public class XQueryServletNullPathTest {
     }
 
     @Test
-    public void nullPathTranslatedReturnsCleanNotFoundInsteadOfNPE() throws Exception {
+    void nullPathTranslatedReturnsCleanNotFoundInsteadOfNPE() throws Exception {
         final XQueryServlet servlet = newInitializedServlet();
 
         // Simulates a request forwarded to a virtual/database-only path: neither

@@ -60,13 +60,13 @@ public class GeneralComparisonBenchmark {
     private static final int MEASURE_ITERATIONS = 5;
 
     @BeforeAll
-    public static void assumeBenchmarks() {
+    static void assumeBenchmarks() {
         Assumptions.assumeTrue(Boolean.getBoolean("exist.run.benchmarks"),
                 "Benchmarks are disabled. Set -Dexist.run.benchmarks=true to enable.");
     }
 
     @BeforeAll
-    public static void setUp() throws XMLDBException {
+    static void setUp() throws XMLDBException {
         if (!Boolean.getBoolean("exist.run.benchmarks")) {
             return;
         }
@@ -92,7 +92,7 @@ public class GeneralComparisonBenchmark {
     }
 
     @AfterAll
-    public static void tearDown() throws XMLDBException {
+    static void tearDown() throws XMLDBException {
         if (!Boolean.getBoolean("exist.run.benchmarks")) {
             return;
         }
@@ -103,7 +103,7 @@ public class GeneralComparisonBenchmark {
     }
 
     @Test
-    public void predicateAttrEqLiteral() throws XMLDBException {
+    void predicateAttrEqLiteral() throws XMLDBException {
         for (final int size : DATA_SIZES) {
             final String query = String.format(
                     "count(doc('%s/data-%d.xml')//item[@v = 'v0'])",
@@ -113,7 +113,7 @@ public class GeneralComparisonBenchmark {
     }
 
     @Test
-    public void predicateAttrEqVar() throws XMLDBException {
+    void predicateAttrEqVar() throws XMLDBException {
         for (final int size : DATA_SIZES) {
             final String query = String.format(
                     "let $x := 'v0' return count(doc('%s/data-%d.xml')//item[@v = $x])",
@@ -123,7 +123,7 @@ public class GeneralComparisonBenchmark {
     }
 
     @Test
-    public void predicateMapGetCtxAttr() throws XMLDBException {
+    void predicateMapGetCtxAttr() throws XMLDBException {
         for (final int size : DATA_SIZES) {
             final String query = String.format(
                     "let $map := map { 'k0': 'v0', 'k1': 'v1', 'k2': 'v2', 'k3': 'v3', 'k4': 'v4' } " +
@@ -134,7 +134,7 @@ public class GeneralComparisonBenchmark {
     }
 
     @Test
-    public void predicateLocalFnCtxAttr() throws XMLDBException {
+    void predicateLocalFnCtxAttr() throws XMLDBException {
         for (final int size : DATA_SIZES) {
             final String query = String.format(
                     "declare function local:get($k as xs:string) as xs:string? { " +

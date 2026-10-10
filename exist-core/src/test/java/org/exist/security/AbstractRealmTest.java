@@ -37,7 +37,7 @@ import static org.easymock.EasyMock.verify;
  *
  * @author aretter
  */
-public class AbstractRealmTest {
+class AbstractRealmTest {
 
     /*
     @Test
@@ -83,7 +83,7 @@ public class AbstractRealmTest {
 
 
     @Test
-    public void updateGroup_calls_assertCanModifyGroup() throws PermissionDeniedException, EXistException {
+    void updateGroup_calls_assertCanModifyGroup() throws PermissionDeniedException, EXistException {
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
         Database mockDatabase = EasyMock.createMock(Database.class);

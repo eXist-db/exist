@@ -26,8 +26,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 
+import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
@@ -44,6 +44,7 @@ import org.exist.xmldb.UserManagementService;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -73,34 +74,34 @@ public class XUpdateTest {
     //TODO should not execute as 'admin' user
     //also additional tests needed to verify update permissions
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"append", "address.xml"},
-                {"insert_after", "address.xml"},
-                {"insert_before", "address.xml"},
-                {"remove", "address.xml"},
-                {"update", "address.xml"},
-                {"append_attribute", "address.xml"},
-                {"append_child", "address.xml"},
-                {"insert_after_big", "address_big.xml"},
-                {"conditional", "address.xml"},
-                {"variables", "address.xml"},
-                {"replace", "address.xml"},
-                {"whitespace", "address.xml"},
-                {"namespaces", "namespaces.xml"},
+    public static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("append", "address.xml"),
+                Arguments.of("insert_after", "address.xml"),
+                Arguments.of("insert_before", "address.xml"),
+                Arguments.of("remove", "address.xml"),
+                Arguments.of("update", "address.xml"),
+                Arguments.of("append_attribute", "address.xml"),
+                Arguments.of("append_child", "address.xml"),
+                Arguments.of("insert_after_big", "address_big.xml"),
+                Arguments.of("conditional", "address.xml"),
+                Arguments.of("variables", "address.xml"),
+                Arguments.of("replace", "address.xml"),
+                Arguments.of("whitespace", "address.xml"),
+                Arguments.of("namespaces", "namespaces.xml"),
 
                 /* TODO Added by Geoff Shuetrim (geoff@galexy.net) on 15 July 2006
                 to highlight that root element renaming does not currently succeed,
                 resulting instead in a null pointer exception because the renaming
                 relies upon obtaining the parent element of the element being
                 renamed and this is null for the root element. */
-                {"rename_root_element", "address.xml"},
+                Arguments.of("rename_root_element", "address.xml"),
 
                 /* TODO Added by Geoff Shuetrim (geoff@galexy.net) on 15 July 2006
                 to highlight that renaming of an element fails when the renaming also
                 involves a change of namespace */
-                {"rename_including_namespace", "namespaces.xml"}
-        });
+                Arguments.of("rename_including_namespace", "namespaces.xml")
+        );
     }
     public String testName;
     public String sourceFile;
@@ -115,7 +116,7 @@ public class XUpdateTest {
     private Collection col = null;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void xupdate(String testName, String sourceFile) throws Exception {
+    void xupdate(String testName, String sourceFile) throws Exception {
         initXUpdateTest(testName, sourceFile);
         startup();
 
@@ -200,7 +201,7 @@ public class XUpdateTest {
     }
 
     @AfterEach
-    public void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         removeDocument();
 
         TestUtils.cleanupDB();

@@ -117,7 +117,7 @@ public class ForwardReferenceTest {
     private static XmldbURI TEST_PAGES_MODULE_URI = null;
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool brokerPool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -140,7 +140,7 @@ public class ForwardReferenceTest {
     }
 
     @Test
-    public void test1() throws EXistException, PermissionDeniedException, IOException, TriggerException, XPathException {
+    void test1() throws EXistException, PermissionDeniedException, IOException, TriggerException, XPathException {
         final StringSource testXquerySource = new StringSource(
                 "xquery version \"3.1\";\n" +
                 "\n" +

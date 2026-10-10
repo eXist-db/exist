@@ -103,7 +103,7 @@ public class URLRewriteContentLengthViewPipelineTest {
     private static Path testDir;
 
     @BeforeAll
-    public static void setup() throws Exception {
+    static void setup() throws Exception {
         // Mirrors the relative path used by exist-webapp-context.xml (jetty.home/../../../webapp)
         // to locate the distribution-mode "/exist" main webapp's exploded document root.
         final Path webappDir = Path.of(System.getProperty("jetty.home"), "..", "..", "..", "webapp").normalize();
@@ -115,7 +115,7 @@ public class URLRewriteContentLengthViewPipelineTest {
     }
 
     @AfterAll
-    public static void teardown() throws Exception {
+    static void teardown() throws Exception {
         if (testDir != null) {
             Files.deleteIfExists(testDir.resolve("controller.xql"));
             Files.deleteIfExists(testDir.resolve("A.xml"));
@@ -125,7 +125,7 @@ public class URLRewriteContentLengthViewPipelineTest {
     }
 
     @Test
-    public void forwardStaticThenLongerViewPipeline() throws IOException {
+    void forwardStaticThenLongerViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/" + TEST_DIR_NAME + "/test";
 

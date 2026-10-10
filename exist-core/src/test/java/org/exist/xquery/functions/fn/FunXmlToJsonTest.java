@@ -43,7 +43,7 @@ public class FunXmlToJsonTest {
     public static final ExistXmldbEmbeddedServer SERVER = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test
-    public void elementSelectedFromHostDocument() throws Exception {
+    void elementSelectedFromHostDocument() throws Exception {
         final String query = """
                 let $host :=
                     <stylesheet xmlns="http://www.w3.org/1999/XSL/Transform">
@@ -57,7 +57,7 @@ public class FunXmlToJsonTest {
     }
 
     @Test
-    public void mapSelectedFromHostDocument() throws Exception {
+    void mapSelectedFromHostDocument() throws Exception {
         final String query = """
                 let $host :=
                     <wrapper>
@@ -73,7 +73,7 @@ public class FunXmlToJsonTest {
     }
 
     @Test
-    public void stringSelectedFromHostDocument() throws Exception {
+    void stringSelectedFromHostDocument() throws Exception {
         final String query = """
                 let $host :=
                     <wrapper>

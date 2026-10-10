@@ -92,24 +92,21 @@ public class QuerySessionTest {
     private Random random = new Random();
 
     @org.junit.jupiter.api.Test
-    public void manualRelease() {
-        assertThrows(XMLDBException.class, () -> {
-            Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-            XQueryService service = test.getService(XQueryService.class);
-            ResourceSet result = service.query("//chapter[@xml:id eq 'chapter1']");
-            assertEquals(1, result.getSize());
+    void manualRelease() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final XQueryService service = test.getService(XQueryService.class);
+        final ResourceSet result = service.query("//chapter[@xml:id eq 'chapter1']");
+        assertEquals(1, result.getSize());
 
-            // clear should release the query result on the server
-            result.clear();
+        // clear should release the query result on the server
+        result.clear();
 
-            // the result has been cleared already. we should get an exception here
-            Resource members = result.getMembersAsResource();
-            members.getContent();
-        });
+        // the result has been cleared already. we should get an exception here
+        assertThrows(XMLDBException.class, result::getMembersAsResource);
     }
 
     @org.junit.jupiter.api.Test
-    public void runTasks() {
+    void runTasks() {
         ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < 100; i++) {
             executor.submit(new QueryTask(QUERY));
@@ -149,8 +146,8 @@ public class QuerySessionTest {
         }
     }
 
-	@BeforeAll
-    public static void startServer() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SAXException {
+    @BeforeAll
+    static void startServer() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SAXException {
         // initialize XML:DB driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -173,7 +170,7 @@ public class QuerySessionTest {
     }
 
     @AfterAll
-    public static void stopServer() throws XMLDBException {
+    static void stopServer() throws XMLDBException {
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         CollectionManagementService mgmt =
                 root.getService(CollectionManagementService.class);

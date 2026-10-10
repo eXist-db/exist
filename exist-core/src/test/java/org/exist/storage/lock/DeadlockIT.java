@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -129,15 +131,15 @@ public class DeadlockIT {
     }
 
     /** Use 4 test runs, querying different collections */
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "testRandomCollection", TEST_RANDOM_COLLECTION },
-            { "testSingleCollection", TEST_SINGLE_COLLECTION },
-            { "testAllCollections", TEST_ALL_COLLECTIONS },
-            { "testSingleDoc", TEST_SINGLE_DOC },
-            { "testMixed", TEST_MIXED },
-            { "testRemoved", TEST_REMOVE }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("testRandomCollection", TEST_RANDOM_COLLECTION),
+            Arguments.of("testSingleCollection", TEST_SINGLE_COLLECTION),
+            Arguments.of("testAllCollections", TEST_ALL_COLLECTIONS),
+            Arguments.of("testSingleDoc", TEST_SINGLE_DOC),
+            Arguments.of("testMixed", TEST_MIXED),
+            Arguments.of("testRemoved", TEST_REMOVE)
+        );
     }
 	
 	private static final int COLL_COUNT = 20;
@@ -181,8 +183,8 @@ public class DeadlockIT {
 	@RegisterExtension
 	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	@BeforeAll
-	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeAll
+    static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -209,14 +211,14 @@ public class DeadlockIT {
 	}
 
     @AfterEach
-    public void clearDB() throws XMLDBException {
+    void clearDB() throws XMLDBException {
 		final org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
 		CollectionManagementService service = root.getService(CollectionManagementService.class);
 		service.removeCollection(".");
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}") @Timeout(value = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    public void runTasks(String testName, int mode) {
+    void runTasks(String testName, int mode) {
         initDeadlockIT(testName, mode);
 		taskFailure.set(null);
 		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);

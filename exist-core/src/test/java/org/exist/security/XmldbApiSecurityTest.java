@@ -22,14 +22,15 @@
 package org.exist.security;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import java.util.stream.Stream;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.UserManagementService;
+import org.junit.jupiter.params.provider.Arguments;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -54,11 +55,11 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "local", "xmldb:exist://" },
-            { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", "xmldb:exist://"),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc")
+        );
     }
     @Parameter(0)
     public String apiName;

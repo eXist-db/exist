@@ -99,7 +99,7 @@ public class PackageTriggerIT {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(false, true);
 
     @BeforeAll
-    public static void setup() throws PermissionDeniedException, SAXException, EXistException, IOException, LockException, XPathException {
+    static void setup() throws PermissionDeniedException, SAXException, EXistException, IOException, LockException, XPathException {
 
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
 
@@ -150,7 +150,7 @@ public class PackageTriggerIT {
 
 
     @Test
-    public void checkTriggerFires() throws EXistException, PermissionDeniedException, XPathException {
+    void checkTriggerFires() throws EXistException, PermissionDeniedException, XPathException {
 
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
 

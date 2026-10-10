@@ -40,20 +40,20 @@ import static org.easymock.EasyMock.verify;
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class OverflowToDiskStreamTest {
+class OverflowToDiskStreamTest {
     private MemoryContents memoryContents;
     private OutputStreamSupplier overflowStreamSupplier;
     private OverflowToDiskStream overflowToDiskStream;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         memoryContents = createMock(MemoryContents.class);
         overflowStreamSupplier = createMock(OutputStreamSupplier.class);
         overflowToDiskStream = new OverflowToDiskStream(5, memoryContents, overflowStreamSupplier);
     }
 
     @Test
-    public void writeSingleByte() throws IOException {
+    void writeSingleByte() throws IOException {
         TestOutputStream testOutput = new TestOutputStream();
 
         expect(memoryContents.writeAtEnd(aryEq(new byte[]{'1'}), eq(0), eq(1))).andReturn(1);
@@ -81,21 +81,21 @@ public class OverflowToDiskStreamTest {
     }
 
     @Test
-    public void close() throws IOException {
+    void close() throws IOException {
         replay(memoryContents, overflowStreamSupplier);
 
         overflowToDiskStream.close();
     }
 
     @Test
-    public void flush() throws IOException {
+    void flush() throws IOException {
         replay(memoryContents, overflowStreamSupplier);
 
         overflowToDiskStream.flush();
     }
 
     @Test
-    public void writeByteArray() throws IOException {
+    void writeByteArray() throws IOException {
         byte[] buf = new byte[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
         TestOutputStream testOutput = new TestOutputStream();
 

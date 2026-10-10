@@ -40,7 +40,7 @@ import java.util.function.BiConsumer;
 import static org.easymock.EasyMock.*;
 
 
-public class IndexIntegrationTest extends AbstractTestUpdate {
+class IndexIntegrationTest extends AbstractTestUpdate {
 
     private void run(final XmldbURI docUri, final String data, final BiConsumer<IndexWorker, StreamListener> setup, ConsumerE<XQueryService, XMLDBException> test) throws Exception {
         final XQueryService service = storeXMLStringAndGetQueryService(docUri.lastSegment().toString(), data);
@@ -112,7 +112,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void insertElement() throws Exception {
+    void insertElement() throws Exception {
 
         final String docName = "pathNs2.xml";
         final XmldbURI docUri = XmldbURI.create("/db/test/"+docName);
@@ -146,7 +146,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void updateAttribute() throws Exception {
+    void updateAttribute() throws Exception {
 
         final String docName = "pathNs2.xml";
         final XmldbURI docUri = XmldbURI.create("/db/test/"+docName);
@@ -195,7 +195,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void removeAttribute() throws Exception {
+    void removeAttribute() throws Exception {
 
         final String docName = "pathNs2.xml";
         final XmldbURI docUri = XmldbURI.create("/db/test/"+docName);

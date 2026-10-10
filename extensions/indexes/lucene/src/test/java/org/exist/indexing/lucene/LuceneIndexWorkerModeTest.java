@@ -34,10 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LuceneIndexWorkerModeTest {
+class LuceneIndexWorkerModeTest {
 
     @Test
-    public void setModeStoreInitializesAndClearsBuffer() throws Exception {
+    void setModeStoreInitializesAndClearsBuffer() throws Exception {
         final LuceneIndexWorker worker = new LuceneIndexWorker(null, null);
 
         final List<Object> existing = new ArrayList<>();
@@ -56,7 +56,7 @@ public class LuceneIndexWorkerModeTest {
     }
 
     @Test
-    public void setModeRemoveSomeNodesInitializesRemovalSet() throws Exception {
+    void setModeRemoveSomeNodesInitializesRemovalSet() throws Exception {
         final LuceneIndexWorker worker = new LuceneIndexWorker(null, null);
 
         worker.setMode(ReindexMode.REMOVE_SOME_NODES);
@@ -68,7 +68,7 @@ public class LuceneIndexWorkerModeTest {
     }
 
     @Test
-    public void setModeNoopModesDoNotMutatePreparedBuffers() throws Exception {
+    void setModeNoopModesDoNotMutatePreparedBuffers() throws Exception {
         final LuceneIndexWorker worker = new LuceneIndexWorker(null, null);
 
         final List<Object> nodesToWrite = new ArrayList<>();
@@ -88,7 +88,7 @@ public class LuceneIndexWorkerModeTest {
     }
 
     @Test
-    public void flushNoopModesDoNotThrowWithoutDocument() {
+    void flushNoopModesDoNotThrowWithoutDocument() {
         final LuceneIndexWorker worker = new LuceneIndexWorker(null, null);
         worker.setMode(ReindexMode.UNKNOWN);
         worker.flush();

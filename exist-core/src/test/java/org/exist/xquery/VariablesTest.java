@@ -66,13 +66,13 @@ public class VariablesTest {
             """;
 
     @BeforeAll
-    public static void setup() throws XMLDBException {
+    static void setup() throws XMLDBException {
         final Collection c = createCollection("variables-test");
         writeModule(c, "mod1.xqm", MODULE);
     }
 
     @Test
-    public void callModule() throws XMLDBException {
+    void callModule() throws XMLDBException {
         final String query =
                 """
                 import module namespace mod1 = "http://mod1" at "xmldb:exist:///db/variables-test/mod1.xqm";

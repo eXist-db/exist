@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * test}, independent of which files a PR happens to touch, and fails loudly
  * the moment a constant disagrees with its paired XSD.
  */
-public class SchemaVersionSyncTest {
+class SchemaVersionSyncTest {
 
     private static final Map<String, String> SCHEMA_FILE_TO_CONSTANT = Map.of(
             "conf.xsd", SchemaVersion.CONF,
@@ -52,7 +52,7 @@ public class SchemaVersionSyncTest {
             "controller-config.xsd", SchemaVersion.CONTROLLER_CONFIG);
 
     @Test
-    public void schemaVersionConstantsMatchXsds() throws Exception {
+    void schemaVersionConstantsMatchXsds() throws Exception {
         final Path schemaDir = resolveSchemaDir();
         assertTrue(Files.isDirectory(schemaDir),
                 "schema/ directory not found at " + schemaDir + " (run from repo root: mvn test -pl exist-core)");

@@ -47,7 +47,7 @@ public class DateTimeSubtypeCompareTest {
 
     /** xs:dateTimeStamp `le` xs:dateTime — the issue #5478 reproducer. */
     @Test
-    public void dateTimeStampLeDateTime() throws XMLDBException {
+    void dateTimeStampLeDateTime() throws XMLDBException {
         final String query =
                 "declare function local:less($a as xs:string, $b as xs:dateTime) as xs:boolean { "
                 + "  if ($a='') then true() else xs:dateTime($a) <= $b "
@@ -59,7 +59,7 @@ public class DateTimeSubtypeCompareTest {
 
     /** Reverse direction: xs:dateTime vs xs:dateTimeStamp. */
     @Test
-    public void dateTimeGtDateTimeStamp() throws XMLDBException {
+    void dateTimeGtDateTimeStamp() throws XMLDBException {
         final String query =
                 "xs:dateTime('2024-02-01T00:00:00Z') gt xs:dateTimeStamp('2024-01-01T00:00:00.000Z')";
         final ResourceSet rs = embedded.executeQuery(query);
@@ -68,7 +68,7 @@ public class DateTimeSubtypeCompareTest {
 
     /** General-comparison (`=`) flavour. */
     @Test
-    public void dateTimeStampGeneralEqDateTime() throws XMLDBException {
+    void dateTimeStampGeneralEqDateTime() throws XMLDBException {
         final String query =
                 "xs:dateTimeStamp('2024-01-01T00:00:00Z') = xs:dateTime('2024-01-01T00:00:00Z')";
         final ResourceSet rs = embedded.executeQuery(query);
@@ -77,7 +77,7 @@ public class DateTimeSubtypeCompareTest {
 
     /** Sister types must still be rejected. xs:date vs xs:time → XPTY0004. */
     @Test
-    public void sisterTypesStillRejected() throws XMLDBException {
+    void sisterTypesStillRejected() throws XMLDBException {
         final String query =
                 "xs:date('2024-01-01') eq xs:time('12:00:00')";
         try {

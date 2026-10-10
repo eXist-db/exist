@@ -68,7 +68,7 @@ public class TreeLevelOrderTest {
      * </ul>
      */
     @Test
-    public void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         // create document
         // write document to the database
         store(DOC1, DOC1_NAME);

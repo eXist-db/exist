@@ -88,18 +88,18 @@ public class UnionTest {
     
     private final static String XQUERY = "/PubmedArticleSet/PubmedArticle[MedlineCitation/Article/AuthorList/Author/(ForeName|LastName) = \"Castellano\"]";
 
-    private static Collection testCollection;    
-    
+    private static Collection testCollection;
+
     @org.junit.jupiter.api.Test
-    public void unionInPredicate_withoutIndex() throws XMLDBException {
+    void unionInPredicate_withoutIndex() throws XMLDBException {
          final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
          final ResourceSet result = service.queryResource(PUBMED_DOC_NAME, XQUERY);
          
          assertEquals(1, result.getSize());
     }
-    
+
     @org.junit.jupiter.api.Test
-    public void unionInPredicate_withIndex() throws XMLDBException {
+    void unionInPredicate_withIndex() throws XMLDBException {
         storeCollectionConfig();
         
         final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
@@ -109,7 +109,7 @@ public class UnionTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void unionPersistentAndConstructedNodes() throws XMLDBException {
+    void unionPersistentAndConstructedNodes() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
         final String xquery = "doc('" + testCollection.getName() + "/" + PUBMED_DOC_NAME + "')//Language | <a/> | <b/>";
 
@@ -159,9 +159,9 @@ public class UnionTest {
        final XQueryService service = testCollection.getService(XQueryService.class);
        return service;
     }
-    
+
     @BeforeEach
-    public void clearCollectionConfig() throws XMLDBException {
+    void clearCollectionConfig() throws XMLDBException {
         final Collection colDb = testCollection.getParentCollection();
         
         final Collection colSystem = colDb.getChildCollection("system");
@@ -194,14 +194,14 @@ public class UnionTest {
     }
 
     @BeforeAll
-    public static void createTestCollection() throws Exception {
+    static void createTestCollection() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
 
     @AfterAll
-    public static void tearDown() throws Exception {
+    static void tearDown() throws Exception {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                         CollectionManagementService.class);

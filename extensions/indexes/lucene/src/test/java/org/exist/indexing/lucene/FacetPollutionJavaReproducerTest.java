@@ -55,7 +55,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FacetPollutionJavaReproducerTest {
+class FacetPollutionJavaReproducerTest {
 
     private static final Logger LOG = LogManager.getLogger(FacetPollutionJavaReproducerTest.class);
 
@@ -70,7 +70,7 @@ public class FacetPollutionJavaReproducerTest {
     private static final String EXPECT_DATE = "date" + FACET_DELIM + "2019" + FACET_DELIM + "03" + FACET_DELIM + "14";
 
     @Test
-    public void hierarchicalFacetTermsMissingAfterPolluterRemoval() throws Exception {
+    void hierarchicalFacetTermsMissingAfterPolluterRemoval() throws Exception {
         final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
         server.startDb();
 
@@ -183,7 +183,7 @@ public class FacetPollutionJavaReproducerTest {
     }
 
     @Test
-    public void hierarchicalFacetTermsPresentWithoutPolluter() throws Exception {
+    void hierarchicalFacetTermsPresentWithoutPolluter() throws Exception {
         final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
         server.startDb();
 

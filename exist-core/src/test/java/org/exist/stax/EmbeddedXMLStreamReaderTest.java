@@ -84,7 +84,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the document starting from the first node of the document.
      */
     @Test
-    public void allNodesInDocument_fromFirstChild() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInDocument_fromFirstChild() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 COMMENT,            // <!-- 1 -->
                 START_ELEMENT,      // <x>
@@ -120,7 +120,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the document element.
      */
     @Test
-    public void allNodesInDocumentElement() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInDocumentElement() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <x>
                 CHARACTERS,         // "\n  "
@@ -155,7 +155,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the "y1" element.
      */
     @Test
-    public void allNodesInY1Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInY1Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <y1>
                 CHARACTERS,         // text1
@@ -173,7 +173,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the "y2" element.
      */
     @Test
-    public void allNodesInY2Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInY2Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <y2>
                 CHARACTERS,         // text2
@@ -191,7 +191,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the "z1" element.
      */
     @Test
-    public void allNodesInZ1Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInZ1Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <z1>
                 END_ELEMENT         // </z1>
@@ -205,7 +205,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the "z1" element.
      */
     @Test
-    public void allNodesInZ2Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInZ2Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <z2>
                 END_ELEMENT         // </z2>
@@ -219,7 +219,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the document element.
      */
     @Test
-    public void allNodesInDocumentElement_fromFirstChild() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInDocumentElement_fromFirstChild() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 CHARACTERS,         // "\n  "
                 COMMENT,            // <!-- x.1 -->
@@ -251,7 +251,7 @@ public class EmbeddedXMLStreamReaderTest {
      * Attempts to read all nodes in the document element.
      */
     @Test
-    public void allNodesInDocumentElement_fromY1() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+    void allNodesInDocumentElement_fromY1() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
                 START_ELEMENT,      // <y1>
                 CHARACTERS,         // text1
@@ -388,7 +388,7 @@ public class EmbeddedXMLStreamReaderTest {
     }
 
     @BeforeAll
-    public static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
+    static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -402,7 +402,7 @@ public class EmbeddedXMLStreamReaderTest {
     }
 
     @AfterAll
-    public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {

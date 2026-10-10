@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,10 +75,10 @@ public class DataBackupTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public static File folder;
+    Path folder;
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -92,13 +91,13 @@ public class DataBackupTest {
     }
 
     @Test
-    public void backup() throws InterruptedException, IOException, EXistException, PermissionDeniedException, SAXException, LockException {
+    void backup() throws InterruptedException, IOException, EXistException, PermissionDeniedException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         // Store a document to ensure all storage systems are initialized and flushed
         storeMinimalDocument(pool);
 
-        final TestableDataBackup dataBackup = new TestableDataBackup(folder.toPath());
+        final TestableDataBackup dataBackup = new TestableDataBackup(folder);
         pool.triggerSystemTask(dataBackup);
 
         final long deadline = System.currentTimeMillis() + BACKUP_TIMEOUT_MS;

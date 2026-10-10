@@ -21,35 +21,43 @@
  */
 package org.exist.xmldb;
 
+import java.util.stream.Stream;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.util.Arrays;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+@ParameterizedClass(name = "{0}")
+@MethodSource("data")
 public class RenameCollectionTest {
 
     @RegisterExtension
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "local", "xmldb:exist://" },
-                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("local", "xmldb:exist://"),
+            Arguments.of("remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc")
+        );
     }
+    @Parameter(0)
     public String apiName;
+    @Parameter(1)
     public String baseUri;
 
     private static final String TEST_COLLECTION_NAME = "testRename";
@@ -62,10 +70,8 @@ public class RenameCollectionTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void renameSameName(String apiName, String baseUri) throws XMLDBException {
-        initRenameCollectionTest(apiName, baseUri);
-        setUp();
+    @Test
+    void renameSameName() throws XMLDBException {
         /*
          * Create the collections:
          *
@@ -97,10 +103,8 @@ public class RenameCollectionTest {
         }
     }
 
-    @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void renameDifferentName(String apiName, String baseUri) throws XMLDBException {
-        initRenameCollectionTest(apiName, baseUri);
-        setUp();
+    @Test
+    void renameDifferentName() throws XMLDBException {
         /*
          * Create the collections:
          *
@@ -126,7 +130,8 @@ public class RenameCollectionTest {
         service.move(XmldbURI.create(ZERO_COLLECTION_NAME), null, newName);
     }
 
-    private void setUp() throws XMLDBException {
+    @BeforeEach
+    void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -134,15 +139,10 @@ public class RenameCollectionTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
-    }
-
-    public void initRenameCollectionTest(String apiName, String baseUri) {
-        this.apiName = apiName;
-        this.baseUri = baseUri;
     }
 }

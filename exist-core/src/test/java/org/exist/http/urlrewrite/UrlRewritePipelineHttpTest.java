@@ -337,7 +337,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // ================================================================================
 
     @Test
-    public void findsLegacyController() throws IOException {
+    void findsLegacyController() throws IOException {
         final String testCollectionName = "test-finds-legacy-controller";
         storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
 
@@ -347,7 +347,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void findsController() throws IOException {
+    void findsController() throws IOException {
         final String testCollectionName = "test-finds-controller";
         storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
 
@@ -357,7 +357,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void prefersNonLegacyController() throws IOException {
+    void prefersNonLegacyController() throws IOException {
         final String testCollectionName = "test-prefers-non-legacy-controller";
         storeAppsDoc(testCollectionName, XQUERY_CONTROLLER_FILENAME, "application/xquery", CONTROLLER_XQUERY);
         storeAppsDoc(testCollectionName, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", LEGACY_CONTROLLER_XQUERY);
@@ -409,7 +409,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void ifModifiedSinceValueSurvivesViewHandover() throws IOException {
+    void ifModifiedSinceValueSurvivesViewHandover() throws IOException {
         final String coll = "ims-with-view";
         storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_WITH_VIEW);
         storeAppsDoc(coll, "model.xql", "application/xquery", IMS_MODEL);
@@ -427,7 +427,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void ifModifiedSinceValueIsVisibleWithoutView() throws IOException {
+    void ifModifiedSinceValueIsVisibleWithoutView() throws IOException {
         final String coll = "ims-no-view";
         storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", IMS_CONTROLLER_NO_VIEW);
         storeAppsDoc(coll, "echo.xql", "application/xquery", IMS_ECHO);
@@ -446,7 +446,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // ================================================================================
 
     @Test
-    public void multipartFormDataIsParsedForBodyMethods() throws IOException {
+    void multipartFormDataIsParsedForBodyMethods() throws IOException {
         final String coll = "multipart-method-controller";
         storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
 
@@ -467,7 +467,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void multipartFormDataIsNotParsedForGet() throws IOException {
+    void multipartFormDataIsNotParsedForGet() throws IOException {
         final String coll = "multipart-method-controller-get";
         storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", MULTIPART_CONTROLLER);
 
@@ -487,7 +487,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // ================================================================================
 
     @BeforeAll
-    public static void setupUrlRewritingTest() throws IOException {
+    static void setupUrlRewritingTest() throws IOException {
         final HttpRequest request = authenticatedRequest(
                 URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME),
                 TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
@@ -499,7 +499,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownUrlRewritingTest() throws IOException {
+    static void teardownUrlRewritingTest() throws IOException {
         final HttpRequest request = authenticatedRequest(URI.create(getRestUri(existWebServer) + URT_TEST_COLLECTION),
                 TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
                 .DELETE()
@@ -509,7 +509,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @Test
-    public void findsParentController() throws IOException {
+    void findsParentController() throws IOException {
         final XmldbURI nestedCollectionName = XmldbURI.create("nested");
         final XmldbURI docName = XmldbURI.create("test.xml");
         final String testDocument = "<hello>world</hello>";
@@ -543,7 +543,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // ================================================================================
 
     @BeforeAll
-    public static void setupViewPipelineTest() throws Exception {
+    static void setupViewPipelineTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION;
 
         storeViaRest(restUrl + "/controller.xq", VP_CONTROLLER_XQ, "application/xquery");
@@ -555,7 +555,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownViewPipelineTest() throws Exception {
+    static void teardownViewPipelineTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + VP_TEST_COLLECTION);
     }
 
@@ -565,7 +565,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
      * must receive the document as XML nodes, not as a string.
      */
     @Test
-    public void htmlWithHeadThroughViewPipeline() throws IOException {
+    void htmlWithHeadThroughViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/with-head.html";
 
@@ -596,7 +596,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
      * Tests that an HTML document WITHOUT a head element works (baseline).
      */
     @Test
-    public void htmlWithoutHeadThroughViewPipeline() throws IOException {
+    void htmlWithoutHeadThroughViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-url-rewrite/no-head.html";
 
@@ -619,7 +619,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // ================================================================================
 
     @BeforeAll
-    public static void setupXsltViewPipelineTest() throws Exception {
+    static void setupXsltViewPipelineTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION;
 
         storeViaRest(restUrl + "/controller.xql", XSLT_CONTROLLER_XQ, "application/xquery");
@@ -630,12 +630,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownXsltViewPipelineTest() throws Exception {
+    static void teardownXsltViewPipelineTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + XSLT_TEST_COLLECTION);
     }
 
     @Test
-    public void forwardThenXsltViewPipeline() throws IOException {
+    void forwardThenXsltViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-xslt-view-pipeline/test";
 
@@ -660,7 +660,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // that step's response wrapper once the view runs. --
 
     @BeforeAll
-    public static void setupSetHeaderSurvivesTest() throws Exception {
+    static void setupSetHeaderSurvivesTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION;
 
         storeViaRest(restUrl + "/controller.xql", SH_CONTROLLER_XQ, "application/xquery");
@@ -671,12 +671,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownSetHeaderSurvivesTest() throws Exception {
+    static void teardownSetHeaderSurvivesTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + SH_TEST_COLLECTION);
     }
 
     @Test
-    public void setHeaderOnForwardStepSurvivesToFinalViewResponse() throws IOException {
+    void setHeaderOnForwardStepSurvivesToFinalViewResponse() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-set-header-view-pipeline/test";
 
@@ -703,7 +703,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // all -- must NOT leak past a view step that discards that step's output. --
 
     @BeforeAll
-    public static void setupIntermediateSetHeaderTest() throws Exception {
+    static void setupIntermediateSetHeaderTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION;
 
         storeViaRest(restUrl + "/controller.xql", IH_CONTROLLER_XQ, "application/xquery");
@@ -714,12 +714,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownIntermediateSetHeaderTest() throws Exception {
+    static void teardownIntermediateSetHeaderTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + IH_TEST_COLLECTION);
     }
 
     @Test
-    public void intermediateStepHeaderDoesNotSurviveToFinalViewResponse() throws IOException {
+    void intermediateStepHeaderDoesNotSurviveToFinalViewResponse() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-intermediate-set-header/test";
 
@@ -743,7 +743,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     // must still reach the client. --
 
     @BeforeAll
-    public static void setupFinalStepSetHeaderTest() throws Exception {
+    static void setupFinalStepSetHeaderTest() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION;
 
         storeViaRest(restUrl + "/controller.xql", FH_CONTROLLER_XQ, "application/xquery");
@@ -754,12 +754,12 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
     }
 
     @AfterAll
-    public static void teardownFinalStepSetHeaderTest() throws Exception {
+    static void teardownFinalStepSetHeaderTest() throws Exception {
         deleteViaRest("http://localhost:" + existWebServer.getPort() + "/exist/rest" + FH_TEST_COLLECTION);
     }
 
     @Test
-    public void finalStepResponseSetHeaderSurvivesToClient() throws IOException {
+    void finalStepResponseSetHeaderSurvivesToClient() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
                 + "/exist/apps/test-final-step-set-header/test";
 

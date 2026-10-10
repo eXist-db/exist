@@ -21,7 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -58,17 +57,17 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class Recovery3Test {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public File tempFolder;
+    Path tempFolder;
 
     private final static int RESOURCE_COUNT = 150;
 
     @Test
-    public void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final Path dir = newFolder(tempFolder, "recovery3-data").toPath();
+    void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+        final Path dir = Files.createDirectories(tempFolder.resolve("recovery3-data"));
         for (int i = 0; i < RESOURCE_COUNT; i++) {
             Files.write(dir.resolve("doc" + i + ".xml"),
                     ("<?xml version=\"1.0\"?><movie id=\"" + i + "\"><title>Movie " + i + "</title></movie>").getBytes(StandardCharsets.UTF_8));
@@ -169,25 +168,9 @@ public class Recovery3Test {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb(true);
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 
 }

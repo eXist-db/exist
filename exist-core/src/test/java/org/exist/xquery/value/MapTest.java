@@ -37,7 +37,7 @@ public class MapTest {
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test
-    public void effectiveBooleanValue() {
+    void effectiveBooleanValue() {
         try {
             final XQueryService queryService = server.getRoot().getService(XQueryService.class);
             queryService.query("fn:boolean(map{})");

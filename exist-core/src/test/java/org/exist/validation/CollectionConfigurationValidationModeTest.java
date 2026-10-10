@@ -148,12 +148,12 @@ public class CollectionConfigurationValidationModeTest {
             """;
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    static void tearDownClass() throws Exception {
         existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
 
@@ -179,7 +179,7 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     @Test
-    public void insertModeFalse() throws XMLDBException {
+    void insertModeFalse() throws XMLDBException {
         createCollection("/db/false");
         storeCollectionXconf("/db/system/config/db/false", XCONF_NO);
 
@@ -197,7 +197,7 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     @Test
-    public void insertModeTrue() throws XMLDBException {
+    void insertModeTrue() throws XMLDBException {
         createCollection("/db/true");
         storeCollectionXconf("/db/system/config/db/true", XCONF_YES);
 
@@ -233,7 +233,7 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     @Test
-    public void insertModeAuto() throws XMLDBException {
+    void insertModeAuto() throws XMLDBException {
         createCollection("/db/auto");
         storeCollectionXconf("/db/system/config/db/auto", XCONF_AUTO);
 

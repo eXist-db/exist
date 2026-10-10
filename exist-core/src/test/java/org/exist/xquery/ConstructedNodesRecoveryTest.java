@@ -64,7 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Tests for recovery of database corruption after constructed node operations (in-memory nodes)
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
-public class ConstructedNodesRecoveryTest {
+class ConstructedNodesRecoveryTest {
 
 	private final static String xquery =
 		"""
@@ -102,22 +102,22 @@ public class ConstructedNodesRecoveryTest {
 			"<grapefruit colour=\"yellow\"/>" +
 		"</fruit>";
 
-	// we don't use @ClassRule/@Rule as we want to force corruption in some tests
+	// started and stopped by the tests themselves, not by an extension, as some tests force corruption
 	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-	/**
-	 * Issues a query against constructed nodes and then corrupts the database (intentionally)
-	 */
+    /**
+     * Issues a query against constructed nodes and then corrupts the database (intentionally)
+     */
     @Test
-	public void constructedNodesCorrupt() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
+    void constructedNodesCorrupt() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
 		constructedNodeQuery(true);
     }
-    
-	/**
-	 * Recovers from corruption (intentional) and then issues a query against constructed nodes
-	 */
+
+    /**
+     * Recovers from corruption (intentional) and then issues a query against constructed nodes
+     */
     @Test
-	public void constructedNodesRecover() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
+    void constructedNodesRecover() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
 		constructedNodeQuery(false);
 	}
 	
@@ -271,8 +271,8 @@ public class ConstructedNodesRecoveryTest {
 		return existEmbeddedServer.getBrokerPool();
 	}
 
-	@AfterEach
-	public void stopDb() {
+    @AfterEach
+    void stopDb() {
 		existEmbeddedServer.stopDb();
 	}
 }

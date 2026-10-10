@@ -80,7 +80,7 @@ public class MoveOverwriteCollectionTest {
      * i.e. its nodes are no longer present in the structural index
      */
     @Test
-    public void moveAndOverwriteCollection() throws Exception  {
+    void moveAndOverwriteCollection() throws Exception  {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Tuple3<Collection, Collection, Collection> collections = store(broker);

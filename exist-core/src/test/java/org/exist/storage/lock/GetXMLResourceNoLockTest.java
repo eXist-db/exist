@@ -60,9 +60,9 @@ public class GetXMLResourceNoLockTest {
 
     private static String EMPTY_BINARY_FILE = "What's an up dog?";
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
-	
-	@org.junit.jupiter.api.Test
-	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
+
+    @org.junit.jupiter.api.Test
+    void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
 
 		storeTestResource();
 

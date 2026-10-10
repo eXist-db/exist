@@ -135,7 +135,7 @@ public class XQueryTriggerChainTest {
             "</exist:collection>";
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -170,7 +170,7 @@ public class XQueryTriggerChainTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xqueryTriggerChain() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
+    void xqueryTriggerChain() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final String uuid = UUID.randomUUID().toString();
         final String documentName = uuid + ".xml";
         final String documentContent = "<id>" + uuid + "</id>";

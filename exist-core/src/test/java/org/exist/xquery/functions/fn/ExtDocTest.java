@@ -22,10 +22,12 @@
 
 package org.exist.xquery.functions.fn;
 
+import java.util.stream.Stream;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -40,7 +42,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -54,13 +55,13 @@ public class ExtDocTest {
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"external-doc-ns-1", "<elem1 xmlns:xyz=\"http://xyz\"/>", null},
-                {"external-doc-ns-2", "<elem1 xmlns=\"hello\" xmlns:xyz=\"http://xyz\"/>", null},
-                {"external-doc-ns-3", "<abc:elem1 xmlns:abc=\"hello\" xmlns:xyz=\"http://xyz\"/>", null},
-                {"external-doc-ns-4", "<abc:elem1 xmlns:abc=\"hello\" xmlns:xyz=\"http://xyz\" xmlns=\"123\"/>", null}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("external-doc-ns-1", "<elem1 xmlns:xyz=\"http://xyz\"/>", null),
+            Arguments.of("external-doc-ns-2", "<elem1 xmlns=\"hello\" xmlns:xyz=\"http://xyz\"/>", null),
+            Arguments.of("external-doc-ns-3", "<abc:elem1 xmlns:abc=\"hello\" xmlns:xyz=\"http://xyz\"/>", null),
+            Arguments.of("external-doc-ns-4", "<abc:elem1 xmlns:abc=\"hello\" xmlns:xyz=\"http://xyz\" xmlns=\"123\"/>", null)
+        );
     }
     public String docName;
     public String docContent;
@@ -73,14 +74,14 @@ public class ExtDocTest {
     }
 
     @AfterEach
-    public void removeExtDoc() {
+    void removeExtDoc() {
         if (externalDoc != null) {
             FileUtils.deleteQuietly(externalDoc);
         }
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void parse(String docName, String docContent, Path externalDoc) throws XMLDBException, IOException {
+    void parse(String docName, String docContent, Path externalDoc) throws XMLDBException, IOException {
         initExtDocTest(docName, docContent, externalDoc);
         storeExtDoc();
         final URI docUri = this.externalDoc.toUri();

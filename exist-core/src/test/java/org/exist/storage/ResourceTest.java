@@ -41,6 +41,7 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -54,21 +55,22 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author wessels
  */
-public class ResourceTest {
+class ResourceTest {
     
     private final static String EMPTY_BINARY_FILE = "";
     private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
+    @AutoClose("stopDb")
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         BrokerPool.stopAll(false);
     }
 
     @Test
-    public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -76,7 +78,7 @@ public class ResourceTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        read(pool);
+        assertRead(pool);
     }
 
     private void store(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
@@ -96,14 +98,13 @@ public class ResourceTest {
         }
     }
 
-    private void read(final BrokerPool pool) throws EXistException,  PermissionDeniedException, IOException, LockException, TriggerException {
+    private void assertRead(final BrokerPool pool) throws EXistException,  PermissionDeniedException, IOException, LockException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         
         byte[] data = null;
         
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
-
 
             final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 
@@ -136,7 +137,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void storeAndRead2() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    void storeAndRead2() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
     	store(pool);
@@ -144,10 +145,10 @@ public class ResourceTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        read2(pool);
+        assertRead2(pool);
     }
 
-    private void read2(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    private void assertRead2(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
 
         byte[] data = null;
@@ -191,13 +192,8 @@ public class ResourceTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @AfterEach
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
-    }
-
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

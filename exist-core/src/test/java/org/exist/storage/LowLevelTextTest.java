@@ -59,8 +59,8 @@ public class LowLevelTextTest {
 
 	private CompiledXQuery preCompiledXQuery;
 
-	@BeforeEach
-	public void setUp() throws DatabaseConfigurationException, EXistException, XPathException, PermissionDeniedException, IOException {
+    @BeforeEach
+    void setUp() throws DatabaseConfigurationException, EXistException, XPathException, PermissionDeniedException, IOException {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 		xqueryPool = pool.getXQueryPool();
@@ -71,30 +71,30 @@ public class LowLevelTextTest {
 		preCompiledXQuery = xquery.compile(context, stringSource);
 	}
 
-	@AfterEach
-	public void tearDown() {
+    @AfterEach
+    void tearDown() {
 		if(broker != null) {
 			broker.close();
 		}
 	}
 
-	@org.junit.jupiter.api.Test
-	public void borrowCompiledXQuery1() throws PermissionDeniedException {
+    @org.junit.jupiter.api.Test
+    void borrowCompiledXQuery1() throws PermissionDeniedException {
 		// put the preCompiledXQuery in cache - NOTE: returnCompiledXQuery() is not a good name
 		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	@org.junit.jupiter.api.Test
-	public void borrowCompiledXQuery2() throws PermissionDeniedException {
+    @org.junit.jupiter.api.Test
+    void borrowCompiledXQuery2() throws PermissionDeniedException {
 		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	@org.junit.jupiter.api.Test
-	public void borrowCompiledXQuery3() throws PermissionDeniedException {
+    @org.junit.jupiter.api.Test
+    void borrowCompiledXQuery3() throws PermissionDeniedException {
 		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
@@ -102,22 +102,22 @@ public class LowLevelTextTest {
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	/**
-	 * test with a new StringSource object having same content
-	 */
-	@org.junit.jupiter.api.Test
-	public void borrowCompiledXQueryNewStringSource() throws PermissionDeniedException {
+    /**
+     * test with a new StringSource object having same content
+     */
+    @org.junit.jupiter.api.Test
+    void borrowCompiledXQueryNewStringSource() throws PermissionDeniedException {
 		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		callAndTestBorrowCompiledXQuery(localStringSource);
 	}
 
-	/**
-	 * test with a new StringSource object having same content
-	 */
-	@org.junit.jupiter.api.Test
-	public void borrowCompiledXQueryNewStringSource2() throws PermissionDeniedException {
+    /**
+     * test with a new StringSource object having same content
+     */
+    @org.junit.jupiter.api.Test
+    void borrowCompiledXQueryNewStringSource2() throws PermissionDeniedException {
 		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 

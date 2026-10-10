@@ -36,13 +36,13 @@ class VectorOperationMetricsTest {
     static final ExistEmbeddedServer SERVER = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void resetMetrics() {
+    void resetMetrics() {
         final String instanceId = SERVER.getBrokerPool().getId();
         VectorMetrics.forInstance(instanceId).reset();
     }
 
     @Test
-    public void bridgeRecordsKnnViaLifecycleHook() {
+    void bridgeRecordsKnnViaLifecycleHook() {
         final String instanceId = SERVER.getBrokerPool().getId();
         VectorOperationMetrics.recordKnn(instanceId, 42);
         assertEquals(1, VectorMetrics.forInstance(instanceId).getKnnQueryCount());
@@ -50,7 +50,7 @@ class VectorOperationMetricsTest {
     }
 
     @Test
-    public void bridgeRecordsEmbedViaLifecycleHook() {
+    void bridgeRecordsEmbedViaLifecycleHook() {
         final String instanceId = SERVER.getBrokerPool().getId();
         VectorOperationMetrics.recordEmbed(instanceId, 99);
         assertEquals(1, VectorMetrics.forInstance(instanceId).getEmbedCallCount());
@@ -58,7 +58,7 @@ class VectorOperationMetricsTest {
     }
 
     @Test
-    public void bridgeRoutesMetricsByInstanceId() {
+    void bridgeRoutesMetricsByInstanceId() {
         VectorOperationMetrics.register("bridge-a", (operation, durationNanos) -> {
             switch (operation) {
                 case EMBED -> VectorMetrics.forInstance("bridge-a").recordEmbed(durationNanos);
@@ -87,7 +87,7 @@ class VectorOperationMetricsTest {
     }
 
     @Test
-    public void shutdownHookClearsMetricsBridge() {
+    void shutdownHookClearsMetricsBridge() {
         final BrokerPool pool = SERVER.getBrokerPool();
         final String instanceId = pool.getId();
         VectorExtensionLifecycle.onBrokerPoolShutdown(pool);

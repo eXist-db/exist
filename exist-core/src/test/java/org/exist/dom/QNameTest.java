@@ -38,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class QNameTest {
+class QNameTest {
 
     @Test
-    public void validLocalPart_1() {
+    void validLocalPart_1() {
         final QName qName = new QName("valid-name", XMLConstants.NULL_NS_URI);
         assertEquals("valid-name", qName.getLocalPart());
         assertEquals(XMLConstants.NULL_NS_URI, qName.getNamespaceURI());
@@ -50,59 +50,59 @@ public class QNameTest {
     }
 
     @Test
-    public void invalidLocalPart_1() {
+    void invalidLocalPart_1() {
         final QName qname = new QName("invalid^Name", XMLConstants.NULL_NS_URI);
         assertEquals(INVALID_LOCAL_PART.val, qname.isValid(false));
     }
 
     @Test
-    public void invalidLocalPart_validNamespace_1() {
+    void invalidLocalPart_validNamespace_1() {
         final QName qname = new QName("invalid^Name", "http://some/ns");
         assertEquals(INVALID_LOCAL_PART.val, qname.isValid(false));
     }
 
     @Test
-    public void validWildcard_1() {
+    void validWildcard_1() {
         final QName qName = new QName.WildcardLocalPartQName("abc");
         assertEquals(VALID.val, qName.isValid(true));
     }
 
     @Test
-    public void invalidWildcard_1() {
+    void invalidWildcard_1() {
         final QName qName = new QName.WildcardLocalPartQName("abc");
         assertEquals(INVALID_LOCAL_PART.val, qName.isValid(false));
     }
 
     @Test
-    public void validWildcard_2() {
+    void validWildcard_2() {
         final QName qName = new QName.WildcardNamespaceURIQName("xyz");
         assertEquals(VALID.val, qName.isValid(true));
     }
 
     @Test
-    public void validWildcard_3() {
+    void validWildcard_3() {
         final QName qName = QName.WildcardQName.getInstance();
         assertEquals(VALID.val, qName.isValid(true));
     }
 
     @Test
-    public void invalidWildcard_3() {
+    void invalidWildcard_3() {
         final QName qName = QName.WildcardQName.getInstance();
         assertEquals(INVALID_LOCAL_PART.val ^ INVALID_PREFIX.val, qName.isValid(false));
     }
 
     @Test
-    public void isQName_illegalFormat1() {
+    void isQName_illegalFormat1() {
         assertEquals(ILLEGAL_FORMAT.val, QName.isQName("emp:"));
     }
 
     @Test
-    public void isQName_illegalFormat2() {
+    void isQName_illegalFormat2() {
         assertEquals(ILLEGAL_FORMAT.val, QName.isQName(":emp"));
     }
 
     @Test
-    public void testParseEqNameWithDefaultNS() throws XPathException, QName.IllegalQNameException {
+    void testParseEqNameWithDefaultNS() throws XPathException, QName.IllegalQNameException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace(XMLConstants.DEFAULT_NS_PREFIX, "a");
         final QName parsed = QName.parse(context, "Q{a}b", XMLConstants.DEFAULT_NS_PREFIX);
@@ -110,7 +110,7 @@ public class QNameTest {
         assertEquals("a", parsed.getNamespaceURI());
     }
     @Test
-    public void testParseEqNameWithNSBound() throws XPathException, QName.IllegalQNameException {
+    void testParseEqNameWithNSBound() throws XPathException, QName.IllegalQNameException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("c", "a");
         final QName parsed = QName.parse(context, "Q{a}b", XMLConstants.DEFAULT_NS_PREFIX);
@@ -119,7 +119,7 @@ public class QNameTest {
     }
 
     @Test
-    public void testParseInvalidEqName() {
+    void testParseInvalidEqName() {
         try {
             QName.parse(new XQueryContext(), "Q{:b", XMLConstants.DEFAULT_NS_PREFIX);
             fail("invalid QName in clark notation was parsed");
@@ -129,7 +129,7 @@ public class QNameTest {
     }
 
     @Test
-    public void testParseClarkNotationWithDefaultNS() throws XPathException, QName.IllegalQNameException {
+    void testParseClarkNotationWithDefaultNS() throws XPathException, QName.IllegalQNameException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace(XMLConstants.DEFAULT_NS_PREFIX, "a");
         final QName parsed = QName.parse(context, "{a}b", XMLConstants.DEFAULT_NS_PREFIX);
@@ -137,7 +137,7 @@ public class QNameTest {
         assertEquals("a", parsed.getNamespaceURI());
     }
     @Test
-    public void testParseClarkNotationWithNSBound() throws XPathException, QName.IllegalQNameException {
+    void testParseClarkNotationWithNSBound() throws XPathException, QName.IllegalQNameException {
         final XQueryContext context = new XQueryContext();
         context.declareNamespace("c", "a");
         final QName parsed = QName.parse(context, "{a}b", XMLConstants.DEFAULT_NS_PREFIX);
@@ -146,7 +146,7 @@ public class QNameTest {
     }
 
     @Test
-    public void testParseInvalidClarkNotation() throws XPathException, QName.IllegalQNameException {
+    void testParseInvalidClarkNotation() throws XPathException, QName.IllegalQNameException {
         try {
             QName.parse(new XQueryContext(), "{a:b", XMLConstants.DEFAULT_NS_PREFIX);
             fail("invalid QName in clark notation was parsed");
@@ -156,7 +156,7 @@ public class QNameTest {
     }
 
     @Test
-    public void identicalComparesAllFourParts() {
+    void identicalComparesAllFourParts() {
         final QName qname = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
 
         assertTrue(qname.isIdenticalTo(new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE)));
@@ -180,7 +180,7 @@ public class QNameTest {
     }
 
     @Test
-    public void identicalHashCodeAgreesWithIsIdenticalTo() {
+    void identicalHashCodeAgreesWithIsIdenticalTo() {
         final QName qname = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
         final QName copy = new QName("id", XMLConstants.XML_NS_URI, "xml", ElementValue.ATTRIBUTE);
 

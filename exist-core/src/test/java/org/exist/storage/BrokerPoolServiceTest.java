@@ -41,6 +41,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.ArrayList;
@@ -55,7 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class BrokerPoolServiceTest {
+class BrokerPoolServiceTest {
 
     // NOTE: this is a concurrent list because it is shared between the test and the BackgroundJobsBrokerPoolService
     private final List<Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>>> futures = new CopyOnWriteArrayList<>();
@@ -70,7 +75,7 @@ public class BrokerPoolServiceTest {
      * stops.
      */
     @Test
-    public void backgroundJobsShutdownCleanly() throws EXistException, IOException, DatabaseConfigurationException, InterruptedException, ExecutionException {
+    void backgroundJobsShutdownCleanly() throws EXistException, IOException, DatabaseConfigurationException, InterruptedException, ExecutionException {
         // Create and add our BackgroundJobsBrokerPoolService to the BrokerPool
         final BrokerPoolService testBrokerPoolService = new BackgroundJobsBrokerPoolService(futures);
         final Properties configProps = new Properties();
@@ -90,12 +95,17 @@ public class BrokerPoolServiceTest {
 
         // check results
         int totalBackgroundJobResults = 0;
-        for (final Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>> future : futures) {
+        for (int i = 0; i < futures.size(); i++) {
+            final Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>> future = futures.get(i);
             try {
                 final List<BackgroundJobsBrokerPoolService.TimestampAndId> backgroundJobResult = future.get();
 
-                // should contain at least 1 result
-                assertFalse(backgroundJobResult.isEmpty());
+                // the jobs that got a thread straight away have been running for the whole test, so they
+                // must contain at least 1 result; the others only start once those have stopped, which is
+                // after the BrokerPool began to shut down, and may be refused a broker (see BackgroundJob)
+                if (i < BackgroundJobsBrokerPoolService.NUM_THREADS) {
+                    assertFalse(backgroundJobResult.isEmpty());
+                }
 
                 totalBackgroundJobResults += backgroundJobResult.size();
 
@@ -117,10 +127,57 @@ public class BrokerPoolServiceTest {
         assertTrue(totalBackgroundJobResults > 0);
     }
 
+    /**
+     * The BrokerPool changes to its shutting down state before it stops its services, and refuses a new broker
+     * from then on when it has no idle one. A background job that wakes up in that window must finish cleanly.
+     * This is deterministic (the pool is a mock that always refuses), unlike backgroundJobsShutdownCleanly, which
+     * only hits that window by chance.
+     */
+    @Test
+    void backgroundJobRefusedABrokerWhileShuttingDownFinishesCleanly() throws Exception {
+        final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
+        expect(mockBrokerPool.getBroker()).andThrow(new EXistException("BrokerPool is not operational (state: SHUTTING_DOWN_MULTI_USER_MODE)")).anyTimes();
+        expect(mockBrokerPool.isShuttingDown()).andReturn(true).anyTimes();
+        replay(mockBrokerPool);
+
+        final BackgroundJobsBrokerPoolService service = new BackgroundJobsBrokerPoolService(futures);
+        service.startMultiUser(mockBrokerPool);
+        try {
+            for (final Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>> future : futures) {
+                // the job ends without an exception, and without a result as it never got a broker
+                assertTrue(future.get(30, TimeUnit.SECONDS).isEmpty());
+            }
+        } finally {
+            service.stopMultiUser(mockBrokerPool);
+        }
+    }
+
+    /**
+     * Not getting a broker for any other reason than a shutting down BrokerPool is still a failure of the job.
+     */
+    @Test
+    void backgroundJobRefusedABrokerWhileNotShuttingDownFails() throws Exception {
+        final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
+        expect(mockBrokerPool.getBroker()).andThrow(new EXistException("no broker")).anyTimes();
+        expect(mockBrokerPool.isShuttingDown()).andReturn(false).anyTimes();
+        replay(mockBrokerPool);
+
+        final BackgroundJobsBrokerPoolService service = new BackgroundJobsBrokerPoolService(futures);
+        service.startMultiUser(mockBrokerPool);
+        try {
+            for (final Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>> future : futures) {
+                final ExecutionException e = assertThrows(ExecutionException.class, () -> future.get(30, TimeUnit.SECONDS));
+                assertInstanceOf(EXistException.class, e.getCause());
+            }
+        } finally {
+            service.stopMultiUser(mockBrokerPool);
+        }
+    }
+
     public static class BackgroundJobsBrokerPoolService implements BrokerPoolService {
         private static final Logger LOG = LogManager.getLogger(BackgroundJobsBrokerPoolService.class);
 
-        private static final int NUM_THREADS = 10;
+        static final int NUM_THREADS = 10;
         private static final int NUM_JOBS = 30;  // It is intentional that there are more jobs than threads
         private static final long JOB_LOOP_DELAY = 1000;
 
@@ -211,6 +268,15 @@ public class BrokerPoolServiceTest {
                         final String id = "job_" + jobId + "_" + broker.getId();
 
                         list.add(new TimestampAndId(timestamp, id));
+                    } catch (final EXistException e) {
+                        // The BrokerPool changes to its shutting down state before it stops this service
+                        // (which is what tells the jobs to stop), and from then on it refuses a new broker
+                        // when it has no idle one. A job that wakes up in between is finished, any other
+                        // reason for not getting a broker is a failure.
+                        if (brokerPool.isShuttingDown()) {
+                            return list;
+                        }
+                        throw e;
                     }
 
                     // just to slow things down a little

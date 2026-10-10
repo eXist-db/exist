@@ -51,10 +51,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class GetData2Test {
+class GetData2Test {
 
     @Test
-    public void xmlChunkedTransferNonBlockingAvailable() throws XPathException, IOException, SAXException {
+    void xmlChunkedTransferNonBlockingAvailable() throws XPathException, IOException, SAXException {
         final String content = "<hello>world</hello>";
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
 
@@ -100,7 +100,7 @@ public class GetData2Test {
     }
 
     @Test
-    public void xmlChunkedTransferNonBlockingNoneAvailable() throws XPathException, IOException {
+    void xmlChunkedTransferNonBlockingNoneAvailable() throws XPathException, IOException {
         final String content = "<hello>world</hello>";
         try (final InputStream is = new ZeroAvailableInputStream(content.getBytes(StandardCharsets.UTF_8))) {
 

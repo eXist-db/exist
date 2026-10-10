@@ -74,14 +74,14 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlDocumentGetsDoctype() throws Exception {
+    void htmlDocumentGetsDoctype() throws Exception {
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "5.0");
         assertTrue(result.contains("<!DOCTYPE html>"),
                 "HTML document should have DOCTYPE: " + result);
     }
 
     @Test
-    public void htmlFragmentNoDoctype() throws Exception {
+    void htmlFragmentNoDoctype() throws Exception {
         final String result = serialize("<p>hello</p>", "html", "5.0");
         assertFalse(result.contains("<!DOCTYPE"),
                 "HTML fragment should NOT have DOCTYPE: " + result);
@@ -90,21 +90,21 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlFragmentDivNoDoctype() throws Exception {
+    void htmlFragmentDivNoDoctype() throws Exception {
         final String result = serialize("<div><span>text</span></div>", "html", "5.0");
         assertFalse(result.contains("<!DOCTYPE"),
                 "HTML div fragment should NOT have DOCTYPE: " + result);
     }
 
     @Test
-    public void htmlFragmentListNoDoctype() throws Exception {
+    void htmlFragmentListNoDoctype() throws Exception {
         final String result = serialize("<li>item</li>", "html", "5.0");
         assertFalse(result.contains("<!DOCTYPE"),
                 "HTML li fragment should NOT have DOCTYPE: " + result);
     }
 
     @Test
-    public void xhtmlDocumentGetsDoctype() throws Exception {
+    void xhtmlDocumentGetsDoctype() throws Exception {
         final String result = serialize(
                 "<html xmlns='http://www.w3.org/1999/xhtml'><body><p>hello</p></body></html>",
                 "xhtml", "5.0");
@@ -113,7 +113,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void xhtmlFragmentNoDoctype() throws Exception {
+    void xhtmlFragmentNoDoctype() throws Exception {
         final String result = serialize(
                 "<p xmlns='http://www.w3.org/1999/xhtml'>hello</p>",
                 "xhtml", "5.0");
@@ -122,7 +122,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlSuppressIndentation() throws Exception {
+    void htmlSuppressIndentation() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
             final XQuery xqueryService = pool.getXQueryService();
@@ -149,7 +149,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlSuppressIndentationViaFnSerialize() throws Exception {
+    void htmlSuppressIndentationViaFnSerialize() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
             final XQuery xqueryService = pool.getXQueryService();
@@ -168,7 +168,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlCdataSectionElementsSuppressed() throws Exception {
+    void htmlCdataSectionElementsSuppressed() throws Exception {
         // For HTML method, cdata-section-elements should be IGNORED
         // Text should not be wrapped in CDATA markers
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -198,7 +198,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void htmlScriptAttributeEscaped() throws Exception {
+    void htmlScriptAttributeEscaped() throws Exception {
         // In HTML5, attributes on script elements MUST be escaped
         // but text content inside script elements must NOT be escaped
         final String result = serialize("<html><head><script language='Jack&amp;Jill'>go &amp;&amp; run();</script></head><body/></html>",
@@ -210,7 +210,7 @@ public class HTML5FragmentTest {
     }
 
     @Test
-    public void html40NoDoctypeWithoutPublicSystem() throws Exception {
+    void html40NoDoctypeWithoutPublicSystem() throws Exception {
         // HTML 4.0 without doctype-public/doctype-system should not emit DOCTYPE
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "4.0");
         assertFalse(result.contains("<!DOCTYPE"),

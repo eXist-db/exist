@@ -29,6 +29,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ReflectionSupport;
+import org.junit.platform.engine.CancellationToken;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
@@ -192,13 +193,19 @@ public final class XQSuiteTestEngine implements TestEngine {
         final TestDescriptor root = request.getRootTestDescriptor();
         listener.executionStarted(root);
         final XQSuiteSettings settings = new XQSuiteSettings(request.getConfigurationParameters());
+        final CancellationToken cancellation = request.getCancellationToken();
         for (final TestDescriptor suite : new ArrayList<>(root.getChildren())) {
-            runSuite((SuiteDescriptor) suite, listener, settings);
+            if (cancellation.isCancellationRequested()) {
+                listener.executionSkipped(suite, "Not run: the test run was cancelled");
+            } else {
+                runSuite((SuiteDescriptor) suite, listener, settings, cancellation);
+            }
         }
         listener.executionFinished(root, TestExecutionResult.successful());
     }
 
-    private static void runSuite(final SuiteDescriptor suite, final EngineExecutionListener listener, final XQSuiteSettings settings) {
+    private static void runSuite(final SuiteDescriptor suite, final EngineExecutionListener listener, final XQSuiteSettings settings,
+            final CancellationToken cancellation) {
         final String unusable = unusableBecause;
         if (unusable != null) {
             listener.executionSkipped(suite, "Not run: " + unusable);
@@ -214,7 +221,7 @@ public final class XQSuiteTestEngine implements TestEngine {
                 server.startDb();
                 started = true;
                 invokeStatic(suite.suiteClass(), BeforeAll.class);
-                new SuiteRun(suite, listener, server.getBrokerPool(), settings).run();
+                new SuiteRun(suite, listener, server.getBrokerPool(), settings, cancellation).run();
             }
         } catch (final Throwable t) {
             failure = t;

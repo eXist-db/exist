@@ -39,7 +39,7 @@ public class BrokerPoolNoRecoveryTest {
             new ExistEmbeddedServer(createConfigProperties(), true, true);
 
     @Test
-    public void testSync_Recovery_Disabled() {
+    void testSync_Recovery_Disabled() {
         // For this test it is sufficient to have startDb() called in ExistEmbeddedServer.
         // With disabled recovery, this used to fail with a java.util.NoSuchElementException: No value present
         assertNotNull(existEmbeddedServer.getBrokerPool()); // for Codacy alone

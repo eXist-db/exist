@@ -67,7 +67,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     private static final String USER1_PWD = "user1";
 
     @BeforeEach
-    public void beforeClass() throws XMLDBException {
+    void beforeClass() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final UserManagementService ums = root.getService(UserManagementService.class);
 
@@ -80,7 +80,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginExplicitSessionCreation() throws IOException {
+    void loginExplicitSessionCreation() throws IOException {
         final HttpClient client = newSessionClient();
 
         // explicitly create a new session
@@ -115,7 +115,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginImplicitSessionCreateSessionFalse() throws IOException {
+    void loginImplicitSessionCreateSessionFalse() throws IOException {
         final HttpClient client = newSessionClient();
 
         // login to the database
@@ -146,7 +146,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginImplicitSessionCreateSessionTrue() throws IOException {
+    void loginImplicitSessionCreateSessionTrue() throws IOException {
         final HttpClient client = newSessionClient();
 
         // login to the database
@@ -177,7 +177,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginOnInvalidatedSessionCreateSessionFalseSeparateHttpCalls() throws IOException {
+    void loginOnInvalidatedSessionCreateSessionFalseSeparateHttpCalls() throws IOException {
         final HttpClient client = newSessionClient();
 
         // explicitly create a new session
@@ -216,7 +216,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginOnInvalidatedSessionCreateSessionTrueSeparateHttpCalls() throws IOException {
+    void loginOnInvalidatedSessionCreateSessionTrueSeparateHttpCalls() throws IOException {
         final HttpClient client = newSessionClient();
 
         // explicitly create a new session
@@ -255,7 +255,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginOnInvalidatedSessionCreateSessionFalseSameHttpCall() throws IOException {
+    void loginOnInvalidatedSessionCreateSessionFalseSameHttpCall() throws IOException {
         final HttpClient client = newSessionClient();
 
         // explicitly create a new session
@@ -290,7 +290,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     @Test
-    public void loginOnInvalidatedSessionCreateSessionTrueSameHttpCall() throws IOException {
+    void loginOnInvalidatedSessionCreateSessionTrueSameHttpCall() throws IOException {
         final HttpClient client = newSessionClient();
 
         // explicitly create a new session

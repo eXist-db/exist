@@ -47,10 +47,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author aretter
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DocumentImplTest {
+class DocumentImplTest {
 
     @Test
-    public void copyOf_updates_metadata_created_and_lastModified() throws PermissionDeniedException {
+    void copyOf_updates_metadata_created_and_lastModified() throws PermissionDeniedException {
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -89,7 +89,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void isSameNode_sameDoc() {
+    void isSameNode_sameDoc() {
         final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -117,7 +117,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void isSameNode_differentDoc() {
+    void isSameNode_differentDoc() {
         final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -148,7 +148,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void isSameNode_nonDoc() {
+    void isSameNode_nonDoc() {
         final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);

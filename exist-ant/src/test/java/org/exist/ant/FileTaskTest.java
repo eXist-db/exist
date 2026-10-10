@@ -42,7 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class FileTaskTest extends AbstractTaskTest {
+class FileTaskTest extends AbstractTaskTest {
 
     private static final String TEST_COLLECTION_NAME = "test";
     private static final String TEST_RESOURCE_NAME = "test.xml";
@@ -59,7 +59,7 @@ public class FileTaskTest extends AbstractTaskTest {
     }
 
     @BeforeEach
-    public void fileSetup() throws XMLDBException {
+    void fileSetup() throws XMLDBException {
         final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
         final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.class);
         res.setContent("<test/>");
@@ -67,13 +67,13 @@ public class FileTaskTest extends AbstractTaskTest {
     }
 
     @AfterEach
-    public void fileCleanup() throws XMLDBException {
+    void fileCleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
     }
 
     @Test
-    public void chmod() throws XMLDBException {
+    void chmod() throws XMLDBException {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_RESOURCE, TEST_RESOURCE_NAME);
@@ -89,7 +89,7 @@ public class FileTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void chown() throws XMLDBException {
+    void chown() throws XMLDBException {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_RESOURCE, TEST_RESOURCE_NAME);
@@ -109,7 +109,7 @@ public class FileTaskTest extends AbstractTaskTest {
 
     @Disabled("Would require implementing an UnlockResourceTask as well")
     @Test
-    public void lockResource() {
+    void lockResource() {
         buildFileRule.executeTarget("lockResource");
     }
 }

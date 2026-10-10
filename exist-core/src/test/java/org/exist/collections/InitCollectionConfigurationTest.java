@@ -47,7 +47,7 @@ public class InitCollectionConfigurationTest {
      * Ensure that etc/collection.xconf.init was deployed at startup
      */
     @Test
-    public void deployedInitCollectionConfig() throws EXistException, PermissionDeniedException, LockException {
+    void deployedInitCollectionConfig() throws EXistException, PermissionDeniedException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             try (final Collection collection = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("db"), Lock.LockMode.READ_LOCK)) {

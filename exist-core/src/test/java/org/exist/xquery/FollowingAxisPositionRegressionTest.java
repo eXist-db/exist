@@ -56,9 +56,10 @@ public class FollowingAxisPositionRegressionTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String LARGE_DOC = "/db/words-large.xml";
+    private static final int ROUNDS = 5;
 
     @BeforeAll
-    public static void storeTestDocuments() throws XMLDBException {
+    static void storeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query(
@@ -74,7 +75,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @AfterAll
-    public static void removeTestDocuments() throws XMLDBException {
+    static void removeTestDocuments() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("xmldb:remove('/db', 'words-small.xml')");
@@ -82,7 +83,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void reproducerOutputAtMidpoint() throws XMLDBException {
+    void reproducerOutputAtMidpoint() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet rs = xqs.query(
@@ -99,7 +100,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void reproducerOutputAtLatePosition() throws XMLDBException {
+    void reproducerOutputAtLatePosition() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         final ResourceSet rs = xqs.query(
@@ -116,7 +117,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void followingExcludesDescendants() throws XMLDBException {
+    void followingExcludesDescendants() throws XMLDBException {
         // The fix changes the StAX reader to start at the reference node, so
         // its descendant events come first. The FollowingFilter must still
         // exclude them.
@@ -144,7 +145,7 @@ public class FollowingAxisPositionRegressionTest {
     }
 
     @Test
-    public void followingAxisIsPositionIndependent() throws XMLDBException {
+    void followingAxisIsPositionIndependent() throws XMLDBException {
         // On a 50,000-element flat document, isolating the wildcard following::
         // axis. Before the fix, the late-position run took 1.6-2x the early-
         // position run because the StAX reader walked from the document root.
@@ -158,14 +159,26 @@ public class FollowingAxisPositionRegressionTest {
         xqs.query(followingOnlyQuery(25000));
         xqs.query(followingOnlyQuery(25000));
 
-        final long earlyMs = timeQuery(xqs, followingOnlyQuery(5000));
-        final long lateMs = timeQuery(xqs, followingOnlyQuery(45000));
+        // Five rounds in alternating order, each position judged by its fastest round: load slows a
+        // round down but never makes it faster than the code can run, so one slow round cannot decide
+        // the outcome.
+        long earlyMs = Long.MAX_VALUE;
+        long lateMs = Long.MAX_VALUE;
+        for (int round = 0; round < ROUNDS; round++) {
+            if (round % 2 == 0) {
+                earlyMs = Math.min(earlyMs, timeQuery(xqs, followingOnlyQuery(5000)));
+                lateMs = Math.min(lateMs, timeQuery(xqs, followingOnlyQuery(45000)));
+            } else {
+                lateMs = Math.min(lateMs, timeQuery(xqs, followingOnlyQuery(45000)));
+                earlyMs = Math.min(earlyMs, timeQuery(xqs, followingOnlyQuery(5000)));
+            }
+        }
 
         final long threshold = Math.max(500L, earlyMs * 3L);
         assertTrue(
                 lateMs <= threshold,
                 "following:: at position 45000 took " + lateMs + "ms; "
-                        + "at position 5000 it took " + earlyMs + "ms; "
+                        + "at position 5000 it took " + earlyMs + "ms (best of " + ROUNDS + " rounds each); "
                         + "threshold=" + threshold + "ms (3x early or 500ms min). "
                         + "If this regressed, the StAX reader is probably walking "
                         + "from the document root again - see issue #2129.");

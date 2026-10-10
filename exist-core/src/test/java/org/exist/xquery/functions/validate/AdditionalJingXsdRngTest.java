@@ -42,7 +42,7 @@ public class AdditionalJingXsdRngTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @org.junit.jupiter.api.Test
-    public void testValidateXSDwithJing() throws XMLDBException {
+    void testValidateXSDwithJing() throws XMLDBException {
         final String query = """
                 let $v := <doc>
                 	<title>Title</title>
@@ -71,7 +71,7 @@ public class AdditionalJingXsdRngTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testValidateXSDwithJing_invalid() throws XMLDBException {
+    void testValidateXSDwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
                 	<title1>Title</title1>
@@ -100,7 +100,7 @@ public class AdditionalJingXsdRngTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testValidateRNGwithJing() throws XPathException, XMLDBException {
+    void testValidateRNGwithJing() throws XPathException, XMLDBException {
         final String query = """
                 let $v := <doc>
                 	<title>Title</title>
@@ -141,7 +141,7 @@ public class AdditionalJingXsdRngTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void testValidateRNGwithJing_invalid() throws XMLDBException {
+    void testValidateRNGwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
                 	<title1>Title</title1>
@@ -182,7 +182,7 @@ public class AdditionalJingXsdRngTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void repeatTests() throws XMLDBException, XPathException {
+    void repeatTests() throws XMLDBException, XPathException {
         for (int i = 0; i < 1000; i++) {
             testValidateRNGwithJing();
             testValidateRNGwithJing_invalid();

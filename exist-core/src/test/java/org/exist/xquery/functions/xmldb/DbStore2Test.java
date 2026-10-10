@@ -78,7 +78,7 @@ public class DbStore2Test {
     }
 
     @BeforeAll
-    public static void beforeClass() throws Exception {
+    static void beforeClass() throws Exception {
 
         jettyPort += new Random().nextInt(15000);
 
@@ -105,13 +105,13 @@ public class DbStore2Test {
     }
 
     @AfterAll
-    public static void afterClass() throws Exception {
+    static void afterClass() throws Exception {
         jettyServer.stop();
         FileUtils.deleteDirectory(jettyRootDir.toFile());
     }
 
     @org.junit.jupiter.api.Test
-    public final void testWithAnyUriEnabled() throws XMLDBException {
+    final void testWithAnyUriEnabled() throws XMLDBException {
         final Collection rootCol = existEmbeddedServerWithAnyURI.getRoot();
         Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
         if (testCol == null) {
@@ -132,7 +132,7 @@ public class DbStore2Test {
     }
 
     @org.junit.jupiter.api.Test
-    public final void testLargeFileStore() throws XMLDBException, IOException {
+    final void testLargeFileStore() throws XMLDBException, IOException {
         final byte buff[] = new byte[BUFFER_SIZE];
         try (final FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {
             for (long written = 0; written < FILE_SIZE; written += BUFFER_SIZE) {

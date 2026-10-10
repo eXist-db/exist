@@ -43,10 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class BinaryValueFromInputStreamTest {
+class BinaryValueFromInputStreamTest {
 
     @Test
-    public void getInputStream() throws XPathException, IOException {
+    void getInputStream() throws XPathException, IOException {
         final byte[] testData = "test data".getBytes();
 
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
@@ -64,7 +64,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void repeated_getInputStream_sameUnderlyingCache() throws XPathException, IOException {
+    void repeated_getInputStream_sameUnderlyingCache() throws XPathException, IOException {
         final byte[] testData = "test data".getBytes();
 
         BinaryValue binaryValue1 = null;
@@ -105,11 +105,10 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filterWithoutIncrementReferenceCountFails() throws XPathException {
+    void filterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
@@ -141,7 +140,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filter_withIncrementReferenceCount() throws IOException, XPathException {
+    void filterWithIncrementReferenceCount() throws IOException, XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final byte[] testData = "test data".getBytes();
@@ -179,11 +178,10 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void multiFilterWithoutIncrementReferenceCountFails() throws XPathException {
+    void multiFilterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
@@ -220,7 +218,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void multiFilter_withIncrementReferenceCount() throws IOException, XPathException {
+    void multiFilterWithIncrementReferenceCount() throws IOException, XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final byte[] testData1 = "test data".getBytes();
@@ -276,11 +274,10 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filterFilterWithoutIncrementReferenceCountFails() throws XPathException {
+    void filterFilterWithoutIncrementReferenceCountFails() throws XPathException {
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final byte[] testData = "test data".getBytes();
         assertThrows(IOException.class, () -> {
-            final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
-
-            final byte[] testData = "test data".getBytes();
 
             try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
                 final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
@@ -321,7 +318,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void filterFilter_withIncrementReferenceCount() throws IOException, XPathException {
+    void filterFilterWithIncrementReferenceCount() throws IOException, XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final byte[] testData = "test data".getBytes();
@@ -377,7 +374,7 @@ public class BinaryValueFromInputStreamTest {
     }
 
     @Test
-    public void multiFilterFilter_withIncrementReferenceCount() throws IOException, XPathException {
+    void multiFilterFilterWithIncrementReferenceCount() throws IOException, XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final byte[] testData = "test data".getBytes();

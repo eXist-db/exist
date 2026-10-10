@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * direct call or {@code fn:function-lookup}). The constructor now always sorts, so this
  * footgun is structurally impossible.
  */
-public class AbstractInternalModuleSortTest {
+class AbstractInternalModuleSortTest {
 
     private static final String NS = "http://TestSortInvariant";
     private static final String PREFIX = "tsi";
@@ -67,7 +67,7 @@ public class AbstractInternalModuleSortTest {
      * <a href="https://github.com/eXist-db/exist/issues/6376">#6376</a>.
      */
     @Test
-    public void unsortedDeclarationOrderStillFindsAllFunctions() {
+    void unsortedDeclarationOrderStillFindsAllFunctions() {
         final FunctionDef[] declarationOrder = {
                 def("eval", 1),
                 def("fetch", 2),
@@ -89,7 +89,7 @@ public class AbstractInternalModuleSortTest {
      * The defensive sort must not mutate the caller's {@code static final} array.
      */
     @Test
-    public void callerArrayIsNotMutated() {
+    void callerArrayIsNotMutated() {
         final FunctionDef[] callerArray = {
                 def("eval", 1),
                 def("fetch", 2),
@@ -106,7 +106,7 @@ public class AbstractInternalModuleSortTest {
      * break the common case where the caller happened to declare in order).
      */
     @Test
-    public void alreadySortedArrayFindsAllFunctions() {
+    void alreadySortedArrayFindsAllFunctions() {
         final FunctionDef[] sorted = {
                 def("close", 1),
                 def("eval", 1),
@@ -122,7 +122,7 @@ public class AbstractInternalModuleSortTest {
      * Same qname at different arities — secondary sort key (arity) is honored.
      */
     @Test
-    public void sameQnameDifferentAritiesAllFound() {
+    void sameQnameDifferentAritiesAllFound() {
         final FunctionDef[] mixed = {
                 def("scan", 3),
                 def("scan", 1),
@@ -140,7 +140,7 @@ public class AbstractInternalModuleSortTest {
      * produce a functioning module. The flag is documented as ignored.
      */
     @Test
-    public void deprecatedThreeArgConstructorStillWorks() {
+    void deprecatedThreeArgConstructorStillWorks() {
         final FunctionDef[] unsorted = {
                 def("eval", 1),
                 def("fetch", 2),

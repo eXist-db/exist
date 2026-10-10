@@ -37,10 +37,10 @@ import org.junit.jupiter.api.Test;
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class BinaryValueTest {
+class BinaryValueTest {
 
     @Test
-    public void cast_base64_to_base64() throws XPathException {
+    void cast_base64_to_base64() throws XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final BinaryValue mockBase64BinaryValue = EasyMock.createMockBuilder(BinaryValue.class)
@@ -58,7 +58,7 @@ public class BinaryValueTest {
     }
 
     @Test
-    public void cast_base64_to_hexBinary() throws XPathException {
+    void cast_base64_to_hexBinary() throws XPathException {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 
         final BinaryValue mockBase64BinaryValue = EasyMock.createMockBuilder(BinaryValue.class)
@@ -84,7 +84,7 @@ public class BinaryValueTest {
     }
 
     @Test
-    public void cast_hexBinary_to_hexBase64() throws XPathException {
+    void cast_hexBinary_to_hexBase64() throws XPathException {
 
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
 

@@ -31,17 +31,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PersistentLoginTest {
+class PersistentLoginTest {
 
     private static DurationValue oneDay;
 
     @BeforeAll
-    public static void initDuration() throws XPathException {
+    static void initDuration() throws XPathException {
         oneDay = new DayTimeDurationValue("P1D");
     }
 
     @Test
-    public void newTokensUsePipeSeparator() throws XPathException {
+    void newTokensUsePipeSeparator() throws XPathException {
         final PersistentLogin login = new PersistentLogin();
         final PersistentLogin.LoginDetails details = login.register("admin", "admin", oneDay);
         assertTrue(details.toString().contains("|"));
@@ -49,7 +49,7 @@ public class PersistentLoginTest {
     }
 
     @Test
-    public void lookupAcceptsLegacyColonSeparator() throws XPathException {
+    void lookupAcceptsLegacyColonSeparator() throws XPathException {
         final PersistentLogin login = new PersistentLogin();
         final PersistentLogin.LoginDetails details = login.register("admin", "admin", oneDay);
         final String legacyToken = details.getSeries() + ":" + details.getToken();
@@ -57,7 +57,7 @@ public class PersistentLoginTest {
     }
 
     @Test
-    public void invalidateAcceptsLegacyColonSeparator() throws XPathException {
+    void invalidateAcceptsLegacyColonSeparator() throws XPathException {
         final PersistentLogin login = new PersistentLogin();
         final PersistentLogin.LoginDetails details = login.register("admin", "admin", oneDay);
         final String legacyToken = details.getSeries() + ":" + details.getToken();

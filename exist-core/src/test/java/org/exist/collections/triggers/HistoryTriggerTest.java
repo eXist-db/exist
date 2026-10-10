@@ -73,7 +73,7 @@ public class HistoryTriggerTest {
             </collection>""";
 
     @BeforeEach
-    public void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -92,7 +92,7 @@ public class HistoryTriggerTest {
     }
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -118,7 +118,7 @@ public class HistoryTriggerTest {
      * @see <a href="https://github.com/eXist-db/exist/issues/139">History trigger fails #139</a>
      */
     @org.junit.jupiter.api.Test
-    public void storeAndOverwriteByCopy() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
+    void storeAndOverwriteByCopy() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final XmldbURI testDoc1Name = XmldbURI.create("test_store-and-overwrite-by-copy.xml");
         final String testDoc1Content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<hello>12345</hello>";
@@ -161,7 +161,7 @@ public class HistoryTriggerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void storeAndOverwrite() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
+    void storeAndOverwrite() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final XmldbURI testDocName = XmldbURI.create("test_store-and-overwrite.xml");
         final String testDocContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<hello>world</hello>";

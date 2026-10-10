@@ -66,7 +66,7 @@ public class NativeBrokerLockingTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach
-    public void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -86,7 +86,7 @@ public class NativeBrokerLockingTest {
     }
 
     @AfterEach
-    public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -103,7 +103,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void openCollection() throws EXistException, PermissionDeniedException {
+    void openCollection() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -138,7 +138,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void openCollection_doesntExist() throws EXistException, PermissionDeniedException {
+    void openCollection_doesntExist() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -173,7 +173,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getCollection() throws EXistException, PermissionDeniedException {
+    void getCollection() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -207,7 +207,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getCollection_doesntExist() throws EXistException, PermissionDeniedException {
+    void getCollection_doesntExist() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -241,7 +241,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getOrCreateCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void getOrCreateCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -277,7 +277,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -313,7 +313,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -349,7 +349,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void removeEmptyCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeEmptyCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);

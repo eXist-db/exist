@@ -85,7 +85,7 @@ public class ConcurrentTransactionsTest {
     private static final ExecutionListener EXECUTION_LISTENER = DEBUG_TRACING ? STD_OUT_SCHEDULE_LISTENER : NULL_SCHEDULE_LISTENER;
 
     @org.junit.jupiter.api.Test
-    public void getDocuments() throws ExecutionException, InterruptedException {
+    void getDocuments() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
         final Tuple2<DocumentImpl, DocumentImpl> result = biSchedule()
@@ -105,7 +105,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void getDeleteUpdate() throws ExecutionException, InterruptedException {
+    void getDeleteUpdate() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
         final Tuple2<Void, Void> result = biSchedule()
@@ -121,7 +121,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void delete_read() throws ExecutionException, InterruptedException {
+    void delete_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
         final Tuple2<Void, DocumentImpl> result = biSchedule()
@@ -138,7 +138,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void delete_commit_read() throws ExecutionException, InterruptedException {
+    void delete_commit_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
         final Tuple2<Void, DocumentImpl> result = biSchedule()
@@ -158,7 +158,7 @@ public class ConcurrentTransactionsTest {
      * made by the transaction.
      */
     @org.junit.jupiter.api.Test
-    public void delete_abort_read() throws ExecutionException, InterruptedException {
+    void delete_abort_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
         final Tuple2<Void, DocumentImpl> result = biSchedule()
@@ -176,7 +176,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @BeforeEach
-    public void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
+    void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -193,7 +193,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @AfterEach
-    public void removeDocs() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeDocs() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

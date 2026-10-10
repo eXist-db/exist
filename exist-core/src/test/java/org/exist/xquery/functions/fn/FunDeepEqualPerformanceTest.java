@@ -142,7 +142,7 @@ public class FunDeepEqualPerformanceTest {
      * lookup also bites.
      */
     @BeforeAll
-    public static void storeLargeDocs() throws XMLDBException {
+    static void storeLargeDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         // breadth 10, depth 4 -> ~10,000 elements; 6 attributes per element.
@@ -167,7 +167,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @AfterAll
-    public static void removeStoredDocs() throws XMLDBException {
+    static void removeStoredDocs() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("""
@@ -214,7 +214,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void deepEqualOnLargeEqualTreesIsFast() throws XMLDBException {
+    void deepEqualOnLargeEqualTreesIsFast() throws XMLDBException {
         // In-memory case (memtree) -- the streaming fast path does not
         // apply here; memtree's linked-list sibling traversal is already
         // O(N) and the legacy recursion is the right path. Constructing the
@@ -233,7 +233,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void deepEqualOnStoredEqualDocsIsFast() throws XMLDBException {
+    void deepEqualOnStoredEqualDocsIsFast() throws XMLDBException {
         // Persistent-DOM case -- this is the GH-4050 reporter's scenario.
         // Pre-fix every getFirstChild / getNextSibling on a stored
         // ElementImpl acquires a broker and walks the parent's children
@@ -256,7 +256,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void deepEqualOnRootMismatchStillShortCircuits() throws XMLDBException {
+    void deepEqualOnRootMismatchStillShortCircuits() throws XMLDBException {
         // Top-level name mismatch on stored documents of the same size as the
         // equal pair: the streaming comparator decides on the first element, so
         // it must not take anything like the time of the full comparison. Stored
@@ -275,13 +275,13 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void deepEqualOnInMemoryRootMismatchIsFalse() throws XMLDBException {
+    void deepEqualOnInMemoryRootMismatchIsFalse() throws XMLDBException {
         // Correctness gate for the in-memory path (no timing: see the test above).
         assertFalse(queryResult(LARGE_TREES_DIFFER_AT_ROOT));
     }
 
     @Test
-    public void deepEqualOnLeafMismatchProducesCorrectResult() throws XMLDBException {
+    void deepEqualOnLeafMismatchProducesCorrectResult() throws XMLDBException {
         // Difference is buried at every leaf; the comparator (streaming
         // for stored docs, recursive for memtree) walks until the leaf
         // mismatch surfaces. Correctness gate only.
@@ -289,7 +289,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void attributeOrderInsensitive() throws XMLDBException {
+    void attributeOrderInsensitive() throws XMLDBException {
         final String q = """
                 let $a := <e a="1" b="2" c="3"/>
                 let $b := <e c="3" a="1" b="2"/>
@@ -299,7 +299,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void nestedAttributeOrderInsensitive() throws XMLDBException {
+    void nestedAttributeOrderInsensitive() throws XMLDBException {
         final String q = """
                 let $a := <root><e a="1" b="2"/><f x="x" y="y"/></root>
                 let $b := <root><e b="2" a="1"/><f y="y" x="x"/></root>
@@ -309,26 +309,26 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void typedNumericVsStringNotEqual() throws XMLDBException {
+    void typedNumericVsStringNotEqual() throws XMLDBException {
         // Per W3C XPath 3.1 deep-equal, xs:integer 1 is NOT deep-equal to "1".
         // Atomic comparison; streaming path does not apply.
         assertFalse(queryResult("fn:deep-equal(xs:integer(1), '1')"));
     }
 
     @Test
-    public void integerAndDoubleEqual() throws XMLDBException {
+    void integerAndDoubleEqual() throws XMLDBException {
         // xs:integer 1 IS deep-equal to xs:double 1.0 per spec.
         assertTrue(queryResult("fn:deep-equal(xs:integer(1), xs:double(1.0))"));
     }
 
     @Test
-    public void nanEqualToNan() throws XMLDBException {
+    void nanEqualToNan() throws XMLDBException {
         // Special case: NaN is deep-equal to NaN even though NaN != NaN.
         assertTrue(queryResult("fn:deep-equal(xs:double('NaN'), xs:double('NaN'))"));
     }
 
     @Test
-    public void textVsCommentChildrenIgnored() throws XMLDBException {
+    void textVsCommentChildrenIgnored() throws XMLDBException {
         // compareContents (and the streaming comparator) skip comments and PIs.
         final String q = """
                 let $a := <e>hello<!--ignore-->world</e>
@@ -339,7 +339,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void differentChildOrderNotEqual() throws XMLDBException {
+    void differentChildOrderNotEqual() throws XMLDBException {
         // Element child order IS significant, unlike attribute order.
         final String q = """
                 let $a := <root><a/><b/></root>
@@ -350,7 +350,7 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void differentNamespaceNotEqual() throws XMLDBException {
+    void differentNamespaceNotEqual() throws XMLDBException {
         final String q = """
                 let $a := <e xmlns="urn:a"/>
                 let $b := <e xmlns="urn:b"/>
@@ -360,12 +360,12 @@ public class FunDeepEqualPerformanceTest {
     }
 
     @Test
-    public void emptySequencesEqual() throws XMLDBException {
+    void emptySequencesEqual() throws XMLDBException {
         assertEquals(true, queryResult("fn:deep-equal((), ())"));
     }
 
     @Test
-    public void differentLengthSequencesNotEqual() throws XMLDBException {
+    void differentLengthSequencesNotEqual() throws XMLDBException {
         assertEquals(false, queryResult("fn:deep-equal((1, 2), (1, 2, 3))"));
     }
 }

@@ -43,7 +43,7 @@ public class DtdEntityTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void loadWithEntities() throws XMLDBException {
+    void loadWithEntities() throws XMLDBException {
         final String input = "<a>first empty: &empty; then trade: &trade; </a>";
 
         try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity")) {
@@ -62,7 +62,7 @@ public class DtdEntityTest {
 
     @Test
     @Disabled("Entity resolve bug")
-    public void bugloadWithEntities() throws XMLDBException {
+    void bugloadWithEntities() throws XMLDBException {
         final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<!DOCTYPE procedure PUBLIC \"-//AAAA//DTD Procedure 0.4//EN\" \"aaaa.dtd\" >"
                 + "<a>first empty: &empty; then trade: &trade; </a>";

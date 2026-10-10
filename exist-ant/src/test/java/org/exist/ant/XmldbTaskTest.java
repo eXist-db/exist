@@ -36,7 +36,6 @@ import org.xmldb.api.modules.XMLResource;
 
 import javax.annotation.Nullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -46,6 +45,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,7 +71,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     private static final String PROP_ANT_TEST_DATA_TMP_FILE_NAME  = "test.data.tmp.file.name";
 
     @TempDir
-    public File temporaryFolder;
+    Path temporaryFolder;
 
     @Nullable
     @Override
@@ -80,7 +80,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @BeforeEach
-    public void fileSetup() throws XMLDBException {
+    void fileSetup() throws XMLDBException {
         final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
 
         final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.class);
@@ -102,13 +102,13 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @AfterEach
-    public void fileCleanup() throws XMLDBException {
+    void fileCleanup() throws XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
     }
 
     @Test
-    public void copy() {
+    void copy() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_RESOURCE, TEST_RESOURCE_NAME);
@@ -121,7 +121,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void create() {
+    void create() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION2, TEST_COLLECTION2_NAME);
@@ -134,7 +134,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void exists() {
+    void exists() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_RESOURCE, TEST_RESOURCE_NAME);
@@ -146,8 +146,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extract() throws IOException {
-        final Path tmpFile = File.createTempFile("junit", null, temporaryFolder).toPath();
+    void extract() throws IOException {
+        final Path tmpFile = Files.createTempFile(temporaryFolder, "junit", null);
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
@@ -160,8 +160,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extractCreateDirectories() throws IOException {
-        final Path tmpDir = newFolder(temporaryFolder, "junit").toPath();
+    void extractCreateDirectories() throws IOException {
+        final Path tmpDir = Files.createDirectories(temporaryFolder.resolve("junit"));
         Files.createDirectories(tmpDir);
 
         final Project project = buildFileRule.getProject();
@@ -178,8 +178,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extractCreateDirectoriesDestDir() throws IOException {
-        final Path tmpFile = newFolder(temporaryFolder, "junit").toPath().resolve("new-sub-dir").resolve(TEST_RESOURCE_NAME);
+    void extractCreateDirectoriesDestDir() throws IOException {
+        final Path tmpFile = Files.createDirectories(temporaryFolder.resolve("junit")).resolve("new-sub-dir").resolve(TEST_RESOURCE_NAME);
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
@@ -192,8 +192,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extractCreateDirectoriesOverwriteFile() throws IOException {
-        final Path tmpFile = newFile(temporaryFolder, TEST_RESOURCE_NAME).toPath();
+    void extractCreateDirectoriesOverwriteFile() throws IOException {
+        final Path tmpFile = Files.createFile(temporaryFolder.resolve(TEST_RESOURCE_NAME));
         assertTrue(Files.exists(tmpFile)); // to ensure we can overwrite from Ant task
 
         final Project project = buildFileRule.getProject();
@@ -207,8 +207,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extractCreateDirectoriesOverwriteDir() throws IOException {
-        final Path tmpDir = newFolder(temporaryFolder, "junit").toPath();
+    void extractCreateDirectoriesOverwriteDir() throws IOException {
+        final Path tmpDir = Files.createDirectories(temporaryFolder.resolve("junit"));
         assertTrue(Files.exists(tmpDir)); // to ensure we can overwrite from Ant task
 
         final Project project = buildFileRule.getProject();
@@ -221,8 +221,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void extractBinary() throws IOException {
-        final Path tmpFile = File.createTempFile("junit", null, temporaryFolder).toPath();
+    void extractBinary() throws IOException {
+        final Path tmpFile = Files.createTempFile(temporaryFolder, "junit", null);
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
@@ -235,7 +235,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void list() {
+    void list() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
 
@@ -246,7 +246,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void move() {
+    void move() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
         project.setProperty(PROP_ANT_TEST_DATA_TEST_RESOURCE, TEST_RESOURCE_NAME);
@@ -259,8 +259,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void store() throws IOException {
-        final Path tmpFile = File.createTempFile("junit", null, temporaryFolder).toPath();
+    void store() throws IOException {
+        final Path tmpFile = Files.createTempFile(temporaryFolder, "junit", null);
         Files.write(tmpFile, "<hello/>".getBytes(UTF_8));
 
         final Project project = buildFileRule.getProject();
@@ -275,8 +275,8 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void storeEmptyFile() throws IOException {
-        final Path tmpFile = File.createTempFile("junit", null, temporaryFolder).toPath();
+    void storeEmptyFile() throws IOException {
+        final Path tmpFile = Files.createTempFile(temporaryFolder, "junit", null);
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
@@ -290,7 +290,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void xpath() {
+    void xpath() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
 
@@ -301,7 +301,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void xpathXml() {
+    void xpathXml() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
 
@@ -312,7 +312,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void xquery() {
+    void xquery() {
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);
 
@@ -323,30 +323,9 @@ public class XmldbTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void xupdate() {
-        buildFileRule.executeTarget("xupdate");
+    void xupdate() {
+        assertDoesNotThrow(() -> buildFileRule.executeTarget("xupdate"));
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 
-    private static File newFile(File parent, String child) throws IOException {
-        File result = new File(parent, child);
-        result.createNewFile();
-        return result;
-    }
 }

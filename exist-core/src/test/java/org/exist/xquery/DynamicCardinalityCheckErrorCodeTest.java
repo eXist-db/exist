@@ -51,25 +51,25 @@ public class DynamicCardinalityCheckErrorCodeTest {
 
     /** XQTS K-MatchesFunc-1. */
     @Test
-    public void emptyPatternForMatches() throws XMLDBException {
+    void emptyPatternForMatches() throws XMLDBException {
         assertEquals("err:XPTY0004", codeRaisedBy("matches('input', ())"));
     }
 
     /** XQTS K-MatchesFunc-3. */
     @Test
-    public void emptyFlagsForMatches() throws XMLDBException {
+    void emptyFlagsForMatches() throws XMLDBException {
         assertEquals("err:XPTY0004", codeRaisedBy("matches('input', 'pattern', ())"));
     }
 
     /** XQTS fo-test-fn-string-004: too many items where one is required. */
     @Test
-    public void tooManyItemsForString() throws XMLDBException {
+    void tooManyItemsForString() throws XMLDBException {
         assertEquals("err:XPTY0004", codeRaisedBy("string(('a', 'b'))"));
     }
 
     /** The specific catch clause the code is for must now work. */
     @Test
-    public void isCatchableBySpecificClause() throws XMLDBException {
+    void isCatchableBySpecificClause() throws XMLDBException {
         final XQueryService xqs = server.getRoot().getService(XQueryService.class);
         final ResourceSet rs = xqs.query("try { matches('input', ()) } catch err:XPTY0004 { 'caught' }");
         assertEquals("caught", rs.getResource(0).getContent().toString());

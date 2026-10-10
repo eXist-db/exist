@@ -72,7 +72,7 @@ public class RemoveAppendTest {
 
     @Disabled("Test setup broken — ITEM_COUNT is zero")
     @org.junit.jupiter.api.Test
-    public void testRemoveAppend() throws Exception {
+    void testRemoveAppend() throws Exception {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);
         for (int i = 1; i < 1000; i++) {
@@ -85,9 +85,9 @@ public class RemoveAppendTest {
             result.getResource(0).getContent();
         }
     }
-    
+
     @org.junit.jupiter.api.Test
-    public void appendRemove() throws XMLDBException, IOException {
+    void appendRemove() throws XMLDBException, IOException {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);
         for (int i = 1; i <= 100; i++) {
@@ -143,9 +143,9 @@ public class RemoveAppendTest {
         long mods = service.update(XU_REMOVE);
         assertEquals(1, mods);
     }
-    
+
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         rootCol = existXmldbEmbeddedServer.getRoot();
         
         testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
@@ -159,9 +159,9 @@ public class RemoveAppendTest {
         
         DBUtils.addXMLResource(testCol, "test.xml", "<test/>");
     }
-    
+
     @AfterEach
-    public void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
     

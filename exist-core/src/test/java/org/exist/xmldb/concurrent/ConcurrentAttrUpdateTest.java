@@ -46,7 +46,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
     private Path tempFile;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         this.wordList = DBUtils.wordList();
         assertNotNull(wordList);
         this.tempFile = DBUtils.generateXMLFile(250, 10, wordList);
@@ -54,7 +54,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         FileUtils.deleteQuietly(tempFile);
     }
 

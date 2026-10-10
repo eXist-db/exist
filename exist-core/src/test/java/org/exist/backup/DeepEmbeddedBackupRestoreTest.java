@@ -43,7 +43,6 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,7 +67,7 @@ public class DeepEmbeddedBackupRestoreTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     private static final String EOL = "\n";
     private static final long XXHASH64_SEED = 0x79742bc8;
@@ -77,19 +76,19 @@ public class DeepEmbeddedBackupRestoreTest {
     private final XXHash64 hash64 = xxHashFactory.hash64();
 
     @BeforeAll
-    public static void registerXmldbDatabaseDriver() throws XMLDBException {
+    static void registerXmldbDatabaseDriver() throws XMLDBException {
         final DatabaseImpl databaseImpl = new DatabaseImpl();
         DatabaseManager.registerDatabase(databaseImpl);
     }
 
     @Test
-    public void backupThenRestore() throws IOException, XMLDBException, SAXException, LockException, PermissionDeniedException, EXistException {
+    void backupThenRestore() throws IOException, XMLDBException, SAXException, LockException, PermissionDeniedException, EXistException {
         // create some collections and documents in the database
         final CollectionsAndDocuments collectionsAndDocs = createHierarchy(XmldbURI.create("/db/exist-EmbeddedBackupRestoreWithAppsTest"), 20, 20, 20, 20);
         assertFalse(collectionsAndDocs.collectionUris.isEmpty());
         assertFalse(collectionsAndDocs.documentInfos.isEmpty());
 
-        final Path backupDir = newFolder(temporaryFolder, "exist-EmbeddedBackupRestoreWithAppsTest").toPath();
+        final Path backupDir = Files.createDirectories(temporaryFolder.resolve("exist-EmbeddedBackupRestoreWithAppsTest"));
         final Properties backupProperties = new Properties();
 
         final Backup backup = new Backup(
@@ -200,21 +199,5 @@ public class DeepEmbeddedBackupRestoreTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }
 

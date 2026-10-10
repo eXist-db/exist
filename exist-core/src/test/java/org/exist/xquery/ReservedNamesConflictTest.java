@@ -39,10 +39,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
-public class ReservedNamesConflictTest {
+class ReservedNamesConflictTest {
 
     @Test
-    public void reservedNamesIssueTest() throws RecognitionException, XPathException, TokenStreamException {
+    void reservedNamesIssueTest() throws RecognitionException, XPathException, TokenStreamException {
         final String query = """
                 xquery version "3.1";
                 <foo copy-namespaces="bar"/>,

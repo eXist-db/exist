@@ -149,19 +149,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.xmlunit</groupId>
-            <artifactId>xmlunit-legacy</artifactId>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
             <scope>test</scope>
-            <!-- the one remaining use of JUnit 4: xmlunit-legacy's XMLAssert and XMLTestCase extend
-                 junit.framework.Assert, so tests that use them need it to compile. Replace those
-                 tests' XMLUnit 1 style assertions with XMLUnit 2 and this can go. -->
         </dependency>
-
 
         <dependency>
             <groupId>org.exist-db</groupId>
@@ -198,30 +194,6 @@
         </testResources>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ban-junit4</id>
-                        <configuration>
-                            <rules combine.self="override">
-                                <bannedDependencies>
-                                    <excludes>
-                                        <!-- test scope is allowed here only: xmlunit-legacy needs junit:junit to compile -->
-                                        <exclude>junit:junit:*:*:compile</exclude>
-                                        <exclude>junit:junit:*:*:provided</exclude>
-                                        <exclude>org.junit.vintage</exclude>
-                                        <exclude>com.googlecode.junit-toolbox</exclude>
-                                    </excludes>
-                                    <searchTransitive>true</searchTransitive>
-                                    <message>JUnit 4 must not be used outside the tests that need it for xmlunit-legacy; write tests with JUnit Jupiter.</message>
-                                </bannedDependencies>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -251,10 +223,6 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <!-- only needed as the supertype of xmlunit-legacy's XMLAssert and XMLTestCase -->
-                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
                             <ignoredNonTestScopedDependencies>
                                 <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>

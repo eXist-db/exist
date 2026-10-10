@@ -39,260 +39,260 @@ public class DeepEqualTest {
     private static XPathQueryService query;
 
     @org.junit.jupiter.api.Test
-    public void atomic1() throws XMLDBException {
+    void atomic1() throws XMLDBException {
         assertQuery(true, "deep-equal('hello', 'hello')");
     }
 
     @org.junit.jupiter.api.Test
-    public void atomic2() throws XMLDBException {
+    void atomic2() throws XMLDBException {
         assertQuery(false, "deep-equal('hello', 'goodbye')");
     }
 
     @org.junit.jupiter.api.Test
-    public void atomic3() throws XMLDBException {
+    void atomic3() throws XMLDBException {
         assertQuery(true, "deep-equal(42, 42)");
     }
 
     @org.junit.jupiter.api.Test
-    public void atomic4() throws XMLDBException {
+    void atomic4() throws XMLDBException {
         assertQuery(false, "deep-equal(42, 17)");
     }
 
     @org.junit.jupiter.api.Test
-    public void atomic5() throws XMLDBException {
+    void atomic5() throws XMLDBException {
         assertQuery(false, "deep-equal(42, 'hello')");
     }
 
     @org.junit.jupiter.api.Test
-    public void atomic6() throws XMLDBException {
+    void atomic6() throws XMLDBException {
         assertQuery(true, "deep-equal( 1. , xs:integer(1) )");
         assertQuery(true, "deep-equal( xs:double(1) , xs:integer(1) )");
     }
 
     @org.junit.jupiter.api.Test
-    public void emptySeq() throws XMLDBException {
+    void emptySeq() throws XMLDBException {
         assertQuery(true, "deep-equal((), ())");
     }
 
     @org.junit.jupiter.api.Test
-    public void diffLengthSeq1() throws XMLDBException {
+    void diffLengthSeq1() throws XMLDBException {
         assertQuery(false, "deep-equal((), 42)");
     }
 
     @org.junit.jupiter.api.Test
-    public void diffLengthSeq2() throws XMLDBException {
+    void diffLengthSeq2() throws XMLDBException {
         assertQuery(false, "deep-equal((), (42, 'hello'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void diffKindNodes1() throws XMLDBException {
+    void diffKindNodes1() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(false, "deep-equal(/test, /test/@key)");
     }
 
     @org.junit.jupiter.api.Test
-    public void diffKindNodes2() throws XMLDBException {
+    void diffKindNodes2() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(false, "deep-equal(/test, /test/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void diffKindNodes3() throws XMLDBException {
+    void diffKindNodes3() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(false, "deep-equal(/test/@key, /test/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void sameNode1() throws XMLDBException {
+    void sameNode1() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(true, "deep-equal(/test, /test)");
     }
 
     @org.junit.jupiter.api.Test
-    public void sameNode2() throws XMLDBException {
+    void sameNode2() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(true, "deep-equal(/test/@key, /test/@key)");
     }
 
     @org.junit.jupiter.api.Test
-    public void sameNode3() throws XMLDBException {
+    void sameNode3() throws XMLDBException {
         createDocument("test", "<test key='value'>hello</test>");
         assertQuery(true, "deep-equal(/test/text(), /test/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void documents1() throws XMLDBException {
+    void documents1() throws XMLDBException {
         createDocument("test1", "<test key='value'>hello</test>");
         createDocument("test2", "<test key='value'>hello</test>");
         assertQuery(true, "deep-equal(doc('test1'), doc('test2'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void documents2() throws XMLDBException {
+    void documents2() throws XMLDBException {
         createDocument("test1", "<test key='value'>hello</test>");
         createDocument("test2", "<notatest/>");
         assertQuery(false, "deep-equal(doc('test1'), doc('test2'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void text1() throws XMLDBException {
+    void text1() throws XMLDBException {
         createDocument("test", "<test><g1><a>1</a><b>2</b></g1><g2><c>1</c><d>2</d></g2></test>");
         assertQuery(true, "deep-equal(//a/text(), //c/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void text2() throws XMLDBException {
+    void text2() throws XMLDBException {
         createDocument("test", "<test><g1><a>1</a><b>2</b></g1><g2><c>1</c><d>2</d></g2></test>");
         assertQuery(false, "deep-equal(//a/text(), //b/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void text3() throws XMLDBException {
+    void text3() throws XMLDBException {
         createDocument("test", "<test><g1><a>1</a><b>2</b></g1><g2><c>1</c><d>2</d></g2></test>");
         assertQuery(true, "deep-equal(//g1/text(), //g2/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void text4() throws XMLDBException {
+    void text4() throws XMLDBException {
         createDocument("test", "<test><a>12</a><b>1<!--blah-->2</b></test>");
         assertQuery(false, "deep-equal(//a/text(), //b/text())");
     }
 
     @org.junit.jupiter.api.Test
-    public void attributes1() throws XMLDBException {
+    void attributes1() throws XMLDBException {
         createDocument("test", "<test><e1 a='1'/><e2 a='1' b='2' c='1'/><e3 a='2'/></test>");
         assertQuery(true, "deep-equal(//e1/@a, //e2/@a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void attributes2() throws XMLDBException {
+    void attributes2() throws XMLDBException {
         createDocument("test", "<test><e1 a='1'/><e2 a='1' b='2' c='1'/><e3 a='2'/></test>");
         assertQuery(false, "deep-equal(//e1/@a, //e2/@b)");
     }
 
     @org.junit.jupiter.api.Test
-    public void attributes3() throws XMLDBException {
+    void attributes3() throws XMLDBException {
         createDocument("test", "<test><e1 a='1'/><e2 a='1' b='2' c='1'/><e3 a='2'/></test>");
         assertQuery(false, "deep-equal(//e1/@a, //e2/@c)");
     }
 
     @org.junit.jupiter.api.Test
-    public void attributes4() throws XMLDBException {
+    void attributes4() throws XMLDBException {
         createDocument("test", "<test><e1 a='1'/><e2 a='1' b='2' c='1'/><e3 a='2'/></test>");
         assertQuery(false, "deep-equal(//e1/@a, //e3/@a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsAttributes1() throws XMLDBException {
+    void nsAttributes1() throws XMLDBException {
         createDocument("test", "<test xmlns:n='urn:blah' xmlns:p='urn:foo' xmlns:q='urn:blah'><e1 n:a='1'/><e2 n:a='1' p:a='1' p:b='1'/><e3 n:a='2'/><e4 q:a='1'/></test>");
         assertQuery(true, "declare namespace n = 'urn:blah'; declare namespace p = 'urn:foo'; declare namespace q = 'urn:blah'; deep-equal(//e1/@n:a, //e2/@n:a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsAttributes2() throws XMLDBException {
+    void nsAttributes2() throws XMLDBException {
         createDocument("test", "<test xmlns:n='urn:blah' xmlns:p='urn:foo' xmlns:q='urn:blah'><e1 n:a='1'/><e2 n:a='1' p:a='1' p:b='1'/><e3 n:a='2'/><e4 q:a='1'/></test>");
         assertQuery(true, "declare namespace n = 'urn:blah'; declare namespace p = 'urn:foo'; declare namespace q = 'urn:blah'; deep-equal(//e1/@q:a, //e4/@n:a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsAttributes3() throws XMLDBException {
+    void nsAttributes3() throws XMLDBException {
         createDocument("test", "<test xmlns:n='urn:blah' xmlns:p='urn:foo' xmlns:q='urn:blah'><e1 n:a='1'/><e2 n:a='1' p:a='1' p:b='1'/><e3 n:a='2'/><e4 q:a='1'/></test>");
         assertQuery(false, "declare namespace n = 'urn:blah'; declare namespace p = 'urn:foo'; declare namespace q = 'urn:blah'; deep-equal(//e1/@n:a, //e2/@p:a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsAttributes4() throws XMLDBException {
+    void nsAttributes4() throws XMLDBException {
         createDocument("test", "<test xmlns:n='urn:blah' xmlns:p='urn:foo' xmlns:q='urn:blah'><e1 n:a='1'/><e2 n:a='1' p:a='1' p:b='1'/><e3 n:a='2'/><e4 q:a='1'/></test>");
         assertQuery(false, "declare namespace n = 'urn:blah'; declare namespace p = 'urn:foo'; declare namespace q = 'urn:blah'; deep-equal(//e1/@n:a, //e2/@p:b)");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsAttributes5() throws XMLDBException {
+    void nsAttributes5() throws XMLDBException {
         createDocument("test", "<test xmlns:n='urn:blah' xmlns:p='urn:foo' xmlns:q='urn:blah'><e1 n:a='1'/><e2 n:a='1' p:a='1' p:b='1'/><e3 n:a='2'/><e4 q:a='1'/></test>");
         assertQuery(false, "declare namespace n = 'urn:blah'; declare namespace p = 'urn:foo'; declare namespace q = 'urn:blah'; deep-equal(//e1/@n:a, //e3/@n:a)");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements1() throws XMLDBException {
+    void elements1() throws XMLDBException {
         createDocument("test", "<test><a/><a/></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements2() throws XMLDBException {
+    void elements2() throws XMLDBException {
         createDocument("test", "<test><a/><b/></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements3() throws XMLDBException {
+    void elements3() throws XMLDBException {
         createDocument("test", "<test><a a='1' b='2'/><a b='2' a='1'/></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements4() throws XMLDBException {
+    void elements4() throws XMLDBException {
         createDocument("test", "<test><a a='1'/><a b='2' a='1'/></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements5() throws XMLDBException {
+    void elements5() throws XMLDBException {
         createDocument("test", "<test><a a='1' c='2'/><a b='2' a='1'/></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements6() throws XMLDBException {
+    void elements6() throws XMLDBException {
         createDocument("test", "<test><a a='1' b='2'/><a a='2' b='2'/></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements7() throws XMLDBException {
+    void elements7() throws XMLDBException {
         createDocument("test", "<test><a>hello</a><a>hello</a></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements8() throws XMLDBException {
+    void elements8() throws XMLDBException {
         createDocument("test", "<test><a>hello</a><a>bye</a></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements9() throws XMLDBException {
+    void elements9() throws XMLDBException {
         createDocument("test", "<test><a><!--blah--></a><a/></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements10() throws XMLDBException {
+    void elements10() throws XMLDBException {
         createDocument("test", "<test><a><b/><!--blah-->hello</a><a><b/>hello</a></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements11() throws XMLDBException {
+    void elements11() throws XMLDBException {
         createDocument("test", "<test><a><b/>hello</a><a>hello</a></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements12() throws XMLDBException {
+    void elements12() throws XMLDBException {
         createDocument("test", "<test><a><b/></a><a>hello</a></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void elements13() throws XMLDBException {
+    void elements13() throws XMLDBException {
         createDocument("test", "<test><a><b/></a><a><b/>hello</a></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     //Courtesy : Dizzz
     @org.junit.jupiter.api.Test
-    public void elements14() throws XMLDBException {
+    void elements14() throws XMLDBException {
         //Includes a reference node
         String query =
                 "let $parSpecs1 := <ParameterSpecifications/> " +
@@ -315,7 +315,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void elements15() throws XMLDBException {
+    void elements15() throws XMLDBException {
 
         String query = "let $funSpecs :=" +
                 "<FunctionSpecifications>" +
@@ -335,7 +335,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void elements16() throws XMLDBException {
+    void elements16() throws XMLDBException {
         // [ 1462061 ] Issue with deep-equal() "DeepestEqualBug"
         String query =
                 "declare namespace ve = \"ournamespace\";" +
@@ -354,7 +354,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void elements17() throws XMLDBException {
+    void elements17() throws XMLDBException {
         // Test deep-equal is used with in-memory nodes
         String query =
                 "let $one := <foo/> " +
@@ -365,7 +365,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void referenceNode() throws XMLDBException {
+    void referenceNode() throws XMLDBException {
         String query =
                 "let $expr1 := <Value>Hello</Value> " +
                         "return " +
@@ -375,7 +375,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void referenceNode2() throws XMLDBException {
+    void referenceNode2() throws XMLDBException {
         String query = "declare namespace dst = \"http://www.test.com/DeeperEqualTest\"; "
                 + "declare function dst:value($value as element(Value), "
                 + "$result as element(Result)) as element(Result) { "
@@ -390,7 +390,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void referenceNode3() throws XMLDBException {
+    void referenceNode3() throws XMLDBException {
         createDocument("test", "<root><value>A</value><value>B</value></root>");
         // two adjacent reference text nodes from another document should be merged into one
         assertQuery(true,
@@ -420,7 +420,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void siblingCornerCase() throws XMLDBException {
+    void siblingCornerCase() throws XMLDBException {
         String query = "declare  namespace ve = 'http://www.test.com/deepestEqualError'; " +
                 "declare function ve:functionVerifications() as element(FunctionVerifications) { " +
                 "let $parVers := " +
@@ -463,7 +463,7 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sequenceError1() throws XMLDBException {
+    void sequenceError1() throws XMLDBException {
         String query = "declare namespace ds = \"http://www.test.com/SequenceError\"; "
                 + "declare function ds:result(  $current as element(Result)?, "
                 + "$value  as element(Value)?) as element(Result) {"
@@ -481,25 +481,25 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void nsElements1() throws XMLDBException {
+    void nsElements1() throws XMLDBException {
         createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsElements2() throws XMLDBException {
+    void nsElements2() throws XMLDBException {
         createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:bar'><p:a/><q:a/></test>");
         assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void nsElements3() throws XMLDBException {
+    void nsElements3() throws XMLDBException {
         createDocument("test", "<test><a/><a xmlns:z='foo'/></test>");
         assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
     }
 
     @org.junit.jupiter.api.Test
-    public void forLoop() throws XMLDBException {
+    void forLoop() throws XMLDBException {
         ResourceSet rs = query.query("let $set := <root><b>test</b><c><a>test</a></c><d><a>test</a></d></root>, $test := <c><a>test</a></c> for $node in $set/* return deep-equal($node, $test)");
         assertEquals(3, rs.getSize());
         assertEquals("false", rs.getResource(0).getContent());
@@ -508,37 +508,37 @@ public class DeepEqualTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void notDeepEqual() throws XMLDBException {
+    void notDeepEqual() throws XMLDBException {
         assertQuery(true, "not(deep-equal((true(), 2, 3), (1, 2, 3)))");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualMaps7() throws XMLDBException {
+    void fnDeepEqualMaps7() throws XMLDBException {
         assertQuery(true, "fn:deep-equal(map{xs:double('NaN'):true()}, map{xs:double('NaN'):true()})");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualMaps8() throws XMLDBException {
+    void fnDeepEqualMaps8() throws XMLDBException {
         assertQuery(true, "fn:deep-equal(map{xs:double('NaN'):true()}, map{xs:float('NaN'):true()})");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualMixArgs020() throws XMLDBException {
+    void fnDeepEqualMixArgs020() throws XMLDBException {
         assertQuery(true, "fn:deep-equal(xs:float('INF'), xs:double('INF'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualMixArgs021() throws XMLDBException {
+    void fnDeepEqualMixArgs021() throws XMLDBException {
         assertQuery(true, "fn:deep-equal(xs:float('-INF'), xs:double('-INF'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualEquivalentIntAndString() throws XMLDBException {
+    void fnDeepEqualEquivalentIntAndString() throws XMLDBException {
         assertQuery(false, "fn:deep-equal(xs:integer(1), xs:string('1'))");
     }
 
     @org.junit.jupiter.api.Test
-    public void fnDeepEqualEquivalentStringAndInt() throws XMLDBException {
+    void fnDeepEqualEquivalentStringAndInt() throws XMLDBException {
         assertQuery(false, "fn:deep-equal(xs:string('1'), xs:integer(1))");
     }
 
@@ -559,7 +559,7 @@ public class DeepEqualTest {
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void setupTestCollection() throws XMLDBException {
+    static void setupTestCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);
         c = root.getChildCollection("test");
@@ -572,7 +572,7 @@ public class DeepEqualTest {
     }
 
     @AfterAll
-    public static void tearDown() throws XMLDBException {
+    static void tearDown() throws XMLDBException {
         if (c != null) {
             final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);

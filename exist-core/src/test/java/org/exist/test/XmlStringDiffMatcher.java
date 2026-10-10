@@ -36,14 +36,20 @@ import javax.xml.transform.Source;
 public class XmlStringDiffMatcher extends DiagnosingMatcher<String> {
     private final Source expectedSource;
     private final boolean identical;
+    private final boolean ignoreWhitespace;
 
     private XmlStringDiffMatcher(final String expectedSource) {
         this(expectedSource, false);
     }
 
     private XmlStringDiffMatcher(final String expectedSource, final boolean identical) {
+        this(expectedSource, identical, false);
+    }
+
+    private XmlStringDiffMatcher(final String expectedSource, final boolean identical, final boolean ignoreWhitespace) {
         this.expectedSource = docSource(expectedSource);
         this.identical = identical;
+        this.ignoreWhitespace = ignoreWhitespace;
     }
 
     /**
@@ -56,6 +62,17 @@ public class XmlStringDiffMatcher extends DiagnosingMatcher<String> {
      */
     public static XmlStringDiffMatcher hasSimilarXml(final String expectedSource) {
         return new XmlStringDiffMatcher(expectedSource);
+    }
+
+    /**
+     * Compares that the XML sources are similar, ignoring whitespace: text nodes are trimmed and
+     * empty text nodes are dropped, as by {@link DiffBuilder#ignoreWhitespace()}.
+     *
+     * @param expectedSource the expected XML
+     * @return The Hamcrest Matcher
+     */
+    public static XmlStringDiffMatcher hasSimilarXmlIgnoringWhitespace(final String expectedSource) {
+        return new XmlStringDiffMatcher(expectedSource, false, true);
     }
 
     /**
@@ -84,6 +101,9 @@ public class XmlStringDiffMatcher extends DiagnosingMatcher<String> {
         final Source actualSource = docSource((String)item);
         DiffBuilder diffBuilder = DiffBuilder.compare(expectedSource)
                 .withTest(actualSource);
+        if (ignoreWhitespace) {
+            diffBuilder = diffBuilder.ignoreWhitespace();
+        }
         if (identical) {
             diffBuilder = diffBuilder.checkForIdentical();
         } else {

@@ -50,7 +50,7 @@ public class OrderByCountClauseTest {
      * based on the sorted tuple stream, not the original iteration order.
      */
     @Test
-    public void countAfterOrderBy() throws XMLDBException {
+    void countAfterOrderBy() throws XMLDBException {
         // Query equivalent to XQTS prod-CountClause/count-009, results encoded as "x/y/remainder/rank"
         final String query =
                 "string-join((" +
@@ -77,7 +77,7 @@ public class OrderByCountClauseTest {
      * (not N, N-1, … in reverse).
      */
     @Test
-    public void countAfterDescendingOrderBy() throws XMLDBException {
+    void countAfterDescendingOrderBy() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for $x in (3, 1, 2)" +
@@ -96,7 +96,7 @@ public class OrderByCountClauseTest {
      * Ranks assigned by a preceding {@code count} must reflect sorted position.
      */
     @Test
-    public void whereAfterOrderBy() throws XMLDBException {
+    void whereAfterOrderBy() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for $x in (5, 3, 1, 4, 2)" +
@@ -116,7 +116,7 @@ public class OrderByCountClauseTest {
      * in sorted order.
      */
     @Test
-    public void letAfterOrderBy() throws XMLDBException {
+    void letAfterOrderBy() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for $x in (3, 1, 2)" +
@@ -135,7 +135,7 @@ public class OrderByCountClauseTest {
      * expression (XQTS count-010).
      */
     @Test
-    public void countResetBetweenOuterIterations() throws XMLDBException {
+    void countResetBetweenOuterIterations() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for $x in 1 to 4 return" +
@@ -155,7 +155,7 @@ public class OrderByCountClauseTest {
      * number windows starting from 1.
      */
     @Test
-    public void countAfterTumblingWindow() throws XMLDBException {
+    void countAfterTumblingWindow() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for tumbling window $w in (1 to 10)" +
@@ -176,7 +176,7 @@ public class OrderByCountClauseTest {
      * clause — the where clause must use the rank assigned by count.
      */
     @Test
-    public void countAndWhereAfterTumblingWindow() throws XMLDBException {
+    void countAndWhereAfterTumblingWindow() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for tumbling window $w in (1 to 10)" +
@@ -197,7 +197,7 @@ public class OrderByCountClauseTest {
      * clause — the where clause must use the rank assigned by count.
      */
     @Test
-    public void countAndWhereAfterSlidingWindow() throws XMLDBException {
+    void countAndWhereAfterSlidingWindow() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for sliding window $w in (1 to 10)" +
@@ -218,7 +218,7 @@ public class OrderByCountClauseTest {
      * where the return expression references the window variable.
      */
     @Test
-    public void orderByAfterSlidingWindow() throws XMLDBException {
+    void orderByAfterSlidingWindow() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for sliding window $w in (1 to 10)" +
@@ -240,7 +240,7 @@ public class OrderByCountClauseTest {
      * where the return expression references the window variable.
      */
     @Test
-    public void orderByAfterTumblingWindow() throws XMLDBException {
+    void orderByAfterTumblingWindow() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for tumbling window $w in (1 to 10)" +
@@ -262,7 +262,7 @@ public class OrderByCountClauseTest {
      * {@code order by} inside the return expression — the outer count must be unaffected.
      */
     @Test
-    public void countAfterTumblingWindowWithNestedOrderBy() throws XMLDBException {
+    void countAfterTumblingWindowWithNestedOrderBy() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for tumbling window $w in (1 to 10)" +
@@ -285,7 +285,7 @@ public class OrderByCountClauseTest {
      * and {@code let} between them, and {@code where} after the second {@code order by}.
      */
     @Test
-    public void twoOrderByClausesWithCountLetWhere() throws XMLDBException {
+    void twoOrderByClausesWithCountLetWhere() throws XMLDBException {
         // for $i in 1 to 100
         // order by -$i                   → sorted: 100, 99, ..., 1
         // count $count                   → $count = 1..100
@@ -315,7 +315,7 @@ public class OrderByCountClauseTest {
      * {@code order by} inside the return expression — the outer count must be unaffected.
      */
     @Test
-    public void countAfterSlidingWindowWithNestedOrderBy() throws XMLDBException {
+    void countAfterSlidingWindowWithNestedOrderBy() throws XMLDBException {
         final String query =
                 "string-join((" +
                 "  for sliding window $w in (1 to 10)" +

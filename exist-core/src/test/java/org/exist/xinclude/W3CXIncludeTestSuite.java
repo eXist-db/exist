@@ -21,6 +21,7 @@
  */
 package org.exist.xinclude;
 
+import java.util.stream.Stream;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -35,6 +36,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.w3c.dom.*;
 
@@ -70,8 +72,8 @@ public class W3CXIncludeTestSuite {
     // Track which contributor directories have been stored (avoid redundant uploads)
     private static final Set<String> storedContributors = new HashSet<>();
 
-    public static java.util.Collection<Object[]> data() throws Exception {
-        final List<Object[]> tests = new ArrayList<>();
+    public static Stream<Arguments> data() throws Exception {
+        final List<Arguments> tests = new ArrayList<>();
         final Path catalogPath = getTestSuitePath().resolve("testdescr.xml");
 
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -105,37 +107,37 @@ public class W3CXIncludeTestSuite {
                     desc = descNodes.item(0).getTextContent().trim();
                 }
 
-                tests.add(new Object[]{id, basedir, tcHref, tcType, output, desc, tcFeatures});
+                tests.add(Arguments.of(id, basedir, tcHref, tcType, output, desc, tcFeatures));
             }
         }
 
         // Add XInclude 1.1 tests (not in testdescr.xml catalog)
-        tests.add(new Object[]{"xi11-attcopy-1", "xinclude-11/spec", "attcopy-1.xml", "success",
-                "result/attcopy-1.xml", "XInclude 1.1: Attribute copying with eg:root", "attcopy"});
-        tests.add(new Object[]{"xi11-attcopy-2", "xinclude-11/spec", "attcopy-2.xml", "success",
-                "result/attcopy-2.xml", "XInclude 1.1: Attribute copying with set", "attcopy"});
-        tests.add(new Object[]{"xi11-rfc5147-1", "xinclude-11/spec", "rfc5147-1.xml", "success",
-                "result/rfc5147-1.xml", "XInclude 1.1: RFC 5147 text fragment (line range)", "fragid"});
-        tests.add(new Object[]{"xi11-rfc5147-2", "xinclude-11/spec", "rfc5147-2.xml", "success",
-                "result/rfc5147-2.xml", "XInclude 1.1: RFC 5147 text fragment (char range)", "fragid"});
-        tests.add(new Object[]{"xi11-fallback", "xinclude-11/more", "fallback.xml", "success",
-                "result/fallback.xml", "XInclude 1.1: Integrity constraint error with fallback", "fragid"});
+        tests.add(Arguments.of("xi11-attcopy-1", "xinclude-11/spec", "attcopy-1.xml", "success",
+                "result/attcopy-1.xml", "XInclude 1.1: Attribute copying with eg:root", "attcopy"));
+        tests.add(Arguments.of("xi11-attcopy-2", "xinclude-11/spec", "attcopy-2.xml", "success",
+                "result/attcopy-2.xml", "XInclude 1.1: Attribute copying with set", "attcopy"));
+        tests.add(Arguments.of("xi11-rfc5147-1", "xinclude-11/spec", "rfc5147-1.xml", "success",
+                "result/rfc5147-1.xml", "XInclude 1.1: RFC 5147 text fragment (line range)", "fragid"));
+        tests.add(Arguments.of("xi11-rfc5147-2", "xinclude-11/spec", "rfc5147-2.xml", "success",
+                "result/rfc5147-2.xml", "XInclude 1.1: RFC 5147 text fragment (char range)", "fragid"));
+        tests.add(Arguments.of("xi11-fallback", "xinclude-11/more", "fallback.xml", "success",
+                "result/fallback.xml", "XInclude 1.1: Integrity constraint error with fallback", "fragid"));
 
         // XProc 3.0 XInclude tests (unique scenarios not in W3C suites)
-        tests.add(new Object[]{"xproc-016", "xproc3/input", "xproc-016.xml", "success",
-                "../result/xproc-016.xml", "XProc 3.0: parse=\"text\" on XML document", ""});
-        tests.add(new Object[]{"xproc-017", "xproc3/input", "xproc-017.xml", "success",
-                null, "XProc 3.0: fixup-xml-lang=\"true\"", "fixup-xml-lang"});
-        tests.add(new Object[]{"xproc-018", "xproc3/input", "xproc-018.xml", "success",
-                null, "XProc 3.0: fixup-xml-lang=\"true\" (variant)", "fixup-xml-lang"});
-        tests.add(new Object[]{"xproc-019", "xproc3/input", "xproc-019.xml", "success",
-                null, "XProc 3.0: fixup-xml-lang=\"false\" (default)", "fixup-xml-lang"});
+        tests.add(Arguments.of("xproc-016", "xproc3/input", "xproc-016.xml", "success",
+                "../result/xproc-016.xml", "XProc 3.0: parse=\"text\" on XML document", ""));
+        tests.add(Arguments.of("xproc-017", "xproc3/input", "xproc-017.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"true\"", "fixup-xml-lang"));
+        tests.add(Arguments.of("xproc-018", "xproc3/input", "xproc-018.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"true\" (variant)", "fixup-xml-lang"));
+        tests.add(Arguments.of("xproc-019", "xproc3/input", "xproc-019.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"false\" (default)", "fixup-xml-lang"));
 
-        return tests;
+        return tests.stream();
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}: {5}")
-    public void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
+    void runTestCase(String testId, String basedir, String href, String type, String outputPath, String description, String features) throws Exception {
         // Skip tests requiring features eXist doesn't support
         if (features != null && !features.isEmpty()) {
             Assumptions.assumeFalse(features.contains("xpointer-scheme"), "Skipping: requires xpointer-scheme");

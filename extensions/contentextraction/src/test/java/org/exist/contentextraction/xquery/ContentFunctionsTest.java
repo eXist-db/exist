@@ -57,7 +57,7 @@ public class ContentFunctionsTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -81,7 +81,7 @@ public class ContentFunctionsTest {
     }
 
     @AfterAll
-    public static void teardown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void teardown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -95,7 +95,7 @@ public class ContentFunctionsTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void getMetadataFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getMetadataFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
                 declare namespace html = "http://www.w3.org/1999/xhtml";
@@ -125,7 +125,7 @@ public class ContentFunctionsTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void getMetadataAndContentFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getMetadataAndContentFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
                 declare namespace html = "http://www.w3.org/1999/xhtml";
@@ -155,7 +155,7 @@ public class ContentFunctionsTest {
 
     @Disabled("see https://github.com/eXist-db/exist/issues/3835")
     @org.junit.jupiter.api.Test
-    public void getMetadataFromXlsx() throws EXistException, XPathException, PermissionDeniedException, IOException {
+    void getMetadataFromXlsx() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
                 declare namespace html = "http://www.w3.org/1999/xhtml";

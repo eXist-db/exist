@@ -64,7 +64,7 @@ public class XQueryUpdateTest {
     protected final static int ITEMS_TO_APPEND = 500;
 
     @org.junit.jupiter.api.Test
-    public void append() throws Exception {
+    void append() throws Exception {
         withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
             String query =
@@ -103,7 +103,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void appendAttributes() throws Exception {
+    void appendAttributes() throws Exception {
 
         append();
 
@@ -152,7 +152,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void insertBefore() throws Exception {
+    void insertBefore() throws Exception {
         withBroker((pool, broker) -> {
             String query =
                     """
@@ -206,7 +206,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void insertAfter() throws Exception {
+    void insertAfter() throws Exception {
         withBroker((pool, broker) -> {
             String query =
                     """
@@ -260,7 +260,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void update() throws Exception {
+    void update() throws Exception {
 
         append();
 
@@ -312,7 +312,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void remove() throws Exception {
+    void remove() throws Exception {
 
         append();
 
@@ -332,7 +332,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void rename() throws Exception {
+    void rename() throws Exception {
 
         append();
 
@@ -362,7 +362,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void replace() throws Exception {
+    void replace() throws Exception {
 
         append();
 
@@ -402,7 +402,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void attrUpdate() throws Exception {
+    void attrUpdate() throws Exception {
         withBroker((pool, broker) -> {
             store(broker, "test.xml", UPDATE_XML);
 
@@ -422,7 +422,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void appendCDATA() throws Exception {
+    void appendCDATA() throws Exception {
         withBroker((pool, broker) -> {
             XQuery xquery = pool.getXQueryService();
             String query =
@@ -454,7 +454,7 @@ public class XQueryUpdateTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void insertAttrib() throws Exception {
+    void insertAttrib() throws Exception {
         withBroker((pool, broker) -> {
             String query =
                 "declare namespace xmldb = 'http://exist-db.org/xquery/xmldb'; "+
@@ -489,12 +489,12 @@ public class XQueryUpdateTest {
     }
 
     @BeforeEach
-    public void loadTestData() throws Exception {
+    void loadTestData() throws Exception {
         withBroker((pool, broker) -> store(broker, "test.xml", TEST_XML));
     }
 
     @AfterEach
-    public void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void removeTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         if (pool.isShuttingDownOrDown()) {
             return;

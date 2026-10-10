@@ -66,13 +66,13 @@ public class FunLangTest {
         """;
 
     @BeforeAll
-    public static void setUp() throws XMLDBException {
+    static void setUp() throws XMLDBException {
         final Collection testCollection = createCollection(TEST_COLLECTION);
         writeModule(testCollection, "mod.xqm", MODULE);
     }
 
     @AfterAll
-    public static void tearDown() throws XMLDBException {
+    static void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService cmService = root.getService(CollectionManagementService.class);
         cmService.removeCollection(TEST_COLLECTION);
@@ -99,7 +99,7 @@ public class FunLangTest {
     }
 
     @Test
-    public void fnLangInLibraryModuleWithVariable() throws XMLDBException {
+    void fnLangInLibraryModuleWithVariable() throws XMLDBException {
         // Regression test for https://github.com/eXist-db/exist/issues/5103
         // fn:lang in analyze() compiles a sub-query that corrupts the XQueryContext,
         // causing module-level variables to fail with XPDY0002 on first access.
@@ -113,7 +113,7 @@ public class FunLangTest {
     }
 
     @Test
-    public void testFnLangWithContext() throws XMLDBException {
+    void testFnLangWithContext() throws XMLDBException {
         final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
             "let $doc-frag := " +
 	    "<desclist xml:lang=\"en\">" +
@@ -131,8 +131,8 @@ public class FunLangTest {
         assertEquals("<desc xml:lang=\"en-US\" n=\"1\">\n    <line>The first line of the description.</line>\n</desc>", resourceSet.getResource(0).getContent());
     }
 
-        @Test
-    public void testFnLangWithArgument() throws XMLDBException {
+    @Test
+    void testFnLangWithArgument() throws XMLDBException {
 		final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
             "let $doc-frag := " +
 	    "<desclist xml:lang=\"en\">" +
@@ -149,9 +149,9 @@ public class FunLangTest {
         assertEquals(1, resourceSet.getSize());
         assertEquals("false", resourceSet.getResource(0).getContent());
     }
-    
+
     @Test
-    public void testFnLangWithAttributeArgument() throws XMLDBException {
+    void testFnLangWithAttributeArgument() throws XMLDBException {
 		final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
             "let $doc-frag := " +
 	    "<desclist xml:lang=\"en\">" +
