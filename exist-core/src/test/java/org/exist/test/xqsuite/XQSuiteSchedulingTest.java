@@ -57,25 +57,26 @@ class XQSuiteSchedulingTest {
     private static final String WAITS = "src/test/resources/org/exist/test/xqsuite/";
     private static final String RUNNER = "src/test/resources/org/exist/test/runner/";
 
-    @XQSuite({WAITS + "wait-a.xqm", WAITS + "wait-b.xqm", WAITS + "wait-c.xqm", WAITS + "wait-d.xqm"})
+    @XQSuite(value = {WAITS + "wait-a.xqm", WAITS + "wait-b.xqm", WAITS + "wait-c.xqm", WAITS + "wait-d.xqm"}, fixture = true)
     static class SequentialWaits {
     }
 
-    @XQSuite(value = {WAITS + "wait-a.xqm", WAITS + "wait-b.xqm", WAITS + "wait-c.xqm", WAITS + "wait-d.xqm"}, parallel = true)
+    @XQSuite(value = {WAITS + "wait-a.xqm", WAITS + "wait-b.xqm", WAITS + "wait-c.xqm", WAITS + "wait-d.xqm"}, parallel = true, fixture = true)
     static class ParallelWaits {
     }
 
     /** the hanging file comes first, so a sequential suite only gets to the second file if the first is given up on */
-    @XQSuite({WAITS + "hang.xqm", RUNNER + "single-test.xqm"})
+    @XQSuite(value = {WAITS + "hang.xqm", RUNNER + "single-test.xqm"}, fixture = true)
     static class SequentialHang {
     }
 
-    @XQSuite(value = {WAITS + "hang.xqm", RUNNER + "single-test.xqm"}, parallel = true)
+    @XQSuite(value = {WAITS + "hang.xqm", RUNNER + "single-test.xqm"}, parallel = true, fixture = true)
     static class ParallelHang {
     }
 
     private static EngineExecutionResults run(final Class<?> suite, final Map<String, String> parameters) {
         final EngineTestKit.Builder builder = EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite));
+        builder.configurationParameter(XQSuiteSettings.FIXTURES, "true");
         parameters.forEach(builder::configurationParameter);
         return builder.execute();
     }
@@ -167,6 +168,19 @@ class XQSuiteSchedulingTest {
                 .forEach(event -> finishes.merge(event.getTestDescriptor().getUniqueId(), 1L, Long::sum));
         finishes.forEach((id, count) -> assertEquals(1L, count, id + " must finish exactly once"));
         assertEquals(1, results.containerEvents().failed().count(), "the hung file, and only it, is a failed container");
+    }
+
+    /**
+     * A run that does not set up the fixture, such as a -Dtest wildcard that also matches nested classes or
+     * the package scan of an IDE, must not run (and fail) the hanging file.
+     */
+    @Test
+    void fixtureSuiteIsSkippedUnlessTheTestAsksForIt() {
+        final EngineExecutionResults results = EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID)
+                .selectors(selectClass(SequentialHang.class))
+                .execute();
+        results.testEvents().assertStatistics(stats -> stats.started(0));
+        assertEquals(0, results.containerEvents().failed().count());
     }
 
     @Test

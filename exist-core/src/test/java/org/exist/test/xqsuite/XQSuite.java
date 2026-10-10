@@ -61,4 +61,14 @@ public @interface XQSuite {
      * @return true to run the files of the suite concurrently
      */
     boolean parallel() default false;
+
+    /**
+     * Marks a suite that only exists to be run by a test of the engine itself (a file that hangs, for
+     * example), with {@link XQSuiteSettings#FIXTURES} set. Any other run, however it selects classes (a
+     * {@code -Dtest} wildcard that also matches nested classes, a package or classpath scan of an IDE),
+     * skips it, so that it is not reported as a failing suite of the module.
+     *
+     * @return true for a suite that is only run by the test that sets it up
+     */
+    boolean fixture() default false;
 }
