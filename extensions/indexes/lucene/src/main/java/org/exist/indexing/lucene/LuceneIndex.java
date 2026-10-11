@@ -53,6 +53,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
@@ -79,7 +80,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected SearcherTaxonomyManager searcherManager = null;
     protected ReaderManager readerManager = null;
 
-    protected boolean needsCommit = false;
+    protected volatile boolean needsCommit = false;
+
+    /** Incremented whenever a writer is released, i.e. whenever the index may have changed. */
+    private final AtomicLong modificationCount = new AtomicLong();
 
     public String getDirName() {
         return DIR_NAME;
@@ -235,12 +239,27 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (writer == null)
             return;
         needsCommit = true;
+        modificationCount.incrementAndGet();
+    }
+
+    /**
+     * A count that changes whenever the index may have changed, without locking: anything derived
+     * from the index's content, such as a rewritten query, stays valid while the count does. A
+     * reader acquired through {@link #withReader} after the count was read shows at least the
+     * changes it counts.
+     *
+     * @return the modification count
+     */
+    public long getModificationCount() {
+        return modificationCount.get();
     }
 
     protected void commit() {
     	if (!needsCommit) {
             return;
         }
+        // read before the commit starts: a write released from now on is not necessarily part of this commit
+        final long committedModificationCount = modificationCount.get();
         try {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Committing Lucene index");
@@ -249,7 +268,13 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
                 cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
             }
-            needsCommit = false;
+            // Compare and clear under the monitor releaseWriter() holds while it sets the flag and bumps the
+            // count: without it a release could land between the compare and the clear, and its flag would be lost.
+            synchronized (this) {
+                if (modificationCount.get() == committedModificationCount) {
+                    needsCommit = false;
+                }
+            }
         } catch(CorruptIndexException cie) {
             LOG.error("Detected corrupt Lucene index on writer release and commit: {}", cie.getMessage(), cie);
         } catch(IOException ioe) {
