@@ -513,26 +513,28 @@ public class LocationStep extends Step {
             }
 
             final NewArrayNodeSet newCurrentSet = new NewArrayNodeSet(preloaded.getItemCount());
+            boolean droppedNodes = false;
             for (NodeProxy p : preloaded) {
+                // self:: selects from the context: a preloaded node that is not in the context is not selected.
+                // The preloaded set may be evaluated for each node of a larger context, one at a time.
+                @Nullable final NodeProxy np = ns != null ? ns.get(p) : null;
+                if (ns != null && np == null) {
+                    droppedNodes = true;
+                    continue;
+                }
                 if (test.isWildcardTest()) {
-                    if (ns != null) {
-                        @Nullable final NodeProxy np = ns.get(p);
-                        if (np != null) {
-                            p = np;
-                        }
+                    if (np != null) {
+                        p = np;
                     }
-                } else {
-                    if (ns != null) {
-                        @Nullable final NodeProxy np = ns.get(p);
-                        if (np != null && np.getMatches() != null) {
-                            p.addMatch(np.getMatches());
-                        }
-                    }
+                } else if (np != null && np.getMatches() != null) {
+                    p.addMatch(np.getMatches());
                 }
                 p.addContextNode(contextId, p);
                 newCurrentSet.add(p);
             }
-            currentSet = newCurrentSet;
+            if (!droppedNodes) {
+                currentSet = newCurrentSet;
+            }
             return newCurrentSet;
         }
 
