@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790507453214,
+  "lastUpdate": 1791720054267,
   "repoUrl": "https://github.com/eXist-db/exist",
   "entries": {
     "exist-core-jmh": [
@@ -7208,6 +7208,1036 @@ window.BENCHMARK_DATA = {
           {
             "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"notSubType\"} )",
             "value": 9.174871627191632,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Duncan Paterson",
+            "username": "duncdrum",
+            "email": "duncdrum@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "c68693484d6d2625ee4df769d31f7ae952ecb48f",
+          "message": "Merge pull request #6820 from joewiz/bugfix/6815-rest-in-query-json",
+          "timestamp": "2026-10-09T18:31:23Z",
+          "url": "https://github.com/eXist-db/exist/commit/c68693484d6d2625ee4df769d31f7ae952ecb48f"
+        },
+        "date": 1791720052688,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "org.exist.storage.lock.LockTableBenchmark.testEvent",
+            "value": 979346351.8885033,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"1\"} )",
+            "value": 49408665.72762385,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"2\"} )",
+            "value": 18315761.565870408,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"5\"} )",
+            "value": 7592428.454426458,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"10\"} )",
+            "value": 4869231.01488152,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"100\"} )",
+            "value": 415257.3013914297,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"1000\"} )",
+            "value": 44190.8178633217,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproach ( {\"numOfStrings\":\"10000\"} )",
+            "value": 2964.0446687861527,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"1\"} )",
+            "value": 27655197.08195862,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"2\"} )",
+            "value": 11582932.219880756,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"5\"} )",
+            "value": 8223929.219939615,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"10\"} )",
+            "value": 4602828.040635225,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"100\"} )",
+            "value": 428541.7492741747,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"1000\"} )",
+            "value": 50211.47638550021,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forApproachRadek ( {\"numOfStrings\":\"10000\"} )",
+            "value": 3309.6876040689267,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"1\"} )",
+            "value": 49888707.24285294,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"2\"} )",
+            "value": 21247704.403790154,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"5\"} )",
+            "value": 9640408.240546439,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"10\"} )",
+            "value": 5104098.298468914,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"100\"} )",
+            "value": 466153.8949558106,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"1000\"} )",
+            "value": 47881.83985064769,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproach ( {\"numOfStrings\":\"10000\"} )",
+            "value": 3019.870743063221,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"1\"} )",
+            "value": 28583662.581981637,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"2\"} )",
+            "value": 19188086.226835188,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"5\"} )",
+            "value": 8037761.439084724,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"10\"} )",
+            "value": 4575373.299245094,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"100\"} )",
+            "value": 427326.1702367122,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"1000\"} )",
+            "value": 44621.89067284827,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.forEachApproachRadek ( {\"numOfStrings\":\"10000\"} )",
+            "value": 2947.975559530519,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"1\"} )",
+            "value": 48943491.752159305,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"2\"} )",
+            "value": 28884914.195157934,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"5\"} )",
+            "value": 14125245.615808949,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"10\"} )",
+            "value": 7153912.672594826,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"100\"} )",
+            "value": 838499.4535578105,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"1000\"} )",
+            "value": 77960.6908894618,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.StringJoinBenchmark.jdkApproach ( {\"numOfStrings\":\"10000\"} )",
+            "value": 3616.5909640731707,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.utils.URIUtilsBenchmark.encodeForURI",
+            "value": 6521399.633694361,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.following ( {\"shape\":\"1500_20\"} )",
+            "value": 9.813079446574456,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.following ( {\"shape\":\"500_100\"} )",
+            "value": 16.043864778374253,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.following ( {\"shape\":\"100_500\"} )",
+            "value": 15.67650113090961,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.followingSibling ( {\"shape\":\"1500_20\"} )",
+            "value": 173.8984738689655,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.followingSibling ( {\"shape\":\"500_100\"} )",
+            "value": 1794.1276996000001,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.followingSibling ( {\"shape\":\"100_500\"} )",
+            "value": 17272.9022754,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.preceding ( {\"shape\":\"1500_20\"} )",
+            "value": 10.062966497901872,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.preceding ( {\"shape\":\"500_100\"} )",
+            "value": 16.49834997202958,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.preceding ( {\"shape\":\"100_500\"} )",
+            "value": 16.135480458735746,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.precedingSibling ( {\"shape\":\"1500_20\"} )",
+            "value": 180.84339610566502,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.precedingSibling ( {\"shape\":\"500_100\"} )",
+            "value": 1852.0757321333335,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.dom.persistent.AxisBenchmark.precedingSibling ( {\"shape\":\"100_500\"} )",
+            "value": 17926.8315824,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"1\",\"queryVariant\":\"single\",\"verificationMode\":\"STRICT\"} )",
+            "value": 38.29334315833307,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"1\",\"queryVariant\":\"unionExplicit\",\"verificationMode\":\"STRICT\"} )",
+            "value": 38.54974075846154,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"1\",\"queryVariant\":\"unionCollectionParens\",\"verificationMode\":\"STRICT\"} )",
+            "value": 37.857324854659375,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"10\",\"queryVariant\":\"single\",\"verificationMode\":\"STRICT\"} )",
+            "value": 12.318454369118781,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"10\",\"queryVariant\":\"unionExplicit\",\"verificationMode\":\"STRICT\"} )",
+            "value": 12.527810757790727,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"1000\",\"matchEvery\":\"10\",\"queryVariant\":\"unionCollectionParens\",\"verificationMode\":\"STRICT\"} )",
+            "value": 12.837029856309647,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"1\",\"queryVariant\":\"single\",\"verificationMode\":\"STRICT\"} )",
+            "value": 689.972341425,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"1\",\"queryVariant\":\"unionExplicit\",\"verificationMode\":\"STRICT\"} )",
+            "value": 691.3776658250001,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"1\",\"queryVariant\":\"unionCollectionParens\",\"verificationMode\":\"STRICT\"} )",
+            "value": 852.9182555,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"10\",\"queryVariant\":\"single\",\"verificationMode\":\"STRICT\"} )",
+            "value": 119.01191689645626,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"10\",\"queryVariant\":\"unionExplicit\",\"verificationMode\":\"STRICT\"} )",
+            "value": 119.08590143687707,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.LucenePhraseQueryBenchmark.phraseQuery ( {\"docCount\":\"5000\",\"matchEvery\":\"10\",\"queryVariant\":\"unionCollectionParens\",\"verificationMode\":\"STRICT\"} )",
+            "value": 122.86130621951217,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 33.891422346166365,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 26.779445891916925,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 157.97694144444444,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 125.87517670984126,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 29.519698684554335,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 27.11550447999975,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 167.84572990952378,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 111.11276217444444,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.88831227684093,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 26.868443196381598,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 167.11875471880953,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 117.770731175,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.79784104640018,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 22.884539124675392,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 140.83179091150794,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 127.91508086285714,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 35.72049394882883,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 24.068864837429174,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 161.45507611460317,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatches ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 114.64115976888888,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.864107193010035,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 22.99819544171726,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 169.6158030088095,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 116.23102127587303,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 29.200643141938166,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 25.065720390714052,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 186.45965286238098,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 114.44054931888891,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.582022302214696,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 24.980892845672383,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 161.19030745944445,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesBooleanShouldSweep ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 121.68506369357142,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 8.26424727885868,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 5.190325121285703,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.60788299336842,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 15.896456434678655,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 10.25328954011837,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 4.670935928584467,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 36.15426110962963,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 14.670197859623428,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 7.7229143639103155,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 3.541312758784941,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 32.513957212916964,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 14.821153019774112,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 10.062818369513531,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 4.420850647136206,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 32.07339791894113,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 13.817442668592847,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 9.199530608895596,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 4.276375184549236,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 32.367740401254835,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesTermInSetSweep ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 14.266450715913928,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 90.8196011915873,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 67.00267135431372,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 428.9765372333333,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 311.23389655,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 83.82755952071429,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 62.512783064227186,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 372.5296952,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 303.0914532,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 87.18733582337663,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 67.43300401783218,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 410.51391356666664,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deleteInBatchesWithNoopCheck ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 291.33883135,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 45.480844410833335,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"64\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 30.76257048432986,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 205.82381934190477,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"64\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 148.1438346265873,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 38.54506139744573,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"128\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 29.405067502704462,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 189.65681507738097,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"128\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 159.5042145047619,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 41.03087123211847,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"256\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 29.211446186002178,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 202.56000491666666,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"256\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 167.2134142857143,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 38.34251040167577,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"512\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 28.525242552776557,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 209.29815355809524,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"512\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 168.99211675619048,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"1\"} )",
+            "value": 40.77921891548973,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"1024\",\"docCount\":\"1000\",\"nodeDocStride\":\"10\"} )",
+            "value": 30.869865811983697,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"1\"} )",
+            "value": 201.52603345714286,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark.deletePerDoc ( {\"batchSize\":\"1024\",\"docCount\":\"5000\",\"nodeDocStride\":\"10\"} )",
+            "value": 135.77704782222222,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.UtilExpandHighlightingBenchmark.expandBatchWildcardHighlightingOff",
+            "value": 58.971253069685375,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.UtilExpandHighlightingBenchmark.expandBatchWildcardHighlightingOn",
+            "value": 341.56869609333336,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.UtilExpandHighlightingBenchmark.expandSingleHitHighlightingOff",
+            "value": 0.0507378740755929,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.lucene.UtilExpandHighlightingBenchmark.expandSingleHitHighlightingOn",
+            "value": 0.16120877481648868,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.storage.ReindexBenchmark.reindex ( {\"docCount\":\"100\",\"verificationMode\":\"STRICT\"} )",
+            "value": 11.88363492988015,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.storage.ReindexBenchmark.reindex ( {\"docCount\":\"500\",\"verificationMode\":\"STRICT\"} )",
+            "value": 51.93321157097104,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.storage.ReindexBenchmark.reindex ( {\"docCount\":\"1000\",\"verificationMode\":\"STRICT\"} )",
+            "value": 100.91192200717856,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.ArrowOperatorBenchmark.arrowChain ( {\"iterations\":\"100000\"} )",
+            "value": 56.851766371476,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.ArrowOperatorBenchmark.arrowSingleCall ( {\"iterations\":\"100000\"} )",
+            "value": 33.02537690749054,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.ArrowOperatorBenchmark.directChain ( {\"iterations\":\"100000\"} )",
+            "value": 55.06282929010989,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.ArrowOperatorBenchmark.directSingleCall ( {\"iterations\":\"100000\"} )",
+            "value": 34.3605728475605,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.precedingSiblingBaseline ( {\"refPosition\":\"5000\"} )",
+            "value": 134.12663406583334,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.precedingSiblingBaseline ( {\"refPosition\":\"25000\"} )",
+            "value": 155.98550246153846,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.precedingSiblingBaseline ( {\"refPosition\":\"45000\"} )",
+            "value": 177.26409005,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.wildcardPrecedingWithPositionalPredicate ( {\"refPosition\":\"5000\"} )",
+            "value": 148.1804369285714,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.wildcardPrecedingWithPositionalPredicate ( {\"refPosition\":\"25000\"} )",
+            "value": 244.5556370444445,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.PrecedingAxisBenchmark.wildcardPrecedingWithPositionalPredicate ( {\"refPosition\":\"45000\"} )",
+            "value": 335.30411751428574,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"identical\"} )",
+            "value": 0.6240081834681616,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"directSuper\"} )",
+            "value": 8.17361769976871,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"deepSuper\"} )",
+            "value": 19.960322735328447,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"unionMember\"} )",
+            "value": 3.1412965962007826,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"unionSubtype\"} )",
+            "value": 27.48367809993668,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.xquery.value.TypeSubTypeOfBenchmark.subTypeOf ( {\"shape\":\"notSubType\"} )",
+            "value": 11.148199372405372,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }
