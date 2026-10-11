@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/http/servlets/HttpResponseWrapper.java
+  s_6d2de3dce8f015::t_8168f771869949 268-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c95881b845e72aa855c1235e5757a887c5944e3",
+  "prompts": {},
+  "sessions": {
+    "s_6d2de3dce8f015": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d7126c7-012e-4e81-b685-f52eb317bfe3",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
