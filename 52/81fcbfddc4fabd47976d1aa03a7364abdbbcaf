@@ -1,0 +1,22 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexCommitDurabilityTest.java
+  s_1e21b9ee169e36::t_7b13cc5f636cd3 1-119
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_1e21b9ee169e36::t_1bf3251e824148 83-86,242-254,258-259,271-276
+  s_1e21b9ee169e36::t_338be433305034 56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5281fcbfddc4fabd47976d1aa03a7364abdbbcaf",
+  "prompts": {},
+  "sessions": {
+    "s_1e21b9ee169e36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e652345c-1dc2-466a-9b82-337f5ecdaa4d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
