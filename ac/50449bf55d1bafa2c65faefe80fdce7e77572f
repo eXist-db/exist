@@ -1,0 +1,20 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneAbortedStoreTest.java
+  s_54a21815731619::t_109c52a1867d17 92,109,117,124,131,141,156,166,174
+  s_54a21815731619::t_0eb800b959ded1 1-91,93-108,110-116,118-123,125-130,132-140,142-155,157-165,167-173,175-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ac50449bf55d1bafa2c65faefe80fdce7e77572f",
+  "prompts": {},
+  "sessions": {
+    "s_54a21815731619": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "19a1f1dd-42dc-460d-a4e0-9a89fabf1940",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
