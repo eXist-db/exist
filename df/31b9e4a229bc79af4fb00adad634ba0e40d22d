@@ -1,7 +1,9 @@
 exist-core/src/main/java/org/exist/collections/MutableCollection.java
   s_54a21815731619::t_cff2c8a2cc2c9d 1410-1418
+  s_54a21815731619::t_fdc0a8c84f73d2 1410-1418
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FailedStoreCurrentPageTest.java
   s_54a21815731619::t_6896a4685263e6 1-149
+  s_54a21815731619::t_3dcf80839a81f3 1-149
 ---
 {
   "schema_version": "authorship/3.0.0",
