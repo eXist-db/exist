@@ -1404,13 +1404,18 @@ public class MutableCollection implements Collection {
             parserFn.accept(info);
             broker.storeXMLResource(transaction, document);
             broker.flush();
-            broker.closeDocument();
             //broker.checkTree(document);
             LOG.debug("document stored.");
         } finally {
-            //This lock has been acquired in validateXMLResourceInternal()
-            info.getDocumentLock().close();
-            broker.getBrokerPool().getProcessMonitor().endJob();
+            try {
+                // Also when parsing or indexing failed: otherwise the broker keeps the failed document's last page
+                // as its current DOM page, and the next document it writes continues on that page.
+                broker.closeDocument();
+            } finally {
+                //This lock has been acquired in validateXMLResourceInternal()
+                info.getDocumentLock().close();
+                broker.getBrokerPool().getProcessMonitor().endJob();
+            }
         }
         
         if(info.isCreating()) {
