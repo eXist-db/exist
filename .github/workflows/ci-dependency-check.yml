@@ -1,0 +1,53 @@
+name: Dependency check
+# Runs the OWASP dependency-check separately from Test & documentation, so
+# that flaky NVD library downloads (see eXist-db/exist#6549) can't block or
+# delay the main test matrix. Only runs on pushes to develop; the weekly
+# cache means most runs reuse an already-downloaded library.
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  MAVEN_OPTS: -DtrimStackTrace=false
+  DEV_JDK: '21'
+jobs:
+  dependencies:
+    name: Dependency checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+      - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set week for OWASP cache key
+        run: echo "WEEK=$(date +%Y-%U)" >> $GITHUB_ENV
+      - name: Restore OWASP dependency-check cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.dependency-check-data
+          key: owasp-dc-${{ env.WEEK }}
+          restore-keys: owasp-dc-
+      - name: OWASP dependency check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -V -B --no-transfer-progress dependency-check:check
+        timeout-minutes: 90
+      - name: Save OWASP dependency-check cache
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.dependency-check-data
+          key: owasp-dc-${{ env.WEEK }}

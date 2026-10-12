@@ -4,6 +4,12 @@ on:
     branches:
       - develop
       - master
+# Serialize rather than cancel: dropping analysis of an actual merged commit
+# loses history, but two analyses racing against the same SonarCloud project
+# can corrupt its incremental state, so back-to-back pushes queue instead.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     name: SonarCloud Analysis
@@ -30,4 +36,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -V -B --no-transfer-progress -Dsurefire.useFile=false -DtrimStackTrace=false -Ddependency-check.skip=true -Ddocker=false -Pskip-build-dist-archives verify site org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        # Static analysis only, no test run: ci-test.yml already runs the full suite on
+        # every push, so re-running it here just duplicates the work and lets flaky tests
+        # abort this build before sonar:sonar ever executes.
+        # -DskipTests covers modules using the standard skip property (incl. failsafe ITs);
+        # exist-core's surefire execution is bound to -DskipUnitTests instead, so both are
+        # needed. This build no longer reports coverage to SonarCloud; coverage is already
+        # tracked via Coveralls from ci-test.yml's ubuntu/unit leg.
+        run: mvn -V -B --no-transfer-progress -Ddependency-check.skip=true -Ddocker=false -Pskip-build-dist-archives -DskipTests -DskipUnitTests=true verify site org.sonarsource.scanner.maven:sonar-maven-plugin:sonar

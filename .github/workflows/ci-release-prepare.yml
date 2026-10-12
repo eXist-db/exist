@@ -41,23 +41,36 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Validate version input
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid version '$VERSION' — expected MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-PRERELEASE (e.g. 7.0.0, 7.0.0-RC1, 7.0.0-beta1)"
+            exit 1
+          fi
+
       - name: Update CITATION.cff
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           mvn -B --no-transfer-progress \
             -Pcitation-release-metadata \
             -DupdateCff=true \
-            -Drevision=${{ inputs.version }} \
+            -Drevision="$VERSION" \
             validate
 
       - name: Commit and tag
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CITATION.cff
           # Only commit if CITATION.cff actually changed
           git diff --staged --quiet || \
-            git commit -m "[release] Prepare eXist-${{ inputs.version }}"
-          git tag -a "eXist-${{ inputs.version }}" \
-            -m "eXist-db ${{ inputs.version }}"
+            git commit -m "[release] Prepare eXist-$VERSION"
+          git tag -a "eXist-$VERSION" \
+            -m "eXist-db $VERSION"
           git push origin HEAD
-          git push origin "eXist-${{ inputs.version }}"
+          git push origin "eXist-$VERSION"
