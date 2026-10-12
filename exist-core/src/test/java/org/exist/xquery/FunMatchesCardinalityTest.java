@@ -46,12 +46,15 @@ import static org.junit.jupiter.api.Assertions.fail;
  * {@code matches(('x','a'), 'a')} came to answer {@code false}: it tested {@code 'x'}. Reported as
  * issue 59 in 2013.</p>
  *
- * <p>What is fixed here is the path that evaluates the argument as a value. Inside a predicate on
- * persistent nodes, {@code fn:matches} still behaves existentially -- {@code //e[matches(v,'a')]}
- * selects rather than raising -- because there the function is an index-backed node filter. That
- * divergence is unchanged by this commit and is tracked separately; the conformant way to write
- * the existential test is {@code some $v in v satisfies matches($v,'a')}, which since the
- * preceding commit reaches the same index.</p>
+ * <p>What is fixed here is the path that evaluates the argument as a value. Where a predicate on
+ * persistent nodes uses {@code fn:matches} as a node filter, it still behaves existentially --
+ * {@code //e[matches(v,'a')]} selects rather than raising -- because there it is an index-backed
+ * filter that tests each node. That is the case when it is the whole predicate, or an operand of
+ * {@code and} or {@code or} in it, since those evaluate their operands as node sets too. Anywhere
+ * else in a predicate, for example as the argument of {@code fn:not}, the argument is evaluated as
+ * a value and a multi-item argument raises {@code XPTY0004}. The existential case is the remaining
+ * half of issue 59; the conformant way to write it is {@code some $v in v satisfies
+ * matches($v,'a')}, which since the preceding commit reaches the same index.</p>
  */
 public class FunMatchesCardinalityTest {
 
@@ -137,6 +140,46 @@ public class FunMatchesCardinalityTest {
         assertEquals(1, rs.getSize());
         assertEquals("true", rs.getResource(0).getContent().toString());
     }
+
+    /**
+     * As the whole predicate on persistent nodes, {@code fn:matches} is evaluated as an index-backed
+     * node filter, which tests each node separately: the existential behavior that remains.
+     */
+    @Test
+    public void asTheWholePredicateItIsExistential() throws XMLDBException {
+        final ResourceSet rs = query(
+                "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a')]");
+        assertEquals(2, rs.getSize());
+    }
+
+    /**
+     * Anywhere else in a predicate, here as the argument of {@code fn:not}, the argument is evaluated
+     * as a value, so a multi-item argument is a type error like everywhere else.
+     */
+    @Test
+    public void insideNotInAPredicateItIsATypeError() throws XMLDBException {
+        assertRaisesTypeError(
+                "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[not(matches(val, 'a'))]");
+    }
+
+    /**
+     * An operand of {@code and} or {@code or} in a predicate is evaluated as a node filter too, so it
+     * is existential as well.
+     */
+    @Test
+    public void asAnOperandOfAndInAPredicateItIsExistential() throws XMLDBException {
+        final ResourceSet rs = query(
+                "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a') and val]");
+        assertEquals(2, rs.getSize());
+    }
+
+    @Test
+    public void asAnOperandOfOrInAPredicateItIsExistential() throws XMLDBException {
+        final ResourceSet rs = query(
+                "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a') or val = 'zz']");
+        assertEquals(2, rs.getSize());
+    }
+
 
     /**
      * The conformant existential spelling, which the optimizer now routes through the index, is

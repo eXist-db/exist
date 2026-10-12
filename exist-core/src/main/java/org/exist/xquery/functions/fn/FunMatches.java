@@ -601,7 +601,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         // fn:matches takes xs:string?, so more than one item is a type error. Sequence.getStringValue
         // below would otherwise quietly return the first item's value and test that alone, which is
         // how matches(('x','a'), 'a') came to answer false rather than raising.
-        if (input.getItemCount() > 1) {
+        if (input.hasMany()) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Type error: the first argument of " + getName() + " must be a single item; got "
                             + input.getItemCount() + " items", input);
