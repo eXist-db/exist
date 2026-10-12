@@ -45,6 +45,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.tools.ant.DirectoryScanner;
+import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -163,9 +164,15 @@ public class Sync extends BasicFunction {
 
             outputProperties = SerializerUtils.getSerializationOptions(this, optionsMap);
 
-            // override defaults set in SerializerUtils
-            for(String p : DEFAULT_PROPERTIES.stringPropertyNames()) {
-                if (optionsMap.get(new StringValue(this, p)).isEmpty()) {
+            // Override SerializerUtils' defaults with file:sync's own, but only for parameters the
+            // caller did not supply. The "supplied?" check must use the same key forms SerializerUtils
+            // accepts: W3C parameters by their string name, eXist extension parameters (e.g.
+            // expand-xincludes) by their exist-namespace QName key. Checking only the bare string key
+            // missed a QName-supplied extension parameter and clobbered it back to the default
+            // (e.g. "exist:expand-xincludes": true() was silently reset to "no"). See
+            // https://github.com/eXist-db/exist/issues/3704
+            for (final String p : DEFAULT_PROPERTIES.stringPropertyNames()) {
+                if (!suppliedInOptionsMap(optionsMap, p)) {
                     outputProperties.setProperty(p, DEFAULT_PROPERTIES.getProperty(p));
                 }
             }
@@ -187,6 +194,26 @@ public class Sync extends BasicFunction {
                     "Invalid 3rd parameter, allowed parameter types are xs:dateTime or map(*) got " + Type.getTypeName(item.getType()));
         }
         return options;
+    }
+
+    /**
+     * Whether the caller supplied the serialization parameter {@code name} in the options map.
+     * W3C parameters are keyed by their bare string name (e.g. {@code "indent"}); eXist extension
+     * parameters are keyed by their exist-namespace QName (e.g. {@code "exist:expand-xincludes"}),
+     * which is the only form {@link SerializerUtils#getSerializationOptions} reads. Both forms must
+     * be checked, or a supplied extension parameter would be overwritten by the default.
+     *
+     * @param optionsMap the user-supplied options map
+     * @param name the serialization property name (the local part, e.g. {@code expand-xincludes})
+     * @return true if the caller supplied the parameter under either key form
+     */
+    private boolean suppliedInOptionsMap(final AbstractMapType optionsMap, final String name) throws XPathException {
+        if (!optionsMap.get(new StringValue(this, name)).isEmpty()) {
+            return true;
+        }
+        final QNameValue existKey =
+                new QNameValue(this, context, new QName(name, Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX));
+        return !optionsMap.get(existKey).isEmpty();
     }
 
     private void checkOption(
