@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FailedStoreCurrentPageTest.java
+  s_54a21815731619::t_a431367c17f169 63-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "874769739a7a1132cbe687fcad7d8e5524b7b523",
+  "prompts": {},
+  "sessions": {
+    "s_54a21815731619": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "19a1f1dd-42dc-460d-a4e0-9a89fabf1940",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
