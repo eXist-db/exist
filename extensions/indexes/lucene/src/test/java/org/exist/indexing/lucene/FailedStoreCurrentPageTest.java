@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -52,19 +53,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class FailedStoreCurrentPageTest {
 
-    public static class FailingAnalyzer extends Analyzer {
-        @Override
-        protected TokenStreamComponents createComponents(final String fieldName) {
-            throw new IllegalStateException("failure while indexing (test)");
-        }
-    }
-
     private static final XmldbURI COLLECTION_URI = XmldbURI.create("/db/failed-store-page");
     private static final XmldbURI KEEP = XmldbURI.create("keep.xml");
     private static final XmldbURI OTHER = XmldbURI.create("other.xml");
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
+    public static class FailingAnalyzer extends Analyzer {
+        @Override
+        protected TokenStreamComponents createComponents(final String fieldName) {
+            throw new IllegalStateException("failure while indexing (test)");
+        }
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -121,6 +122,91 @@ public class FailedStoreCurrentPageTest {
 
         assertEquals("keep v3", content(KEEP));
         assertEquals("other", content(OTHER), "the unrelated document was damaged by the replace of keep.xml");
+    }
+
+    @Test
+    public void documentStoredAfterAFailedCopyStartsOnItsOwnPage() throws Exception {
+        // a document with a p element was stored before the analyzer configuration; copying it indexes it and fails
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager tm = pool.getTransactionManager();
+        final XmldbURI source = XmldbURI.create("/db/failed-store-page-source");
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            try (final Txn txn = tm.beginTransaction()) {
+                final Collection sourceCollection = broker.getOrCreateCollection(txn, source);
+                broker.saveCollection(txn, sourceCollection);
+                broker.storeDocument(txn, XmldbURI.create("p.xml"), new StringInputSource("<doc><q>q</q><p>copy me</p></doc>"),
+                        MimeType.XML_TYPE, sourceCollection);
+                tm.commit(txn);
+            }
+            try (final Txn txn = tm.beginTransaction()) {
+                final Collection sourceCollection = broker.getCollection(source);
+                final Collection target = broker.getCollection(COLLECTION_URI);
+                try {
+                    assertThrows(IllegalStateException.class, () -> broker.copyResource(txn,
+                            sourceCollection.getDocument(broker, XmldbURI.create("p.xml")), target, XmldbURI.create("copy.xml")));
+                } finally {
+                    tm.abort(txn);
+                }
+            }
+            try (final Txn txn = tm.beginTransaction()) {
+                final Collection sourceCollection = broker.getCollection(source);
+                broker.removeCollection(txn, sourceCollection);
+                tm.commit(txn);
+            }
+        }
+
+        store(OTHER, "<doc><q>other</q></doc>");
+
+        assertEquals(1, pageCount(OTHER), "the document continued on the page of the failed copy");
+    }
+
+    @Test
+    public void documentStoredAfterAFailedDefragmentStartsOnItsOwnPage() throws Exception {
+        // a document with a p element was stored before the analyzer configuration; defragmenting indexes it and fails
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager tm = pool.getTransactionManager();
+        final XmldbURI source = XmldbURI.create("/db/failed-store-page-defrag");
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            try (final Txn txn = tm.beginTransaction()) {
+                final Collection defragCollection = broker.getOrCreateCollection(txn, source);
+                broker.saveCollection(txn, defragCollection);
+                broker.storeDocument(txn, XmldbURI.create("p.xml"), new StringInputSource("<doc><q>q</q><p>defragment me</p></doc>"),
+                        MimeType.XML_TYPE, defragCollection);
+                final String configuration = "<collection xmlns='http://exist-db.org/collection-config/1.0'><index><lucene>"
+                        + "<analyzer id='failing' class='" + FailingAnalyzer.class.getName() + "'/>"
+                        + "<text qname='p' analyzer='failing'/></lucene></index></collection>";
+                pool.getConfigurationManager().addConfiguration(txn, broker, defragCollection, configuration);
+                tm.commit(txn);
+            }
+            try (final Txn txn = tm.beginTransaction()) {
+                final Collection defragCollection = broker.getCollection(source);
+                final DocumentImpl doc = defragCollection.getDocument(broker, XmldbURI.create("p.xml"));
+                try {
+                    assertThrows(IllegalStateException.class, () -> broker.defragXMLResource(txn, doc));
+                } finally {
+                    tm.abort(txn);
+                }
+            }
+            try (final Txn txn = tm.beginTransaction()) {
+                broker.removeCollection(txn, broker.getCollection(source));
+                final Collection config = broker.getCollection(XmldbURI.CONFIG_COLLECTION_URI.append("db").append("failed-store-page-defrag"));
+                if (config != null) {
+                    broker.removeCollection(txn, config);
+                }
+                tm.commit(txn);
+            }
+        }
+
+        store(OTHER, "<doc><q>other</q></doc>");
+
+        assertEquals(1, pageCount(OTHER), "the document continued on the page of the failed defragmentation");
+    }
+
+    private int pageCount(final XmldbURI name) throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            return broker.getCollection(COLLECTION_URI).getDocument(broker, name).getMetadata().getPageCount();
+        }
     }
 
     private void store(final XmldbURI name, final String xml) throws Exception {
