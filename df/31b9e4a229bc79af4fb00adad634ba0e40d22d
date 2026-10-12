@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_54a21815731619::t_cff2c8a2cc2c9d 1410-1418
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FailedStoreCurrentPageTest.java
+  s_54a21815731619::t_6896a4685263e6 1-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "df31b9e4a229bc79af4fb00adad634ba0e40d22d",
+  "prompts": {},
+  "sessions": {
+    "s_54a21815731619": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "19a1f1dd-42dc-460d-a4e0-9a89fabf1940",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
