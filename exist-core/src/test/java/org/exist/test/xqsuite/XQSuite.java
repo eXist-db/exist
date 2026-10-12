@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.junit.platform.commons.annotation.Testable;
+
 /**
  * Marks a class as a suite of XQSuite and XML tests, to be run by the {@link XQSuiteTestEngine}.
  * <p>
@@ -46,6 +48,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
+@Testable
 public @interface XQSuite {
 
     /**
