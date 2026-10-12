@@ -155,3 +155,55 @@ function dlu:replace-comment-in-an-element() {
         serialize($doc)
     )
 };
+
+declare variable $dlu:PROLOG-AND-EPILOG := document {
+    processing-instruction p { "x" },
+    <document/>,
+    comment { "z" }
+};
+
+(:~ each node as its kind and name or value :)
+declare %private function dlu:describe($nodes as node()*) as xs:string {
+    string-join(
+        for $n in $nodes
+        return typeswitch ($n)
+            case comment() return "comment:" || string($n)
+            case processing-instruction() return "pi:" || name($n)
+            case element() return "element:" || name($n)
+            default return "other",
+        " ")
+};
+
+(:~
+ : Nodes inserted between two children of the document get node ids in between theirs. The sibling axes
+ : must still find them, from the document element and from each other, and still do after the document
+ : is defragmented.
+ :)
+declare
+    %test:assertEquals(
+        "pi:p comment:b element:document comment:a comment:z",
+        "pi:p comment:b", "comment:a comment:z",
+        "element:document", "element:document",
+        "pi:p comment:b element:document comment:a",
+        "comment:b element:document comment:a comment:z",
+        "pi:p comment:b element:document comment:a comment:z",
+        "pi:p comment:b", "comment:a comment:z")
+function dlu:sibling-axes-reach-inserted-nodes() {
+    let $doc := dlu:store("sibling-axes.xml", $dlu:PROLOG-AND-EPILOG)
+    let $_ := (
+        update insert comment { "b" } preceding $doc/document,
+        update insert comment { "a" } following $doc/document
+    )
+    return (
+        dlu:describe($doc/node()),
+        dlu:describe($doc/document/preceding-sibling::node()),
+        dlu:describe($doc/document/following-sibling::node()),
+        dlu:describe($doc/comment()[. = "b"]/following-sibling::node()[1]),
+        dlu:describe($doc/comment()[. = "a"]/preceding-sibling::node()[1]),
+        dlu:describe($doc/comment()[. = "z"]/preceding-sibling::node()),
+        dlu:describe($doc/processing-instruction()/following-sibling::node()),
+        (xmldb:defragment($doc), dlu:describe($doc/node())),
+        dlu:describe($doc/document/preceding-sibling::node()),
+        dlu:describe($doc/document/following-sibling::node())
+    )
+};
