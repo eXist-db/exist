@@ -1182,13 +1182,18 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     /**
-     * Remove a child of the document, with its descendants.
+     * Remove a comment or processing instruction around the document element. A stored document always has a
+     * document element: it can be replaced, but not removed.
      */
     @Override
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public Node removeChild(final Txn transaction, final Node oldChild) throws DOMException {
         if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        if(oldNode.getNodeType() == ELEMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "The document element of a stored document cannot be removed, only replaced");
         }
         final int index = childIndex(oldNode);
         try(final DBBroker broker = pool.getBroker()) {
@@ -1207,13 +1212,47 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return oldChild;
     }
 
+    /**
+     * The child of this document after or before {@code child}, in the order the children are recorded in.
+     *
+     * Nodes inserted around the document element get node ids in between those of their siblings, so a
+     * sibling cannot be found by computing its node id from the child's.
+     *
+     * @param child a child of this document
+     * @param next true for the child after it, false for the one before it
+     * @return the sibling, or null if there is none
+     */
+    @Nullable IStoredNode<?> getSiblingOfChild(final IStoredNode<?> child, final boolean next) {
+        final int childIndex = findChildIndex(child);
+        try(final DBBroker broker = pool.getBroker()) {
+            if(childIndex < 0) {
+                // a node without the address of a recorded child: fall back to computing the sibling's id
+                final NodeId siblingId = next ? child.getNodeId().nextSibling() : child.getNodeId().precedingSibling();
+                return broker.objectWith(this, siblingId);
+            }
+            final int index = childIndex + (next ? 1 : -1);
+            return index < 0 || index >= children ? null : storedChildAt(broker, index);
+        } catch(final EXistException e) {
+            LOG.error("Internal error while reading a sibling of a document child: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
     private int childIndex(final IStoredNode<?> child) {
+        final int index = findChildIndex(child);
+        if(index < 0) {
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "Node is not a child of this document");
+        }
+        return index;
+    }
+
+    private int findChildIndex(final IStoredNode<?> child) {
         for(int i = 0; i < children; i++) {
             if(StorageAddress.equals(childAddress[i], child.getInternalAddress())) {
                 return i;
             }
         }
-        throw new DOMException(DOMException.NOT_FOUND_ERR, "Node is not a child of this document");
+        return -1;
     }
 
     @Override
@@ -1227,6 +1266,20 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
             //TODO : throw exception ?
+        }
+        return null;
+    }
+
+    @Override
+    @EnsureContainerLocked(mode=READ_LOCK)
+    public Node getLastChild() {
+        if(children == 0) {
+            return null;
+        }
+        try(final DBBroker broker = pool.getBroker()) {
+            return storedChildAt(broker, children - 1);
+        } catch(final EXistException e) {
+            LOG.warn("Exception while reading the last child of the document: {}", e.getMessage(), e);
         }
         return null;
     }

@@ -47,7 +47,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -130,13 +129,8 @@ public class Delete extends Modification {
                             "It is not possible to remove the document element.");
 
                     } else if (parent instanceof final DocumentImpl parentDoc) {
-                        // the only element child of a document is its document element
-                        if (node.getNodeType() == Node.ELEMENT_NODE) {
-                            throw new XPathException(this,
-                                "you cannot remove the document element. Use update "
-                                    + "instead");
-                        }
-                        // a comment or processing instruction around the document element
+                        // a comment or processing instruction around the document element; the document
+                        // element itself is refused by DocumentImpl#removeChild
                         parentDoc.removeChild(transaction, node);
                     } else {
                         parent.removeChild(transaction, node);

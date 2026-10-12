@@ -253,6 +253,23 @@ public class NodeTest {
         }
     }
 
+    @org.junit.jupiter.api.Test
+    public void removingTheDocumentElementIsRejected() throws EXistException, LockException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"), LockMode.WRITE_LOCK)) {
+            final DocumentImpl doc = lockedDoc.getDocument();
+            final Element documentElement = doc.getDocumentElement();
+
+            // a stored document always has a document element: it can be replaced, but not removed
+            final DOMException e = assertThrows(DOMException.class, () -> doc.removeChild(transaction, documentElement));
+            assertEquals(DOMException.HIERARCHY_REQUEST_ERR, e.code);
+            assertEquals(3, doc.getChildNodes().getLength());
+            assertEquals("test", doc.getDocumentElement().getLocalName());
+        }
+    }
+
 	@BeforeAll
     public static void setUp() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

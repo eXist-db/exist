@@ -308,13 +308,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
         // handle siblings of level 1, e.g. a comment before/after a document element
         if(nodeId.getTreeLevel() == 1) {
-            final NodeId siblingId = nodeId.precedingSibling();
-            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-                return broker.objectWith(ownerDocument, siblingId);
-            } catch(final EXistException e) {
-                LOG.error("Internal error while reading previous sibling node: {}", e.getMessage(), e);
-                //TODO : throw exception -pb
-            }
+            return ownerDocument.getSiblingOfChild(this, false);
         }
 
         // handle siblings of level 1+n
@@ -367,13 +361,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
         // handle siblings of level 1, e.g. a comment before/after a document element
         if(nodeId.getTreeLevel() == 1) {
-            final NodeId siblingId = nodeId.nextSibling();
-            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-                return broker.objectWith(ownerDocument, siblingId);
-            } catch(final EXistException e) {
-                LOG.error("Internal error while reading next sibling node: {}", e.getMessage(), e);
-                //TODO : throw exception -pb
-            }
+            return ownerDocument.getSiblingOfChild(this, true);
         }
 
         // handle siblings of level 1+n
