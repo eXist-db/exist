@@ -96,10 +96,15 @@ public class RegexUtil {
      * @throws XPathException in case of invalid flag
      */
     public static int parseFlags(final Expression context, @Nullable final String strFlags) throws XPathException {
+        // Validates the whole string, including anything after a ';'. Only the XPath flags before
+        // it are converted to Java bits: ';j' selects Java's engine, which is what these bits are for.
+        final String validated = SaxonRegex.validateFlags(context, strFlags);
+        final int semicolon = validated.indexOf(';');
+        final String xpathFlags = semicolon < 0 ? validated : validated.substring(0, semicolon);
         int flags = 0;
-        if(strFlags != null) {
-            for (int i = 0; i < strFlags.length(); i++) {
-                final char ch = strFlags.charAt(i);
+        if(!xpathFlags.isEmpty()) {
+            for (int i = 0; i < xpathFlags.length(); i++) {
+                final char ch = xpathFlags.charAt(i);
                 switch (ch) {
                     case 'm':
                         flags |= Pattern.MULTILINE;
