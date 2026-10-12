@@ -1,14 +1,15 @@
 Convention type,Pattern,Example,Frequency,Scope
 naming,UPPER_SNAKE_CASE for constants,MODE_JETTY,,project-wide
 imports,Static imports from org.hamcrest,org.hamcrest.CoreMatchers.containsString,,project-wide
-imports,Static imports from org.junit,org.junit.Assert.assertEquals,,project-wide
+imports,Static imports from org.junit.jupiter.api,org.junit.jupiter.api.Assertions.assertEquals,,project-wide
 naming,Test suffix for classes,FileTaskTest,,project-wide
 naming,get* method naming pattern,getBuildFile,,project-wide
 naming,Abstract prefix for abstract classes,AbstractTaskTest,,project-wide
 naming,Base prefix for base classes,BaseTaskTest,,project-wide
+naming,init* method naming pattern,initBaseTaskTest,,project-wide
+comments,Classes have Javadoc documentation,AntBuildFileExtension,,project-wide
 imports,Static imports from java.nio.charset,java.nio.charset.StandardCharsets.UTF_8,,project-wide
 imports,Static imports from org.hamcrest.core,org.hamcrest.core.AllOf.allOf,,project-wide
-comments,Classes have Javadoc documentation,ProcessorAdapter,,project-wide
 comments,Methods have Javadoc documentation,setupFOUserAgent,,project-wide
 naming,Builder suffix for classes,FopConfigurationBuilder,,project-wide
 naming,build* method naming pattern,buildFromNode,,project-wide
@@ -35,7 +36,6 @@ naming,has* method naming pattern,hasNonWhitespaceContent,,project-wide
 naming,should* method naming pattern,shouldAttemptChallenge,,project-wide
 naming,Helper suffix for classes,ContentTypeHelper,,project-wide
 naming,delete* method naming pattern,deletePerDoc,,project-wide
-imports,Static imports from org.junit.jupiter.api,org.junit.jupiter.api.Assertions.assertFalse,,project-wide
 naming,Impl suffix for classes,DebuggeeImpl,,project-wide
 imports,Static imports from org.exist.util,org.exist.util.ThreadUtils.newInstanceThread,,project-wide
 naming,update* method naming pattern,updateThroughput,,project-wide
@@ -43,7 +43,6 @@ naming,Error suffix for classes,Error,,project-wide
 naming,Utils suffix for classes,Utils,,project-wide
 naming,load* method naming pattern,loadImage,,project-wide
 naming,find* method naming pattern,findFile,,project-wide
-naming,init* method naming pattern,initDuration,,project-wide
 imports,Static imports from java.net,java.net.HttpURLConnection.HTTP_OK,,project-wide
 imports,Static imports from org.exist.xquery.modules.vector,org.exist.xquery.modules.vector.VectorModule.functionSignature,,project-wide
 naming,Service suffix for classes,VectorEmbeddingService,,project-wide
@@ -110,27 +109,24 @@ naming,Repository suffix for classes,ExistRepository,,project-wide
 imports,Static imports from org.quartz,org.quartz.CronScheduleBuilder.cronSchedule,,project-wide
 imports,Static imports from org.exist.scheduler,org.exist.scheduler.JobDescription.*,,project-wide
 imports,Static imports from org.quartz.impl,org.quartz.impl.StdSchedulerFactory.*,,project-wide
-imports,Static imports from org.exist.test,org.exist.test.DiffMatcher.hasIdenticalXml,,project-wide
-imports,Static imports from java.util,java.util.Objects.requireNonNull,,project-wide
-imports,Static imports from org.exist.repo,org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY,,project-wide
-imports,Static imports from org.exist.dom.persistent,org.exist.dom.persistent.DocumentImpl.XML_FILE,,project-wide
 imports,Static imports from org.exist.xslt,org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver,,project-wide
 naming,Controller suffix for classes,IndexController,,project-wide
 imports,Static imports from java.lang,java.lang.Math.max,,project-wide
 imports,Static imports from org.exist.util.crypto.digest,org.exist.util.crypto.digest.DigestType.RIPEMD_256,,project-wide
 imports,Static imports from org.exist.util.XMLReaderPool,org.exist.util.XMLReaderPool.XmlParser.XML_PARSER_ELEMENT,,project-wide
 imports,Static imports from org.exist.xquery.modules.sql,org.exist.xquery.modules.sql.SQLModule.*,,project-wide
+imports,Static imports from org.exist.test,org.exist.test.TestConstants.TEST_COLLECTION_URI,,project-wide
 imports,Static imports from org.exist.xquery.modules.file,org.exist.xquery.modules.file.FileErrorCode.DIRECTORY_NOT_FOUND,,project-wide
 imports,Static imports from org.exist.xquery.modules.image,org.exist.xquery.modules.image.ImageModule.functionSignatures,,project-wide
 imports,Static imports from org.exist.xquery.modules.xmldiff,org.exist.xquery.modules.xmldiff.XmlDiffModule.functionSignature,,project-wide
 imports,Static imports from org.exist.contentextraction.xquery,org.exist.contentextraction.xquery.Util.executeQuery,,project-wide
 imports,Static imports from org.exist.samples,org.exist.samples.Samples.SAMPLES,,project-wide
 imports,Static imports from org.exist.http.urlrewrite,org.exist.http.urlrewrite.XQueryURLRewrite.LEGACY_XQUERY_CONTROLLER_FILENAME,,project-wide
+imports,Static imports from java.util,java.util.Arrays.asList,,project-wide
 imports,Static imports from org.custommonkey.xmlunit,org.custommonkey.xmlunit.XMLAssert.assertXMLEqual,,project-wide
 imports,Static imports from com.ibm.icu.impl,com.ibm.icu.impl.Assert.fail,,project-wide
 imports,Static imports from org.exist.xquery.InternalModuleTest,org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*,,project-wide
 imports,Static imports from org.apache.commons.codec.binary,org.apache.commons.codec.binary.Base64.encodeBase64String,,project-wide
-imports,Static imports from junit.framework,junit.framework.TestCase.assertEquals,,project-wide
 imports,Static imports from org.exist.xmlrpc,org.exist.xmlrpc.RpcConnection.MAX_DOWNLOAD_CHUNK_SIZE,,project-wide
 imports,Static imports from java.util.concurrent,java.util.concurrent.TimeUnit.SECONDS,,project-wide
 imports,Static imports from org.awaitility,org.awaitility.Awaitility.await,,project-wide
@@ -141,7 +137,9 @@ imports,Static imports from org.exist.stax,org.exist.stax.ExtendedXMLStreamReade
 imports,Static imports from org.exist.stax.EmbeddedXMLStreamReaderTest,org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*,,project-wide
 imports,Static imports from org.exist.management.client,org.exist.management.client.JMXtoXML.JMX_NAMESPACE,,project-wide
 imports,Static imports from org.xmlunit.matchers,org.xmlunit.matchers.HasXPathMatcher.hasXPath,,project-wide
-imports,Static imports from org.exist.test.runner,org.exist.test.runner.AbstractTestRunner.checkDescription,,project-wide
+imports,Static imports from org.exist.repo,org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY,,project-wide
+imports,Static imports from org.exist.dom.persistent,org.exist.dom.persistent.DocumentImpl.XML_FILE,,project-wide
+imports,Static imports from org.junit.platform.engine.discovery,org.junit.platform.engine.discovery.DiscoverySelectors.selectClass,,project-wide
 imports,Static imports from org.xmldb.api.security,org.xmldb.api.security.Permission.GROUP_EXECUTE,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene,org.exist.xquery.modules.lucene.LuceneModule.functionSignatures,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene.QueryOptions,org.exist.xquery.modules.lucene.QueryOptions.DefaultOperator.OR,,project-wide
