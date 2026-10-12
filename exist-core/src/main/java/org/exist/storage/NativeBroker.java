@@ -2280,22 +2280,26 @@ public class NativeBroker implements DBBroker {
                     permission.setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
                     final DocumentImpl targetDoc = new DocumentImpl(null, pool, temp, tmpDocId, docName, permission, 0, null, System.currentTimeMillis(), null, null, null);
 
-                    //index the temporary document
-                    final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
-                    indexer.scan();
-                    indexer.store();
-                    //store the temporary document
-                    temp.addDocument(transaction, this, targetDoc);
+                    try {
+                        //index the temporary document
+                        final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
+                        indexer.scan();
+                        indexer.store();
+                        //store the temporary document
+                        temp.addDocument(transaction, this, targetDoc);
 
-                    storeXMLResource(transaction, targetDoc);
+                        storeXMLResource(transaction, targetDoc);
 
-                    saveCollection(transaction, temp);
+                        saveCollection(transaction, temp);
 
-                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                    temp.close();
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        temp.close();
 
-                    flush();
-                    closeDocument();
+                        flush();
+                    } finally {
+                        // also when storing failed: do not leave the failed document's page as the current page
+                        closeDocument();
+                    }
                     //commit the transaction
                     transact.commit(transaction);
                     return targetDoc;
@@ -2976,16 +2980,20 @@ public class NativeBroker implements DBBroker {
         }
         final long start = System.currentTimeMillis();
         final StreamListener listener = getIndexController().getStreamListener(newDoc, ReindexMode.STORE);
-        final NodeList nodes = oldDoc.getChildNodes();
-        for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
-            try(final INodeIterator iterator = getNodeIterator(node)) {
-                iterator.next();
-                copyNodes(transaction, iterator, node, new NodePath2(), newDoc, false, listener);
+        try {
+            final NodeList nodes = oldDoc.getChildNodes();
+            for(int i = 0; i < nodes.getLength(); i++) {
+                final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
+                try(final INodeIterator iterator = getNodeIterator(node)) {
+                    iterator.next();
+                    copyNodes(transaction, iterator, node, new NodePath2(), newDoc, false, listener);
+                }
             }
+            flush();
+        } finally {
+            // also when copying failed: do not leave the failed copy's page as the current page
+            closeDocument();
         }
-        flush();
-        closeDocument();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Copy took {} ms.", (System.currentTimeMillis() - start));
         }
@@ -3384,12 +3392,14 @@ public class NativeBroker implements DBBroker {
             doc.setPageCount(tempDoc.getPageCount());
             // store defragmented document
             storeXMLResource(transaction, doc);
-            closeDocument();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Defragmentation took {} ms.", (System.currentTimeMillis() - start));
             }
         } catch(final IOException e) {
             LOG.error(e);
+        } finally {
+            // also when defragmenting failed: do not leave the half-written copy's page as the current page
+            closeDocument();
         }
     }
 
