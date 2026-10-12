@@ -53,7 +53,8 @@ public class CompressionModule extends AbstractInternalModule {
             functionDefs(ZipFunction.class,
                     ZipFunction.signatures[0],
                     ZipFunction.signatures[1],
-                    ZipFunction.signatures[2]
+                    ZipFunction.signatures[2],
+                    ZipFunction.signatures[3]
             ),
             functionDefs(UnZipFunction.class,
                     UnZipFunction.FS_UNZIP[0],
@@ -77,7 +78,8 @@ public class CompressionModule extends AbstractInternalModule {
             functionDefs(TarFunction.class,
                     TarFunction.signatures[0],
                     TarFunction.signatures[1],
-                    TarFunction.signatures[2]
+                    TarFunction.signatures[2],
+                    TarFunction.signatures[3]
             ),
             functionDefs(UnTarFunction.class,
                     UnTarFunction.FS_UNTAR[0],

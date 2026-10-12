@@ -85,7 +85,7 @@ public class FunSerialize extends BasicFunction {
         }
 
         // SEPM0009: validate parameter consistency before serializing
-        validateSerializationParams(outputProperties);
+        validateSerializationParams(this, outputProperties);
 
         try(final StringWriter writer = new StringWriter()) {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
@@ -161,22 +161,27 @@ public class FunSerialize extends BasicFunction {
     /**
      * Validate serialization parameter consistency per W3C Serialization 3.1.
      * Throws SEPM0009 if omit-xml-declaration=yes conflicts with standalone or
-     * version+doctype-system.
+     * version+doctype-system. An absent omit-xml-declaration counts as yes, fn:serialize's
+     * default; a caller with a different default must set it in {@code props} first.
+     *
+     * @param callingExpr the expression to report errors against
+     * @param props the serialization properties to check
+     * @throws XPathException SEPM0009 if the parameters are inconsistent
      */
-    private void validateSerializationParams(final Properties props) throws XPathException {
+    public static void validateSerializationParams(final Expression callingExpr, final Properties props) throws XPathException {
         final String omitXmlDecl = props.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         if (isBooleanTrue(omitXmlDecl)) {
             // SEPM0009: standalone must be omit (absent) when omit-xml-declaration=yes
             final String standalone = props.getProperty(OutputKeys.STANDALONE);
             if (standalone != null) {
-                throw new XPathException(this, ErrorCodes.SEPM0009,
+                throw new XPathException(callingExpr, ErrorCodes.SEPM0009,
                         "omit-xml-declaration is yes but standalone is set to '" + standalone + "'");
             }
             // SEPM0009: version != 1.0 with doctype-system when omit-xml-declaration=yes
             final String version = props.getProperty(OutputKeys.VERSION);
             final String doctypeSystem = props.getProperty(OutputKeys.DOCTYPE_SYSTEM);
             if (version != null && !"1.0".equals(version) && doctypeSystem != null) {
-                throw new XPathException(this, ErrorCodes.SEPM0009,
+                throw new XPathException(callingExpr, ErrorCodes.SEPM0009,
                         "omit-xml-declaration is yes with version '" + version + "' and doctype-system set");
             }
         }

@@ -79,6 +79,19 @@ public class ZipFunction extends AbstractCompressFunction {
                             ENCODING_PARAM
                     },
                     new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)
+            ),
+
+            new FunctionSignature(
+                    ZIP_FUNCTION_NAME,
+                    ZIP_FUNCTION_DESCRIPTION,
+                    new SequenceType[]{
+                            SOURCES_PARAM,
+                            COLLECTION_HIERARCHY_PARAM,
+                            STRIP_PREFIX_PARAM,
+                            ENCODING_PARAM,
+                            SERIALIZATION_OPTIONS_PARAM
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)
             )
     };
 
