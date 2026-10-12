@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/xquery/Profiler.java
+  s_4d1ed8a8e38baa::t_e8635ecb930da2 85-92,107,129,430-434,442-443,445-451,454,459-470,525-527,545-549,551
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_4d1ed8a8e38baa::t_6511f3ed0dc98d 1605
+exist-core/src/test/java/org/exist/xquery/functions/system/QueryTraceTest.java
+  s_4d1ed8a8e38baa::t_0bf65da4e55280 148-201,232-252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ea7dffed29ba3db4089cadfaf5bb0e8e4aa52a6",
+  "prompts": {},
+  "sessions": {
+    "s_4d1ed8a8e38baa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9bceff41-5bf7-4a32-b52a-e29147fbd0c0",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
