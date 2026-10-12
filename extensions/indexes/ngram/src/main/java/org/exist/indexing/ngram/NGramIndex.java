@@ -58,15 +58,22 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";
-        if (config.hasAttribute("file"))
-            fileName = config.getAttribute("file");
-        if (config.hasAttribute("n"))
-            try {
-                gramSize = Integer.parseInt(config.getAttribute("n"));
-            } catch (NumberFormatException e) {
-                throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
-            }
+        if (config != null) {
+            if (config.hasAttribute("file"))
+                fileName = config.getAttribute("file");
+            if (config.hasAttribute("n"))
+                try {
+                    gramSize = Integer.parseInt(config.getAttribute("n"));
+                } catch (NumberFormatException e) {
+                    throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
+                }
+        }
         dataFile = dataDir.resolve(fileName);
+    }
+
+    public static final class Factory implements org.exist.indexing.IndexFactory {
+        @Override public String getDefaultId() { return "ngram-index"; }
+        @Override public Class<? extends AbstractIndex> getIndexClass() { return NGramIndex.class; }
     }
 
     @Override

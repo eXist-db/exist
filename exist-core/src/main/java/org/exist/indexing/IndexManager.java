@@ -55,6 +55,8 @@ public class IndexManager implements BrokerPoolService {
     public static final String INDEXER_MODULES_ID_ATTRIBUTE = "id";
 
     public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
+    /** Full registry (active and {@code enabled="no"}-suppressed) for {@code system:get-registered-indexes()}. */
+    public final static String PROPERTY_INDEXER_MODULES_REGISTRY = "indexer.modules.registry";
 
     private final BrokerPool pool;
 
@@ -124,16 +126,32 @@ public class IndexManager implements BrokerPoolService {
             // check if a structural index was configured. If not, create one based on default settings.
             AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
             if (structural == null) {
-                structural = initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
-                if (structural != null) {
-                    structural.setName(StructuralIndex.STRUCTURAL_INDEX_ID);
-                }
+                initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
+                registerStructuralIndexProvenance(brokerPool);
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
         } finally {
             configurationChanged();
         }
+    }
+
+    /**
+     * Records the always-on structural index in {@link #PROPERTY_INDEXER_MODULES_REGISTRY}
+     * so it appears in {@code system:get-registered-indexes()} even though, unlike
+     * conf.xml/SPI modules, it is registered directly here rather than while
+     * {@code Configuration} parses {@code conf.xml}.
+     */
+    @SuppressWarnings("unchecked")
+    private void registerStructuralIndexProvenance(final BrokerPool brokerPool) {
+        final Configuration configuration = brokerPool.getConfiguration();
+        final List<Configuration.IndexModuleConfig> existing =
+                (List<Configuration.IndexModuleConfig>) configuration.getProperty(PROPERTY_INDEXER_MODULES_REGISTRY);
+        final List<Configuration.IndexModuleConfig> registry =
+                existing == null ? new ArrayList<>() : new ArrayList<>(existing);
+        registry.add(new Configuration.IndexModuleConfig(StructuralIndex.STRUCTURAL_INDEX_ID,
+                StructuralIndex.DEFAULT_CLASS, null, true, Configuration.IndexModuleConfig.SOURCE_BUILT_IN));
+        configuration.setProperty(PROPERTY_INDEXER_MODULES_REGISTRY, List.copyOf(registry));
     }
 
     private AbstractIndex initIndex(final BrokerPool pool, final String id, final Element config, final Path dataDir, final String className) throws DatabaseConfigurationException {
@@ -145,6 +163,9 @@ public class IndexManager implements BrokerPoolService {
             }
             final AbstractIndex index = (AbstractIndex) clazz.newInstance();
             index.configure(pool, dataDir, config);
+            if (index.getIndexName() == null && id != null && !id.isBlank()) {
+                index.setName(id);
+            }
             index.open();
             indexers.put(id, index);
             if (LOG.isInfoEnabled()) {

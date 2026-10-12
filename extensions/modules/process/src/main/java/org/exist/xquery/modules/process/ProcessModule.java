@@ -60,4 +60,9 @@ public class ProcessModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASE;
     }
+
+    public static final class Factory implements org.exist.xquery.ModuleFactory {
+        @Override public String getNamespaceURI() { return NAMESPACE; }
+        @Override public Class<? extends org.exist.xquery.Module> getModuleClass() { return ProcessModule.class; }
+    }
 }

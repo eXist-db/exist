@@ -1,0 +1,16 @@
+org.exist.xquery.functions.map.MapModule$Factory
+org.exist.xquery.functions.math.MathModule$Factory
+org.exist.xquery.functions.array.ArrayModule$Factory
+org.exist.backup.xquery.BackupModule$Factory
+org.exist.xquery.functions.inspect.InspectionModule$Factory
+org.exist.xquery.functions.request.RequestModule$Factory
+org.exist.xquery.functions.response.ResponseModule$Factory
+org.exist.xquery.functions.securitymanager.SecurityManagerModule$Factory
+org.exist.xquery.functions.session.SessionModule$Factory
+org.exist.xquery.functions.system.SystemModule$Factory
+org.exist.xquery.functions.transform.TransformModule$Factory
+org.exist.xquery.functions.util.UtilModule$Factory
+org.exist.xquery.functions.validation.ValidationModule$Factory
+org.exist.xquery.functions.websocket.WebSocketModule$Factory
+org.exist.xquery.functions.websocket.ConsoleCompatModule$Factory
+org.exist.xquery.functions.xmldb.XMLDBModule$Factory

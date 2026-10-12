@@ -30,22 +30,13 @@
 
     <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
+    <!--
+        Most modules are now SPI-registered; only modules with non-default parameters
+        that remain in canonical conf.xml need to be kept here.
+    -->
     <xsl:param name="keep-modules" as="xs:string*" select="(
-        'http://exist-db.org/xquery/console',
-        'http://exist-db.org/xquery/inspection',
-        'http://exist-db.org/xquery/request',
-        'http://exist-db.org/xquery/response',
-        'http://exist-db.org/xquery/securitymanager',
-        'http://exist-db.org/xquery/session',
-        'http://exist-db.org/xquery/system',
-        'http://exist-db.org/xquery/transform',
         'http://exist-db.org/xquery/util',
-        'http://exist-db.org/xquery/validation',
-        'http://exist-db.org/xquery/websocket',
-        'http://exist-db.org/xquery/xmldb',
-        'http://www.w3.org/2005/xpath-functions/array',
-        'http://www.w3.org/2005/xpath-functions/map',
-        'http://www.w3.org/2005/xpath-functions/math'
+        'http://exist-db.org/xquery/xmldb'
     )"/>
 
     <xsl:param name="catalog-uri" as="xs:string?"
