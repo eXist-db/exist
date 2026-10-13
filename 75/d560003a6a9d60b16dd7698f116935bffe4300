@@ -1,0 +1,45 @@
+exist-core/src/main/java/org/exist/xquery/UntypedValueCheck.java
+  s_353c74c7481ac5::t_da2514cb726e35 36,41,45,49,53
+  s_353c74c7481ac5::t_a7ee061b674733 55,57,60-68
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/TypedArgumentSourceLuceneBenchmark.java
+  s_353c74c7481ac5::t_c167f1cf88ea67 46-60,78
+  s_353c74c7481ac5::t_012f166791cbf0 114-121
+  s_353c74c7481ac5::t_05b22edd289093 62-64
+  s_353c74c7481ac5::t_ef0053cdbca6fc 75-77
+  s_353c74c7481ac5::t_9d44b52e08f5be 79-81
+  s_353c74c7481ac5::t_2f6e86ac4ce5f0 65-67
+  s_353c74c7481ac5::t_dffdbf49c6b410 122-124
+  s_353c74c7481ac5::t_4e83ff5679480b 113
+  s_353c74c7481ac5::t_ddba48b1b2a2a7 22-37,41-43,68-70,72-74,89-90,92-95,97-101,103-111,125,128-130,132-133,135-136,138-141,143,145-153,156-180
+exist-core/src/main/java/org/exist/xquery/AbstractRewritableExpression.java
+  s_353c74c7481ac5::t_790093b2599c83 1-80
+exist-core/src/main/java/org/exist/xquery/DynamicNameCheck.java
+  s_353c74c7481ac5::t_4f7440bbf1cb76 39,48
+exist-core/src/main/java/org/exist/xquery/DynamicTypeCheck.java
+  s_353c74c7481ac5::t_f6ba5c65a4e108 34,45,49
+exist-core/src/main/java/org/exist/xquery/DynamicCardinalityCheck.java
+  s_353c74c7481ac5::t_54a4bf92900b14 35,42
+exist-core/src/main/java/org/exist/xquery/FunctionTypeCheck.java
+  s_353c74c7481ac5::t_ec3a79a3dcb268 33,38
+exist-core/src/main/java/org/exist/xquery/Function.java
+  s_353c74c7481ac5::t_0fa5d792d439eb 485-486,491-497,500-504,509-510,518-535
+  s_353c74c7481ac5::t_8f3fc170248ee9 536-537
+extensions/indexes/lucene/src/test/xquery/lucene/optimizer-ft.xql
+  s_353c74c7481ac5::t_cf08e3a92c9839 154-169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "75d560003a6a9d60b16dd7698f116935bffe4300",
+  "prompts": {},
+  "sessions": {
+    "s_353c74c7481ac5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f783ae77-fb8c-4fb6-ab5f-bfbbd2d03b05",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
