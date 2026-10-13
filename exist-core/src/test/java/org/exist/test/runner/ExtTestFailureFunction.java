@@ -33,7 +33,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.junit.jupiter.api.AssertionFailureBuilder;
+import org.opentest4j.AssertionFailedError;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -90,14 +90,11 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             final String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
             XQueryFailureLog.log(oneLine);
 
-            // The builder puts the two values into the message too ("... ==> expected: <x> but was: <y>"),
-            // because the surefire report and the console keep only the message and the stack trace, and drop
-            // the values that an AssertionFailedError carries separately (which only an IDE shows).
-            final AssertionError failureReason = AssertionFailureBuilder.assertionFailure()
-                    .message(oneLine)
-                    .expected(abbreviate(expectedToString(expected)))
-                    .actual(abbreviate(actualToString(actual)))
-                    .build();
+            final String expectedValue = abbreviate(expectedToString(expected));
+            final String actualValue = abbreviate(actualToString(actual));
+            final AssertionError failureReason = new AssertionFailedError(
+                    failureMessage(oneLine, getMessageFromExpected(expected), expectedValue, actualValue),
+                    expectedValue, actualValue);
 
             // Stack trace for IDE navigation. IntelliJ linkifies short "filename:line" in stack traces
             // but not absolute paths; use short filename so the stack line becomes clickable.
@@ -116,6 +113,30 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * The two values go into the message too, because the surefire report and the console keep only the
+     * message and the stack trace, and drop the values that an AssertionFailedError carries separately
+     * (which only an IDE shows). They go on a line of their own: IntelliJ cuts the message where
+     * "expected: <" begins and shows the values as a comparison instead, so what is left must read as a
+     * whole, without a dangling separator.
+     *
+     * @param headline the location and name of the test
+     * @param assertionMessage why the assertion failed, may be empty
+     * @param expected the expected value
+     * @param actual the actual value
+     *
+     * @return the message of the failure
+     */
+    static String failureMessage(final String headline, @Nullable final String assertionMessage, final String expected, final String actual) {
+        final StringBuilder message = new StringBuilder(headline);
+        if (assertionMessage != null && !assertionMessage.isEmpty()) {
+            message.append(": ").append(assertionMessage);
+        }
+        return message.append(System.lineSeparator())
+                .append("expected: <").append(expected).append("> but was: <").append(actual).append('>')
+                .toString();
     }
 
     /**
@@ -175,6 +196,12 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             }
         }
         return 0;
+    }
+
+    @Nullable
+    private String getMessageFromExpected(final MapType expected) throws XPathException {
+        final Sequence seqMessage = expected.get(new StringValue(this, "message"));
+        return seqMessage.isEmpty() ? null : seqToString(seqMessage);
     }
 
     private String expectedToString(final MapType expected) throws XPathException {

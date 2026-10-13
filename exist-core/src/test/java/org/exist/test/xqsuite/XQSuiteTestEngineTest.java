@@ -34,6 +34,7 @@ import org.opentest4j.AssertionFailedError;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -97,7 +98,7 @@ class XQSuiteTestEngineTest {
 
         final Throwable failure = failures(results).get(0);
         final AssertionFailedError assertionFailure = assertInstanceOf(AssertionFailedError.class, failure);
-        assertTrue(assertionFailure.getExpected().getStringRepresentation().contains("expected"));
+        assertEquals("expected", assertionFailure.getExpected().getValue(), "the expected value should not carry the assertion message");
         assertEquals("actual", assertionFailure.getActual().getValue());
     }
 
@@ -107,8 +108,9 @@ class XQSuiteTestEngineTest {
         // a failed assertion in a report cannot be told apart from an empty result
         final String message = assertInstanceOf(AssertionFailedError.class, failures(run(FailingAssertion.class)).get(0)).getMessage();
         assertTrue(message.startsWith("XQuery failure: failing-assertion.xqm:"), message);
-        assertTrue(message.contains(" ==> expected: <expected"), message);
-        assertTrue(message.endsWith(" but was: <actual>"), message);
+        assertTrue(message.contains(": assertEquals failed"), message);
+        assertFalse(message.contains("==>"), message);
+        assertTrue(message.endsWith(System.lineSeparator() + "expected: <expected> but was: <actual>"), message);
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally

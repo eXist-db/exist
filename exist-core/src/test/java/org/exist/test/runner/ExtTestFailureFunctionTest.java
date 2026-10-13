@@ -42,4 +42,13 @@ class ExtTestFailureFunctionTest {
         assertTrue(abbreviated.endsWith("... [truncated, 100000 characters in all]"), abbreviated);
         assertTrue(abbreviated.startsWith("xxx"));
     }
+
+    @Test
+    void messageHasNoSeparatorLeftWhenAnIdeCutsOffTheValues() {
+        final String nl = System.lineSeparator();
+        assertEquals("head: why" + nl + "expected: <a> but was: <b>",
+                ExtTestFailureFunction.failureMessage("head", "why", "a", "b"));
+        assertEquals("head" + nl + "expected: <a> but was: <b>",
+                ExtTestFailureFunction.failureMessage("head", null, "a", "b"));
+    }
 }
