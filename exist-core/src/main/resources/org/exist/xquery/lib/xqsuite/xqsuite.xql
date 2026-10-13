@@ -554,7 +554,7 @@ declare function test:expected-strings($report as element(report)+) {
     )
 };
 
-declare function test:failure-messages($report as element(report)+) {
+declare %private function test:failure-messages($report as element(report)+) {
     string-join($report/failure/@message, ", ")
 };
 
