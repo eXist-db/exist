@@ -1,0 +1,19 @@
+extensions/exquery/restxq/pom.xml
+  s_dc4eb20d1ea12d::t_47981f2c8078ca 276-280,289-290,296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "934215343a2173adef28dc00adba9a2440a0ee9a",
+  "prompts": {},
+  "sessions": {
+    "s_dc4eb20d1ea12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9982c798-8af3-4297-a187-6aa6a35dac31",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
