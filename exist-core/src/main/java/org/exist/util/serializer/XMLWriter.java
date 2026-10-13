@@ -616,7 +616,7 @@ public class XMLWriter implements SerializerWriter {
             closeStartTag(false);
         }
 
-        if ((!xdmSerialization) || preserveCdata || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || (preserveCdata && shouldUseCdataSections()) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("<![CDATA[");
                 this.cdataSetionElement = true;
@@ -627,7 +627,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void endCdataSection() throws TransformerException {
-        if ((!xdmSerialization) || preserveCdata || cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || (preserveCdata && shouldUseCdataSections()) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("]]>");
                 this.cdataSetionElement = false;

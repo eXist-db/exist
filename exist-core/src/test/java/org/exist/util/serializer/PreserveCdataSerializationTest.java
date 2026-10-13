@@ -31,6 +31,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The {@code exist:preserve-cdata} serialization parameter — see
@@ -60,6 +61,10 @@ public class PreserveCdataSerializationTest {
 
     /** A direct element constructor whose content is written as a CDATA section in query source. */
     private static final String DIRECT = "<elem><![CDATA[ a > b ]]></elem>";
+
+    /** An XHTML document whose script is a CDATA section, built by concatenation like {@link #SOURCE}. */
+    private static final String XHTML_SCRIPT =
+            "'<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><script>' || '<' || '![CDATA[if (a < b) f()]]' || '>' || '</script></body></html>'";
 
     private static final String PRESERVE =
             "QName('http://exist.sourceforge.net/NS/exist','preserve-cdata'): true()";
@@ -135,5 +140,26 @@ public class PreserveCdataSerializationTest {
         final String plain = "parse-xml('<doc><p>a &amp;gt; b</p></doc>')";
         assertEquals(query("serialize(" + plain + ", map { 'method': 'xml' })"),
                 query("serialize(" + plain + ", map { 'method': 'xml', " + PRESERVE + " })"));
+    }
+
+    /** The html method has no CDATA sections, so preserve-cdata does not apply to HTML elements. */
+    @Test
+    public void htmlMethodNeverEmitsCdataInHtmlElements() throws XMLDBException {
+        assertEquals("<!DOCTYPE html><html><body><script>if (a < b) f()</script></body></html>",
+                query("serialize(parse-xml(" + XHTML_SCRIPT + "), map { 'method': 'html', 'html-version': 5 })"));
+    }
+
+    @Test
+    public void xhtmlMethodStillPreservesCdata() throws XMLDBException {
+        assertTrue(query("serialize(parse-xml(" + XHTML_SCRIPT + "), map { 'method': 'xhtml' })")
+                .contains("<script><![CDATA[if (a < b) f()]]></script>"));
+    }
+
+    /** An XML island, such as SVG in an HTML page, is not an HTML element and keeps its CDATA. */
+    @Test
+    public void htmlMethodStillPreservesCdataInXmlIslands() throws XMLDBException {
+        assertTrue(query("serialize(parse-xml('<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>"
+                + "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>' || '<' || '![CDATA[a < b]]' || '>' || '</text></svg></body></html>'),"
+                + " map { 'method': 'html', 'html-version': 5 })").contains("<text><![CDATA[a < b]]></text>"));
     }
 }
