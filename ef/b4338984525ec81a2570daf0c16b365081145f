@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/OptimizerPragmaWiringTest.java
+  s_dc4eb20d1ea12d::t_be7b9bcc1ee028 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "efb4338984525ec81a2570daf0c16b365081145f",
+  "prompts": {},
+  "sessions": {
+    "s_dc4eb20d1ea12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9982c798-8af3-4297-a187-6aa6a35dac31",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
