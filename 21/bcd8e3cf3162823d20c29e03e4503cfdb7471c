@@ -1,0 +1,21 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/ExQueryRequestAdapterFactoryTest.java
+  s_dc4eb20d1ea12d::t_5e965b71da2f94 1-82
+extensions/exquery/restxq/pom.xml
+  s_dc4eb20d1ea12d::t_47981f2c8078ca 276-280,289-290,296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "21bcd8e3cf3162823d20c29e03e4503cfdb7471c",
+  "prompts": {},
+  "sessions": {
+    "s_dc4eb20d1ea12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9982c798-8af3-4297-a187-6aa6a35dac31",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
