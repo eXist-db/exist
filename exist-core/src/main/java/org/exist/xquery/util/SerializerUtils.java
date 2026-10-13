@@ -197,7 +197,8 @@ public class SerializerUtils {
         ADD_EXIST_ID(EXistOutputKeys.ADD_EXIST_ID, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         // default of 4 corresponds to the existing eXist default, although 3 is in the spec
         INDENT_SPACES("indent-spaces", Type.INTEGER, Cardinality.ZERO_OR_ONE, new IntegerValue(4)),
-        INSERT_FINAL_NEWLINE(EXistOutputKeys.INSERT_FINAL_NEWLINE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE);
+        INSERT_FINAL_NEWLINE(EXistOutputKeys.INSERT_FINAL_NEWLINE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
+        PRESERVE_CDATA(EXistOutputKeys.PRESERVE_CDATA, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE);
 
 
         private final QName parameterName;

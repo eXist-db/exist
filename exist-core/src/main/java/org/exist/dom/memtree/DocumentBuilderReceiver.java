@@ -49,6 +49,9 @@ import java.util.function.Predicate;
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
+    /** Reassembles a CDATA section from its SAX events; shared with {@link SAXAdapter}. */
+    private final CDataSectionBuffer cdata = new CDataSectionBuffer();
+
     private MemTreeBuilder builder = null;
     private final boolean explicitNSDecl;
 
@@ -197,12 +200,20 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void characters(final CharSequence seq) throws SAXException {
-        builder.characters(seq);
+        if (cdata.isActive()) {
+            cdata.append(seq);
+        } else {
+            builder.characters(seq);
+        }
     }
 
     @Override
     public void characters(final char[] ch, final int start, final int len) throws SAXException {
-        builder.characters(ch, start, len);
+        if (cdata.isActive()) {
+            cdata.append(ch, start, len);
+        } else {
+            builder.characters(ch, start, len);
+        }
     }
 
     @Override
@@ -388,7 +399,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endCDATA() throws SAXException {
-        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
+        cdata.flushTo(builder);
     }
 
     @Override
@@ -398,7 +409,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startCDATA() throws SAXException {
-        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
+        cdata.start();
     }
 
     @Override

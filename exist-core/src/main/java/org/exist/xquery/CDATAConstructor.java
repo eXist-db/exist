@@ -28,7 +28,19 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
- * Constructs an in-memory CDATA node.
+ * Constructs the character content written as a CDATA section in query source.
+ *
+ * <p>A CDATA section in a direct element constructor is an escaping convenience for the query
+ * author -- a way to write {@code <} and {@code >} without entity references. XDM has no CDATA
+ * node kind, so what it contributes to the constructed element is character content,
+ * indistinguishable from the same characters typed directly. This builds a text node accordingly,
+ * which keeps the distinction {@link org.exist.storage.serializers.EXistOutputKeys#PRESERVE_CDATA}
+ * relies on: a CDATA node in eXist's trees marks a CDATA section that was present in a parsed
+ * document, not one an author typed into a query.</p>
+ *
+ * <p>Serialization is unaffected. Content is escaped either way, and an element named in
+ * {@code cdata-section-elements} is still emitted as a CDATA section, because
+ * {@code XMLWriter.characters} applies that parameter to text nodes.</p>
  *
  * @author wolf
  */
@@ -63,7 +75,7 @@ public class CDATAConstructor extends NodeConstructor {
 
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final NodeImpl node = builder.getDocument().getNode(builder.cdataSection(cdata));
+            final NodeImpl node = builder.getDocument().getNode(builder.characters(cdata));
 
             if (context.getProfiler().isEnabled()) {
                 context.getProfiler().end(this, "", node);
