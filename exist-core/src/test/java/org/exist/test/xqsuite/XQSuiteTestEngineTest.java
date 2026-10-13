@@ -149,6 +149,13 @@ class XQSuiteTestEngineTest {
     }
 
     @Test
+    void assertionFailureStackFrameNamesTheTest() {
+        final StackTraceElement frame = failures(run(FailingAssertion.class)).get(0).getStackTrace()[0];
+        assertTrue(frame.getMethodName().endsWith("assertionFails"), frame.toString());
+        assertFalse(frame.getClassName().isBlank(), frame.toString());
+    }
+
+    @Test
     void unexpectedErrorLeadsToTheJavaCode() {
         final Throwable failure = failures(run(FailingBoth.class)).stream()
                 .filter(org.exist.xquery.XPathException.class::isInstance)
