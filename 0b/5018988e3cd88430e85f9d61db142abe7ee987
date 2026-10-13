@@ -1,0 +1,19 @@
+extensions/modules/file/src/test/xquery/modules/file/sync-serialize.xqm
+  s_5420263ade13a8::t_b1e831c550c28f 267-268,281,292
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b5018988e3cd88430e85f9d61db142abe7ee987",
+  "prompts": {},
+  "sessions": {
+    "s_5420263ade13a8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c668f9d2-5fc9-4daf-8c1f-9759e698cb16",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
