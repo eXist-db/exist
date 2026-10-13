@@ -22,15 +22,15 @@
 package org.exist.util.serializer;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The {@code exist:preserve-cdata} serialization parameter — see
@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class PreserveCdataSerializationTest {
 
-    @ClassRule
+    @RegisterExtension
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String DOC = "/db/preserve-cdata-test.xml";
@@ -70,13 +70,13 @@ public class PreserveCdataSerializationTest {
         return rs.getSize() == 0 ? "" : String.valueOf(rs.getResource(0).getContent());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void storeTestDocument() throws XMLDBException {
         query("let $s := " + SOURCE
                 + " return xmldb:store('/db', 'preserve-cdata-test.xml', $s, 'application/xml')");
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'preserve-cdata-test.xml')");
     }

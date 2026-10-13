@@ -21,7 +21,7 @@
  */
 package org.exist.dom.memtree;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -33,8 +33,8 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * A CDATA section parsed into the in-memory DOM must survive as a CDATA node, not decay into a
@@ -73,9 +73,9 @@ public class DocumentBuilderReceiverCDataTest {
 
     private static Node onlyChildOfScript(final Document doc) {
         final NodeList scripts = doc.getDocumentElement().getElementsByTagName("script");
-        assertEquals("expected exactly one <script>", 1, scripts.getLength());
+        assertEquals(1, scripts.getLength(), "expected exactly one <script>");
         final NodeList children = scripts.item(0).getChildNodes();
-        assertEquals("expected exactly one child node inside <script>", 1, children.getLength());
+        assertEquals(1, children.getLength(), "expected exactly one child node inside <script>");
         return children.item(0);
     }
 
@@ -88,8 +88,7 @@ public class DocumentBuilderReceiverCDataTest {
 
         assertNotNull(doc);
         final Node child = onlyChildOfScript(doc);
-        assertEquals("a CDATA section must not decay into a text node",
-                Node.CDATA_SECTION_NODE, child.getNodeType());
+        assertEquals(Node.CDATA_SECTION_NODE, child.getNodeType(), "a CDATA section must not decay into a text node");
         assertEquals("  if (a > b) {} ", child.getNodeValue());
     }
 
@@ -126,8 +125,8 @@ public class DocumentBuilderReceiverCDataTest {
                 parseVia(new DocumentBuilderReceiver(builder), CDATA_DOC));
         final Node viaAdapter = viaSaxAdapter(CDATA_DOC);
 
-        assertEquals("fn:parse-xml and request:get-data() must agree on the node type",
-                viaAdapter.getNodeType(), viaReceiver.getNodeType());
+        assertEquals(viaAdapter.getNodeType(), viaReceiver.getNodeType(),
+                "fn:parse-xml and request:get-data() must agree on the node type");
         assertEquals(viaAdapter.getNodeValue(), viaReceiver.getNodeValue());
         assertEquals(Node.CDATA_SECTION_NODE, viaReceiver.getNodeType());
     }
@@ -170,7 +169,7 @@ public class DocumentBuilderReceiverCDataTest {
         assertEquals("before a > b after", viaReceiver.getNodeValue());
         assertEquals("before a > b after", viaAdapter.getNodeValue());
         // and both routes into MemTreeBuilder must agree on the resulting node type
-        assertEquals("the two adapters must build the same structure",
-                viaAdapter.getNodeType(), viaReceiver.getNodeType());
+        assertEquals(viaAdapter.getNodeType(), viaReceiver.getNodeType(),
+                "the two adapters must build the same structure");
     }
 }
