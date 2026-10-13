@@ -100,7 +100,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             // but not absolute paths; use short filename so the stack line becomes clickable.
             if (shortFileName != null) {
                 failureReason.setStackTrace(new StackTraceElement[]{
-                    new StackTraceElement(" ", " ", shortFileName, lineNumber > 0 ? lineNumber : 1)
+                    new StackTraceElement(suiteName, name, shortFileName, lineNumber > 0 ? lineNumber : 1)
                 });
             } else {
                 failureReason.setStackTrace(new StackTraceElement[0]);
