@@ -1,0 +1,21 @@
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_b424eab1ae5e7a::t_3ae2378c9523e6 173,176
+extensions/indexes/lucene/src/test/xquery/lucene/unicode-supplementary-lucene.xql
+  s_b424eab1ae5e7a::t_898bad7cbb1f70 175-176,179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e294df9ee38b80a1160384836734f2e2b730320b",
+  "prompts": {},
+  "sessions": {
+    "s_b424eab1ae5e7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8c55ebe-eaf8-4bc4-8731-568a40b12726",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
