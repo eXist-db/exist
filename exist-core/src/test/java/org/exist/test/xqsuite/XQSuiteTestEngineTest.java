@@ -62,6 +62,10 @@ class XQSuiteTestEngineTest {
     static class FailingSerialization {
     }
 
+    @XQSuite(value = FIXTURES + "failing-boolean.xqm", fixture = true)
+    static class FailingBoolean {
+    }
+
     @XQSuite(value = FIXTURES + "no-tests.xqm", fixture = true)
     static class NoTests {
     }
@@ -125,6 +129,18 @@ class XQSuiteTestEngineTest {
         assertEquals("""
                 <doc a="1">text</doc>""", failure.getActual().getValue(),
                 "a node-valued result should reach the failure message as markup, not XML-escaped");
+    }
+
+    @Test
+    void booleanAssertionReportsTheExpectedBoolean() {
+        final List<AssertionFailedError> booleanFailures = failures(run(FailingBoolean.class)).stream()
+                .map(failure -> assertInstanceOf(AssertionFailedError.class, failure))
+                .toList();
+        assertEquals(2, booleanFailures.size());
+        for (final AssertionFailedError failure : booleanFailures) {
+            final String expected = failure.getMessage().contains("notTrue") ? "true" : "false";
+            assertEquals(expected, failure.getExpected().getValue(), failure.getMessage());
+        }
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
