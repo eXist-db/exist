@@ -38,7 +38,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -106,24 +105,23 @@ public class ResourceNamingConformanceTest {
     /**
      * The corpus of "awkward" leaf resource names. Each is the human-intended name the user
      * believes they are creating. {@code /} is excluded (path separator); a {@code .xml}/{@code .bin}
-     * suffix is kept so MIME detection behaves normally.
+     * suffix is kept so MIME detection behaves normally. A list rather than a map, because the report
+     * prints the probes in this order.
      */
-    private static final Map<String, String> CORPUS = new LinkedHashMap<>();
-    static {
-        CORPUS.put("ascii-control",   "plain.xml");        // control: must always work
-        CORPUS.put("space",           "with space.xml");
-        CORPUS.put("plus",            "a+b.xml");
-        CORPUS.put("literal-percent", "a%b.xml");
-        CORPUS.put("encoded-space",   "a%20b.xml");        // literal "%20" in the name
-        CORPUS.put("hash",            "a#b.xml");
-        CORPUS.put("at",              "a@b.xml");
-        CORPUS.put("ampersand",       "a&b.xml");
-        CORPUS.put("parens",          "report(2024).xml");
-        CORPUS.put("apostrophe",      "o'brien.xml");
-        CORPUS.put("non-ascii",       "café.xml");
-        CORPUS.put("cyrillic",        "Привет.xml");
-        CORPUS.put("cjk",             "文書.xml");
-    }
+    private static final List<Map.Entry<String, String>> CORPUS = List.of(
+            Map.entry("ascii-control", "plain.xml"),  // control: must always work
+            Map.entry("space", "with space.xml"),
+            Map.entry("plus", "a+b.xml"),
+            Map.entry("literal-percent", "a%b.xml"),
+            Map.entry("encoded-space", "a%20b.xml"),  // literal "%20" in the name
+            Map.entry("hash", "a#b.xml"),
+            Map.entry("at", "a@b.xml"),
+            Map.entry("ampersand", "a&b.xml"),
+            Map.entry("parens", "report(2024).xml"),
+            Map.entry("apostrophe", "o'brien.xml"),
+            Map.entry("non-ascii", "café.xml"),
+            Map.entry("cyrillic", "Привет.xml"),
+            Map.entry("cjk", "文書.xml"));
 
     /**
      * The ratchet allowlist: corpus labels that do NOT round-trip cross-surface (stored via WebDAV,
@@ -221,7 +219,7 @@ public class ResourceNamingConformanceTest {
     public void crossSurfaceNamingConformance() throws Exception {
         final List<Row> rows = new ArrayList<>();
 
-        for (final Map.Entry<String, String> probe : CORPUS.entrySet()) {
+        for (final Map.Entry<String, String> probe : CORPUS) {
             final String label = probe.getKey();
             final String name = probe.getValue();
             final Row row = new Row(label, name);
@@ -455,7 +453,7 @@ public class ResourceNamingConformanceTest {
             }
             out.append('\n');
 
-            for (final Map.Entry<String, String> probe : CORPUS.entrySet()) {
+            for (final Map.Entry<String, String> probe : CORPUS) {
                 final String label = probe.getKey();
                 final String name = probe.getValue();
 
