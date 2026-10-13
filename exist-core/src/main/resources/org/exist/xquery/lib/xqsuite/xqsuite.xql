@@ -426,7 +426,8 @@ declare %private function test:test(
                             $test-failure-function(test:get-test-name($meta),
                                     (: expected :)
                                     map {
-                                        "value": test:expected-strings($assertResult)
+                                        "value": test:expected-strings($assertResult),
+                                        "message": test:failure-messages($assertResult)
                                     },
                                     (: actual :)
                                     test:actual-with-location(map {
@@ -547,10 +548,14 @@ declare function test:expected-strings($report as element(report)+) {
     string-join(
         for $report-failure in $report/failure
         return
-            string-join($report-failure/text(), ", ") || " (" || $report-failure/@message || ")"
+            string-join($report-failure/text(), ", ")
         ,
         ", "
     )
+};
+
+declare function test:failure-messages($report as element(report)+) {
+    string-join($report/failure/@message, ", ")
 };
 
 declare function test:actual-strings($report as element(report)+) {
