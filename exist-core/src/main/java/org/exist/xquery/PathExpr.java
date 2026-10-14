@@ -337,10 +337,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                             !Type.subTypeOf(result.getItemType(), Type.NODE)) {
                         gotAtomicResult = true;
                     }
-                    if (hasSlash && !result.isEmpty()
-                            && Type.subTypeOf(result.getItemType(), Type.NODE)) {
-                        // remove duplicate nodes if this is a path
-                        // expression with more than one step
+                    if (isPathOperatorResult(stepIdx, result)) {
                         result.removeDuplicates();
                     }
 
@@ -413,6 +410,23 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public Expression getLastExpression() {
         return steps.isEmpty() ? null : steps.getLast();
+    }
+
+    /**
+     * Whether the result of a step is the result of a path operator, whose duplicate nodes must be removed.
+     *
+     * The result of the first step is E1 of the leftmost E1/E2, not the result of a path operator, unless it is
+     * the only step. Each of its items provides the focus for E2 in turn, so its order and duplicates must be
+     * kept. Not sorting it also spares a large sequence, such as the documents of fn:collection(), a sort
+     * before the next step.
+     *
+     * @param stepIdx the index of the step
+     * @param result the result of the step
+     * @return true if the duplicate nodes of the result must be removed
+     */
+    private boolean isPathOperatorResult(final int stepIdx, final Sequence result) {
+        return hasSlash && (stepIdx > 0 || steps.size() == 1) && !result.isEmpty()
+                && Type.subTypeOf(result.getItemType(), Type.NODE);
     }
 
     /**

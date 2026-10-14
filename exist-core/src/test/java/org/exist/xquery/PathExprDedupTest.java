@@ -144,4 +144,37 @@ public class PathExprDedupTest {
                 count($doc/*/local:parent(.))""");
         assertEquals("1", result);
     }
+
+    /**
+     * E1 is not the result of a path operator: when E2 returns atomic values, the results follow E1's order.
+     */
+    @Test
+    public void atomicStepKeepsOrderOfFirstStep() throws XMLDBException {
+        final String result = query("""
+                declare variable $d := <r><a/><b/></r>;
+                string-join(($d/b, $d/a)/name(), ",")""");
+        assertEquals("b,a", result, "the atomic results must follow the order of E1, not document order");
+    }
+
+    /**
+     * E1 is not the result of a path operator: when E2 returns atomic values, each item of E1 produces a result.
+     */
+    @Test
+    public void atomicStepKeepsDuplicatesOfFirstStep() throws XMLDBException {
+        final String result = query("""
+                declare variable $d := <r><a/><b/></r>;
+                string-join(($d/a, $d/a)/name(), ",")""");
+        assertEquals("a,a", result, "each item of E1 must provide the focus for E2 once");
+    }
+
+    /**
+     * When E2 returns nodes, the result of the path is still deduplicated and in document order.
+     */
+    @Test
+    public void nodeStepAfterUnorderedFirstStepDedup() throws XMLDBException {
+        final String result = query("""
+                declare variable $d := <r><a/><b/></r>;
+                string-join(($d/b, $d/a, $d/b)/self::*/name(), ",")""");
+        assertEquals("a,b", result, "the nodes must be deduplicated and in document order");
+    }
 }
