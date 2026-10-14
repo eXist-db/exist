@@ -206,7 +206,7 @@ public class BrokerPoolServiceTest {
                         throw new Exception("Unable to get BrokerPoolRef");
                     }
 
-                    try (final DBBroker broker = brokerPool.getBroker()) {
+                    try (final DBBroker broker = brokerPool.getBrokerForService(BackgroundJobsBrokerPoolService.this)) {
                         final long timestamp = System.nanoTime();
                         final String id = "job_" + jobId + "_" + broker.getId();
 
