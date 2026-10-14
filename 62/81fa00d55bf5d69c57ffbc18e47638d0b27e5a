@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_60f0f336ccf383::t_d7a4e3904965a3 1210-1241,1292,1303
+exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManager.java
+  s_60f0f336ccf383::t_26b0113b018374 111-118,322-326
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceAdmissionTest.java
+  s_60f0f336ccf383::t_8e85c946202510 1-99
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceTest.java
+  s_e98fb2299e704f::t_79f673a1fdf9a7 209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6281fa00d55bf5d69c57ffbc18e47638d0b27e5a",
+  "prompts": {},
+  "sessions": {
+    "s_60f0f336ccf383": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "671502c7-1901-4192-b5a1-492320f00cca",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_e98fb2299e704f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "fe63e19d-7812-4cd3-8078-f384be04c806",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
