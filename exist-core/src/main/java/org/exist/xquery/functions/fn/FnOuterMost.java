@@ -73,6 +73,8 @@ public class FnOuterMost extends BasicFunction {
                 }
             }
 
+            // the result is in document order, whatever the order of the input
+            results.removeDuplicates();
             return results;
         }
     }
