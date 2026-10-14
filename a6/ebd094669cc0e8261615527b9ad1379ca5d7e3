@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java
+  s_60f0f336ccf383::t_67e9d01a220392 228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a6ebd094669cc0e8261615527b9ad1379ca5d7e3",
+  "prompts": {},
+  "sessions": {
+    "s_60f0f336ccf383": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "671502c7-1901-4192-b5a1-492320f00cca",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
