@@ -44,6 +44,8 @@ import static org.exist.security.UnixStylePermission.LOG;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class simply maintains a list of {@link BrokerPoolService}
@@ -110,6 +112,25 @@ class BrokerPoolServicesManager {
     final List<BrokerPoolService> brokerPoolServices = new ArrayList<>();
 
     /**
+     * The registered services, mapped to whether their stop of multi-user mode has returned.
+     * Unlike {@link #brokerPoolServices} it is safe to read from any thread.
+     */
+    private final Map<BrokerPoolService, Boolean> stoppedMultiUser = new ConcurrentHashMap<>();
+
+    /**
+     * Whether the service is registered and its stop of multi-user mode has not yet returned.
+     *
+     * This holds from the moment the services start to stop, for every registered service
+     * that has not been stopped yet, and not only for the one whose stop is currently running:
+     * the work of a service is expected to continue until that service itself has been stopped.
+     * A service whose stop threw is considered stopped, so that a failed stop cannot keep the
+     * shutdown waiting on it.
+     */
+    boolean awaitsStopMultiUser(final BrokerPoolService service) {
+        return Boolean.FALSE.equals(stoppedMultiUser.get(service));
+    }
+
+    /**
      * Register a Service to be managed
      *
      * Note all services must be registered before any service is configured
@@ -130,6 +151,7 @@ class BrokerPoolServicesManager {
         }
 
         brokerPoolServices.add(brokerPoolService);
+        stoppedMultiUser.put(brokerPoolService, Boolean.FALSE);
         if(LOG.isTraceEnabled()) {
             LOG.trace("Registered service: {}...", brokerPoolService.getClass().getSimpleName());
         }
@@ -311,7 +333,11 @@ class BrokerPoolServicesManager {
             }
 
             try {
-                brokerPoolService.stopMultiUser(brokerPool);
+                try {
+                    brokerPoolService.stopMultiUser(brokerPool);
+                } finally {
+                    stoppedMultiUser.put(brokerPoolService, Boolean.TRUE);
+                }
             } catch (final BrokerPoolServiceException e) {
                 if(serviceExceptions == null) {
                     serviceExceptions = new ArrayList<>();
