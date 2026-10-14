@@ -33,18 +33,18 @@
         <author>Ron Van den Branden</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="coll"/>
-        <store collection="/db/coll" name="test.xml">
+        <create-collection parent="/db" name="coll-path-expression-operators"/>
+        <store collection="/db/coll-path-expression-operators" name="test.xml">
             <test>this is text with an <el>embedded element</el></test>
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/coll-path-expression-operators"/>
     </tearDown>
     <test output="xml">
         <task>union operator: should select context node (not its child nodes)</task>
         <code><![CDATA[
-          let $a := collection('/db/coll')/test
+          let $a := collection('/db/coll-path-expression-operators')/test
           return
             <result>{$a/(.|..)}</result>
         ]]></code>
@@ -53,7 +53,7 @@
     <test output="xml" ignore="yes">
         <task>comma operator: should remove duplicates (due to '/' operator)</task>
         <code><![CDATA[
-          let $a := collection('/db/coll')/test
+          let $a := collection('/db/coll-path-expression-operators')/test
           return $a/(.,.)
         ]]></code>
         <expected><test>this is text with an <el>embedded element</el></test></expected>

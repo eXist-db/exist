@@ -31,6 +31,9 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $syncmod:suite := "sync-modified";
 
+declare variable $syncmod:collection := "/db/file-module-test-syncmod";
+declare variable $syncmod:child-collection := $syncmod:collection || "/" || $fixtures:child-collection-name;
+
 (:
  : Same setup as for basic sync tests in sync.xqm
  : In addition this time two files are modified an hour after ($fixtures:mod-date)
@@ -38,15 +41,15 @@ declare variable $syncmod:suite := "sync-modified";
 declare
     %test:setUp
 function syncmod:setup() as empty-sequence() {
-    helper:setup-db(),
-    helper:modify-db-resource($fixtures:child-collection, "test-data.xml"),
-    helper:modify-db-resource($fixtures:collection, "test-text.txt")
+    helper:setup-db($syncmod:collection),
+    helper:modify-db-resource($syncmod:child-collection, "test-data.xml"),
+    helper:modify-db-resource($syncmod:collection, "test-text.txt")
 };
 
 declare
     %test:tearDown
 function syncmod:tearDown() {
-    helper:clear-db(),
+    helper:clear-db($syncmod:collection),
     helper:clear-suite-fs($syncmod:suite)
 };
 
@@ -54,7 +57,7 @@ declare
     %test:assertTrue
 function syncmod:simple() {
     file:sync(
-        $fixtures:collection,
+        $syncmod:collection,
         helper:get-test-directory($syncmod:suite),
         ()
     )
@@ -69,7 +72,7 @@ declare
     %test:assertTrue
 function syncmod:empty-options() {
     file:sync(
-        $fixtures:collection,
+        $syncmod:collection,
         helper:get-test-directory($syncmod:suite),
         map{}
     )
@@ -84,7 +87,7 @@ declare
     %test:assertError
 function syncmod:deprecated-options() {
     file:sync(
-        $fixtures:collection,
+        $syncmod:collection,
         helper:get-test-directory($syncmod:suite),
         $fixtures:mod-date
     )
@@ -103,7 +106,7 @@ function syncmod:do-not-prune() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{ "prune": false() }
         )
@@ -122,7 +125,7 @@ function syncmod:prune() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{ "prune": true() }
         )
@@ -141,7 +144,7 @@ function syncmod:prune-with-excludes-matching-none() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{ "prune": true(), "excludes": "*.txt" }
         )
@@ -160,7 +163,7 @@ function syncmod:after() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{ "after": $fixtures:mod-date }
         )
@@ -176,7 +179,7 @@ declare
     %test:assertTrue
 function syncmod:after-mod-date-2() {
     file:sync(
-        $fixtures:collection,
+        $syncmod:collection,
         helper:get-test-directory($syncmod:suite),
         map{ "after": $fixtures:mod-date-2 }
     )
@@ -192,7 +195,7 @@ declare
     %test:assertTrue
 function syncmod:exclude-changed-files() {
     file:sync(
-        $fixtures:collection,
+        $syncmod:collection,
         helper:get-test-directory($syncmod:suite),
         map{ "excludes":("*.txt", "data/*"), "after": $fixtures:mod-date }
     )
@@ -211,7 +214,7 @@ function syncmod:prune-with-after-and-excludes-matching-none() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{
                 "after": $fixtures:mod-date,
@@ -234,7 +237,7 @@ function syncmod:prune-with-after-and-excludes-matching-all() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{
                 "after": $fixtures:mod-date,
@@ -257,7 +260,7 @@ function syncmod:prunes-a-directory-with-after() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{ "prune": true(), "excludes": ".*", "after": $fixtures:mod-date }
         )
@@ -276,7 +279,7 @@ function syncmod:prunes-a-file-with-after() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $syncmod:collection,
             $directory,
             map{
                 "after": $fixtures:mod-date,

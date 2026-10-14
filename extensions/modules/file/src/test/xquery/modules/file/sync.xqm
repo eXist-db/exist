@@ -31,16 +31,18 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $sync:suite := "sync";
 
+declare variable $sync:collection := "/db/file-module-test-sync";
+
 declare
     %test:setUp
 function sync:setup() as empty-sequence() {
-    helper:setup-db()
+    helper:setup-db($sync:collection)
 };
 
 declare
     %test:tearDown
 function sync:tear-down() {
-    helper:clear-db(),
+    helper:clear-db($sync:collection),
     helper:clear-suite-fs($sync:suite)
 };
 
@@ -48,7 +50,7 @@ declare
     %test:assertTrue
 function sync:simple() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         ()
     )
@@ -63,7 +65,7 @@ declare
     %test:assertTrue
 function sync:empty-options-map() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         map{}
     )
@@ -78,7 +80,7 @@ declare
     %test:assertError
 function sync:deprecated-options() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         $fixtures:mod-date
     )
@@ -93,7 +95,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-1() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         xs:date("2012-12-21")
     )
@@ -103,7 +105,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-2() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         "2012-12-21T10:12:21"
     )
@@ -113,7 +115,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-3() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         "lizard"
     )
@@ -123,7 +125,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-4() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         ""
     )
@@ -137,7 +139,7 @@ declare
     %test:assertError
 function sync:bad-options-5() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         (1, map{}, "")
     )
@@ -147,7 +149,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-6() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         map{ "prune": "true" }
     )
@@ -157,7 +159,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-7() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         map{ "prune": "no" }
     )
@@ -167,7 +169,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-8() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         map{ "after": 1234325 }
     )
@@ -177,7 +179,7 @@ declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-9() {
     file:sync(
-        $fixtures:collection,
+        $sync:collection,
         helper:get-test-directory($sync:suite),
         map{ "excludes": [] }
     )
@@ -191,7 +193,7 @@ function sync:do-not-prune() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "prune": false() }
         )
@@ -210,7 +212,7 @@ function sync:prune() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "prune": true() }
         )
@@ -229,7 +231,7 @@ function sync:prune-with-excludes-matching-none() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "prune": true(), "excludes": "*.txt" }
         )
@@ -248,7 +250,7 @@ function sync:after() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "after": $fixtures:mod-date }
         )
@@ -267,7 +269,7 @@ function sync:after-mod-date-2() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "after": $fixtures:mod-date-2 }
         )
@@ -286,7 +288,7 @@ function sync:after-with-excludes() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "after": $fixtures:mod-date, "excludes": ".env" }
         )
@@ -319,7 +321,7 @@ function sync:prune-with-after-and-excludes() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{
                 "after": $fixtures:mod-date,
@@ -342,7 +344,7 @@ function sync:prunes-a-directory() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "prune": true(), "excludes": ".*" }
         )
@@ -361,7 +363,7 @@ function sync:prunes-a-file() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{ "prune": true(), "excludes": "test" || $helper:path-separator || "*" }
         )
@@ -380,7 +382,7 @@ function sync:prunes-with-multiple-excludes() {
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             map{
                 "prune": true(),
@@ -404,14 +406,14 @@ function sync:twice() {
      :)
     let $_ := util:wait(1000)
     let $_ := file:sync(
-        $fixtures:collection,
+        $sync:collection,
         $directory,
         ()
     )
 
     return
         file:sync(
-            $fixtures:collection,
+            $sync:collection,
             $directory,
             ()
         )

@@ -85,6 +85,7 @@ public final class XQSuiteTestEngine implements TestEngine {
     @Override
     public TestDescriptor discover(final EngineDiscoveryRequest request, final UniqueId uniqueId) {
         final EngineDescriptor engine = new EngineDescriptor(uniqueId, "eXist-db XQSuite");
+        final boolean runFixtures = new XQSuiteSettings(request.getConfigurationParameters()).runFixtures();
 
         final Set<Class<?>> classes = new LinkedHashSet<>();
         for (final ClassSelector selector : request.getSelectorsByType(ClassSelector.class)) {
@@ -100,7 +101,7 @@ public final class XQSuiteTestEngine implements TestEngine {
         try (final DiscoveryDatabase discoveryDb = new DiscoveryDatabase()) {
             for (final Class<?> clazz : classes) {
                 final XQSuite annotation = clazz.getAnnotation(XQSuite.class);
-                if (annotation != null) {
+                if (annotation != null && (runFixtures || !annotation.fixture())) {
                     engine.addChild(discoverSuite(engine.getUniqueId(), clazz, annotation, discoveryDb));
                 }
             }
@@ -161,8 +162,10 @@ public final class XQSuiteTestEngine implements TestEngine {
         final SuiteDescriptor suite = new SuiteDescriptor(suiteId, clazz, annotation.parallel(), failure);
         for (final AbstractTestRunner runner : runners) {
             final FileDescriptor file = new FileDescriptor(suiteId.append("file", runner.getSourcePath().toString()), runner);
-            for (final String testName : runner.getTestNames()) {
-                file.addTest(testName);
+            final List<String> testNames = runner.getTestNames();
+            final List<Integer> testLines = runner.getTestLines();
+            for (int i = 0; i < testNames.size(); i++) {
+                file.addTest(testNames.get(i), i < testLines.size() ? testLines.get(i) : 0);
             }
             suite.addChild(file);
         }

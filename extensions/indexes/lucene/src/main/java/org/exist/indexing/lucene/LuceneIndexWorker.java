@@ -21,12 +21,10 @@
  */
 package org.exist.indexing.lucene;
 
-import com.evolvedbinary.j8fu.function.FunctionE;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.*;
 import org.apache.lucene.facet.DrillDownQuery;
@@ -62,7 +60,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Expression;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -77,6 +74,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.util.*;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -107,6 +105,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
+
+    /** releases the hold on a taxonomy reader when the facets that need it are unreachable, see {@link LuceneFacets} */
+    private static final Cleaner TAXONOMY_READER_RELEASER = Cleaner.create();
     
     protected LuceneIndex index;
     
@@ -779,7 +780,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          */
         public void compute(DirectoryTaxonomyReader reader, FacetsConfig config, FacetsCollector collector)
                 throws IOException {
-            this.facets = new FastTaxonomyFacetCounts(reader, config, collector);
+            final Facets counts = new FastTaxonomyFacetCounts(reader, config, collector);
+            // The reader is lent by the searcher manager only for the duration of the query, but the facets are
+            // read later (ft:facets), and a refresh caused by another thread closes a reader nobody holds.
+            // So hold the reader for as long as the facets can be read.
+            reader.incRef();
+            TAXONOMY_READER_RELEASER.register(counts, new TaxonomyReaderRelease(reader));
+            this.facets = counts;
+        }
+    }
+
+    /**
+     * Releases the hold on a taxonomy reader once the facets that need it are unreachable. It must not refer to the
+     * facets, or they would never become unreachable.
+     */
+    private record TaxonomyReaderRelease(DirectoryTaxonomyReader reader) implements Runnable {
+        @Override
+        public void run() {
+            try {
+                reader.decRef();
+            } catch (final IOException e) {
+                LOG.warn("Could not release a taxonomy reader: {}", e.getMessage(), e);
+            }
         }
     }
 
@@ -1396,6 +1418,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /**
      * Resolve binary field by eXist document ID and node ID. Uses query-by-FIELD_DOC_ID
      * and FIELD_NODE_ID so the lookup is valid across reader refreshes (avoids volatile Lucene docID).
+     * <p>
+     * The Lucene doc id found by the search is only valid in the reader the search ran on, so the value is
+     * read from that same reader, never from another one acquired afterwards: the searcher and the plain
+     * reader refresh independently, and a commit by another thread in between can renumber the documents.
      */
     public @Nullable BytesRef getBinaryFieldByExistDocId(final int existDocId, final NodeId nodeId, final String field) throws IOException {
         try {
@@ -1406,30 +1432,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return null;
                 }
                 final int luceneDocId = topDocs.scoreDocs[0].doc;
-                return getBinaryFieldForLuceneDocId(luceneDocId, field);
+                return getBinaryFieldForLuceneDocId(searcher.searcher().getIndexReader(), luceneDocId, field);
             });
         } catch (XPathException e) {
             throw new IOException("Unexpected XPath error in getBinaryFieldByExistDocId", e);
         }
     }
 
-    private @Nullable BytesRef getBinaryFieldForLuceneDocId(final int luceneDocId, final String field) throws IOException {
-        return index.withReader(reader -> {
-            final List<LeafReaderContext> leaves = reader.leaves();
-            for (final LeafReaderContext context : leaves) {
-                final int id = luceneDocId - context.docBase;
-                if (id >= 0 && id < context.reader().numDocs()) {
-                    final BinaryDocValues values = context.reader().getBinaryDocValues(field);
-                    if (values != null && values.advanceExact(id)) {
-                        final BytesRef bytes = values.binaryValue();
-                        if (bytes != null && bytes.length > 0) {
-                            return bytes;
-                        }
-                    }
-                }
+    private static @Nullable BytesRef getBinaryFieldForLuceneDocId(final IndexReader reader, final int luceneDocId, final String field) throws IOException {
+        // the leaf that holds the document: the last one that starts at or before it
+        final List<LeafReaderContext> leaves = reader.leaves();
+        final LeafReaderContext context = leaves.get(ReaderUtil.subIndex(luceneDocId, leaves));
+        // ids within a leaf run up to maxDoc(), which is larger than numDocs() once the leaf has deleted documents
+        final BinaryDocValues values = context.reader().getBinaryDocValues(field);
+        if (values != null && values.advanceExact(luceneDocId - context.docBase)) {
+            final BytesRef bytes = values.binaryValue();
+            if (bytes != null && bytes.length > 0) {
+                return bytes;
             }
-            return null;
-        });
+        }
+        return null;
     }
 
     private static Query docIdAndNodeIdQuery(final int existDocId, final NodeId nodeId) {
@@ -1918,9 +1940,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<LeafReaderContext> leaves = reader.leaves();
         for (LeafReaderContext context : leaves) {
             LeafReader leafReader = context.reader();
-            // FIXME: docidvalues is null and likely should not be
-            SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
-            BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
             if (LOG.isDebugEnabled() && terms == null) {
@@ -1944,6 +1963,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     continue;
                 }
                 PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
+                // The postings of every term start again at the first document, but a doc values iterator only moves
+                // forward (advanceExact needs a target at or above the current one), so each term gets its own.
+                // A segment where not every document has the value, which is the case once documents without a
+                // node id share it, does not tolerate going back.
+                final SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
+                final BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
                 while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
                     if (liveDocs != null && !liveDocs.get(postings.docID())) {
                         continue;
@@ -2088,6 +2113,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     config.build(broker, contextNode, doc, pending.text);
                 });
                 // register field analyzers so indexing uses the same analyzer as querying
+                final Map<String, Analyzer> documentAnalyzers = new HashMap<>();
                 final LuceneConfig luceneConfig = pending.idxConf.getParent();
                 for (AbstractFieldConfig config : facetConfigs) {
                     if (config instanceof LuceneFieldConfig lfc) {
@@ -2100,6 +2126,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         }
                         if (a != null) {
                             index.addFieldAnalyzer(lfc.getName(), a);
+                            documentAnalyzers.put(lfc.getName(), a);
                         }
                     }
                 }
@@ -2147,8 +2174,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final Analyzer customAnalyzer = pending.idxConf.getAnalyzer();
                 if (customAnalyzer != null && contentField != null) {
                     index.addFieldAnalyzer(contentField, customAnalyzer);
+                    documentAnalyzers.put(contentField, customAnalyzer);
                 }
-                writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
+                index.addDocument(writer, pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc), documentAnalyzers);
 	        }
         } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);

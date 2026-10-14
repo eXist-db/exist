@@ -36,6 +36,8 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $syse:suite := "syse";
 
+declare variable $syse:collection := "/db/file-module-test-sync-serialize";
+
 declare variable $syse:simple-file-name := "simple-data.xml";
 declare variable $syse:complex-file-name := "complex-data.xml";
 
@@ -47,9 +49,9 @@ declare
     %test:setUp
 function syse:setup() as empty-sequence() {
     let $_ := (
-        xmldb:create-collection("/db", $fixtures:collection-name),
-        helper:create-db-resource($fixtures:collection, $syse:simple-file-name, $fixtures:XML),
-        helper:create-db-resource($fixtures:collection, $syse:complex-file-name, $fixtures:COMPLEX_XML)
+        helper:create-db-collection($syse:collection),
+        helper:create-db-resource($syse:collection, $syse:simple-file-name, $fixtures:XML),
+        helper:create-db-resource($syse:collection, $syse:complex-file-name, $fixtures:COMPLEX_XML)
     )
     return ()
 };
@@ -57,7 +59,7 @@ function syse:setup() as empty-sequence() {
 declare
     %test:tearDown
 function syse:tear-down() {
-    helper:clear-db(),
+    helper:clear-db($syse:collection),
     helper:clear-suite-fs($syse:suite)
 };
 
@@ -66,7 +68,7 @@ declare
 function syse:defaults() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         ()
     )
@@ -90,7 +92,7 @@ declare
 function syse:indent-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"indent": false()}
     )
@@ -114,7 +116,7 @@ declare
 function syse:indent-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"indent": true()}
     )
@@ -138,7 +140,7 @@ declare
 function syse:omit-xml-declaration-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"omit-xml-declaration": false()}
     )
@@ -162,7 +164,7 @@ declare
 function syse:omit-xml-declaration-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{"omit-xml-declaration": true()}
     )
@@ -184,7 +186,7 @@ declare
 function syse:unindented-no-declaration() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{
             "omit-xml-declaration": true(),
@@ -209,7 +211,7 @@ declare
 function syse:insert-final-newline-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{ QName($syse:exist-ns, "insert-final-newline"): true() }
     )
@@ -233,7 +235,7 @@ declare
 function syse:insert-final-newline-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
-        $fixtures:collection,
+        $syse:collection,
         $directory,
         map{ QName($syse:exist-ns, "insert-final-newline"): false() }
     )
@@ -262,8 +264,8 @@ declare variable $syse:xinclude-host-name := "xinclude-host.xml";
 declare variable $syse:xinclude-target-name := "xinclude-target.xml";
 
 declare %private function syse:store-xinclude-fixture() as empty-sequence() {
-    helper:create-db-resource($fixtures:collection, $syse:xinclude-target-name, document { <inc>INCLUDED</inc> }),
-    helper:create-db-resource($fixtures:collection, $syse:xinclude-host-name,
+    helper:create-db-resource($syse:collection, $syse:xinclude-target-name, document { <inc>INCLUDED</inc> }),
+    helper:create-db-resource($syse:collection, $syse:xinclude-host-name,
         document {
             <doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="{$syse:xinclude-target-name}"/></doc>
         })
@@ -276,7 +278,7 @@ declare
 function syse:expand-xincludes-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $_ := syse:store-xinclude-fixture()
-    let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): true() })
+    let $sync := file:sync($syse:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): true() })
     return file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
 };
 
@@ -287,6 +289,6 @@ declare
 function syse:expand-xincludes-no() {
     let $directory := helper:get-test-directory($syse:suite)
     let $_ := syse:store-xinclude-fixture()
-    let $sync := file:sync($fixtures:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): false() })
+    let $sync := file:sync($syse:collection, $directory, map { QName($syse:exist-ns, "expand-xincludes"): false() })
     return file:read(helper:glue-path(($directory, $syse:xinclude-host-name)))
 };

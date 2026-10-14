@@ -23,6 +23,9 @@ package org.exist.test.xqsuite;
 
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.FilePosition;
+import org.junit.platform.engine.support.descriptor.FileSource;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
@@ -31,6 +34,7 @@ import org.opentest4j.AssertionFailedError;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -39,36 +43,44 @@ class XQSuiteTestEngineTest {
 
     private static final String FIXTURES = "src/test/resources/org/exist/test/runner/";
 
-    @XQSuite(FIXTURES + "single-test.xqm")
+    /** the line of "function single:f1()" in single-test.xqm */
+    private static final int SINGLE_TEST_FUNCTION_LINE = 30;
+
+    @XQSuite(value = FIXTURES + "single-test.xqm", fixture = true)
     static class SingleTest {
     }
 
-    @XQSuite(FIXTURES + "failing-assertion.xqm")
+    @XQSuite(value = FIXTURES + "failing-assertion.xqm", fixture = true)
     static class FailingAssertion {
     }
 
-    @XQSuite(FIXTURES + "failing-both.xqm")
+    @XQSuite(value = FIXTURES + "failing-both.xqm", fixture = true)
     static class FailingBoth {
     }
 
-    @XQSuite(FIXTURES + "failing-serialization.xqm")
+    @XQSuite(value = FIXTURES + "failing-serialization.xqm", fixture = true)
     static class FailingSerialization {
     }
 
-    @XQSuite(FIXTURES + "no-tests.xqm")
+    @XQSuite(value = FIXTURES + "failing-boolean.xqm", fixture = true)
+    static class FailingBoolean {
+    }
+
+    @XQSuite(value = FIXTURES + "no-tests.xqm", fixture = true)
     static class NoTests {
     }
 
-    @XQSuite(FIXTURES + "hyphenated-prefix.xqm")
+    @XQSuite(value = FIXTURES + "hyphenated-prefix.xqm", fixture = true)
     static class HyphenatedPrefix {
     }
 
-    @XQSuite("src/test/resources/does/not/exist.xqm")
+    @XQSuite(value = "src/test/resources/does/not/exist.xqm", fixture = true)
     static class MissingFile {
     }
 
     private static EngineExecutionResults run(final Class<?> suite) {
-        return EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite)).execute();
+        return EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite))
+                .configurationParameter(XQSuiteSettings.FIXTURES, "true").execute();
     }
 
     private static List<Throwable> failures(final EngineExecutionResults results) {
@@ -90,8 +102,19 @@ class XQSuiteTestEngineTest {
 
         final Throwable failure = failures(results).get(0);
         final AssertionFailedError assertionFailure = assertInstanceOf(AssertionFailedError.class, failure);
-        assertTrue(assertionFailure.getExpected().getStringRepresentation().contains("expected"));
+        assertEquals("expected", assertionFailure.getExpected().getValue(), "the expected value should not carry the assertion message");
         assertEquals("actual", assertionFailure.getActual().getValue());
+    }
+
+    @Test
+    void failureMessageCarriesExpectedAndActual() {
+        // surefire keeps the message and drops the separate expected and actual values, so without this
+        // a failed assertion in a report cannot be told apart from an empty result
+        final String message = assertInstanceOf(AssertionFailedError.class, failures(run(FailingAssertion.class)).get(0)).getMessage();
+        assertTrue(message.startsWith("XQuery failure: failing-assertion.xqm:"), message);
+        assertTrue(message.contains(": assertEquals failed"), message);
+        assertFalse(message.contains("==>"), message);
+        assertTrue(message.endsWith(System.lineSeparator() + "expected: <expected> but was: <actual>"), message);
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
@@ -103,8 +126,21 @@ class XQSuiteTestEngineTest {
     @Test
     void nodeResultIsNotEscapedIntoTheFailureMessage() {
         final AssertionFailedError failure = assertInstanceOf(AssertionFailedError.class, failures(run(FailingSerialization.class)).get(0));
-        assertEquals("<doc a=\"1\">text</doc>", failure.getActual().getValue(),
+        assertEquals("""
+                <doc a="1">text</doc>""", failure.getActual().getValue(),
                 "a node-valued result should reach the failure message as markup, not XML-escaped");
+    }
+
+    @Test
+    void booleanAssertionReportsTheExpectedBoolean() {
+        final List<AssertionFailedError> booleanFailures = failures(run(FailingBoolean.class)).stream()
+                .map(failure -> assertInstanceOf(AssertionFailedError.class, failure))
+                .toList();
+        assertEquals(2, booleanFailures.size());
+        for (final AssertionFailedError failure : booleanFailures) {
+            final String expected = failure.getMessage().contains("notTrue") ? "true" : "false";
+            assertEquals(expected, failure.getExpected().getValue(), failure.getMessage());
+        }
     }
 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is delegated to assertStatistics, which asserts internally
@@ -129,6 +165,13 @@ class XQSuiteTestEngineTest {
     }
 
     @Test
+    void assertionFailureStackFrameNamesTheTest() {
+        final StackTraceElement frame = failures(run(FailingAssertion.class)).get(0).getStackTrace()[0];
+        assertTrue(frame.getMethodName().endsWith("assertionFails"), frame.toString());
+        assertFalse(frame.getClassName().isBlank(), frame.toString());
+    }
+
+    @Test
     void unexpectedErrorLeadsToTheJavaCode() {
         final Throwable failure = failures(run(FailingBoth.class)).stream()
                 .filter(org.exist.xquery.XPathException.class::isInstance)
@@ -143,6 +186,36 @@ class XQSuiteTestEngineTest {
     @Test
     void fileWithoutTestsRunsNothing() {
         run(NoTests.class).testEvents().assertStatistics(stats -> stats.started(0));
+    }
+
+    @Test
+    void reportNameOfATestLeadsWithItsFile() {
+        // XML reports group tests under the suite class, so the file has to be in the name, or tests of
+        // different files of one suite cannot be told apart
+        final List<String> names = run(SingleTest.class).testEvents().started().list().stream()
+                .map(event -> event.getTestDescriptor().getDisplayName())
+                .toList();
+        assertEquals(1, names.size());
+        assertTrue(names.get(0).startsWith("single-test.xqm: "), names.get(0));
+    }
+
+    @Test
+    void testSourceIsTheLineOfItsFunction() {
+        // so that an IDE jumps to the test, not to the top of its file
+        final var sources = run(SingleTest.class).testEvents().started().list().stream()
+                .map(event -> event.getTestDescriptor().getSource().orElseThrow())
+                .toList();
+        assertEquals(1, sources.size());
+        final FileSource source = assertInstanceOf(FileSource.class, sources.get(0));
+        assertEquals(FilePosition.from(SINGLE_TEST_FUNCTION_LINE), source.getPosition().orElseThrow());
+    }
+
+    @Test
+    void fileTimeIsReportedForEachFile() {
+        final List<Event> entries = run(SingleTest.class).allEvents().reportingEntryPublished().list();
+        assertEquals(1, entries.size());
+        final String millis = entries.get(0).getRequiredPayload(ReportEntry.class).getKeyValuePairs().get("file-time-ms");
+        assertTrue(Long.parseLong(millis) >= 0);
     }
 
     @Test

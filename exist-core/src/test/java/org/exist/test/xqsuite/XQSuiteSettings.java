@@ -45,6 +45,9 @@ final class XQSuiteSettings {
     /** how long to wait for the thread of a hung test file to stop once it has been interrupted, in seconds */
     static final String HANG_GRACE_SECONDS = "exist.xqsuite.hang.grace.seconds";
 
+    /** set to true by a test of the engine to run the suites that are marked {@link XQSuite#fixture()} */
+    static final String FIXTURES = "exist.xqsuite.fixtures";
+
     private static final int MIN_PARALLELISM = 2;
     private static final int MAX_PARALLELISM = 32;
     private static final double DEFAULT_HANG_THRESHOLD_MINUTES = 5.0;
@@ -54,6 +57,13 @@ final class XQSuiteSettings {
 
     XQSuiteSettings(final ConfigurationParameters parameters) {
         this.parameters = parameters;
+    }
+
+    /**
+     * @return true if suites marked {@link XQSuite#fixture()} are run instead of skipped
+     */
+    boolean runFixtures() {
+        return Boolean.TRUE.equals(parse(FIXTURES, Boolean::parseBoolean));
     }
 
     /**

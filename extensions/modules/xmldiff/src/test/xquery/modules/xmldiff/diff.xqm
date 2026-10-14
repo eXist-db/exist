@@ -39,7 +39,7 @@ import module namespace xmldiff = "http://exist-db.org/xquery/xmldiff";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 
-declare variable $xt:TEST_COLLECTION_NAME := "test-xmldiff-compare";
+declare variable $xt:TEST_COLLECTION_NAME := "test-xmldiff-diff";
 declare variable $xt:TEST_COLLECTION := "/db/" || $xt:TEST_COLLECTION_NAME;
 
 declare variable $xt:TEST_DOC1_NAME := "doc1.xml";

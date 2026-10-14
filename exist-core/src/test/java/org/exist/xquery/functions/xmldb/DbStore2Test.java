@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -43,7 +44,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Random;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
@@ -66,7 +66,7 @@ public class DbStore2Test {
 
     //Second jetty server to mock HTTP resources for tests.
     private static Server jettyServer = null;
-    private static int jettyPort = 30350;
+    private static int jettyPort;
 
     private final static Path getConfig() {
         try {
@@ -80,8 +80,6 @@ public class DbStore2Test {
     @BeforeAll
     public static void beforeClass() throws Exception {
 
-        jettyPort += new Random().nextInt(15000);
-
         jettyRootDir = Files.createTempDirectory("dbstore2-test");
         largeFileLocation = jettyRootDir.resolve("large-file.bin");
         pictureLocation = jettyRootDir.resolve("picture.jpg");
@@ -91,7 +89,8 @@ public class DbStore2Test {
             fOut.write(buff);
         }
 
-        jettyServer = new Server(jettyPort);
+        // port 0: the OS hands out a free port, a fixed range can collide with ports in use on the machine
+        jettyServer = new Server(0);
         final ResourceHandler resource_handler = new ResourceHandler();
         resource_handler.setDirAllowed(true);
         final String dir = jettyRootDir.toAbsolutePath().toFile().getCanonicalPath();
@@ -101,7 +100,7 @@ public class DbStore2Test {
 
         jettyServer.setHandler(handlers);
         jettyServer.start();
-
+        jettyPort = ((ServerConnector) jettyServer.getConnectors()[0]).getLocalPort();
     }
 
     @AfterAll

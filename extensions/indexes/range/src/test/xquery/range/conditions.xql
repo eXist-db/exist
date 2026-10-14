@@ -202,6 +202,9 @@ declare variable $ct:DATA :=
 declare variable $ct:COLLECTION_NAME := "range-test-conditions";
 declare variable $ct:COLLECTION := "/db/" || $ct:COLLECTION_NAME;
 
+(:~ A second collection with the same index and other key values, see ct:setup. :)
+declare variable $ct:BYSTANDER_NAME := "range-test-conditions-bystander";
+
 declare
 %test:setUp
 function ct:setup() {
@@ -211,14 +214,26 @@ function ct:setup() {
      xmldb:create-collection("/db", $ct:COLLECTION_NAME),
      xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
      xmldb:store($ct:COLLECTION, "data2.xml", $ct:DATA),
-     xmldb:reindex($ct:COLLECTION))
+     xmldb:reindex($ct:COLLECTION),
+
+     (: The files of this suite run concurrently against one database. The queries of the field index tests
+        are scoped to $ct:COLLECTION; this collection plays another file that defines the same fields with
+        other key values, so a query that is not scoped fails here every time and not only when another file
+        happens to run at the same moment. :)
+     xmldb:create-collection("/db/system/config/db", $ct:BYSTANDER_NAME),
+     xmldb:create-collection("/db", $ct:BYSTANDER_NAME),
+     xmldb:store("/db/system/config/db/" || $ct:BYSTANDER_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
+     xmldb:store("/db/" || $ct:BYSTANDER_NAME, "data.xml", parse-xml(replace(replace(replace(serialize($ct:DATA), "zerozeroonepointzero", "bystanderkey"), "startswithendswith", "bystanderstartend"), "literarisch", "bystandertext"))),
+     xmldb:reindex("/db/" || $ct:BYSTANDER_NAME))
 };
 
 declare
 %test:tearDown
 function ct:cleanup() {
     xmldb:remove($ct:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $ct:COLLECTION_NAME)
+    xmldb:remove("/db/system/config/db/" || $ct:COLLECTION_NAME),
+    xmldb:remove("/db/" || $ct:BYSTANDER_NAME),
+    xmldb:remove("/db/system/config/db/" || $ct:BYSTANDER_NAME)
 };
 
 (: rewrite expression with predicate that matches a condition to a field  :)
@@ -301,7 +316,7 @@ function ct:optimize-eq2() {
 declare
 %test:assertEquals(1)
 function ct:index-eq-no-case() {
-count(range:index-keys-for-field("pCase", function($k, $n) { $k }, 10))
+count(collection($ct:COLLECTION)/range:index-keys-for-field("pCase", function($k, $n) { $k }, 10))
 };
 
 declare
@@ -314,7 +329,7 @@ collection($ct:COLLECTION)//tei:note[@type eq "Availablity"][.="publiziert"]
 declare
 %test:assertXPath("count($result) eq 2 and contains($result, 'one') and contains($result, 'zerozeroonepointzero')")
 function ct:index-eq-numeric() {
-range:index-keys-for-field("exactlyOne", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("exactlyOne", function($k, $n) { $k }, 10)
 };
 
 (: do not use a conditional field for optimizing if condition does not match :)
@@ -366,7 +381,7 @@ collection($ct:COLLECTION)//tei:placeName[@cert="high"][not(.="")][@type eq "som
 declare
 %test:assertEquals("startswithendswith")
 function ct:index-ends-with() {
-range:index-keys-for-field("text_type_end", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("text_type_end", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -379,7 +394,7 @@ collection($ct:COLLECTION)//tei:note[ends-with(@type, "end")][. = "startswithend
 declare
 %test:assertEquals("startswithendswith")
 function ct:index-starts-with() {
-range:index-keys-for-field("text_type_start", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("text_type_start", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -392,7 +407,7 @@ collection($ct:COLLECTION)//tei:note[starts-with(@type, "start")][. = "startswit
 declare
 %test:assertEquals("eins")
 function ct:index-lt() {
-range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -420,19 +435,19 @@ collection($ct:COLLECTION)//tei:figure[@n < "2"][. = "one"]
 declare
 %test:assertXPath("count($result) eq 3 and contains($result, 'one') and contains($result, 'onehundredandten') and contains($result, 'zerozeroonepointzero')")
 function ct:index-lt-non-numeric() {
-range:index-keys-for-field("lessThanTwoString", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("lessThanTwoString", function($k, $n) { $k }, 10)
 };
 
 declare
 %test:assertXPath("count($result) eq 2 and contains($result, 'one') and contains($result, 'zerozeroonepointzero')")
 function ct:index-lt-numeric() {
-range:index-keys-for-field("lessThanTwoNumeric", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("lessThanTwoNumeric", function($k, $n) { $k }, 10)
 };
 
 declare
 %test:assertEquals("drei")
 function ct:index-gt() {
-range:index-keys-for-field("termsAfterB", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("termsAfterB", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -464,7 +479,7 @@ collection($ct:COLLECTION)//tei:term["b" > @n][. = "eins"]/text()
 declare
 %test:assertXPath("count($result) eq 2 and contains($result, 'eins') and contains($result, 'zwei')")
 function ct:index-le() {
-range:index-keys-for-field("termsBeforeOrEqualB", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("termsBeforeOrEqualB", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -483,7 +498,7 @@ collection($ct:COLLECTION)//tei:term["b" le @n][true()]
 declare
 %test:assertXPath("count($result) eq 2 and contains($result, 'zwei') and contains($result, 'drei')")
 function ct:index-ge() {
-range:index-keys-for-field("termsAfterOrEqualB", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("termsAfterOrEqualB", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -497,7 +512,7 @@ collection($ct:COLLECTION)//tei:term[@n ge "b"][. = "drei"]
 declare
 %test:assertXPath("count($result) eq 2 and contains($result, 'eins') and contains($result, 'drei')")
 function ct:index-ne() {
-range:index-keys-for-field("termsNotB", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("termsNotB", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -510,7 +525,7 @@ collection($ct:COLLECTION)//tei:term[@n ne "b"][. = "drei"]
 declare
 %test:assertEquals("something")
 function ct:index-contains() {
-range:index-keys-for-field("entryNContains1234", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("entryNContains1234", function($k, $n) { $k }, 10)
 };
 
 declare
@@ -523,7 +538,7 @@ collection($ct:COLLECTION)//tei:entry[contains(@n, "1234")][. = "something"]
 declare
 %test:assertEquals("something")
 function ct:index-matches() {
-range:index-keys-for-field("entryNMatches", function($k, $n) { $k }, 10)
+collection($ct:COLLECTION)/range:index-keys-for-field("entryNMatches", function($k, $n) { $k }, 10)
 };
 
 declare

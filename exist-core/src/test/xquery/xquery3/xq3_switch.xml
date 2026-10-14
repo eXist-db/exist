@@ -29,8 +29,8 @@
         <author>Leif-Jöran Olsson</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="xquery3"/>
-        <store collection="/db/xquery3" name="product-err.xml"><![CDATA[
+        <create-collection parent="/db" name="xquery3-switch"/>
+        <store collection="/db/xquery3-switch" name="product-err.xml"><![CDATA[
             <products>
               <product>
                 <name>broiler</name>
@@ -67,7 +67,7 @@
         </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/xquery3"/>
+        <remove-collection collection="/db/xquery3-switch"/>
     </tearDown>
 
     <!-- the following tests are derived from http://www.w3.org/TR/xquery-30/#id-switch -->
@@ -121,7 +121,7 @@
         </task>
         <code><![CDATA[
 xquery version "3.0";
-let $product := collection("/db/xquery3")//product[name = "toaster"]
+let $product := collection("/db/xquery3-switch")//product[name = "toaster"]
 return
     switch ($product/name)
 	    case "toaster" return $product/price/string()
