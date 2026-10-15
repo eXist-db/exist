@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/collections/MutableCollection.java
+  s_0aafa4e1f72b71::t_a914cbe3d5c260 61,1963-1965,1969-1970,1973,1980-1981,1985,1987
+exist-core/src/main/java/org/exist/util/XMLReaderObjectFactory.java
+  s_0aafa4e1f72b71::t_58ace2892ed0dd 135-152
+exist-core/src/main/java/org/exist/util/XMLReaderPool.java
+  s_0aafa4e1f72b71::t_abcd8439fda9c6 75-91
+exist-core/src/test/java/org/exist/util/XMLReaderPoolTest.java
+  s_0aafa4e1f72b71::t_eea5e7874d78d0 146-180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2460b5aea59f22e34e8b9ff06c80fb17a1259f36",
+  "prompts": {},
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
