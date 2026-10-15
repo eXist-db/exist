@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_09297aafabf850::t_f2d2630ab99eb1 1220-1223
+exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManager.java
+  s_09297aafabf850::t_6dafda2853b093 47-48,113-118,122-127,130,154,339
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceAdmissionTest.java
+  s_09297aafabf850::t_a90d94c86b8db2 27,31-33,38,42-44,49,51,57,59,61-64,68,81-85,87-88,90,94-118,120,122-138,140-143,148-167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e68dafd6549f73a57c9d300221667250f74aefd6",
+  "prompts": {},
+  "sessions": {
+    "s_09297aafabf850": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f355600-331c-4897-ba29-8335ae050ec4",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
