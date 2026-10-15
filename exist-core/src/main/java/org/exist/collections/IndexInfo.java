@@ -31,6 +31,10 @@ import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.validation.DtdEntityRestorer;
+import org.exist.validation.ReaderGrammarPool;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -105,8 +109,27 @@ public class IndexInfo {
         } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
             // reader cannot report declarations; undeclared and external entities are then treated alike
         }
+        enableCachedDtds(reader);
         reader.setContentHandler(getContentHandler());
         reader.setErrorHandler(indexer);
+    }
+
+    /**
+     * Let the parser of the reader use cached DTD grammars. The parser does not make the entities of
+     * such a DTD available by itself, so the indexer restores them. Without that, a DTD is parsed
+     * for each document.
+     */
+    private void enableCachedDtds(final XMLReader reader) {
+        try {
+            final Object pool = reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
+            final Object entityManager = reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYMANAGER);
+            if (pool instanceof ReaderGrammarPool readerPool && entityManager instanceof XMLEntityManager xmlEntityManager) {
+                indexer.setDtdEntityRestorer(new DtdEntityRestorer(readerPool.getDelegate(), xmlEntityManager));
+                readerPool.enableDtdReuse();
+            }
+        } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
+            // not a Xerces reader, the DTD is parsed for each document
+        }
     }
 
     /**
