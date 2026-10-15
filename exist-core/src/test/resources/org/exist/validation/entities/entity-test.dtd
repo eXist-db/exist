@@ -1,0 +1,3 @@
+<!-- Entity declarations used by org.exist.validation.DtdEntityTest -->
+<!ENTITY ouml "&#246;">
+<!ENTITY trade "&#8482;">

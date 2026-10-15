@@ -163,7 +163,17 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
     public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
         // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
-        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe());
+
+        // The external DTD subset declares entities that the document may rely on, so it is read
+        // when a catalog resolver can supply it, even if the document is not validated. Without such
+        // a resolver nothing bounds where the subset would be fetched from, so it is only read when
+        // validating. An unresolved subset of a non-validated document is not fetched, see
+        // XercesXmlResolverAdapter#setRestrictExternalSubset.
+        final XercesXmlResolverAdapter resolverAdapter = XercesXmlResolverAdapter.getFrom(xmlReader);
+        if (resolverAdapter != null) {
+            resolverAdapter.setRestrictExternalSubset(!validation.maybe());
+        }
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe() || resolverAdapter != null);
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, validation.maybe());
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, validation == VALIDATION_SETTING.AUTO);
         setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA, validation.maybe());

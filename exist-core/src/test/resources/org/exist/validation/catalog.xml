@@ -27,6 +27,7 @@
     <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
     <system systemId="play.dtd" uri="entities/play.dtd"/>
     <system systemId="mondial.dtd" uri="entities/mondial.dtd"/> 
+    <public publicId="-//EXIST-TEST//DTD Entities//EN" uri="entities/entity-test.dtd"/>
 	
 	<!-- eXist-db internals entries -->
     <uri name="http://exist-db.org/collection-config/1.0" uri="../../../schema/collection.xconf.xsd"/>

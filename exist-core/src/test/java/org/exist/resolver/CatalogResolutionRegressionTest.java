@@ -21,6 +21,7 @@
  */
 package org.exist.resolver;
 
+import org.exist.util.XMLReaderObjectFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.xml.sax.InputSource;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression tests for two long-standing catalog-resolution issues, exercised directly against
@@ -145,5 +147,97 @@ class CatalogResolutionRegressionTest {
         xmlReader.parse(new InputSource(new StringReader(xml)));
 
         return characters.toString();
+    }
+
+    /**
+     * With validation disabled the external DTD subset must still be read when the catalog can
+     * supply it, otherwise the entities it declares are reported as skipped and silently lost.
+     */
+    @Test
+    void nonValidatingReaderExpandsEntitiesFromCatalogDtd() throws Exception {
+        final Path tempDir = Files.createTempDirectory("catalog-nonvalidating-test");
+        try {
+            final Path dtd = tempDir.resolve("greeting.dtd");
+            Files.writeString(dtd, "<!ENTITY greeting \"Hello from catalog\">");
+
+            final Path catalog = tempDir.resolve("catalog.xml");
+            Files.writeString(catalog, """
+                    <?xml version="1.0"?>
+                    <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+                        <public publicId="-//EXIST-TEST//GREETING//EN" uri="%s"/>
+                    </catalog>
+                    """.formatted(dtd.toUri()));
+
+            final ParseResult result = parseNonValidating(catalog.toUri().toString(),
+                    "<!DOCTYPE root PUBLIC \"-//EXIST-TEST//GREETING//EN\" \"greeting.dtd\">"
+                            + "<root>&greeting;</root>");
+            assertEquals("Hello from catalog", result.text());
+            assertTrue(result.skipped().isEmpty(), "no entity should be skipped: " + result.skipped());
+        } finally {
+            Files.deleteIfExists(tempDir.resolve("greeting.dtd"));
+            Files.deleteIfExists(tempDir.resolve("catalog.xml"));
+            Files.deleteIfExists(tempDir);
+        }
+    }
+
+    /**
+     * With validation disabled, an external DTD the catalog does not know about must not be
+     * fetched (see #2476): the document is still parsed, and a reference to an entity the DTD would
+     * have declared is reported as skipped so the caller can reject it.
+     */
+    @Test
+    void nonValidatingReaderDoesNotFetchDtdMissingFromCatalog() throws Exception {
+        final Path tempDir = Files.createTempDirectory("catalog-nonvalidating-miss-test");
+        try {
+            final Path catalog = tempDir.resolve("catalog.xml");
+            Files.writeString(catalog, """
+                    <?xml version="1.0"?>
+                    <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+                        <public publicId="-//SOME//KNOWN//EN" uri="known.dtd"/>
+                    </catalog>
+                    """);
+
+            // nothing listens on port 1: if the DTD were fetched, the parse would fail with a connection error
+            final String doctype = "<!DOCTYPE root PUBLIC \"-//UNKNOWN//EN\" \"http://127.0.0.1:1/unknown.dtd\">";
+
+            final ParseResult noReference = parseNonValidating(catalog.toUri().toString(), doctype + "<root>text</root>");
+            assertEquals("text", noReference.text());
+
+            final ParseResult withReference = parseNonValidating(catalog.toUri().toString(), doctype + "<root>a&missing;b</root>");
+            assertEquals("ab", withReference.text());
+            assertEquals(List.of("missing"), withReference.skipped());
+        } finally {
+            Files.deleteIfExists(tempDir.resolve("catalog.xml"));
+            Files.deleteIfExists(tempDir);
+        }
+    }
+
+    private record ParseResult(String text, List<String> skipped) { }
+
+    private static ParseResult parseNonValidating(final String catalogUri, final String xml) throws Exception {
+        final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(catalogUri, Optional.<InputSource>empty())));
+
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        final XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+        XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
+        XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED, xmlReader);
+
+        final StringBuilder characters = new StringBuilder();
+        final List<String> skipped = new java.util.ArrayList<>();
+        xmlReader.setContentHandler(new DefaultHandler() {
+            @Override
+            public void characters(final char[] ch, final int start, final int length) {
+                characters.append(ch, start, length);
+            }
+
+            @Override
+            public void skippedEntity(final String name) {
+                skipped.add(name);
+            }
+        });
+
+        xmlReader.parse(new InputSource(new StringReader(xml)));
+        return new ParseResult(characters.toString(), skipped);
     }
 }
