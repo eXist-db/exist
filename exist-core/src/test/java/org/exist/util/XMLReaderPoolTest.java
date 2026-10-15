@@ -179,6 +179,39 @@ public class XMLReaderPoolTest {
     }
 
     @Test
+    public void borrowedReaderGetsServerValidationModeAgain() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("no");
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        final XMLReader first = xmlReaderPool.borrowXMLReader();
+        // e.g. the validation mode of a collection configuration, which is not reset on return
+        xmlReaderPool.setValidationMode(first, XMLReaderObjectFactory.VALIDATION_SETTING.ENABLED);
+        assertTrue(first.getFeature(Namespaces.SAX_VALIDATION));
+        xmlReaderPool.returnXMLReader(first);
+
+        final XMLReader second = xmlReaderPool.borrowXMLReader();
+        try {
+            assertSame(first, second);
+            assertFalse(second.getFeature(Namespaces.SAX_VALIDATION));
+            assertFalse(second.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA));
+        } finally {
+            xmlReaderPool.returnXMLReader(second);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
     public void xmlReaderWithUnknownValidation() throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
@@ -230,7 +263,10 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            // each reader has its own view of the configured pool
+            final Object readerGrammarPool = xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
+            assertInstanceOf(org.exist.validation.ReaderGrammarPool.class, readerGrammarPool);
+            assertSame(mockGrammarPool, ((org.exist.validation.ReaderGrammarPool) readerGrammarPool).getDelegate());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -651,7 +687,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            assertSame(mockGrammarPool, ((org.exist.validation.ReaderGrammarPool) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL)).getDelegate());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }

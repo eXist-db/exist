@@ -153,4 +153,24 @@ public class DtdEntityTest {
             assertTrue(content.contains("umlaut: \u00f6 trade: \u2122"), content);
         }
     }
+
+    @Test
+    public void declaredExternalEntityIsNotFetchedWhenStoredAgain() throws XMLDBException {
+        final String input = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a [
+                    <!ENTITY ext SYSTEM "does-not-exist-again.xml">
+                ]>
+                <a>before-&ext;-after</a>""";
+
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity-external-twice")) {
+            // a parser that reuses a DTD grammar must not start to read external entities
+            for (int i = 0; i < 3; i++) {
+                ExistXmldbEmbeddedServer.storeResource(col, "docname" + i + ".xml", input.getBytes(UTF_8));
+
+                final String content = ExistXmldbEmbeddedServer.getXMLResource(col, "docname" + i + ".xml");
+                assertTrue(content.contains("before--after"), content);
+            }
+        }
+    }
 }
