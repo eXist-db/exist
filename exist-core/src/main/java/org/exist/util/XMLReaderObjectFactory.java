@@ -151,6 +151,7 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
         xmlReader.setContentHandler(null);
         xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
         xmlReader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, null);
+        xmlReader.setProperty(Namespaces.SAX_DECLARATION_HANDLER, null);
     }
 
     /**

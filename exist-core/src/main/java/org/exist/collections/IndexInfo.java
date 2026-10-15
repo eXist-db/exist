@@ -34,6 +34,8 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
@@ -97,6 +99,12 @@ public class IndexInfo {
             reader.setEntityResolver(entityResolver);
         }
         reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, getLexicalHandler());
+        try {
+            // lets the indexer tell a declared but unfetched external entity from an undeclared one
+            reader.setProperty(Namespaces.SAX_DECLARATION_HANDLER, indexer);
+        } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
+            // reader cannot report declarations; undeclared and external entities are then treated alike
+        }
         reader.setContentHandler(getContentHandler());
         reader.setErrorHandler(indexer);
     }
