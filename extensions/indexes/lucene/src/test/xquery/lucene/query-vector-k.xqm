@@ -152,6 +152,26 @@ function t:path-form-honors-k-large() {
     count(collection(t:collection-path($t:N_LARGE))//article[ft:query-vector(., $t:VEC, $t:K)])
 };
 
+(: The query vector bound to a variable, with the path in a return clause: the
+   variable used to make ft:query-vector look as if it varied per candidate, so
+   it ran once per article and returned every article instead of the top k. :)
+declare
+    %test:assertEquals(5)
+function t:path-form-with-let-bound-vector-honors-k() {
+    let $vector := $t:VEC
+    return count(collection(t:collection-path($t:N_SMALL))//article[ft:query-vector(., $vector, $t:K)])
+};
+
+declare function t:search-with-vector-parameter($vector as array(*)) as xs:integer {
+    count(collection(t:collection-path($t:N_SMALL))//article[ft:query-vector(., $vector, $t:K)])
+};
+
+declare
+    %test:assertEquals(5)
+function t:path-form-with-vector-parameter-honors-k() {
+    t:search-with-vector-parameter($t:VEC)
+};
+
 declare
     %test:assertEquals(5)
 function t:direct-call-honors-k-large() {
@@ -244,6 +264,15 @@ declare
 function t:bare-variable-predicate-needs-boolean-wrapping() {
     let $probe := collection($t:NONSELF_COLL)//article[title = "A"]
     return count(collection($t:NONSELF_COLL)//article[boolean($probe)])
+};
+
+(: A vector bound by a for clause differs per iteration, not per candidate:
+   each iteration must search with its own vector (GH-2204). :)
+declare
+    %test:assertEquals("A", "B", "C")
+function t:for-bound-vector-searches-per-iteration() {
+    for $vector in ([1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0])
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
 };
 
 (: ================================================================

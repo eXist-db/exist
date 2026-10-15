@@ -167,12 +167,13 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     }
 
     /**
-     * True if any argument from {@code fromIndex} onward varies per candidate node — either
-     * because it depends on a local iteration variable (e.g. a {@code for}-bound variable —
-     * GH-2204; CONTEXT_VARS from an outer scope are static relative to the current iteration and
-     * don't count), or because it depends on the context item itself (e.g. {@code .}, or anything
-     * derived from it, such as {@code ft:embed(.)} as a per-candidate "vector" argument). Either
-     * way the expression cannot be bulk-evaluated via {@link #preSelect(Sequence, boolean)}: its
+     * True if any argument from {@code fromIndex} onward varies per candidate node because it
+     * depends on the context item (e.g. {@code .}, or anything derived from it, such as
+     * {@code ft:embed(.)} as a per-candidate "vector" argument). A reference to a variable does
+     * not count: a vector bound outside the predicate is the same for every candidate, and the
+     * case of GH-2204 is handled by the where clause itself (as for ft:query, ft:query-field and
+     * ngram:contains). If an argument does vary, the expression cannot be bulk-evaluated via
+     * {@link #preSelect(Sequence, boolean)}: its
      * value would then vary per candidate, but {@link #evalArgs} evaluates every tail argument
      * exactly once, with {@code contextItem=null} — the same class of bug fixed for arg0 in
      * {@link QueryVector#canOptimizeSequence(Sequence)}, here for the remaining arguments.
@@ -180,7 +181,7 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     protected boolean anyArgVariesPerCandidate(final int fromIndex) {
         for (int i = fromIndex; i < getArgumentCount(); i++) {
             final Expression arg = getArgument(i);
-            if (Dependency.dependsOnLocalVar(arg) || Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
+            if (Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
                 return true;
             }
         }
