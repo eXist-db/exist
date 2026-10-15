@@ -144,6 +144,41 @@ public class XMLReaderPoolTest {
     }
 
     @Test
+    public void validationModeOverrideKeepsConfiguredParserFeatures() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("no");
+
+        // an explicit parser feature of the administrator
+        final Map<String, Boolean> parserFeatures = new HashMap<>();
+        parserFeatures.put(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, false);
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(parserFeatures);
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // e.g. the validation mode of a collection configuration
+            xmlReaderPool.setValidationMode(xmlreader, XMLReaderObjectFactory.VALIDATION_SETTING.ENABLED);
+
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            // the explicit parser feature wins over the validation mode
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
     public void xmlReaderWithUnknownValidation() throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
