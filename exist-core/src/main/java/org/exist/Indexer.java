@@ -293,12 +293,14 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
                         indexListener.characters(transaction, cdata, currentPath);
                     }
                 }
-                setPrevious(cdata);
+                // append before setPrevious, as storeText does: clearing a previous text node also resets
+                // charBuf, which that node shares
                 if (!nodeContentStack.isEmpty()) {
                     for (final XMLString next : nodeContentStack) {
                         next.append(charBuf);
                     }
                 }
+                setPrevious(cdata);
                 charBuf.reset();
             }
         }
