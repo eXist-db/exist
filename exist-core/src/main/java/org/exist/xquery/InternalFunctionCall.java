@@ -98,6 +98,12 @@ public class InternalFunctionCall extends Function {
         return function.returnsType();
     }
 
+    /** A call of an updating built-in function, such as fn:put, is an updating expression. */
+    @Override
+    public boolean isUpdating() {
+        return function.getSignature().isUpdating();
+    }
+
     @Override
     public Cardinality getCardinality() {
         return function.getCardinality();

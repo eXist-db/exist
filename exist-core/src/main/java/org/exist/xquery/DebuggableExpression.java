@@ -90,6 +90,11 @@ public class DebuggableExpression implements Expression, RewritableExpression {
     	return true;
     }
 
+    @Override
+    public boolean isUpdating() {
+        return expression.isUpdating();
+    }
+
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
     }

@@ -434,6 +434,7 @@ public abstract class Function extends PathExpr {
                 if (!(this instanceof Optimizable)) {
                     argContextInfo.removeFlag(IN_PREDICATE);
                 }
+                argContextInfo.addFlag(NON_UPDATING_CONTEXT);
                 arg.analyze(argContextInfo);
 
                 if (!argumentsChecked) {
