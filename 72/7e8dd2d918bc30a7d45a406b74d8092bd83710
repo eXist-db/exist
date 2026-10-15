@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/Indexer.java
+  s_0aafa4e1f72b71::t_2db45b3b9316a9 762-770,774-777,782-783
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_0aafa4e1f72b71::t_59b716999167d0 31,136-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "727e8dd2d918bc30a7d45a406b74d8092bd83710",
+  "prompts": {},
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
