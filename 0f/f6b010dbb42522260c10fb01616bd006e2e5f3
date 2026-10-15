@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/validation/GrammarPool.java
+  s_0aafa4e1f72b71::t_e0a23d87b9335e 108-116
+exist-core/src/test/java/org/exist/validation/DtdGrammarCacheTest.java
+  s_0aafa4e1f72b71::t_157d200beb3548 1-100
+exist-core/src/test/java/org/exist/validation/GrammarPoolTest.java
+  s_0aafa4e1f72b71::t_cb5d820b9fd0f2 24-25,37,137-159
+exist-core/src/test/resources/org/exist/validation/catalog.xml
+  s_0aafa4e1f72b71::t_80c37f9dbc4889 31
+exist-core/src/test/resources/org/exist/validation/entities/entity-test-b.dtd
+  s_0aafa4e1f72b71::t_ba2afe0fd76955 1-3
+exist-core/src/test/resources/org/exist/validation/entities/entity-test.dtd
+  s_0aafa4e1f72b71::t_0441368d9b9963 1-3
+exist-core/src/main/java/org/exist/Indexer.java
+  s_0aafa4e1f72b71::t_2db45b3b9316a9 762-770,774-777,782-783
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_0aafa4e1f72b71::t_59b716999167d0 31,118-136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0ff6b010dbb42522260c10fb01616bd006e2e5f3",
+  "prompts": {},
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
