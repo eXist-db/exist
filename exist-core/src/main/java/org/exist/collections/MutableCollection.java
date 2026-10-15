@@ -55,10 +55,10 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
@@ -1960,38 +1960,31 @@ public class MutableCollection implements Collection {
      */
     private XMLReader getReader(final DBBroker broker, final boolean validation, final CollectionConfiguration collectionConf) {
         // Get reader from readerpool.
-        final XMLReader reader = broker.getBrokerPool().getXmlReaderPool().borrowXMLReader();
-        
+        final XMLReaderPool xmlReaderPool = broker.getBrokerPool().getXmlReaderPool();
+        final XMLReader reader = xmlReaderPool.borrowXMLReader();
+
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
         if (!validation) {
-            XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED, reader);
-            
+            xmlReaderPool.setValidationMode(reader, XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED);
+
         } else if(collectionConf != null) {
             final VALIDATION_SETTING mode = collectionConf.getValidationMode();
-            XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
+            xmlReaderPool.setValidationMode(reader, mode);
         }
         // Return configured reader.
         return reader;
     }
 
     /**
-     * Reset validation mode of reader and return reader to reader pool.
+     * Return the XML Reader to the reader pool. The pool configures the
+     * validation mode of the server again when the reader is next borrowed.
      *
      * @param broker The database broker
      * @param reader The XML Reader to release
-     */    
+     */
     private void releaseReader(final DBBroker broker, final XMLReader reader) {
-        // Get validation mode from static configuration
-        final Configuration config = broker.getConfiguration();
-        final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
-        final VALIDATION_SETTING validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.fromOption(optionValue);
-        
-        // Restore default validation mode
-        XMLReaderObjectFactory.setReaderValidationMode(validationMode, reader);
-        
-        // Return reader
-        broker.getBrokerPool().getParserPool().returnXMLReader(reader);
+        broker.getBrokerPool().getXmlReaderPool().returnXMLReader(reader);
     }
 
     @Override
