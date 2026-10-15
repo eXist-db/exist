@@ -21,6 +21,8 @@
  */
 package org.exist.validation;
 
+import org.apache.xerces.impl.dtd.XMLDTDDescription;
+import org.apache.xerces.impl.dtd.XMLDTDLoader;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -131,4 +134,26 @@ class GrammarPoolTest {
         assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
     }
 
+    private Grammar loadDtd(final String publicId, final String systemId, final String content) throws IOException {
+        final XMLInputSource inputSource = new XMLInputSource(publicId, systemId, null, new StringReader(content), null);
+        return new XMLDTDLoader().loadGrammar(inputSource);
+    }
+
+    /**
+     * See <a href="https://github.com/eXist-db/exist/issues/1757">#1757</a>: Xerces does not make the
+     * entities declared by a cached DTD available to later documents, and DTDs have no namespace to
+     * tell them apart in the cache, so DTD grammars must not be cached.
+     */
+    @Test
+    void dtdGrammarsAreNotCached() throws IOException {
+        final String publicIdA = "-//EXIST-TEST//DTD A//EN";
+        final String systemIdA = "file:///dtds/a.dtd";
+
+        final Grammar dtdA = loadDtd(publicIdA, systemIdA, "<!ELEMENT a (#PCDATA)><!ENTITY alpha \"A\">");
+
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[]{dtdA});
+
+        assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD).length);
+        assertNull(grammarPool.retrieveGrammar(new XMLDTDDescription(publicIdA, systemIdA, null, systemIdA, null)));
+    }
 }

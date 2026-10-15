@@ -105,6 +105,15 @@ public class GrammarPool implements XMLGrammarPool {
 
         Arrays.stream(grammars).forEach(grammar -> {
             final XMLGrammarDescription desc = grammar.getGrammarDescription();
+
+            // A DTD grammar must not be cached. Xerces does not make the entities that a cached DTD
+            // declares available to later documents, so these would fail with "The entity was
+            // referenced, but not declared", depending on the order in which documents are stored.
+            // The cache key is also not specific enough to tell DTDs apart, as they have no namespace.
+            if (XMLGrammarDescription.XML_DTD.equals(desc.getGrammarType())) {
+                return;
+            }
+
             grammarCache.put(new GrammarKey(desc), grammar);
         });
     }
