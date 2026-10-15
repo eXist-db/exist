@@ -236,6 +236,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
+            // whether currentContext is the result of a previous step, i.e. E1 of E1/E2
+            boolean contextFromPreviousStep = false;
             Expression prev = null;
             for (int stepIdx = 0; stepIdx < steps.size(); stepIdx++) {
                 final Expression step = steps.get(stepIdx);
@@ -299,19 +301,27 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                                 currentContext != null && !currentContext.isEmpty())) {
                     Sequence exprResult = new ValueSequence(Type.subTypeOf(expr.returnsType(), Type.NODE));
                     ((ValueSequence) exprResult).keepUnOrdered(unordered);
-                    //Restore a position which may have been modified by inner expressions 
-                    int p = context.getContextPosition();
-                    final Sequence seq = context.getContextSequence();
-                    for (final SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
-                        context.setContextSequencePosition(p, seq);
-                        context.getWatchDog().proceed(expr);
-                        final Item current = iterInner.nextItem();
-                        //0 or 1 item
-                        if (!currentContext.hasMany()) {
-                            exprResult = expr.eval(currentContext, current);
-                        } else {
-                            exprResult.addAll(expr.eval(currentContext, current));
+                    // Each item of E1 provides the focus for E2: its position in E1 and the size of E1.
+                    // Otherwise, such as for the expression of a predicate, keep the focus of the enclosing
+                    // expression.
+                    final int outerPosition = context.getContextPosition();
+                    final Sequence outerSequence = context.getContextSequence();
+                    final Sequence focusSequence = contextFromPreviousStep ? currentContext : outerSequence;
+                    int p = contextFromPreviousStep ? 0 : outerPosition;
+                    try {
+                        for (final SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
+                            context.setContextSequencePosition(p, focusSequence);
+                            context.getWatchDog().proceed(expr);
+                            final Item current = iterInner.nextItem();
+                            //0 or 1 item
+                            if (!currentContext.hasMany()) {
+                                exprResult = expr.eval(currentContext, current);
+                            } else {
+                                exprResult.addAll(expr.eval(currentContext, current));
+                            }
                         }
+                    } finally {
+                        context.setContextSequencePosition(outerPosition, outerSequence);
                     }
                     result = exprResult;
                 } else {
@@ -358,6 +368,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
                 if (!staticContext && (!(step instanceof VariableDeclaration))) {
                     currentContext = result;
+                    contextFromPreviousStep = true;
                 }
             }
 
