@@ -22,13 +22,13 @@
 package org.exist.validation;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -61,7 +61,6 @@ public class DtdEntityTest {
     }
 
     @Test
-    @Disabled("Entity resolve bug")
     public void bugloadWithEntities() throws XMLDBException {
         final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<!DOCTYPE procedure PUBLIC \"-//AAAA//DTD Procedure 0.4//EN\" \"aaaa.dtd\" >"
@@ -79,5 +78,60 @@ public class DtdEntityTest {
         }
 
         fail("Should have thrown XMLDBException");
+    }
+
+    @Test
+    public void entitiesDeclaredInInternalSubsetAreResolved() throws XMLDBException {
+        final String input = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a [
+                    <!ENTITY empty "nothing">
+                    <!ENTITY trade "&#x2122;">
+                ]>
+                <a>first empty: &empty; then trade: &trade;</a>""";
+
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity-internal")) {
+            ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes(UTF_8));
+
+            final String content = ExistXmldbEmbeddedServer.getXMLResource(col, "docname.xml");
+            assertTrue(content.contains("first empty: nothing then trade: \u2122"), content);
+        }
+    }
+
+    @Test
+    public void declaredExternalEntityIsDroppedNotRejected() throws XMLDBException {
+        final String input = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a [
+                    <!ENTITY ext SYSTEM "does-not-exist.xml">
+                ]>
+                <a>before-&ext;-after</a>""";
+
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity-external")) {
+            ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes(UTF_8));
+
+            final String content = ExistXmldbEmbeddedServer.getXMLResource(col, "docname.xml");
+            assertTrue(content.contains("before--after"), content);
+        }
+    }
+
+    @Test
+    public void rejectedDocumentIsNotStored() throws XMLDBException {
+        final String input = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a PUBLIC "-//AAAA//DTD Procedure 0.4//EN" "aaaa.dtd">
+                <a><b>first</b>&empty;<c>last</c></a>""";
+
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity-rejected")) {
+            try {
+                ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes(UTF_8));
+                fail("Should have thrown XMLDBException");
+            } catch (final XMLDBException e) {
+                assertTrue(e.getMessage().contains("The entity \"empty\" was referenced, but not declared"), e.getMessage());
+            }
+
+            // the document must be rejected as a whole, not stored up to the offending reference
+            assertEquals(0, col.getResourceCount(), "a rejected document must not be stored");
+        }
     }
 }
