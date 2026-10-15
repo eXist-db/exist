@@ -1,0 +1,3 @@
+<!-- Entity declarations used by org.exist.validation.DtdGrammarCacheTest -->
+<!ELEMENT b (#PCDATA)>
+<!ENTITY beta "from-B">
