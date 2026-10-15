@@ -172,20 +172,45 @@ class GrammarPoolTest {
     }
 
     /**
-     * See <a href="https://github.com/eXist-db/exist/issues/1757">#1757</a>: Xerces does not make the
-     * entities declared by a cached DTD available to later documents, and DTDs have no namespace to
-     * tell them apart in the cache, so DTD grammars must not be cached.
+     * See <a href="https://github.com/eXist-db/exist/issues/1757">#1757</a>: DTDs have no target
+     * namespace, so different DTDs must not share a cache entry.
      */
     @Test
-    void dtdGrammarsAreNotCached() throws IOException {
+    void differentDtdsAreCachedSeparately() throws IOException {
+        final String publicIdA = "-//EXIST-TEST//DTD A//EN";
+        final String systemIdA = "file:///dtds/a.dtd";
+        final String publicIdB = "-//EXIST-TEST//DTD B//EN";
+        final String systemIdB = "file:///dtds/b.dtd";
+
+        final Grammar dtdA = loadDtd(publicIdA, systemIdA, "<!ELEMENT a (#PCDATA)><!ENTITY alpha \"A\">");
+        final Grammar dtdB = loadDtd(publicIdB, systemIdB, "<!ELEMENT b (#PCDATA)><!ENTITY beta \"B\">");
+
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[]{dtdA});
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[]{dtdB});
+
+        assertEquals(2, grammarPool.retrieveCachedDtdGrammars().length);
+    }
+
+    /**
+     * Xerces does not make the entities declared by a cached DTD available to later documents, so the
+     * pool never hands a DTD grammar to a parser itself, see {@link ReaderGrammarPool}.
+     */
+    @Test
+    void dtdGrammarsAreNotGivenToParsers() throws IOException {
         final String publicIdA = "-//EXIST-TEST//DTD A//EN";
         final String systemIdA = "file:///dtds/a.dtd";
 
         final Grammar dtdA = loadDtd(publicIdA, systemIdA, "<!ELEMENT a (#PCDATA)><!ENTITY alpha \"A\">");
-
         grammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[]{dtdA});
 
         assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD).length);
         assertNull(grammarPool.retrieveGrammar(new XMLDTDDescription(publicIdA, systemIdA, null, systemIdA, null)));
+        assertEquals(1, grammarPool.retrieveCachedDtdGrammars().length);
+
+        // a reader view only does so once DTD reuse is enabled
+        final ReaderGrammarPool readerPool = new ReaderGrammarPool(grammarPool);
+        assertEquals(0, readerPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD).length);
+        readerPool.enableDtdReuse();
+        assertEquals(1, readerPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD).length);
     }
 }

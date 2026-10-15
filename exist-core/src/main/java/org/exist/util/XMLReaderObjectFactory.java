@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.resolver.XercesXmlResolverAdapter;
+import org.exist.validation.ReaderGrammarPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 
@@ -72,6 +73,8 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
             = "http://apache.org/xml/properties/internal/grammar-pool";
     public static final String APACHE_PROPERTIES_LOAD_EXT_DTD
             = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    public static final String APACHE_PROPERTIES_INTERNAL_ENTITYMANAGER
+            = "http://apache.org/xml/properties/internal/entity-manager";
     public static final String APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER
             = "http://apache.org/xml/properties/internal/entity-resolver";
 
@@ -117,9 +120,12 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
         final XMLReader xmlReader = pooledXmlReader.getObject();
 
         try {
-            if (validation.maybe()) {
-                // Only need to set Grammar Cache if we are validating
-                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            if (grammarPool != null) {
+                // Each reader gets its own view of the shared cache, which decides whether
+                // the parser may use cached DTD grammars
+                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, new ReaderGrammarPool(grammarPool));
+            } else if (validation.maybe()) {
+                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, null);
             }
 
             // Set XML Catalog Resolver

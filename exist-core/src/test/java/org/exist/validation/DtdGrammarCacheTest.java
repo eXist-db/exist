@@ -34,11 +34,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Documents that refer to different DTDs must each be parsed with their own DTD, whatever
@@ -46,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * See <a href="https://github.com/eXist-db/exist/issues/1757">#1757</a>.
  */
-public class DtdGrammarCacheTest {
+class DtdGrammarCacheTest {
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
@@ -69,7 +72,7 @@ public class DtdGrammarCacheTest {
             <b>&beta;</b>""";
 
     @BeforeAll
-    public static void createCollection() throws Exception {
+    static void createCollection() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn txn = pool.getTransactionManager().beginTransaction()) {
@@ -81,7 +84,7 @@ public class DtdGrammarCacheTest {
     }
 
     @Test
-    public void alternatingDtdsAreEachResolved() throws Exception {
+    void alternatingDtdsAreEachResolved() throws Exception {
         final String[] order = {"a", "b", "a", "b", "b", "a", "a", "b"};
 
         for (int i = 0; i < order.length; i++) {
@@ -96,5 +99,72 @@ public class DtdGrammarCacheTest {
                     "string(doc('" + COLLECTION + "/" + name + "')/*)");
             assertEquals(isA ? "from-A" : "from-B", result.getStringValue(), "stored as " + name + " (" + order[i] + ")");
         }
+    }
+
+    @Test
+    void dtdIsReusedAndEntitiesStayCorrect() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final GrammarPool grammarPool = (GrammarPool) pool.getConfiguration().getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
+
+        for (int i = 0; i < 3; i++) {
+            store("reuse-a" + i + ".xml", DOC_A);
+            store("reuse-b" + i + ".xml", DOC_B);
+        }
+
+        // both DTDs are cached, and the entities of each are still expanded for every document
+        assertEquals(2, grammarPool.retrieveCachedDtdGrammars().length);
+        assertEquals("from-A", query("string(doc('" + COLLECTION + "/reuse-a2.xml')/*)"));
+        assertEquals("from-B", query("string(doc('" + COLLECTION + "/reuse-b2.xml')/*)"));
+    }
+
+    @Test
+    void entityOfAnotherDtdIsNotDeclared() throws Exception {
+        // load both DTDs into the cache first
+        store("leak-a.xml", DOC_A);
+        store("leak-b.xml", DOC_B);
+
+        final String docWithForeignEntity = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a PUBLIC "-//EXIST-TEST//DTD Entities//EN" "entity-test.dtd">
+                <a>&beta;</a>""";
+
+        final IOException e = assertThrows(IOException.class, () -> store("leak-foreign.xml", docWithForeignEntity));
+        assertTrue(e.getMessage().contains("beta"), e.getMessage());
+    }
+
+    @Test
+    void internalSubsetTakesPrecedenceOverCachedDtd() throws Exception {
+        store("internal-a.xml", DOC_A);  // caches the DTD
+
+        final String doc = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a PUBLIC "-//EXIST-TEST//DTD Entities//EN" "entity-test.dtd" [
+                    <!ENTITY alpha "internal">
+                ]>
+                <a>&alpha;</a>""";
+        store("internal-override.xml", doc);
+
+        assertEquals("internal", query("string(doc('" + COLLECTION + "/internal-override.xml')/*)"));
+    }
+
+    @Test
+    void otherParsersAreNotGivenCachedDtds() throws Exception {
+        // the DTD is in the cache after this
+        store("parse-a.xml", DOC_A);
+
+        // fn:parse-xml uses a pooled reader too, and must still see the entities of the DTD each time
+        final String query = "string(fn:parse-xml('<!DOCTYPE a PUBLIC \"-//EXIST-TEST//DTD Entities//EN\" \"entity-test.dtd\"><a>&amp;alpha;</a>')/*)";
+        assertEquals("from-A", query(query));
+        assertEquals("from-A", query(query));
+    }
+
+    private static void store(final String name, final String content) throws IOException {
+        TestTools.insertDocumentToURL(
+                new UnsynchronizedByteArrayInputStream(content.getBytes(UTF_8)),
+                "xmldb:exist://" + COLLECTION + "/" + name);
+    }
+
+    private static String query(final String query) throws Exception {
+        return TestTools.executeQuery(existEmbeddedServer.getBrokerPool(), query).getStringValue();
     }
 }

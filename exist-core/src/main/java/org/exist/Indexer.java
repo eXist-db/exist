@@ -21,6 +21,7 @@
  */
 package org.exist;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -55,6 +56,7 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.exist.validation.DtdEntityRestorer;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -150,6 +152,12 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private Map<String, String> entityMap = null;
     /** Names of general entities declared with an external system or public id. */
     private final Set<String> externalEntities = new HashSet<>();
+
+    /** Makes the entities of a cached DTD available, see {@link #endDTD()}. */
+    @Nullable private DtdEntityRestorer dtdEntityRestorer = null;
+    @Nullable private String dtdPublicId = null;
+    @Nullable private String dtdSystemId = null;
+    @Nullable private String dtdBaseSystemId = null;
     private String currentEntityName = null;
     private final XMLString currentEntityValue = new XMLString();
     
@@ -189,6 +197,15 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
             preserveWSmixed = temp;
 	}
+    }
+
+    /**
+     * Set the restorer for the entities of a cached DTD.
+     *
+     * @param dtdEntityRestorer the restorer
+     */
+    public void setDtdEntityRestorer(@Nullable final DtdEntityRestorer dtdEntityRestorer) {
+        this.dtdEntityRestorer = dtdEntityRestorer;
     }
 
     public void setValidating(final boolean validate) {
@@ -311,8 +328,18 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     }
 
     @Override
-    public void endDTD() {
+    public void endDTD() throws SAXException {
         insideDTD = false;
+
+        // A cached DTD is not scanned again, so make its entities available now that the
+        // internal subset, which takes precedence, has been seen
+        if (dtdEntityRestorer != null && dtdSystemId != null) {
+            try {
+                dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId);
+            } catch (final IOException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -527,6 +554,10 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         final DocumentTypeImpl docType = new DocumentTypeImpl(null, name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
+
+        dtdPublicId = publicId;
+        dtdSystemId = systemId;
+        dtdBaseSystemId = locator != null ? locator.getSystemId() : null;
     }
 
     @Override
