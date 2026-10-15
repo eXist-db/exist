@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/Indexer.java
+  s_0aafa4e1f72b71::t_bda3d2c2ca5445 753-756,758-761,763-771
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_e98fb2299e704f::t_375fe92456cef6 81-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3b3a319b94dc5a12985ce935b41adaadb7b80a1",
+  "prompts": {},
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_e98fb2299e704f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "fe63e19d-7812-4cd3-8078-f384be04c806",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
