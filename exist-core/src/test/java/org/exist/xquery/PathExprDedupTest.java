@@ -305,4 +305,38 @@ public class PathExprDedupTest {
                 string-join(($r/b, $r/a, $r/b)/c/d/name(../..), ",")""");
         assertEquals("a,b", result, "the results must follow document order and contain no duplicates");
     }
+
+    /**
+     * Evaluating a path must not reorder the sequence bound to the variable that is its first step.
+     */
+    @Test
+    public void pathDoesNotReorderVariableOfFirstStep() throws XMLDBException {
+        final String result = query("""
+                let $x := <x/>
+                let $y := <y/>
+                let $s := ($y, $x)
+                let $count := count($s/self::*)
+                return string-join($s ! name(.), ",")""");
+        assertEquals("y,x", result, "the variable must keep its order after a path used it as E1");
+    }
+
+    /**
+     * The topological sort from https://github.com/eXist-db/exist/issues/4918, whose accumulated sequence was
+     * reordered by the paths that read it.
+     */
+    @Test
+    public void topologicalSortKeepsAccumulatedOrder() throws XMLDBException {
+        final String result = query("""
+                declare function local:topological-sort($unordered, $ordered) {
+                    if (empty($unordered)) then
+                        $ordered
+                    else
+                        let $defined := $unordered[empty(ref[not(@id = $ordered/@id)])]
+                        return local:topological-sort($unordered[not(@id = $defined/@id)], ($ordered, $defined))
+                };
+                string-join(local:topological-sort(
+                    (<node id="a"><ref id="b"/><ref id="c"/></node>, <node id="b"><ref id="c"/></node>, <node id="c"/>),
+                    ()) ! string(@id), ",")""");
+        assertEquals("c,b,a", result, "each node must follow the nodes it refers to");
+    }
 }
