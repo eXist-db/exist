@@ -134,4 +134,23 @@ public class DtdEntityTest {
             assertEquals(0, col.getResourceCount(), "a rejected document must not be stored");
         }
     }
+
+    /**
+     * See <a href="https://github.com/eXist-db/exist/issues/5277">#5277</a>: the named entities of a
+     * document whose DTD is in the catalog must be expanded, also when validation is disabled.
+     */
+    @Test
+    public void namedEntitiesOfCatalogDtdAreResolved() throws XMLDBException {
+        final String input = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE a PUBLIC "-//EXIST-TEST//DTD Entities//EN" "entity-test.dtd">
+                <a>umlaut: &ouml; trade: &trade;</a>""";
+
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity-catalog")) {
+            ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes(UTF_8));
+
+            final String content = ExistXmldbEmbeddedServer.getXMLResource(col, "docname.xml");
+            assertTrue(content.contains("umlaut: \u00f6 trade: \u2122"), content);
+        }
+    }
 }
