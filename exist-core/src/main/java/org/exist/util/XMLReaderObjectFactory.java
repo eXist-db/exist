@@ -132,7 +132,24 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
             LOG.error("SAXNotSupportedException:{}", ex.getMessage());
         }
 
-        setReaderValidationMode(validation, xmlReader);
+        configureValidation(xmlReader, validation);
+
+        xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
+    }
+
+    /**
+     * Configures the validation related features of the {@code xmlReader}.
+     *
+     * The features are applied in a fixed order: first those implied by the validation
+     * {@code mode}, then any feature the administrator set in the parser section of
+     * conf.xml. An explicitly configured feature therefore always wins over the mode,
+     * no matter whether the mode comes from the server or from a collection configuration.
+     *
+     * @param xmlReader the reader
+     * @param mode the validation mode
+     */
+    public void configureValidation(final XMLReader xmlReader, final VALIDATION_SETTING mode) {
+        setReaderValidationMode(mode, xmlReader);
 
         // Sets any features for the parser which were defined in conf.xml
         if (parserFeatures != null) {
@@ -140,8 +157,6 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
                 setReaderFeature(xmlReader, feature.getKey(), feature.getValue());
             }
         }
-
-        xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
     }
 
     @Override
