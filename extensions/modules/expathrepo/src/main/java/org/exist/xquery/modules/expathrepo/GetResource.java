@@ -26,6 +26,7 @@ import java.util.Optional;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.dom.QName;
+import org.exist.repo.Deployment;
 import org.exist.repo.ExistRepository;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,7 +37,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.Storage;
 
 public class GetResource extends BasicFunction {
@@ -63,26 +63,24 @@ public class GetResource extends BasicFunction {
 		String path = args[1].getStringValue();
 
 		Optional<ExistRepository> repo = context.getRepository();
-		if (repo.isPresent()) {
-		    try {
-                for (Packages pp : repo.get().getParentRepo().listPackages()) {
-                    final Package pkg = pp.latest();
-                    if (pkg.getName().equals(pkgName)) {
-                        try {
-                            // FileSystemResolver already returns an input stream
-                            StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
-                            return Base64BinaryDocument.getInstance(context, source.getInputStream(), this);
-                        } catch (Storage.NotExistException e) {
-                            throw new XPathException(this, ErrorCodes.FODC0002, "Resource " + path + " does not exist.", e);
-                        }
-                    }
-                }
-		    } catch (PackageException e) {
-			    throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
-		    }
-		} else {
+		if (repo.isEmpty()) {
 		    throw new XPathException(this, "expath repository not available");
 		}
-        return Sequence.EMPTY_SEQUENCE;
+		try {
+		    // the version deployed into the database, which isn't necessarily the latest installed one
+		    final Optional<Package> pkg = new Deployment().getDeployedPackage(context.getBroker(), pkgName, repo);
+		    if (pkg.isEmpty()) {
+		        return Sequence.EMPTY_SEQUENCE;
+		    }
+		    try {
+		        // FileSystemResolver already returns an input stream
+		        final StreamSource source = (StreamSource) pkg.get().getResolver().resolveResource(path);
+		        return Base64BinaryDocument.getInstance(context, source.getInputStream(), this);
+		    } catch (final Storage.NotExistException e) {
+		        throw new XPathException(this, ErrorCodes.FODC0002, "Resource " + path + " does not exist.", e);
+		    }
+		} catch (final PackageException e) {
+		    throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
+		}
 	}
 }

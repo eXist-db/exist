@@ -30,11 +30,13 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.*;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.*;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.serializer.AttrList;
@@ -118,6 +120,47 @@ public class Deployment {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Get the version of a package that is deployed into the database. Several versions of a package can be
+     * installed at once, and the deployed one is not necessarily the latest: {@code repo:install-and-deploy} can
+     * deploy a lower version than one already installed.
+     *
+     * @param broker the broker to use
+     * @param pkgName the name of the package
+     * @param repo the EXPath repository
+     * @return the version whose descriptor is in its target collection; otherwise, such as for a library package
+     *     that isn't deployed into the database, the latest installed version; or Optional.empty if no version of
+     *     the package is installed
+     * @throws PackageException if the target collection of a version can't be determined
+     */
+    public Optional<Package> getDeployedPackage(final DBBroker broker, final String pkgName,
+            final Optional<ExistRepository> repo) throws PackageException {
+        final Optional<Packages> packages = repo.map(r -> r.getParentRepo().getPackages(pkgName));
+        if (packages.isEmpty()) {
+            return Optional.empty();
+        }
+        for (final Package pkg : packages.get().packages()) {
+            final String targetCollection = getTargetCollection(broker, pkg, getPackageDir(pkg));
+            if (getDeployedVersion(broker, targetCollection).filter(pkg.getVersion()::equals).isPresent()) {
+                return Optional.of(pkg);
+            }
+        }
+        return Optional.ofNullable(packages.get().latest());
+    }
+
+    private Optional<String> getDeployedVersion(final DBBroker broker, final String targetCollection) {
+        final XmldbURI descriptorUri = XmldbURI.create(targetCollection).append("expath-pkg.xml");
+        try (final LockedDocument lockedDescriptor = broker.getXMLResource(descriptorUri, LockMode.READ_LOCK)) {
+            if (lockedDescriptor == null) {
+                return Optional.empty();
+            }
+            final Element root = lockedDescriptor.getDocument().getDocumentElement();
+            return root == null ? Optional.empty() : Optional.of(root.getAttribute("version"));
+        } catch (final PermissionDeniedException e) {
+            return Optional.empty();
+        }
     }
 
     protected DocumentImpl getRepoXML(final DBBroker broker, final Path packageDir) throws PackageException {

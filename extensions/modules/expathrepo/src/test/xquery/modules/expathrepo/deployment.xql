@@ -228,7 +228,7 @@ function deploy:remove-unknown-throws() {
 
 declare
     %test:name("install-and-deploy respects the freshly installed package version (regression for Deployment.installAndDeploy deploying packages.latest() instead of the version just installed)")
-    %test:assertEquals("ok", "ok", "0.5.0", "true")
+    %test:assertEquals("ok", "ok", "0.5.0", "true", "0.5.0", "true", "false")
 function deploy:install-lower-version-after-higher() {
     (: Use a distinct package name from the other tests (`dtest-versioning`,
        not `dtest`) so leftover state doesn't pollute the rest of the suite. :)
@@ -251,11 +251,16 @@ function deploy:install-lower-version-after-higher() {
     (: After the second install, the descriptor copied into the deployed target
        collection should be 0.5.0's (the just-installed version), not 1.0.0's
        (the existing higher version). Before the fix the second deploy step
-       used packages.latest() and copied 1.0.0's descriptor instead.
-       NOTE: we read /db/apps/<target>/expath-pkg.xml, NOT
-       repo:get-resource(name, "expath-pkg.xml") — the latter reads from
-       packages.latest()'s dir, not from the deployed target. :)
+       used packages.latest() and copied 1.0.0's descriptor instead. :)
     let $deployed-version := doc($target-coll || "/expath-pkg.xml")/*:package/@version/string()
+
+    (: repo:get-resource and repo:resource-available must read from the
+       deployed version too, not from the latest installed one: 0.5.0 has
+       test-low.xml and no test-high.xml. :)
+    let $resource-version :=
+        parse-xml(util:binary-to-string(repo:get-resource($pkg-name, "expath-pkg.xml")))/*:package/@version/string()
+    let $low-available := repo:resource-available($pkg-name, "test-low.xml")
+    let $high-available := repo:resource-available($pkg-name, "test-high.xml")
 
     (: Sanity check: the just-installed 0.5.0 XAR's distinctive resource
        test-low.xml should be present in the deployed target collection.
@@ -275,6 +280,9 @@ function deploy:install-lower-version-after-higher() {
         $deployed-high/@result/string(),
         $deployed-low/@result/string(),
         $deployed-version,
-        string($low-resource-deployed)
+        string($low-resource-deployed),
+        $resource-version,
+        string($low-available),
+        string($high-available)
     )
 };
