@@ -5,7 +5,7 @@
     xmlns:db="http://docbook.org/ns/docbook"
     elementFormDefault="qualified"
     targetNamespace="http://exist-db.org/Configuration"
-    version="2.0.0">
+    version="2.1.0">
     
     <xs:annotation>
         <xs:documentation>
@@ -63,5 +63,83 @@
     <xs:simpleType name="realmTypeId">
         <xs:restriction base="xs:string"/>
     </xs:simpleType>
-    
+
+    <!--
+        === Account / Group principal documents ===
+
+        Unlike realmType above (a child of the realm's config.xml, and deliberately left as an
+        `xs:any` wildcard because its content varies per realm implementation, e.g. LDAP), the
+        elements below describe two *standalone* document kinds persisted one-per-principal by
+        the built-in XML-backed realm: an account at
+        /db/system/security/exist/accounts/<name>.xml and a group at
+        /db/system/security/exist/groups/<name>.xml.
+
+        They are generated generically by org.exist.config.Configurator reflecting over
+        @ConfigurationFieldAsElement/@ConfigurationFieldAsAttribute-annotated fields on
+        AbstractPrincipal, AbstractAccount/AccountImpl and AbstractGroup/GroupImpl; there is no
+        dedicated Java class per element. This schema is descriptive only: nothing in the load
+        path (RealmImpl, ConfigurationDocumentTrigger) validates against it, so it is not a
+        substitute for the loader's own defensiveness, only a grammar external tools (eXide, IDE
+        plugins) can validate hand-edited instances against. Since Configurator resolves every
+        field by element/attribute name regardless of position, `xs:all` (permitting
+        maxOccurs="unbounded" members under XSD 1.1) mirrors the loader's actual
+        order-independence more accurately than `xs:sequence` would.
+    -->
+
+    <xs:element name="account" type="cnf:accountType"/>
+
+    <xs:complexType name="accountType">
+        <xs:all>
+            <!-- primary + supplementary group membership, by group name -->
+            <xs:element name="group" type="cnf:principalRefType" minOccurs="0" maxOccurs="unbounded"/>
+            <!-- hashed credential; absent for e.g. externally-authenticated accounts -->
+            <xs:element name="password" type="xs:string" minOccurs="0"/>
+            <xs:element name="digestPassword" type="xs:string" minOccurs="0"/>
+            <xs:element name="expired" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="umask" type="cnf:octalStringType" minOccurs="0"/>
+            <xs:element name="metadata" type="cnf:metadataEntryType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="name" type="xs:string"/>
+        </xs:all>
+        <xs:attribute name="id" type="xs:int" use="required"/>
+    </xs:complexType>
+
+    <xs:element name="group" type="cnf:groupType"/>
+
+    <xs:complexType name="groupType">
+        <xs:all>
+            <!-- accounts (by name) permitted to manage this group -->
+            <xs:element name="manager" type="cnf:principalRefType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="metadata" type="cnf:metadataEntryType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="name" type="xs:string"/>
+        </xs:all>
+        <xs:attribute name="id" type="xs:int" use="required"/>
+    </xs:complexType>
+
+    <!-- a by-name reference to another principal, e.g. <group name="nogroup"/>, <manager name="admin"/> -->
+    <xs:complexType name="principalRefType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!--
+        One key/value pair of an account's or group's metadata map (org.exist.security.SchemaType
+        namespace -> value), e.g. <metadata key="http://axschema.org/namePerson">Jane Doe</metadata>.
+        `key` is open-ended: AXSchemaType and EXistSchemaType supply the well-known namespace
+        URIs, but any org.exist.security.SchemaType implementation may contribute its own.
+    -->
+    <xs:complexType name="metadataEntryType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="key" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- serialized as "0" + Integer.toString(value, 8), e.g. 022 -->
+    <xs:simpleType name="octalStringType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0[0-7]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>
