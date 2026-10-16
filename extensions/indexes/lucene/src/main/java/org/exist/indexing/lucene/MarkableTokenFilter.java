@@ -103,8 +103,15 @@ public class MarkableTokenFilter extends TokenFilter {
             return true;
         }
 
-        // The cache is exhausted, return false.
+        // The replayed cache is exhausted; resume reading fresh tokens from the wrapped
+        // stream instead of ending here, otherwise a rewindToMark() truncates the token
+        // stream at the end of whatever was cached, silently hiding every token after it.
         cache = null;
+        if (input.incrementToken()) {
+            return true;
+        }
+        input.end();
+        finalState = captureState();
         return false;
     }
 }
