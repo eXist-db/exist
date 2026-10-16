@@ -145,6 +145,22 @@ function fnt:outermost() {
 };
 
 declare
+    %test:assertEquals("b,d,e,h")
+function fnt:innermost-document-order() {
+    let $doc := document { <a><b/><c><d/><e/></c><f><g><h/></g></f></a> }
+    let $in := ($doc/a/f/g/h, $doc/a/c/e, $doc/a/b, $doc/a/c/d, $doc/a/f, $doc/a/b)
+    return string-join(fn:innermost($in)/local-name(), ",")
+};
+
+declare
+    %test:assertEquals("b,c,f")
+function fnt:outermost-document-order() {
+    let $doc := document { <a><b/><c><d/><e/></c><f><g><h/></g></f></a> }
+    let $in := ($doc/a/f/g/h, $doc/a/c/e, $doc/a/f, $doc/a/b, $doc/a/c, $doc/a/b)
+    return string-join(fn:outermost($in)/local-name(), ",")
+};
+
+declare
       %test:args('red green blue ', 'red')          %test:assertTrue
       %test:args("red, green, blue", ' red ')       %test:assertFalse
       %test:args('', 'red')                         %test:assertFalse
