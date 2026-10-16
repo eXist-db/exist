@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/util/XMLReaderPoolTest.java
+  s_de6c8e6165bb49::t_3d63ce81b1236b 181-213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e0ca6c0443769a2b3e35efc8c7adcc7bdcb4c73b",
+  "prompts": {},
+  "sessions": {
+    "s_de6c8e6165bb49": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "64b90ec0-16f9-4c24-b582-15edf54a19bf",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
