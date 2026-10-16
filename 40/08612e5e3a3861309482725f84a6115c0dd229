@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/config/ConfigurationImpl.java
+  s_33942d35b6c97e::t_64eed18d1c579f 217,219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4008612e5e3a3861309482725f84a6115c0dd229",
+  "prompts": {},
+  "sessions": {
+    "s_33942d35b6c97e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4f773747-990a-470f-808b-618093f8b187",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
