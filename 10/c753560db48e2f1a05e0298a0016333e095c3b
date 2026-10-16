@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/collections/triggers/STXTemplatesCache.java
+  s_de36ff9b8ca5ba::t_7ea20659349558 50-52,54
+exist-core/src/main/java/org/exist/collections/triggers/STXTransformerTrigger.java
+  s_de36ff9b8ca5ba::t_f81a34d3e0662c 55-57,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10c753560db48e2f1a05e0298a0016333e095c3b",
+  "prompts": {},
+  "sessions": {
+    "s_de36ff9b8ca5ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0bbe7c7-f9c6-4c41-818d-bbfe73c9e2d8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
