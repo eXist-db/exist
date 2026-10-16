@@ -46,8 +46,11 @@ import org.apache.lucene.util.automaton.RegExp;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
@@ -471,11 +474,10 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
         ValueSequence optimizables = null;
 
-        NodePath path = contextPath;
-        if (path == null) {
-            path = new NodePath(contextQName);
-        }
+        final NodePath path = contextPath != null ? contextPath : new NodePath(contextQName);
 
+        // the configuration depends only on the collection: resolve it once per collection, not once per item
+        final Map<Collection, Optional<RangeIndexConfigElement>> configs = new IdentityHashMap<>();
         int usesCollationCount = 0;
         for (int i = 0; i < contextSequence.getItemCount(); i++) {
             final Item item = contextSequence.itemAt(i);
@@ -492,22 +494,14 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                 continue;
             }
 
-            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
-                continue;
-            }
-            final IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
-            if (idxConf != null) {
-                final RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
-                if (config != null) {
-                    RangeIndexConfigElement rice = config.find(path);
-                    if (rice != null && !rice.isComplex()) {
-                        if (optimizables == null) {
-                            optimizables = new ValueSequence(contextSequence.getItemCount());
-                        }
-                        optimizables.add(item);
-                        usesCollationCount += rice.usesCollation() ? 1 : 0;
-                    }
+            final Optional<RangeIndexConfigElement> rice = configs.computeIfAbsent(collection,
+                    c -> Optional.ofNullable(findConfiguration(c, path)));
+            if (rice.isPresent()) {
+                if (optimizables == null) {
+                    optimizables = new ValueSequence(contextSequence.getItemCount());
                 }
+                optimizables.add(item);
+                usesCollationCount += rice.get().usesCollation() ? 1 : 0;
             }
         }
 
@@ -530,22 +524,35 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             path = new NodePath(contextQName);
         }
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            final Collection collection = i.next();
-            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
-                continue;
-            }
-            IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
-            if (idxConf != null) {
-                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
-                if (config != null) {
-                    RangeIndexConfigElement rice = config.find(path);
-                    if (rice != null && !rice.isComplex()) {
-                        return rice;
-                    }
-                }
+            final RangeIndexConfigElement rice = findConfiguration(i.next(), path);
+            if (rice != null) {
+                return rice;
             }
         }
         return null;
+    }
+
+    /**
+     * Find the simple range index configuration that applies to the path in a collection.
+     *
+     * @param collection the collection
+     * @param path the path of the compared node
+     * @return the configuration, or null if the collection is a system collection or has no simple range index on the path
+     */
+    private @Nullable RangeIndexConfigElement findConfiguration(final Collection collection, final NodePath path) {
+        if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+            return null;
+        }
+        final IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+        if (idxConf == null) {
+            return null;
+        }
+        final RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+        if (config == null) {
+            return null;
+        }
+        // find returns only a simple configuration: a complex one indexes its fields, which Lookup doesn't query
+        return config.find(path);
     }
 
     @Override
