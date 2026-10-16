@@ -1,0 +1,31 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/ExQueryRequestAdapterFactoryTest.java
+  s_dc4eb20d1ea12d::t_5e965b71da2f94 1-82
+extensions/exquery/restxq/pom.xml
+  s_dc4eb20d1ea12d::t_47981f2c8078ca 276-280,289-290,296
+exist-core/src/main/java/org/exist/http/RESTServer.java
+  s_33942d35b6c97e::t_6527fa50db75aa 163-172,174-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8813663bb7faea8109db249f606e17f2b2e8c969",
+  "prompts": {},
+  "sessions": {
+    "s_33942d35b6c97e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4f773747-990a-470f-808b-618093f8b187",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_dc4eb20d1ea12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9982c798-8af3-4297-a187-6aa6a35dac31",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
