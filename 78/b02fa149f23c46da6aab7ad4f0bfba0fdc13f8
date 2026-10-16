@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/http/RESTServer.java
+  s_33942d35b6c97e::t_6527fa50db75aa 163-172,174-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78b02fa149f23c46da6aab7ad4f0bfba0fdc13f8",
+  "prompts": {},
+  "sessions": {
+    "s_33942d35b6c97e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4f773747-990a-470f-808b-618093f8b187",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
