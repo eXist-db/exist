@@ -534,7 +534,7 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public boolean hasAccount(final String name) {
-        return getAccount(name) != null;
+        return hasAccountLocal(ensureCase(name));
     }
 
     /**
@@ -662,7 +662,7 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public boolean hasGroup(final String name) {
-        return getGroup((Subject)null, getSecurityManager().getDatabase().getActiveBroker(), name) != null;
+        return hasGroupLocal(ensureCase(name));
     }
 
     private String addDomainPostfix(final String principalName) {
