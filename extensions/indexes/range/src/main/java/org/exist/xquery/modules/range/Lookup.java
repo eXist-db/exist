@@ -551,8 +551,8 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         if (config == null) {
             return null;
         }
-        final RangeIndexConfigElement rice = config.find(path);
-        return rice != null && !rice.isComplex() ? rice : null;
+        // find returns only a simple configuration: a complex one indexes its fields, which Lookup doesn't query
+        return config.find(path);
     }
 
     @Override
