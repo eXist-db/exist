@@ -62,6 +62,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -124,13 +125,44 @@ public abstract class AbstractCompressFunction extends BasicFunction {
      * @return the supplied serialization properties, or an empty {@link Properties} when no map was given
      */
     private Properties parseSerializationOptions(final Sequence[] args) throws XPathException {
+        // the prolog's serialization options, overridden by those of the argument
+        final Properties properties = getPrologSerializationOptions();
         if (args.length >= 5 && !args[4].isEmpty()) {
-            final Properties properties = FunSerialize.getSerializationProperties(this, args[4].itemAt(0));
+            final Properties argumentProperties = FunSerialize.getSerializationProperties(this, args[4].itemAt(0));
             // the same consistency check (SEPM0009) fn:serialize applies to the same options
-            FunSerialize.validateSerializationParams(this, properties);
-            return properties;
+            FunSerialize.validateSerializationParams(this, argumentProperties);
+            properties.putAll(argumentProperties);
         }
-        return new Properties();
+        return properties;
+    }
+
+    /**
+     * The serialization options declared in the prolog, with {@code declare option exist:serialize} and the
+     * {@code output:} declarations, as for the query's own result. A method declared with {@code output:method}
+     * is left out: it is the method of the query's result, such as {@code json} for a REST endpoint, not of the
+     * documents archived. A method set with {@code exist:serialize} still applies, as it always has.
+     */
+    private Properties getPrologSerializationOptions() throws XPathException {
+        final Properties properties = new Properties();
+        context.checkOptions(properties);
+        if (!existSerializeSetsMethod()) {
+            properties.remove(OutputKeys.METHOD);
+        }
+        return properties;
+    }
+
+    private boolean existSerializeSetsMethod() {
+        final Option option = context.getOption(Option.SERIALIZE_QNAME);
+        if (option == null) {
+            return false;
+        }
+        for (final String param : option.tokenizeContents()) {
+            final String[] kvp = Option.parseKeyValuePair(param);
+            if (kvp != null && OutputKeys.METHOD.equals(kvp[0])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -394,16 +426,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
     }
 
     private void getDynamicSerializerOptions(final Serializer serializer, final Properties serializationProperties) throws SAXException {
-        final Option option = context.getOption(Option.SERIALIZE_QNAME);
-        if (option != null) {
-            final String[] params = option.tokenizeContents();
-            for (final String param : params) {
-                // OutputKeys.INDENT
-                final String[] kvp = Option.parseKeyValuePair(param);
-                serializer.setProperty(kvp[0], kvp[1]);
-            }
-        }
-        // an explicit serialization-options map argument takes precedence over the prolog option
+        // the prolog's options and those of the argument, see parseSerializationOptions
         serializer.setProperties(serializationProperties);
     }
 

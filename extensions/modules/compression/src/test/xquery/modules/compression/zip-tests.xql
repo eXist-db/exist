@@ -208,3 +208,54 @@ function z:zipInconsistentSerializationOptions() {
     compression:zip(<entry type="xml" name="m.xml"><m/></entry>, false(), "", "UTF8",
         map { "omit-xml-declaration": true(), "standalone": true() })
 };
+
+(: Prolog serialization declarations apply to the archived XML entries, as they do to the query's
+ : own result (#178). output: declarations are only allowed in a main module, so each query is
+ : evaluated with util:eval. The tests compare the size of the archive, which changes with the
+ : serialization of the entry: an entry is serialized indented by default. :)
+declare variable $z:prolog-entry :=
+    '<entry name="a.xml" type="xml" method="store"><r><a>1</a><b>2</b></r></entry>';
+
+declare %private function z:zip-size-with-prolog($prolog as xs:string, $options as xs:string) as xs:integer {
+    util:eval($prolog || ' string-length(string(compression:zip(' || $z:prolog-entry || ', false()'
+        || (if ($options) then ', "", "UTF8", ' || $options else '') || ')))')
+};
+
+declare
+    %test:assertTrue
+function z:zipPrologOutputIndent() {
+    z:zip-size-with-prolog('declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization"; declare option output:indent "no";', '')
+        lt z:zip-size-with-prolog('', '')
+};
+
+declare
+    %test:assertTrue
+function z:zipPrologExistSerializeIndent() {
+    z:zip-size-with-prolog('declare option exist:serialize "indent=no";', '')
+        lt z:zip-size-with-prolog('', '')
+};
+
+(: output:method is the method of the query's result, e.g. json for a REST endpoint, not of the
+ : archived documents: the entry stays XML :)
+declare
+    %test:assertTrue
+function z:zipPrologOutputMethodIgnored() {
+    z:zip-size-with-prolog('declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization"; declare option output:method "json";', '')
+        eq z:zip-size-with-prolog('', '')
+};
+
+(: a method set with exist:serialize still applies, as it always has :)
+declare
+    %test:assertTrue
+function z:zipPrologExistSerializeMethodApplies() {
+    z:zip-size-with-prolog('declare option exist:serialize "method=json";', '')
+        ne z:zip-size-with-prolog('', '')
+};
+
+(: the serialization options argument overrides the prolog :)
+declare
+    %test:assertTrue
+function z:zipArgumentOverridesPrologOutputIndent() {
+    z:zip-size-with-prolog('declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization"; declare option output:indent "no";', 'map { "indent": true() }')
+        eq z:zip-size-with-prolog('', 'map { "indent": true() }')
+};
