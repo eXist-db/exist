@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-k.xqm
+  s_906a7d5fc5215d::t_66a7f7c529e707 617-674
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d247da3f68f3e5f19304944f339c79e95e133c52",
+  "prompts": {},
+  "sessions": {
+    "s_906a7d5fc5215d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1cf66bf3-d334-402c-b319-a7f3c0f179f6",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
