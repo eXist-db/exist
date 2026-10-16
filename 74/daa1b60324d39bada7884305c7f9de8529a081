@@ -1,0 +1,49 @@
+exist-core/src/main/java/org/exist/Indexer.java
+  s_0aafa4e1f72b71::t_bda3d2c2ca5445 758,759-763,773-775,780-783,786,794
+  s_0aafa4e1f72b71::t_f3d196248fee5d 64,75,151-152,787-793,795-809
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_e98fb2299e704f::t_375fe92456cef6 82-99,101,103-105,107,111,113,115-116
+  s_0aafa4e1f72b71::t_ea306a09967af3 100,102,106,108-110,112,114
+  s_0aafa4e1f72b71::t_25c05f5cdf9019 117,138-155
+exist-core/src/main/java/org/exist/Namespaces.java
+  s_0aafa4e1f72b71::t_e87b6aa6b97514 89
+exist-core/src/main/java/org/exist/collections/IndexInfo.java
+  s_0aafa4e1f72b71::t_6064930985cde0 37-38,102-107
+exist-core/src/main/java/org/exist/util/XMLReaderObjectFactory.java
+  s_0aafa4e1f72b71::t_0c0c3885f17d5a 154
+  s_0aafa4e1f72b71::t_5466b26e0477a1 166-176
+exist-core/src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java
+  s_0aafa4e1f72b71::t_e5bf6ee9a3d123 35-36,54,63-64,67-73,111-115,126-156
+exist-core/src/test/java/org/exist/resolver/CatalogResolutionRegressionTest.java
+  s_0aafa4e1f72b71::t_88781674c1458e 24,43,151-242
+exist-core/src/test/java/org/exist/util/XMLReaderPoolTest.java
+  s_0aafa4e1f72b71::t_c7ef2f1c143cd8 115-145
+exist-core/src/test/resources/org/exist/validation/catalog.xml
+  s_0aafa4e1f72b71::t_8c4a38a77ff5a9 30
+exist-core/src/test/resources/org/exist/validation/entities/entity-test.dtd
+  s_0aafa4e1f72b71::t_72a7289f8c9918 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "74daa1b60324d39bada7884305c7f9de8529a081",
+  "prompts": {},
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_e98fb2299e704f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "fe63e19d-7812-4cd3-8078-f384be04c806",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
