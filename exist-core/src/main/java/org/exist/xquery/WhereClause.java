@@ -430,4 +430,12 @@ public class WhereClause extends AbstractFLWORClause {
 
         return vars;
     }
+
+    /**
+     * Also what the where expression depends on, e.g. {@code where $x = .}.
+     */
+    @Override
+    public int getDependencies() {
+        return super.getDependencies() | whereExpr.getDependencies();
+    }
 }
