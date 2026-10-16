@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/validation/GrammarPool.java
+  s_0e38a282aba4fa::t_1f257ed3ef0e1d 37-38,57-59,98-104,107,129-152,168,180,185-186,191,199-200,205
+exist-core/src/main/java/org/exist/xquery/functions/validation/GrammarTooling.java
+  s_0e38a282aba4fa::t_b45fd017f8061f 228
+exist-core/src/test/java/org/exist/validation/GrammarPoolTest.java
+  s_0e38a282aba4fa::t_3dacdb62d7609f 90,96,102,108-139,157,163
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpGrammarCacheSameNamespaceTest.java
+  s_0e38a282aba4fa::t_889d53a4f7cc6a 1-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c07e16627ec39c6523a1465cff4b8995ca86d23d",
+  "prompts": {},
+  "sessions": {
+    "s_0e38a282aba4fa": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "def0786b-808a-478e-be29-822a8f88d13a",
+        "model": "composer-2.5-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
