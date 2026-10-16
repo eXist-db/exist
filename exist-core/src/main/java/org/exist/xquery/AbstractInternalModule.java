@@ -49,7 +49,12 @@ public abstract class AbstractInternalModule implements InternalModule {
     protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
     private final Map<String, List<?>> parameters;
 
-    public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters) {
+    /**
+     * @param functions  the array of functions
+     * @param parameters configuration parameters, or null if the module has none, e.g. when it is
+     *                   registered only through the {@link ModuleFactory} service and not in conf.xml
+     */
+    public AbstractInternalModule(final FunctionDef[] functions, @Nullable final Map<String, List<?>> parameters) {
         // Defensive-copy + sort so the caller's static final array is left intact
         // and getFunctionDef() can binary-search regardless of declaration order.
         // See https://github.com/eXist-db/exist/issues/6378 (and #6376 which surfaced
@@ -61,7 +66,7 @@ public abstract class AbstractInternalModule implements InternalModule {
         } else {
             this.mFunctions = functions;
         }
-        this.parameters = parameters;
+        this.parameters = parameters != null ? parameters : Map.of();
     }
 
     /**

@@ -1894,7 +1894,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> moduleClass,
-                                               final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
+                                               @Nullable final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         try {
             final Constructor<Module> constructor = XQueryContext.getModuleConstructor(moduleClass);
 
@@ -1905,7 +1905,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             final Module module;
             if (constructor.getParameterCount() == 1) {
-                module = constructor.newInstance(moduleParameters.get(namespaceURI));
+                // a configuration built without conf.xml may have no module parameters at all
+                module = constructor.newInstance(moduleParameters != null ? moduleParameters.get(namespaceURI) : null);
             } else {
                 // attempt for a constructor that takes 0 arguments
                 module = constructor.newInstance();
