@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,6 +54,9 @@ public class GrammarPool implements XMLGrammarPool {
     public static final String PROPERTY_EXPIRE_AFTER_ACCESS = "validation.grammar-cache.expire";
 
     private final Cache<GrammarKey, Grammar> grammarCache;
+
+    /** Schemas registered on purpose, to be found by namespace alone (see {@link #preloadGrammars}). */
+    private final Set<GrammarKey> preloaded = ConcurrentHashMap.newKeySet();
     private boolean isLocked = false;
 
     /**
@@ -85,14 +90,24 @@ public class GrammarPool implements XMLGrammarPool {
         final  Level level = seconds > 0L && maxSize > 0 ? Level.INFO : Level.WARN;
         LOGGER.log(level, "Grammar cache: size={}, lifetime={}", sizeTxt, expireTxt);
 
+        // forget a registration together with the grammar it belongs to, when the cache drops it by itself
+        cafeineBuilder = cafeineBuilder.evictionListener((key, value, cause) -> preloaded.remove(key));
+
         grammarCache = cafeineBuilder.build();
     }
 
     @Override
     public Grammar[] retrieveInitialGrammarSet(final String grammarType) {
+        // Xerces preloads this set into a bucket keyed by target namespace alone and consults it before the
+        // schema location of the document. Handing out every cached schema would make the first one cached
+        // for a namespace win over a different schema that a document names for the same namespace, so
+        // schemas are only handed out here when they were registered on purpose. All others are found
+        // through retrieveGrammar(), which sees the location.
+        final boolean onlyRegistered = XMLGrammarDescription.XML_SCHEMA.equals(grammarType);
+
         final List<Grammar> grammars = new ArrayList<>();
         grammarCache.asMap().forEach((key, value) -> {
-            if (key.grammarType.equals(grammarType)) {
+            if (key.grammarType.equals(grammarType) && (!onlyRegistered || preloaded.contains(key))) {
                 grammars.add(value);
             }
         });
@@ -114,6 +129,26 @@ public class GrammarPool implements XMLGrammarPool {
         return grammarCache.getIfPresent(new GrammarKey(desc));
     }
 
+    /**
+     * Caches XML Schema grammars and registers them to be found by their target namespace alone, as
+     * {@code validation:pre-parse-grammar} promises, even for a document that names no schema location.
+     *
+     * @param grammars the XML Schema grammars to cache and register.
+     */
+    public void preloadGrammars(final Grammar[] grammars) {
+        if (isLocked || grammars == null) return;
+
+        cacheGrammars(XMLGrammarDescription.XML_SCHEMA, grammars);
+        Arrays.stream(grammars).forEach(grammar -> preloaded.add(new GrammarKey(grammar.getGrammarDescription())));
+    }
+
+    /**
+     * @return the number of grammars currently cached, of any type.
+     */
+    int cachedGrammarCount() {
+        return grammarCache.asMap().size();
+    }
+
     @Override
     public void lockPool() {
         isLocked = true;
@@ -129,6 +164,7 @@ public class GrammarPool implements XMLGrammarPool {
         if (isLocked) return;
 
         grammarCache.invalidateAll();
+        preloaded.clear();
     }
 
     @Override
@@ -140,15 +176,18 @@ public class GrammarPool implements XMLGrammarPool {
     private static class GrammarKey {
         private final String grammarType;
         private final String targetNamespace;
+        private final String expandedSystemId;
 
         public GrammarKey(final XMLGrammarDescription desc) {
             this.grammarType = desc.getGrammarType();
             this.targetNamespace = desc.getNamespace();
+            // Different schemas can share a target namespace, so the namespace alone does not identify one.
+            this.expandedSystemId = desc.getExpandedSystemId() != null ? desc.getExpandedSystemId() : desc.getLiteralSystemId();
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(grammarType, targetNamespace);
+            return Objects.hash(grammarType, targetNamespace, expandedSystemId);
         }
 
         @Override
@@ -156,12 +195,13 @@ public class GrammarPool implements XMLGrammarPool {
             if (this == obj) return true;
             if (!(obj instanceof final GrammarKey other)) return false;
             return Objects.equals(grammarType, other.grammarType) &&
-                    Objects.equals(targetNamespace, other.targetNamespace);
+                    Objects.equals(targetNamespace, other.targetNamespace) &&
+                    Objects.equals(expandedSystemId, other.expandedSystemId);
         }
 
         @Override
         public String toString() {
-            return "grammarType='%s', targetNamespace='%s'".formatted(grammarType, targetNamespace);
+            return "grammarType='%s', targetNamespace='%s', expandedSystemId='%s'".formatted(grammarType, targetNamespace, expandedSystemId);
         }
     }
 }

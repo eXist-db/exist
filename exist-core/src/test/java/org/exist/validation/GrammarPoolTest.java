@@ -87,24 +87,56 @@ class GrammarPoolTest {
         final Grammar xsd = constructFromText("systemid", TEMPLATE);
 
         // check empty
-        assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertEquals(0, grammarPool.cachedGrammarCount());
 
         // add one
         grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{xsd});
 
         // check one
-        assertEquals(1, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertEquals(1, grammarPool.cachedGrammarCount());
 
         // add same one again
         grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{xsd});
 
         // still one
-        assertEquals(1, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertEquals(1, grammarPool.cachedGrammarCount());
 
         // make cache empty
         grammarPool.clear();
 
         // check empty
+        assertEquals(0, grammarPool.cachedGrammarCount());
+    }
+
+    @Test
+    void sameNamespaceDifferentLocationsAreKeptApart() {
+        final Grammar first = constructFromText("file:///first.xsd", TEMPLATE);
+        final Grammar second = constructFromText("file:///second.xsd", TEMPLATE);
+
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{first});
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{second});
+
+        assertEquals(2, grammarPool.cachedGrammarCount());
+        assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertSame(first, grammarPool.retrieveGrammar(first.getGrammarDescription()));
+        assertSame(second, grammarPool.retrieveGrammar(second.getGrammarDescription()));
+    }
+
+    @Test
+    void onlyRegisteredSchemasAreOfferedForPreloading() {
+        final Grammar discovered = constructFromText("file:///discovered.xsd", TEMPLATE);
+        final Grammar registered = constructFromText("file:///registered.xsd", TEMPLATE);
+
+        grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{discovered});
+        grammarPool.preloadGrammars(new Grammar[]{registered});
+
+        final Grammar[] initial = grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+        assertEquals(1, initial.length);
+        assertSame(registered, initial[0]);
+        // both can still be looked up individually
+        assertSame(discovered, grammarPool.retrieveGrammar(discovered.getGrammarDescription()));
+
+        grammarPool.clear();
         assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
     }
 
@@ -122,13 +154,13 @@ class GrammarPoolTest {
         Thread.sleep(250);
 
         // only 5 should be cached
-        assertEquals(10, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertEquals(10, grammarPool.cachedGrammarCount());
 
         // make cache empty
         grammarPool.clear();
 
         // check empty
-        assertEquals(0, grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA).length);
+        assertEquals(0, grammarPool.cachedGrammarCount());
     }
 
 }
