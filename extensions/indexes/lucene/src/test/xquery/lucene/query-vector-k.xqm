@@ -275,6 +275,65 @@ function t:for-bound-vector-searches-per-iteration() {
     return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
 };
 
+(: More shapes in which a vector, or k, is the same for every candidate but differs between
+   iterations or calls: each search must use its own value. :)
+declare variable $t:ABC := ([1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]);
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:field-vector-for-bound() {
+    for $vector in $t:ABC
+    return collection($t:NONSELF_COLL)//article[ft:query-field-vector("embedding", $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals(1)
+function t:field-vector-let-bound-honors-k() {
+    let $vector := $t:ABC[1]
+    return count(collection($t:NONSELF_COLL)//article[ft:query-field-vector("embedding", $vector, 1)])
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:closure-parameter-vector() {
+    for-each($t:ABC, function($vector) {
+        collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+    })
+};
+
+declare
+    %test:assertEquals(1, 2, 3)
+function t:k-from-for-variable() {
+    for $k in 1 to 3
+    return count(collection($t:NONSELF_COLL)//article[ft:query-vector(., $t:ABC[1], $k)])
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:path-in-where-clause() {
+    for $vector in $t:ABC
+    where exists(collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)])
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals("A", "B", "C", "A", "B", "C")
+function t:nested-for() {
+    for $round in 1 to 2
+    for $vector in $t:ABC
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare function t:titles-nearest($vector as array(*)) as xs:string* {
+    collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:function-called-with-different-vectors() {
+    t:titles-nearest($t:ABC[1]), t:titles-nearest($t:ABC[2]), t:titles-nearest($t:ABC[3])
+};
+
 (: ================================================================
    Regression: a "vector" argument that varies per candidate node (via a
    dependency on `.`, not a for/let-bound local variable) must not be

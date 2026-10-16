@@ -170,9 +170,11 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
      * True if any argument from {@code fromIndex} onward varies per candidate node because it
      * depends on the context item (e.g. {@code .}, or anything derived from it, such as
      * {@code ft:embed(.)} as a per-candidate "vector" argument). A reference to a variable does
-     * not count: a vector bound outside the predicate is the same for every candidate, and the
-     * case of GH-2204 is handled by the where clause itself (as for ft:query, ft:query-field and
-     * ngram:contains). If an argument does vary, the expression cannot be bulk-evaluated via
+     * not count: a vector bound outside the predicate is the same for every candidate. Where its
+     * value changes, as with a {@code for} variable, in a {@code where} clause or between calls of
+     * a function, the path is evaluated again, and each evaluation re-runs
+     * {@link #preSelect(Sequence, boolean)}, which resets the previous result (GH-2204). The same
+     * holds for ft:query, ft:query-field and ngram:contains. If an argument does vary, the expression cannot be bulk-evaluated via
      * {@link #preSelect(Sequence, boolean)}: its
      * value would then vary per candidate, but {@link #evalArgs} evaluates every tail argument
      * exactly once, with {@code contextItem=null} — the same class of bug fixed for arg0 in
