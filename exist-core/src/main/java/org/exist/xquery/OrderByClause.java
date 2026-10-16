@@ -498,4 +498,16 @@ public class OrderByClause extends AbstractFLWORClause {
             this.originalPos = originalPos;
         }
     }
+
+    /**
+     * Also what the order specs depend on, e.g. {@code order by $x = .}.
+     */
+    @Override
+    public int getDependencies() {
+        int dependencies = super.getDependencies();
+        for (final OrderSpec orderSpec : orderSpecs) {
+            dependencies |= orderSpec.getSortExpression().getDependencies();
+        }
+        return dependencies;
+    }
 }
