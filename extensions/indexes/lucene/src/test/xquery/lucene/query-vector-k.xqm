@@ -152,6 +152,26 @@ function t:path-form-honors-k-large() {
     count(collection(t:collection-path($t:N_LARGE))//article[ft:query-vector(., $t:VEC, $t:K)])
 };
 
+(: The query vector bound to a variable, with the path in a return clause: the
+   variable used to make ft:query-vector look as if it varied per candidate, so
+   it ran once per article and returned every article instead of the top k. :)
+declare
+    %test:assertEquals(5)
+function t:path-form-with-let-bound-vector-honors-k() {
+    let $vector := $t:VEC
+    return count(collection(t:collection-path($t:N_SMALL))//article[ft:query-vector(., $vector, $t:K)])
+};
+
+declare function t:search-with-vector-parameter($vector as array(*)) as xs:integer {
+    count(collection(t:collection-path($t:N_SMALL))//article[ft:query-vector(., $vector, $t:K)])
+};
+
+declare
+    %test:assertEquals(5)
+function t:path-form-with-vector-parameter-honors-k() {
+    t:search-with-vector-parameter($t:VEC)
+};
+
 declare
     %test:assertEquals(5)
 function t:direct-call-honors-k-large() {
@@ -244,6 +264,74 @@ declare
 function t:bare-variable-predicate-needs-boolean-wrapping() {
     let $probe := collection($t:NONSELF_COLL)//article[title = "A"]
     return count(collection($t:NONSELF_COLL)//article[boolean($probe)])
+};
+
+(: A vector bound by a for clause differs per iteration, not per candidate:
+   each iteration must search with its own vector (GH-2204). :)
+declare
+    %test:assertEquals("A", "B", "C")
+function t:for-bound-vector-searches-per-iteration() {
+    for $vector in ([1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0])
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+(: More shapes in which a vector, or k, is the same for every candidate but differs between
+   iterations or calls: each search must use its own value. :)
+declare variable $t:ABC := ([1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]);
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:field-vector-for-bound() {
+    for $vector in $t:ABC
+    return collection($t:NONSELF_COLL)//article[ft:query-field-vector("embedding", $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals(1)
+function t:field-vector-let-bound-honors-k() {
+    let $vector := $t:ABC[1]
+    return count(collection($t:NONSELF_COLL)//article[ft:query-field-vector("embedding", $vector, 1)])
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:closure-parameter-vector() {
+    for-each($t:ABC, function($vector) {
+        collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+    })
+};
+
+declare
+    %test:assertEquals(1, 2, 3)
+function t:k-from-for-variable() {
+    for $k in 1 to 3
+    return count(collection($t:NONSELF_COLL)//article[ft:query-vector(., $t:ABC[1], $k)])
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:path-in-where-clause() {
+    for $vector in $t:ABC
+    where exists(collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)])
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals("A", "B", "C", "A", "B", "C")
+function t:nested-for() {
+    for $round in 1 to 2
+    for $vector in $t:ABC
+    return collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare function t:titles-nearest($vector as array(*)) as xs:string* {
+    collection($t:NONSELF_COLL)//article[ft:query-vector(., $vector, 1)]/title/string()
+};
+
+declare
+    %test:assertEquals("A", "B", "C")
+function t:function-called-with-different-vectors() {
+    t:titles-nearest($t:ABC[1]), t:titles-nearest($t:ABC[2]), t:titles-nearest($t:ABC[3])
 };
 
 (: ================================================================

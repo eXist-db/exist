@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.vector;
 
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -82,6 +83,20 @@ public class Embed extends BasicFunction {
 
   public Embed(final XQueryContext context, final FunctionSignature signature) {
     super(context, signature);
+  }
+
+  /**
+   * Only what the arguments depend on. The default for a function is to depend on the context item, which
+   * made {@code ft:query-vector(., vector:embed("…", "…"), $k)} look as if its query vector differed per
+   * candidate: the search then ran, and the text was embedded again, once per candidate node.
+   */
+  @Override
+  public int getDependencies() {
+    int dependencies = Dependency.NO_DEPENDENCY;
+    for (int i = 0; i < getArgumentCount(); i++) {
+      dependencies |= getArgument(i).getDependencies();
+    }
+    return dependencies;
   }
 
   @Override
