@@ -222,13 +222,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
         //WARNING : get() realizes virtual node sets
         //TODO : investigate more efficient solutions
         NodeProxy parentOfSelf = context.get(self.getOwnerDocument(), parentOfSelfId);
-        if(parentOfSelf != null && test.matches(self)) {
-            if(axis != Constants.CHILD_AXIS) {
-                // if we are on the descendant axis, we return the first node 
-                // we found while walking bottom-up.
-                // Otherwise, we return the last one (which is the node itself)
-                self = candidateFirstParent;
-            }
+        // on the descendant axis, the node returned is the first one found while walking bottom-up, so that is
+        // the one the test must match, not the ancestor just below the context node; on the child axis, both are the same
+        final NodeProxy selected = axis != Constants.CHILD_AXIS ? candidateFirstParent : self;
+        if(parentOfSelf != null && test.matches(selected)) {
+            self = selected;
             self.copyContext(parentOfSelf);
             if(useSelfAsContext && inPredicate) {
                 self.addContextNode(contextId, self);
