@@ -527,8 +527,9 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         final int fix = ("".equals(split[0])) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
+        // the path has already been parsed and normalized, and each segment is encoded, so needn't be parsed again
         for (int i = fix; i < split.length; i++) {
-            segments[i - fix] = XmldbURI.create(split[i]);
+            segments[i - fix] = createInternal(split[i]);
         }
         return segments;
     }
