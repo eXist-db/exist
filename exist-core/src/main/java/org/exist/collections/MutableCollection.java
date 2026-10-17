@@ -244,7 +244,11 @@ public class MutableCollection implements Collection {
     }
 
     private static Iterator<DocumentImpl> stableDocumentIterator(final LinkedHashMap<String, DocumentImpl> documents) {
-        return new ArrayList<>(documents.values()).iterator();
+        return stableDocuments(documents).iterator();
+    }
+
+    private static List<DocumentImpl> stableDocuments(final LinkedHashMap<String, DocumentImpl> documents) {
+        return new ArrayList<>(documents.values());
     }
 
     private static Iterator<String> stableDocumentNameIterator(final LinkedHashMap<String, DocumentImpl> documents) {
@@ -452,8 +456,9 @@ public class MutableCollection implements Collection {
         XmldbURI[] subColls = null;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             if (getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
-                //Add all docs in this collection to the returned set
-                getDocuments(broker, docs);
+                //Add all docs in this collection to the returned set; we already hold the lock and have checked the permission that getDocuments would
+                docs.addCollection(this);
+                addDocumentsToSet(broker, stableDocuments(documents), docs);
                 //Get a list of sub-collection URIs. We will process them
                 //after unlocking this collection. otherwise we may deadlock ourselves
                 subColls = subCollections.stream()
@@ -528,24 +533,24 @@ public class MutableCollection implements Collection {
     public DocumentSet
     getDocuments(final DBBroker broker, final MutableDocumentSet docs)
             throws PermissionDeniedException, LockException {
-        final Iterator<DocumentImpl> documentIterator;
+        final List<DocumentImpl> stableDocuments;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                 throw new PermissionDeniedException("Permission denied to read collection: " + path);
             }
-            documentIterator = stableDocumentIterator(documents);
+            stableDocuments = stableDocuments(documents);
             docs.addCollection(this);
         }
-        addDocumentsToSet(broker, documentIterator, docs);
-        
+        addDocumentsToSet(broker, stableDocuments, docs);
+
         return docs;
     }
 
     @Override
     public DocumentSet getDocumentsNoLock(final DBBroker broker, final MutableDocumentSet docs) {
-        final Iterator<DocumentImpl> documentIterator = stableDocumentIterator(documents);
+        final List<DocumentImpl> stableDocuments = stableDocuments(documents);
         docs.addCollection(this);
-        addDocumentsToSet(broker, documentIterator, docs);
+        addDocumentsToSet(broker, stableDocuments, docs);
         return docs;
     }
 
@@ -588,17 +593,58 @@ public class MutableCollection implements Collection {
     	}
     }
     
-    private void addDocumentsToSet(final DBBroker broker, final Iterator<DocumentImpl> documentIterator, final MutableDocumentSet docs) {
-        while (documentIterator.hasNext()) {
-            final DocumentImpl doc = documentIterator.next();
+    /**
+     * Adds each of the documents that the current user may read to the set.
+     *
+     * A document's permissions are checked under its READ_LOCK. When no document is being written,
+     * they are first checked optimistically without the locks, which is much faster for a large
+     * number of documents, and then only if that read is invalidated by a concurrent write are
+     * they checked again with the locks; see {@link LockManager#tryOptimisticDocumentRead()}.
+     */
+    private void addDocumentsToSet(final DBBroker broker, final List<DocumentImpl> documents, final MutableDocumentSet docs) {
+        final Subject subject = broker.getCurrentSubject();
+
+        final long stamp = lockManager.tryOptimisticDocumentRead();
+        if (stamp != LockManager.NO_OPTIMISTIC_DOCUMENT_READ) {
+            final List<DocumentImpl> readable = readableDocumentsOptimistically(subject, documents);
+            if (readable != null && lockManager.validateOptimisticDocumentRead(stamp)) {
+                for (final DocumentImpl doc : readable) {
+                    docs.add(doc);
+                }
+                return;
+            }
+        }
+
+        for (final DocumentImpl doc : documents) {
             try(final ManagedDocumentLock lockedDoc = lockManager.acquireDocumentReadLock(doc.getURI())) {
-                if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                if(doc.getPermissions().validate(subject, Permission.READ)) {
                     docs.add(doc);
                 }
             } catch (final LockException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * Checks the documents' permissions without their locks, for an optimistic read.
+     *
+     * @return the documents that the subject may read, or null if a permission could not be checked
+     *     because it was being changed; the result is only valid if the optimistic read is.
+     */
+    private static @Nullable List<DocumentImpl> readableDocumentsOptimistically(final Subject subject, final List<DocumentImpl> documents) {
+        final List<DocumentImpl> readable = new ArrayList<>(documents.size());
+        try {
+            for (final DocumentImpl doc : documents) {
+                if (doc.getPermissions().validate(subject, Permission.READ)) {
+                    readable.add(doc);
+                }
+            }
+        } catch (final RuntimeException e) {
+            // an inconsistent read of permissions that were being changed, which validation would reject anyway
+            return null;
+        }
+        return readable;
     }
 
     @Override
@@ -816,8 +862,9 @@ public class MutableCollection implements Collection {
         if(path.equals(XmldbURI.ROOT_COLLECTION_URI)) {
             return null;
         }
-        //TODO : resolve URI against ".." !
-         return path.removeLastSegment();
+        // a Collection's path is absolute and normalized, so its parent is everything before the last '/'
+        final String collectionPath = path.getRawCollectionPath();
+        return XmldbURI.createInternal(collectionPath.substring(0, collectionPath.lastIndexOf('/')));
     }
 
     @Override
