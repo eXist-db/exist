@@ -54,7 +54,10 @@ public class ExtCollection extends BasicFunction {
             new QName(FS_COLLECTION_NAME, Function.BUILTIN_FUNCTION_NS),
             "Returns the documents contained in the Collection specified in the input sequence. "
                     + XMLDBModule.COLLECTION_URI + " Documents contained in sub-collections are also included. "
-                    + "If no value is supplied, the statically know documents are used; for the REST Server this could be the collection in the URI path.",
+                    + "If no value is supplied, the statically know documents are used; for the REST Server this could be the collection in the URI path. "
+                    + "Raises err:FODC0002 if the collection cannot be retrieved, unless raise-error-on-failed-retrieval is disabled in conf.xml, "
+                    + "in which case the empty sequence is returned for a missing collection. "
+                    + "The result is not stable: the collection may be modified by other transactions while the query runs.",
             returnsOptMany(Type.ITEM, "The items indicated by the Collection URI"),
             arities(
                     arity(),
@@ -159,7 +162,7 @@ public class ExtCollection extends BasicFunction {
                     }
                     uri = baseUri.resolve(uri);
                 } else if (!XmldbURI.create(uri).isAbsolute()) {
-                    throw new XPathException(this, ErrorCodes.FODC0003, "$uri is a relative URI but there is no base-URI set");
+                    throw new XPathException(this, ErrorCodes.FODC0002, "$uri is a relative URI but there is no base-URI set");
                 }
             }
             return uri;

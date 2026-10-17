@@ -1333,14 +1333,17 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no" default="no">
+                        <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no" default="yes">
                             <xs:annotation>
                                 <xs:documentation>
-                                    Set to "yes" if a call to doc(), xmldb:document(), collection() or
+                                    Set to "yes" (default) if a call to doc(), collection() or
                                     xmldb:xcollection() should raise an error (FODC0002) when an
-                                    XML resource cannot be retrieved.
-                                    Set to "no" (default) if such a call should return an empty sequence
-                                    when the resource cannot be retrieved.
+                                    XML resource or collection cannot be retrieved, as required by
+                                    the XQuery and XPath Functions specification.
+                                    Set to "no" if such a call should return an empty sequence
+                                    instead. This is a legacy option for applications that test for
+                                    the existence of a resource with doc() or collection(); use
+                                    doc-available() or xmldb:collection-available() instead.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>

@@ -72,7 +72,7 @@ public class GetData2Test {
             expect(mockRequestWrapper.getContentType()).andReturn("application/xml");
 
             expect(mockConfiguration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY)).andReturn("org.exist.util.io.FileFilterInputStreamCache");
-            expect(mockConfiguration.getProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE)).andReturn(Boolean.FALSE);
+            expect(mockConfiguration.getProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT)).andReturn(XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
 
             expect(mockBrokerPool.getConfiguration()).andReturn(mockConfiguration);
             expect(mockBrokerPool.getActiveBroker()).andReturn(mockBroker).anyTimes();
@@ -118,7 +118,7 @@ public class GetData2Test {
             expect(mockRequestWrapper.getContentType()).andReturn("application/xml");
 
             expect(mockConfiguration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY)).andReturn("org.exist.util.io.FileFilterInputStreamCache");
-            expect(mockConfiguration.getProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE)).andReturn(Boolean.FALSE);
+            expect(mockConfiguration.getProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT)).andReturn(XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
 
             expect(mockBrokerPool.getConfiguration()).andReturn(mockConfiguration);
             expect(mockBrokerPool.getActiveBroker()).andReturn(mockBroker).anyTimes();

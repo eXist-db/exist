@@ -50,9 +50,12 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the serializing of constructed in-memory fragments.
@@ -98,8 +101,8 @@ public class DOMIndexerTest {
         "return" +
         "   <result>{$a/title, $a/f:name, $a}</result>";
 
-    @Test
-    public void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
+    @BeforeAll
+    public static void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
@@ -133,7 +136,7 @@ public class DOMIndexerTest {
                 next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
-            out.toString();
+            assertTrue(out.toString().contains("Racing bike"), out.toString());
         }
     }
 }
