@@ -222,21 +222,18 @@ public class VirtualNodeSet extends AbstractNodeSet {
         //WARNING : get() realizes virtual node sets
         //TODO : investigate more efficient solutions
         NodeProxy parentOfSelf = context.get(self.getOwnerDocument(), parentOfSelfId);
-        if(parentOfSelf != null && test.matches(self)) {
-            if(axis != Constants.CHILD_AXIS) {
-                // if we are on the descendant axis, we return the first node 
-                // we found while walking bottom-up.
-                // Otherwise, we return the last one (which is the node itself)
-                self = candidateFirstParent;
-            }
-            self.copyContext(parentOfSelf);
+        // on the descendant axis, the node returned is the first one found while walking bottom-up, so that is
+        // the one the test must match, not the ancestor just below the context node; on the child axis, both are the same
+        final NodeProxy selected = axis != Constants.CHILD_AXIS ? candidateFirstParent : self;
+        if(parentOfSelf != null && test.matches(selected)) {
+            selected.copyContext(parentOfSelf);
             if(useSelfAsContext && inPredicate) {
-                self.addContextNode(contextId, self);
+                selected.addContextNode(contextId, selected);
             } else if(inPredicate) {
-                self.addContextNode(contextId, parentOfSelf);
+                selected.addContextNode(contextId, parentOfSelf);
             }
             // Timo Boehme: we return the ancestor which is child of context
-            return self;
+            return selected;
         } else if(parentOfSelfId == NodeId.DOCUMENT_NODE) {
             // no matching node has been found in the context
             return null;
@@ -246,7 +243,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
         } else {
             // continue for expressions like //*/n or /*//n
             parentOfSelf = new NodeProxy(parentOfSelf != null ? parentOfSelf.getExpression() : null, self.getOwnerDocument(), parentOfSelfId, Node.ELEMENT_NODE);
-            return getFirstParent(parentOfSelf, candidateFirstParent, false, false, recursions + 1);
+            // on the descendant axis, an ancestor of the node may be selected where its first parent is not:
+            // unless only the direct parent may be, the candidate moves up to the next ancestor
+            final NodeProxy nextCandidate = !restrictToDirectParent && axis != Constants.CHILD_AXIS
+                    && !test.matches(candidateFirstParent) ? parentOfSelf : candidateFirstParent;
+            // the caller's restriction is passed on (it only ends the walk at recursions == 1, on the child axis)
+            return getFirstParent(parentOfSelf, nextCandidate, false, restrictToDirectParent, recursions + 1);
         }
     }
 
