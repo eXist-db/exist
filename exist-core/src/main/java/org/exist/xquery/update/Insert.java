@@ -41,6 +41,7 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.*;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -163,7 +164,7 @@ public class Insert extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 transaction.commit();
-            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException e) {
+            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException | DOMException e) {
                 throw new XPathException(this, e.getMessage(), e);
             } finally {
                 unlockDocuments();

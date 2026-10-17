@@ -305,7 +305,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         } else {
             result = read((document, broker, transaction) -> {
                 if (proxy != null) {
-                    return document.getNode(proxy);
+                    final Node node = document.getNode(proxy);
+                    if (node == null) {
+                        throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Node " + proxy.getNodeId() + " not found in document " + document.getURI());
+                    }
+                    return node;
                 } else {
                     // <frederic.glorieux@ajlsm.com> return a full to get root PI and comments
                     return document;
