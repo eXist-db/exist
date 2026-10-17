@@ -55,6 +55,7 @@ import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.dom.RawNodeIterator;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
+import org.exist.storage.vector.VectorStoreImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.*;
@@ -562,6 +563,8 @@ public class NativeBroker implements DBBroker {
             case DOM_DBX_ID -> domDb;
             case COLLECTIONS_DBX_ID -> collectionsDb;
             case VALUES_DBX_ID -> valueIndex.dbValues;
+            // vector.dbx is recoverable too, so recovery must be able to find it by its id
+            case VectorStoreImpl.VECTOR_DBX_ID -> pool.getVectorStore() instanceof final VectorStoreImpl vectorStore ? vectorStore.getFile() : null;
             default -> null;
         };
     }

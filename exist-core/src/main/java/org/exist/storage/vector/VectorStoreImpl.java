@@ -63,6 +63,15 @@ public class VectorStoreImpl implements VectorStore {
     }
 
     /**
+     * The file that holds the vectors. Its changes are journaled, so recovery needs it to redo and undo them.
+     *
+     * @return the file of {@code vector.dbx}
+     */
+    public BFile getFile() {
+        return bfile;
+    }
+
+    /**
      * Returns the number of entries in the store, maintaining an incremental counter when possible.
      * The first call may scan the BTree ({@code O(n)}).
      */
