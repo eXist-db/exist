@@ -42,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -94,8 +93,8 @@ public class BrokerPoolServiceTest {
             try {
                 final List<BackgroundJobsBrokerPoolService.TimestampAndId> backgroundJobResult = future.get();
 
-                // should contain at least 1 result
-                assertFalse(backgroundJobResult.isEmpty());
+                // may be empty: a job queued behind the busy threads only starts once the service is
+                // stopping, and its single iteration is refused when the pool is already shutting down
 
                 totalBackgroundJobResults += backgroundJobResult.size();
 
@@ -211,6 +210,14 @@ public class BrokerPoolServiceTest {
                         final String id = "job_" + jobId + "_" + broker.getId();
 
                         list.add(new TimestampAndId(timestamp, id));
+                    } catch (final EXistException e) {
+                        // BrokerPool leaves the operational state before it asks its services to stop,
+                        // so a job that wakes in between sees a pool that refuses brokers but a
+                        // stop flag that is not yet set; that is a stop request, not a failure
+                        if (brokerPool.isShuttingDown()) {
+                            return list;
+                        }
+                        throw e;
                     }
 
                     // just to slow things down a little
