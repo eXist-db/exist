@@ -55,7 +55,7 @@ public class BTreeRecoverTest {
     private int count = 0;
 
     @Test
-    public void addAndRead() throws EXistException, IOException, BTreeException, TerminatedException, DatabaseConfigurationException {
+    void addAndRead() throws EXistException, IOException, BTreeException, TerminatedException, DatabaseConfigurationException {
         BrokerPool pool = existEmbeddedServer.getBrokerPool();
         BrokerPool.FORCE_CORRUPTION = true;
 

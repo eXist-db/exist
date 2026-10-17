@@ -44,12 +44,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * unregister once per principal, so an equals-driven scan turns startup
  * into O(N^2) and produces 12-minute startup with 50k users.
  */
-public class ConfiguratorUnregisterPerfTest {
+class ConfiguratorUnregisterPerfTest {
 
     private final List<FullXmldbURI> registeredKeys = new ArrayList<>();
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         for (final FullXmldbURI key : registeredKeys) {
             Configurator.hotConfigs.remove(key);
         }
@@ -58,7 +58,7 @@ public class ConfiguratorUnregisterPerfTest {
     }
 
     @Test
-    public void unregisterDoesNotCallEqualsOnOtherEntries() {
+    void unregisterDoesNotCallEqualsOnOtherEntries() {
         final int n = 200;
         final List<Configuration> configs = new ArrayList<>(n);
 

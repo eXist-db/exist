@@ -37,9 +37,9 @@ public class ConversionsTest {
 	@RegisterExtension
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	/** test conversion from QName to string */
-	@Test
-	public void qname2string() throws XMLDBException {
+    /** test conversion from QName to string */
+    @Test
+    void qname2string() throws XMLDBException {
         final String query = """
                 declare namespace foo = 'http://foo';\s
                 let $a := ( xs:QName('foo:bar'), xs:QName('foo:john'), xs:QName('foo:doe') )

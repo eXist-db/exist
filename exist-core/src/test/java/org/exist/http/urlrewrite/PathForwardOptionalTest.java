@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * A forward whose servlet is not registered is a configuration error, unless the forward is
  * marked optional, in which case its route answers 404.
  */
-public class PathForwardOptionalTest {
+class PathForwardOptionalTest {
 
     private static Element forward(final boolean optional) throws Exception {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -72,7 +72,7 @@ public class PathForwardOptionalTest {
     }
 
     @Test
-    public void aMissingServletIsAnErrorByDefault() throws Exception {
+    void aMissingServletIsAnErrorByDefault() throws Exception {
         final PathForward forward = new PathForward(configWithoutTheServlet(), forward(false), "/missing");
         final HttpServletRequest request = createMock(HttpServletRequest.class);
         final HttpServletResponse response = createMock(HttpServletResponse.class);
@@ -82,7 +82,7 @@ public class PathForwardOptionalTest {
     }
 
     @Test
-    public void aMissingOptionalServletAnswers404() throws Exception {
+    void aMissingOptionalServletAnswers404() throws Exception {
         final PathForward forward = new PathForward(configWithoutTheServlet(), forward(true), "/missing");
         final HttpServletRequest request = createMock(HttpServletRequest.class);
         final HttpServletResponse response = createMock(HttpServletResponse.class);

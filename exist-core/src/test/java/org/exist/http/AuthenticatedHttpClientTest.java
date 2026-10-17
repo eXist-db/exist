@@ -48,7 +48,7 @@ public class AuthenticatedHttpClientTest extends AbstractHttpTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
-    public void authenticatedRestRequestSucceeds() throws IOException {
+    void authenticatedRestRequestSucceeds() throws IOException {
         final String url = getRestUri(existWebServer) + "/db/";
         final HttpClient client = newHttpClient();
         final HttpRequest request = authenticatedRequest(URI.create(url), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)

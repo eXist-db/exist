@@ -139,7 +139,7 @@ public class Xsd11StoreTimeValidationTest {
             """;
 
     @BeforeAll
-    public static void createTestCollection() throws Exception {
+    static void createTestCollection() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
@@ -165,7 +165,7 @@ public class Xsd11StoreTimeValidationTest {
     }
 
     @AfterAll
-    public static void removeTestCollection() throws Exception {
+    static void removeTestCollection() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
@@ -177,7 +177,7 @@ public class Xsd11StoreTimeValidationTest {
     }
 
     @Test
-    public void xsd11SchemaDocumentItselfStoresUnderValidation() {
+    void xsd11SchemaDocumentItselfStoresUnderValidation() {
         // Storing the schema document itself validates it against the W3C meta-schema, purely by
         // namespace (no schemaLocation hint at all) -- exercises resolveXsd11SchemaForNamespace().
         try {
@@ -190,7 +190,7 @@ public class Xsd11StoreTimeValidationTest {
     }
 
     @Test
-    public void conformingInstanceAgainstXsd11SchemaViaLocationHintStores() throws Exception {
+    void conformingInstanceAgainstXsd11SchemaViaLocationHintStores() throws Exception {
         final Path schema = writeTempSchema("xsd11store-conform-test");
         try {
             // The instance's own xsi:noNamespaceSchemaLocation hint resolves to an XSD 1.1-only
@@ -209,7 +209,7 @@ public class Xsd11StoreTimeValidationTest {
     }
 
     @Test
-    public void commentAndCdataSurviveXsd11StoreTimeValidation() throws Exception {
+    void commentAndCdataSurviveXsd11StoreTimeValidation() throws Exception {
         // The XSD 1.1 store-time path drives a ValidatorHandler via xmlReader1.parse(source)
         // rather than Schema.newValidator()'s validate(Source, SAXResult) precisely so that
         // comments/CDATA are not silently dropped -- a SAXResult has no lexical-handler hook.
@@ -249,7 +249,7 @@ public class Xsd11StoreTimeValidationTest {
     }
 
     @Test
-    public void violatingInstanceAgainstXsd11SchemaViaLocationHintFails() throws Exception {
+    void violatingInstanceAgainstXsd11SchemaViaLocationHintFails() throws Exception {
         final Path schema = writeTempSchema("xsd11store-violate-test");
         try {
             final String instance = INSTANCE_TEMPLATE.formatted(schema.toUri(), 2, 1);

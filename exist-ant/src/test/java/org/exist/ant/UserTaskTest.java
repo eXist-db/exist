@@ -33,7 +33,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UserTaskTest extends AbstractTaskTest {
+class UserTaskTest extends AbstractTaskTest {
 
     private static final String PROP_ANT_TEST_DATA_USER =  "test.data.user";
     private static final String PROP_ANT_TEST_DATA_PASSWORD = "test.data.password";
@@ -46,7 +46,7 @@ public class UserTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void addUser() {
+    void addUser() {
         final String testUsername = "test-user-1";
         final String testPassword = "test-user-1-password";
 
@@ -61,7 +61,7 @@ public class UserTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void listUser() {
+    void listUser() {
         final Project project = buildFileRule.getProject();
 
         buildFileRule.executeTarget("listUser");
@@ -72,7 +72,7 @@ public class UserTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void changePassword() {
+    void changePassword() {
         final String testUsername = "test-user-1";
         final String testPassword = "test-user-1-password";
         final String testPasswordChanged = "test-user-1-password-changed";
@@ -89,7 +89,7 @@ public class UserTaskTest extends AbstractTaskTest {
     }
 
     @Test
-    public void removeUser() {
+    void removeUser() {
         final String testUsername = "test-user-1";
         final String testPassword = "test-user-1-password";
 

@@ -59,7 +59,7 @@ import java.util.Optional;
  */
 public class RemoveCollectionIT {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String generateXQ =
@@ -89,7 +89,7 @@ public class RemoveCollectionIT {
     private final static int COUNT = 300;
 
     @Test
-    public void removeCollectionTests() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, DatabaseConfigurationException {
+    void removeCollectionTests() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, DatabaseConfigurationException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         removeCollection(pool);
@@ -221,12 +221,12 @@ public class RemoveCollectionIT {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         existEmbeddedServer.stopDb();
     }
 
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 }

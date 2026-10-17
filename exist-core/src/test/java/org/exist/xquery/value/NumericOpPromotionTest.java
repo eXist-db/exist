@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.value;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.util.Arrays;
 
 import org.exist.xquery.XPathException;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,12 +39,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Execution(ExecutionMode.CONCURRENT)
 public class NumericOpPromotionTest {
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"decimal", new DecimalValue(VALUE)},
-                {"double", new DoubleValue(VALUE)},
-                {"float", new FloatValue((float) VALUE)}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("decimal", new DecimalValue(VALUE)),
+            Arguments.of("double", new DoubleValue(VALUE)),
+            Arguments.of("float", new FloatValue((float) VALUE))
+        );
     }
     public String typeName;
     public ComputableValue operand;
@@ -52,25 +53,25 @@ public class NumericOpPromotionTest {
 	private static final IntegerValue ZERO = new IntegerValue(0), ONE = new IntegerValue(1);
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerDiv(String typeName, ComputableValue operand) throws XPathException {
+    void integerDiv(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.div(ONE));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerMult(String typeName, ComputableValue operand) throws XPathException {
+    void integerMult(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.mult(ONE));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerPlus(String typeName, ComputableValue operand) throws XPathException {
+    void integerPlus(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.plus(ZERO));
 	}
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void integerMinus(String typeName, ComputableValue operand) throws XPathException {
+    void integerMinus(String typeName, ComputableValue operand) throws XPathException {
         initNumericOpPromotionTest(typeName, operand);
 		assertDoubleValue(VALUE, operand.minus(ZERO));
 	}

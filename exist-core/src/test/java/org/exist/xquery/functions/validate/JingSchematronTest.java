@@ -21,16 +21,17 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class JingSchematronTest {
             "</collection>";
 
     @BeforeAll
-    public static void prepareResources() throws Exception {
+    static void prepareResources() throws Exception {
 
         // Switch off validation
         try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/tournament")) {
@@ -79,16 +80,16 @@ public class JingSchematronTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void sch_15_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    void sch15StoredValid() throws XMLDBException, SAXException, IOException {
         String query = "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void sch_15_stored_valid_boolean() throws XMLDBException {
+    void sch15StoredValidBoolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
@@ -102,34 +103,26 @@ public class JingSchematronTest {
 
     @org.junit.jupiter.api.Test
 
-    public void sch_15_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    void sch15StoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
-        executeAndEvaluate(query,"invalid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void sch_15_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
+    void sch15AnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
-        executeAndEvaluate(query,"valid");
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
     @org.junit.jupiter.api.Test
-    public void sch_15_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
+    void sch15AnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
-        executeAndEvaluate(query,"invalid");
-    }
-
-    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        final ResourceSet results = existEmbeddedServer.executeQuery(query);
-        assertEquals(1, results.getSize());
-
-        final String r = (String) results.getResource(0).getContent();
-        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
+        assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 }

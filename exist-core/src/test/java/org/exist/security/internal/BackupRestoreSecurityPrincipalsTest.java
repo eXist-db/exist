@@ -91,7 +91,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      * that were owned by them are still correctly owner by them (and not some other user).
      */
     @org.junit.jupiter.api.Test
-    public void restoreConflictingUsername() throws PermissionDeniedException, EXistException, SAXException, IOException, XMLDBException, ReflectiveOperationException {
+    void restoreConflictingUsername() throws PermissionDeniedException, EXistException, SAXException, IOException, XMLDBException, ReflectiveOperationException {
         // creates a database with new users: 'frank(id=11)', 'joe(id=12)', and 'jack(id=13)'
         createInitialUsers(FRANK_USER, JOE_USER, JACK_USER);
 

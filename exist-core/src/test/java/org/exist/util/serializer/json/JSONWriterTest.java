@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Created by aretter on 16/05/2017.
  */
-public class JSONWriterTest {
+class JSONWriterTest {
 
     private static final String EOL = System.getProperty("line.separator");
     private static final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -60,7 +60,7 @@ public class JSONWriterTest {
     }
 
     @Test
-    public void whitespaceTextNodes() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+    void whitespaceTextNodes() throws IOException, TransformerException, ParserConfigurationException, SAXException {
 
         final Node xmlDoc = parseXml(
                 "<a z='99'>" + EOL +
@@ -88,7 +88,7 @@ public class JSONWriterTest {
     }
 
     @Test
-    public void ignoreWhitespaceTextNodes() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+    void ignoreWhitespaceTextNodes() throws IOException, TransformerException, ParserConfigurationException, SAXException {
 
         final Node xmlDoc = parseXml(
                 "<a z='99'>" + EOL +
@@ -117,7 +117,7 @@ public class JSONWriterTest {
     }
 
     @Test
-    public void serializesMixedContent_whenAttrsPresent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+    void serializesMixedContent_whenAttrsPresent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
         final Node xmlDoc = parseXml(
                 "<a x='y' xx='yy'>" + EOL +
                             "\tbefore-b" + EOL +
@@ -143,7 +143,7 @@ public class JSONWriterTest {
     }
 
     @Test
-    public void serializesMixedContent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+    void serializesMixedContent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
         final Node xmlDoc = parseXml(
                 "<a>" + EOL +
                             "\tbefore-b" + EOL +

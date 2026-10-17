@@ -57,7 +57,7 @@ public class DOMFileRecoverTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-	public void add() throws EXistException, ReadOnlyException, TerminatedException, IOException, BTreeException {
+    void add() throws EXistException, ReadOnlyException, TerminatedException, IOException, BTreeException {
 		BrokerPool.FORCE_CORRUPTION = false;
 
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -145,7 +145,7 @@ public class DOMFileRecoverTest {
 	}
 
     @Test
-    public void get() throws EXistException, IOException, BTreeException {
+    void get() throws EXistException, IOException, BTreeException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
         	//Recover and read the data

@@ -62,7 +62,7 @@ public class ModificationTimeTest {
      * have been updated afterwards.
      */
     @Test
-    public void check_if_modification_time_is_updated_binary() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
+    void check_if_modification_time_is_updated_binary() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
 
         final String mimeType = "application/octet-stream";
         final String filename = "data.dat";
@@ -95,7 +95,7 @@ public class ModificationTimeTest {
      * have been updated afterwards.
      */
     @Test
-    public void check_if_modification_time_is_updated_xml() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
+    void check_if_modification_time_is_updated_xml() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -119,7 +119,7 @@ public class ModificationTimeTest {
      * the resource's modification time should be the same afterwards.
      */
     @Test
-    public void check_if_modification_time_is_not_updated_on_parse_error() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
+    void check_if_modification_time_is_not_updated_on_parse_error() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {

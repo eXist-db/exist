@@ -36,11 +36,11 @@ import org.junit.jupiter.api.Test;
  *
  * @author aretter
  */
-public class AccountTest {
+class AccountTest {
 
     @Disabled("Mock API changed — EasyMock constructor mismatch")
     @Test
-    public void testGroupFallback() throws NoSuchMethodException, PermissionDeniedException {
+    void testGroupFallback() throws NoSuchMethodException, PermissionDeniedException {
 
 //        final String mockRealmId = "mock";
         final String testAccountName = "testUser";

@@ -52,35 +52,35 @@ public class DirectElementConstructorInScopeNamespaceTest {
     // visible to enclosed expressions in attribute values.
 
     @Test
-    public void prefixedCastInsideAttributeValue() throws Exception {
+    void prefixedCastInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<e a=\"{1 cast as p:string}\" xmlns:p=\"http://www.w3.org/2001/XMLSchema\"/>/@a/string()");
         assertEquals("1", result);
     }
 
     @Test
-    public void prefixedTreatInsideAttributeValue() throws Exception {
+    void prefixedTreatInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<e a=\"{1 treat as p:integer}\" xmlns:p=\"http://www.w3.org/2001/XMLSchema\"/>/@a/string()");
         assertEquals("1", result);
     }
 
     @Test
-    public void prefixedInstanceOfInsideAttributeValue() throws Exception {
+    void prefixedInstanceOfInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<e a=\"{1 instance of p:integer}\" xmlns:p=\"http://www.w3.org/2001/XMLSchema\"/>/@a/string()");
         assertEquals("true", result);
     }
 
     @Test
-    public void prefixedCastableInsideAttributeValue() throws Exception {
+    void prefixedCastableInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<e a=\"{1 castable as p:integer}\" xmlns:p=\"http://www.w3.org/2001/XMLSchema\"/>/@a/string()");
         assertEquals("true", result);
     }
 
     @Test
-    public void prefixedVariableNameInsideAttributeValue() throws Exception {
+    void prefixedVariableNameInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<a attr=\"{let $p:name := 3 return $p:name}\" xmlns:p=\"urn:foo\"/>/@attr/string()");
         assertEquals("3", result);
@@ -90,7 +90,7 @@ public class DirectElementConstructorInScopeNamespaceTest {
     // unprefixed type references inside enclosed exprs resolve.
 
     @Test
-    public void defaultNamespaceInstanceOfInsideAttributeValue() throws Exception {
+    void defaultNamespaceInstanceOfInsideAttributeValue() throws Exception {
         final String result = executeStringValue(
                 "<e a=\"{1 instance of integer}\" xmlns=\"http://www.w3.org/2001/XMLSchema\"/>/@a/string()");
         assertEquals("true", result);
@@ -100,7 +100,7 @@ public class DirectElementConstructorInScopeNamespaceTest {
     // sequential constructors must not bleed across.
 
     @Test
-    public void prefixRedeclarationDoesNotLeak() throws Exception {
+    void prefixRedeclarationDoesNotLeak() throws Exception {
         final String result = executeStringValue(
                 "let $a := <a xmlns:p=\"http://www.w3.org/2001/XMLSchema\">{1 instance of p:integer}</a>" +
                         " let $b := <b xmlns:p=\"urn:other\">marker</b>" +

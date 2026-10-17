@@ -118,7 +118,7 @@ public class NGramContainsBenchmark {
             new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setUp() throws DatabaseConfigurationException, EXistException,
+    static void setUp() throws DatabaseConfigurationException, EXistException,
             PermissionDeniedException, IOException, CollectionConfigurationException,
             LockException, TriggerException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -140,7 +140,7 @@ public class NGramContainsBenchmark {
     }
 
     @AfterAll
-    public static void tearDown() throws EXistException, PermissionDeniedException,
+    static void tearDown() throws EXistException, PermissionDeniedException,
             IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -159,7 +159,7 @@ public class NGramContainsBenchmark {
     }
 
     @org.junit.jupiter.api.Test
-    public void benchmark() throws EXistException, PermissionDeniedException, XPathException {
+    void benchmark() throws EXistException, PermissionDeniedException, XPathException {
         Assumptions.assumeTrue(
                 Boolean.getBoolean("exist.run.benchmarks"),
                 "Benchmark skipped by default.  Re-run with -Dexist.run.benchmarks=true");

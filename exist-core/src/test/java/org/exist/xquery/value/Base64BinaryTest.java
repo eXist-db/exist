@@ -40,7 +40,7 @@ public class Base64BinaryTest {
     public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test
-    public void castToBase64ThenBackToString() throws XMLDBException {
+    void castToBase64ThenBackToString() throws XMLDBException {
         final String base64String = "QWxhZGRpbjpvcGVuIHNlc2FtZQ==";
         final String query = "let $data := '" + base64String + "' cast as xs:base64Binary return $data cast as xs:string";
 

@@ -23,15 +23,14 @@ package org.exist.backup;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 
+import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
@@ -66,6 +65,7 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
@@ -82,7 +82,7 @@ public class SystemExportImportTest {
     public boolean zip;
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -120,17 +120,17 @@ public class SystemExportImportTest {
 
     private static String BINARY = "test";
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"direct", true, false},
-                {"non-direct", false, false},
-                {"direct", true, true},
-                {"non-direct", false, true}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("direct", true, false),
+            Arguments.of("non-direct", false, false),
+            Arguments.of("direct", true, true),
+            Arguments.of("non-direct", false, true)
+        );
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0} zip:{2}")
-    public void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
+    void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
         initSystemExportImportTest(apiName, direct, zip);
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -141,7 +141,7 @@ public class SystemExportImportTest {
             assertNotNull(test);
 
             final SystemExport sysexport = new SystemExport(broker, transaction, null, null, direct);
-            final String backupDir = newFolder(temporaryFolder, "junit").getAbsolutePath();
+            final String backupDir = Files.createDirectories(temporaryFolder.resolve("junit")).toAbsolutePath().toString();
             file = sysexport.export(backupDir, false, zip, null);
 
             transaction.commit();
@@ -229,8 +229,8 @@ public class SystemExportImportTest {
         }
     }
 
-	@BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+    @BeforeAll
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -253,22 +253,6 @@ public class SystemExportImportTest {
         }
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 
     public void initSystemExportImportTest(String apiName, boolean direct, boolean zip) {
         this.apiName = apiName;

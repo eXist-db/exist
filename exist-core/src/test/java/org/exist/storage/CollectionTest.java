@@ -53,11 +53,11 @@ public class CollectionTest {
     
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
+    void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
 
@@ -109,7 +109,7 @@ public class CollectionTest {
     }
 
     @AfterEach
-    public void stopDb() {
+    void stopDb() {
         BrokerPool.FORCE_CORRUPTION = false;
         existEmbeddedServer.stopDb();
     }

@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class SerializerPoolTest {
+class SerializerPoolTest {
 
     @Test
-    public void exceedMaxIdle() {
+    void exceedMaxIdle() {
         final int maxIdle = 3;
         final int initialCapacity = 0;
 

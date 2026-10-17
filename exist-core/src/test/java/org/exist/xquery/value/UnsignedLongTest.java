@@ -30,27 +30,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class UnsignedLongTest {
-    
+class UnsignedLongTest {
+
     @Test
-    public void testOver() {
+    void testOver() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("18446744073709551616", Type.UNSIGNED_LONG);
         });
     }
-    
+
     @Test
-    public void testPositiveLimit() throws XPathException {
+    void testPositiveLimit() throws XPathException {
         new IntegerValue("18446744073709551615", Type.UNSIGNED_LONG);
     }
-    
+
     @Test
-    public void testNegativeLimit() throws XPathException {
+    void testNegativeLimit() throws XPathException {
         new IntegerValue("0", Type.UNSIGNED_LONG);
     }
-    
+
     @Test
-    public void testUnder() {
+    void testUnder() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("-1", Type.UNSIGNED_LONG);
         });

@@ -51,7 +51,7 @@ public class CollectionTriggerTest {
 
 
     @org.junit.jupiter.api.Test
-    public void move() throws XMLDBException, EXistException, PermissionDeniedException {
+    void move() throws XMLDBException, EXistException, PermissionDeniedException {
 
         //create /db/testCollectionTrigger/srcCollection
         final EXistCollectionManagementService colMgmtSrv = testCollection.getService(EXistCollectionManagementService.class);
@@ -75,7 +75,7 @@ public class CollectionTriggerTest {
     }
 
     @BeforeEach
-    public void createTestCollection() throws XMLDBException {
+    void createTestCollection() throws XMLDBException {
         //create a test collection
         testCollection = rootSrv.createCollection(TEST_COLLECTION);
 
@@ -85,18 +85,18 @@ public class CollectionTriggerTest {
     }
 
     @AfterEach
-    public void removeTestCollection() throws XMLDBException {
+    void removeTestCollection() throws XMLDBException {
         rootSrv.removeCollection(XmldbURI.create(testCollection.getName()));
     }
 
     /** just start the DB and create the test collection */
     @BeforeAll
-    public static void startDB() throws XMLDBException {
+    static void startDB() throws XMLDBException {
         rootSrv = existEmbeddedServer.getRoot().getService(EXistCollectionManagementService.class);
     }
 
     @AfterAll
-    public static void shutdownDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void shutdownDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
         testCollection = null;
         rootSrv = null;

@@ -64,7 +64,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
     private static HttpClient client = null;
 
     @BeforeAll
-    public static void setupExecutor() {
+    static void setupExecutor() {
         client = AbstractHttpTest.newHttpClient();
     }
 
@@ -74,7 +74,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * response:stream is used to return Base64 encoded binary.
      */
     @Test
-    public void streamBinarySax() throws JAXBException, IOException {
+    void streamBinarySax() throws JAXBException, IOException {
         final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
                 "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
@@ -89,7 +89,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * response:stream-binary is used to return raw binary.
      */
     @Test
-    public void streamBinaryRaw() throws JAXBException, IOException {
+    void streamBinaryRaw() throws JAXBException, IOException {
         final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
                 "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
@@ -104,7 +104,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * is byte-identical.
      */
     @Test
-    public void streamBinaryResourceRaw() throws JAXBException, IOException {
+    void streamBinaryResourceRaw() throws JAXBException, IOException {
         final String query = "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
                 "response:stream-binary-resource('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "', 'application/octet-stream', ())";
 
@@ -118,7 +118,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
      * filename argument (while still streaming the byte-identical body).
      */
     @Test
-    public void streamBinaryResourceWithFilename() throws JAXBException, IOException {
+    void streamBinaryResourceWithFilename() throws JAXBException, IOException {
         final String query = "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
                 "response:stream-binary-resource('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "', 'application/octet-stream', 'download.bin')";
 

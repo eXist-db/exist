@@ -35,13 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class BaseConversionFunctionsTest {
+class BaseConversionFunctionsTest {
 
     /**
      * Test of eval method, of class PermissionsFunctions.
      */
     @Test
-    public void intToOctal() throws XPathException {
+    void intToOctal() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_INT_TO_OCTAL);
@@ -54,9 +54,9 @@ public class BaseConversionFunctionsTest {
        assertEquals(1, result.getItemCount());
        assertEquals("0777", result.itemAt(0).toString());
     }
-    
+
     @Test
-    public void octalToInt() throws XPathException {
+    void octalToInt() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_OCTAL_TO_INT);

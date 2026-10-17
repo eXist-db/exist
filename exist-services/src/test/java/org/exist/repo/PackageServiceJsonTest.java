@@ -26,28 +26,28 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class PackageServiceJsonTest {
+class PackageServiceJsonTest {
 
     @Test
-    public void readsATopLevelStringMember() {
+    void readsATopLevelStringMember() {
         assertEquals("http://example.com/pkg",
                 PackageService.extractJsonStringValue("{\"name\":\"http://example.com/pkg\",\"url\":\"u\"}", "name"));
     }
 
     /** A nested object's member of the same name is not the one asked for. */
     @Test
-    public void ignoresNestedMembers() {
+    void ignoresNestedMembers() {
         assertEquals("u", PackageService.extractJsonStringValue(
                 "{\"other\":{\"url\":\"nested\"},\"url\":\"u\"}", "url"));
     }
 
     @Test
-    public void unescapesTheValue() {
+    void unescapesTheValue() {
         assertEquals("say \"hi\"", PackageService.extractJsonStringValue("{\"name\":\"say \\\"hi\\\"\"}", "name"));
     }
 
     @Test
-    public void missingOrNonStringOrMalformedGivesNull() {
+    void missingOrNonStringOrMalformedGivesNull() {
         assertNull(PackageService.extractJsonStringValue("{\"url\":\"u\"}", "name"));
         assertNull(PackageService.extractJsonStringValue("{\"name\":42}", "name"));
         assertNull(PackageService.extractJsonStringValue("{\"name\":", "name"));

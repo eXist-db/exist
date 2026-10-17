@@ -49,7 +49,7 @@ import static org.exist.http.AbstractHttpTest.assertRequestResponse;
 public class AttributeTest extends AbstractSessionTest {
 
     @Test
-    public void getSetAttributeExplicitSessionCreation() throws IOException {
+    void getSetAttributeExplicitSessionCreation() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // explicitly create a new session
@@ -70,7 +70,7 @@ public class AttributeTest extends AbstractSessionTest {
     }
 
     @Test
-    public void getSetAttributeImplicitSessionCreation() throws IOException {
+    void getSetAttributeImplicitSessionCreation() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // get the value of the attribute named "attr1", and check its value is the empty sequence
@@ -87,7 +87,7 @@ public class AttributeTest extends AbstractSessionTest {
     }
 
     @Test
-    public void getAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
+    void getAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // explicitly create a new session
@@ -104,7 +104,7 @@ public class AttributeTest extends AbstractSessionTest {
     }
 
     @Test
-    public void getAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
+    void getAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // explicitly create a new session
@@ -117,7 +117,7 @@ public class AttributeTest extends AbstractSessionTest {
     }
 
     @Test
-    public void setAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
+    void setAttributeOnInvalidatedSessionSeparateHttpCalls() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // explicitly create a new session
@@ -139,7 +139,7 @@ public class AttributeTest extends AbstractSessionTest {
     }
 
     @Test
-    public void setAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
+    void setAttributeOnInvalidatedSessionSameHttpCall() throws IOException {
         final HttpClient client = newSessionHttpClient();
 
         // explicitly create a new session

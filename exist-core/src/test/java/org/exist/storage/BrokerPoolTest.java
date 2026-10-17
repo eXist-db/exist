@@ -46,7 +46,7 @@ public class BrokerPoolTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void noPrivilegeEscalationThroughBrokerRelease() throws EXistException {
+    void noPrivilegeEscalationThroughBrokerRelease() throws EXistException {
         //take a broker with the guest user
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
@@ -66,7 +66,7 @@ public class BrokerPoolTest {
     }
 
     @Test
-    public void privilegeStableWhenSubjectNull() throws EXistException {
+    void privilegeStableWhenSubjectNull() throws EXistException {
         //take a broker with the SYSTEM user
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject sysUser = pool.getSecurityManager().getSystemSubject();
@@ -85,7 +85,7 @@ public class BrokerPoolTest {
     }
 
     @Test
-    public void guestDefaultPriviledge() throws EXistException {
+    void guestDefaultPriviledge() throws EXistException {
         //take a broker with default perms
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker1 = pool.getBroker()) {
@@ -105,7 +105,7 @@ public class BrokerPoolTest {
     }
 
     @Test
-    public void noPrivilegeEscalationThroughBrokerRelease_xmldb() throws EXistException, XMLDBException {
+    void noPrivilegeEscalationThroughBrokerRelease_xmldb() throws EXistException, XMLDBException {
         //take a broker with the guest user
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
@@ -128,7 +128,7 @@ public class BrokerPoolTest {
      * been released.
      */
     @Test
-    public void canReleaseWhenSaturated() throws InterruptedException, ExecutionException {
+    void canReleaseWhenSaturated() throws InterruptedException, ExecutionException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final int maxBrokers = pool.getMax();
 

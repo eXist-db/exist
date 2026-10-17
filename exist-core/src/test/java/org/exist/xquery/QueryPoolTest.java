@@ -42,7 +42,7 @@ public class QueryPoolTest {
     private Collection testCollection;
 
     @Test
-    public void differentQueries() throws XMLDBException {
+    void differentQueries() throws XMLDBException {
         EXistXQueryService service = testCollection.getService(EXistXQueryService.class);
         for (int i = 0; i < 1000; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
@@ -55,13 +55,13 @@ public class QueryPoolTest {
     }
 
     @Test
-    public void read() throws XMLDBException {
+    void read() throws XMLDBException {
         XMLResource res = (XMLResource) testCollection.getResource("large_list.xml");
         assertNotNull(res);
     }
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
                 existEmbeddedServer.getRoot().getService(
                     CollectionManagementService.class);
@@ -74,7 +74,7 @@ public class QueryPoolTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         final CollectionManagementService service = testCollection.getService(CollectionManagementService.class);
         service.removeCollection("/db/test-pool");
         testCollection.close();

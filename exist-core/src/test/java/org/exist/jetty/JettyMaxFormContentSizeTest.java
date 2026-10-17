@@ -45,32 +45,32 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * the default value and when overridden via the documented Jetty
  * property.</p>
  */
-public class JettyMaxFormContentSizeTest {
+class JettyMaxFormContentSizeTest {
 
     private static final String CTX = "/org/exist/jetty/etc/webapps/exist-webapp-context.xml";
     private static final String STANDALONE_CTX = "/org/exist/jetty/etc/standalone-webapps/exist-webapp-context.xml";
 
     @Test
-    public void contextHonorsMaxFormContentSizeDefault() throws Exception {
+    void contextHonorsMaxFormContentSizeDefault() throws Exception {
         final WebAppContext ctx = configureContext(CTX, Map.of());
         assertEquals(200_000, ctx.getMaxFormContentSize());
     }
 
     @Test
-    public void contextHonorsMaxFormContentSizeOverride() throws Exception {
+    void contextHonorsMaxFormContentSizeOverride() throws Exception {
         final WebAppContext ctx = configureContext(CTX,
                 Map.of("jetty.http.maxFormContentSize", "2000000"));
         assertEquals(2_000_000, ctx.getMaxFormContentSize());
     }
 
     @Test
-    public void standaloneContextHonorsMaxFormContentSizeDefault() throws Exception {
+    void standaloneContextHonorsMaxFormContentSizeDefault() throws Exception {
         final WebAppContext ctx = configureContext(STANDALONE_CTX, Map.of());
         assertEquals(200_000, ctx.getMaxFormContentSize());
     }
 
     @Test
-    public void standaloneContextHonorsMaxFormContentSizeOverride() throws Exception {
+    void standaloneContextHonorsMaxFormContentSizeOverride() throws Exception {
         final WebAppContext ctx = configureContext(STANDALONE_CTX,
                 Map.of("jetty.http.maxFormContentSize", "5000000"));
         assertEquals(5_000_000, ctx.getMaxFormContentSize());

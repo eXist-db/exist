@@ -62,7 +62,7 @@ public class CollectionConfigurationTest {
 
 
     @Test
-    public void insertInvalidCollectionXconf() throws XMLDBException {
+    void insertInvalidCollectionXconf() throws XMLDBException {
         createCollection("/db/system/config/db/foobar");
         storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
 

@@ -36,9 +36,9 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	
 	private static final String XML =
 		"<TEST><USER-SESSION-DATA version=\"0\"/></TEST>";
-	
-	@BeforeEach
-	public void setUp() throws Exception {
+
+    @BeforeEach
+    void setUp() throws Exception {
         final XMLResource res = getTestCollection().createResource("R01.xml", XMLResource.class);
         res.setContent(XML);
         getTestCollection().storeResource(res);

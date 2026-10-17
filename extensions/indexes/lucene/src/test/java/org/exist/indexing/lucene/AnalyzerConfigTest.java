@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class AnalyzerConfigTest {
+class AnalyzerConfigTest {
 
     private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
 
@@ -56,7 +56,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void parameterFromCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void parameterFromCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strParam =
                 """
                 <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
@@ -74,23 +74,21 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException {
-        assertThrows(AnalyzerConfig.ParameterException.class, () -> {
-            final String strParam =
-                    """
-                            <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
-                                <value>'</value>
-                                <value/>
-                                <value>’</value>
-                            </param>""";
-
-            final Element elemParam = parse(strParam).getDocumentElement();
-            AnalyzerConfig.getConstructorParameter(elemParam);
-        });
+    void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException {
+        final String strParam =
+                """
+                        <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
+                            <value>'</value>
+                            <value/>
+                            <value>’</value>
+                        </param>""";
+        final Element elemParam = parse(strParam).getDocumentElement();
+        assertThrows(AnalyzerConfig.ParameterException.class, () ->
+            AnalyzerConfig.getConstructorParameter(elemParam));
     }
 
     @Test
-    public void parameterFromStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void parameterFromStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strParam =
                 """
                 <param xmlns="http://exist-db.org/collection-config/1.0" name="dictionary" type="java.lang.String[]">
@@ -109,7 +107,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersIntegerAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersIntegerAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
         """
         <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -138,7 +136,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersIntAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersIntAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
                 """
                 <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -167,7 +165,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
                 """
                 <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -196,7 +194,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersPrimitiveBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersPrimitiveBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
                 """
                 <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -225,7 +223,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
                 """
                 <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -247,7 +245,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void allParametersStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
+    void allParametersStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
                 """
                 <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
@@ -269,7 +267,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructIntegerAndSetMockAnalyzerWithoutVersion() {
+    void constructIntegerAndSetMockAnalyzerWithoutVersion() {
         final Class<IntegerAndSetConstructorMockAnalyzer> analyerClass = IntegerAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 Integer.class,
@@ -287,7 +285,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructIntegerAndSetMockAnalyzerWithVersion() {
+    void constructIntegerAndSetMockAnalyzerWithVersion() {
         final Class<IntegerAndSetConstructorMockAnalyzer> analyerClass = IntegerAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 Integer.class,
@@ -305,7 +303,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructIntAndSetMockAnalyzerWithoutVersion() {
+    void constructIntAndSetMockAnalyzerWithoutVersion() {
         final Class<IntAndSetConstructorMockAnalyzer> analyerClass = IntAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 int.class,
@@ -323,7 +321,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructIntAndSetMockAnalyzerWithVersion() {
+    void constructIntAndSetMockAnalyzerWithVersion() {
         final Class<IntAndSetConstructorMockAnalyzer> analyerClass = IntAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 int.class,
@@ -341,7 +339,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructBooleanAndSetMockAnalyzerWithoutVersion() {
+    void constructBooleanAndSetMockAnalyzerWithoutVersion() {
         final Class<BooleanAndSetConstructorMockAnalyzer> analyerClass = BooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 Boolean.class,
@@ -359,7 +357,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructBooleanAndSetMockAnalyzerWithVersion() {
+    void constructBooleanAndSetMockAnalyzerWithVersion() {
         final Class<BooleanAndSetConstructorMockAnalyzer> analyerClass = BooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 Boolean.class,
@@ -377,7 +375,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructPrimitiveAndSetMockAnalyzerWithoutVersion() {
+    void constructPrimitiveAndSetMockAnalyzerWithoutVersion() {
         final Class<PrimitiveBooleanAndSetConstructorMockAnalyzer> analyerClass = PrimitiveBooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 boolean.class,
@@ -395,7 +393,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructPrimitiveBooleanAndSetMockAnalyzerWithVersion() {
+    void constructPrimitiveBooleanAndSetMockAnalyzerWithVersion() {
         final Class<PrimitiveBooleanAndSetConstructorMockAnalyzer> analyerClass = PrimitiveBooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 boolean.class,
@@ -413,7 +411,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructCharArrayMockAnalyzerWithoutVersion() {
+    void constructCharArrayMockAnalyzerWithoutVersion() {
         final Class<CharArrayConstructorMockAnalyzer> analyerClass = CharArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 char[].class,
@@ -428,7 +426,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructCharArrayMockAnalyzerWithVersion() {
+    void constructCharArrayMockAnalyzerWithVersion() {
         final Class<CharArrayConstructorMockAnalyzer> analyerClass = CharArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 char[].class,
@@ -443,7 +441,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructStringArrayMockAnalyzerWithoutVersion() {
+    void constructStringArrayMockAnalyzerWithoutVersion() {
         final Class<StringArrayConstructorMockAnalyzer> analyerClass = StringArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 String[].class,
@@ -458,7 +456,7 @@ public class AnalyzerConfigTest {
     }
 
     @Test
-    public void constructStringArrayMockAnalyzerWithVersion() {
+    void constructStringArrayMockAnalyzerWithVersion() {
         final Class<StringArrayConstructorMockAnalyzer> analyerClass = StringArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[]{
                 String[].class,

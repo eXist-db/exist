@@ -72,7 +72,7 @@ public class SendRequestFunctionTest {
     private static int port;
 
     @BeforeAll
-    public static void startHttpServer() throws IOException {
+    static void startHttpServer() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress(0), 0);
         port = httpServer.getAddress().getPort();
 
@@ -297,7 +297,7 @@ public class SendRequestFunctionTest {
     }
 
     @AfterAll
-    public static void stopHttpServer() {
+    static void stopHttpServer() {
         if (httpServer != null) {
             httpServer.stop(0);
         }
@@ -438,7 +438,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void getTextReturnsResponseElementAndBody() throws XMLDBException {
+    void getTextReturnsResponseElementAndBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -450,7 +450,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseElementHasStatusAttribute() throws XMLDBException {
+    void responseElementHasStatusAttribute() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -462,7 +462,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseElementHasMessageAttribute() throws XMLDBException {
+    void responseElementHasMessageAttribute() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -474,7 +474,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseElementIsNamespacedCorrectly() throws XMLDBException {
+    void responseElementIsNamespacedCorrectly() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -487,7 +487,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseElementLocalNameIsResponse() throws XMLDBException {
+    void responseElementLocalNameIsResponse() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -499,7 +499,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseElementContainsHeaders() throws XMLDBException {
+    void responseElementContainsHeaders() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -511,7 +511,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseHeadersHaveNameAndValueAttributes() throws XMLDBException {
+    void responseHeadersHaveNameAndValueAttributes() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -524,7 +524,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseContainsContentTypeHeader() throws XMLDBException {
+    void responseContainsContentTypeHeader() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -536,7 +536,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void responseContainsBodyDescriptor() throws XMLDBException {
+    void responseContainsBodyDescriptor() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -548,7 +548,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void bodyDescriptorHasMediaType() throws XMLDBException {
+    void bodyDescriptorHasMediaType() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -564,7 +564,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void textPlainResponseReturnsString() throws XMLDBException {
+    void textPlainResponseReturnsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -576,7 +576,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void textPlainResponseIsXsString() throws XMLDBException {
+    void textPlainResponseIsXsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -588,7 +588,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void jsonResponseReturnsString() throws XMLDBException {
+    void jsonResponseReturnsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -601,7 +601,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void jsonResponseIsXsString() throws XMLDBException {
+    void jsonResponseIsXsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -613,7 +613,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void jsonWithCharsetReturnsString() throws XMLDBException {
+    void jsonWithCharsetReturnsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -625,7 +625,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void jsonSubtypeReturnsString() throws XMLDBException {
+    void jsonSubtypeReturnsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -637,7 +637,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void jsonResponseCanBeParsed() throws XMLDBException {
+    void jsonResponseCanBeParsed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -649,7 +649,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void xmlResponseIsParsedAsDocument() throws XMLDBException {
+    void xmlResponseIsParsedAsDocument() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -661,7 +661,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void xmlResponseIsDocumentNode() throws XMLDBException {
+    void xmlResponseIsDocumentNode() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -673,7 +673,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void textXmlResponseIsParsed() throws XMLDBException {
+    void textXmlResponseIsParsed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -685,7 +685,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void xmlSubtypeResponseIsParsed() throws XMLDBException {
+    void xmlSubtypeResponseIsParsed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -697,7 +697,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void htmlResponseIsParsed() throws XMLDBException {
+    void htmlResponseIsParsed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -713,7 +713,7 @@ public class SendRequestFunctionTest {
      * HTML-to-XML parser (NekoHTML), not returned as a raw string.
      */
     @Test
-    public void malformedHtmlResponseIsParsedToDocument() throws XMLDBException {
+    void malformedHtmlResponseIsParsedToDocument() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
                 let $doc := http:send-request(
                   <http:request method='GET' href='%s/malformed-html'/>)[2]
@@ -725,7 +725,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void binaryResponseIsBase64Binary() throws XMLDBException {
+    void binaryResponseIsBase64Binary() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -737,7 +737,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void cssResponseIsString() throws XMLDBException {
+    void cssResponseIsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -749,7 +749,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void javascriptResponseIsString() throws XMLDBException {
+    void javascriptResponseIsString() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -765,7 +765,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void getMethod() throws XMLDBException {
+    void getMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -777,7 +777,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void postMethodWithBody() throws XMLDBException {
+    void postMethodWithBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -791,7 +791,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void postBodyIsSent() throws XMLDBException {
+    void postBodyIsSent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -810,7 +810,7 @@ public class SendRequestFunctionTest {
      * body was sent.
      */
     @Test
-    public void bodySrcSendsResourceContent() throws XMLDBException {
+    void bodySrcSendsResourceContent() throws XMLDBException {
         storeBinaryResource("http-src-body.txt", "abracadabra");
         try {
             final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
@@ -846,7 +846,7 @@ public class SendRequestFunctionTest {
      * Per EXPath HTTP Client 3.1, combining @src with body content is err:HC004.
      */
     @Test
-    public void bodySrcWithContentThrowsHC004() {
+    void bodySrcWithContentThrowsHC004() {
         assertThatExceptionOfType(XMLDBException.class)
                 .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
                         http:send-request(
@@ -860,7 +860,7 @@ public class SendRequestFunctionTest {
      * media-type is mandatory on an http:body that uses @src (request-validity error err:HC005).
      */
     @Test
-    public void bodySrcWithoutMediaTypeThrowsHC005() {
+    void bodySrcWithoutMediaTypeThrowsHC005() {
         assertThatExceptionOfType(XMLDBException.class)
                 .isThrownBy(() -> existEmbeddedServer.executeQuery(HTTP_NS + """
                         http:send-request(
@@ -875,7 +875,7 @@ public class SendRequestFunctionTest {
      * (EXPath HTTP Client 3.1 serialization method). base64('hello') = 'aGVsbG8='.
      */
     @Test
-    public void bodyMethodBinarySendsDecodedBytes() throws XMLDBException {
+    void bodyMethodBinarySendsDecodedBytes() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
                 let $response := http:send-request(
                   <http:request method='POST' href='%s/echo'>
@@ -890,7 +890,7 @@ public class SendRequestFunctionTest {
      * http:body/@method='hex' decodes the body's hexadecimal text content. hex('hi') = '6869'.
      */
     @Test
-    public void bodyMethodHexSendsDecodedBytes() throws XMLDBException {
+    void bodyMethodHexSendsDecodedBytes() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
                 let $response := http:send-request(
                   <http:request method='POST' href='%s/echo'>
@@ -906,7 +906,7 @@ public class SendRequestFunctionTest {
      * so a child element is sent as its text, not its markup.
      */
     @Test
-    public void bodyMethodTextSerializesAsText() throws XMLDBException {
+    void bodyMethodTextSerializesAsText() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(HTTP_NS + """
                 let $response := http:send-request(
                   <http:request method='POST' href='%s/echo'>
@@ -918,7 +918,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void putMethod() throws XMLDBException {
+    void putMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -932,7 +932,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void deleteMethod() throws XMLDBException {
+    void deleteMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -944,7 +944,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void headMethod() throws XMLDBException {
+    void headMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -957,7 +957,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void headMethodReturnsNoBody() throws XMLDBException {
+    void headMethodReturnsNoBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -969,7 +969,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void optionsMethod() throws XMLDBException {
+    void optionsMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -981,7 +981,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void patchMethod() throws XMLDBException {
+    void patchMethod() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -999,7 +999,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void customHeadersAreSent() throws XMLDBException {
+    void customHeadersAreSent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1013,7 +1013,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void acceptHeaderIsSent() throws XMLDBException {
+    void acceptHeaderIsSent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1027,7 +1027,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void contentTypeFromBodyMediaType() throws XMLDBException {
+    void contentTypeFromBodyMediaType() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1045,7 +1045,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void twoArgFormWithHref() throws XMLDBException {
+    void twoArgFormWithHref() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1057,7 +1057,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void hrefParameterOverridesAttribute() throws XMLDBException {
+    void hrefParameterOverridesAttribute() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1070,7 +1070,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void threeArgFormWithBodies() throws XMLDBException {
+    void threeArgFormWithBodies() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1090,7 +1090,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void status404() throws XMLDBException {
+    void status404() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1102,7 +1102,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void status500() throws XMLDBException {
+    void status500() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1114,7 +1114,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void status204NoContent() throws XMLDBException {
+    void status204NoContent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1126,7 +1126,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void status204HasNoBody() throws XMLDBException {
+    void status204HasNoBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1138,7 +1138,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void errorStatusStillReturnsBody() throws XMLDBException {
+    void errorStatusStillReturnsBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1154,7 +1154,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void followRedirectTrue() throws XMLDBException {
+    void followRedirectTrue() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1167,7 +1167,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void followRedirectTrueGetsContent() throws XMLDBException {
+    void followRedirectTrueGetsContent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1180,7 +1180,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void followRedirectFalse() throws XMLDBException {
+    void followRedirectFalse() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1193,7 +1193,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void redirectChainFollowed() throws XMLDBException {
+    void redirectChainFollowed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1206,7 +1206,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void defaultFollowRedirectIsTrue() throws XMLDBException {
+    void defaultFollowRedirectIsTrue() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1222,7 +1222,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void timeoutRaisesHC006() throws XMLDBException {
+    void timeoutRaisesHC006() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
                     HTTP_NS +
@@ -1242,7 +1242,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void basicAuthWithCredentials() throws XMLDBException {
+    void basicAuthWithCredentials() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1256,7 +1256,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void basicAuthWithWrongCredentials() throws XMLDBException {
+    void basicAuthWithWrongCredentials() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1270,7 +1270,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void noAuthReturns401() throws XMLDBException {
+    void noAuthReturns401() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1282,7 +1282,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void basicChallengeResponse() throws XMLDBException {
+    void basicChallengeResponse() throws XMLDBException {
         // No send-authorization: the client must answer the server's 401 Basic challenge by
         // re-sending the request with credentials (EXPath default behavior).
         final ResourceSet result = existEmbeddedServer.executeQuery(
@@ -1297,7 +1297,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void digestChallengeResponse() throws XMLDBException {
+    void digestChallengeResponse() throws XMLDBException {
         // The client must answer the server's 401 Digest challenge by computing the RFC 2617
         // digest response and re-sending; the test server validates the response hash.
         final ResourceSet result = existEmbeddedServer.executeQuery(
@@ -1316,7 +1316,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void statusOnlyReturnsNoBody() throws XMLDBException {
+    void statusOnlyReturnsNoBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1329,7 +1329,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void statusOnlyStillHasStatus() throws XMLDBException {
+    void statusOnlyStillHasStatus() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1342,7 +1342,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void overrideMediaType() throws XMLDBException {
+    void overrideMediaType() throws XMLDBException {
         // Override binary content-type to treat as text
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
@@ -1360,7 +1360,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void multipleResponseHeaders() throws XMLDBException {
+    void multipleResponseHeaders() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1378,7 +1378,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void utf8ResponseContent() throws XMLDBException {
+    void utf8ResponseContent() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1390,7 +1390,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void utf8ResponseWithJapanese() throws XMLDBException {
+    void utf8ResponseWithJapanese() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1406,7 +1406,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void gzipResponseIsDecompressed() throws XMLDBException {
+    void gzipResponseIsDecompressed() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1424,7 +1424,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void postXmlBody() throws XMLDBException {
+    void postXmlBody() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1442,7 +1442,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void invalidUriRaisesError() throws XMLDBException {
+    void invalidUriRaisesError() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
                     HTTP_NS +
@@ -1457,7 +1457,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void connectionRefusedRaisesHC001() throws XMLDBException {
+    void connectionRefusedRaisesHC001() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
                     HTTP_NS +
@@ -1475,7 +1475,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void connectionErrorIsCatchableAsExpathHC001() throws XMLDBException {
+    void connectionErrorIsCatchableAsExpathHC001() throws XMLDBException {
         // Regression test for #4256: a connection error must surface as the EXPath error
         // expath-err:HC001 (namespace http://expath.org/ns/error), catchable from XQuery — not as a
         // raw Java exception (org.expath.httpclient.HttpClientException), as the old client did.
@@ -1492,7 +1492,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void missingHrefRaisesError() throws XMLDBException {
+    void missingHrefRaisesError() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
                     HTTP_NS +
@@ -1506,7 +1506,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void missingMethodRaisesError() throws XMLDBException {
+    void missingMethodRaisesError() throws XMLDBException {
         try {
             existEmbeddedServer.executeQuery(
                     HTTP_NS +
@@ -1524,7 +1524,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void largeResponseIsFullyReturned() throws XMLDBException {
+    void largeResponseIsFullyReturned() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1540,7 +1540,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void binaryToStringStillWorksOnTextResponse() throws XMLDBException {
+    void binaryToStringStillWorksOnTextResponse() throws XMLDBException {
         // The old workaround (util:binary-to-string) should still work even though
         // the response is now a string — util:binary-to-string accepts strings too
         final ResourceSet result = existEmbeddedServer.executeQuery(
@@ -1559,7 +1559,7 @@ public class SendRequestFunctionTest {
     // ========================================================================
 
     @Test
-    public void multipartResponseReturnsMultipleItems() throws XMLDBException {
+    void multipartResponseReturnsMultipleItems() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1572,7 +1572,7 @@ public class SendRequestFunctionTest {
     }
 
     @Test
-    public void multipartResponseContainsMultibodyElements() throws XMLDBException {
+    void multipartResponseContainsMultibodyElements() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $response := http:send-request(" +
@@ -1588,7 +1588,7 @@ public class SendRequestFunctionTest {
      * String round-trip. The first part is the two bytes 0xFF 0xFE (base64 "//4="); the second is text.
      */
     @Test
-    public void multipartBinaryPartIsByteSafe() throws XMLDBException {
+    void multipartBinaryPartIsByteSafe() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $r := http:send-request(\n" +
@@ -1605,7 +1605,7 @@ public class SendRequestFunctionTest {
      * outer = [ multipart[ "A", "B" ], "C" ] yields the three leaf text items A, B, C.
      */
     @Test
-    public void multipartNestedIsParsedRecursively() throws XMLDBException {
+    void multipartNestedIsParsedRecursively() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 HTTP_NS +
                 "let $r := http:send-request(\n" +

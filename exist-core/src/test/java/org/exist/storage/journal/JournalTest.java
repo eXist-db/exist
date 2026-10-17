@@ -32,7 +32,6 @@ import org.exist.util.ReadOnlyException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -59,10 +58,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class JournalTest {
 
     @TempDir
-    public static File TEMPORARY_FOLDER;
+    Path TEMPORARY_FOLDER;
 
     @Test
-    public void getFileName() {
+    void getFileName() {
         assertEquals("0000000000.log", Journal.getFileName((short)0));
         assertEquals("0000000001.log", Journal.getFileName((short)1));
         assertEquals("0000000002.log", Journal.getFileName((short)2));
@@ -78,19 +77,19 @@ public class JournalTest {
     }
 
     @Test
-    public void getFileNameWithFileNumShortMinValueRaisesException() {
+    void getFileNameWithFileNumShortMinValueRaisesException() {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFileName(Short.MIN_VALUE));
     }
 
     @Test
-    public void getFileNameWithFileNumMinusOneRaisesException() {
+    void getFileNameWithFileNumMinusOneRaisesException() {
         assertThrows(IllegalArgumentException.class, () ->
             Journal.getFileName((short) -1));
     }
 
     @Test
-    public void journalFileNum() {
+    void journalFileNum() {
         assertEquals(0, Journal.journalFileNum(Path.of("0000000000.log")));
         assertEquals(1, Journal.journalFileNum(Path.of("0000000001.log")));
         assertEquals(2, Journal.journalFileNum(Path.of("0000000002.log")));
@@ -106,23 +105,21 @@ public class JournalTest {
     }
 
     @Test
-    public void journalFileNumWithPathShortMinValueRaisesException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
-            Journal.journalFileNum(Path.of(fileName));
-        });
+    void journalFileNumWithPathShortMinValueRaisesException() {
+        final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
+        assertThrows(IllegalArgumentException.class, () ->
+            Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test
-    public void journalFileNumWithPathMinusOneRaisesException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
-            Journal.journalFileNum(Path.of(fileName));
-        });
+    void journalFileNumWithPathMinusOneRaisesException() {
+        final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
+        assertThrows(IllegalArgumentException.class, () ->
+            Journal.journalFileNum(Path.of(fileName)));
     }
 
     @Test
-    public void findLastFile() {
+    void findLastFile() {
         try (final Stream<Path> paths = Stream.of(
                 Path.of(Journal.getFileName((short)1)),
                 Path.of(Journal.getFileName((short)31)),
@@ -179,7 +176,7 @@ public class JournalTest {
     }
 
     @Test
-    public void getFiles() throws IOException {
+    void getFiles() throws IOException {
         List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
         Path mockJournalDir = createTempDirWithFiles(input);
         List<String> actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
@@ -199,7 +196,7 @@ public class JournalTest {
     }
 
     @Test
-    public void getFile() throws IOException {
+    void getFile() throws IOException {
         List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
         Path mockJournalDir = createTempDirWithFiles(input);
 
@@ -252,20 +249,20 @@ public class JournalTest {
     }
 
     @Test
-    public void getFileWithFileNumShortMinValueRaisesException() throws IOException {
+    void getFileWithFileNumShortMinValueRaisesException() throws IOException {
         assertThrows(IllegalArgumentException.class, () ->
-            Journal.getFile(newFolder(TEMPORARY_FOLDER, "junit").toPath(), Short.MIN_VALUE));
+            Journal.getFile(Files.createDirectories(TEMPORARY_FOLDER.resolve("junit")), Short.MIN_VALUE));
     }
 
     @Test
-    public void getFileWithFileNumMinusOneRaisesException() throws IOException {
+    void getFileWithFileNumMinusOneRaisesException() throws IOException {
         assertThrows(IllegalArgumentException.class, () ->
-            Journal.getFile(newFolder(TEMPORARY_FOLDER, "junit").toPath(), (short) -1));
+            Journal.getFile(Files.createDirectories(TEMPORARY_FOLDER.resolve("junit")), (short) -1));
     }
 
 
     @Test
-    public void writeJournalHeader() throws IOException {
+    void writeJournalHeader() throws IOException {
         final SeekableByteChannel mockSeekableByteChannel = mock(SeekableByteChannel.class);
         final Capture<ByteBuffer> captureByteBuffer = newCapture(CaptureType.FIRST);
         expect(mockSeekableByteChannel.write(capture(captureByteBuffer))).andReturn(Journal.JOURNAL_HEADER_LEN);
@@ -291,7 +288,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFiles() throws EXistException, IOException, ReadOnlyException, InterruptedException {
+    void switchFiles() throws EXistException, IOException, ReadOnlyException, InterruptedException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);
@@ -304,7 +301,7 @@ public class JournalTest {
 
         replay(mockBrokerPool, mockConfiguration);
 
-        final Path tempJournalDir = newFolder(TEMPORARY_FOLDER, "junit").toPath();
+        final Path tempJournalDir = Files.createDirectories(TEMPORARY_FOLDER.resolve("junit"));
         Files.createDirectories(tempJournalDir);
         assertTrue(Files.exists(tempJournalDir));
 
@@ -335,7 +332,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFilesBacksUpOldFileFirst() throws EXistException, IOException, ReadOnlyException {
+    void switchFilesBacksUpOldFileFirst() throws EXistException, IOException, ReadOnlyException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);
@@ -348,7 +345,7 @@ public class JournalTest {
 
         replay(mockBrokerPool, mockConfiguration);
 
-        final Path tempJournalDir = newFolder(TEMPORARY_FOLDER, "junit").toPath();
+        final Path tempJournalDir = Files.createDirectories(TEMPORARY_FOLDER.resolve("junit"));
         Files.createDirectories(tempJournalDir);
         assertTrue(Files.exists(tempJournalDir));
 
@@ -377,7 +374,7 @@ public class JournalTest {
     }
 
     @Test
-    public void switchFilesWrapsCurrentJournalFileNumberAround() throws EXistException, IOException, ReadOnlyException {
+    void switchFilesWrapsCurrentJournalFileNumberAround() throws EXistException, IOException, ReadOnlyException {
         final BrokerPool mockBrokerPool = mock(BrokerPool.class);
         final Configuration mockConfiguration = mock(Configuration.class);
         final Scheduler mockScheduler = createNiceMock(Scheduler.class);
@@ -390,7 +387,7 @@ public class JournalTest {
 
         replay(mockBrokerPool, mockConfiguration);
 
-        final Path tempJournalDir = newFolder(TEMPORARY_FOLDER, "junit").toPath();
+        final Path tempJournalDir = Files.createDirectories(TEMPORARY_FOLDER.resolve("junit"));
         Files.createDirectories(tempJournalDir);
         assertTrue(Files.exists(tempJournalDir));
 
@@ -425,9 +422,8 @@ public class JournalTest {
         verify(mockBrokerPool, mockConfiguration);
     }
 
-    private static Path createTempDirWithFiles(final List<String> fileNames) throws IOException {
-        final Path tempFolder = newFolder(TEMPORARY_FOLDER, "junit").toPath();
-        Files.createDirectories(tempFolder);
+    private Path createTempDirWithFiles(final List<String> fileNames) throws IOException {
+        final Path tempFolder = Files.createTempDirectory(TEMPORARY_FOLDER, "junit");
         for (final String fileName : fileNames) {
             final Path file = Files.createFile(tempFolder.resolve(fileName));
             assertTrue(Files.exists(file));
@@ -435,20 +431,4 @@ public class JournalTest {
         return tempFolder;
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            if (result.isDirectory()) {
-                // TemporaryFolder.newFolder() always returned a fresh directory; this migrated
-                // helper reuses a fixed subDirs name across repeated/parameterized invocations
-                // sharing the same root, so fall back to a uniquely-suffixed sibling instead of
-                // colliding with the previous call's directory.
-                result = Files.createTempDirectory(root.toPath(), subFolder + "-").toFile();
-            } else {
-                throw new IOException("Couldn't create folders " + root);
-            }
-        }
-        return result;
-    }
 }

@@ -32,10 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class XQueryIsLibraryModuleTest {
+class XQueryIsLibraryModuleTest {
 
     @Test
-    public void isLibraryModuleAstVersionDeclAndLibraryModule() {
+    void isLibraryModuleAstVersionDeclAndLibraryModule() {
         final BaseAST xqueryModuleDecl = new CommonAST();
         xqueryModuleDecl.setType(XQueryTreeParser.MODULE_DECL);
 
@@ -48,7 +48,7 @@ public class XQueryIsLibraryModuleTest {
     }
 
     @Test
-    public void isLibraryModuleAstVersionDeclAndMainModule() {
+    void isLibraryModuleAstVersionDeclAndMainModule() {
         final BaseAST namespaceDecl = new CommonAST();
         namespaceDecl.setType(XQueryTreeParser.NAMESPACE_DECL);
 
@@ -61,7 +61,7 @@ public class XQueryIsLibraryModuleTest {
     }
 
     @Test
-    public void isLibraryModuleAstLibraryModule() {
+    void isLibraryModuleAstLibraryModule() {
         final BaseAST xqueryModuleDecl = new CommonAST();
         xqueryModuleDecl.setType(XQueryTreeParser.MODULE_DECL);
 
@@ -69,7 +69,7 @@ public class XQueryIsLibraryModuleTest {
     }
 
     @Test
-    public void isLibraryModuleAstMainModule() {
+    void isLibraryModuleAstMainModule() {
         final BaseAST namespaceDecl = new CommonAST();
         namespaceDecl.setType(XQueryTreeParser.NAMESPACE_DECL);
 
@@ -77,7 +77,7 @@ public class XQueryIsLibraryModuleTest {
     }
 
     @Test
-    public void isLibraryModuleAstVersionDeclAndLibraryModuleAndProlog() {
+    void isLibraryModuleAstVersionDeclAndLibraryModuleAndProlog() {
         final BaseAST eof = new CommonAST();
         eof.setType(XQueryTreeParser.EOF);
 
@@ -106,7 +106,7 @@ public class XQueryIsLibraryModuleTest {
     }
 
     @Test
-    public void isLibraryModuleAstVersionDeclAndMainModuleAndProlog() {
+    void isLibraryModuleAstVersionDeclAndMainModuleAndProlog() {
         final BaseAST eof = new CommonAST();
         eof.setType(XQueryTreeParser.EOF);
 

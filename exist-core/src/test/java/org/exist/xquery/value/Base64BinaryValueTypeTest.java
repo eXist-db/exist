@@ -37,49 +37,48 @@ import org.junit.jupiter.api.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  *
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
-public class Base64BinaryValueTypeTest {
+class Base64BinaryValueTypeTest {
 
     @Test
-    public void verifyInvalidBase64Fails() {
-        assertThrows(XPathException.class, () -> {
-            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-            base64Type.verifyString("=aaabbcd");
-        });
-    }
-
-    @Test
-    public void verifyInvalidBase64Fails2() {
-        assertThrows(XPathException.class, () -> {
-            TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-            base64Type.verifyString("frfhforlksid745323==");
-        });
-    }
-
-    @Test
-    public void verify_validBase64_passes() throws XPathException {
+    void verifyInvalidBase64Fails() {
         TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-        base64Type.verifyString("aaabbcd=");
+        assertThrows(XPathException.class, () ->
+            base64Type.verifyString("=aaabbcd"));
     }
 
     @Test
-    public void verify_validBase64_passes_2() throws XPathException {
+    void verifyInvalidBase64Fails2() {
         TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-        base64Type.verifyString("dGVzdCBkYXRh");
+        assertThrows(XPathException.class, () ->
+            base64Type.verifyString("frfhforlksid745323=="));
     }
 
     @Test
-    public void verify_validBase64_passes_3() throws XPathException {
+    void verifyValidBase64Passes() throws XPathException {
         TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
-        base64Type.verifyString("aaa a");
+        assertDoesNotThrow(() -> base64Type.verifyString("aaabbcd="));
     }
 
     @Test
-    public void verify_validBase64_passes_large_string() throws XPathException, IOException, URISyntaxException {
+    void verifyValidBase64Passes2() throws XPathException {
+        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+        assertDoesNotThrow(() -> base64Type.verifyString("dGVzdCBkYXRh"));
+    }
+
+    @Test
+    void verifyValidBase64Passes3() throws XPathException {
+        TestableBase64BinaryValueType base64Type = new TestableBase64BinaryValueType();
+        assertDoesNotThrow(() -> base64Type.verifyString("aaa a"));
+    }
+
+    @Test
+    void verifyValidBase64PassesLargeString() throws XPathException, IOException, URISyntaxException {
         Optional<Path> home = ConfigurationHelper.getExistHome();
         Path binaryFile = Path.of(getClass().getResource("logo.jpg").toURI());
 

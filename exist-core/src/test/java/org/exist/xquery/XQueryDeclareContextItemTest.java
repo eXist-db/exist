@@ -73,7 +73,7 @@ public class XQueryDeclareContextItemTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -90,7 +90,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @AfterAll
-    public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -105,7 +105,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItem() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItem() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -126,7 +126,7 @@ public class XQueryDeclareContextItemTest {
      * See issue https://github.com/eXist-db/exist/issues/2156
      */
     @Test
-    public void declareContextItemIsDocument() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItemIsDocument() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -144,7 +144,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItemTyped() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItemTyped() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -162,7 +162,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItemExternal() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItemExternal() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -180,7 +180,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItemExternalDefault() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItemExternalDefault() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -198,7 +198,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItemExternalDefaultOverrides() throws EXistException, PermissionDeniedException, XPathException {
+    void declareContextItemExternalDefaultOverrides() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
                 """
                 xquery version "3.0";
@@ -216,7 +216,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void declareContextItemExternalElement() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    void declareContextItemExternalElement() throws EXistException, PermissionDeniedException, XPathException, SAXException {
         final String query =
                 """
                 xquery version "3.0";
@@ -243,7 +243,7 @@ public class XQueryDeclareContextItemTest {
     }
 
     @Test
-    public void contextItemExternalDefaultElement() throws EXistException, SAXException, PermissionDeniedException, XPathException {
+    void contextItemExternalDefaultElement() throws EXistException, SAXException, PermissionDeniedException, XPathException {
         final String query =
                 "xquery version \"3.0\";\n" +
                         "declare namespace sys=\"http://syslog\";\n" +

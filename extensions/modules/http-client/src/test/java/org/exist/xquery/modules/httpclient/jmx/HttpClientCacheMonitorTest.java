@@ -39,14 +39,14 @@ import java.net.http.HttpClient;
 /**
  * Tests for {@link HttpClientCacheMonitor} JMX registration and attribute reporting.
  */
-public class HttpClientCacheMonitorTest {
+class HttpClientCacheMonitorTest {
 
     private MBeanServer server;
     private ObjectName name;
     private Cache<HttpClientOptions, HttpClient> cache;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         server = ManagementFactory.getPlatformMBeanServer();
         name = new ObjectName(HttpClientCacheMonitor.OBJECT_NAME);
 
@@ -60,26 +60,26 @@ public class HttpClientCacheMonitorTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         if (server.isRegistered(name)) {
             server.unregisterMBean(name);
         }
     }
 
     @Test
-    public void mBeanIsRegistered() {
+    void mBeanIsRegistered() {
         assertTrue(server.isRegistered(name), "HttpClientCache MBean should be registered");
     }
 
     @Test
-    public void registerAndGetIsIdempotent() {
+    void registerAndGetIsIdempotent() {
         // Second call must not throw and must not register a duplicate
         HttpClientCacheMonitor.register(cache);
         assertTrue(server.isRegistered(name));
     }
 
     @Test
-    public void cacheSizeReflectsEntries() throws Exception {
+    void cacheSizeReflectsEntries() throws Exception {
         assertEquals(0L, server.getAttribute(name, "CacheSize"));
 
         final HttpClientOptions opts = HttpClientOptions.DEFAULTS;
@@ -89,7 +89,7 @@ public class HttpClientCacheMonitorTest {
     }
 
     @Test
-    public void hitAndMissCountsAreReported() throws Exception {
+    void hitAndMissCountsAreReported() throws Exception {
         final HttpClientOptions opts = HttpClientOptions.DEFAULTS;
         cache.put(opts, HttpClient.newHttpClient());
 
@@ -103,12 +103,12 @@ public class HttpClientCacheMonitorTest {
     }
 
     @Test
-    public void hitRateIsZeroWhenNoRequests() throws Exception {
+    void hitRateIsZeroWhenNoRequests() throws Exception {
         assertEquals(0.0, (double) server.getAttribute(name, "HitRate"), 0.0001);
     }
 
     @Test
-    public void cachedClientsSummaryListsConfigurations() throws Exception {
+    void cachedClientsSummaryListsConfigurations() throws Exception {
         cache.put(new HttpClientOptions(true, 0, HttpClient.Version.HTTP_1_1, true),
                 HttpClient.newHttpClient());
         cache.put(new HttpClientOptions(false, 30, HttpClient.Version.HTTP_1_1, true),
@@ -122,13 +122,13 @@ public class HttpClientCacheMonitorTest {
     }
 
     @Test
-    public void cachedClientsSummaryIsEmptyWhenCacheIsEmpty() throws Exception {
+    void cachedClientsSummaryIsEmptyWhenCacheIsEmpty() throws Exception {
         final String summary = (String) server.getAttribute(name, "CachedClientsSummary");
         assertEquals("", summary);
     }
 
     @Test
-    public void resetClearsCache() throws Exception {
+    void resetClearsCache() throws Exception {
         cache.put(HttpClientOptions.DEFAULTS, HttpClient.newHttpClient());
         assertEquals(1L, server.getAttribute(name, "CacheSize"));
 

@@ -51,7 +51,7 @@ public class DescendantOrSelfWithNonLocationStepTest {
     }
 
     @Test
-    public void parenthesizedAttribute() throws XMLDBException {
+    void parenthesizedAttribute() throws XMLDBException {
         // //(@x) should find all @x attributes at any depth
         final ResourceSet result = execute(
                 """
@@ -61,7 +61,7 @@ public class DescendantOrSelfWithNonLocationStepTest {
     }
 
     @Test
-    public void parenthesizedAttributeUnion() throws XMLDBException {
+    void parenthesizedAttributeUnion() throws XMLDBException {
         // //(@x | @y) should find all @x and @y attributes at any depth
         final ResourceSet result = execute(
                 """
@@ -71,7 +71,7 @@ public class DescendantOrSelfWithNonLocationStepTest {
     }
 
     @Test
-    public void parenthesizedElementUnion() throws XMLDBException {
+    void parenthesizedElementUnion() throws XMLDBException {
         // //(b | c) should find elements at any depth, including direct children
         final ResourceSet result = execute(
                 """
@@ -81,7 +81,7 @@ public class DescendantOrSelfWithNonLocationStepTest {
     }
 
     @Test
-    public void parenthesizedUnionWithFollowingAxis() throws XMLDBException {
+    void parenthesizedUnionWithFollowingAxis() throws XMLDBException {
         // //(north | near-south)/preceding-sibling::comment() should work
         final ResourceSet result = execute(
                 """

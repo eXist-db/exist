@@ -40,10 +40,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * {@code XQueryURLRewrite} -- would throw an unhandled {@link NullPointerException} on effectively
  * every request. Same defect shape as eXist-db/exist#6615.
  */
-public class XQueryURLRewriteFindSourceFromFsTest {
+class XQueryURLRewriteFindSourceFromFsTest {
 
     @Test
-    public void nullRealPathReturnsNullInsteadOfNPE() {
+    void nullRealPathReturnsNullInsteadOfNPE() {
         final ServletContext mockContext = createNiceMock(ServletContext.class);
         expect(mockContext.getRealPath(anyString())).andReturn(null).anyTimes();
         replay(mockContext);

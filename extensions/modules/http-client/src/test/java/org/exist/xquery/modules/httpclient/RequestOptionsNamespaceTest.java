@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RequestOptionsNamespaceTest {
+class RequestOptionsNamespaceTest {
 
     private static Document createEmptyDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -49,7 +49,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void namespacedAttribute() throws XPathException, ParserConfigurationException {
+    void namespacedAttribute() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(HttpClientModule.NAMESPACE_URI, "follow-redirect", "false");
@@ -60,7 +60,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void existNamespacedAttribute() throws XPathException, ParserConfigurationException {
+    void existNamespacedAttribute() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(Namespaces.EXIST_NS, "follow-redirect", "false");
@@ -71,7 +71,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void autoAcceptEncodingExistNamespaced() throws XPathException, ParserConfigurationException {
+    void autoAcceptEncodingExistNamespaced() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(Namespaces.EXIST_NS, "auto-accept-encoding", "false");
@@ -82,7 +82,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void autoAcceptEncodingNoNamespaceIgnored() throws XPathException, ParserConfigurationException {
+    void autoAcceptEncodingNoNamespaceIgnored() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttribute("auto-accept-encoding", "false");
@@ -93,7 +93,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void httpVersionExistNamespacedHttp11() throws XPathException, ParserConfigurationException {
+    void httpVersionExistNamespacedHttp11() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "1.1");
@@ -105,7 +105,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void httpVersionExistNamespacedHttp2() throws XPathException, ParserConfigurationException {
+    void httpVersionExistNamespacedHttp2() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "2");
@@ -117,7 +117,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void httpVersionExistNamespacedHttp123() throws XPathException, ParserConfigurationException {
+    void httpVersionExistNamespacedHttp123() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttributeNS(Namespaces.EXIST_NS, "http-version", "1.2.3");
@@ -127,7 +127,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void httpVersionNoNamespacedHttp2() throws XPathException, ParserConfigurationException {
+    void httpVersionNoNamespacedHttp2() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         reqElem.setAttribute("http-version", "2");
@@ -139,7 +139,7 @@ public class RequestOptionsNamespaceTest {
     }
 
     @Test
-    public void noHttpVersion() throws XPathException, ParserConfigurationException {
+    void noHttpVersion() throws XPathException, ParserConfigurationException {
         final Document doc = createEmptyDocument();
         final Element reqElem = doc.createElementNS(HttpClientModule.NAMESPACE_URI, "http:request");
         doc.appendChild(reqElem);

@@ -84,7 +84,7 @@ public class QueryTraceTest {
             """;
 
     @Test
-    public void tracingOneQueryRecordsNothingForAnotherAndLeavesTheDatabaseWideTraceOff() throws Exception {
+    void tracingOneQueryRecordsNothingForAnotherAndLeavesTheDatabaseWideTraceOff() throws Exception {
         final CompletableFuture<String> recording = CompletableFuture.supplyAsync(() -> run(RECORDING_QUERY));
 
         // the first query has tracing on and is waiting now: run the second one inside that window
@@ -100,7 +100,7 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void clearingTheTraceOfOneQueryKeepsTheStatisticsOfAnother() throws Exception {
+    void clearingTheTraceOfOneQueryKeepsTheStatisticsOfAnother() throws Exception {
         final String clearingQuery = PROLOG + """
                 let $_ := system:enable-query-tracing(true())
                 let $_ := util:wait(1200)

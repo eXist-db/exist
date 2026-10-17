@@ -52,7 +52,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class GetDataTest extends RESTTest {
+class GetDataTest extends RESTTest {
 
     private final static String CONTAINER_ELEMENT_NAME = "data";
     private final static String XQUERY = wrapInElement("{request:get-data()}");
@@ -65,7 +65,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @BeforeAll
-    public static void beforeClass() throws XMLDBException {
+    static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
@@ -76,13 +76,13 @@ public class GetDataTest extends RESTTest {
     }
 
     @AfterAll
-    public static void afterClass() throws XMLDBException {
+    static void afterClass() throws XMLDBException {
         BinaryResource res = (BinaryResource)root.getResource(XQUERY_FILENAME);
         root.removeResource(res);
     }
 
     @Test
-    public void retrieveEmpty() throws IOException {
+    void retrieveEmpty() throws IOException {
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
             .header("Content-Type", "application/octet-stream")
             .POST(HttpRequest.BodyPublishers.noBody())
@@ -93,7 +93,7 @@ public class GetDataTest extends RESTTest {
 
     @Disabled("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
     @Test
-    public void retrieveBinaryHttp09() throws IOException {
+    void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -107,7 +107,7 @@ public class GetDataTest extends RESTTest {
 
     @Disabled("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
     @Test
-    public void retrieveBinaryHttp10() throws IOException {
+    void retrieveBinaryHttp10() throws IOException {
         final String testData = "12345";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -120,7 +120,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveBinaryHttp11() throws IOException {
+    void retrieveBinaryHttp11() throws IOException {
         final String testData = "12345";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -133,7 +133,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveBinaryHttp11ChunkedTransferEncoding() throws IOException {
+    void retrieveBinaryHttp11ChunkedTransferEncoding() throws IOException {
         final String testData = "12345";
 
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
@@ -149,7 +149,7 @@ public class GetDataTest extends RESTTest {
 
     @Disabled("Jetty 12 rejects HTTP/0.9, which the JDK HttpClient cannot express")
     @Test
-    public void retrieveXmlHttp09() throws IOException {
+    void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -163,7 +163,7 @@ public class GetDataTest extends RESTTest {
 
     @Disabled("Jetty 12 drops the connection on HTTP/1.0 without a response, which the JDK HttpClient cannot express")
     @Test
-    public void retrieveXmlHttp10() throws IOException {
+    void retrieveXmlHttp10() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -176,7 +176,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveXmlHttp11() throws IOException {
+    void retrieveXmlHttp11() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -189,7 +189,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveXmlHttp11ChunkedTransferEncoding() throws IOException {
+    void retrieveXmlHttp11ChunkedTransferEncoding() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
@@ -204,7 +204,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveMalformedXmlFallbackToString() throws IOException {
+    void retrieveMalformedXmlFallbackToString() throws IOException {
         final String testData = "<a><b></a>";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -216,7 +216,7 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveString() throws IOException {
+    void retrieveString() throws IOException {
         final String testData = "12345";
 
         final HttpRequest post = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))

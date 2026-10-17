@@ -56,7 +56,7 @@ public class InspectLineSourceTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void inspectFunctionReturnsLineAndSourceForUDF() throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
+    void inspectFunctionReturnsLineAndSourceForUDF() throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Path path = Path.of("src/test/resources/org/exist/test/runner/inspect-line-source-test.xqm").toAbsolutePath();
         if (!Files.exists(path)) {

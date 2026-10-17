@@ -84,7 +84,7 @@ public class StoreResourceTest {
      * As group member replace {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
     @org.junit.jupiter.api.Test
-    public void replaceXmlAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
+    void replaceXmlAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_DOC1);
         Thread.sleep(5);
@@ -96,7 +96,7 @@ public class StoreResourceTest {
      * As group member replace {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
     @org.junit.jupiter.api.Test
-    public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
+    void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         Thread.sleep(5);
@@ -198,7 +198,7 @@ public class StoreResourceTest {
     }
 
     @BeforeAll
-    public static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void prepareDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
@@ -216,7 +216,7 @@ public class StoreResourceTest {
     }
 
     @BeforeEach
-    public void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
+    void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
 
         // create user1 resources
@@ -240,7 +240,7 @@ public class StoreResourceTest {
     }
 
     @AfterEach
-    public void teardown() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
+    void teardown() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -253,7 +253,7 @@ public class StoreResourceTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void cleanupDb() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));

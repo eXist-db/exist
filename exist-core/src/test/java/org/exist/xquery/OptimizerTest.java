@@ -84,14 +84,14 @@ public class OptimizerTest {
     private static Collection testCollection;
 
     @org.junit.jupiter.api.Test
-    public void nestedQuery() throws XMLDBException {
+    void nestedQuery() throws XMLDBException {
         execute("/root/a[descendant::b = 'one']", true, "Inner b node should be returned.", 2);
         execute("/root/a[b = 'one']", true, "Inner b node should not be returned.", 1);
         execute("/root/a[b = 'one']", false, "Inner b node should not be returned.", 1);
     }
 
     @org.junit.jupiter.api.Test
-    public void simplePredicatesRegex() throws XMLDBException {
+    void simplePredicatesRegex() throws XMLDBException {
         long r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
         execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", false);
@@ -103,7 +103,7 @@ public class OptimizerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void noOptimization() throws XMLDBException {
+    void noOptimization() throws XMLDBException {
         long r = execute("/root//b[parent::c/b = 'two']", false);
         assertEquals(1, r);
         execute("/root//b[parent::c/b = 'two']", true, "Parent axis should not be optimized.", r);
@@ -126,14 +126,14 @@ public class OptimizerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void reversePaths() throws XMLDBException {
+    void reversePaths() throws XMLDBException {
         long r = execute("/root//b/parent::c[b = 'two']", false);
         assertEquals(1, r);
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
     @org.junit.jupiter.api.Test
-    public void reversePathsWithWildcard() throws XMLDBException {
+    void reversePathsWithWildcard() throws XMLDBException {
         //parent with wildcard
         long r = execute("/root//b/parent::*[b = 'two']", false);
         assertEquals(1, r);
@@ -141,7 +141,7 @@ public class OptimizerTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void booleanOperator() throws XMLDBException {
+    void booleanOperator() throws XMLDBException {
         execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
     }
@@ -157,7 +157,7 @@ public class OptimizerTest {
      * and in-memory DOM, with or without the optimizer.
      */
     @org.junit.jupiter.api.Test
-    public void nestedComparisonPreservedIssue4958() throws XMLDBException {
+    void nestedComparisonPreservedIssue4958() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         service.query("xmldb:store('/db/test', 'issue-4958.xml', <root><F id=\"1\"/></root>)");
         try {
@@ -221,7 +221,7 @@ public class OptimizerTest {
             true);
 
     @BeforeAll
-    public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException, URISyntaxException {
+    static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException, URISyntaxException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -251,7 +251,7 @@ public class OptimizerTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
 	}
 }
