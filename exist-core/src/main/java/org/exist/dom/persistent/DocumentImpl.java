@@ -440,7 +440,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             if (collection == null) {
                 uri = (XmldbURI) fileURI.clone();
             } else {
-                uri = collection.getURI().append(fileURI);
+                // a document's name is a single, already encoded path segment, so it can be appended without re-parsing the path
+                uri = collection.getURI().appendInternal(fileURI);
             }
         }
         return uri;
