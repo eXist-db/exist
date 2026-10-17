@@ -395,4 +395,18 @@ public class GroupByClause extends AbstractFLWORClause {
 
         return vars;
     }
+
+    /**
+     * Also what the grouping keys depend on, e.g. {@code group by $k := .}.
+     */
+    @Override
+    public int getDependencies() {
+        int dependencies = super.getDependencies();
+        if (groupSpecs != null) {
+            for (final GroupSpec groupSpec : groupSpecs) {
+                dependencies |= groupSpec.getGroupExpression().getDependencies();
+            }
+        }
+        return dependencies;
+    }
 }
