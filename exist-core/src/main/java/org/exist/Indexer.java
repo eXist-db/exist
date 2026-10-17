@@ -21,6 +21,7 @@
  */
 package org.exist;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -55,12 +56,14 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.exist.validation.DtdEntityRestorer;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.annotation.Nullable;
@@ -71,7 +74,7 @@ import javax.annotation.Nullable;
  * 
  * @author wolf
  */
-public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
+public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, ErrorHandler {
 
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
@@ -147,6 +150,14 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     // entities will not be reported. We thus have to cache all needed entities
     // during the validation run.
     private Map<String, String> entityMap = null;
+    /** Names of general entities declared with an external system or public id. */
+    private final Set<String> externalEntities = new HashSet<>();
+
+    /** Makes the entities of a cached DTD available, see {@link #endDTD()}. */
+    @Nullable private DtdEntityRestorer dtdEntityRestorer = null;
+    @Nullable private String dtdPublicId = null;
+    @Nullable private String dtdSystemId = null;
+    @Nullable private String dtdBaseSystemId = null;
     private String currentEntityName = null;
     private final XMLString currentEntityValue = new XMLString();
     
@@ -186,6 +197,15 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
             preserveWSmixed = temp;
 	}
+    }
+
+    /**
+     * Set the restorer for the entities of a cached DTD.
+     *
+     * @param dtdEntityRestorer the restorer
+     */
+    public void setDtdEntityRestorer(@Nullable final DtdEntityRestorer dtdEntityRestorer) {
+        this.dtdEntityRestorer = dtdEntityRestorer;
     }
 
     public void setValidating(final boolean validate) {
@@ -308,8 +328,18 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     }
 
     @Override
-    public void endDTD() {
+    public void endDTD() throws SAXException {
         insideDTD = false;
+
+        // A cached DTD is not scanned again, so make its entities available now that the
+        // internal subset, which takes precedence, has been seen
+        if (dtdEntityRestorer != null && dtdSystemId != null) {
+            try {
+                dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId);
+            } catch (final IOException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -524,6 +554,10 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         final DocumentTypeImpl docType = new DocumentTypeImpl(null, name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
+
+        dtdPublicId = publicId;
+        dtdSystemId = systemId;
+        dtdBaseSystemId = locator != null ? locator.getSystemId() : null;
     }
 
     @Override
@@ -752,14 +786,58 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     }
 
     @Override
-    public void skippedEntity(final String name) {
-        if (!validate && entityMap != null) {
-            final String value = entityMap.get(name);
+    public void skippedEntity(final String name) throws SAXException {
+        // SAX reports parameter entities as "%name" and the external DTD subset as "[dtd]"
+        if (name.startsWith("%") || "[dtd]".equals(name)) {
+            return;
+        }
 
+        if (!validate) {
+            // the entity was expanded while validating, use that value
+            final String value = entityMap != null ? entityMap.get(name) : null;
             if (value != null) {
                 characters(value.toCharArray(), 0, value.length());
+                return;
             }
         }
+
+        // The entity is declared, but the parser was configured not to fetch external entities
+        // (see the external-general-entities feature). Keep the document, and say what was dropped.
+        if (externalEntities.contains(name)) {
+            if (!validate) {
+                LOG.warn("Skipped external entity '{}' in '{}': external general entities are disabled, "
+                        + "its content is not included in the stored document", name, document != null ? document.getURI() : null);
+            }
+            return;
+        }
+
+        // The parser could not expand this reference (e.g. the external DTD subset was not loaded).
+        // Dropping it would silently remove content from the stored document, so reject it. This is
+        // also done while validating, so that the document is rejected before any of it is stored.
+        throw new SAXParseException("The entity \"" + name + "\" was referenced, but not declared.", locator);
+    }
+
+    @Override
+    public void externalEntityDecl(final String name, final String publicId, final String systemId) {
+        // parameter entities are reported with a leading '%'
+        if (!name.startsWith("%")) {
+            externalEntities.add(name);
+        }
+    }
+
+    @Override
+    public void elementDecl(final String name, final String model) {
+        // not used
+    }
+
+    @Override
+    public void attributeDecl(final String eName, final String aName, final String type, final String mode, final String value) {
+        // not used
+    }
+
+    @Override
+    public void internalEntityDecl(final String name, final String value) {
+        // not used
     }
 
     @Override

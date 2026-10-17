@@ -32,6 +32,8 @@
  */
 package org.exist.resolver;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dtd.XMLDTDDescription;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.util.SAXInputSource;
@@ -49,6 +51,7 @@ import org.xmlresolver.Resolver;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Adapts an {@link org.xmlresolver.Resolver} for use
@@ -57,7 +60,16 @@ import java.io.IOException;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class XercesXmlResolverAdapter implements XMLEntityResolver {
+    private static final Logger LOG = LogManager.getLogger(XercesXmlResolverAdapter.class);
+
     private final Resolver resolver;
+
+    /**
+     * When true, an external DTD subset that the catalog cannot resolve is only fetched if it lives
+     * in the database; anything else is treated as an empty subset. The system id of an untrusted
+     * document must not make the server open arbitrary files or network connections (see #2476).
+     */
+    private volatile boolean restrictExternalSubset = false;
 
     public XercesXmlResolverAdapter(final Resolver resolver) {
         this.resolver = resolver;
@@ -96,6 +108,11 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
             // resolve the entity via an org.xmlresolver.Resolver
             final InputSource src = resolver.resolveEntity(name, xmlResourceIdentifier.getPublicId(), xmlResourceIdentifier.getBaseSystemId(), systemId);
             if (src == null) {
+                if (restrictExternalSubset && xmlResourceIdentifier instanceof XMLDTDDescription && !isDatabaseUri(systemId)) {
+                    LOG.debug("External DTD subset '{}' is not in the catalog, treating it as empty", systemId);
+                    return new XMLInputSource(xmlResourceIdentifier.getPublicId(), systemId,
+                            xmlResourceIdentifier.getBaseSystemId(), new StringReader(""), null);
+                }
                 return null;
             }
 
@@ -103,6 +120,37 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
 
         } catch (final SAXException e) {
             throw new XNIException(e);
+        }
+    }
+
+    private static boolean isDatabaseUri(@Nullable final String systemId) {
+        return systemId != null && systemId.startsWith("xmldb:");
+    }
+
+    /**
+     * Restricts, or not, where an external DTD subset that the catalog cannot resolve may be loaded
+     * from. See {@link #restrictExternalSubset}.
+     *
+     * @param restrict true to only load such a subset from the database
+     */
+    public void setRestrictExternalSubset(final boolean restrict) {
+        this.restrictExternalSubset = restrict;
+    }
+
+    /**
+     * Get the adapter that is set as the entity resolver of the {@code xmlReader}.
+     *
+     * @param xmlReader the Xerces XML Reader
+     *
+     * @return the adapter, or null if the reader has no entity resolver or a different one
+     */
+    @Nullable
+    public static XercesXmlResolverAdapter getFrom(final XMLReader xmlReader) {
+        try {
+            final Object current = xmlReader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER);
+            return current instanceof XercesXmlResolverAdapter adapter ? adapter : null;
+        } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
+            return null;
         }
     }
 

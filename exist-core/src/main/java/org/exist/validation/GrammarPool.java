@@ -26,6 +26,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xerces.impl.dtd.DTDGrammar;
+import org.apache.xerces.impl.dtd.XMLEntityDecl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -90,9 +92,34 @@ public class GrammarPool implements XMLGrammarPool {
 
     @Override
     public Grammar[] retrieveInitialGrammarSet(final String grammarType) {
+        // DTD grammars are not handed out here, see #retrieveCachedDtdGrammars()
+        if (XMLGrammarDescription.XML_DTD.equals(grammarType)) {
+            return new Grammar[0];
+        }
+
         final List<Grammar> grammars = new ArrayList<>();
         grammarCache.asMap().forEach((key, value) -> {
             if (key.grammarType.equals(grammarType)) {
+                grammars.add(value);
+            }
+        });
+        return grammars.toArray(new Grammar[0]);
+    }
+
+    /**
+     * Get the cached DTD grammars.
+     *
+     * Xerces does not make the entities declared by a cached DTD available to later documents,
+     * so DTD grammars are never given to a parser through the {@link XMLGrammarPool} methods.
+     * They are only for a reader that restores those entities itself, see {@link ReaderGrammarPool}
+     * and {@link DtdEntityRestorer}.
+     *
+     * @return the cached DTD grammars
+     */
+    public Grammar[] retrieveCachedDtdGrammars() {
+        final List<Grammar> grammars = new ArrayList<>();
+        grammarCache.asMap().forEach((key, value) -> {
+            if (XMLGrammarDescription.XML_DTD.equals(key.grammarType)) {
                 grammars.add(value);
             }
         });
@@ -105,12 +132,49 @@ public class GrammarPool implements XMLGrammarPool {
 
         Arrays.stream(grammars).forEach(grammar -> {
             final XMLGrammarDescription desc = grammar.getGrammarDescription();
+
+            if (XMLGrammarDescription.XML_DTD.equals(desc.getGrammarType()) && !isReusableDtd(grammar)) {
+                return;
+            }
+
             grammarCache.put(new GrammarKey(desc), grammar);
         });
     }
 
+    /**
+     * Is it safe to parse a later document with this DTD grammar, without scanning the DTD again?
+     *
+     * A parser that is given a cached DTD grammar expands the entities that it declares without
+     * regard to the settings of the parser. That is not acceptable for an external or unparsed
+     * entity, as the parser would read the file or location of the entity even though
+     * external general entities are disabled. Such a DTD is parsed each time instead. A DTD that
+     * only consists of an internal subset has no identity to reuse it by.
+     */
+    private static boolean isReusableDtd(final Grammar grammar) {
+        if (!(grammar instanceof DTDGrammar dtd)) {
+            return false;
+        }
+
+        final XMLGrammarDescription desc = grammar.getGrammarDescription();
+        if (desc.getExpandedSystemId() == null && desc.getLiteralSystemId() == null) {
+            return false;
+        }
+
+        final XMLEntityDecl decl = new XMLEntityDecl();
+        for (int i = 0; dtd.getEntityDecl(i, decl); i++) {
+            if (!decl.isPE && (decl.systemId != null || decl.notation != null)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public Grammar retrieveGrammar(final XMLGrammarDescription desc) {
+        // see #retrieveCachedDtdGrammars()
+        if (XMLGrammarDescription.XML_DTD.equals(desc.getGrammarType())) {
+            return null;
+        }
         return grammarCache.getIfPresent(new GrammarKey(desc));
     }
 
@@ -140,15 +204,27 @@ public class GrammarPool implements XMLGrammarPool {
     private static class GrammarKey {
         private final String grammarType;
         private final String targetNamespace;
+        private final String publicId;
+        private final String systemId;
 
         public GrammarKey(final XMLGrammarDescription desc) {
             this.grammarType = desc.getGrammarType();
             this.targetNamespace = desc.getNamespace();
+
+            if (XMLGrammarDescription.XML_DTD.equals(grammarType)) {
+                // A DTD has no target namespace to tell it apart from another DTD, so it is
+                // identified by its public and system id instead.
+                this.publicId = desc.getPublicId();
+                this.systemId = desc.getExpandedSystemId() != null ? desc.getExpandedSystemId() : desc.getLiteralSystemId();
+            } else {
+                this.publicId = null;
+                this.systemId = null;
+            }
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(grammarType, targetNamespace);
+            return Objects.hash(grammarType, targetNamespace, publicId, systemId);
         }
 
         @Override
@@ -156,12 +232,15 @@ public class GrammarPool implements XMLGrammarPool {
             if (this == obj) return true;
             if (!(obj instanceof final GrammarKey other)) return false;
             return Objects.equals(grammarType, other.grammarType) &&
-                    Objects.equals(targetNamespace, other.targetNamespace);
+                    Objects.equals(targetNamespace, other.targetNamespace) &&
+                    Objects.equals(publicId, other.publicId) &&
+                    Objects.equals(systemId, other.systemId);
         }
 
         @Override
         public String toString() {
-            return "grammarType='%s', targetNamespace='%s'".formatted(grammarType, targetNamespace);
+            return "grammarType='%s', targetNamespace='%s', publicId='%s', systemId='%s'"
+                    .formatted(grammarType, targetNamespace, publicId, systemId);
         }
     }
 }
