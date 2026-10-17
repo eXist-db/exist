@@ -225,7 +225,7 @@ public class GrammarTooling extends BasicFunction  {
             // Send all XSD grammars to grammarpool
             Grammar[] grammars = new Grammar[allGrammars.size()];
             grammars = allGrammars.toArray(grammars);
-            grammarpool.cacheGrammars(TYPE_XSD, grammars);
+            grammarpool.preloadGrammars(grammars);
  
             // Construct result to end user
             final ValueSequence result = new ValueSequence();
