@@ -52,7 +52,11 @@ import org.xml.sax.SAXException;
  * will be loaded from the database, otherwise, it is interpreted as an URI.
  *
  * @author wolf
+ * @deprecated since 7.0.0, for removal. STX support depends on Joost, whose last release
+ * (0.9.1) dates from 2009, and Joost is not a dependency of eXist-db: this class only works if the
+ * user adds a Joost jar to the classpath. See https://github.com/eXist-db/exist/issues/6859.
  */
+@Deprecated(since = "7.0.0", forRemoval = true)
 public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger {
 
     protected Logger LOG = LogManager.getLogger(getClass());

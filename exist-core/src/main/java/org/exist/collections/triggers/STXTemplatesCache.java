@@ -47,7 +47,11 @@ import org.xml.sax.SAXException;
  * for each stylesheet use a READ_LOCK per document.
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @deprecated since 7.0.0, for removal. STX support depends on Joost, whose last release
+ * (0.9.1) dates from 2009, and Joost is not a dependency of eXist-db: this class only works if the
+ * user adds a Joost jar to the classpath. See https://github.com/eXist-db/exist/issues/6859.
  */
+@Deprecated(since = "7.0.0", forRemoval = true)
 @ThreadSafe
 public class STXTemplatesCache {
 
