@@ -201,10 +201,20 @@ public class Optimize extends AbstractPragma {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("exist:optimize: Cannot optimize expression.");
             }
+            forgetPreloadedData();
             if (originalContext != null) {
                 contextSequence = originalContext;
             }
             return innerExpr.eval(contextSequence, contextItem);
+        }
+    }
+
+    /**
+     * A previous, optimized evaluation may have preloaded the context step with nodes from another context.
+     */
+    private void forgetPreloadedData() {
+        if (contextStep != null) {
+            contextStep.clearPreloadedData();
         }
     }
 

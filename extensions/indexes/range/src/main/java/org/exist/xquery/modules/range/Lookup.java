@@ -390,6 +390,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (!canOptimize && fallback != null) {
+            forgetPreselection();
             return fallback.eval(contextSequence, contextItem);
         }
         final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
@@ -452,6 +453,17 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             result = getArgument(0).eval(effectiveContextSequence, contextItem).toNodeSet();
         }
         return result;
+    }
+
+    /**
+     * Drop what an earlier, optimized evaluation pre-selected, including the nodes it preloaded into the context
+     * step, which the fallback shares.
+     */
+    private void forgetPreselection() {
+        preselectResult = null;
+        if (contextStep != null) {
+            contextStep.clearPreloadedData();
+        }
     }
 
     @Override

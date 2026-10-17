@@ -168,6 +168,17 @@ public class LocationStep extends Step {
     }
 
     /**
+     * Forget the data set by {@link #setPreloadedData(DocumentSet, NodeSet)}, so that the step is evaluated against
+     * its context again. Called when an optimizer that preloaded this step declines to optimize a later evaluation.
+     */
+    public void clearPreloadedData() {
+        this.preloadedData = false;
+        this.currentDocs = null;
+        this.currentSet = null;
+        this.optimized = false;
+    }
+
+    /**
      * The method <code>applyPredicate</code>
      *
      * @param outerSequence   a <code>Sequence</code> value
