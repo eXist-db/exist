@@ -101,7 +101,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	public Subject authenticate(final String username, Object credentials) throws AuthenticationException {
 
 		String returnedAtts[] = { "sn", "givenName", "mail" };
-		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
+		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + escapeSearchAttribute(username) + "))";
 
 		// Create the search controls
 		SearchControls searchCtls = new SearchControls();

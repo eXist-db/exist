@@ -730,17 +730,32 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     /**
-     * Escapes '\', '(', and ')' characters.
+     * Escapes the special characters that are significant inside an LDAP search
+     * filter value per RFC 4515 \u00a73: backslash, '(', ')', '*' and the NUL
+     * character. Each is replaced with its hexadecimal escape so a value supplied
+     * by an unauthenticated principal can never break out of the filter value and
+     * alter the structure of the constructed filter. The backslash is replaced
+     * first so the escapes produced for the other characters are not themselves
+     * re-escaped.
      *
      * @param searchAttribute The search attribute string.
      *
      * @return the escaped search attribute.
      */
-    private String escapeSearchAttribute(final String searchAttribute) {
-        return searchAttribute
-                .replace("\\", "\\5c")
-                .replace("(", "\\28")
-                .replace(")", "\\29");
+    protected static String escapeSearchAttribute(final String searchAttribute) {
+        final StringBuilder buf = new StringBuilder(searchAttribute.length());
+        for (int i = 0; i < searchAttribute.length(); i++) {
+            final char ch = searchAttribute.charAt(i);
+            buf.append(switch (ch) {
+                case '\\' -> "\\5c";
+                case '*' -> "\\2a";
+                case '(' -> "\\28";
+                case ')' -> "\\29";
+                case '\u0000' -> "\\00";
+                default -> String.valueOf(ch);
+            });
+        }
+        return buf.toString();
     }
 
     private SearchResult findAccountByAccountName(final DirContext ctx, final String accountName) throws NamingException {
@@ -1234,7 +1249,11 @@ public class LDAPRealm extends AbstractRealm {
     @Override
     public List<String> findAllGroupMembers(final String groupName) {
 
-        final String name = escapeSearchAttribute(ensureCase(groupName));
+        // NOTE: kept unescaped here - checkGroupRestrictionList() matches against the raw group
+        // name, and findGroupByGroupName() escapes it itself before building its search filter.
+        // Escaping it here as well would both break restriction-list matching and double-escape
+        // the value handed to findGroupByGroupName().
+        final String name = ensureCase(groupName);
 
         final List<String> groupMembers = new ArrayList<>();
 
