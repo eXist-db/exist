@@ -48,7 +48,6 @@ public class MemTreeBuilder {
     private DocumentImpl doc;
     private short level = 1;
     private int[] prevNodeInLevel;
-    private String defaultNamespaceURI = XMLConstants.NULL_NS_URI;
     private final Expression expression;
 
     public MemTreeBuilder() {
@@ -82,7 +81,6 @@ public class MemTreeBuilder {
         prevNodeInLevel = new int[15];
         Arrays.fill(prevNodeInLevel, -1);
         prevNodeInLevel[0] = 0;
-        defaultNamespaceURI = XMLConstants.NULL_NS_URI;
     }
 
     /**
@@ -139,27 +137,24 @@ public class MemTreeBuilder {
      * @param attributes   the attributes of the element.
      * @return the node number of the created element.
      */
-    public int startElement(final String namespaceURI, String localName, final String qname, final Attributes attributes) {
+    public int startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) {
         final int prefixIdx = qname.indexOf(':');
 
-        String prefix = null;
-        if (context != null && !getDefaultNamespace().equals(namespaceURI == null ? XMLConstants.NULL_NS_URI : namespaceURI)) {
-            prefix = context.getPrefixForURI(namespaceURI);
+        // the element keeps the prefix it has in its source (none when its namespace is the
+        // default there): a prefix the query declares for the same namespace must not
+        // replace it, or a parsed element in the default namespace comes out prefixed
+        final String prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
+
+        final String local;
+        if (!localName.isEmpty()) {
+            local = localName;
+        } else if (prefixIdx > -1) {
+            local = qname.substring(prefixIdx + 1);
+        } else {
+            local = qname;
         }
 
-        if (prefix == null) {
-            prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
-        }
-
-        if (localName.isEmpty()) {
-            if (prefixIdx > -1) {
-                localName = qname.substring(prefixIdx + 1);
-            } else {
-                localName = qname;
-            }
-        }
-
-        final QName qn = new QName(localName, namespaceURI, prefix);
+        final QName qn = new QName(local, namespaceURI, prefix);
         return startElement(qn, attributes);
     }
 
@@ -512,14 +507,5 @@ public class MemTreeBuilder {
 
     public void setReplaceAttributeFlag(final boolean replaceAttribute) {
         doc.replaceAttribute = replaceAttribute;
-    }
-
-    public void setDefaultNamespace(final String defaultNamespaceURI) {
-        this.defaultNamespaceURI = defaultNamespaceURI;
-    }
-
-    private String getDefaultNamespace() {
-        // guard against someone setting null as the defaultNamespaceURI
-        return defaultNamespaceURI == null ? XMLConstants.NULL_NS_URI : defaultNamespaceURI;
     }
 }

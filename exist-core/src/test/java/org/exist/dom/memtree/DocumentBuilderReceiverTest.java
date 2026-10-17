@@ -89,7 +89,6 @@ public class DocumentBuilderReceiverTest {
     @Test
     public void use_given_namespace_prefix() throws SAXException {
         // if an explicit namespace prefix is present, it should be used
-        // unless a different mapping was defined in context
         final String title = "title";
         final String titleQName = "atom:title";
 
@@ -97,8 +96,6 @@ public class DocumentBuilderReceiverTest {
 
         expect(mockContext.getDatabase()).andReturn(null);
         expect(mockContext.getSharedNamePool()).andReturn(new NamePool());
-        // no namespace mapping in context
-        expect(mockContext.getPrefixForURI(ATOM_NS)).andReturn(null);
 
         replay(mockContext);
 
@@ -122,9 +119,10 @@ public class DocumentBuilderReceiverTest {
     }
 
     @Test
-    public void use_namespace_prefix_from_context() throws SAXException {
-        // if a namespace is mapped in the current context, use its prefix and overwrite
-        // local prefix
+    public void keepGivenNamespacePrefixWhateverTheContextMaps() throws SAXException {
+        // the element keeps the prefix it has: a prefix the query context maps to the
+        // same namespace must not replace it (the context isn't asked: an unexpected
+        // call on the mock fails the test)
         final String title = "title";
         final String titleQName = "atom:title";
 
@@ -132,8 +130,6 @@ public class DocumentBuilderReceiverTest {
 
         expect(mockContext.getDatabase()).andReturn(null);
         expect(mockContext.getSharedNamePool()).andReturn(new NamePool());
-        // namespace mapping in context
-        expect(mockContext.getPrefixForURI(ATOM_NS)).andReturn("a");
 
         replay(mockContext);
 
@@ -153,6 +149,6 @@ public class DocumentBuilderReceiverTest {
         Document doc = builder.getDocument();
         Node entryNode = doc.getFirstChild();
 
-        assertEquals("a:title", entryNode.getNodeName(), "Explicit namespace prefix should be preserved");
+        assertEquals(titleQName, entryNode.getNodeName(), "Explicit namespace prefix should be preserved");
     }
 }
