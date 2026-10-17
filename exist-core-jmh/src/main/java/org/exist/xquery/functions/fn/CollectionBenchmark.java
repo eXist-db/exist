@@ -191,6 +191,14 @@ public class CollectionBenchmark {
         bh.consume(server.executeQuery("count(collection(\"" + ROOT + "\"))"));
     }
 
+    /**
+     * The same collection resolved twice in one query, as a search over several indexes may do.
+     */
+    @Benchmark
+    public void countCollectionTwice(final Blackhole bh) throws XMLDBException {
+        bh.consume(server.executeQuery("count(collection(\"" + ROOT + "\")) + count(collection(\"" + ROOT + "\"))"));
+    }
+
     private static final class LifecycleEmbeddedServer extends ExistXmldbEmbeddedServer {
         LifecycleEmbeddedServer() {
             super(false, true, true);

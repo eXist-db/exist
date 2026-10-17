@@ -118,31 +118,51 @@ public class ExtCollection extends BasicFunction {
         if (dynamicCollection != null) {
             items.addAll(dynamicCollection);
 
+        } else if (context.inProtectedMode()) {
+            items.addAll(resolveCollection(collectionUri));
         } else {
-            final MutableDocumentSet ndocs = new DefaultDocumentSet();
-            final XmldbURI uri = XmldbURI.create(collectionUri);
-            try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
-                if (coll == null) {
-                    if (context.isRaiseErrorOnFailedRetrieval()) {
-                        throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
-                    }
-                } else {
-                    if (context.inProtectedMode()) {
-                        context.getProtectedDocs().getDocsByCollection(coll, ndocs);
-                    } else {
-                        coll.allDocs(context.getBroker(), ndocs,
-                                includeSubCollections, context.getProtectedDocs());
-                    }
-                }
-            } catch (final PermissionDeniedException e) {
-                throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", new StringValue(collectionUri.toString()), e);
-            } catch (final LockException e) {
-                throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), new StringValue(collectionUri.toString()), e);
+            // fn:collection() is stable within a query, so a collection resolved earlier in the query is reused, as
+            // long as nothing has been written to the database since
+            final String key = (includeSubCollections ? "descendants " : "children ")
+                    + context.getBroker().getCurrentSubject().getId() + " " + collectionUri;
+            final Sequence resolved = context.getResolvedCollection(key);
+            if (resolved != null) {
+                items.addAll(resolved);
+            } else {
+                final long writeLockGeneration = context.getBroker().getBrokerPool().getLockManager().getWriteLockGeneration();
+                final Sequence collectionItems = resolveCollection(collectionUri);
+                context.setResolvedCollection(key, writeLockGeneration, collectionItems);
+                items.addAll(collectionItems);
             }
-
-            // add the docs to the items
-            addAll(ndocs, items);
         }
+    }
+
+    private Sequence resolveCollection(final URI collectionUri) throws XPathException {
+        final Sequence items = new ValueSequence();
+        final MutableDocumentSet ndocs = new DefaultDocumentSet();
+        final XmldbURI uri = XmldbURI.create(collectionUri);
+        try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+            if (coll == null) {
+                if (context.isRaiseErrorOnFailedRetrieval()) {
+                    throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
+                }
+            } else {
+                if (context.inProtectedMode()) {
+                    context.getProtectedDocs().getDocsByCollection(coll, ndocs);
+                } else {
+                    coll.allDocs(context.getBroker(), ndocs,
+                            includeSubCollections, context.getProtectedDocs());
+                }
+            }
+        } catch (final PermissionDeniedException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", new StringValue(collectionUri.toString()), e);
+        } catch (final LockException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), new StringValue(collectionUri.toString()), e);
+        }
+
+        // add the docs to the items
+        addAll(ndocs, items);
+        return items;
     }
 
     protected URI asUri(final String path) throws XPathException {

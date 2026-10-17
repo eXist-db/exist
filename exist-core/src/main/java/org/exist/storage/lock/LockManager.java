@@ -42,6 +42,7 @@ import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.lang.invoke.VarHandle;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
@@ -154,6 +155,11 @@ public class LockManager {
      * The number of optimistic reads of Documents' metadata that were not possible, or invalidated by a concurrent write.
      */
     private final LongAdder optimisticDocumentReadsFailed = new LongAdder();
+
+    /**
+     * The number of Collection and Document WRITE_LOCKs ever acquired, or attempted, see {@link #getWriteLockGeneration()}.
+     */
+    private final AtomicLong writeLocksAcquired = new AtomicLong();
 
     /**
      * @param configuration database configuration
@@ -420,6 +426,7 @@ public class LockManager {
      */
     LockGroup acquirePathWriteLock(final LockType lockType, final XmldbURI path,
             final boolean lockParent) throws LockException {
+        writeLocksAcquired.incrementAndGet();
         final XmldbURI[] segments = path.getPathSegments();
 
         final long groupId = System.nanoTime();
@@ -573,6 +580,7 @@ public class LockManager {
                 final int index = documentWriteLockStripe(documentPath.getRawCollectionPath(), documentPath.getRawCollectionPath().lastIndexOf('/'));
                 documentWriteLocksHeld.incrementAndGet(index);
                 documentWriteLocksAcquired.incrementAndGet(index);
+                writeLocksAcquired.incrementAndGet();
                 lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
                 return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable, () -> documentWriteLocksHeld.decrementAndGet(index));
             } else {
@@ -616,6 +624,16 @@ public class LockManager {
             return NO_OPTIMISTIC_DOCUMENT_READ;
         }
         return stamp;
+    }
+
+    /**
+     * A number that changes whenever a Collection or Document WRITE_LOCK is acquired, so that a
+     * result read from the database can be reused for as long as it is unchanged.
+     *
+     * @return the write lock generation.
+     */
+    public long getWriteLockGeneration() {
+        return writeLocksAcquired.get();
     }
 
     /**
