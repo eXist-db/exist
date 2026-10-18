@@ -1,0 +1,14 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPRealmHasPrincipalTest.java
+  h_ff0005bef58c9d 56,68,76,84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eb0e60457d3f8954de085f9987d19fa986f0e6e9",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
