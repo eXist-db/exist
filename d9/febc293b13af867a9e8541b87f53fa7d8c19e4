@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/storage/DOMFileCurrentPageTest.java
+  s_bf77a8d4f1b569::t_c2cfea066edf27 56,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9febc293b13af867a9e8541b87f53fa7d8c19e4",
+  "prompts": {},
+  "sessions": {
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
