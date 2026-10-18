@@ -458,7 +458,10 @@ public class MutableCollection implements Collection {
             if (getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                 //Add all docs in this collection to the returned set; we already hold the lock and have checked the permission that getDocuments would
                 docs.addCollection(this);
-                addDocumentsToSet(broker, stableDocuments(documents), docs);
+                final List<DocumentImpl> stableDocuments = stableDocuments(documents);
+                if (!addReadableDocumentsWithoutLocks(broker.getCurrentSubject(), stableDocuments, docs)) {
+                    addReadableDocumentsWithLocks(broker.getCurrentSubject(), stableDocuments, docs);
+                }
                 //Get a list of sub-collection URIs. We will process them
                 //after unlocking this collection. otherwise we may deadlock ourselves
                 subColls = subCollections.stream()
@@ -540,8 +543,12 @@ public class MutableCollection implements Collection {
             }
             stableDocuments = stableDocuments(documents);
             docs.addCollection(this);
+            if (addReadableDocumentsWithoutLocks(broker.getCurrentSubject(), stableDocuments, docs)) {
+                return docs;
+            }
         }
-        addDocumentsToSet(broker, stableDocuments, docs);
+        // take the documents' locks after releasing the collection's, as before
+        addReadableDocumentsWithLocks(broker.getCurrentSubject(), stableDocuments, docs);
 
         return docs;
     }
@@ -550,7 +557,8 @@ public class MutableCollection implements Collection {
     public DocumentSet getDocumentsNoLock(final DBBroker broker, final MutableDocumentSet docs) {
         final List<DocumentImpl> stableDocuments = stableDocuments(documents);
         docs.addCollection(this);
-        addDocumentsToSet(broker, stableDocuments, docs);
+        // the caller may not hold this collection's lock, which the optimistic read needs
+        addReadableDocumentsWithLocks(broker.getCurrentSubject(), stableDocuments, docs);
         return docs;
     }
 
@@ -594,27 +602,47 @@ public class MutableCollection implements Collection {
     }
     
     /**
-     * Adds each of the documents that the current user may read to the set.
+     * Adds each of the documents that the subject may read to the set, without the documents' locks.
      *
-     * A document's permissions are checked under its READ_LOCK. When no document is being written,
-     * they are first checked optimistically without the locks, which is much faster for a large
-     * number of documents, and then only if that read is invalidated by a concurrent write are
-     * they checked again with the locks; see {@link LockManager#tryOptimisticDocumentRead()}.
+     * Must be called while holding this collection's READ_LOCK, which stops documents from being added
+     * to it, removed from it, or moved out of it. When path locks are used for documents, that lock also
+     * excludes any WRITE_LOCK on its documents, so their permissions can be read directly. Otherwise they
+     * are read optimistically, which is much faster for a large number of documents, and are valid only
+     * if no WRITE_LOCK on a document in the collection was held or taken during the read; see
+     * {@link LockManager#tryOptimisticDocumentRead(XmldbURI)}.
+     *
+     * @return true if the documents were added, or false if they must be added with
+     *     {@link #addReadableDocumentsWithLocks(Subject, List, MutableDocumentSet)} instead.
      */
-    private void addDocumentsToSet(final DBBroker broker, final List<DocumentImpl> documents, final MutableDocumentSet docs) {
-        final Subject subject = broker.getCurrentSubject();
-
-        final long stamp = lockManager.tryOptimisticDocumentRead();
-        if (stamp != LockManager.NO_OPTIMISTIC_DOCUMENT_READ) {
-            final List<DocumentImpl> readable = readableDocumentsOptimistically(subject, documents);
-            if (readable != null && lockManager.validateOptimisticDocumentRead(stamp)) {
-                for (final DocumentImpl doc : readable) {
+    private boolean addReadableDocumentsWithoutLocks(final Subject subject, final List<DocumentImpl> documents, final MutableDocumentSet docs) {
+        if (lockManager.isUsingPathLocksForDocuments()) {
+            for (final DocumentImpl doc : documents) {
+                if (doc.getPermissionsNoLock().validate(subject, Permission.READ)) {
                     docs.add(doc);
                 }
-                return;
             }
+            return true;
         }
 
+        final long stamp = lockManager.tryOptimisticDocumentRead(path);
+        if (stamp == LockManager.NO_OPTIMISTIC_DOCUMENT_READ) {
+            return false;
+        }
+        final List<DocumentImpl> readable = readableDocumentsOptimistically(subject, documents);
+        if (readable == null || !lockManager.validateOptimisticDocumentRead(path, stamp)) {
+            return false;
+        }
+        for (final DocumentImpl doc : readable) {
+            docs.add(doc);
+        }
+        return true;
+    }
+
+    /**
+     * Adds each of the documents that the subject may read to the set, checking each document's
+     * permissions under its READ_LOCK.
+     */
+    private void addReadableDocumentsWithLocks(final Subject subject, final List<DocumentImpl> documents, final MutableDocumentSet docs) {
         for (final DocumentImpl doc : documents) {
             try(final ManagedDocumentLock lockedDoc = lockManager.acquireDocumentReadLock(doc.getURI())) {
                 if(doc.getPermissions().validate(subject, Permission.READ)) {
@@ -636,7 +664,7 @@ public class MutableCollection implements Collection {
         final List<DocumentImpl> readable = new ArrayList<>(documents.size());
         try {
             for (final DocumentImpl doc : documents) {
-                if (doc.getPermissions().validate(subject, Permission.READ)) {
+                if (doc.getPermissionsNoLock().validate(subject, Permission.READ)) {
                     readable.add(doc);
                 }
             }
@@ -864,7 +892,11 @@ public class MutableCollection implements Collection {
         }
         // a Collection's path is absolute and normalized, so its parent is everything before the last '/'
         final String collectionPath = path.getRawCollectionPath();
-        return XmldbURI.createInternal(collectionPath.substring(0, collectionPath.lastIndexOf('/')));
+        final int lastSlash = collectionPath.lastIndexOf('/');
+        if (lastSlash <= 0) {
+            return path.removeLastSegment();
+        }
+        return XmldbURI.createInternal(collectionPath.substring(0, lastSlash));
     }
 
     @Override
