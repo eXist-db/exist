@@ -76,12 +76,26 @@ public class Replace extends Modification {
             }
         }
 
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
+        final Sequence evaluationSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
+
+        context.pushInScopeNamespaces();
+        try {
+            evaluateAndModify(() -> evaluate(evaluationSequence), this::modify);
+        } finally {
+            context.popInScopeNamespaces();
         }
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+        
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Selection<Sequence> evaluate(final Sequence contextSequence) throws XPathException {
         final Sequence inSeq = select.eval(contextSequence, null);
         if (inSeq.isEmpty()) {
-            return Sequence.EMPTY_SEQUENCE;
+            return null;
         }
 
         //START trap Replace failure
@@ -91,102 +105,81 @@ public class Replace extends Modification {
          * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
          * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt replace node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application
          */
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
-        {
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) {
             //Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
             ValueSequence prevUpdateErrors = null;
 
             final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
             final Object ctxVarObj = context.getAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-            if(ctxVarObj == null)
-            {
+            if (ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
-            }
-            else
-            {
+            } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
             }
             prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
-            if(!inSeq.isEmpty()) {
+            if (!inSeq.isEmpty()) {
                 //TODO: should we trap this instead of throwing an exception - deliriumsky?
                 throw xpe;
             }
         }
         //END trap Replace failure
 
-        Sequence contentSeq = value.eval(contextSequence, null);
+        final Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
-        context.pushInScopeNamespaces();
-        contentSeq = deepCopy(contentSeq);
-        
-        //start a transaction
-        try (final Txn transaction = getTransaction()) {
-            final StoredNode ql[] = selectAndLock(transaction, inSeq);
-            final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            Item temp;
-            TextImpl text;
-            AttrImpl attribute;
-            ElementImpl parent;
-            for (final StoredNode node : ql) {
-                final DocumentImpl doc = node.getOwnerDocument();
-                if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
-                    throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
-                }
+        return new Selection<>(inSeq, deepCopy(contentSeq));
+    }
 
-                //update the document
-                parent = (ElementImpl) node.getParentStoredNode();
-                if (parent == null) {
-                    throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
-                        "Please consider removing the document or use 'update value' to just replace the children of the root.");
-                }
-                switch (node.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        temp = contentSeq.itemAt(0);
-                        if (!Type.subTypeOf(temp.getType(), Type.NODE)) {
-                            throw new XPathException(this,
-                                Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
-                                    Type.getTypeName(temp.getType())));
-                        }
-                        parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
-                        break;
-                    case Node.TEXT_NODE:
-                        text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
-                        text.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, text);
-                        break;
-                    case Node.ATTRIBUTE_NODE:
-                        final AttrImpl attr = (AttrImpl) node;
-                        attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
-                        attribute.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, attribute);
-                        break;
-                    default:
-                        throw new EXistException("unsupported node-type");
-                }
-                doc.setLastModified(System.currentTimeMillis());
-                modifiedDocuments.add(doc);
-                context.getBroker().storeXMLResource(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+    private void modify(final Txn transaction, final StoredNode[] ql, final Sequence contentSeq) throws XPathException, EXistException, PermissionDeniedException {
+        final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+        Item temp;
+        TextImpl text;
+        AttrImpl attribute;
+        ElementImpl parent;
+        for (final StoredNode node : ql) {
+            final DocumentImpl doc = node.getOwnerDocument();
+            if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
             }
-            finishTriggers(transaction);
-            //commit the transaction
-            transaction.commit();
-        } catch (final LockException | PermissionDeniedException | EXistException | TriggerException e) {
-            throw new XPathException(this, e.getMessage(), e);
-        } finally {
-            unlockDocuments();
-            context.popInScopeNamespaces();
-        }
 
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            //update the document
+            parent = (ElementImpl) node.getParentStoredNode();
+            if (parent == null) {
+                throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
+                    "Please consider removing the document or use 'update value' to just replace the children of the root.");
+            }
+            switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    temp = contentSeq.itemAt(0);
+                    if (!Type.subTypeOf(temp.getType(), Type.NODE)) {
+                        throw new XPathException(this,
+                            Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
+                                Type.getTypeName(temp.getType())));
+                    }
+                    parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
+                    break;
+                case Node.TEXT_NODE:
+                    text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
+                    text.setOwnerDocument(doc);
+                    parent.updateChild(transaction, node, text);
+                    break;
+                case Node.ATTRIBUTE_NODE:
+                    final AttrImpl attr = (AttrImpl) node;
+                    attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
+                    attribute.setOwnerDocument(doc);
+                    parent.updateChild(transaction, node, attribute);
+                    break;
+                default:
+                    throw new EXistException("unsupported node-type");
+            }
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+            context.getBroker().storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         }
-        
-        return Sequence.EMPTY_SEQUENCE;
     }
 
     /* (non-Javadoc)

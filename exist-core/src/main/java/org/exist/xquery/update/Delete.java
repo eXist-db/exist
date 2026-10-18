@@ -73,10 +73,17 @@ public class Delete extends Modification {
             }
         }
         
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+        final Sequence evaluationSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
+        evaluateAndModify(() -> evaluate(evaluationSequence), (transaction, nodes, with) -> modify(transaction, nodes));
 
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+        
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Selection<Void> evaluate(final Sequence contextSequence) throws XPathException {
         final Sequence inSeq = select.eval(contextSequence, null);
 
         //START trap Delete failure
@@ -86,14 +93,13 @@ public class Delete extends Modification {
          * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
          * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt delete node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application 
          */
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
-        {
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) {
             //Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
             ValueSequence prevUpdateErrors = null;
 
             final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
             final Object ctxVarObj = context.getAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-            if(ctxVarObj == null) {
+            if (ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
@@ -101,65 +107,50 @@ public class Delete extends Modification {
             prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
-            if(!inSeq.isEmpty()) {
+            if (!inSeq.isEmpty()) {
                 //TODO: should we trap this instead of throwing an exception - deliriumsky?
                 throw xpe;
             }
         }
         //END trap Delete failure
-        
-        if (!inSeq.isEmpty()) {
-            //start a transaction
-            try (final Txn transaction = getTransaction()) {
-                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                final StoredNode[] ql = selectAndLock(transaction, inSeq);
-                for (final StoredNode node : ql) {
-                    final DocumentImpl doc = node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
-                        //transact.abort(transaction);    
-                        throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
-                    }
 
-                    //update the document
-                    final NodeImpl parent = (NodeImpl) getParent(node);
+        return inSeq.isEmpty() ? null : new Selection<>(inSeq, null);
+    }
 
-                    if (parent == null) {
-                        LOG.debug("Cannot remove the document element (no parent node)");
-                        throw new XPathException(this,
-                            "It is not possible to remove the document element.");
-
-                    } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("parent = {}; {}", parent.getNodeType(), parent.getNodeName());
-                        }
-                        //transact.abort(transaction);
-                        throw new XPathException(this,
-                            "you cannot remove the document element. Use update "
-                                + "instead");
-                    } else {
-                        parent.removeChild(transaction, node);
-                    }
-
-                    doc.setLastModified(System.currentTimeMillis());
-                    modifiedDocuments.add(doc);
-                    context.getBroker().storeXMLResource(transaction, doc);
-                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
-                }
-                finishTriggers(transaction);
-                //commit the transaction
-                transaction.commit();
-            } catch (final EXistException | PermissionDeniedException | LockException | TriggerException e) {
-                throw new XPathException(this, e.getMessage(), e);
-            } finally {
-                unlockDocuments();
+    private void modify(final Txn transaction, final StoredNode[] ql) throws XPathException, EXistException, PermissionDeniedException {
+        final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+        for (final StoredNode node : ql) {
+            final DocumentImpl doc = node.getOwnerDocument();
+            if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                //transact.abort(transaction);    
+                throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
             }
+
+            //update the document
+            final NodeImpl parent = (NodeImpl) getParent(node);
+
+            if (parent == null) {
+                LOG.debug("Cannot remove the document element (no parent node)");
+                throw new XPathException(this,
+                    "It is not possible to remove the document element.");
+
+            } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("parent = {}; {}", parent.getNodeType(), parent.getNodeName());
+                }
+                //transact.abort(transaction);
+                throw new XPathException(this,
+                    "you cannot remove the document element. Use update "
+                        + "instead");
+            } else {
+                parent.removeChild(transaction, node);
+            }
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+            context.getBroker().storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         }
-        
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        }
-        
-        return Sequence.EMPTY_SEQUENCE;
     }
 
     /* (non-Javadoc)

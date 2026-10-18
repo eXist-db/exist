@@ -41,6 +41,7 @@ import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
+import javax.annotation.Nullable;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.LongAdder;
@@ -144,6 +145,21 @@ public class LockManager {
      * The number of Document WRITE_LOCKs ever acquired, by stripe, see {@link #documentWriteLockStripe(String, int)}.
      */
     private final AtomicLongArray documentWriteLocksAcquired = new AtomicLongArray(DOCUMENT_WRITE_LOCK_STRIPES * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE);
+
+    /**
+     * The number of Document WRITE_LOCKs held, by stripe of the Document's path, see {@link #stampDocumentWrites()}.
+     */
+    private final AtomicLongArray documentWriteLocksHeldByDocument = new AtomicLongArray(DOCUMENT_WRITE_LOCK_STRIPES * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE);
+
+    /**
+     * The number of Document WRITE_LOCKs ever acquired, by stripe of the Document's path, see {@link #stampDocumentWrites()}.
+     */
+    private final AtomicLongArray documentWriteLocksAcquiredByDocument = new AtomicLongArray(DOCUMENT_WRITE_LOCK_STRIPES * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE);
+
+    /**
+     * The Document WRITE_LOCKs that the current thread has acquired, and holds.
+     */
+    private final ThreadLocal<ThreadDocumentWriteLocks> threadDocumentWriteLocks = ThreadLocal.withInitial(ThreadDocumentWriteLocks::new);
 
     /**
      * The number of optimistic reads of Documents' metadata that were valid.
@@ -573,8 +589,19 @@ public class LockManager {
                 final int index = documentWriteLockStripe(documentPath.getRawCollectionPath(), documentPath.getRawCollectionPath().lastIndexOf('/'));
                 documentWriteLocksHeld.incrementAndGet(index);
                 documentWriteLocksAcquired.incrementAndGet(index);
+                final int documentIndex = documentWriteLockStripe(documentPath.getRawCollectionPath(), documentPath.getRawCollectionPath().length());
+                documentWriteLocksHeldByDocument.incrementAndGet(documentIndex);
+                documentWriteLocksAcquiredByDocument.incrementAndGet(documentIndex);
+                final ThreadDocumentWriteLocks threadLocks = threadDocumentWriteLocks.get();
+                threadLocks.acquired++;
+                threadLocks.acquiredByDocument[documentIndex / DOCUMENT_WRITE_LOCK_STRIPE_STRIDE]++;
+                threadLocks.held++;
                 lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-                return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable, () -> documentWriteLocksHeld.decrementAndGet(index));
+                return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable, () -> {
+                    documentWriteLocksHeld.decrementAndGet(index);
+                    documentWriteLocksHeldByDocument.decrementAndGet(documentIndex);
+                    threadLocks.held--;
+                });
             } else {
                 lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
                 throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
@@ -640,6 +667,119 @@ public class LockManager {
             optimisticDocumentReadsFailed.increment();
         }
         return valid;
+    }
+
+    /**
+     * Takes a stamp of the Document WRITE_LOCKs acquired so far, so that a reader which doesn't know beforehand which
+     * Documents it will modify, such as an update expression evaluating its selection, can then validate that no
+     * other thread has written them since, with {@link #validateDocumentWrites(DocumentWriteStamp, Iterable)}.
+     *
+     * The WRITE_LOCKs are counted in stripes of the Documents' paths, so a WRITE_LOCK on another Document of the same
+     * stripe also invalidates the stamp, which is merely conservative.
+     *
+     * @return the stamp, or null if path locks are used for Documents, which aren't counted.
+     */
+    public @Nullable DocumentWriteStamp stampDocumentWrites() {
+        if (usePathLocksForDocuments) {
+            return null;
+        }
+        final long[] acquired = new long[DOCUMENT_WRITE_LOCK_STRIPES];
+        for (int stripe = 0; stripe < DOCUMENT_WRITE_LOCK_STRIPES; stripe++) {
+            final int index = stripe * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE;
+            // NOTE: read in the opposite order to which #acquireDocumentWriteLock(XmldbURI) increments them
+            acquired[stripe] = documentWriteLocksAcquiredByDocument.get(index);
+            if (documentWriteLocksHeldByDocument.get(index) != 0) {
+                acquired[stripe] = DocumentWriteStamp.HELD;
+            }
+        }
+        return new DocumentWriteStamp(acquired, threadDocumentWriteLocks.get().acquiredByDocument.clone());
+    }
+
+    /**
+     * Validates that no other thread held or acquired a WRITE_LOCK on any of the Documents since the stamp was
+     * taken; the current thread's own WRITE_LOCKs, such as those it took to modify them, don't count.
+     *
+     * @param stamp the stamp from {@link #stampDocumentWrites()}.
+     * @param documentPaths the paths of the Documents.
+     *
+     * @return true if no other thread wrote the Documents since the stamp was taken.
+     */
+    public boolean validateDocumentWrites(@Nullable final DocumentWriteStamp stamp, final Iterable<XmldbURI> documentPaths) {
+        if (stamp == null) {
+            return false;
+        }
+        // order the reads made since the stamp was taken before the reads of the counters, as StampedLock#validate(long) does
+        VarHandle.acquireFence();
+        final long[] own = threadDocumentWriteLocks.get().acquiredByDocument;
+        for (final XmldbURI documentPath : documentPaths) {
+            final String path = documentPath.getRawCollectionPath();
+            final int stripe = documentWriteLockStripe(path, path.length()) / DOCUMENT_WRITE_LOCK_STRIPE_STRIDE;
+            if (!stamp.unchanged(stripe, documentWriteLocksAcquiredByDocument.get(stripe * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE), own[stripe])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Validates that no other thread held or acquired a WRITE_LOCK on any Document since the stamp was taken; the
+     * current thread's own WRITE_LOCKs don't count.
+     *
+     * @param stamp the stamp from {@link #stampDocumentWrites()}.
+     *
+     * @return true if no other thread wrote any Document since the stamp was taken.
+     */
+    public boolean validateDocumentWrites(@Nullable final DocumentWriteStamp stamp) {
+        if (stamp == null) {
+            return false;
+        }
+        VarHandle.acquireFence();
+        final long[] own = threadDocumentWriteLocks.get().acquiredByDocument;
+        for (int stripe = 0; stripe < DOCUMENT_WRITE_LOCK_STRIPES; stripe++) {
+            if (!stamp.unchanged(stripe, documentWriteLocksAcquiredByDocument.get(stripe * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE), own[stripe])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * A stamp of the Document WRITE_LOCKs acquired, see {@link #stampDocumentWrites()}.
+     */
+    public static final class DocumentWriteStamp {
+        private static final long HELD = -1;
+
+        private final long[] acquired;
+        private final long[] ownAcquired;
+
+        private DocumentWriteStamp(final long[] acquired, final long[] ownAcquired) {
+            this.acquired = acquired;
+            this.ownAcquired = ownAcquired;
+        }
+
+        private boolean unchanged(final int stripe, final long acquiredNow, final long ownAcquiredNow) {
+            return acquired[stripe] != HELD && acquiredNow - acquired[stripe] == ownAcquiredNow - ownAcquired[stripe];
+        }
+    }
+
+    /**
+     * Returns the number of Document WRITE_LOCKs the current thread has ever acquired. The difference between two
+     * calls is the number it acquired in between, for example to tell whether it wrote anything between two points.
+     *
+     * @return the number of Document WRITE_LOCKs the current thread has acquired.
+     */
+    public long documentWriteLocksAcquiredByCurrentThread() {
+        return threadDocumentWriteLocks.get().acquired;
+    }
+
+    /**
+     * Returns true if the current thread holds a Document WRITE_LOCK. When path locks are used for Documents, which
+     * aren't counted, it is assumed that it does.
+     *
+     * @return true if the current thread holds, or may hold, a Document WRITE_LOCK.
+     */
+    public boolean currentThreadMayHoldDocumentWriteLock() {
+        return usePathLocksForDocuments || threadDocumentWriteLocks.get().held > 0;
     }
 
     /**
@@ -937,5 +1077,14 @@ public class LockManager {
         } else {
             return defaultValue;
         }
+    }
+
+    /**
+     * The number of Document WRITE_LOCKs that a thread has acquired, and holds.
+     */
+    private static final class ThreadDocumentWriteLocks {
+        private long acquired;
+        private final long[] acquiredByDocument = new long[DOCUMENT_WRITE_LOCK_STRIPES];
+        private int held;
     }
 }
