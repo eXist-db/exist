@@ -1,0 +1,64 @@
+exist-core/src/main/java/org/exist/Indexer.java
+  s_0aafa4e1f72b71::t_ce3486d245fcbe 24,59,155-160,202-210,331,333-342,557-560
+exist-core/src/main/java/org/exist/collections/IndexInfo.java
+  s_0aafa4e1f72b71::t_a99078175e6058 34-37,112,117-134
+exist-core/src/main/java/org/exist/util/XMLReaderObjectFactory.java
+  s_0aafa4e1f72b71::t_530e78bdb0bb8a 36,76-77,123-128
+exist-core/src/main/java/org/exist/validation/DtdEntityRestorer.java
+  s_0aafa4e1f72b71::t_d10a07bf535946 1-42,47-106
+exist-core/src/main/java/org/exist/validation/GrammarPool.java
+  s_0aafa4e1f72b71::t_b17245bb1aa8f2 29-30,95-99,109-128,136,144-171,174-177,207-208,213-222,227,235-237,242-243
+exist-core/src/main/java/org/exist/validation/ReaderGrammarPool.java
+  s_0aafa4e1f72b71::t_324b9cbe20602c 1-95
+exist-core/src/test/java/org/exist/util/XMLReaderPoolTest.java
+  s_0aafa4e1f72b71::t_89fbe923973a81 266-269,690
+  s_de6c8e6165bb49::t_3d63ce81b1236b 181,183-213
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_0aafa4e1f72b71::t_e45608e5b9ae26 156-157,159-175
+  s_bf77a8d4f1b569::t_3eff943214d415 143,158
+exist-core/src/test/java/org/exist/validation/DtdGrammarCacheTest.java
+  s_0aafa4e1f72b71::t_845906617341f3 37,43-44,103-104,106-120,122-135,137-150,152-169
+  s_bf77a8d4f1b569::t_174d3b0ff8b4d0 52,87,105,121,136,151
+  h_ff0005bef58c9d 75
+exist-core/src/test/java/org/exist/validation/GrammarPoolTest.java
+  s_0aafa4e1f72b71::t_13a21d4f8a52e7 143-144,147,150-151,154,156-171,176-182
+exist-core/src/test/java/org/exist/resolver/CatalogResolutionRegressionTest.java
+  s_bf77a8d4f1b569::t_c62c8a1bc68c2f 157,189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "577173c822dab235c0efe0d60c760bc6830f949a",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_0aafa4e1f72b71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d488e127-4924-4b78-84c6-cac4e00930d1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_de6c8e6165bb49": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "64b90ec0-16f9-4c24-b582-15edf54a19bf",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
