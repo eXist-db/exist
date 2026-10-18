@@ -1,0 +1,18 @@
+exist-core/src/test/java/org/exist/xquery/functions/AccessUtilTest.java
+  h_ff0005bef58c9d 35,47,63,87
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java
+  h_ff0005bef58c9d 63,84,95,103,120
+exist-core/src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java
+  h_ff0005bef58c9d 68,89,100,108,133,162,190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "371970fbb73ca468bb3d41795f72189212996b06",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
