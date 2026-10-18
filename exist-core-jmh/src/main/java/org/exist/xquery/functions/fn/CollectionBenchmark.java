@@ -35,10 +35,19 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.lock.LockTable;
+import org.exist.storage.lock.ManagedDocumentLock;
+import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xmldb.EXistXQueryService;
 import org.openjdk.jmh.infra.Blackhole;
 import org.xmldb.api.base.XMLDBException;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Measures {@code fn:collection()} over a collection tree of many small
@@ -50,6 +59,12 @@ import java.util.concurrent.TimeUnit;
  * sub-collections (50,000 documents) every {@code Collection} stays cached, and with
  * 10,000 (200,000 documents) they no longer fit, so collections are reloaded as
  * {@code fn:collection()} walks the tree.
+ *
+ * <p>While it runs, a light writer may store a document every {@value #WRITER_PAUSE_MS} ms,
+ * either in another collection ({@code writer=other}) or in one of the sub-collections that
+ * {@code fn:collection()} reads ({@code writer=inside}); or a WRITE_LOCK on a document in another
+ * collection may be held throughout ({@code writer=held}), as by a long update. The lock table, which records every lock
+ * for diagnostics, may be disabled, as the default {@code conf.xml} recommends in production.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -62,14 +77,24 @@ public class CollectionBenchmark {
     private static final int DOCUMENTS_PER_COLLECTION = 20;
     private static final int COLLECTIONS_PER_STORE_QUERY = 500;
     private static final String ROOT = "/db/collection-benchmark";
+    private static final int WRITER_PAUSE_MS = 10;
 
     @Param({"2500", "10000"})
     public int collections;
 
+    @Param({"none"})
+    public String writer;
+
+    @Param({"enabled"})
+    public String lockTable;
+
     private LifecycleEmbeddedServer server;
+    private final AtomicBoolean writing = new AtomicBoolean();
+    private Thread writerThread;
 
     @Setup(Level.Trial)
     public void setUp() throws Throwable {
+        System.setProperty(LockTable.PROP_DISABLE, Boolean.toString("disabled".equals(lockTable)));
         server = new LifecycleEmbeddedServer();
         server.before();
 
@@ -84,10 +109,77 @@ public class CollectionBenchmark {
                         <doc n="{$i}"><title>Document {$i} of c{$c}</title><p>Some text for document {$i}.</p></doc>)
                     """.formatted(from, to, ROOT, DOCUMENTS_PER_COLLECTION));
         }
+
+        final String writerCollection = switch (writer) {
+            case "none" -> null;
+            case "other" -> "/db/collection-benchmark-writes";
+            case "inside" -> ROOT + "/c1";
+            case "held" -> {
+                holdDocumentWriteLock(XmldbURI.create("/db/collection-benchmark-writes/held.xml"));
+                yield null;
+            }
+            default -> throw new IllegalArgumentException("Unknown writer: " + writer);
+        };
+        if (writerCollection != null) {
+            startWriter(writerCollection);
+        }
+    }
+
+    /**
+     * Holds a WRITE_LOCK on the document until the trial ends.
+     */
+    private void holdDocumentWriteLock(final XmldbURI document) throws InterruptedException {
+        final CountDownLatch locked = new CountDownLatch(1);
+        writing.set(true);
+        writerThread = new Thread(() -> {
+            try (final ManagedDocumentLock ignored = BrokerPool.getInstance().getLockManager().acquireDocumentWriteLock(document)) {
+                locked.countDown();
+                while (writing.get()) {
+                    Thread.sleep(WRITER_PAUSE_MS);
+                }
+            } catch (final EXistException | LockException e) {
+                throw new IllegalStateException(e);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "collection-benchmark-lock-holder");
+        writerThread.start();
+        locked.await();
+    }
+
+    /**
+     * Stores a document in the collection every {@value #WRITER_PAUSE_MS} ms, until the trial ends.
+     */
+    private void startWriter(final String collection) throws XMLDBException {
+        final String parent = collection.substring(0, collection.lastIndexOf('/'));
+        final String name = collection.substring(collection.lastIndexOf('/') + 1);
+        final EXistXQueryService service = server.getRoot().getService(EXistXQueryService.class);
+        service.query("xmldb:create-collection(\"" + parent + "\", \"" + name + "\")");
+        writing.set(true);
+        writerThread = new Thread(() -> {
+            long i = 0;
+            while (writing.get()) {
+                try {
+                    service.query("xmldb:store(\"" + collection + "\", \"written.xml\", <written n=\"" + i++ + "\"/>)");
+                    Thread.sleep(WRITER_PAUSE_MS);
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (final XMLDBException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        }, "collection-benchmark-writer");
+        writerThread.start();
     }
 
     @TearDown(Level.Trial)
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
+        writing.set(false);
+        if (writerThread != null) {
+            writerThread.join();
+            writerThread = null;
+        }
         if (server != null) {
             server.after();
             server = null;
