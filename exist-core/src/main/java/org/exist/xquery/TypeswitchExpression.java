@@ -161,12 +161,37 @@ public class TypeswitchExpression extends AbstractExpression {
         return Cardinality.ZERO_OR_MORE;
     }
     
+    @Override
+    public boolean isUpdating() {
+        for (final Case c : cases) {
+            if (c.returnClause.isUpdating()) {
+                return true;
+            }
+        }
+        return defaultClause != null && defaultClause.returnClause.isUpdating();
+    }
+
+    @Override
+    public boolean isVacuous() {
+        for (final Case c : cases) {
+            if (!c.returnClause.isVacuous()) {
+                return false;
+            }
+        }
+        return defaultClause == null || defaultClause.returnClause.isVacuous();
+    }
+
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.setParent(this);
-        operand.analyze(contextInfo);
-        
+        final AnalyzeContextInfo myContextInfo = new AnalyzeContextInfo(contextInfo);
+        myContextInfo.setParent(this);
+
+        // Operand is a non-updating context
+        final AnalyzeContextInfo operandInfo = new AnalyzeContextInfo(myContextInfo);
+        operandInfo.addFlag(NON_UPDATING_CONTEXT);
+        operand.analyze(operandInfo);
+
         final LocalVariable mark0 = context.markLocalVariables(false);
-        
+
         try {
         	for (final Case next : cases) {
         		final LocalVariable mark1 = context.markLocalVariables(false);
@@ -178,7 +203,8 @@ public class TypeswitchExpression extends AbstractExpression {
                         }
         				context.declareVariableBinding(var);
         			}
-        			next.returnClause.analyze(contextInfo);
+        			myContextInfo.setParent(this);
+        			next.returnClause.analyze(myContextInfo);
         		} finally {
         			context.popLocalVariables(mark1);
         		}
@@ -187,9 +213,33 @@ public class TypeswitchExpression extends AbstractExpression {
         		final LocalVariable var = new LocalVariable(defaultClause.variable);
         		context.declareVariableBinding(var);
         	}
-        	defaultClause.returnClause.analyze(contextInfo);
+        	myContextInfo.setParent(this);
+        	defaultClause.returnClause.analyze(myContextInfo);
         } finally {
         	context.popLocalVariables(mark0);
+        }
+
+        // XUST0001: check branch compatibility
+        // All branches must be either all updating, all non-updating, or vacuous
+        boolean hasUpdating = false;
+        boolean hasNonUpdating = false;
+        for (final Case c : cases) {
+            if (c.returnClause.isUpdating()) {
+                hasUpdating = true;
+            } else if (!c.returnClause.isVacuous()) {
+                hasNonUpdating = true;
+            }
+        }
+        if (defaultClause != null) {
+            if (defaultClause.returnClause.isUpdating()) {
+                hasUpdating = true;
+            } else if (!defaultClause.returnClause.isVacuous()) {
+                hasNonUpdating = true;
+            }
+        }
+        if (hasUpdating && hasNonUpdating) {
+            throw new XPathException(this, ErrorCodes.XUST0001,
+                    "typeswitch branches mix updating and non-updating expressions");
         }
     }
 

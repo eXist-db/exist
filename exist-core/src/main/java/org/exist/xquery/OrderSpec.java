@@ -48,7 +48,9 @@ public class OrderSpec {
 	}
 
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-	    expression.analyze(contextInfo);
+	    final AnalyzeContextInfo orderInfo = new AnalyzeContextInfo(contextInfo);
+	    orderInfo.addFlag(Expression.NON_UPDATING_CONTEXT);
+	    expression.analyze(orderInfo);
 	}
 	
 	public void setModifiers(int modifiers) {
