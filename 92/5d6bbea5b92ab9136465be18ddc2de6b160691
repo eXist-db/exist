@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1e21b9ee169e36::t_44b971c5b7aee9 516,518-524,526-527,529-530,535-537
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FtQueryUpdateNotificationTest.java
+  s_1e21b9ee169e36::t_d75b8fc3eed1fc 1-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "925d6bbea5b92ab9136465be18ddc2de6b160691",
+  "prompts": {},
+  "sessions": {
+    "s_1e21b9ee169e36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e652345c-1dc2-466a-9b82-337f5ecdaa4d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

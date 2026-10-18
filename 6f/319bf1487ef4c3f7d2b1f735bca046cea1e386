@@ -1,0 +1,22 @@
+exist-core/src/test/java/org/exist/xquery/LocationStepUpdateListenerTest.java
+  s_1e21b9ee169e36::t_10555154cf21a4 1-158
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1e21b9ee169e36::t_6125e8a4d052ea 504-507,515-516,665-668,679-680,686,688,749-752,762-763,767,813-816,826-827,834,837,929-931,941-942,947-948,1023-1025,1031-1032,1041,1043,1047,1049,1054,1056,1180-1182,1192-1193,1198-1199,1244-1246,1256-1257,1261
+  s_1e21b9ee169e36::t_df4ed89e17b2e9 57-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6f319bf1487ef4c3f7d2b1f735bca046cea1e386",
+  "prompts": {},
+  "sessions": {
+    "s_1e21b9ee169e36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e652345c-1dc2-466a-9b82-337f5ecdaa4d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
