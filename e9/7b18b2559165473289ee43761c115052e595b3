@@ -1,0 +1,66 @@
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_09297aafabf850::t_752ce6e8747528 1307,1309,1314-1324,1333
+  s_09297aafabf850::t_f2d2630ab99eb1 1220-1226
+  s_60f0f336ccf383::t_d7a4e3904965a3 1210-1219,1227-1242,1244-1248,1299,1311
+  s_906a7d5fc5215d::t_5479e3f36b3986 1243
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceAdmissionTest.java
+  s_60f0f336ccf383::t_8e85c946202510 1-26,28-30,34-37,39-41,45-48,50,52-56,58,60,65-67,88-99,105,109,116,118-119,143-145,147,175-178,185,188,190-191,193,197,199-201
+  s_09297aafabf850::t_5c087a912befe8 111,113-115,117,148
+  s_09297aafabf850::t_a90d94c86b8db2 27,31-33,38,42-44,49,51,57,59,61-64,68-87,100-104,106-108,110,112,120-142,146,149-174,179-184,186-187,189,192,194-196,198
+exist-core/src/test/java/org/exist/storage/BrokerPoolServiceTest.java
+  s_e98fb2299e704f::t_79f673a1fdf9a7 267
+  s_bf77a8d4f1b569::t_18f1c23529a0b5 44,140,162
+exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManager.java
+  s_60f0f336ccf383::t_26b0113b018374 119-121,128,131,336-338,340
+  s_09297aafabf850::t_831d1544d85535 132
+  s_906a7d5fc5215d::t_309b6b74c72478 129
+  s_09297aafabf850::t_6dafda2853b093 47-48,114-118,122-127,130,154,339
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e97b18b2559165473289ee43761c115052e595b3",
+  "prompts": {},
+  "sessions": {
+    "s_09297aafabf850": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f355600-331c-4897-ba29-8335ae050ec4",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_60f0f336ccf383": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "671502c7-1901-4192-b5a1-492320f00cca",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_906a7d5fc5215d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1cf66bf3-d334-402c-b319-a7f3c0f179f6",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_e98fb2299e704f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "fe63e19d-7812-4cd3-8078-f384be04c806",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
