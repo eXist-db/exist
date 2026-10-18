@@ -1,0 +1,41 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_e77a973088f8d4::t_f6c51160e52397 256,259-263,268,271
+  s_e77a973088f8d4::t_a6e0d2ddaf5fa8 250
+  s_e77a973088f8d4::t_d9f826e628c4a5 264-265,270,275-276
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_e77a973088f8d4::t_a1f3581a45c254 135-149
+  s_e77a973088f8d4::t_a171d3312bf8df 38
+  s_e77a973088f8d4::t_90344fa75ad267 134
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextHighlighter.java
+  s_e77a973088f8d4::t_05bb907b190ee6 68,73,80-81,85
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatchListener.java
+  s_e77a973088f8d4::t_c6271cdfe48a5a 302,309-312
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_e77a973088f8d4::t_ce2a374f71e9a0 30
+  s_e77a973088f8d4::t_9c05820288b361 73-76
+  s_e77a973088f8d4::t_0f62629133bb8f 50-52
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/MarkableTokenFilter.java
+  s_e77a973088f8d4::t_092342d3ff350a 106-108,110-114
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneUtil.java
+  s_e77a973088f8d4::t_7d4a63cbfa26b3 283-287,289,291-296,299
+  s_e77a973088f8d4::t_fc98c605528a77 33
+  s_e77a973088f8d4::t_c9b5bbff21882d 313-320
+  s_e77a973088f8d4::t_1cfd4c74b21f56 321
+  s_e77a973088f8d4::t_47f53bb27930b4 401-460
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "295fa2d981b09713d757e7af72eea0893e4a1263",
+  "prompts": {},
+  "sessions": {
+    "s_e77a973088f8d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "90594510-d0c7-44bd-a5e8-62b28c547f3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
