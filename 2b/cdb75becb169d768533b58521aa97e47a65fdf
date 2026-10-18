@@ -1,0 +1,32 @@
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_b424eab1ae5e7a::t_c5c076c00250c7 71-73
+  s_b424eab1ae5e7a::t_ac46760b95fa98 80
+  s_b424eab1ae5e7a::t_c620fd0c7ead7c 81-82
+  s_b424eab1ae5e7a::t_f62fb6ca52d300 70
+  s_b424eab1ae5e7a::t_ceb7cfd958d790 214-223,226
+  s_b424eab1ae5e7a::t_8afebc07620214 229-242
+  s_b424eab1ae5e7a::t_923f5afcf30bc8 213,224-225,227-228
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_b424eab1ae5e7a::t_011704f6891edc 270-335
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_b424eab1ae5e7a::t_e267b4a33cd109 201,211
+  s_b424eab1ae5e7a::t_d606501e72ef36 158,166-183,193
+  s_b424eab1ae5e7a::t_a46012db493bc8 157
+  s_b424eab1ae5e7a::t_bc7cba8fd3cefa 103-110,113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2bcdb75becb169d768533b58521aa97e47a65fdf",
+  "prompts": {},
+  "sessions": {
+    "s_b424eab1ae5e7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8c55ebe-eaf8-4bc4-8731-568a40b12726",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
