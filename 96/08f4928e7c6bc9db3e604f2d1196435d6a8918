@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/validation/DtdGrammarCacheTest.java
+  h_ff0005bef58c9d 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9608f4928e7c6bc9db3e604f2d1196435d6a8918",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
