@@ -400,11 +400,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     private boolean isShared = false;
 
     /**
-     * The most compiled forms of code that {@code util:eval} keeps per query, see {@link #returnEvalQuery(Source, CompiledXQuery)}.
-     */
-    private static final int MAX_EVAL_QUERIES = 64;
-
-    /**
      * Code that {@code util:eval} compiled in a copy of this query's context, kept for reuse by this query, in
      * least recently used order.
      */
@@ -732,17 +727,23 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Keeps the compiled form of code that {@code util:eval} compiled in a copy of this query's context, for reuse
      * by this query. Such code uses this query's instances of the modules it imports, so it must only be used by
-     * this query, which is only ever used by one thread at a time; it is discarded with this query.
+     * this query, which is only ever used by one thread at a time; it is discarded with this query. At most the
+     * query pool's {@code eval-cache-size} codes are kept (see {@link org.exist.storage.XQueryPool#getEvalCacheSize()}), the least
+     * recently used being discarded first.
      *
      * @param source the code
      * @param compiled its compiled form
      */
     public void returnEvalQuery(final Source source, final CompiledXQuery compiled) {
         if (evalQueries == null) {
+            final int maxEvalQueries = getBroker().getBrokerPool().getXQueryPool().getEvalCacheSize();
+            if (maxEvalQueries <= 0) {
+                return;
+            }
             evalQueries = new LinkedHashMap<>(16, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(final Map.Entry<Source, CompiledXQuery> eldest) {
-                    return size() > MAX_EVAL_QUERIES;
+                    return size() > maxEvalQueries;
                 }
             };
         }
