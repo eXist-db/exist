@@ -1,0 +1,43 @@
+exist-core/src/test/java/org/exist/http/RESTServiceTest.java
+  s_cf829adf72994e::t_d901df4cb152d6 222-225,266-269,365-369,679,1359,1448,1455,1461-1471,1473,1480,1490,1501,1512,1553-1556,1566,1739,1754,1758-1764,1771-1773,1801-1816,1820-1822,1901-1959
+  s_cf829adf72994e::t_ebbcf10e53f5b9 1774-1791,1795-1800,1819
+  s_65f5254d20b9ea::t_cb81abdd807c55 1817
+  s_cf829adf72994e::t_43d19a27039e90 1818
+  s_bf77a8d4f1b569::t_5452c8e3cbd420 80
+exist-core/src/main/java/org/exist/http/RESTServer.java
+  s_cf829adf72994e::t_deacdc27124bc7 582-583
+  s_cf829adf72994e::t_6d44c371e0e740 549,553,555,568-572,578-579
+  s_bf77a8d4f1b569::t_429f3e29d2a7cf 289,545-548,550-552,554,556-564
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ae351175796f2564302cfb518e8819a16c22c73e",
+  "prompts": {},
+  "sessions": {
+    "s_65f5254d20b9ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d12773f-47a1-4c9e-adc9-030a6c7db78a",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cf829adf72994e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1fa647ff-0799-496e-a419-a7b49f7c0151",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": null
+    }
+  }
+}
