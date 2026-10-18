@@ -1543,6 +1543,8 @@ public class RESTServer {
                 try (final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(()
                         -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
                     final CachingFilterInputStream cfis = new CachingFilterInputStream(cache)) {
+                    // the request's transaction stores this document only, so the document's lock can be held until it ends
+                    transaction.setHoldDocumentLocksUntilEnd(true);
                     broker.storeDocument(transaction, docUri, new CachingFilterInputStreamInputSource(cfis), mime, collection);
                 }
                 response.setStatus(HttpServletResponse.SC_CREATED);
@@ -1631,6 +1633,8 @@ public class RESTServer {
                                 LOG.debug("removing document {}", path);
                             }
 
+                            // the request's transaction removes this document only, so the document's lock can be held until it ends
+                            transaction.setHoldDocumentLocksUntilEnd(true);
                             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                                 parent.removeBinaryResource(transaction, broker, pathURI.lastSegment());
                             } else {

@@ -264,6 +264,8 @@ public class ExistDocument extends ExistResource {
                 }
 
                 final DocumentImpl resource = lockedResource.getDocument();
+                // the transaction removes this document only, so the document's lock can be held until it ends
+                txn.setHoldDocumentLocksUntilEnd(true);
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                     collection.removeBinaryResource(txn, broker, resource.getFileURI());
                 } else {

@@ -1003,6 +1003,22 @@ public class MutableCollection implements Collection {
         }
     }
 
+    /**
+     * Releases the WRITE_LOCK on a Document that the transaction stored or removed or, if the transaction holds
+     * Document locks until it ends (see {@link Txn#setHoldDocumentLocksUntilEnd(boolean)}), hands it to the
+     * transaction, which releases it when it commits or aborts.
+     *
+     * @param transaction the transaction, or null
+     * @param documentLock the WRITE_LOCK on the Document
+     */
+    private static void releaseOrHoldUntilEnd(@Nullable final Txn transaction, final ManagedDocumentLock documentLock) {
+        if (transaction != null && transaction.isHoldDocumentLocksUntilEnd()) {
+            transaction.holdDocumentLock(documentLock);
+        } else {
+            documentLock.close();
+        }
+    }
+
     @Override
     public void removeResource(final Txn transaction, final DBBroker broker, final DocumentImpl doc)
             throws PermissionDeniedException, LockException, IOException, TriggerException {
@@ -1028,7 +1044,8 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to write collection: " + path);
             }
 
-            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()))) {
+            final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()));
+            try {
 
                 final DocumentImpl doc = documents.get(name.lastSegmentString());
 
@@ -1068,6 +1085,8 @@ public class MutableCollection implements Collection {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
+            } finally {
+                releaseOrHoldUntilEnd(transaction, docUpdateLock);
             }
         }
     }
@@ -1080,12 +1099,15 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to write collection: " + path);
             }
 
-            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()))) {
+            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()));
+            try {
                 final DocumentImpl doc = getDocument(broker, name);
                 removeBinaryResource(transaction, broker, doc);
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
+            } finally {
+                releaseOrHoldUntilEnd(transaction, docLock);
             }
         }
     }
@@ -1108,7 +1130,8 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("document " + doc.getFileURI() + " is not a binary object");
             }
 
-            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(doc.getURI())) {
+            final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(doc.getURI());
+            try {
                 try {
                     final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
 
@@ -1137,6 +1160,8 @@ public class MutableCollection implements Collection {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
+            } finally {
+                releaseOrHoldUntilEnd(transaction, docUpdateLock);
             }
         }
     }
@@ -1409,7 +1434,7 @@ public class MutableCollection implements Collection {
             LOG.debug("document stored.");
         } finally {
             //This lock has been acquired in validateXMLResourceInternal()
-            info.getDocumentLock().close();
+            releaseOrHoldUntilEnd(transaction, info.getDocumentLock());
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
         
@@ -1792,21 +1817,24 @@ public class MutableCollection implements Collection {
 
         final XmldbURI uri = getURI().append(name.lastSegment());
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
-            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(uri)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
+            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(uri);
+            try {
+                final DocumentImpl oldDoc = getDocument(broker, name);
 
-            final DocumentImpl oldDoc = getDocument(broker, name);
+                final int docId = broker.getNextResourceId(transaction);
+                final BinaryDocument blob;
+                if (oldDoc != null) {
+                    blob = new BinaryDocument(null, docId, oldDoc);
+                } else {
+                    blob = new BinaryDocument(null, broker.getBrokerPool(), this, docId, name);
+                }
 
-            final int docId = broker.getNextResourceId(transaction);
-            final BinaryDocument blob;
-            if (oldDoc != null) {
-                blob = new BinaryDocument(null, docId, oldDoc);
-            } else {
-                blob = new BinaryDocument(null, broker.getBrokerPool(), this, docId, name);
+                return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, permission,
+                        DBBroker.PreserveType.DEFAULT, oldDoc, collectionLock);
+            } finally {
+                releaseOrHoldUntilEnd(transaction, docLock);
             }
-
-            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, permission,
-                    DBBroker.PreserveType.DEFAULT, oldDoc, collectionLock);
         }
     }
 
@@ -1837,13 +1865,16 @@ public class MutableCollection implements Collection {
 
         final XmldbURI docUri = blob.getFileURI();
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
-                final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI())) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
+            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI());
+            try {
+                final DocumentImpl oldDoc = getDocument(broker, docUri);
 
-            final DocumentImpl oldDoc = getDocument(broker, docUri);
-
-            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, null, preserve,
-                    oldDoc, collectionLock);
+                return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, null, preserve,
+                        oldDoc, collectionLock);
+            } finally {
+                releaseOrHoldUntilEnd(transaction, docLock);
+            }
         }
     }
 
