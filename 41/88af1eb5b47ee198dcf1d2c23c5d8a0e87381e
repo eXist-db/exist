@@ -1,0 +1,46 @@
+exist-core/src/main/java/org/exist/util/PatternFactory.java
+  s_0e38a282aba4fa::t_e5a064415fda83 40,53,57-64
+exist-core/src/test/java/org/exist/util/PatternFactoryTest.java
+  s_de36ff9b8ca5ba::t_b178d18df4adcf 1-29,31-67
+  h_ff0005bef58c9d 30
+exist-core/src/main/java/org/exist/validation/GrammarPool.java
+  s_0e38a282aba4fa::t_1f257ed3ef0e1d 37-38,57-59,101-107,110,132,134-135,137,139-140,143-151,167,179,184-185,190,198-199,204
+  s_de36ff9b8ca5ba::t_b9d3c8913aa463 93-95,133,136,138,141-142
+exist-core/src/test/java/org/exist/validation/GrammarPoolTest.java
+  s_0e38a282aba4fa::t_3dacdb62d7609f 90,96,102,108-126,129-130,132-139,157,163
+  s_de36ff9b8ca5ba::t_c2185aa138cce6 127-128,131
+exist-core/src/test/java/org/exist/xquery/functions/validate/JaxpGrammarCacheSameNamespaceTest.java
+  s_0e38a282aba4fa::t_889d53a4f7cc6a 1-38,40-58,60-68,70-80,82-87,89-92
+  h_ff0005bef58c9d 39,59,69,81,88
+exist-core/src/main/java/org/exist/xquery/functions/validation/GrammarTooling.java
+  s_de36ff9b8ca5ba::t_24f2caecb42e19 228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4188af1eb5b47ee198dcf1d2c23c5d8a0e87381e",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_0e38a282aba4fa": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "def0786b-808a-478e-be29-822a8f88d13a",
+        "model": "composer-2.5-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_de36ff9b8ca5ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0bbe7c7-f9c6-4c41-818d-bbfe73c9e2d8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
