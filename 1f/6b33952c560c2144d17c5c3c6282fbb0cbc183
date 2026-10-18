@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/functions/xmldb/DbStore2Test.java
+  s_96d57d94010b6f::t_e76292602755ad 27,69,92-93,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f6b33952c560c2144d17c5c3c6282fbb0cbc183",
+  "prompts": {},
+  "sessions": {
+    "s_96d57d94010b6f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1e942de5-d3dc-4447-9f9d-eec65da64885",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
