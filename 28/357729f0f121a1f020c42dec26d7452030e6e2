@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/xquery/OptimizerPragmaWiringTest.java
+  h_ff0005bef58c9d 52,62,67,76,85,90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "28357729f0f121a1f020c42dec26d7452030e6e2",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
