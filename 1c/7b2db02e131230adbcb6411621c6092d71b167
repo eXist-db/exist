@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/xquery/functions/AccessUtilTest.java
+  h_ff0005bef58c9d 35,47,63,87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1c7b2db02e131230adbcb6411621c6092d71b167",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
