@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java
+  h_ff0005bef58c9d 68,89,100,108,133,162,190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3f62e1f68309cbd7b8fd6cb64ce17ea008439c29",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
