@@ -433,9 +433,10 @@ public abstract class AbstractRecoverTest {
      * The history created by this test, should never be created within by a single thread unless
      * due to a programming mistake.
      *
-     * It is currently possible to create such a non-recoverable history between threads
-     * for a single resource, however that must be solved by improved locking of resources
-     * e.g. keeping resource locks for the duration of a transaction.
+     * Such a non-recoverable history can be created between threads for a single resource,
+     * unless the resource's lock is kept for the duration of the transaction; transactions which
+     * store or remove a single resource through an API now do so, see
+     * {@link org.exist.storage.ConcurrentReplaceThenDeleteRecoveryTest}.
      *
      * This test creates the journal history (repetitively):
      *
@@ -464,7 +465,7 @@ public abstract class AbstractRecoverTest {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Recovery can't restore this history, so it must not be created: a transaction that stores or removes a single document through an API holds the document's WRITE_LOCK until it ends, see ConcurrentReplaceThenDeleteRecoveryTest")
     @Test
     public void replaceWithoutCommitThenDeleteAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
@@ -495,9 +496,10 @@ public abstract class AbstractRecoverTest {
      * The history created by this test, should never be created within by a single thread unless
      * due to a programming mistake.
      *
-     * It is currently possible to create such a non-recoverable history between threads
-     * for a single resource, however that must be solved by improved locking of resources
-     * e.g. keeping resource locks for the duration of a transaction.
+     * Such a non-recoverable history can be created between threads for a single resource,
+     * unless the resource's lock is kept for the duration of the transaction; transactions which
+     * store or remove a single resource through an API now do so, see
+     * {@link org.exist.storage.ConcurrentReplaceThenDeleteRecoveryTest}.
      *
      * This test creates the journal history (repetitively):
      *
@@ -526,7 +528,7 @@ public abstract class AbstractRecoverTest {
      *
      * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
      */
-    @Disabled("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Disabled("Recovery can't restore this history, so it must not be created: a transaction that stores or removes a single document through an API holds the document's WRITE_LOCK until it ends, see ConcurrentReplaceThenDeleteRecoveryTest")
     @Test
     public void replaceWithoutCommitThenDeleteAndLoadIsRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
