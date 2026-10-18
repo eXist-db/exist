@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/validation/DtdEntityTest.java
+  s_bf77a8d4f1b569::t_3eff943214d415 143,158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b30dd3877362b8cba25ea94bcfb1ced2adbc6b69",
+  "prompts": {},
+  "sessions": {
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
