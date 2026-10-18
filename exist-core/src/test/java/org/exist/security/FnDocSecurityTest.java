@@ -95,7 +95,7 @@ public class FnDocSecurityTest {
      * Creates a new user: docTestUser1
      */
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, SyntaxException, IOException, SAXException, LockException {
 
         // as system user
         final BrokerPool pool = server.getBrokerPool();
@@ -127,7 +127,7 @@ public class FnDocSecurityTest {
     }
 
     @Test
-    public void canAccessDocument() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
+    void canAccessDocument() throws EXistException, AuthenticationException, PermissionDeniedException, XPathException, IOException, SAXException {
         // as docTestUser1 user
         final String query = "fn:doc('" + TEST_DOC_URI_ALL + "')";
 
@@ -149,14 +149,12 @@ public class FnDocSecurityTest {
     }
 
     @Test
-    public void cannotAccessRestrictedDocument() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
+    void cannotAccessRestrictedDocument() throws EXistException, AuthenticationException, XPathException, IOException, SAXException {
+        final String query = "fn:doc('" + TEST_DOC_URI_SYSTEM_ONLY + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-            // as docTestUser1 user
-            final String query = "fn:doc('" + TEST_DOC_URI_SYSTEM_ONLY + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -176,15 +174,12 @@ public class FnDocSecurityTest {
     }
 
     @Test
-    public void cannotAccessDocumentInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
+    void cannotAccessDocumentInCollectionHierarchyWithDeniedExecute() throws EXistException, AuthenticationException, XPathException {
+        final String query = "fn:doc('" + TEST_DOC_URI_1 + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-
-            // as docTestUser1 user
-            final String query = "fn:doc('" + TEST_DOC_URI_1 + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -204,15 +199,12 @@ public class FnDocSecurityTest {
     }
 
     @Test
-    public void cannotAccessDocumentInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
+    void cannotAccessDocumentInCollectionHierarchyWithDeniedReadAndExecuteAce() throws EXistException, AuthenticationException, XPathException {
+        final String query = "fn:doc('" + TEST_DOC_URI_2 + "')";
+        final BrokerPool pool = server.getBrokerPool();
+        final SecurityManager securityManager = pool.getSecurityManager();
+        final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
         assertThrows(PermissionDeniedException.class, () -> {
-
-            // as docTestUser1 user
-            final String query = "fn:doc('" + TEST_DOC_URI_2 + "')";
-
-            final BrokerPool pool = server.getBrokerPool();
-            final SecurityManager securityManager = pool.getSecurityManager();
-            final Subject testUser1 = securityManager.authenticate(TEST_USER_1, TEST_USER_1);
 
             try (final DBBroker broker = pool.get(Optional.of(testUser1));
                  final Txn transaction = pool.getTransactionManager().beginTransaction()) {

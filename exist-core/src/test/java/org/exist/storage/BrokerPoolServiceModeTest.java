@@ -56,7 +56,7 @@ public class BrokerPoolServiceModeTest {
      * Single-thread baseline: the flag transitions correctly within one thread.
      */
     @Test
-    public void isInServiceModeTransitionsSingleThread()
+    void isInServiceModeTransitionsSingleThread()
             throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().getSystemSubject();
@@ -87,7 +87,7 @@ public class BrokerPoolServiceModeTest {
      * weakly-ordered architectures (ARM, POWER).
      */
     @Test
-    public void isInServiceModeVisibleAcrossThreads()
+    void isInServiceModeVisibleAcrossThreads()
             throws EXistException, PermissionDeniedException, InterruptedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().getSystemSubject();

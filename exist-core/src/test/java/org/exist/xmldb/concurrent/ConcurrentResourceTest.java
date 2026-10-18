@@ -39,8 +39,8 @@ import java.util.List;
  */
 public class ConcurrentResourceTest extends ConcurrentTestBase {
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
 		final Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		assertNotNull(c1);
 		DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);

@@ -24,12 +24,13 @@ package org.exist.jetty;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
-import org.exist.util.OSUtil;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,12 +42,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * ({@code verify -DskipUnitTests=true}).
  */
 @SuppressWarnings("PMD.ClassNamingConventions") // Failsafe *IT suffix; not a JUnit *Test class
-public class WindowsPathResourceIT {
+class WindowsPathResourceIT {
 
     @Test
-    public void resolveWebInfOnWindowsDriveUri() throws Exception {
-        assumeTrue(OSUtil.isWindows(), "Windows-only PathResource URI regression");
-
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Windows-only PathResource URI regression")
+    void resolveWebInfOnWindowsDriveUri() throws Exception {
         final ResourceFactory resourceFactory = ResourceFactory.root();
         final Path webapp = Files.createTempDirectory("webapp");
         Files.createDirectory(webapp.resolve("WEB-INF"));

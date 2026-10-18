@@ -43,10 +43,10 @@ import org.junit.jupiter.api.Test;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
-public class StreamBinaryTest extends RESTTest {
+class StreamBinaryTest extends RESTTest {
 
-	@Test
-	public void testStreamBinary() throws Exception {
+    @Test
+    void testStreamBinary() throws Exception {
 
 		final String testValue = "hello world";
 		final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";

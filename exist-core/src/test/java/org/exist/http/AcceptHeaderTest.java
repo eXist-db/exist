@@ -34,10 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AcceptHeaderTest {
+class AcceptHeaderTest {
 
     @Test
-    public void parseOrdersByQualityThenSpecificity() {
+    void parseOrdersByQualityThenSpecificity() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/*;q=0.5, text/html, application/json;q=0.9, */*;q=0.1");
         assertEquals(4, ranges.size());
         assertEquals("text/html", ranges.getFirst().mediaType());        // q=1.0
@@ -47,14 +47,14 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void parseDefaultsQualityToOne() {
+    void parseDefaultsQualityToOne() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html");
         assertEquals(1, ranges.size());
         assertEquals(1.0, ranges.getFirst().quality(), 0.0);
     }
 
     @Test
-    public void parseExtractsParametersExcludingQ() {
+    void parseExtractsParametersExcludingQ() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html;level=1;q=0.8");
         assertEquals(1, ranges.size());
         final MediaRange range = ranges.getFirst();
@@ -64,27 +64,27 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void parseRetainsExplicitQZero() {
+    void parseRetainsExplicitQZero() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html;q=0");
         assertEquals(1, ranges.size());
         assertEquals(0.0, ranges.getFirst().quality(), 0.0);
     }
 
     @Test
-    public void parseSkipsMalformedEntries() {
+    void parseSkipsMalformedEntries() {
         final List<MediaRange> ranges = AcceptHeader.parse("text/html, garbage, , application/json");
         assertEquals(2, ranges.size());
     }
 
     @Test
-    public void parseEmptyOrNullYieldsEmptyList() {
+    void parseEmptyOrNullYieldsEmptyList() {
         assertTrue(AcceptHeader.parse(null).isEmpty());
         assertTrue(AcceptHeader.parse("").isEmpty());
         assertTrue(AcceptHeader.parse("   ").isEmpty());
     }
 
     @Test
-    public void negotiatePicksHighestQuality() {
+    void negotiatePicksHighestQuality() {
         final Optional<String> best = AcceptHeader.negotiate(
                 "text/html, application/xhtml+xml, application/json;q=0.9, */*;q=0.8",
                 asList("application/json", "application/xml"));
@@ -92,7 +92,7 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void negotiatePrefersExactOverWildcardMatch() {
+    void negotiatePrefersExactOverWildcardMatch() {
         final Optional<String> best = AcceptHeader.negotiate(
                 "text/html, application/json;q=0.9, */*;q=0.8",
                 asList("text/html", "application/json"));
@@ -100,12 +100,12 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void negotiateNoMatchYieldsEmpty() {
+    void negotiateNoMatchYieldsEmpty() {
         assertFalse(AcceptHeader.negotiate("application/json", singletonList("application/xml")).isPresent());
     }
 
     @Test
-    public void negotiateNoAcceptHeaderYieldsFirstOffer() {
+    void negotiateNoAcceptHeaderYieldsFirstOffer() {
         assertEquals(Optional.of("application/json"),
                 AcceptHeader.negotiate(null, asList("application/json", "application/xml")));
         assertEquals(Optional.of("application/json"),
@@ -113,13 +113,13 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void negotiateWildcardAcceptYieldsFirstOffer() {
+    void negotiateWildcardAcceptYieldsFirstOffer() {
         assertEquals(Optional.of("application/json"),
                 AcceptHeader.negotiate("*/*", asList("application/json", "application/xml")));
     }
 
     @Test
-    public void negotiateHonorsQZeroAsRejection() {
+    void negotiateHonorsQZeroAsRejection() {
         final Optional<String> best = AcceptHeader.negotiate(
                 "text/html;q=0, application/json",
                 asList("text/html", "application/json"));
@@ -127,18 +127,18 @@ public class AcceptHeaderTest {
     }
 
     @Test
-    public void negotiateSupportsTypeWildcard() {
+    void negotiateSupportsTypeWildcard() {
         assertEquals(Optional.of("text/html"),
                 AcceptHeader.negotiate("text/*", asList("application/json", "text/html")));
     }
 
     @Test
-    public void negotiateEmptyOffersYieldsEmpty() {
+    void negotiateEmptyOffersYieldsEmpty() {
         assertFalse(AcceptHeader.negotiate("text/html", emptyList()).isPresent());
     }
 
     @Test
-    public void negotiateTieBreaksByOfferOrder() {
+    void negotiateTieBreaksByOfferOrder() {
         // both acceptable only via */* at equal quality and specificity -> first offer wins
         assertEquals(Optional.of("application/xml"),
                 AcceptHeader.negotiate("*/*", asList("application/xml", "application/json")));

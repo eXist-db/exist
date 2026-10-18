@@ -21,6 +21,7 @@
  */
 package org.exist.indexing;
 
+import java.util.stream.Stream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -46,23 +47,23 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EnforceIndexUseTest {
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "always", 1 },
-                { "strict", 3 }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("always", 1),
+            Arguments.of("strict", 3)
+        );
     }
     public String enforceIndexUseValue;
     public int expectedSearchCount;
@@ -92,7 +93,7 @@ public class EnforceIndexUseTest {
             </root>""";
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws Throwable {
+    void matchesWithDiffrentIndexStyles(String enforceIndexUseValue, int expectedSearchCount) throws Throwable {
         initEnforceIndexUseTest(enforceIndexUseValue, expectedSearchCount);
         setup();
         //query and expand
@@ -167,7 +168,7 @@ public class EnforceIndexUseTest {
     }
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * html-templating engine both do) produced one log line per accessor. This asserts the body runs once
  * and the failure is logged once, however many accessors are called.</p>
  */
-public class DeferredFunctionCallErrorTest {
+class DeferredFunctionCallErrorTest {
 
     private static final QName FN = new QName("boom", "http://exist-db.org/test");
     private static final String DEFERRED_LOGGER = "org.exist.xquery.DeferredFunctionCall";
@@ -61,7 +61,7 @@ public class DeferredFunctionCallErrorTest {
     private CountingAppender appender;
 
     @BeforeEach
-    public void attachAppender() {
+    void attachAppender() {
         appender = new CountingAppender();
         appender.start();
         // The test log4j2 config sets the root logger to OFF, which would filter these events before
@@ -83,7 +83,7 @@ public class DeferredFunctionCallErrorTest {
     }
 
     @AfterEach
-    public void detachAppender() {
+    void detachAppender() {
         final Logger logger = (Logger) LogManager.getLogger(DEFERRED_LOGGER);
         final LoggerContext ctx = logger.getContext();
         ctx.getConfiguration().removeLogger(DEFERRED_LOGGER);
@@ -92,7 +92,7 @@ public class DeferredFunctionCallErrorTest {
     }
 
     @Test
-    public void errorIsComputedOnceAndLoggedOnce() throws XPathException {
+    void errorIsComputedOnceAndLoggedOnce() throws XPathException {
         final AtomicInteger executeCount = new AtomicInteger();
         final DeferredFunctionCall dfc = new DeferredFunctionCall(new FunctionSignature(FN)) {
             @Override

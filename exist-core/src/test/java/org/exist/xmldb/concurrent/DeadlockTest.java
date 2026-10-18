@@ -50,7 +50,7 @@ public class DeadlockTest {
             """;
 
     @Test
-    public void deadlock() throws Exception {
+    void deadlock() throws Exception {
         final int threads = 20;
         final int resources = 200;
 

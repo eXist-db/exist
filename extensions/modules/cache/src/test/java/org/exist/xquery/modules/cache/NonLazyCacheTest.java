@@ -51,7 +51,7 @@ public class NonLazyCacheTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test
-    public void putOnNonLazilyCreatedCacheWithoutExplicitCreation() throws XPathException, PermissionDeniedException, EXistException {
+    void putOnNonLazilyCreatedCacheWithoutExplicitCreation() throws XPathException, PermissionDeniedException, EXistException {
         try {
             executeQuery("cache:put('foo', 'bar', 'baz1')");
             fail("Should not be able to lazily create a cache when lazy creation is disabled");

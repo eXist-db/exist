@@ -24,18 +24,17 @@ package org.exist.storage;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 
+import static org.exist.test.XmlStringDiffMatcher.hasIdenticalXml;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -156,7 +155,7 @@ public class XIncludeSerializerTest {
     }
 
     @Test
-    public void absSimpleREST() throws IOException, SAXException {
+    void absSimpleREST() throws IOException {
         // path needs to indicate indent and wrap is off
         final String uri = getRestUri() + "/test_simple.xml?_indent=no&_wrap=no";
 
@@ -176,13 +175,11 @@ public class XIncludeSerializerTest {
 
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT));
     }
 
     @Test
-    public void relSimpleREST1() throws IOException, SAXException {
+    void relSimpleREST1() throws IOException {
         final String uri = getRestUri() + "/test_relative1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -198,13 +195,11 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT));
     }
 
     @Test
-    public void relSimpleREST2() throws IOException, SAXException {
+    void relSimpleREST2() throws IOException {
         // path needs to indicate indent and wrap is off
         final String uri = getRestUri() + "/test_relative2.xml?_indent=no&_wrap=no";
 
@@ -221,13 +216,11 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT));
     }
 
     @Test
-    public void xpointerREST3() throws IOException, SAXException {
+    void xpointerREST3() throws IOException {
         final String uri = getRestUri() + "/test_xpointer1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -243,13 +236,11 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT_XPOINTER));
     }
 
     @Test
-    public void xpointerREST4() throws IOException, SAXException {
+    void xpointerREST4() throws IOException {
         final String uri = getRestUri() + "/test_xpointer2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -265,13 +256,11 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT_XPOINTER));
     }
 
     @Test
-    public void fallback1() throws IOException, SAXException {
+    void fallback1() throws IOException {
         final String uri = getRestUri() + "/test_fallback1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -287,13 +276,11 @@ public class XIncludeSerializerTest {
         }
         String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT_FALLBACK1, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT_FALLBACK1));
     }
 
     @Test
-    public void relParentPathFromSubcollectionXML() throws IOException, SAXException {
+    void relParentPathFromSubcollectionXML() throws IOException {
         final String uri = getRestUri() + "/modules/test_rel_parent.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
@@ -310,29 +297,18 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        final Diff myDiff = new Diff(XML_RESULT, responseXML);
-        assertTrue(myDiff.similar(), "pieces of XML are similar " + myDiff);
-        assertTrue(myDiff.identical(), "but are they identical? " + myDiff);
+        assertThat(responseXML, hasIdenticalXml(XML_RESULT));
     }
 
     @Test
-    public void fallback2() {
-        assertThrows(IOException.class, () -> {
-            final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
+    void fallback2() throws IOException {
+        final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
 
-            final HttpURLConnection connect = getConnection(uri);
-            connect.setRequestMethod("GET");
-            connect.connect();
+        final HttpURLConnection connect = getConnection(uri);
+        connect.setRequestMethod("GET");
+        connect.connect();
 
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
-            String line;
-            final StringBuilder out = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                out.append(line);
-                out.append("\r\n");
-            }
-            final String responseXML = out.toString();
-        });
+        assertThrows(IOException.class, connect::getInputStream);
     }
 
     //TODO add full url test e.g. http://www.example.org/test.xml for xinclude
@@ -379,13 +355,13 @@ public class XIncludeSerializerTest {
         return client;
     }
 
-   //TODO create reader for xml
+    //TODO create reader for xml
     /*
      * SetUp / TearDown functions
      *
      */
     @BeforeAll
-    public static void startDB() throws XmlRpcException, MalformedURLException {
+    static void startDB() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = getClient();
         final List<Object> params = new ArrayList<>();
         params.add(XINCLUDE_COLLECTION.toString());

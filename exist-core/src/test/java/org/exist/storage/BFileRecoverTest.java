@@ -50,7 +50,7 @@ public class BFileRecoverTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void add() throws EXistException, IOException, BTreeException {
+    void add() throws EXistException, IOException, BTreeException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager mgr = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -83,7 +83,7 @@ public class BFileRecoverTest {
     }
 
     @Test
-    public void read() throws EXistException, IOException, BTreeException {
+    void read() throws EXistException, IOException, BTreeException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         BrokerPool.FORCE_CORRUPTION = false;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

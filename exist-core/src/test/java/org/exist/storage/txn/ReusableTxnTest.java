@@ -40,12 +40,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ReusableTxnTest {
+class ReusableTxnTest {
 
     final TransactionManagerTestHelper helper = new TransactionManagerTestHelper();
 
     @Test
-    public void commitTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void commitTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -70,7 +70,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void commitAndCloseTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void commitAndCloseTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -96,7 +96,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void abortTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void abortTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -121,7 +121,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void abortAndCloseTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void abortAndCloseTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -147,7 +147,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void repeatedAbortOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void repeatedAbortOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -177,7 +177,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void closeWithoutCommitAbortsTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void closeWithoutCommitAbortsTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -204,7 +204,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void repeatedCloseWithoutCommitOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void repeatedCloseWithoutCommitOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -234,7 +234,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void closeWithoutCommitOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void closeWithoutCommitOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
@@ -267,7 +267,7 @@ public class ReusableTxnTest {
     }
 
     @Test
-    public void abortOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    void abortOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();

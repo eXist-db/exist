@@ -34,41 +34,41 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class ByteArrayContentTest {
+class ByteArrayContentTest {
     private ByteArrayContent content;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         content = ByteArrayContent.of("test data");
     }
 
     @Test
-    public void testOfNullString() {
+    void testOfNullString() {
         assertThrows(NullPointerException.class, () ->
             ByteArrayContent.of((String) null));
     }
 
     @Test
-    public void testOfNullBytes() {
+    void testOfNullBytes() {
         content = ByteArrayContent.of((byte[]) null);
         assertEquals(0, content.size());
         assertArrayEquals(new byte[0], content.getBytes());
     }
 
     @Test
-    public void testClose() {
+    void testClose() {
         content.close();
         assertEquals(0, content.size());
         assertArrayEquals(new byte[0], content.getBytes());
     }
 
     @Test
-    public void testGetBytes() {
+    void testGetBytes() {
         assertArrayEquals("test data".getBytes(), content.getBytes());
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(9, content.size());
     }
 }

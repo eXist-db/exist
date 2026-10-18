@@ -23,6 +23,7 @@ package org.exist.test.xqsuite;
 
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.XQueryWatchDog;
+import org.junit.platform.engine.CancellationToken;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
@@ -55,6 +56,10 @@ import java.util.stream.Collectors;
  * failed, its XQuery is killed and its thread interrupted, and the remaining files carry on. Whatever the
  * abandoned thread reports afterwards is ignored.
  * <p>
+ * The watcher also looks at the {@link CancellationToken} of the run, much more often than at the files. Once
+ * the run is cancelled (Ctrl-C, an IDE's stop button, a tool that gave up) the running files are abandoned
+ * the same way, with the cancellation as the reason, and the files that have not started are skipped.
+ * <p>
  * Giving up on a file is reliable, stopping its thread is not. A thread that is sleeping or blocked ends when it
  * is interrupted, and eXist can stop a query at the points where it checks for being killed, but a query that is
  * spinning in code that does neither keeps running (which expressions check differs, and queries nested inside the
@@ -65,20 +70,28 @@ final class SuiteRun {
     /** how many of the slowest files the time summary names */
     private static final int SLOWEST_FILES_SHOWN = 3;
 
+    /** how often the watcher looks at the cancellation token, so that a cancelled run ends in a moment */
+    private static final long CANCELLATION_POLL_MILLIS = 200;
+
+    private static final String NOT_RUN_CANCELLED = "Not run: the test run was cancelled";
+
     private final SuiteDescriptor suite;
     private final EngineExecutionListener listener;
     private final BrokerPool brokerPool;
     private final XQSuiteSettings settings;
+    private final CancellationToken cancellation;
 
     private final List<FileRun> runs = new CopyOnWriteArrayList<>();
     private final Semaphore permits;
     private final Duration hangThreshold;
 
-    SuiteRun(final SuiteDescriptor suite, final EngineExecutionListener listener, final BrokerPool brokerPool, final XQSuiteSettings settings) {
+    SuiteRun(final SuiteDescriptor suite, final EngineExecutionListener listener, final BrokerPool brokerPool, final XQSuiteSettings settings,
+            final CancellationToken cancellation) {
         this.suite = suite;
         this.listener = listener;
         this.brokerPool = brokerPool;
         this.settings = settings;
+        this.cancellation = cancellation;
         this.permits = new Semaphore(suite.parallel() ? settings.parallelism(brokerPool.getMax()) : 1);
         this.hangThreshold = settings.hangThreshold();
     }
@@ -98,9 +111,14 @@ final class SuiteRun {
         try {
             for (final TestDescriptor child : new ArrayList<>(suite.getChildren())) {
                 permits.acquire();
-                final FileRun run = new FileRun((FileDescriptor) child);
-                runs.add(run);
-                threads.execute(run);
+                if (cancellation.isCancellationRequested()) {
+                    permits.release();
+                    listener.executionSkipped(child, NOT_RUN_CANCELLED);
+                } else {
+                    final FileRun run = new FileRun((FileDescriptor) child);
+                    runs.add(run);
+                    threads.execute(run);
+                }
             }
             for (final FileRun run : runs) {
                 run.awaitSettled();
@@ -187,19 +205,41 @@ final class SuiteRun {
     }
 
     private void watch() {
-        final long intervalMillis = settings.hangWatcherInterval().toMillis();
+        final long hangCheckNanos = settings.hangWatcherInterval().toNanos();
+        long nextHangCheck = System.nanoTime() + hangCheckNanos;
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                Thread.sleep(intervalMillis);
+                Thread.sleep(CANCELLATION_POLL_MILLIS);
                 final long now = System.nanoTime();
-                for (final FileRun run : runs) {
-                    if (run.state.get() == State.RUNNING && now - run.lastActivityNanos > hangThreshold.toNanos()) {
-                        run.abandon();
-                    }
+                if (cancellation.isCancellationRequested()) {
+                    abandonRunningFiles("was given up on because the test run was cancelled");
+                } else if (now - nextHangCheck >= 0) {
+                    abandonHungFiles(now);
+                    nextHangCheck = now + hangCheckNanos;
                 }
             }
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private void abandonHungFiles(final long now) {
+        for (final FileRun run : runs) {
+            if (run.state.get() == State.RUNNING && now - run.lastActivityNanos > hangThreshold.toNanos()) {
+                run.abandon("appears hung (no activity for " + format(hangThreshold) + ")");
+            }
+        }
+    }
+
+    /**
+     * Every poll while the run is cancelled, not just the first: a file whose thread was about to start when the
+     * cancellation was noticed is running by the next poll.
+     */
+    private void abandonRunningFiles(final String reason) {
+        for (final FileRun run : runs) {
+            if (run.state.get() == State.RUNNING) {
+                run.abandon(reason);
+            }
         }
     }
 
@@ -253,16 +293,19 @@ final class SuiteRun {
             }
         }
 
-        void abandon() {
+        /**
+         * @param reason what is said about the file in the failure, after "Test file "
+         */
+        void abandon(final String reason) {
             if (!state.compareAndSet(State.RUNNING, State.ABANDONED)) {
                 return;
             }
             final List<String> running = events.runningTests();
-            final AssertionError hung = new AssertionError("Test file appears hung (no activity for "
-                    + format(hangThreshold) + "): " + file.runner().getSourcePath().toAbsolutePath()
+            final AssertionError abandoned = new AssertionError("Test file " + reason + ": "
+                    + file.runner().getSourcePath().toAbsolutePath()
                     + (running.isEmpty() ? "" : " while running " + running));
-            events.completeOutstanding(hung);
-            listener.executionFinished(file, TestExecutionResult.failed(hung));
+            events.completeOutstanding(abandoned);
+            listener.executionFinished(file, TestExecutionResult.failed(abandoned));
 
             // stop the query if it can be stopped, then the thread, so that a stuck file does not keep using the database
             final Thread stuck = thread;

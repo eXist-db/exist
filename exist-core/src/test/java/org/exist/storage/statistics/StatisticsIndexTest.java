@@ -37,7 +37,7 @@ public class StatisticsIndexTest {
     private static Path configFile;
 
     @BeforeAll
-    public static void prepare() throws URISyntaxException {
+    static void prepare() throws URISyntaxException {
         final ClassLoader loader = StatisticsIndexTest.class.getClassLoader();
         final char separator = System.getProperty("file.separator").charAt(0);
         final String packagePath = StatisticsIndexTest.class.getPackage().getName().replace('.', separator);
@@ -49,7 +49,7 @@ public class StatisticsIndexTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer("db1", configFile, null, true);
 
     @org.junit.jupiter.api.Test
-    public void statsFileExists() {
+    void statsFileExists() {
         final Path dataDir = existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(DEFAULT_DATA_DIR));
         assertTrue(Files.exists(dataDir.resolve("stats.dbx")));
     }

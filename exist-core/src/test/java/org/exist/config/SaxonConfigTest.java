@@ -32,8 +32,8 @@ public class SaxonConfigTest {
   @RegisterExtension
   public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-  @Test
-  public void configFromBroker() {
+    @Test
+    void configFromBroker() {
     final var brokerPool = existEmbeddedServer.getBrokerPool();
 
     final var existConfiguration = brokerPool.getConfiguration();

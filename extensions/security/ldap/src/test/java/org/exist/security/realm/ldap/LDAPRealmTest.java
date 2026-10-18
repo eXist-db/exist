@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class LDAPRealmTest {
+class LDAPRealmTest {
 
 	private static String config = 
 		"<realm id=\"LDAP\">" +
@@ -51,31 +51,31 @@ public class LDAPRealmTest {
 		"</realm>";
 
 	private static LDAPRealm realm;
-	
-	/**
-	 * @throws java.lang.Exception
+
+    /**
+     * @throws java.lang.Exception
 	 */
-	@BeforeAll
-	public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() throws Exception {
 		try (final InputStream is = UnsynchronizedByteArrayInputStream.builder().setByteArray(config.getBytes(UTF_8)).get()) {
 			Configuration config = Configurator.parse(is);
 			realm = new LDAPRealm(null, config);
 		}
 	}
 
-	/**
-	 * @throws java.lang.Exception
+    /**
+     * @throws java.lang.Exception
 	 */
-	@AfterAll
-	public static void tearDownAfterClass() {
+    @AfterAll
+    static void tearDownAfterClass() {
 	}
 
-	/**
-	 * Test method for {@link org.exist.security.realm.ldap.LDAPRealm#authenticate(java.lang.String, java.lang.Object)}.
-	 */
-	@Disabled("Requires external LDAP server")
-	@Test
-	public void testAuthenticate() {
+    /**
+     * Test method for {@link org.exist.security.realm.ldap.LDAPRealm#authenticate(java.lang.String, java.lang.Object)}.
+     */
+    @Disabled("Requires external LDAP server")
+    @Test
+    void testAuthenticate() {
 		Account account = null;
 		try {
 			account = realm.authenticate("admin", "passwd");

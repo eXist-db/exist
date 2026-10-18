@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class ConfigurableTest {
+class ConfigurableTest {
 
 	String config1 = "<instance xmlns='http://exist-db.org/Configuration' " +
 			"valueString=\"a\" " +
@@ -77,9 +77,9 @@ public class ConfigurableTest {
 			"<spice name='berbere'/>" +
 			
 			"</instance>";
-	
-	@Test
-	public void simple() throws Exception {
+
+    @Test
+    void simple() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
@@ -102,8 +102,8 @@ public class ConfigurableTest {
         assertEquals("berbere", object.spices.get(1).name);
 	}
 
-	@Test
-	public void subelement() throws Exception {
+    @Test
+    void subelement() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config2.getBytes(UTF_8));
 		
         // initialize xml parser
@@ -126,9 +126,9 @@ public class ConfigurableTest {
         
         assertEquals(Integer.valueOf(5), object.someInteger);
 	}
-	
-	@Test
-	public void notSimple() throws Exception {
+
+    @Test
+    void notSimple() throws Exception {
 		InputStream is = new UnsynchronizedByteArrayInputStream(config3.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);

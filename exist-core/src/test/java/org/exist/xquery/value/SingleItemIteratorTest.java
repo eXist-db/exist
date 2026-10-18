@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 import static org.easymock.EasyMock.createMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SingleItemIteratorTest {
+class SingleItemIteratorTest {
 
     @Test
-    public void iterate_loop() {
+    void iterate_loop() {
         final Item mockItem = mockItem();
 
         final SequenceIterator it = new SingleItemIterator(mockItem);
@@ -44,7 +44,7 @@ public class SingleItemIteratorTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    void iterate_skip_loop() {
         final Item mockItem = mockItem();
         final SequenceIterator it = new SingleItemIterator(mockItem);
 
@@ -64,7 +64,7 @@ public class SingleItemIteratorTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    void iterate_loop_skip_loop() {
         final Item mockItem = mockItem();
         final SequenceIterator it = new SingleItemIterator(mockItem);
 

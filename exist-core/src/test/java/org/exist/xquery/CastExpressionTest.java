@@ -54,16 +54,16 @@ public class CastExpressionTest {
   @RegisterExtension
   public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-  @BeforeAll
-  public static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
+    @BeforeAll
+    static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
     final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
     broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
     context = new XQueryContext(pool);
   }
 
-  @AfterAll
-  public static void tearDown() throws EXistException {
+    @AfterAll
+    static void tearDown() throws EXistException {
     if (broker != null) {
       broker.close();
     }
@@ -71,8 +71,8 @@ public class CastExpressionTest {
     context = null;
   }
 
-  @Test
-  public void numericCast() throws XPathException {
+    @Test
+    void numericCast() throws XPathException {
     CastExpression numericCastExpr;
 
     // Test decimal: xs:numeric(1.0)
@@ -204,8 +204,8 @@ public class CastExpressionTest {
     assertCast(Type.DOUBLE, DoubleValue.class, numericCastExpr);
   }
 
-  @Test
-  public void floatCast() throws XPathException {
+    @Test
+    void floatCast() throws XPathException {
     // Test float: xs:float(1.0)
     CastExpression floatCastExpr;
     floatCastExpr = buildCast(new StringValue("1.0"), Type.FLOAT);
@@ -233,8 +233,8 @@ public class CastExpressionTest {
     assertCast(Type.FLOAT, FloatValue.class, floatCastExpr);
   }
 
-  @Test
-  public void doubleCast() throws XPathException {
+    @Test
+    void doubleCast() throws XPathException {
     // Test double: xs:double(1.0)
     CastExpression doubleCastExpr;
     doubleCastExpr = buildCast(new DoubleValue("1.0e2"), Type.DOUBLE);

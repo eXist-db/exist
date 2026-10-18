@@ -21,11 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import org.custommonkey.xmlunit.NamespaceContext;
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLAssert;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.TestUtils;
@@ -43,7 +38,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
@@ -59,15 +53,19 @@ import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.junit.jupiter.api.extension.RegisterExtension;
 public class LuceneMatchListenerTest {
+
+    private static final Map<String, String> NAMESPACES = Map.of(Namespaces.EXIST_NS_PREFIX, Namespaces.EXIST_NS);
 
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -169,7 +167,7 @@ public class LuceneMatchListenerTest {
      * &lt;create qname="a"/&gt;.
      */
     @Test
-    public void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
 
         configureAndStore(CONF2, XML);
 
@@ -222,7 +220,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException, LockException, CollectionConfigurationException {
+    void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
         configureAndStore(CONF1, XML);
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -232,18 +230,18 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+            assertThat(result, hasXPath("count(//exist:match)", equalTo("1")).withNamespaceContext(NAMESPACES));
 
             seq = xquery.execute(broker, "//para[ft:query(., 'nested')]/note", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
+            assertThat(result, hasXPath("count(//hi/exist:match)", equalTo("1")).withNamespaceContext(NAMESPACES));
         }
     }
 
     @Test
-    public void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException, LockException, CollectionConfigurationException {
+    void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, LockException, CollectionConfigurationException {
         configureAndStore(CONF3, XML);
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -253,18 +251,18 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+            assertThat(result, hasXPath("count(//exist:match)", equalTo("1")).withNamespaceContext(NAMESPACES));
 
             seq = xquery.execute(broker, "//hi[ft:query(., 'nested')]/parent::note", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
+            assertThat(result, hasXPath("count(//hi/exist:match)", equalTo("1")).withNamespaceContext(NAMESPACES));
         }
     }
 
     @Test
-    public void inlineNodesWhenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void inlineNodesWhenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF4, XML1);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -313,7 +311,7 @@ public class LuceneMatchListenerTest {
      * to verify expectations. Does not assert.
      */
     @Test
-    public void issue4835Diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void issue4835Diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -380,7 +378,7 @@ public class LuceneMatchListenerTest {
      * nodes or multiple matches in parent. Fixed by stopping scan at root boundary in LuceneMatchListener.
      */
     @Test
-    public void issue4835MultipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void issue4835MultipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -435,7 +433,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -480,7 +478,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException, XpathException {
+    void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -497,12 +495,12 @@ public class LuceneMatchListenerTest {
             assertEquals(1, seq.getItemCount());
 
             final String result = queryResult2String(broker, seq, true);
-            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+            assertThat(result, hasXPath("count(//exist:match)", equalTo("1")).withNamespaceContext(NAMESPACES));
         }
     }
 
     @BeforeAll
-    public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
+    static void startDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -514,15 +512,10 @@ public class LuceneMatchListenerTest {
 
             transact.commit(transaction);
         }
-
-        final Map<String, String> m = new HashMap<>();
-        m.put(Namespaces.EXIST_NS_PREFIX, Namespaces.EXIST_NS);
-        final NamespaceContext ctx = new SimpleNamespaceContext(m);
-        XMLUnit.setXpathNamespaceContext(ctx);
     }
 
     @AfterAll
-    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 
@@ -547,7 +540,7 @@ public class LuceneMatchListenerTest {
         return queryResult2String(broker, seq, false);
     }
 
-    private String queryResult2String(final DBBroker broker, final Sequence seq, final boolean indent) throws SAXException, XPathException {
+    private String queryResult2String(final DBBroker broker, final Sequence seq, final boolean indent) throws SAXException {
         final Properties props = new Properties();
         props.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
         props.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");

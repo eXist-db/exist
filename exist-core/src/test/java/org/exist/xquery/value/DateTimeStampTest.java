@@ -27,34 +27,29 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class DateTimeStampTest extends AbstractTimeRelatedTestCase {
+class DateTimeStampTest extends AbstractTimeRelatedTestCase {
 
 
     @Test
-    public void constructWithoutTimeZone() {
-        assertThrows(XPathException.class, () -> {
-            new DateTimeStampValue("2005-10-11T10:00:00");
-        });
+    void constructWithoutTimeZone() {
+        assertThrows(XPathException.class, () -> new DateTimeStampValue("2005-10-11T10:00:00"));
     }
 
     @Test
-    public void convertDateTimeWithTimeZoneToDateTimeStamp() throws XPathException {
+    void convertDateTimeWithTimeZoneToDateTimeStamp() throws XPathException {
         final DateTimeValue dateTimeValue = new DateTimeValue("2005-10-11T10:00:00Z");
         final AtomicValue value = dateTimeValue.convertTo(Type.DATE_TIME_STAMP);
         assertEquals(DateTimeStampValue.class, value.getClass());
     }
 
     @Test
-    public void convertDateTimeWithoutTimeZoneToDateTimeStamp() {
-        assertThrows(XPathException.class, () -> {
-            final DateTimeValue dateTimeValue = new DateTimeValue("2005-10-11T10:00:00");
-            final AtomicValue value = dateTimeValue.convertTo(Type.DATE_TIME_STAMP);
-            assertEquals(DateTimeStampValue.class, value.getClass());
-        });
+    void convertDateTimeWithoutTimeZoneToDateTimeStamp() throws XPathException {
+        final DateTimeValue dateTimeValue = new DateTimeValue("2005-10-11T10:00:00");
+        assertThrows(XPathException.class, () -> dateTimeValue.convertTo(Type.DATE_TIME_STAMP));
     }
 
     @Test
-    public void getTimezone() throws XPathException {
+    void getTimezone() throws XPathException {
         final DateTimeStampValue value = new DateTimeStampValue("2005-10-11T10:00:00+10:00");
         assertEquals(10 * 60, value.calendar.getTimezone());
     }

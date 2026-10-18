@@ -34,51 +34,51 @@ import static org.exist.test.XQueryAssertions.assertXQStaticError;
  *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
-public class UnknownAtomicTypeTest extends XQueryCompilationTest {
+class UnknownAtomicTypeTest extends XQueryCompilationTest {
     @Test
-    public void letVariable() throws EXistException, PermissionDeniedException {
+    void letVariable() throws EXistException, PermissionDeniedException {
         final String query = "let $x as a := 0 return $x";
         final String error = "Unknown simple type a";
         assertXQStaticError(ErrorCodes.XPST0051, 1, 11, error, compileQuery(query));
     }
 
     @Test
-    public void functionReturnType() throws EXistException, PermissionDeniedException {
+    void functionReturnType() throws EXistException, PermissionDeniedException {
         final String query = "function () as b { () }";
         final String error = "Unknown simple type b";
         assertXQStaticError(ErrorCodes.XPST0051, 1, 16, error, compileQuery(query));
     }
 
     @Test
-    public void functionParameterType() throws EXistException, PermissionDeniedException {
+    void functionParameterType() throws EXistException, PermissionDeniedException {
         final String query = "function ($x as c) { $x }";
         final String error = "Unknown simple type c";
         assertXQStaticError(ErrorCodes.XPST0051, 1, 17, error, compileQuery(query));
     }
 
     @Test
-    public void instanceOf() throws EXistException, PermissionDeniedException {
+    void instanceOf() throws EXistException, PermissionDeniedException {
         final String query = "1 instance of d";
         final String error = "Unknown simple type d";
         assertXQStaticError(ErrorCodes.XPST0051, 1, 15, error, compileQuery(query));
     }
 
     @Test
-    public void treatAs() throws EXistException, PermissionDeniedException {
+    void treatAs() throws EXistException, PermissionDeniedException {
         final String query = "1 treat as e";
         final String error = "Unknown simple type e";
         assertXQStaticError(ErrorCodes.XPST0051, 1, 12, error, compileQuery(query));
     }
 
     @Test
-    public void castAs() throws EXistException, PermissionDeniedException {
+    void castAs() throws EXistException, PermissionDeniedException {
         final String query = "1 cast as f";
         final String error = "Unknown simple type f";
         assertXQStaticError(ErrorCodes.XQST0052, 1, 11, error, compileQuery(query));
     }
 
     @Test
-    public void castableAs() throws EXistException, PermissionDeniedException {
+    void castableAs() throws EXistException, PermissionDeniedException {
         final String query = "1 castable as g";
         final String error = "Unknown simple type g";
         assertXQStaticError(ErrorCodes.XQST0052, 1, 15, error, compileQuery(query));

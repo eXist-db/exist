@@ -46,199 +46,199 @@ public class SeqOpTest {
 	private static XPathQueryService query;
 	private static Collection c;
 
-	@org.junit.jupiter.api.Test
-	public void testReverseEmpty() throws XMLDBException {
+    @org.junit.jupiter.api.Test
+    void testReverseEmpty() throws XMLDBException {
 		assertSeq(new String[0], "reverse(())");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testReverseAtomic1() throws XMLDBException {
+    void testReverseAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "reverse(('a'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testReverseAtomic2() throws XMLDBException {
+    void testReverseAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"b", "a"}, "reverse(('a', 'b'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testReverseNodes1() throws XMLDBException {
+    void testReverseNodes1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>"}, "reverse(//a)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testReverseNodes2() throws XMLDBException {
+    void testReverseNodes2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<b/>", "<a/>"}, "reverse(/top/*)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testReverseMixed() throws XMLDBException {
+    void testReverseMixed() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"c", "<b/>", "<a/>"}, "reverse((/top/*, 'c'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveEmpty1() throws XMLDBException {
+    void testRemoveEmpty1() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 1)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveEmpty2() throws XMLDBException {
+    void testRemoveEmpty2() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 0)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveEmpty3() throws XMLDBException {
+    void testRemoveEmpty3() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 42)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveOutOfBounds1() throws XMLDBException {
+    void testRemoveOutOfBounds1() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), 0)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveOutOfBounds2() throws XMLDBException {
+    void testRemoveOutOfBounds2() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), 3)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveOutOfBounds3() throws XMLDBException {
+    void testRemoveOutOfBounds3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), -1)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveAtomic1() throws XMLDBException {
+    void testRemoveAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"b", "c"}, "remove(('a', 'b', 'c'), 1)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveAtomic2() throws XMLDBException {
+    void testRemoveAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"a", "c"}, "remove(('a', 'b', 'c'), 2)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveAtomic3() throws XMLDBException {
+    void testRemoveAtomic3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b', 'c'), 3)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveMixed1() throws XMLDBException {
+    void testRemoveMixed1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<b/>", "a", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 1)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveMixed2() throws XMLDBException {
+    void testRemoveMixed2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>", "a", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 2)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveMixed3() throws XMLDBException {
+    void testRemoveMixed3() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>", "<b/>", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 3)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveNodes1() throws XMLDBException {
+    void testRemoveNodes1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<b/>", "<c/>"}, "remove(/top/*, 1)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveNodes2() throws XMLDBException {
+    void testRemoveNodes2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<a/>", "<c/>"}, "remove(/top/*, 2)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testRemoveNodes3() throws XMLDBException {
+    void testRemoveNodes3() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<a/>", "<b/>"}, "remove(/top/*, 3)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertEmpty1() throws XMLDBException {
+    void testInsertEmpty1() throws XMLDBException {
 		assertSeq(new String[0], "insert-before((), 1, ())");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertEmpty2() throws XMLDBException {
+    void testInsertEmpty2() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "insert-before((), 1, ('a'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertEmpty3() throws XMLDBException {
+    void testInsertEmpty3() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "insert-before(('a'), 1, ())");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertOutOfBounds1() throws XMLDBException {
+    void testInsertOutOfBounds1() throws XMLDBException {
 		assertSeq(new String[]{"c", "d", "a", "b"}, "insert-before(('a', 'b'), 0, ('c', 'd'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertOutOfBounds2() throws XMLDBException {
+    void testInsertOutOfBounds2() throws XMLDBException {
 		assertSeq(new String[]{"a", "b", "c", "d"}, "insert-before(('a', 'b'), 3, ('c', 'd'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertOutOfBounds3() throws XMLDBException {
+    void testInsertOutOfBounds3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b", "c", "d"}, "insert-before(('a', 'b'), 4, ('c', 'd'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertAtomic1() throws XMLDBException {
+    void testInsertAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"a", "c", "d", "b"}, "insert-before(('a', 'b'), 2, ('c', 'd'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertAtomic2() throws XMLDBException {
+    void testInsertAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"c", "d", "a", "b"}, "insert-before(('a', 'b'), 1, ('c', 'd'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertAtomic3() throws XMLDBException {
+    void testInsertAtomic3() throws XMLDBException {
 		assertSeq(new String[]{"a", "a", "b", "b"}, "insert-before(('a', 'b'), 2, ('a', 'b'))");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertNodes1() throws XMLDBException {
+    void testInsertNodes1() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<c/>", "<d/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/y/*)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertNodes2() throws XMLDBException {
+    void testInsertNodes2() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<c/>", "<d/>", "<a/>", "<b/>"}, "insert-before(/top/x/*, 1, /top/y/*)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertNodes3() throws XMLDBException {
+    void testInsertNodes3() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<b/>", "<c/>", "<d/>"}, "insert-before(/top/x/*, 3, /top/y/*)");
 	}
 
-	// TODO: currently fails because duplicate nodes are removed
+    // TODO: currently fails because duplicate nodes are removed
     @org.junit.jupiter.api.Test
-	public void testInsertNodes4() throws XMLDBException {
+    void testInsertNodes4() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/x/*)");
 	}
 
     @org.junit.jupiter.api.Test
-	public void testInsertMixed1() throws XMLDBException {
+    void testInsertMixed1() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "c", "<b/>"}, "insert-before(/top/x/*, 2, ('c'))");
 	}
 
-	// TODO: currently fails because duplicate nodes are removed
+    // TODO: currently fails because duplicate nodes are removed
     @org.junit.jupiter.api.Test
-	public void testInsertMixed2() throws XMLDBException {
+    void testInsertMixed2() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>", "c"}, "insert-before((/top/x/*, 'c'), 2, /top/x/*)");
 	}
@@ -266,8 +266,8 @@ public class SeqOpTest {
 	@RegisterExtension
 	public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	@BeforeAll
-	public static void setupTestCollection() throws XMLDBException {
+    @BeforeAll
+    static void setupTestCollection() throws XMLDBException {
 		final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 		final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);
 		c = root.getChildCollection("test");
@@ -279,8 +279,8 @@ public class SeqOpTest {
 		query = c.getService(XPathQueryService.class);
 	}
 
-	@AfterAll
-	public static void tearDown() throws XMLDBException {
+    @AfterAll
+    static void tearDown() throws XMLDBException {
 		if (c != null) {
 			final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 			final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);

@@ -64,12 +64,12 @@ public class DatabaseInsertResourcesWithValidationTest {
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
 
     @BeforeAll
-    public static void startup() throws Exception {
+    static void startup() throws Exception {
         createTestCollections();
     }
 
     @AfterAll
-    public static void shutdown() throws Exception {
+    static void shutdown() throws Exception {
         removeTestCollections();
     }
 
@@ -118,7 +118,7 @@ public class DatabaseInsertResourcesWithValidationTest {
      * {@code &lt;!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"&gt;}
      */
     @Test
-    public void validDocumentSystemCatalog() throws IOException {
+    void validDocumentSystemCatalog() throws IOException {
         String hamletWithValid = getHamletXml();
         hamletWithValid = hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">");
@@ -151,7 +151,7 @@ public class DatabaseInsertResourcesWithValidationTest {
      * Additionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
     @Test
-    public void invalidDocumentSystemCatalog() throws IOException {
+    void invalidDocumentSystemCatalog() throws IOException {
         String hamletWithInvalid = getHamletXml();
         hamletWithInvalid = hamletWithInvalid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">");

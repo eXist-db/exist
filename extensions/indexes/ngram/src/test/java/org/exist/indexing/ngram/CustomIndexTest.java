@@ -106,7 +106,7 @@ public class CustomIndexTest {
      * correctly updated.
      */
     @org.junit.jupiter.api.Test
-    public void xupdateRemove() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
+    void xupdateRemove() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -187,7 +187,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xupdateInsert() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
+    void xupdateInsert() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -304,7 +304,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xupdateUpdate() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
+    void xupdateUpdate() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -365,7 +365,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xupdateReplace() throws LockException, XPathException, PermissionDeniedException, SAXException, EXistException, IOException, ParserConfigurationException {
+    void xupdateReplace() throws LockException, XPathException, PermissionDeniedException, SAXException, EXistException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -418,7 +418,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void xupdateRename() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
+    void xupdateRename() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -451,9 +451,9 @@ public class CustomIndexTest {
             transact.commit(transaction);
         }
     }
- 
+
     @org.junit.jupiter.api.Test
-    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException, LockException {
+    void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -484,7 +484,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException, IOException {
+    void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -515,7 +515,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void query() throws PermissionDeniedException, XPathException, EXistException {
+    void query() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
@@ -545,7 +545,7 @@ public class CustomIndexTest {
      * must not raise XPTY0004.
      */
     @org.junit.jupiter.api.Test
-    public void ngramContainsWithForVariable() throws PermissionDeniedException, XPathException, EXistException {
+    void ngramContainsWithForVariable() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
@@ -574,7 +574,7 @@ public class CustomIndexTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
+    void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
@@ -650,7 +650,7 @@ public class CustomIndexTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach
-    public void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+    void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -676,7 +676,7 @@ public class CustomIndexTest {
     }
 
     @AfterEach
-    public void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();

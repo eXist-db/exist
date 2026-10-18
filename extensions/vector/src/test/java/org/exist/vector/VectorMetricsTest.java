@@ -28,17 +28,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class VectorMetricsTest {
+class VectorMetricsTest {
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         VectorMetrics.removeInstance("metrics-a");
         VectorMetrics.removeInstance("metrics-b");
         VectorMetrics.removeInstance("metrics-reset");
     }
 
     @Test
-    public void recordsEmbedAndKnnCounters() {
+    void recordsEmbedAndKnnCounters() {
         final VectorMetrics metrics = VectorMetrics.forInstance("metrics-reset");
         metrics.reset();
         metrics.recordEmbed(100);
@@ -54,7 +54,7 @@ public class VectorMetricsTest {
     }
 
     @Test
-    public void resetClearsCounters() {
+    void resetClearsCounters() {
         final VectorMetrics metrics = VectorMetrics.forInstance("metrics-reset");
         metrics.recordEmbed(100);
         metrics.recordKnnQuery(50);
@@ -64,7 +64,7 @@ public class VectorMetricsTest {
     }
 
     @Test
-    public void instancesAreIsolatedById() {
+    void instancesAreIsolatedById() {
         final VectorMetrics first = VectorMetrics.forInstance("metrics-a");
         final VectorMetrics second = VectorMetrics.forInstance("metrics-b");
         assertNotSame(first, second);
@@ -81,7 +81,7 @@ public class VectorMetricsTest {
     }
 
     @Test
-    public void collectModelsIncludesBuiltins() {
+    void collectModelsIncludesBuiltins() {
         final var models = VectorModelDiagnostics.collectModels();
         assertTrue(models.size() >= 1);
         assertTrue(models.stream().anyMatch(model -> model.getId() != null && !model.getId().isEmpty()));

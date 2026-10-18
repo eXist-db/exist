@@ -141,7 +141,7 @@ public class RESTExecuteWithoutReadTest {
     private static String credentials;
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, TriggerException, SyntaxException {
+    static void setup() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException, TriggerException, SyntaxException {
         credentials = Base64.encodeBase64String((TEST_USER + ":" + TEST_USER).getBytes(UTF_8));
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -174,7 +174,7 @@ public class RESTExecuteWithoutReadTest {
     }
 
     @Test
-    public void executeOnlyQueryRuns() throws IOException {
+    void executeOnlyQueryRuns() throws IOException {
         final Response response = get(EXEC_ONLY_VALID, null);
 
         assertEquals(HttpStatus.OK_200, response.status);
@@ -183,7 +183,7 @@ public class RESTExecuteWithoutReadTest {
     }
 
     @Test
-    public void executeOnlyQueryFailsGenerically() throws IOException {
+    void executeOnlyQueryFailsGenerically() throws IOException {
         final Response response = get(EXEC_ONLY_BROKEN, null);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.status);
@@ -196,7 +196,7 @@ public class RESTExecuteWithoutReadTest {
     }
 
     @Test
-    public void readableQueryFailsWithTheRealError() throws IOException {
+    void readableQueryFailsWithTheRealError() throws IOException {
         final Response response = get(READABLE_BROKEN, null);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.status);
@@ -212,7 +212,7 @@ public class RESTExecuteWithoutReadTest {
      * raised outside the narrow try that caught XPathException from execute().
      */
     @Test
-    public void executeOnlySerializationFailureIsGeneric() throws IOException {
+    void executeOnlySerializationFailureIsGeneric() throws IOException {
         final Response response = get(EXEC_ONLY_SERIALIZE_FAIL, null);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.status);
@@ -224,7 +224,7 @@ public class RESTExecuteWithoutReadTest {
     }
 
     @Test
-    public void readableSerializationFailureShowsTheRealError() throws IOException {
+    void readableSerializationFailureShowsTheRealError() throws IOException {
         final Response response = get(READABLE_SERIALIZE_FAIL, null);
 
         // a readable caller keeps the original failure's status and detail — here a serialization
@@ -241,7 +241,7 @@ public class RESTExecuteWithoutReadTest {
      * sent to a read-blind caller (plan §4.6). A read-capable caller still gets it.
      */
     @Test
-    public void theCacheHeaderIsSuppressedForAReadBlindCaller() throws IOException {
+    void theCacheHeaderIsSuppressedForAReadBlindCaller() throws IOException {
         final Response readBlind = get(EXEC_ONLY_VALID, null);
         assertEquals(HttpStatus.OK_200, readBlind.status);
         assertFalse(readBlind.headers.containsKey("X-XQuery-Cached"),
@@ -259,7 +259,7 @@ public class RESTExecuteWithoutReadTest {
      * execute-only copy must still come back generic, and vice versa.
      */
     @Test
-    public void theDisclosureLevelIsNotCachedWithTheCompiledQuery() throws IOException {
+    void theDisclosureLevelIsNotCachedWithTheCompiledQuery() throws IOException {
         final Response readable = get(READABLE_BROKEN, null);
         assertTrue(readable.body.contains("XPST0003"));
 
@@ -277,7 +277,7 @@ public class RESTExecuteWithoutReadTest {
      * Relaxing the execution gate must not open a way to fetch the source as data.
      */
     @Test
-    public void theSourceOfAnExecuteOnlyQueryCannotBeViewed() throws IOException {
+    void theSourceOfAnExecuteOnlyQueryCannotBeViewed() throws IOException {
         final Response response = get(EXEC_ONLY_VALID, "_source=yes");
 
         assertEquals(HttpStatus.FORBIDDEN_403, response.status);
@@ -290,7 +290,7 @@ public class RESTExecuteWithoutReadTest {
      * cannot be run — being able to read it is not enough.
      */
     @Test
-    public void aReadableButNonExecutableQueryIsDenied() throws IOException {
+    void aReadableButNonExecutableQueryIsDenied() throws IOException {
         final Response response = get(NOT_EXECUTABLE, null);
 
         assertEquals(HttpStatus.FORBIDDEN_403, response.status);
@@ -311,7 +311,7 @@ public class RESTExecuteWithoutReadTest {
      * entry survives for the users which may read the module.
      */
     @Test
-    public void aReadBlindCallerCannotRunAQueryImportingAnUnreadableModule() throws Exception {
+    void aReadBlindCallerCannotRunAQueryImportingAnUnreadableModule() throws Exception {
         final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
 
         // COLD: nothing pooled -> recompile -> module resolved on READ -> denied -> generic failure.
@@ -349,7 +349,7 @@ public class RESTExecuteWithoutReadTest {
      * evicting it and forcing a recompile for everybody.
      */
     @Test
-    public void aReadBlindCallerReusesThePooledQueryInsteadOfEvictingIt() throws Exception {
+    void aReadBlindCallerReusesThePooledQueryInsteadOfEvictingIt() throws Exception {
         final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
         xqPool.clear();
 
@@ -371,7 +371,7 @@ public class RESTExecuteWithoutReadTest {
      * pooled entry survives its attempt untouched.
      */
     @Test
-    public void aCallerWithoutExecuteLeavesThePooledEntryIntact() throws Exception {
+    void aCallerWithoutExecuteLeavesThePooledEntryIntact() throws Exception {
         final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
         xqPool.clear();
         primeQueryPool(NOT_EXECUTABLE);
@@ -390,7 +390,7 @@ public class RESTExecuteWithoutReadTest {
      * pooled compilation, for a read-blind caller as for any other.
      */
     @Test
-    public void aChangedQueryIsRecompiledForAReadBlindCallerToo() throws Exception {
+    void aChangedQueryIsRecompiledForAReadBlindCallerToo() throws Exception {
         final XQueryPool xqPool = existEmbeddedServer.getBrokerPool().getXQueryPool();
         xqPool.clear();
 

@@ -73,7 +73,7 @@ public class ProtectedModeTest {
             </book>""";
 
     @Test
-    public void queryCollection() throws XMLDBException {
+    void queryCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
         final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         try {
@@ -86,7 +86,7 @@ public class ProtectedModeTest {
     }
 
     @Test
-    public void queryRoot() throws XMLDBException {
+    void queryRoot() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
         final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         try {
@@ -99,7 +99,7 @@ public class ProtectedModeTest {
     }
 
     @Test
-    public void queryDocs() throws XMLDBException {
+    void queryDocs() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
         final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         final Random random = new Random();
@@ -116,7 +116,7 @@ public class ProtectedModeTest {
     }
 
     @BeforeAll
-    public static void setupDb() throws XMLDBException, SAXException {
+    static void setupDb() throws XMLDBException, SAXException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection collection = mgmt.createCollection("protected");
 
@@ -135,7 +135,7 @@ public class ProtectedModeTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws XMLDBException {
+    static void cleanupDb() throws XMLDBException {
         final CollectionManagementService cmgr = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cmgr.removeCollection("protected");
     }

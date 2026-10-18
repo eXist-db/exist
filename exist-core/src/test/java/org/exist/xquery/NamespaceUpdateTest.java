@@ -50,8 +50,8 @@ public class NamespaceUpdateTest {
 
 	private Collection testCollection;
 
-	@Test
-	public void updateAttribute() throws XMLDBException {
+    @Test
+    void updateAttribute() throws XMLDBException {
 		XQueryService service = testCollection.getService(XQueryService.class);
 		String query =
 				"""
@@ -72,8 +72,8 @@ public class NamespaceUpdateTest {
 		assertEquals("myid", result.getResource(0).getContent().toString());
 	}
 
-	@BeforeEach
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeEach
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		// initialize driver
 		final CollectionManagementService service =
 				existEmbeddedServer.getRoot().getService(
@@ -86,8 +86,8 @@ public class NamespaceUpdateTest {
 		testCollection.storeResource(doc);
 	}
 
-	@AfterEach
-	public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
 		final CollectionManagementService service =
 				existEmbeddedServer.getRoot().getService(
 						CollectionManagementService.class);

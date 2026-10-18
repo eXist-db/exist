@@ -38,7 +38,7 @@ public class BaseConverterTest {
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
-    public void testBaseConverterOctalToInt() throws XMLDBException {
+    void testBaseConverterOctalToInt() throws XMLDBException {
         final String query = "util:base-to-integer(0755, 8)";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -46,7 +46,7 @@ public class BaseConverterTest {
     }
 
     @Test
-    public void testBaseConverterIntToHex() throws XMLDBException {
+    void testBaseConverterIntToHex() throws XMLDBException {
         final String query = "util:integer-to-base(10, 16)";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -54,7 +54,7 @@ public class BaseConverterTest {
     }
 
     @Test
-    public void testBaseConverterIntToBinary() throws XMLDBException {
+    void testBaseConverterIntToBinary() throws XMLDBException {
         final String query = "util:integer-to-base(4, 2)";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();

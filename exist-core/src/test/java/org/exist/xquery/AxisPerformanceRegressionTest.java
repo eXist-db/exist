@@ -47,9 +47,10 @@ public class AxisPerformanceRegressionTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String DOC_PATH = "/db/axis-perf-test.xml";
+    private static final int ROUNDS = 5;
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         // 1500 <a> elements, each with 20 <b> children -> 30,000 <b> total.
         // 19 of each <a>'s 20 children have a preceding-sibling <b>; same for
         // following. So count for both predicates is 28,500. With the bug
@@ -67,10 +68,16 @@ public class AxisPerformanceRegressionTest {
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         final XQueryService xqs =
                 existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("xmldb:remove(\"/db\", \"axis-perf-test.xml\")");
+    }
+
+    private long timeQuery(final String axis) throws XMLDBException {
+        final long start = System.nanoTime();
+        execute("count(doc(\"" + DOC_PATH + "\")//b[" + axis + "::b])");
+        return (System.nanoTime() - start) / 1_000_000L;
     }
 
     private ResourceSet execute(final String xquery) throws XMLDBException {
@@ -80,7 +87,7 @@ public class AxisPerformanceRegressionTest {
     }
 
     @Test
-    public void followingSiblingMatchesPrecedingSiblingCount() throws XMLDBException {
+    void followingSiblingMatchesPrecedingSiblingCount() throws XMLDBException {
         final ResourceSet preceding = execute(
                 "count(doc(\"" + DOC_PATH + "\")//b[preceding-sibling::b])");
         final ResourceSet following = execute(
@@ -94,18 +101,25 @@ public class AxisPerformanceRegressionTest {
     }
 
     @Test
-    public void followingSiblingPerformanceCloseToPrecedingSibling() throws XMLDBException {
+    void followingSiblingPerformanceCloseToPrecedingSibling() throws XMLDBException {
         // Warm-up - first run pays index/parsing costs we don't want to measure.
         execute("count(doc(\"" + DOC_PATH + "\")//b[preceding-sibling::b])");
         execute("count(doc(\"" + DOC_PATH + "\")//b[following-sibling::b])");
 
-        final long precedingStart = System.nanoTime();
-        execute("count(doc(\"" + DOC_PATH + "\")//b[preceding-sibling::b])");
-        final long precedingMs = (System.nanoTime() - precedingStart) / 1_000_000L;
-
-        final long followingStart = System.nanoTime();
-        execute("count(doc(\"" + DOC_PATH + "\")//b[following-sibling::b])");
-        final long followingMs = (System.nanoTime() - followingStart) / 1_000_000L;
+        // Five rounds in alternating order, each side judged by its fastest round: load on the machine
+        // slows a round down but never makes it faster than the code can run, so one slow round
+        // (a GC pause, a busy CI runner) cannot decide the outcome.
+        long precedingMs = Long.MAX_VALUE;
+        long followingMs = Long.MAX_VALUE;
+        for (int round = 0; round < ROUNDS; round++) {
+            if (round % 2 == 0) {
+                precedingMs = Math.min(precedingMs, timeQuery("preceding-sibling"));
+                followingMs = Math.min(followingMs, timeQuery("following-sibling"));
+            } else {
+                followingMs = Math.min(followingMs, timeQuery("following-sibling"));
+                precedingMs = Math.min(precedingMs, timeQuery("preceding-sibling"));
+            }
+        }
 
         // Pre-fix this ratio was ~80x on the original issue's corpus and well
         // over 10x on this smaller one. Threshold is intentionally loose so it
@@ -114,6 +128,6 @@ public class AxisPerformanceRegressionTest {
         assertTrue(
                 followingMs <= threshold,
                 "following-sibling=" + followingMs + "ms, preceding-sibling=" + precedingMs
-                        + "ms; threshold=" + threshold + "ms (5x preceding-sibling, min 500ms)");
+                        + "ms (best of " + ROUNDS + " rounds); threshold=" + threshold + "ms (5x preceding-sibling, min 500ms)");
     }
 }

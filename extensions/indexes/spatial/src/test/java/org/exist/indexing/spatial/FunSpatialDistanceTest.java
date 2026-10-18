@@ -80,7 +80,7 @@ public class FunSpatialDistanceTest {
             </gml:Point>""";
 
     @Test
-    public void distanceCartesianReturnsEuclideanDegrees()
+    void distanceCartesianReturnsEuclideanDegrees()
             throws EXistException, PermissionDeniedException, XPathException {
         final double dx = -118.4081 - -73.9857;
         final double dy = 33.9416 - 40.7484;
@@ -91,7 +91,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceMetersNycToLa() throws EXistException, PermissionDeniedException, XPathException {
+    void distanceMetersNycToLa() throws EXistException, PermissionDeniedException, XPathException {
         final double meters = runDouble(
                 "spatial:distance(%s, %s, 'meter')".formatted(POINT_NYC, POINT_LA));
 
@@ -103,7 +103,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceKilometersMatchesMetersScaledDown()
+    void distanceKilometersMatchesMetersScaledDown()
             throws EXistException, PermissionDeniedException, XPathException {
         final double meters = runDouble(
                 "spatial:distance(%s, %s, 'meter')".formatted(POINT_NYC, POINT_LA));
@@ -113,7 +113,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceMilesNycToLa() throws EXistException, PermissionDeniedException, XPathException {
+    void distanceMilesNycToLa() throws EXistException, PermissionDeniedException, XPathException {
         final double miles = runDouble(
                 "spatial:distance(%s, %s, 'mile')".formatted(POINT_NYC, POINT_LA));
         // ~2446 mi great-circle. Allow 1% slack.
@@ -122,7 +122,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceNauticalMilesNycToLa() throws EXistException, PermissionDeniedException, XPathException {
+    void distanceNauticalMilesNycToLa() throws EXistException, PermissionDeniedException, XPathException {
         final double nm = runDouble(
                 "spatial:distance(%s, %s, 'nautical-mile')".formatted(POINT_NYC, POINT_LA));
         // ~2124.6 nm great-circle. Allow 1% slack.
@@ -131,7 +131,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceMetersNycToParis() throws EXistException, PermissionDeniedException, XPathException {
+    void distanceMetersNycToParis() throws EXistException, PermissionDeniedException, XPathException {
         final double meters = runDouble(
                 "spatial:distance(%s, %s, 'meter')".formatted(POINT_NYC, POINT_PARIS));
         // ~5837 km great-circle. Allow 1% slack.
@@ -140,21 +140,21 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceWithEmptyFirstOperandReturnsEmpty()
+    void distanceWithEmptyFirstOperandReturnsEmpty()
             throws EXistException, PermissionDeniedException, XPathException {
         final Sequence seq = runQuery("spatial:distance((), %s)".formatted(POINT_NYC));
         assertEquals(0, seq.getItemCount());
     }
 
     @Test
-    public void distanceWithEmptySecondOperandReturnsEmpty()
+    void distanceWithEmptySecondOperandReturnsEmpty()
             throws EXistException, PermissionDeniedException, XPathException {
         final Sequence seq = runQuery("spatial:distance(%s, ())".formatted(POINT_NYC));
         assertEquals(0, seq.getItemCount());
     }
 
     @Test
-    public void distanceWithUnsupportedUnitRaisesError() throws EXistException, PermissionDeniedException {
+    void distanceWithUnsupportedUnitRaisesError() throws EXistException, PermissionDeniedException {
         try {
             runQuery("spatial:distance(%s, %s, 'furlong')".formatted(POINT_NYC, POINT_LA));
             fail("Expected XPathException for unsupported unit");
@@ -165,7 +165,7 @@ public class FunSpatialDistanceTest {
     }
 
     @Test
-    public void distanceWithDegreeUnitMatchesCartesianDefault()
+    void distanceWithDegreeUnitMatchesCartesianDefault()
             throws EXistException, PermissionDeniedException, XPathException {
         final double cartesian = runDouble("spatial:distance(%s, %s)".formatted(POINT_NYC, POINT_LA));
         final double explicit = runDouble(

@@ -51,7 +51,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 /**
  * Test HTTP PATCH capabilities of {@link org.exist.http.servlets.EXistServlet}
  */
-public class PatchTest extends RESTTest {
+class PatchTest extends RESTTest {
 
     private final static String XQUERY_FILENAME = "test-patch.xql";
     private final static String XML_FILENAME = "test-patch.xml";
@@ -61,7 +61,7 @@ public class PatchTest extends RESTTest {
     private static BinaryResource bin;
 
     @BeforeAll
-    public static void beforeClass() throws XMLDBException {
+    static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         UserManagementService ums = root.getService(UserManagementService.class);
 
@@ -83,13 +83,13 @@ public class PatchTest extends RESTTest {
     }
 
     @AfterAll
-    public static void afterClass() throws XMLDBException {
+    static void afterClass() throws XMLDBException {
         root.removeResource(bin);
         root.removeResource(xml);
     }
 
     @Test
-    public void patchBinary() throws IOException {
+    void patchBinary() throws IOException {
         final byte[] testData = "12345".getBytes(UTF_8);
 
         final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -101,7 +101,7 @@ public class PatchTest extends RESTTest {
     }
 
     @Test
-    public void patchXml() throws IOException {
+    void patchXml() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -113,7 +113,7 @@ public class PatchTest extends RESTTest {
     }
 
     @Test
-    public void patchString() throws IOException {
+    void patchString() throws IOException {
         final String testData = "12345";
 
         final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XQUERY_FILENAME))
@@ -124,7 +124,7 @@ public class PatchTest extends RESTTest {
     }
 
     @Test
-    public void patchCollectionNotAllowed() throws IOException {
+    void patchCollectionNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri()))
@@ -136,7 +136,7 @@ public class PatchTest extends RESTTest {
     }
 
     @Test
-    public void patchXmlResourceNotAllowed() throws IOException {
+    void patchXmlResourceNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         final HttpRequest patch = HttpRequest.newBuilder(URI.create(getCollectionRootUri() + "/" + XML_FILENAME))

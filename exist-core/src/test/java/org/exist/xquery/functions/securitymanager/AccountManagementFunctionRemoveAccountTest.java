@@ -46,28 +46,27 @@ public class AccountManagementFunctionRemoveAccountTest {
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void cannotDeleteSystemAccount() throws XPathException, EXistException, AuthenticationException {
-        assertThrows(PermissionDeniedException.class, () -> {
-            final BrokerPool pool = existWebServer.getBrokerPool();
-            final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin)));
-        });
+    void cannotDeleteSystemAccount() throws XPathException, EXistException, AuthenticationException {
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        assertThrows(PermissionDeniedException.class, () ->
+            extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin))));
     }
 
     @Test
-    public void cannotDeleteDbaAccount() throws XPathException, EXistException {
+    void cannotDeleteDbaAccount() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.DBA_USER)));
     }
 
     @Test
-    public void cannotDeleteGuestAccount() throws XPathException, EXistException {
+    void cannotDeleteGuestAccount() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.GUEST_USER)));
     }
 
     @Test
-    public void cannotDeleteUnknownAccount() throws XPathException, EXistException {
+    void cannotDeleteUnknownAccount() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.UNKNOWN_USER)));
     }

@@ -30,27 +30,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class IntTest {
-    
+class IntTest {
+
     @Test
-    public void testOver() {
+    void testOver() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("2147483648", Type.INT);
         });
     }
-    
+
     @Test
-    public void testPositiveLimit() throws XPathException {
+    void testPositiveLimit() throws XPathException {
         new IntegerValue("2147483647", Type.INT);
     }
-    
+
     @Test
-    public void testNegativeLimit() throws XPathException {
+    void testNegativeLimit() throws XPathException {
         new IntegerValue("-2147483648", Type.INT);
     }
-    
+
     @Test
-    public void testUnder() {
+    void testUnder() {
         assertThrows(XPathException.class, () -> {
             new IntegerValue("-2147483649", Type.INT);
         });

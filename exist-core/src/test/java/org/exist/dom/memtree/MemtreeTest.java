@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class MemtreeTest {
+class MemtreeTest {
 
     private final static String XML =
             """
@@ -73,7 +73,7 @@ public class MemtreeTest {
             <?pi-after-doc-3?>""";
 
     @Test
-    public void size() throws IOException, ParserConfigurationException, SAXException {
+    void size() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -83,7 +83,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getLastNode() throws IOException, ParserConfigurationException, SAXException {
+    void getLastNode() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -93,7 +93,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getChildCountFor() throws IOException, ParserConfigurationException, SAXException {
+    void getChildCountFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -129,7 +129,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getNodeType() throws IOException, ParserConfigurationException, SAXException {
+    void getNodeType() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -165,7 +165,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getTreeLevel() throws IOException, ParserConfigurationException, SAXException {
+    void getTreeLevel() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -201,7 +201,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getAttributesCountFor() throws IOException, ParserConfigurationException, SAXException {
+    void getAttributesCountFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -237,7 +237,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getNamespacesCountFor() throws IOException, ParserConfigurationException, SAXException {
+    void getNamespacesCountFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -273,7 +273,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getFirstChildFor() throws IOException, ParserConfigurationException, SAXException {
+    void getFirstChildFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -309,7 +309,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getNextSiblingFor() throws IOException, ParserConfigurationException, SAXException {
+    void getNextSiblingFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -345,7 +345,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getParentNodeFor() throws IOException, ParserConfigurationException, SAXException {
+    void getParentNodeFor() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -383,7 +383,7 @@ public class MemtreeTest {
     // TODO(AR) Move DOM like tests below to somewhere more appropriate
 
     @Test
-    public void getNode() throws IOException, ParserConfigurationException, SAXException {
+    void getNode() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -419,7 +419,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void hasChildNodes() throws IOException, ParserConfigurationException, SAXException {
+    void hasChildNodes() throws IOException, ParserConfigurationException, SAXException {
         final DocumentImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);
@@ -429,7 +429,7 @@ public class MemtreeTest {
     }
 
     @Test
-    public void getChildNodes() throws IOException, ParserConfigurationException, SAXException {
+    void getChildNodes() throws IOException, ParserConfigurationException, SAXException {
         final NodeImpl doc;
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(XML.getBytes(UTF_8))) {
             doc = parse(is);

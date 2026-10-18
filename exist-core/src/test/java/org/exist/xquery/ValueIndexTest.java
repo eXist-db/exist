@@ -102,7 +102,7 @@ public class ValueIndexTest {
     private Collection testCollection;
 
     @BeforeEach
-    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service = existEmbeddedServer.getRoot()
                 .getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
@@ -110,7 +110,7 @@ public class ValueIndexTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         final CollectionManagementService service = existEmbeddedServer.getRoot()
                 .getService(CollectionManagementService.class);
         service.removeCollection("test");
@@ -126,7 +126,7 @@ public class ValueIndexTest {
 	}
 
     @Test
-    public void strings() throws XMLDBException, URISyntaxException {
+    void strings() throws XMLDBException, URISyntaxException {
         configureCollection(CONFIG_PATH);
         XPathQueryService service = storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         queryResource(service, ITEMS_FILENAME, "//item[@id = 'i2']", 1);
@@ -153,7 +153,7 @@ public class ValueIndexTest {
     }
 
     @Test
-    public void strFunctions() throws XMLDBException {
+    void strFunctions() throws XMLDBException {
         configureCollection(CONFIG_PATH);
         XMLResource resource = testCollection.createResource("mondial-test.xml", XMLResource.class);
         resource.setContent(CITY);
@@ -182,18 +182,18 @@ public class ValueIndexTest {
         queryResource(service, "mondial-test.xml", "//city[matches(name, '^lin$', 'i')]", 0);
     }
 
-	/*
+    /*
      * Bugfix
      *
      * These following two tests were put in place to demonstrate bugs in how the index matching functions work,
      * as a precursor to a fix, which was committed 2/3/2010. The issue was that the 2nd parameter
-	 * to the string matching functions was incorrectly interpreted as a regex, which causd an exception
-	 * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
-	 *
-	 * andrzej@chaeron.com
+     * to the string matching functions was incorrectly interpreted as a regex, which causd an exception
+     * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
+     *
+     * andrzej@chaeron.com
      */
     @Test
-	public void pathIndexStringMatchingFunctions() throws XMLDBException {
+    void pathIndexStringMatchingFunctions() throws XMLDBException {
         configureCollection(CONFIG_PATH);
         XMLResource resource = testCollection.createResource( "mondial-test.xml", XMLResource.class );
         resource.setContent( CITY );
@@ -204,10 +204,10 @@ public class ValueIndexTest {
         queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '^*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ contains( name, '^*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '^*' ) ]", 0);
-	}    
+	}
 
     @Test
-	public void pathIndexStringMatchingFunctions2() throws XMLDBException {
+    void pathIndexStringMatchingFunctions2() throws XMLDBException {
         configureCollection(CONFIG_PATH);
         XMLResource resource = testCollection.createResource( "mondial-test.xml", XMLResource.class );
         resource.setContent( CITY );
@@ -217,19 +217,19 @@ public class ValueIndexTest {
         queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '(*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ contains( name, '*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '(*' ) ]", 0);
-	}    
+	}
 
-	/*
+    /*
      * Bugfix
      *
      * These following two tests were put in place to test a bug fix for QName matching functions, which was committed 2/19/2010. The issue was that the 2nd parameter
-	 * to the string matching functions was incorrectly interpreted as a regex, for QName indexes, which causd an exception
-	 * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
-	 *
-	 * andrzej@chaeron.com
+     * to the string matching functions was incorrectly interpreted as a regex, for QName indexes, which causd an exception
+     * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
+     *
+     * andrzej@chaeron.com
      */
     @Test
-	public void qnameIndexStringMatchingFunctions() throws XMLDBException {
+    void qnameIndexStringMatchingFunctions() throws XMLDBException {
         configureCollection( CONFIG_QNAME );
         XMLResource resource = testCollection.createResource( "mondial-test.xml", XMLResource.class );
         resource.setContent( CITY );
@@ -240,10 +240,10 @@ public class ValueIndexTest {
         queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '^*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ contains( name, '^*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '^*' ) ]", 0);
-	}    
+	}
 
     @Test
-	public void qnameIndexStringMatchingFunctions2() throws XMLDBException {
+    void qnameIndexStringMatchingFunctions2() throws XMLDBException {
         configureCollection( CONFIG_QNAME );
         XMLResource resource = testCollection.createResource( "mondial-test.xml", XMLResource.class );
         resource.setContent( CITY );
@@ -253,10 +253,10 @@ public class ValueIndexTest {
         queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '(*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ contains( name, '*' ) ]", 0);
         queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '(*' ) ]", 0);
-	}    
+	}
 
     @Test
-    public void strFunctionsQName() throws XMLDBException {
+    void strFunctionsQName() throws XMLDBException {
         configureCollection(CONFIG_QNAME);
         XMLResource resource = testCollection.createResource("mondial-test.xml", XMLResource.class);
         resource.setContent(CITY);
@@ -286,7 +286,7 @@ public class ValueIndexTest {
     }
 
     @Test
-    public void qnameIndex() throws XMLDBException, URISyntaxException {
+    void qnameIndex() throws XMLDBException, URISyntaxException {
         configureCollection(CONFIG_QNAME);
         XPathQueryService service = storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         queryResource(service, ITEMS_FILENAME, "//((#exist:optimize#) { item[stock = 10] })", 1);
@@ -302,7 +302,7 @@ public class ValueIndexTest {
     }
 
     @Test
-    public void indexScan() throws XMLDBException, URISyntaxException {
+    void indexScan() throws XMLDBException, URISyntaxException {
         configureCollection(CONFIG_PATH);
         String queryBody =
             """
@@ -337,7 +337,7 @@ public class ValueIndexTest {
     }
 
     @Test
-    public void updates() throws Exception {
+    void updates() throws Exception {
         configureCollection(CONFIG_PATH);
         storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         for (int i = 100; i <= 150; i++) {
@@ -369,7 +369,7 @@ public class ValueIndexTest {
     }
 
     @Test
-    public void updatesQName() throws Exception {
+    void updatesQName() throws Exception {
         configureCollection(CONFIG_QNAME);
         storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         for (int i = 100; i <= 150; i++) {

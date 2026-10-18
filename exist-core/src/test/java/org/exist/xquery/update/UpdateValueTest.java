@@ -29,10 +29,10 @@ import org.xmldb.api.modules.XQueryService;
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class UpdateValueTest extends AbstractTestUpdate {
+class UpdateValueTest extends AbstractTestUpdate {
 
     @Test
-    public void updateNamespacedAttribute() throws XMLDBException {
+    void updateNamespacedAttribute() throws XMLDBException {
         final String docName = "pathNs.xml";
         final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test><t xml:id=\"id1\"/></test>");
@@ -46,7 +46,7 @@ public class UpdateValueTest extends AbstractTestUpdate {
     }
 
     @Test
-    public void updateAttributeInNamespacedElement() throws XMLDBException {
+    void updateAttributeInNamespacedElement() throws XMLDBException {
         final String docName = "docNs.xml";
         final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test xmlns=\"http://test.com\" id=\"id1\"/>");

@@ -44,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 @Execution(ExecutionMode.CONCURRENT)
-public class SourceFactoryTest {
+class SourceFactoryTest {
 
     @Test
-    public void getSourceFromFile_contextAbsoluteFileUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException, URISyntaxException {
+    void getSourceFromFile_contextAbsoluteFileUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
         final String contextPath = mainUrl.toString();
         final URL libraryUrl = getClass().getResource("library.xqm");
@@ -60,7 +60,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromFile_contextAbsoluteFile_locationAbsoluteFile() throws IOException, PermissionDeniedException, URISyntaxException {
+    void getSourceFromFile_contextAbsoluteFile_locationAbsoluteFile() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
         final String contextPath = Path.of(mainUrl.toURI()).toAbsolutePath().toString();
         final URL libraryUrl = getClass().getResource("library.xqm");
@@ -73,7 +73,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromFile_contextAbsoluteFileUrl_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
+    void getSourceFromFile_contextAbsoluteFileUrl_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
         final String contextPath = mainUrl.toString();
         final String location = "library.xqm";
@@ -85,7 +85,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromFile_contextAbsoluteFile_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
+    void getSourceFromFile_contextAbsoluteFile_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
         final String contextPath = Path.of(mainUrl.toURI()).toAbsolutePath().toString();
         final String location = "library.xqm";
@@ -97,7 +97,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromFile_contextAbsoluteDir_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
+    void getSourceFromFile_contextAbsoluteDir_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
         final String contextPath = Path.of(mainUrl.toURI()).getParent().toString();
         //final String contextPath = mainParent.substring(0, mainParent.lastIndexOf('/'));
@@ -110,7 +110,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextAbsoluteFileUrl_locationRelative() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextAbsoluteFileUrl_locationRelative() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source/main.xq";
         final String location = "library.xqm";
 
@@ -121,7 +121,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextAbsoluteFileUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextAbsoluteFileUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source/main.xq";
         final String location = "resource:org/exist/source/library.xqm";
 
@@ -132,7 +132,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source/main.xq";
         final String location = "library.xqm";
 
@@ -143,7 +143,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source/main.xq";
         final String location = "library.xqm";
 
@@ -157,7 +157,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextFolderUrl_locationRelative() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextFolderUrl_locationRelative() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source";
         final String location = "library.xqm";
 
@@ -168,7 +168,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextFolderUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextFolderUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source";
         final String location = "resource:org/exist/source/library.xqm";
 
@@ -179,7 +179,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextFolderUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextFolderUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source";
         final String location = "library.xqm";
 
@@ -190,7 +190,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromResource_contextFolderUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
+    void getSourceFromResource_contextFolderUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
         final String contextPath = "resource:org/exist/source";
         final String location = "library.xqm";
 
@@ -204,7 +204,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromXmldb_noContext() throws IOException, PermissionDeniedException {
+    void getSourceFromXmldb_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "xmldb:exist:///db/library.xqm";
 
@@ -230,7 +230,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromXmldb() throws IOException, PermissionDeniedException {
+    void getSourceFromXmldb() throws IOException, PermissionDeniedException {
         final String contextPath = "xmldb:exist:///db";
         final String location = "library.xqm";
 
@@ -256,7 +256,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromXmldb_noContext() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromXmldb_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "xmldb:exist:///db/library.xqm";
 
@@ -272,7 +272,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromXmldb() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromXmldb() throws IOException, PermissionDeniedException {
         final String contextPath = "xmldb:exist:///db";
         final String location = "library.xqm";
 
@@ -288,7 +288,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromXmldbEmbedded_noContext() throws IOException, PermissionDeniedException {
+    void getSourceFromXmldbEmbedded_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "xmldb:exist://embedded-eXist-server/db/library.xqm";
 
@@ -314,7 +314,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromXmldbEmbedded() throws IOException, PermissionDeniedException {
+    void getSourceFromXmldbEmbedded() throws IOException, PermissionDeniedException {
         final String contextPath = "xmldb:exist://embedded-eXist-server/db";
         final String location = "library.xqm";
 
@@ -340,7 +340,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromXmldbEmbedded_noContext() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromXmldbEmbedded_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "xmldb:exist://embedded-eXist-server/db/library.xqm";
 
@@ -356,7 +356,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromXmldbEmbedded() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromXmldbEmbedded() throws IOException, PermissionDeniedException {
         final String contextPath = "xmldb:exist://embedded-eXist-server/db";
         final String location = "library.xqm";
 
@@ -372,7 +372,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromDb() throws IOException, PermissionDeniedException {
+    void getSourceFromDb() throws IOException, PermissionDeniedException {
         final String contextPath = "/db";
         final String location = "library.xqm";
 
@@ -398,7 +398,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSourceFromDb_noContext() throws IOException, PermissionDeniedException {
+    void getSourceFromDb_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "/db/library.xqm";
 
@@ -424,7 +424,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromDb() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromDb() throws IOException, PermissionDeniedException {
         final String contextPath = "/db";
         final String location = "library.xqm";
 
@@ -440,7 +440,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getNonExistentSourceFromDb_noContext() throws IOException, PermissionDeniedException {
+    void getNonExistentSourceFromDb_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "/db/library.xqm";
 
@@ -456,7 +456,7 @@ public class SourceFactoryTest {
     }
 
     @Test
-    public void getSource_justFilename() throws IOException, PermissionDeniedException {
+    void getSource_justFilename() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "library.xqm";
 

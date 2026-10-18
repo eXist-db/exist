@@ -28,7 +28,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +53,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     protected static final byte[] BIN1_CONTENT = "1234567890".getBytes(UTF_8);
 
     @TempDir
-    public static File temporaryFolder;
+    Path temporaryFolder;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -92,7 +91,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     protected Path createTemporaryFile(final byte[] data) throws IOException {
-        final Path f = File.createTempFile("junit", null, temporaryFolder).toPath();
+        final Path f = Files.createTempFile(temporaryFolder, "junit", null);
         Files.write(f, data);
         return f;
     }

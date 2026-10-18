@@ -31,13 +31,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class XMLUtilTest {
+class XMLUtilTest {
 
 	private static final String utf8TestFileName = "utf8.xml";
 	private static final String utf16TestFileName =  "utf16.xml";
-	
-	@Test
-	public void testGetXMLDeclWithUTF8() throws IOException, URISyntaxException {
+
+    @Test
+    void testGetXMLDeclWithUTF8() throws IOException, URISyntaxException {
 		final URL testFileUrl = getClass().getResource(utf8TestFileName);
 		final Path testFile = Path.of(testFileUrl.toURI());
 
@@ -46,8 +46,8 @@ public class XMLUtilTest {
 		assertEquals(expectedDecl, decl, "XML Declaration for the UTF-8 encode example file wasn't resolved properly");
 	}
 
-	@Test
-	public void testGetXMLDeclWithUTF16() throws IOException, URISyntaxException {
+    @Test
+    void testGetXMLDeclWithUTF16() throws IOException, URISyntaxException {
 		final URL testFileUrl = getClass().getResource(utf16TestFileName);
 		final Path testFile = Path.of(testFileUrl.toURI());
 

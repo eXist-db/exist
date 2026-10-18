@@ -52,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * enforces that, so this asserts it strips everything derived from the source and logs the real
  * error server-side under a correlation id the caller can quote.
  */
-public class ErrorDisclosureTest {
+class ErrorDisclosureTest {
 
     private static final String DISCLOSURE_LOGGER = "org.exist.xquery.ErrorDisclosure";
 
@@ -66,7 +66,7 @@ public class ErrorDisclosureTest {
     private CapturingAppender appender;
 
     @BeforeEach
-    public void attachAppender() {
+    void attachAppender() {
         appender = new CapturingAppender();
         appender.start();
         // the test log4j2 config sets the root logger to OFF, which would filter these events before
@@ -87,7 +87,7 @@ public class ErrorDisclosureTest {
     }
 
     @AfterEach
-    public void detachAppender() {
+    void detachAppender() {
         final Logger logger = (Logger) LogManager.getLogger(DISCLOSURE_LOGGER);
         final LoggerContext ctx = logger.getContext();
         ctx.getConfiguration().removeLogger(DISCLOSURE_LOGGER);
@@ -96,7 +96,7 @@ public class ErrorDisclosureTest {
     }
 
     @Test
-    public void fullDisclosureReturnsTheOriginalError() {
+    void fullDisclosureReturnsTheOriginalError() {
         final XQueryContext context = new XQueryContext();
         assertEquals(ErrorDisclosure.FULL, context.getErrorDisclosure(), "FULL must be the default");
 
@@ -108,7 +108,7 @@ public class ErrorDisclosureTest {
     }
 
     @Test
-    public void genericDisclosureStripsEverythingDerivedFromTheSource() {
+    void genericDisclosureStripsEverythingDerivedFromTheSource() {
         final XQueryContext context = new XQueryContext();
         context.setErrorDisclosure(ErrorDisclosure.GENERIC);
 
@@ -131,7 +131,7 @@ public class ErrorDisclosureTest {
     }
 
     @Test
-    public void genericDisclosureLogsTheFullErrorUnderTheCorrelationIdGivenToTheCaller() {
+    void genericDisclosureLogsTheFullErrorUnderTheCorrelationIdGivenToTheCaller() {
         final XQueryContext context = new XQueryContext();
         context.setErrorDisclosure(ErrorDisclosure.GENERIC);
 
@@ -155,7 +155,7 @@ public class ErrorDisclosureTest {
     }
 
     @Test
-    public void eachFailureGetsItsOwnCorrelationId() {
+    void eachFailureGetsItsOwnCorrelationId() {
         final XQueryContext context = new XQueryContext();
         context.setErrorDisclosure(ErrorDisclosure.GENERIC);
 

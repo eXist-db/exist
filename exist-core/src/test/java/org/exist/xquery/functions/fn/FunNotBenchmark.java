@@ -58,7 +58,7 @@ public class FunNotBenchmark {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void setUp() throws XMLDBException {
+    static void setUp() throws XMLDBException {
         assumeTrue(Boolean.getBoolean("exist.run.benchmarks"),
                 "Benchmark skipped (pass -Dexist.run.benchmarks=true to enable)");
 
@@ -92,7 +92,7 @@ public class FunNotBenchmark {
     }
 
     @AfterAll
-    public static void tearDown() throws XMLDBException {
+    static void tearDown() throws XMLDBException {
         try {
             final CollectionManagementService cms =
                     server.getRoot().getService(CollectionManagementService.class);
@@ -106,35 +106,35 @@ public class FunNotBenchmark {
 
     /** Set-difference optimization: child axis */
     @org.junit.jupiter.api.Test
-    public void notChild() throws XMLDBException {
+    void notChild() throws XMLDBException {
         runBenchmark("not(child)",
                 DOC + "//item[not(child)]");
     }
 
     /** Set-difference optimization: attribute axis */
     @org.junit.jupiter.api.Test
-    public void notAttribute() throws XMLDBException {
+    void notAttribute() throws XMLDBException {
         runBenchmark("not(@attr)",
                 DOC + "//item[not(@attr)]");
     }
 
     /** Set-difference optimization: descendant axis */
     @org.junit.jupiter.api.Test
-    public void notDescendant() throws XMLDBException {
+    void notDescendant() throws XMLDBException {
         runBenchmark("not(descendant::x)",
                 DOC + "//item[not(descendant::x)]");
     }
 
     /** Boolean fallback: general comparison inside not() */
     @org.junit.jupiter.api.Test
-    public void notComparison() throws XMLDBException {
+    void notComparison() throws XMLDBException {
         runBenchmark("not(@id > 100)",
                 DOC + "//item[not(@id > 100)]");
     }
 
     /** Boolean fallback: not(.) on in-memory nodes */
     @org.junit.jupiter.api.Test
-    public void notDotOnNodes() throws XMLDBException {
+    void notDotOnNodes() throws XMLDBException {
         runBenchmark("not(.) on nodes",
                 DOC + "//item[not(.)]");
     }

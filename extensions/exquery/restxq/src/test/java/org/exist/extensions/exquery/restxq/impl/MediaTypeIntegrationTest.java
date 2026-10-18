@@ -37,7 +37,7 @@ import java.net.http.HttpResponse;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
+class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
     private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 
@@ -93,35 +93,35 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
 
     @BeforeAll
-    public static void storeResourceFunctions() throws IOException {
+    static void storeResourceFunctions() throws IOException {
         enableRestXqTrigger(TEST_COLLECTION);
         storeXquery(TEST_COLLECTION, XQUERY1_FILENAME, XQUERY1);
         assertRestXqResourceFunctionsCount(4);
     }
 
     @Test
-    public void mediaTypeJson1() throws IOException {
+    void mediaTypeJson1() throws IOException {
         assertMediaTypeResponse("/media-type-json1", "application/json",
                 "application/json;charset=utf-8",
                 "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
     }
 
     @Test
-    public void mediaTypeJson2() throws IOException {
+    void mediaTypeJson2() throws IOException {
         assertMediaTypeResponse("/media-type-json2", "application/json",
                 "application/json;charset=utf-8",
                 "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
     }
 
     @Test
-    public void mediaTypeXml1() throws IOException {
+    void mediaTypeXml1() throws IOException {
         assertMediaTypeResponse("/media-type-xml1", "application/xml; charset=utf-8",
                 "application/xml; charset=UTF-8",
                 "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");
     }
 
     @Test
-    public void mediaTypeXml2() throws IOException {
+    void mediaTypeXml2() throws IOException {
         assertMediaTypeResponse("/media-type-xml2", "application/xml; charset=utf-8",
                 "application/xml; charset=UTF-8",
                 "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");

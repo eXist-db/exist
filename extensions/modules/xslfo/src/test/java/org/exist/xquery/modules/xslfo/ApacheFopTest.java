@@ -42,7 +42,7 @@ public class ApacheFopTest {
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void simplePdf() throws EXistException, PermissionDeniedException, XPathException {
+    void simplePdf() throws EXistException, PermissionDeniedException, XPathException {
         final String fopConfig =
                 """
                 <fop version="1.0">

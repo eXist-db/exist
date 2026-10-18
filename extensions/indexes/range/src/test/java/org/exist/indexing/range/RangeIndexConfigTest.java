@@ -39,13 +39,13 @@ import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
 import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RangeIndexConfigTest {
+class RangeIndexConfigTest {
 
     /**
      * {@see https://github.com/eXist-db/exist/issues/1339}
      */
     @Test
-    public void errorsHaveSourceContext() {
+    void errorsHaveSourceContext() {
         final String badCreateQName = "tei:persName "; // Note the trailing
         final String mockCollectionXConfUri = "/db/system/conf/db/mock/" + DEFAULT_COLLECTION_CONFIG_FILE;
 

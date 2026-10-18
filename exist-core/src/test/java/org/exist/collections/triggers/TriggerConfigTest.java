@@ -22,8 +22,8 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
-import java.util.Arrays;
 
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -36,6 +36,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
@@ -61,12 +62,12 @@ public class TriggerConfigTest {
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "/db/triggers" },
-            { "/db/triggers/sub1" },
-            { "/db/triggers/sub1/sub2" }
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of("/db/triggers"),
+            Arguments.of("/db/triggers/sub1"),
+            Arguments.of("/db/triggers/sub1/sub2")
+        );
     }
 
     private static final String COLLECTION_CONFIG =
@@ -92,7 +93,7 @@ public class TriggerConfigTest {
     public String testCollection;
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void storeDocument(String testCollection) {
+    void storeDocument(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -113,7 +114,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void removeDocument(String testCollection) {
+    void removeDocument(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -137,7 +138,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void removeTriggers(String testCollection) {
+    void removeTriggers(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -158,7 +159,7 @@ public class TriggerConfigTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0}")
-    public void updateTriggers(String testCollection) {
+    void updateTriggers(String testCollection) {
         initTriggerConfigTest(testCollection);
         try {
             Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -185,7 +186,7 @@ public class TriggerConfigTest {
     }
 
     @AfterEach
-    public void cleanDB() {
+    void cleanDB() {
         try {
             Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
             if (config != null) {
@@ -208,7 +209,7 @@ public class TriggerConfigTest {
     }
 
     @BeforeAll
-    public static void initDB() throws XMLDBException {
+    static void initDB() throws XMLDBException {
         CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
 
@@ -219,7 +220,7 @@ public class TriggerConfigTest {
     }
 
     @AfterAll
-    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 

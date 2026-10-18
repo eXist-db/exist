@@ -40,13 +40,13 @@ import org.xml.sax.SAXException;
  * @author aretter
  */
 @Execution(ExecutionMode.CONCURRENT)
-public class DocumentBuilderReceiverTest {
+class DocumentBuilderReceiverTest {
 
     private static String ATOM_NS = "http://www.w3.org/2005/Atom";
 //    private static String ATOM_PREFIX = "atom";
     
     @Test
-    public void when_prefix_is_known_in_context_dont_use_if_namespace_equals_default_namespace() throws SAXException {
+    void when_prefix_is_known_in_context_dont_use_if_namespace_equals_default_namespace() throws SAXException {
         
         final String entry_name = "entry";
         final String id_name = "id";
@@ -87,7 +87,7 @@ public class DocumentBuilderReceiverTest {
     }
 
     @Test
-    public void use_given_namespace_prefix() throws SAXException {
+    void use_given_namespace_prefix() throws SAXException {
         // if an explicit namespace prefix is present, it should be used
         final String title = "title";
         final String titleQName = "atom:title";
@@ -119,7 +119,7 @@ public class DocumentBuilderReceiverTest {
     }
 
     @Test
-    public void keepGivenNamespacePrefixWhateverTheContextMaps() throws SAXException {
+    void keepGivenNamespacePrefixWhateverTheContextMaps() throws SAXException {
         // the element keeps the prefix it has: a prefix the query context maps to the
         // same namespace must not replace it (the context isn't asked: an unexpected
         // call on the mock fails the test)

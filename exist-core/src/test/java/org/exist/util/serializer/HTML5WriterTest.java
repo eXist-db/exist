@@ -29,19 +29,19 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HTML5WriterTest {
+class HTML5WriterTest {
 
     private HTML5Writer writer;
     private StringWriter targetWriter;
-    
+
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         targetWriter = new StringWriter();
         writer = new HTML5Writer(targetWriter);
     }
 
     @Test
-    public void testAttributeWithBooleanValue() throws Exception {
+    void testAttributeWithBooleanValue() throws Exception {
         final String expected = "<input checked>";
         final QName elQName = new QName("input");
         writer.startElement(elQName);
@@ -53,7 +53,7 @@ public class HTML5WriterTest {
     }
 
     @Test
-    public void testAttributeWithNonBooleanValue() throws Exception {
+    void testAttributeWithNonBooleanValue() throws Exception {
         final String expected = "<input name=\"name\">";
         final QName elQName = new QName("input");
         writer.startElement(elQName);
@@ -65,7 +65,7 @@ public class HTML5WriterTest {
     }
 
     @Test
-    public void testAttributeQNameWithBooleanValue() throws Exception {
+    void testAttributeQNameWithBooleanValue() throws Exception {
         final String expected = "<input checked>";
         final QName elQName = new QName("input");
         final QName attrQName = new QName("checked");
@@ -78,7 +78,7 @@ public class HTML5WriterTest {
     }
 
     @Test
-    public void testAttributeQNameWithNonBooleanValue() throws Exception {
+    void testAttributeQNameWithNonBooleanValue() throws Exception {
         final String expected = "<input name=\"name\">";
         final QName elQName = new QName("input");
         final QName attrQName = new QName("name");

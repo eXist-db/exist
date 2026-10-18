@@ -41,7 +41,7 @@ import org.exist.util.*;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -50,19 +50,20 @@ import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ConcurrentStoreTest {
+class ConcurrentStoreTest {
 
     private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
 
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    // started and stopped by the tests themselves, not by an extension, as some tests force corruption
+    @AutoClose("stopDb")
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private Collection test, test2;
 
     @Test
-    public void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
+    void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         setupCollections(pool);
@@ -83,10 +84,10 @@ public class ConcurrentStoreTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = restartDb();
 
-        read(pool);
+        assertRead(pool);
     }
 
-    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
+    private void assertRead(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
@@ -127,13 +128,8 @@ public class ConcurrentStoreTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @AfterEach
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
-    }
-
     @AfterAll
-    public static void cleanup() {
+    static void cleanup() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
     

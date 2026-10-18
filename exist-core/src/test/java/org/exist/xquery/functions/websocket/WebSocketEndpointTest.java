@@ -45,7 +45,7 @@ public class WebSocketEndpointTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @Test
-    public void connectAndHeartbeatKeepsSessionOpen() throws Exception {
+    void connectAndHeartbeatKeepsSessionOpen() throws Exception {
         final int port = existWebServer.getPort();
         final URI wsUri = new URI("ws://localhost:" + port + "/ws");
 
@@ -68,7 +68,7 @@ public class WebSocketEndpointTest {
     }
 
     @Test
-    public void subscribeToChannelAndReceiveMessage() throws Exception {
+    void subscribeToChannelAndReceiveMessage() throws Exception {
         final int port = existWebServer.getPort();
         final URI wsUri = new URI("ws://localhost:" + port + "/ws");
 
@@ -114,7 +114,7 @@ public class WebSocketEndpointTest {
     }
 
     @Test
-    public void channelCountReflectsSubscribers() throws Exception {
+    void channelCountReflectsSubscribers() throws Exception {
         final int port = existWebServer.getPort();
         final URI wsUri = new URI("ws://localhost:" + port + "/ws");
 

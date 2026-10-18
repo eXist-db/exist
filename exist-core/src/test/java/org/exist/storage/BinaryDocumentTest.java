@@ -48,7 +48,7 @@ public class BinaryDocumentTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void removeCollection() throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
+    void removeCollection() throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
         final XmldbURI testCollectionUri = XmldbURI.create("/db/remove-collection-test");
         final XmldbURI thingUri = testCollectionUri.append("thing");
 
@@ -73,7 +73,7 @@ public class BinaryDocumentTest {
     }
 
     @Test
-    public void overwriteCollection() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    void overwriteCollection() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final XmldbURI testCollectionUri = XmldbURI.create("/db/overwrite-collection-test");
         final XmldbURI thingUri = testCollectionUri.append("thing");
 

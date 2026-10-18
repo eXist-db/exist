@@ -42,7 +42,7 @@ public class RemoveRootCollectionTest {
     Collection root;
 
     @org.junit.jupiter.api.Test
-    public void removeEmptyRootCollection() throws Exception {
+    void removeEmptyRootCollection() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
         try (final Txn transaction = transact.beginTransaction()) {
@@ -54,7 +54,7 @@ public class RemoveRootCollectionTest {
     }
 
     @org.junit.jupiter.api.Test
-    public void removeRootCollectionWithChildCollection() throws Exception {
+    void removeRootCollectionWithChildCollection() throws Exception {
         addChildToRoot();
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
@@ -68,7 +68,7 @@ public class RemoveRootCollectionTest {
 
     @Disabled("Document count not zero after removing root collection, see #6158")
     @org.junit.jupiter.api.Test
-    public void removeRootCollectionWithDocument() throws Exception {
+    void removeRootCollectionWithDocument() throws Exception {
         addDocumentToRoot();
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
@@ -84,14 +84,14 @@ public class RemoveRootCollectionTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeEach
-    public void startDB() throws Exception {
+    void startDB() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
         root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
     }
 
     @AfterEach
-    public void stopDB() {
+    void stopDB() {
         if (broker != null) {
             broker.close();
         }

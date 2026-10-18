@@ -82,7 +82,7 @@ public class ContextDependencyRegressionTest {
             new ExistEmbeddedServer(true, true);
 
     @BeforeAll
-    public static void initDatabase() throws ClassNotFoundException, IllegalAccessException,
+    static void initDatabase() throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, XMLDBException {
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         final Database database = (Database) cl.newInstance();
@@ -106,7 +106,7 @@ public class ContextDependencyRegressionTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws LockException, TriggerException,
+    static void cleanupDb() throws LockException, TriggerException,
             PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
@@ -123,7 +123,7 @@ public class ContextDependencyRegressionTest {
      * index pre-select dominated query time.
      */
     @Test
-    public void compoundPredicateWithConstantContainsReturnsEmpty() throws XMLDBException {
+    void compoundPredicateWithConstantContainsReturnsEmpty() throws XMLDBException {
         final ResourceSet result = execute(
                 "//foo[bar = '999'][contains('abc', '123')]");
         assertEquals(0, result.getSize());
@@ -136,7 +136,7 @@ public class ContextDependencyRegressionTest {
      * semantics, not just performance.
      */
     @Test
-    public void noIndexPragmaReturnsSameResult() throws XMLDBException {
+    void noIndexPragmaReturnsSameResult() throws XMLDBException {
         final ResourceSet wrapped = execute(
                 "//foo[bar = '999'][contains('abc', '123')]");
         final ResourceSet noIndex = execute(
@@ -151,7 +151,7 @@ public class ContextDependencyRegressionTest {
      * builtin-function-with-no-args branch.
      */
     @Test
-    public void constantFalsePredicateReturnsEmpty() throws XMLDBException {
+    void constantFalsePredicateReturnsEmpty() throws XMLDBException {
         final ResourceSet result = execute("//foo[bar = '5'][false()]");
         assertEquals(0, result.getSize());
     }
@@ -162,7 +162,7 @@ public class ContextDependencyRegressionTest {
      * {@code ContextDependencyChecker}.
      */
     @Test
-    public void constantFalseComparisonReturnsEmpty() throws XMLDBException {
+    void constantFalseComparisonReturnsEmpty() throws XMLDBException {
         final ResourceSet result = execute("//foo[bar = '5'][1 = 0]");
         assertEquals(0, result.getSize());
     }
@@ -173,7 +173,7 @@ public class ContextDependencyRegressionTest {
      * gate that strips the wrap whenever a predicate is context-free.
      */
     @Test
-    public void constantTruePredicateDoesNotInterfereWithIndex() throws XMLDBException {
+    void constantTruePredicateDoesNotInterfereWithIndex() throws XMLDBException {
         // [true()] is a no-op; the indexed predicate still selects one <foo>.
         final ResourceSet result = execute("//foo[bar = '5'][true()]");
         assertEquals(1, result.getSize());
@@ -186,7 +186,7 @@ public class ContextDependencyRegressionTest {
      * optimizer tests.
      */
     @Test
-    public void singleIndexedPredicateStillReturnsExpectedResults() throws XMLDBException {
+    void singleIndexedPredicateStillReturnsExpectedResults() throws XMLDBException {
         final ResourceSet result = execute("//foo[bar = '42']");
         assertEquals(1, result.getSize());
     }
@@ -200,7 +200,7 @@ public class ContextDependencyRegressionTest {
      * cannot inline).
      */
     @Test
-    public void predicateReferencingVariableDoesNotTriggerGate() throws XMLDBException {
+    void predicateReferencingVariableDoesNotTriggerGate() throws XMLDBException {
         final ResourceSet result = execute(
                 "let $needle := 'no-match-anywhere' "
                         + "return //foo[bar = '5'][contains($needle, 'x')]");
@@ -217,7 +217,7 @@ public class ContextDependencyRegressionTest {
     // false for position 9999), and a positive match must still return a node.
 
     @Test
-    public void positionPredicateBehavesPerContext() throws XMLDBException {
+    void positionPredicateBehavesPerContext() throws XMLDBException {
         final ResourceSet first = execute("//foo[bar = '5'][position() = 1]");
         assertEquals(1, first.getSize());
 
@@ -226,14 +226,14 @@ public class ContextDependencyRegressionTest {
     }
 
     @Test
-    public void lastPredicateBehavesPerContext() throws XMLDBException {
+    void lastPredicateBehavesPerContext() throws XMLDBException {
         // The single result is at last() = 1.
         final ResourceSet match = execute("//foo[bar = '5'][position() = last()]");
         assertEquals(1, match.getSize());
     }
 
     @Test
-    public void noArgNamePredicateBehavesPerContext() throws XMLDBException {
+    void noArgNamePredicateBehavesPerContext() throws XMLDBException {
         // name() on each <foo> returns 'foo'; never matches 'never'.
         final ResourceSet none = execute("//foo[bar = '5'][name() = 'never']");
         assertEquals(0, none.getSize());
@@ -243,7 +243,7 @@ public class ContextDependencyRegressionTest {
     }
 
     @Test
-    public void noArgLocalNamePredicateBehavesPerContext() throws XMLDBException {
+    void noArgLocalNamePredicateBehavesPerContext() throws XMLDBException {
         final ResourceSet match = execute("//foo[bar = '5'][local-name() = 'foo']");
         assertEquals(1, match.getSize());
     }

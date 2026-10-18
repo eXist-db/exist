@@ -84,7 +84,7 @@ public class SerializeAttrMatchesTest {
     private Collection test = null;
 
     @org.junit.jupiter.api.Test
-    public void expandAttr() throws CollectionConfigurationException, LockException, IOException, SAXException, PermissionDeniedException, EXistException, XPathException {
+    void expandAttr() throws CollectionConfigurationException, LockException, IOException, SAXException, PermissionDeniedException, EXistException, XPathException {
         configureAndStore(COLLECTION_CONFIG, XML, "test1.xml");
 
         //query and expand
@@ -126,7 +126,7 @@ public class SerializeAttrMatchesTest {
     }
 
     @BeforeEach
-    public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -140,7 +140,7 @@ public class SerializeAttrMatchesTest {
     }
 
     @AfterEach
-    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -158,7 +158,7 @@ public class SerializeAttrMatchesTest {
     }
 
     @AfterAll
-    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

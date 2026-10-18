@@ -74,8 +74,8 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		);
 	}
 
-	@BeforeEach
-	public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         final IndexQueryService idxConf = getTestCollection().getService(IndexQueryService.class);
         assertNotNull(idxConf);
         idxConf.configureCollection(CONFIG);
@@ -85,8 +85,8 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 	}
 
-	@AfterEach
-	public void tearDown() throws XMLDBException {
+    @AfterEach
+    void tearDown() throws XMLDBException {
 		FileUtils.deleteQuietly(tempFile);
 	}
 }

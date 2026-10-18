@@ -52,7 +52,7 @@ public class FragmentsTest extends ConcurrentTestBase {
     }
 
     @BeforeEach
-    public void createC2() throws XMLDBException {
+    void createC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         if (rootCol.getChildCollection(SECOND_QUERY_COLLECTION) != null) {
             DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
@@ -61,7 +61,7 @@ public class FragmentsTest extends ConcurrentTestBase {
     }
 
     @AfterEach
-    public void removeC2() throws XMLDBException {
+    void removeC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
     }

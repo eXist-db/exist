@@ -78,7 +78,7 @@ public class ConcurrencyTest {
     	"</collection>";
 
     @Test
-	public void store() {
+    void store() {
         final ExecutorService executor = newFixedThreadPool(CONCURRENT_THREADS, "store");
 
         for (int i = 0; i < CONCURRENT_THREADS; i++) {
@@ -105,7 +105,7 @@ public class ConcurrencyTest {
     }
 
     @Test
-	public void update() {
+    void update() {
 
 		final ExecutorService executor = newFixedThreadPool(CONCURRENT_THREADS, "update");
         for (int i = 0; i < CONCURRENT_THREADS; i++) {
@@ -207,12 +207,12 @@ public class ConcurrencyTest {
     }
 
     @BeforeAll
-    public static void initDB() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    static void initDB() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         test = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "test");
     }
 
     @AfterAll
-    public static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         test.close();
         TestUtils.cleanupDB();
     }

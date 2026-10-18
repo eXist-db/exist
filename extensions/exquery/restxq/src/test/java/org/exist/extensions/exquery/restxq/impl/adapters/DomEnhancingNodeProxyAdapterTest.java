@@ -77,7 +77,7 @@ public class DomEnhancingNodeProxyAdapterTest {
             </test-doc>""";
 
     @BeforeAll
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
@@ -94,7 +94,7 @@ public class DomEnhancingNodeProxyAdapterTest {
 
 
     @Test
-    public void asElement() throws PermissionDeniedException, EXistException {
+    void asElement() throws PermissionDeniedException, EXistException {
         final NodeId elementId1 = new DLN("1");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, elementId1, Element.class, ElementImpl.class, elementProxy ->
@@ -111,7 +111,7 @@ public class DomEnhancingNodeProxyAdapterTest {
     }
 
     @Test
-    public void asAttr() throws PermissionDeniedException, EXistException {
+    void asAttr() throws PermissionDeniedException, EXistException {
         final NodeId attrId = new DLN("1.2.1");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, attrId, Attr.class, AttrImpl.class, attrProxy ->
@@ -121,7 +121,7 @@ public class DomEnhancingNodeProxyAdapterTest {
     }
 
     @Test
-    public void asText() throws PermissionDeniedException, EXistException {
+    void asText() throws PermissionDeniedException, EXistException {
         final NodeId textId = new DLN("1.2.2");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, textId, Text.class, TextImpl.class, textProxy ->
@@ -131,7 +131,7 @@ public class DomEnhancingNodeProxyAdapterTest {
     }
 
     @Test
-    public void asComment() throws PermissionDeniedException, EXistException {
+    void asComment() throws PermissionDeniedException, EXistException {
         final NodeId commentId = new DLN("1.4");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, commentId, Comment.class, CommentImpl.class, commentProxy ->
@@ -141,7 +141,7 @@ public class DomEnhancingNodeProxyAdapterTest {
     }
 
     @Test
-    public void asCdataSection() throws PermissionDeniedException, EXistException {
+    void asCdataSection() throws PermissionDeniedException, EXistException {
         final DLN cdataSectionId = new DLN("1.6");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, cdataSectionId, CDATASection.class, CDATASectionImpl.class, cdataSectionProxy ->
@@ -151,7 +151,7 @@ public class DomEnhancingNodeProxyAdapterTest {
     }
 
     @Test
-    public void asProcessingInstruction() throws PermissionDeniedException, EXistException {
+    void asProcessingInstruction() throws PermissionDeniedException, EXistException {
         final DLN processingInstructionId = new DLN("1.8");
         withTestDocument(doc ->
                 assertProxiedCorrectly(doc, processingInstructionId, ProcessingInstruction.class, ProcessingInstructionImpl.class, processingInstructionProxy ->
