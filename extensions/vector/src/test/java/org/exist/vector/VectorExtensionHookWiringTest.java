@@ -50,7 +50,7 @@ public class VectorExtensionHookWiringTest {
     public final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void startupHookRegistersMetricsBridgeWithoutManualWiring() {
+    void startupHookRegistersMetricsBridgeWithoutManualWiring() {
         final String instanceId = server.getBrokerPool().getId();
         VectorMetrics.forInstance(instanceId).reset();
 
@@ -61,7 +61,7 @@ public class VectorExtensionHookWiringTest {
     }
 
     @Test
-    public void shutdownHookUnregistersMetricsBridgeOnRealBrokerPoolShutdown() throws Exception {
+    void shutdownHookUnregistersMetricsBridgeOnRealBrokerPoolShutdown() throws Exception {
         final String instanceId = server.getBrokerPool().getId();
 
         // Sanity check: the bridge is live before shutdown (same proof as the test above).

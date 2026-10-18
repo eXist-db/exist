@@ -37,14 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AbstractInternalModuleParametersTest {
 
     @Test
-    public void utilModuleWithoutParameters() {
+    void utilModuleWithoutParameters() {
         final UtilModule module = assertDoesNotThrow(() -> new UtilModule(null),
                 "UtilModule must be instantiable without configuration parameters");
         assertEquals(UtilModule.NAMESPACE_URI, module.getNamespaceURI());
     }
 
     @Test
-    public void xmldbModuleWithoutParameters() {
+    void xmldbModuleWithoutParameters() {
         final XMLDBModule module = assertDoesNotThrow(() -> new XMLDBModule(null),
                 "XMLDBModule must be instantiable without configuration parameters");
         assertEquals(XMLDBModule.NAMESPACE_URI, module.getNamespaceURI());

@@ -62,7 +62,7 @@ public class GetCookieValueDecodeTest {
     }
 
     @Test
-    public void literalPlusInForeignCookieDecodesAsLiteral() throws XPathException {
+    void literalPlusInForeignCookieDecodesAsLiteral() throws XPathException {
         // Never percent-encoded by this instance -- e.g. a base64 payload set by a browser or
         // another app on the domain. Must not be corrupted into a space.
         final Sequence result = getCookieValue("aGVsbG8+d29ybGQ=");
@@ -70,14 +70,14 @@ public class GetCookieValueDecodeTest {
     }
 
     @Test
-    public void spaceEncodedByThisInstanceDecodesCorrectly() throws XPathException {
+    void spaceEncodedByThisInstanceDecodesCorrectly() throws XPathException {
         // What HttpResponseWrapper#encodeCookieValue actually emits for a space today.
         final Sequence result = getCookieValue("hello%20world");
         assertEquals("hello world", result.getStringValue());
     }
 
     @Test
-    public void wellFormedForeignPercentEscapeDecodesOptimistically() throws XPathException {
+    void wellFormedForeignPercentEscapeDecodesOptimistically() throws XPathException {
         // A foreign cookie whose value coincidentally contains a well-formed %XX sequence that
         // was never actually percent-encoded. Inherent, documented ambiguity -- decoding a
         // namespace this instance doesn't own -- rather than a bug; pinned here so a future change
@@ -87,7 +87,7 @@ public class GetCookieValueDecodeTest {
     }
 
     @Test
-    public void malformedPercentEscapeFallsBackToRawValue() throws XPathException {
+    void malformedPercentEscapeFallsBackToRawValue() throws XPathException {
         // A lone '%' not followed by two hex digits is not a valid escape -- URLDecoder throws,
         // and decode() falls back to the untouched raw value rather than propagating the error.
         final Sequence result = getCookieValue("50%");

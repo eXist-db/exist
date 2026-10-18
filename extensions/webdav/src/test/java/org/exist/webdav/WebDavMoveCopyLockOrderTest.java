@@ -55,27 +55,27 @@ public class WebDavMoveCopyLockOrderTest {
     private WebDavHttpClient webDav;
 
     @Test
-    public void copyDocument() throws Exception {
+    void copyDocument() throws Exception {
         assertEquals(List.of(), record("COPY", DOCUMENT, TARGET + "/doc.xml"));
     }
 
     @Test
-    public void moveDocument() throws Exception {
+    void moveDocument() throws Exception {
         assertEquals(List.of(), record("MOVE", DOCUMENT, TARGET + "/doc.xml"));
     }
 
     @Test
-    public void copyCollection() throws Exception {
+    void copyCollection() throws Exception {
         assertEquals(List.of(), record("COPY", SOURCE, TARGET + "/source"));
     }
 
     @Test
-    public void copyCollectionIntoParentOfSource() throws Exception {
+    void copyCollectionIntoParentOfSource() throws Exception {
         assertEquals(List.of(), record("COPY", SOURCE, TEST_COLLECTION + "/source-copy"));
     }
 
     @Test
-    public void moveCollection() throws Exception {
+    void moveCollection() throws Exception {
         assertEquals(List.of(), record("MOVE", SOURCE, TARGET + "/source"));
     }
 
@@ -89,7 +89,7 @@ public class WebDavMoveCopyLockOrderTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         webDav = new WebDavHttpClient(EXIST_WEB_SERVER.getPort(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         assertEquals(HttpURLConnection.HTTP_CREATED, webDav.makeCollection(TEST_COLLECTION));
         assertEquals(HttpURLConnection.HTTP_CREATED, webDav.makeCollection(SOURCE));
@@ -98,7 +98,7 @@ public class WebDavMoveCopyLockOrderTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         webDav.deleteDocument(TEST_COLLECTION);
     }
 }

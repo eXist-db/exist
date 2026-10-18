@@ -108,7 +108,7 @@ public class AttributeNamespaceFixupTest {
      * element's own bindings decide, so they cannot mislead it.
      */
     @Test
-    public void staleContextBindingsDoNotMisdirectTheAttribute() throws Exception {
+    void staleContextBindingsDoNotMisdirectTheAttribute() throws Exception {
         final String query = "serialize(for $x in <parent1 xmlns:foo=\"" + PARENT1 + "\" foo:attr1=\"attr1\"/> "
                 + "return <new xmlns:foo=\"" + EX + "\">{$x//@*:attr1}</new>) (: pooled :)";
         run(query, context -> {

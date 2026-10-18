@@ -41,7 +41,7 @@ class AbstractRealmTest {
 
     /*
     @Test
-    public void updateAccount_calls_assertCanModifyAccount() throws PermissionDeniedException, EXistException {
+    void updateAccount_calls_assertCanModifyAccount() throws PermissionDeniedException, EXistException {
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
         Database mockDatabase = EasyMock.createMock(Database.class);

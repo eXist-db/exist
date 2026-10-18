@@ -51,12 +51,12 @@ public class VectorStoreRecoverTest {
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterEach
-    public void resetCorruption() {
+    void resetCorruption() {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 
     @Test
-    public void committedVectorsAreRecovered() throws Exception {
+    void committedVectorsAreRecovered() throws Exception {
         BrokerPool.FORCE_CORRUPTION = true;
         put(1, COMMITTED, true);
 
@@ -68,7 +68,7 @@ public class VectorStoreRecoverTest {
     }
 
     @Test
-    public void uncommittedVectorsAreRolledBack() throws Exception {
+    void uncommittedVectorsAreRolledBack() throws Exception {
         BrokerPool.FORCE_CORRUPTION = true;
         put(1, COMMITTED, true);
         put(COMMITTED + 1, COMMITTED + UNCOMMITTED, false);

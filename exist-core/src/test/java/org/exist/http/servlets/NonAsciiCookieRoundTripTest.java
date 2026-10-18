@@ -77,7 +77,7 @@ public class NonAsciiCookieRoundTripTest {
                 <result step="get" value="{request:get-cookie-value('test-cookie')}"/>""".formatted(CYRILLIC);
 
     @BeforeAll
-    public static void setup() throws Exception {
+    static void setup() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest storeRequest = AbstractHttpTest.authenticatedRequest(
                         URI.create(restUrl + "/test.xql"), "admin", "")
@@ -96,7 +96,7 @@ public class NonAsciiCookieRoundTripTest {
     }
 
     @AfterAll
-    public static void teardown() throws Exception {
+    static void teardown() throws Exception {
         final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
                 .DELETE()
@@ -105,7 +105,7 @@ public class NonAsciiCookieRoundTripTest {
     }
 
     @Test
-    public void nonAsciiCookieSurvivesAndRoundTripsCorrectly() throws IOException, InterruptedException {
+    void nonAsciiCookieSurvivesAndRoundTripsCorrectly() throws IOException, InterruptedException {
         final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))

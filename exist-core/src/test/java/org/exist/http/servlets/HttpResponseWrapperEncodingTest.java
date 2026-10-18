@@ -61,7 +61,7 @@ public class HttpResponseWrapperEncodingTest {
     private static final String CYRILLIC = "Кириллица";
 
     @Test
-    public void setHeaderPacksEachUtf8ByteIntoOneChar() {
+    void setHeaderPacksEachUtf8ByteIntoOneChar() {
         final Capture<String> capturedValue = newCapture();
         final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
         mockResponse.setHeader(eq("X-Test"), capture(capturedValue));
@@ -75,7 +75,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void addHeaderPacksEachUtf8ByteIntoOneChar() {
+    void addHeaderPacksEachUtf8ByteIntoOneChar() {
         final Capture<String> capturedValue = newCapture();
         final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
         mockResponse.addHeader(eq("X-Test"), capture(capturedValue));
@@ -89,7 +89,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void addCookiePercentEncodesNonAsciiValue() {
+    void addCookiePercentEncodesNonAsciiValue() {
         final Capture<Cookie> capturedCookie = newCapture();
         final HttpServletResponse mockResponse = createMock(HttpServletResponse.class);
         mockResponse.addCookie(capture(capturedCookie));
@@ -111,7 +111,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void addCookieEncodesSpaceAsPercentTwentyNotPlus() {
+    void addCookieEncodesSpaceAsPercentTwentyNotPlus() {
         // URLEncoder alone (application/x-www-form-urlencoded) would emit '+' for a space, which
         // is indistinguishable on the read side from a literal '+' already in the value -- common
         // in base64 payloads such as session tokens. Rewriting to '%20' removes that collision;
@@ -129,7 +129,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void addCookieLeavesLiteralPlusPercentEncoded() {
+    void addCookieLeavesLiteralPlusPercentEncoded() {
         // A literal '+' already in the value (e.g. a base64 payload) is percent-encoded to '%2B',
         // not left raw -- so it can never be confused with an encoded space on the read side.
         final Capture<Cookie> capturedCookie = newCapture();
@@ -148,7 +148,7 @@ public class HttpResponseWrapperEncodingTest {
     }
 
     @Test
-    public void pureAsciiValuesAreUnaffected() {
+    void pureAsciiValuesAreUnaffected() {
         // ASCII bytes (0-127) are identical in UTF-8 and ISO-8859-1, so the transformation is a
         // no-op for the common case -- this is why the hack has been invisible for values like
         // "no-cache" and only bites on genuinely non-ASCII content.
