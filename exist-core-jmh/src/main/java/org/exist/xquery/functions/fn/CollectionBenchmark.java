@@ -98,6 +98,14 @@ public class CollectionBenchmark {
         server = new LifecycleEmbeddedServer();
         server.before();
 
+        // a full-text index on the documents' titles, for #queryCollection
+        server.executeQuery("""
+                xmldb:store(xmldb:create-collection("/db/system/config", "db/collection-benchmark"), "collection.xconf",
+                    <collection xmlns="http://exist-db.org/collection-config/1.0">
+                        <index><lucene><text qname="title"/></lucene></index>
+                    </collection>)
+                """);
+
         for (int from = 1; from <= collections; from += COLLECTIONS_PER_STORE_QUERY) {
             final int to = Math.min(collections, from + COLLECTIONS_PER_STORE_QUERY - 1);
             server.executeQuery("""
@@ -189,6 +197,14 @@ public class CollectionBenchmark {
     @Benchmark
     public void countCollection(final Blackhole bh) throws XMLDBException {
         bh.consume(server.executeQuery("count(collection(\"" + ROOT + "\"))"));
+    }
+
+    /**
+     * A full-text query over the whole tree, which matches the 20 documents of one sub-collection.
+     */
+    @Benchmark
+    public void queryCollection(final Blackhole bh) throws XMLDBException {
+        bh.consume(server.executeQuery("count(collection(\"" + ROOT + "\")//title[ft:query(., 'c7')])"));
     }
 
     private static final class LifecycleEmbeddedServer extends ExistXmldbEmbeddedServer {
