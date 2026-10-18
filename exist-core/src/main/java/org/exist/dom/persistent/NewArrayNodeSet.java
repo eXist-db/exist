@@ -484,12 +484,40 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             return;
         } else {
             if(size > 0) {
-                FastQSort.sort(nodes, 0, size - 1);
+                sortNodes();
                 removeDuplicates(mergeContexts);
             }
             updateDocs();
             isSorted = true;
         }
+    }
+
+    /**
+     * Sorts the nodes into document order, unless they already are.
+     *
+     * Document nodes, such as those that fn:collection() returns, are sorted by their document's id alone,
+     * which is much cheaper than comparing the nodes.
+     */
+    private void sortNodes() {
+        if (!needsSort()) {
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            if (!NodeId.DOCUMENT_NODE.equals(nodes[i].getNodeId())) {
+                FastQSort.sort(nodes, 0, size - 1);
+                return;
+            }
+        }
+        final long[] keys = new long[size];
+        for (int i = 0; i < size; i++) {
+            keys[i] = ((long) nodes[i].getOwnerDocument().getDocId() << 32) | i;
+        }
+        Arrays.sort(keys);
+        final NodeProxy[] sorted = new NodeProxy[nodes.length];
+        for (int i = 0; i < size; i++) {
+            sorted[i] = nodes[(int) keys[i]];
+        }
+        nodes = sorted;
     }
 
     public void updateNoSort() {

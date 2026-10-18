@@ -887,11 +887,12 @@ public class MutableCollection implements Collection {
      */
     @Override
     public XmldbURI getParentURI() {
-        if(path.equals(XmldbURI.ROOT_COLLECTION_URI)) {
+        // a Collection's path is absolute and normalized, so it can be compared, and its parent found, without parsing it
+        final String collectionPath = path.getRawCollectionPath();
+        if (XmldbURI.ROOT_COLLECTION.equals(collectionPath)) {
             return null;
         }
-        // a Collection's path is absolute and normalized, so its parent is everything before the last '/'
-        final String collectionPath = path.getRawCollectionPath();
+        // its parent is everything before the last '/'
         final int lastSlash = collectionPath.lastIndexOf('/');
         if (lastSlash <= 0) {
             return path.removeLastSegment();
