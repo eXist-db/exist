@@ -24,22 +24,22 @@ Build the module first — this also installs a fresh `exist-core` into the loca
 
 ```bash
 JAVA_HOME=/path/to/java-21 \
-  mvn install -pl exist-core-jmh -am -DskipTests \
+  mvn install -Pperf-tests -pl exist-core-jmh -am -DskipTests \
   -Ddependency-check.skip=true -Ddocker=false
 ```
 
 The `package` phase shades an uber-jar with `org.openjdk.jmh.Main` as its entry point (`target/exist-core-jmh-<version>-benchmarks.jar`). Run it via `exec-maven-plugin`. The default `benchmark.args` runs `ArrowOperatorBenchmark` with JMH's `GCProfiler` enabled:
 
 ```bash
-mvn exec:exec -pl exist-core-jmh
+mvn exec:exec -Pperf-tests -pl exist-core-jmh
 ```
 
 Override `benchmark.args` with `-D` to pass anything `org.openjdk.jmh.Main` accepts:
 
-- `mvn exec:exec -pl exist-core-jmh -Dbenchmark.args="AxisBenchmark -wi 3 -i 5 -f 1"` — a specific class
-- `mvn exec:exec -pl exist-core-jmh -Dbenchmark.args="-rf json -rff target/jmh-result.json"` — machine-readable output, every class (this is what CI feeds to the gh-pages dashboard)
-- `mvn exec:exec -pl exist-core-jmh -Dbenchmark.args="TypeSubTypeOfBenchmark.identical"` — filter by regex
-- `mvn exec:exec -pl exist-core-jmh -Dbenchmark.args=""` — no class filter, runs every `@Benchmark` in the jar
+- `mvn exec:exec -Pperf-tests -pl exist-core-jmh -Dbenchmark.args="AxisBenchmark -wi 3 -i 5 -f 1"` — a specific class
+- `mvn exec:exec -Pperf-tests -pl exist-core-jmh -Dbenchmark.args="-rf json -rff target/jmh-result.json"` — machine-readable output, every class (this is what CI feeds to the gh-pages dashboard)
+- `mvn exec:exec -Pperf-tests -pl exist-core-jmh -Dbenchmark.args="TypeSubTypeOfBenchmark.identical"` — filter by regex
+- `mvn exec:exec -Pperf-tests -pl exist-core-jmh -Dbenchmark.args=""` — no class filter, runs every `@Benchmark` in the jar
 
 Or invoke the uber-jar directly with `java -jar` (no Maven required once it's built):
 

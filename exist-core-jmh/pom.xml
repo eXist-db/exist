@@ -43,7 +43,7 @@
         <uberjar.name>${project.artifactId}-${project.version}-benchmarks</uberjar.name>
         <!--
             Override at the command line, e.g.
-              mvn exec:exec -pl exist-core-jmh \
+              mvn exec:exec -Pperf-tests -pl exist-core-jmh \
                   -Dbenchmark.args="ArrowOperatorBenchmark -prof gc"
             See README.md for more recipes.
         -->

@@ -48,23 +48,23 @@ Build the module. The `package` phase runs `maven-shade-plugin` to produce a fat
 
 ```bash
 JAVA_HOME=/path/to/java-21 \
-  mvn install -pl exist-indexes-jmh -am -DskipTests \
+  mvn install -Pperf-tests -pl exist-indexes-jmh -am -DskipTests \
   -Ddependency-check.skip=true -Ddocker=false
 ```
 
 Then run via `exec-maven-plugin`. The default `benchmark.args` runs `NgramWhereClauseBenchmark` with JMH's `GCProfiler` enabled:
 
 ```bash
-mvn exec:exec -pl exist-indexes-jmh
+mvn exec:exec -Pperf-tests -pl exist-indexes-jmh
 ```
 
 Override `benchmark.args` with `-D` to pass anything `org.openjdk.jmh.Main` accepts:
 
-- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 1 -i 2 -f 1"` — quick smoke check (~1 minute)
-- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 5 -i 10 -f 3 -prof gc"` — publishable numbers, GC profile
-- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -prof stack"` — sampler stack profile (one benchmark at a time)
-- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -rf json -rff target/result.json"` — machine-readable output
-- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark.shapeA.*"` — filter by regex
+- `mvn exec:exec -Pperf-tests -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 1 -i 2 -f 1"` — quick smoke check (~1 minute)
+- `mvn exec:exec -Pperf-tests -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 5 -i 10 -f 3 -prof gc"` — publishable numbers, GC profile
+- `mvn exec:exec -Pperf-tests -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -prof stack"` — sampler stack profile (one benchmark at a time)
+- `mvn exec:exec -Pperf-tests -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -rf json -rff target/result.json"` — machine-readable output
+- `mvn exec:exec -Pperf-tests -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark.shapeA.*"` — filter by regex
 
 Or invoke the uber-jar directly with `java -jar` (no Maven required once it's built):
 
