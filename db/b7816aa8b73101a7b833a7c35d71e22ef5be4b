@@ -1,0 +1,14 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexCommitDurabilityTest.java
+  h_ff0005bef58c9d 56,60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbb7816aa8b73101a7b833a7c35d71e22ef5be4b",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
