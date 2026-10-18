@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java
+  h_ff0005bef58c9d 63,84,95,103,120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de60f23e3c96e92c870f5366dedffdeda768c42d",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
