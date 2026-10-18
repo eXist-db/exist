@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/http/urlrewrite/UrlRewritePipelineHttpTest.java
+  s_bf77a8d4f1b569::t_dab01fff93a602 688,699,704
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7959737eb850ba8b6456bec17a0f20b1977e17c0",
+  "prompts": {},
+  "sessions": {
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
