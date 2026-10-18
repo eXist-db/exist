@@ -1,0 +1,14 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/ExQueryRequestAdapterFactoryTest.java
+  h_ff0005bef58c9d 45,48,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aa69db6640d5f6046827617b017c52d16355756a",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
