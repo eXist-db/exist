@@ -1,0 +1,14 @@
+extensions/security/ldap/src/test/java/org/exist/security/realm/ldap/LDAPAccountCachingIT.java
+  h_ff0005bef58c9d 97,131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7b3becbfcf620b251edaeedb5400d315203036ba",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
