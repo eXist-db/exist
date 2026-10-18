@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/http/servlets/XQueryServletErrorPageTest.java
+  h_ff0005bef58c9d 36,39,52,62,71,80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3cb97d1560abea2e7180d00d630c153f1445923e",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
