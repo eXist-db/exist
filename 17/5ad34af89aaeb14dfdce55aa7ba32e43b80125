@@ -1,0 +1,14 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FtQueryUpdateNotificationTest.java
+  h_ff0005bef58c9d 56,73,89,100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "175ad34af89aaeb14dfdce55aa7ba32e43b80125",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
