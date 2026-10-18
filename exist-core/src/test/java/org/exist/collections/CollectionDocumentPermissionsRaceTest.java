@@ -28,6 +28,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.LockManager;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -42,13 +43,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.IntFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks that {@code fn:collection()} never returns a document that the user can't read, while another
- * thread changes the documents' owner and group.
+ * thread changes the documents' owner and group, and that it returns each document that she can read while
+ * another thread changes their access control lists.
  *
  * Each document has the mode {@code ---rwx---}, and moves back and forth between being owned by
  * alice:staff and by bob:other. alice is in staff but not other, and can read neither: in the first,
@@ -60,6 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CollectionDocumentPermissionsRaceTest {
 
     private static final String COLLECTION = "/db/permissions-race";
+    private static final String ACL_COLLECTION = "/db/acl-race";
     private static final int DOCUMENTS = 20;
     private static final int CHANGES = 300;
 
@@ -74,29 +78,70 @@ public class CollectionDocumentPermissionsRaceTest {
                     sm:create-group("other"),
                     sm:create-account("alice", "alice", "staff", ()),
                     sm:create-account("bob", "bob", "other", ()),
+                    sm:create-account("carol", "carol", "other", ()),
                     let $collection := xmldb:create-collection("/db", "permissions-race")
                     return (
                         sm:chmod(xs:anyURI($collection), "rwxr-xr-x"),
                         for $i in 1 to %d
                         let $doc := xs:anyURI(xmldb:store($collection, "doc" || $i || ".xml", <doc/>))
                         return (sm:chown($doc, "alice:staff"), sm:chmod($doc, "---rwx---"))
+                    ),
+                    let $collection := xmldb:create-collection("/db", "acl-race")
+                    return (
+                        sm:chmod(xs:anyURI($collection), "rwxr-xr-x"),
+                        for $i in 1 to %d
+                        let $doc := xs:anyURI(xmldb:store($collection, "doc" || $i || ".xml", <doc/>))
+                        return (sm:chown($doc, "bob:other"), sm:chmod($doc, "r--r--r--"))
                     )
                 )
-                """.formatted(DOCUMENTS));
+                """.formatted(DOCUMENTS, DOCUMENTS));
     }
 
     @Test
     void neverReturnsADocumentInAnIntermediatePermissionState() throws Exception {
+        race(i -> """
+                for $doc in collection("%s") return sm:chown(document-uri($doc), "%s")
+                """.formatted(COLLECTION, i % 2 == 0 ? "bob:other" : "alice:staff"), COLLECTION, 0);
+
+        // both owner/group states deny alice
+        assertEquals(0, asAlice("count(collection(\"" + COLLECTION + "\"))"));
+        assertEquals(DOCUMENTS, asAdmin("count(collection(\"" + COLLECTION + "\"))").itemAt(0).toJavaObject(Integer.class));
+    }
+
+    /**
+     * An access control entry for carol never applies to alice, who may read each document as "other",
+     * but replacing the access control list while it is read may make the read fail, which must then
+     * be repeated under the documents' locks.
+     */
+    @Test
+    void returnsEachReadableDocumentWhileTheAccessControlListsChange() throws Exception {
+        race(i -> i % 2 == 0
+                ? """
+                for $doc in collection("%s") return sm:add-user-ace(document-uri($doc), "carol", true(), "rwx")
+                """.formatted(ACL_COLLECTION)
+                : """
+                for $doc in collection("%s") return sm:clear-acl(document-uri($doc))
+                """.formatted(ACL_COLLECTION), ACL_COLLECTION, DOCUMENTS);
+    }
+
+    /**
+     * Makes {@link #CHANGES} changes to the documents, while alice counts the documents she can read.
+     *
+     * @param change the query which makes the nth change.
+     * @param collection the collection which alice reads.
+     * @param readable the number of documents which alice should read each time.
+     */
+    private static void race(final IntFunction<String> change, final String collection, final int readable) throws Exception {
+        final LockManager lockManager = existEmbeddedServer.getBrokerPool().getLockManager();
+        final long failedBefore = lockManager.getOptimisticDocumentReadsFailed();
+
         final AtomicBoolean changing = new AtomicBoolean(true);
         final ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             final Future<?> writer = executor.submit(() -> {
                 try {
                     for (int i = 0; i < CHANGES; i++) {
-                        final String ownerGroup = i % 2 == 0 ? "bob:other" : "alice:staff";
-                        asAdmin("""
-                                for $doc in collection("%s") return sm:chown(document-uri($doc), "%s")
-                                """.formatted(COLLECTION, ownerGroup));
+                        asAdmin(change.apply(i));
                     }
                 } finally {
                     changing.set(false);
@@ -107,7 +152,7 @@ public class CollectionDocumentPermissionsRaceTest {
             final Future<Integer> reader = executor.submit(() -> {
                 int reads = 0;
                 while (changing.get()) {
-                    assertEquals(0, asAlice("count(collection(\"" + COLLECTION + "\"))"), "alice could read a document");
+                    assertEquals(readable, asAlice("count(collection(\"" + collection + "\"))"), "alice read the wrong number of documents");
                     reads++;
                 }
                 return reads;
@@ -119,9 +164,8 @@ public class CollectionDocumentPermissionsRaceTest {
             executor.shutdownNow();
         }
 
-        // both owner/group states deny alice
-        assertEquals(0, asAlice("count(collection(\"" + COLLECTION + "\"))"));
-        assertEquals(DOCUMENTS, asAdmin("count(collection(\"" + COLLECTION + "\"))").itemAt(0).toJavaObject(Integer.class));
+        // the documents were read with their locks at least once, after an optimistic read was not possible or invalidated
+        assertTrue(lockManager.getOptimisticDocumentReadsFailed() > failedBefore);
     }
 
     private static Sequence asAdmin(final String query) throws EXistException, PermissionDeniedException, XPathException, AuthenticationException {

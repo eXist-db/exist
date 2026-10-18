@@ -440,8 +440,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             if (collection == null) {
                 uri = (XmldbURI) fileURI.clone();
             } else {
-                // a document's name is a single, already encoded path segment, so it can be appended without re-parsing the path
-                uri = collection.getURI().appendInternal(fileURI);
+                // a document's name is normally a single, already encoded path segment, so it can be appended without re-parsing the path
+                final String name = fileURI.getRawCollectionPath();
+                uri = name.isEmpty() || name.indexOf('/') >= 0 ? collection.getURI().append(fileURI) : collection.getURI().appendInternal(fileURI);
             }
         }
         return uri;
@@ -558,6 +559,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     @EnsureContainerLocked(mode=READ_LOCK)
     public Permission getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * Gets the permissions without the READ_LOCK that {@link #getPermissions()} requires, for a caller
+     * which excludes concurrent changes to them otherwise.
+     *
+     * @return the permissions of the document.
+     */
+    public Permission getPermissionsNoLock() {
         return permissions;
     }
 

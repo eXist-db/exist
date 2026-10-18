@@ -42,7 +42,8 @@ import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -124,14 +125,35 @@ public class LockManager {
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
     /**
-     * The number of Document WRITE_LOCKs held, or being acquired.
+     * The number of stripes that the Document WRITE_LOCK counters are divided into, by the path of the
+     * Collection which holds the Document; a power of two.
      */
-    private final AtomicLong documentWriteLocksHeld = new AtomicLong();
+    private static final int DOCUMENT_WRITE_LOCK_STRIPES = 256;
 
     /**
-     * The number of Document WRITE_LOCKs ever acquired, or attempted.
+     * The distance between two stripes' counters in their arrays, so that each stripe's counter is on its own cache line.
      */
-    private final AtomicLong documentWriteLocksAcquired = new AtomicLong();
+    private static final int DOCUMENT_WRITE_LOCK_STRIPE_STRIDE = 8;
+
+    /**
+     * The number of Document WRITE_LOCKs held, by stripe, see {@link #documentWriteLockStripe(String, int)}.
+     */
+    private final AtomicLongArray documentWriteLocksHeld = new AtomicLongArray(DOCUMENT_WRITE_LOCK_STRIPES * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE);
+
+    /**
+     * The number of Document WRITE_LOCKs ever acquired, by stripe, see {@link #documentWriteLockStripe(String, int)}.
+     */
+    private final AtomicLongArray documentWriteLocksAcquired = new AtomicLongArray(DOCUMENT_WRITE_LOCK_STRIPES * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE);
+
+    /**
+     * The number of optimistic reads of Documents' metadata that were valid.
+     */
+    private final LongAdder optimisticDocumentReadsValid = new LongAdder();
+
+    /**
+     * The number of optimistic reads of Documents' metadata that were not possible, or invalidated by a concurrent write.
+     */
+    private final LongAdder optimisticDocumentReadsFailed = new LongAdder();
 
     /**
      * @param configuration database configuration
@@ -543,71 +565,140 @@ public class LockManager {
             final long groupId = System.nanoTime();
             final String path = documentPath.toString();
 
-            // count the lock before acquiring it, so that an optimistic read which starts before it is released fails, see #tryOptimisticDocumentRead()
-            documentWriteLocksHeld.incrementAndGet();
-            documentWriteLocksAcquired.incrementAndGet();
-            boolean acquired = false;
-            try {
-                final MultiLock lock = getDocumentLock(path);
-                lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+            final MultiLock lock = getDocumentLock(path);
+            lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
 
-                if (lock(lock, Lock.LockMode.WRITE_LOCK)) {
-                    lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-                } else {
-                    lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-                    throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
-                }
-
-                final ManagedSingleLockDocumentLock documentLock = new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable, documentWriteLocksHeld::decrementAndGet);
-                acquired = true;
-                return documentLock;
-            } finally {
-                if (!acquired) {
-                    documentWriteLocksHeld.decrementAndGet();
-                }
+            if (lock(lock, Lock.LockMode.WRITE_LOCK)) {
+                // count the lock before anything is changed under it, so that an optimistic read during which it is held fails, see #tryOptimisticDocumentRead(XmldbURI)
+                final int index = documentWriteLockStripe(documentPath.getRawCollectionPath(), documentPath.getRawCollectionPath().lastIndexOf('/'));
+                documentWriteLocksHeld.incrementAndGet(index);
+                documentWriteLocksAcquired.incrementAndGet(index);
+                lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+                return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable, () -> documentWriteLocksHeld.decrementAndGet(index));
+            } else {
+                lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+                throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
             }
         }
     }
 
     /**
-     * Starts an optimistic read of the Documents' metadata, such as their permissions, without
-     * a READ_LOCK on each Document.
+     * Starts an optimistic read of the metadata, such as the permissions, of the Documents in a Collection,
+     * without a READ_LOCK on each Document.
      *
-     * A Document's metadata is only changed while its WRITE_LOCK is held. If no Document WRITE_LOCK
-     * is held when the read starts, and none has been acquired by the time it is validated with
-     * {@link #validateOptimisticDocumentRead(long)}, then the read saw the same metadata that it would
-     * have seen with a READ_LOCK on each Document. Like {@link java.util.concurrent.locks.StampedLock#tryOptimisticRead()},
+     * A Document's metadata is only changed while its WRITE_LOCK is held. If no WRITE_LOCK on a Document
+     * in the Collection is held when the read starts, and none has been acquired by the time it is validated
+     * with {@link #validateOptimisticDocumentRead(XmldbURI, long)}, then the read saw the same metadata that
+     * it would have seen with a READ_LOCK on each Document. Like {@link java.util.concurrent.locks.StampedLock#tryOptimisticRead()},
      * the values read may be inconsistent until validated, so they must not be acted on before then.
      *
-     * Optimistic reads are not possible when path locks are used for Documents, as then a Collection's
-     * WRITE_LOCK also covers its Documents.
+     * The WRITE_LOCKs are counted in stripes of Collections, so a WRITE_LOCK on a Document in another
+     * Collection of the same stripe also invalidates the read, which is merely conservative.
      *
-     * @return a stamp to validate the read with, or {@link #NO_OPTIMISTIC_DOCUMENT_READ} if a Document
-     *     WRITE_LOCK is held, or an optimistic read is not possible.
+     * Optimistic reads are not possible when path locks are used for Documents; there, a READ_LOCK on the
+     * Collection already excludes any WRITE_LOCK on its Documents.
+     *
+     * @param collectionPath the path of the Collection which holds the Documents.
+     *
+     * @return a stamp to validate the read with, or {@link #NO_OPTIMISTIC_DOCUMENT_READ} if a WRITE_LOCK is held
+     *     on a Document in the Collection, or an optimistic read is not possible.
      */
-    public long tryOptimisticDocumentRead() {
+    public long tryOptimisticDocumentRead(final XmldbURI collectionPath) {
         if (usePathLocksForDocuments) {
+            optimisticDocumentReadsFailed.increment();
             return NO_OPTIMISTIC_DOCUMENT_READ;
         }
+        final int index = documentWriteLockStripe(collectionPath.getRawCollectionPath(), collectionPath.getRawCollectionPath().length());
         // NOTE: read in the opposite order to which #acquireDocumentWriteLock(XmldbURI) increments them
-        final long stamp = documentWriteLocksAcquired.get();
-        if (documentWriteLocksHeld.get() != 0) {
+        final long stamp = documentWriteLocksAcquired.get(index);
+        if (documentWriteLocksHeld.get(index) != 0) {
+            optimisticDocumentReadsFailed.increment();
             return NO_OPTIMISTIC_DOCUMENT_READ;
         }
         return stamp;
     }
 
     /**
-     * Validates an optimistic read of the Documents' metadata, see {@link #tryOptimisticDocumentRead()}.
+     * Validates an optimistic read of the metadata of the Documents in a Collection, see {@link #tryOptimisticDocumentRead(XmldbURI)}.
      *
-     * @param stamp the stamp returned by {@link #tryOptimisticDocumentRead()}.
+     * @param collectionPath the path of the Collection which holds the Documents.
+     * @param stamp the stamp returned by {@link #tryOptimisticDocumentRead(XmldbURI)}.
      *
-     * @return true if no Document WRITE_LOCK was held or acquired during the read, so the values read are valid.
+     * @return true if no WRITE_LOCK on a Document in the Collection was held or acquired during the read, so the values read are valid.
      */
-    public boolean validateOptimisticDocumentRead(final long stamp) {
+    public boolean validateOptimisticDocumentRead(final XmldbURI collectionPath, final long stamp) {
+        if (stamp == NO_OPTIMISTIC_DOCUMENT_READ) {
+            return false;
+        }
         // order the reads made since the stamp was issued before the read of the counter, as StampedLock#validate(long) does
         VarHandle.acquireFence();
-        return stamp != NO_OPTIMISTIC_DOCUMENT_READ && documentWriteLocksAcquired.get() == stamp;
+        final int index = documentWriteLockStripe(collectionPath.getRawCollectionPath(), collectionPath.getRawCollectionPath().length());
+        final boolean valid = documentWriteLocksAcquired.get(index) == stamp;
+        if (valid) {
+            optimisticDocumentReadsValid.increment();
+        } else {
+            optimisticDocumentReadsFailed.increment();
+        }
+        return valid;
+    }
+
+    /**
+     * Gets the index of the counters of the Document WRITE_LOCKs in a Collection.
+     *
+     * @param path the path of the Collection, or of a Document in it.
+     * @param collectionPathLength the length of the Collection's path within {@code path}.
+     *
+     * @return the index of the Collection's stripe in {@link #documentWriteLocksHeld} and {@link #documentWriteLocksAcquired}.
+     */
+    private static int documentWriteLockStripe(final String path, final int collectionPathLength) {
+        // the same as path.substring(0, collectionPathLength).hashCode(), without creating the substring
+        int hash = 0;
+        for (int i = 0; i < collectionPathLength; i++) {
+            hash = 31 * hash + path.charAt(i);
+        }
+        hash ^= hash >>> 16;
+        return (hash & (DOCUMENT_WRITE_LOCK_STRIPES - 1)) * DOCUMENT_WRITE_LOCK_STRIPE_STRIDE;
+    }
+
+    /**
+     * Returns true if path locks are used for Documents, as opposed to separate Collection and Document locks.
+     *
+     * @return true if a Collection's locks cover its Documents.
+     */
+    public boolean isUsingPathLocksForDocuments() {
+        return usePathLocksForDocuments;
+    }
+
+    /**
+     * Gets the number of optimistic reads of Documents' metadata that were valid, see {@link #tryOptimisticDocumentRead(XmldbURI)}.
+     *
+     * @return the number of valid optimistic reads.
+     */
+    public long getOptimisticDocumentReadsValid() {
+        return optimisticDocumentReadsValid.sum();
+    }
+
+    /**
+     * Gets the number of optimistic reads of Documents' metadata that were not possible, or were invalidated
+     * by a concurrent write, so that the Documents were read with their locks instead.
+     *
+     * @return the number of failed optimistic reads.
+     */
+    public long getOptimisticDocumentReadsFailed() {
+        return optimisticDocumentReadsFailed.sum();
+    }
+
+    /**
+     * Gets the number of Document WRITE_LOCKs held.
+     *
+     * @return the number of Document WRITE_LOCKs held.
+     */
+    public long getDocumentWriteLocksHeld() {
+        long held = 0;
+        for (int i = 0; i < documentWriteLocksHeld.length(); i += DOCUMENT_WRITE_LOCK_STRIPE_STRIDE) {
+            held += documentWriteLocksHeld.get(i);
+        }
+        return held;
     }
 
     /**
