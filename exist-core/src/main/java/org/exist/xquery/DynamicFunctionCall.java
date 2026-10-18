@@ -24,7 +24,9 @@ package org.exist.xquery;
 import java.util.List;
 
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -106,6 +108,8 @@ public class DynamicFunctionCall extends AbstractExpression {
         	} catch (final Exception e) {
                 throw new XPathException(this, e);
             }
+        } else if (ref instanceof AbstractMapType || ref instanceof ArrayType) {
+            return callMapOrArray(ref, contextSequence, contextItem);
         } else {
 	        ref.setArguments(arguments);
             // need to create a new AnalyzeContextInfo to avoid memory leak
@@ -162,5 +166,36 @@ public class DynamicFunctionCall extends AbstractExpression {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Calls a map or an array as a function, by looking up its argument, which is evaluated here.
+     *
+     * The map or array isn't given this call's arguments, unlike other function items: it may be shared with
+     * queries running in other threads, for example through the cache module, and its accessor function runs in
+     * the context of the query which created it.
+     */
+    private Sequence callMapOrArray(final FunctionReference mapOrArray, final Sequence contextSequence,
+            final Item contextItem) throws XPathException {
+        if (arguments.size() != 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "A map or an array is called with one argument, got "
+                    + arguments.size());
+        }
+        // the argument is analyzed here, as other function items analyze the arguments they are given
+        final Expression argument = arguments.getFirst();
+        argument.analyze(new AnalyzeContextInfo(cachedContextInfo));
+        final Sequence key = Atomize.atomize(argument.eval(contextSequence, contextItem));
+        if (key.getItemCount() != 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "A map or an array is called with exactly one key, got "
+                    + key.getItemCount() + " items");
+        }
+        AtomicValue keyValue = (AtomicValue) key.itemAt(0);
+        if (mapOrArray instanceof final ArrayType array) {
+            if (keyValue.getType() == Type.UNTYPED_ATOMIC) {
+                keyValue = keyValue.convertTo(Type.INTEGER);
+            }
+            return array.get(keyValue);
+        }
+        return ((AbstractMapType) mapOrArray).get(keyValue);
     }
 }
