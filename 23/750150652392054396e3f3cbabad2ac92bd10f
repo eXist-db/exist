@@ -1,0 +1,67 @@
+exist-core/src/test/java/org/exist/config/ConfigurationImplPropertyMapTest.java
+  s_bf77a8d4f1b569::t_253822ea34acf6 70,79,91,98,116,126,142,154
+exist-core/src/test/java/org/exist/dom/memtree/AttributeNamespaceFixupTest.java
+  s_bf77a8d4f1b569::t_59fe29bb2d948f 111
+exist-core/src/test/java/org/exist/dom/memtree/DocumentBuilderReceiverCDataTest.java
+  s_bf77a8d4f1b569::t_8ab79c08adaa21 84,121,136,158
+exist-core/src/test/java/org/exist/http/RESTServiceTest.java
+  s_bf77a8d4f1b569::t_1a676613c22a35 1346,1435,1442,1449,1456,1466,1477,1488
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingTest.java
+  s_bf77a8d4f1b569::t_1561ebfc4676a4 64,78,92,114,132,151
+exist-core/src/test/java/org/exist/http/servlets/HttpResponseWrapperEncodingWireTest.java
+  s_bf77a8d4f1b569::t_df9e41c3eef501 75,94,103
+exist-core/src/test/java/org/exist/http/servlets/NonAsciiCookieRoundTripTest.java
+  s_bf77a8d4f1b569::t_15ec67569889c8 80,99,108
+exist-core/src/test/java/org/exist/http/urlrewrite/UrlRewritePipelineHttpTest.java
+  s_bf77a8d4f1b569::t_d8d08beebc4eb4 380
+exist-core/src/test/java/org/exist/security/AbstractRealmTest.java
+  s_bf77a8d4f1b569::t_63ea5ef64209f3 44
+exist-core/src/test/java/org/exist/storage/vector/VectorStoreRecoverTest.java
+  s_bf77a8d4f1b569::t_9e36f5c307aa7f 54,59,71
+exist-core/src/test/java/org/exist/util/serializer/HtmlCdataWriterTest.java
+  s_bf77a8d4f1b569::t_78052db87c6b16 66,71,76,82
+exist-core/src/test/java/org/exist/util/serializer/PreserveCdataSerializationTest.java
+  s_bf77a8d4f1b569::t_61a6af14dcca85 79,85,91,98,105,112,124,131,139,147,153,160
+exist-core/src/test/java/org/exist/xmldb/MoveCopyLockOrderTest.java
+  s_bf77a8d4f1b569::t_de4890680ba9bb 91,97,103,113,119,129,141,164,180
+exist-core/src/test/java/org/exist/xmlrpc/GetDocumentHtmlCdataTest.java
+  s_bf77a8d4f1b569::t_8d111324e41d94 64,74,96,101
+exist-core/src/test/java/org/exist/xquery/AbstractInternalModuleParametersTest.java
+  s_bf77a8d4f1b569::t_10dd33f686bfb5 40,47
+exist-core/src/test/java/org/exist/xquery/FunMatchesCardinalityTest.java
+  s_bf77a8d4f1b569::t_28654961d28489 76,86,108,114,121,129,137,149,160,170,177,189
+exist-core/src/test/java/org/exist/xquery/ModuleParametersContextTest.java
+  s_bf77a8d4f1b569::t_bb84d2585c069e 58,74
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java
+  s_bf77a8d4f1b569::t_2d719dbbf5396a 52,59,181,192,203,214,225,237,252,268,280,291,302,313,328
+exist-core/src/test/java/org/exist/xquery/functions/request/GetCookieValueDecodeTest.java
+  s_bf77a8d4f1b569::t_a43631e03124e4 65,73,80,90
+exist-core/src/test/java/org/exist/xquery/functions/system/QueryTraceTest.java
+  s_bf77a8d4f1b569::t_e5f551e4f85c3c 133,140,149,163,189,202
+extensions/indexes/range/src/test/java/org/exist/xquery/modules/range/LoopVariableLookupRegressionTest.java
+  s_bf77a8d4f1b569::t_3963a6ebe5f17e 66,78,98,104
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorSearchEmbeddingIT.java
+  s_bf77a8d4f1b569::t_2fa48f44c9ae71 128
+extensions/vector/src/test/java/org/exist/vector/VectorExtensionHookWiringTest.java
+  s_bf77a8d4f1b569::t_4c150c20c471a3 53,64
+extensions/vector/src/test/java/org/exist/xquery/modules/vector/EmbedDependenciesTest.java
+  s_bf77a8d4f1b569::t_82fdc5e9a5fe41 54,60
+extensions/webdav/src/test/java/org/exist/webdav/WebDavMoveCopyLockOrderTest.java
+  s_bf77a8d4f1b569::t_989323ba57c80f 58,63,68,73,78,92,101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23750150652392054396e3f3cbabad2ac92bd10f",
+  "prompts": {},
+  "sessions": {
+    "s_bf77a8d4f1b569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0111d3e6-a2a5-4ffb-ba3b-1966c9b05061",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
