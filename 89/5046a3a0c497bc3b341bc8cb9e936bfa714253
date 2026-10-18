@@ -1,0 +1,32 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexCommitDurabilityTest.java
+  s_1e21b9ee169e36::t_7b13cc5f636cd3 1-119
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_1e21b9ee169e36::t_1bf3251e824148 81-84,260-272,291-295
+  s_1e21b9ee169e36::t_338be433305034 55
+  s_0daa214f39d0db::t_2144f073984414 279-280
+  s_0daa214f39d0db::t_31752d139f226f 289-290
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "895046a3a0c497bc3b341bc8cb9e936bfa714253",
+  "prompts": {},
+  "sessions": {
+    "s_0daa214f39d0db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a0c17f1-3a34-468a-924d-1088244cef94",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_1e21b9ee169e36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e652345c-1dc2-466a-9b82-337f5ecdaa4d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
