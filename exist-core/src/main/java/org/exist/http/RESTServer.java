@@ -1615,7 +1615,9 @@ public class RESTServer {
                     response.setStatus(HttpServletResponse.SC_OK);
 
                 } else {
-                    try(final LockedDocument lockedDocument = broker.getXMLResource(pathURI, LockMode.WRITE_LOCK)) {
+                    // lock the document's collection before the document, as removing the document locks the collection
+                    try (final Collection parent = broker.openCollection(pathURI.removeLastSegment(), LockMode.WRITE_LOCK);
+                            final LockedDocument lockedDocument = parent == null ? null : parent.getDocumentWithLock(broker, pathURI.lastSegment(), LockMode.WRITE_LOCK)) {
                         final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
                         if (doc == null) {
                             throw new NotFoundException("No document or collection found for path: " + path);
@@ -1630,9 +1632,9 @@ public class RESTServer {
                             }
 
                             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                                doc.getCollection().removeBinaryResource(transaction, broker, pathURI.lastSegment());
+                                parent.removeBinaryResource(transaction, broker, pathURI.lastSegment());
                             } else {
-                                doc.getCollection().removeXMLResource(transaction, broker, pathURI.lastSegment());
+                                parent.removeXMLResource(transaction, broker, pathURI.lastSegment());
                             }
 
                             response.setStatus(HttpServletResponse.SC_OK);
