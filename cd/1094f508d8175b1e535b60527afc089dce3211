@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/util/PatternFactory.java
+  s_0e38a282aba4fa::t_e5a064415fda83 40,53,57-64
+exist-core/src/test/java/org/exist/util/PatternFactoryTest.java
+  s_de36ff9b8ca5ba::t_b178d18df4adcf 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cd1094f508d8175b1e535b60527afc089dce3211",
+  "prompts": {},
+  "sessions": {
+    "s_0e38a282aba4fa": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "def0786b-808a-478e-be29-822a8f88d13a",
+        "model": "composer-2.5-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_de36ff9b8ca5ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0bbe7c7-f9c6-4c41-818d-bbfe73c9e2d8",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
