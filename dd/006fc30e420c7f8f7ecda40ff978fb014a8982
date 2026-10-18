@@ -1,0 +1,38 @@
+exist-core/src/main/java/org/exist/xquery/FunctionTypeCheck.java
+  s_9236ac166605fd::t_fb790eb125bdbc 33,35
+  s_9236ac166605fd::t_4a26b0affed62d 140-165
+exist-core/src/main/java/org/exist/xquery/DynamicNameCheck.java
+  s_9236ac166605fd::t_77051116eb1209 186-215
+  s_9236ac166605fd::t_f369cd3db2f1f1 39,42
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/Issue6759RegressionTest.java
+  s_9236ac166605fd::t_835cce0d205f71 1-170
+exist-core/src/main/java/org/exist/xquery/Function.java
+  s_9236ac166605fd::t_ba31c0e2dc1414 484-516
+exist-core/src/main/java/org/exist/xquery/DynamicCardinalityCheck.java
+  s_9236ac166605fd::t_1cd4a7df3bbc74 181
+  s_9236ac166605fd::t_051affc95e6c42 35,37
+  s_9236ac166605fd::t_fba62e28911050 149,155-180
+exist-core/src/main/java/org/exist/xquery/DynamicTypeCheck.java
+  s_9236ac166605fd::t_2d4cdf9ac01ce9 34,36
+  s_9236ac166605fd::t_6d00ec26842ef8 232,235-261
+exist-core/src/main/java/org/exist/xquery/UntypedValueCheck.java
+  s_9236ac166605fd::t_5c2d2aafa3f9a5 36,38
+  s_9236ac166605fd::t_467abd3c4006b3 212,215-239
+  s_9236ac166605fd::t_1cd4a7df3bbc74 240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dd006fc30e420c7f8f7ecda40ff978fb014a8982",
+  "prompts": {},
+  "sessions": {
+    "s_9236ac166605fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38699338-9a73-4c1f-bf65-530d6c33f2e0",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
