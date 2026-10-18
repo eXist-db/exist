@@ -1,0 +1,14 @@
+exist-core/src/test/java/org/exist/xquery/LocationStepUpdateListenerTest.java
+  h_ff0005bef58c9d 56,74,80,86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ed2b1852399ff299a76950fe6bb6b9697fe568f",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
