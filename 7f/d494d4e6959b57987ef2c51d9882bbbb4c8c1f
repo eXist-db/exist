@@ -1,0 +1,32 @@
+exist-core/src/test/java/org/exist/xquery/LocationStepUpdateListenerTest.java
+  s_1e21b9ee169e36::t_10555154cf21a4 1-55,57-73,75-79,81-85,87-158
+  h_ff0005bef58c9d 56,74,80,86
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1e21b9ee169e36::t_6125e8a4d052ea 504-507,515,517,667-670,681-682,688,690,751-754,764-765,769,815-818,828-829,836,839,931-933,943-944,949-950,1025-1027,1033-1034,1043,1045,1049,1051,1056,1058,1182-1184,1194-1195,1200-1201,1246-1248,1258-1259,1263
+  s_1e21b9ee169e36::t_df4ed89e17b2e9 57-60
+  s_1e21b9ee169e36::t_44b971c5b7aee9 516,518-524,526-527,529-530,535-537
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FtQueryUpdateNotificationTest.java
+  s_1e21b9ee169e36::t_d75b8fc3eed1fc 1-55,57-72,74-88,90-99,101-156
+  h_ff0005bef58c9d 56,73,89,100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7fd494d4e6959b57987ef2c51d9882bbbb4c8c1f",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_1e21b9ee169e36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e652345c-1dc2-466a-9b82-337f5ecdaa4d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
