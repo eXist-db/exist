@@ -138,7 +138,7 @@
         <lucene.version>10.5.2</lucene.version>
         <lz4-java.version>1.12.0</lz4-java.version>
         <nekohtml.version>3.0.4</nekohtml.version>
-        <saxon.version>12.5</saxon.version>
+        <saxon.version>13.1</saxon.version>
         <xerces.version>2.12.2</xerces.version>
         <xpath2.version>1.2.0</xpath2.version>
         <java-cup.version>10k</java-cup.version>
