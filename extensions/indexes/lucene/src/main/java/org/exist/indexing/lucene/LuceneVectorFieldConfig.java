@@ -51,6 +51,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -190,7 +191,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         if (s == null || s.isEmpty()) {
             return VectorSimilarityFunction.COSINE;
         }
-        return switch (s.toLowerCase()) {
+        return switch (s.toLowerCase(Locale.ROOT)) {
             case "cosine" -> VectorSimilarityFunction.COSINE;
             case "euclidean" -> VectorSimilarityFunction.EUCLIDEAN;
             case "dot_product" -> VectorSimilarityFunction.DOT_PRODUCT;
