@@ -1,0 +1,61 @@
+exist-core/src/main/java/org/exist/backup/BackupDirectory.java
+  s_089e399b080439::t_f1936e1b642764 38,51
+exist-core/src/main/java/org/exist/backup/BackupFile.java
+  s_089e399b080439::t_1134ed9498ef42 29,36
+exist-core/src/main/java/org/exist/backup/SystemExport.java
+  s_089e399b080439::t_92f4d2c9e8acc8 81,112,733
+exist-core/src/main/java/org/exist/http/Descriptor.java
+  s_089e399b080439::t_d3e4d132acc0be 51,369
+exist-core/src/main/java/org/exist/launcher/ConfigurationUtility.java
+  s_089e399b080439::t_c6cbee6de5b7f3 44,163
+exist-core/src/main/java/org/exist/storage/BackupSystemTask.java
+  s_089e399b080439::t_6d135b20708c6b 40,85
+exist-core/src/main/java/org/exist/storage/DataBackup.java
+  s_089e399b080439::t_fd022241112986 44,51
+exist-core/src/main/java/org/exist/xquery/Function.java
+  s_089e399b080439::t_8e999321ba1b82 28,660
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java
+  s_089e399b080439::t_da7e72102f65dd 871,1305
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunPath.java
+  s_089e399b080439::t_1f7312e3ae7ec8 167,177,188,216
+exist-core/src/main/java/org/exist/xquery/functions/system/GetScheduledJobs.java
+  s_089e399b080439::t_5901f0b69571fd 28,156
+exist-core/src/main/java/org/exist/xquery/pragmas/TimePragma.java
+  s_089e399b080439::t_23a4057ac2aaf6 47,143,177
+exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java
+  s_089e399b080439::t_3c066b1777365e 47,281
+exist-core/src/test/java/org/exist/validation/ValidatorXsd11Test.java
+  s_089e399b080439::t_a08ca289fda213 77-78
+exist-core/src/test/java/org/exist/validation/Xsd11StoreTimeValidationTest.java
+  s_089e399b080439::t_f32131b2a4e34d 120-121,130-131
+exist-core/src/test/java/org/exist/xquery/functions/fn/XQueryDefaultLocaleDigitsTest.java
+  s_089e399b080439::t_6269706dd3334d 1-105
+extensions/indexes/range/src/main/java/org/exist/indexing/range/conversion/DateConverter.java
+  s_089e399b080439::t_ddf7f1b8bbd03d 33,65
+extensions/indexes/range/src/test/java/org/exist/xquery/modules/range/ForBoundXmlIdRegressionTest.java
+  s_089e399b080439::t_cef351ac05650f 128
+extensions/indexes/range/src/test/java/org/exist/xquery/modules/range/LoopVariableLookupRegressionTest.java
+  s_089e399b080439::t_fe7a99cfe690d6 58,71
+extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/MessageFunctions.java
+  s_089e399b080439::t_a165cfa0d88daa 32,285
+extensions/modules/mail/src/main/java/org/exist/xquery/modules/mail/MessageListFunctions.java
+  s_089e399b080439::t_8322888ec1ab8e 30,444
+extensions/modules/sql-oracle/src/main/java/org/exist/xquery/modules/oracle/ExecuteFunction.java
+  s_089e399b080439::t_5ff9d8806b2b5d 65,134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d1603debc0c6c019b4808e49d288d645ba5be0f3",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
