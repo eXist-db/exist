@@ -1,0 +1,19 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/conversion/DateConverter.java
+  s_240345b07d7ace::t_8d1bde49eead80 61,66,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e8fce19e0089ae36ea2e2c727102dc58b1ecfce",
+  "prompts": {},
+  "sessions": {
+    "s_240345b07d7ace": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8ca3bb6c-9129-4d00-8bfb-b1a309b5dc2c",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
