@@ -55,7 +55,7 @@ public class LoopVariableLookupRegressionTest {
 
     private static final String QUERY = """
             count(
-                for $id in (1 to %d) ! ('id-' || . * 100)
+                for $id in (1 to %s) ! ('id-' || . * 100)
                 return collection('/db/issue-6619')/item[id = $id]
             )
             """.formatted(N_LOOKUPS);
@@ -68,7 +68,7 @@ public class LoopVariableLookupRegressionTest {
         execute("""
                 let $_ := xmldb:create-collection('/db', 'issue-6619')
                 return count(
-                    for $i in 1 to %d
+                    for $i in 1 to %s
                     return xmldb:store('/db/issue-6619', 'doc' || $i || '.xml', <item><id>id-{$i}</id></item>)
                 )
                 """.formatted(N_DOCS));

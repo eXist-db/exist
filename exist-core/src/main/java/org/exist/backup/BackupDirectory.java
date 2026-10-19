@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 
 public class BackupDirectory {
@@ -47,7 +48,7 @@ public class BackupDirectory {
     public final static String FILE_REGEX = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
 
     public final static String DATE_FORMAT_PICTURE = "yyyyMMdd-HHmm";
-    private final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
+    private final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE, Locale.ROOT);
 
 
     private final Path dir;
