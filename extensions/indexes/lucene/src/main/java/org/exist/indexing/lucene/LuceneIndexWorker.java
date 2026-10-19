@@ -1959,7 +1959,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 BytesRef ref = termsIter.term();
                 String term = ref.utf8ToString();
-                if ((end != null && term.compareTo(end) > 0) || (start != null && !term.toLowerCase().startsWith(start.toLowerCase()))) {
+                if ((end != null && term.compareTo(end) > 0) || (start != null && !term.toLowerCase(Locale.ROOT).startsWith(start.toLowerCase(Locale.ROOT)))) {
                     continue;
                 }
                 PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);

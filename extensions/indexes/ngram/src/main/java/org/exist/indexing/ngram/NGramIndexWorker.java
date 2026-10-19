@@ -462,13 +462,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
                     final Value startRef = new NGramQNameKey(collectionId, qname,
-                            index.getBrokerPool().getSymbols(), start.toString().toLowerCase());
+                            index.getBrokerPool().getSymbols(), start.toString().toLowerCase(Locale.ROOT));
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
                     final Value startRef = new NGramQNameKey(collectionId, qname,
-                            index.getBrokerPool().getSymbols(), start.toString().toLowerCase());
+                            index.getBrokerPool().getSymbols(), start.toString().toLowerCase(Locale.ROOT));
                     final Value endRef = new NGramQNameKey(collectionId, qname,
-                            index.getBrokerPool().getSymbols(), end.toString().toLowerCase());
+                            index.getBrokerPool().getSymbols(), end.toString().toLowerCase(Locale.ROOT));
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
                 try (final ManagedLock<ReentrantLock> dbLock = lockManager.acquireBtreeReadLock(index.db.getLockName())) {
