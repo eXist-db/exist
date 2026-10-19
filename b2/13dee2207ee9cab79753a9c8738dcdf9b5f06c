@@ -1,0 +1,33 @@
+exist-core/pom.xml
+  s_089e399b080439::t_a3f835d90d23c6 1356,1383
+exist-parent/pom.xml
+  s_089e399b080439::t_993e07a640ff64 118-126,1190,1208-1213
+extensions/debuggee/pom.xml
+  s_089e399b080439::t_afe5c1c204c269 141
+extensions/indexes/vector-it/pom.xml
+  s_089e399b080439::t_e578ff1f62f7d1 148
+extensions/modules/file/pom.xml
+  s_089e399b080439::t_f34989370d4503 231
+extensions/modules/persistentlogin/pom.xml
+  s_089e399b080439::t_4269aee2e14b3b 192
+extensions/vector/pom.xml
+  s_089e399b080439::t_0a693c2591056c 109
+extensions/webdav/pom.xml
+  s_089e399b080439::t_6859bd2cca29a8 221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b213dee2207ee9cab79753a9c8738dcdf9b5f06c",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
