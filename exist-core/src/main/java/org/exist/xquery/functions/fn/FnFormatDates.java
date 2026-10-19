@@ -280,7 +280,7 @@ public class FnFormatDates extends BasicFunction {
             if (args[2].hasOne()) {
                 language = args[2].getStringValue();
             } else {
-                language = context.getDefaultLanguage();
+                language = defaultLanguage();
             }
 
             // Validate calendar argument — we only support Gregorian/ISO. Unknown
@@ -306,12 +306,12 @@ public class FnFormatDates extends BasicFunction {
             if (args[2].hasOne()) {
                 language = args[2].getStringValue();
             } else {
-                language = context.getDefaultLanguage();
+                language = defaultLanguage();
             }
             calendarFallback = Optional.empty();
             place = Optional.empty();
         } else {
-            language = context.getDefaultLanguage();
+            language = defaultLanguage();
             calendarFallback = Optional.empty();
             place = Optional.empty();
         }
@@ -330,11 +330,21 @@ public class FnFormatDates extends BasicFunction {
         return new StringValue(this, result);
     }
 
+    /**
+     * The language used when the caller did not ask for one. The default language of the context
+     * comes from the JVM, so a system whose language is not supported here would get the
+     * {@code [Language: en]} prefix on every result; use English instead.
+     */
+    private String defaultLanguage() {
+        final String defaultLanguage = context.getDefaultLanguage();
+        return isLanguageSupported(defaultLanguage) ? defaultLanguage : "en";
+    }
+
     private static boolean isLanguageSupported(String lang) {
         if (lang == null || lang.isEmpty()) return true;
         // Strip region/variant subtags ("en-US" → "en")
         final int hyphen = lang.indexOf('-');
-        final String base = (hyphen >= 0 ? lang.substring(0, hyphen) : lang).toLowerCase();
+        final String base = (hyphen >= 0 ? lang.substring(0, hyphen) : lang).toLowerCase(Locale.ROOT);
         return SUPPORTED_LANGUAGES.contains(base);
     }
 
@@ -598,9 +608,9 @@ public class FnFormatDates extends BasicFunction {
         final int year = dt.getPart(AbstractDateTimeValue.YEAR);
         String era = year > 0 ? "AD" : "BC";
         if ("n".equals(picture)) {
-            era = era.toLowerCase();
+            era = era.toLowerCase(Locale.ROOT);
         } else if ("Nn".equals(picture)) {
-            era = era.charAt(0) + era.substring(1).toLowerCase();
+            era = era.charAt(0) + era.substring(1).toLowerCase(Locale.ROOT);
         }
         sb.append(era);
     }
@@ -1052,7 +1062,7 @@ public class FnFormatDates extends BasicFunction {
         if ("I".equals(pic) || "i".equals(pic)) {
             String roman = toRomanNumerals(num);
             if ("i".equals(pic)) {
-                roman = roman.toLowerCase();
+                roman = roman.toLowerCase(Locale.ROOT);
             }
             applyMinWidthOnly(roman, width, sb);
             return;
@@ -1080,9 +1090,9 @@ public class FnFormatDates extends BasicFunction {
                 name = formatter.getCardinalWord(num);
             }
             if ("W".equals(pic)) {
-                name = name.toUpperCase();
+                name = name.toUpperCase(Locale.ROOT);
             } else if ("w".equals(pic)) {
-                name = name.toLowerCase();
+                name = name.toLowerCase(Locale.ROOT);
             } else if ("Ww".equals(pic)) {
                 name = formatter.toTitleCase(name);
             }
@@ -1117,9 +1127,9 @@ public class FnFormatDates extends BasicFunction {
             }
 
             if ("N".equals(pic)) {
-                name = name.toUpperCase();
+                name = name.toUpperCase(Locale.ROOT);
             } else if ("n".equals(pic)) {
-                name = name.toLowerCase();
+                name = name.toLowerCase(Locale.ROOT);
             }
 
             applyWidthToText(name, width, sb);
@@ -1587,11 +1597,11 @@ public class FnFormatDates extends BasicFunction {
             }
             if (uri.isEmpty()) {
                 // Q{}name — same rules as a bare NCName: must be a recognised code
-                if (!KNOWN_CALENDARS.contains(local.toUpperCase())) {
+                if (!KNOWN_CALENDARS.contains(local.toUpperCase(Locale.ROOT))) {
                     throw new XPathException(this, ErrorCodes.FOFD1340,
                             "Unknown calendar: " + calendar);
                 }
-                if (SUPPORTED_CALENDARS.contains(local.toUpperCase())) {
+                if (SUPPORTED_CALENDARS.contains(local.toUpperCase(Locale.ROOT))) {
                     return Optional.empty();
                 }
                 return Optional.of(local);
@@ -1609,11 +1619,11 @@ public class FnFormatDates extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FOFD1340,
                     "Badly-formed calendar name: " + calendar);
         }
-        if (!KNOWN_CALENDARS.contains(calendar.toUpperCase())) {
+        if (!KNOWN_CALENDARS.contains(calendar.toUpperCase(Locale.ROOT))) {
             throw new XPathException(this, ErrorCodes.FOFD1340,
                     "Unknown calendar: " + calendar);
         }
-        if (SUPPORTED_CALENDARS.contains(calendar.toUpperCase())) {
+        if (SUPPORTED_CALENDARS.contains(calendar.toUpperCase(Locale.ROOT))) {
             return Optional.empty();
         }
         return Optional.of(calendar);
