@@ -18,6 +18,7 @@ external:org.exist.http.AbstractHttpTest,exist-core/src/test/java/org/exist/http
 external:org.exist.http.AbstractHttpTest,exist-core/src/test/java/org/exist/http/AbstractHttpTest.java,org.exist.http.AbstractHttpTest,Abstract Http Test Service,Java HttpClient,,
 external:org.exist.http.AbstractHttpTest,exist-core/src/test/java/org/exist/http/AbstractHttpTest.java,org.exist.http.AbstractHttpTest,Abstract Http Test Service,Java HttpClient,,
 external:org.exist.http.AuthenticatedHttpClientTest,exist-core/src/test/java/org/exist/http/AuthenticatedHttpClientTest.java,org.exist.http.AuthenticatedHttpClientTest,Authenticated Http Client Test Service,Java HttpClient,,
+external:org.exist.http.servlets.NonAsciiCookieRoundTripTest,exist-core/src/test/java/org/exist/http/servlets/NonAsciiCookieRoundTripTest.java,org.exist.http.servlets.NonAsciiCookieRoundTripTest,Non Ascii Cookie Round Trip Test Service,Java HttpClient,,
 external:org.exist.xquery.functions.request.GetHeaderTest,exist-core/src/test/java/org/exist/xquery/functions/request/GetHeaderTest.java,org.exist.xquery.functions.request.GetHeaderTest,Get Header Test Service,Java HttpClient,,
 external:org.exist.xquery.functions.request.PatchTest,exist-core/src/test/java/org/exist/xquery/functions/request/PatchTest.java,org.exist.xquery.functions.request.PatchTest,Patch Test Service,Java HttpClient,,
 external:org.exist.xquery.functions.request.PatchTest,exist-core/src/test/java/org/exist/xquery/functions/request/PatchTest.java,org.exist.xquery.functions.request.PatchTest,Patch Test Service,Java HttpClient,,

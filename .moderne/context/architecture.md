@@ -24,6 +24,7 @@ flowchart LR
   jmx-remote-test-service["Jmx Remote Test Service"]
   login-module-i-t-service["Login Module I T Service"]
   move-resource-test$-check-thread-service["Move Resource Test$ Check Thread Service"]
+  non-ascii-cookie-round-trip-test-service["Non Ascii Cookie Round Trip Test Service"]
   patch-test-service["Patch Test Service"]
   rest-binaries-test-service["Rest Binaries Test Service"]
   send-request-function-service["Send Request Function Service"]
@@ -60,6 +61,7 @@ flowchart LR
 - **Jmx Remote Test Service**: HTTPS service
 - **Login Module I T Service**: HTTPS service
 - **Move Resource Test$ Check Thread Service**: HTTPS service
+- **Non Ascii Cookie Round Trip Test Service**: HTTPS service
 - **Patch Test Service**: HTTPS service
 - **Rest Binaries Test Service**: HTTPS service
 - **Send Request Function Service**: HTTPS service

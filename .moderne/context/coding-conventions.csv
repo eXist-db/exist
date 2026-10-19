@@ -15,6 +15,7 @@ naming,Builder suffix for classes,FopConfigurationBuilder,,project-wide
 naming,build* method naming pattern,buildFromNode,,project-wide
 naming,process* method naming pattern,processEvent,,project-wide
 naming,camelCase for constants,logger,,project-wide
+naming,Factory suffix for classes,Factory,,project-wide
 imports,Static imports from org.exist.xquery,org.exist.xquery.FunctionDSL.*,,project-wide
 imports,Static imports from org.exist.xquery.modules.xslfo,org.exist.xquery.modules.xslfo.XSLFOModule.functionSignatures,,project-wide
 imports,Static imports from org.exist.xquery.modules.mail,org.exist.xquery.modules.mail.Util.executeQuery,,project-wide
@@ -26,7 +27,6 @@ naming,is* method naming pattern,isBoundaryStart,,project-wide
 naming,parse* method naming pattern,parseParameters,,project-wide
 naming,Config suffix for classes,CacheConfig,,project-wide
 imports,Static imports from org.exist.xquery.modules.cache,org.exist.xquery.modules.cache.CacheModule.*,,project-wide
-naming,Factory suffix for classes,ContextFactory,,project-wide
 imports,Static imports from org.easymock,org.easymock.EasyMock.*,,project-wide
 imports,Static imports from org.exist.collections,org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE,,project-wide
 imports,Static imports from org.exist.indexing.lucene,org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR,,project-wide
@@ -44,6 +44,7 @@ naming,Utils suffix for classes,Utils,,project-wide
 naming,load* method naming pattern,loadImage,,project-wide
 naming,find* method naming pattern,findFile,,project-wide
 imports,Static imports from java.net,java.net.HttpURLConnection.HTTP_OK,,project-wide
+imports,Static imports from org.xmlunit.matchers,org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath,,project-wide
 imports,Static imports from org.exist.xquery.modules.vector,org.exist.xquery.modules.vector.VectorModule.functionSignature,,project-wide
 naming,Service suffix for classes,VectorEmbeddingService,,project-wide
 naming,Exception suffix for classes,StopException,,project-wide
@@ -59,7 +60,6 @@ naming,Manager suffix for classes,RestXqServiceRegistryManager,,project-wide
 naming,convert* method naming pattern,convertToExistFunctionArguments,,project-wide
 imports,Static imports from se.softhouse.jargo,se.softhouse.jargo.Arguments.helpArgument,,project-wide
 imports,Static imports from org.apache.commons.lang3,org.apache.commons.lang3.ArrayUtils.isEmpty,,project-wide
-imports,Static imports from java.lang.invoke,java.lang.invoke.MethodType.methodType,,project-wide
 imports,Static imports from org.exist.http,org.exist.http.RESTServerParameter.*,,project-wide
 imports,Static imports from javax.xml,javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING,,project-wide
 imports,Static imports from org.exist.xquery.Predicate,org.exist.xquery.Predicate.ExecutionMode.*,,project-wide
@@ -79,6 +79,7 @@ imports,Static imports from com.ibm.icu.text,com.ibm.icu.text.UnicodeMatcher.U_M
 imports,Static imports from org.exist.xquery.functions.inspect,org.exist.xquery.functions.inspect.InspectionModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.functions.array,org.exist.xquery.functions.array.ArrayModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.functions.system,org.exist.xquery.functions.system.SystemModule.functionSignature,,project-wide
+naming,Configuration suffix for classes,GetConfiguration,,project-wide
 imports,Static imports from org.exist.xquery.functions.util,org.exist.xquery.functions.util.UtilModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.functions.xmldb,org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures,,project-wide
 imports,Static imports from org.exist.xquery.Cardinality,org.exist.xquery.Cardinality.InternalValue.*,,project-wide
@@ -93,8 +94,8 @@ naming,I prefix for interfaces,IRawNodeIterator,,project-wide
 imports,Static imports from org.exist.storage.btree.Paged,org.exist.storage.btree.Paged.Page.NO_PAGE,,project-wide
 imports,Static imports from org.exist.storage.blob,org.exist.storage.blob.BlobStoreImpl.BLOB_STORE_HEADER_LEN,,project-wide
 imports,Static imports from org.exist.storage.blob.BlobStoreImpl,org.exist.storage.blob.BlobStoreImpl.BlobReference.*,,project-wide
+imports,Static imports from java.lang.invoke,java.lang.invoke.MethodType.methodType,,project-wide
 imports,Static imports from org.exist.storage.lock.Lock,org.exist.storage.lock.Lock.LockMode.READ_LOCK,,project-wide
-naming,Configuration suffix for classes,CollectionConfiguration,,project-wide
 imports,Static imports from java.lang.management,java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME,,project-wide
 naming,_prefix for fields,_statusChangeTime,,project-wide
 imports,Static imports from org.exist.storage,org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY,,project-wide
@@ -123,7 +124,6 @@ imports,Static imports from org.exist.contentextraction.xquery,org.exist.content
 imports,Static imports from org.exist.samples,org.exist.samples.Samples.SAMPLES,,project-wide
 imports,Static imports from org.exist.http.urlrewrite,org.exist.http.urlrewrite.XQueryURLRewrite.LEGACY_XQUERY_CONTROLLER_FILENAME,,project-wide
 imports,Static imports from java.util,java.util.Arrays.asList,,project-wide
-imports,Static imports from org.custommonkey.xmlunit,org.custommonkey.xmlunit.XMLAssert.assertXMLEqual,,project-wide
 imports,Static imports from com.ibm.icu.impl,com.ibm.icu.impl.Assert.fail,,project-wide
 imports,Static imports from org.exist.xquery.InternalModuleTest,org.exist.xquery.InternalModuleTest.TestModuleWithVariables.*,,project-wide
 imports,Static imports from org.apache.commons.codec.binary,org.apache.commons.codec.binary.Base64.encodeBase64String,,project-wide
@@ -136,7 +136,6 @@ imports,Static imports from org.bouncycastle.util,org.bouncycastle.util.Arrays.r
 imports,Static imports from org.exist.stax,org.exist.stax.ExtendedXMLStreamReader.PROPERTY_NODE_ID,,project-wide
 imports,Static imports from org.exist.stax.EmbeddedXMLStreamReaderTest,org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*,,project-wide
 imports,Static imports from org.exist.management.client,org.exist.management.client.JMXtoXML.JMX_NAMESPACE,,project-wide
-imports,Static imports from org.xmlunit.matchers,org.xmlunit.matchers.HasXPathMatcher.hasXPath,,project-wide
 imports,Static imports from org.exist.repo,org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY,,project-wide
 imports,Static imports from org.exist.dom.persistent,org.exist.dom.persistent.DocumentImpl.XML_FILE,,project-wide
 imports,Static imports from org.junit.platform.engine.discovery,org.junit.platform.engine.discovery.DiscoverySelectors.selectClass,,project-wide
