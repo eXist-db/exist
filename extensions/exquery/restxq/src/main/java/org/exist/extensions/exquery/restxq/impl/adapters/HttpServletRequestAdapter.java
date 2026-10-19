@@ -26,6 +26,7 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,6 +35,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.exist.http.ExQueryRequestAdapterFactory;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
@@ -43,10 +45,14 @@ import org.exquery.http.HttpMethod;
 import org.exquery.http.HttpRequest;
 
 /**
+ * Adapts a {@link HttpServletRequest} to an EXQuery {@link HttpRequest}.
+ *
+ * <p>The adapter owns the cache of the request body that {@link #getInputStream()} creates,
+ * and so it must be {@link #close() closed} once the request has been serviced.
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class HttpServletRequestAdapter implements HttpRequest {
+public class HttpServletRequestAdapter implements HttpRequest, Closeable {
 
     private final HttpServletRequest request;
     private final FilterInputStreamCacheConfiguration cacheConfiguration;
@@ -124,7 +130,8 @@ public class HttpServletRequestAdapter implements HttpRequest {
             is.reset();
         }
 
-        return is;
+        // the cache is released by close(), consumers must not close it before then
+        return CloseShieldInputStream.wrap(is);
     }
 
     @Override
@@ -272,6 +279,16 @@ public class HttpServletRequestAdapter implements HttpRequest {
         }
 
         return fields;
+    }
+
+    /**
+     * Releases the cache of the request body, if {@link #getInputStream()} was called.
+     */
+    @Override
+    public void close() throws IOException {
+        if (is != null) {
+            is.close();
+        }
     }
 
     /**

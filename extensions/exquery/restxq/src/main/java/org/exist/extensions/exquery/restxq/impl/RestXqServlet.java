@@ -41,7 +41,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exquery.http.HttpRequest;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.RestXqServiceRegistry;
@@ -70,12 +69,11 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
-            final Configuration configuration = broker.getConfiguration();
-
-            final HttpRequest requestAdapter = new HttpServletRequestAdapter(
-                request,
-                    () -> (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
+        // closing the request adapter releases its cache of the request body, see https://github.com/eXist-db/exist/issues/186
+        try(final DBBroker broker = getPool().get(Optional.of(user));
+                final HttpServletRequestAdapter requestAdapter = new HttpServletRequestAdapter(
+                    request,
+                    () -> (String)broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY))) {
 
             final RestXqService service = getRegistry().findService(requestAdapter);
             if(service != null) {
