@@ -233,20 +233,15 @@ public class ForExpr extends BindingExpression {
             final int position = contextItem == AtomicValue.EMPTY_VALUE ? 0 : p + 1;
             at.setValue(new IntegerValue(this, position));
         }
-        final Sequence contextSequence = contextItem.toSequence();
+        final Sequence itemSequence = contextItem.toSequence();
         // set variable value to current item
-        var.setValue(contextSequence);
+        var.setValue(itemSequence);
         var.checkType();
         //Reset the context position
         context.setContextSequencePosition(0, null);
 
-        final Sequence returnExprResult;
-        if (returnExpr instanceof OrderByClause) {
-            returnExprResult = returnExpr.eval(contextSequence, null);
-        } else {
-            // a for clause binds a variable but doesn't change the focus
-            returnExprResult = returnExpr.eval(outerContextSequence, outerContextItem);
-        }
+        // a for clause binds a variable but doesn't change the focus, which the clauses after it share
+        final Sequence returnExprResult = returnExpr.eval(outerContextSequence, outerContextItem);
         resultSequence.addAll(returnExprResult);
 
         // free resources
