@@ -868,7 +868,7 @@ public class FnFormatDates extends BasicFunction {
     }
 
     private static String defaultTimezoneFormat(int absHour, int absMinute, boolean isNegative) {
-        return String.format("%s%02d:%02d", isNegative ? "-" : "+", absHour, absMinute);
+        return String.format(Locale.ROOT, "%s%02d:%02d", isNegative ? "-" : "+", absHour, absMinute);
     }
 
     /**
@@ -1302,7 +1302,7 @@ public class FnFormatDates extends BasicFunction {
         final NumericPicture np = parseFractionPicture(pic);
 
         // Fraction digits string: at least 3 (millisecond precision), most significant first.
-        final String fractionDigits = String.format("%03d", millis);
+        final String fractionDigits = String.format(Locale.ROOT, "%03d", millis);
 
         // Determine effective min/max
         int picMin = np.mandatoryDigits;

@@ -48,6 +48,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
@@ -365,7 +366,7 @@ public class Descriptor implements ErrorHandler {
         try {
             //Store the date and time
             bufWriteReplayLog.write("Date: ");
-            final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ROOT);
             bufWriteReplayLog.write(formatter.format(new Date()));
 
             bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
