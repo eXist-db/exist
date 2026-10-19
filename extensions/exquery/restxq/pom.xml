@@ -273,6 +273,11 @@
                                 -->
                                 <exclude>src/test/resources-filtered/conf-fixture.xsl</exclude>
                                 <exclude>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</exclude>
+                                <!--
+                                    eXist-db-authored test for the ExQueryRequestAdapterFactory SPI,
+                                    not derived from the original EXQuery/RESTXQ BSD-3 licensed sources
+                                -->
+                                <exclude>src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/ExQueryRequestAdapterFactoryTest.java</exclude>
                             </excludes>
                         </licenseSet>
                         <licenseSet>
@@ -281,12 +286,14 @@
 
                                 Applies to the fixture codegen stylesheets above: they are new
                                 eXist-db tooling, not modifications of Adam Retter's original
-                                BSD-3 conf.xml/controller-config.xml.
+                                BSD-3 conf.xml/controller-config.xml, and to the SPI discovery
+                                test, which is new eXist-db code.
                             -->
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <includes>
                                 <include>src/test/resources-filtered/conf-fixture.xsl</include>
                                 <include>src/test/resources/standalone-webapp/WEB-INF/controller-config-fixture.xsl</include>
+                                <include>src/test/java/org/exist/extensions/exquery/restxq/impl/adapters/ExQueryRequestAdapterFactoryTest.java</include>
                             </includes>
                         </licenseSet>
                     </licenseSets>
