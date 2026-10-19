@@ -88,7 +88,7 @@ public class LockManager {
     public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
 
     /**
-     * Returned by {@link #tryOptimisticDocumentRead()} when an optimistic read isn't possible.
+     * Returned by {@link #tryOptimisticDocumentRead(XmldbURI)} when an optimistic read isn't possible.
      */
     public static final long NO_OPTIMISTIC_DOCUMENT_READ = -1;
 
@@ -597,6 +597,10 @@ public class LockManager {
      *
      * Optimistic reads are not possible when path locks are used for Documents; there, a READ_LOCK on the
      * Collection already excludes any WRITE_LOCK on its Documents.
+     *
+     * The stripe is found from the string form of the paths, so the Collection's path and the paths of the
+     * Documents locked must be canonical {@link XmldbURI}s, as they are for document locks themselves: a
+     * Document path that differs only in the case of a percent-escape lands on another stripe.
      *
      * @param collectionPath the path of the Collection which holds the Documents.
      *

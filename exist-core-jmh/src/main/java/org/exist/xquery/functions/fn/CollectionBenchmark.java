@@ -48,6 +48,7 @@ import org.xmldb.api.base.XMLDBException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Measures {@code fn:collection()} over a collection tree of many small
@@ -91,6 +92,8 @@ public class CollectionBenchmark {
     private LifecycleEmbeddedServer server;
     private final AtomicBoolean writing = new AtomicBoolean();
     private Thread writerThread;
+    /** The failure that ended the writer thread, rethrown at the end of the trial so that it isn't measured without a writer. */
+    private final AtomicReference<Throwable> writerFailure = new AtomicReference<>();
 
     @Setup(Level.Trial)
     public void setUp() throws Throwable {
@@ -138,13 +141,16 @@ public class CollectionBenchmark {
                     Thread.sleep(WRITER_PAUSE_MS);
                 }
             } catch (final EXistException | LockException e) {
-                throw new IllegalStateException(e);
+                writerFailure.set(e);
             } catch (final InterruptedException e) {
                 Thread.currentThread().interrupt();
+            } finally {
+                locked.countDown();
             }
         }, "collection-benchmark-lock-holder");
         writerThread.start();
         locked.await();
+        throwWriterFailure();
     }
 
     /**
@@ -166,7 +172,8 @@ public class CollectionBenchmark {
                     Thread.currentThread().interrupt();
                     return;
                 } catch (final XMLDBException e) {
-                    throw new IllegalStateException(e);
+                    writerFailure.set(e);
+                    return;
                 }
             }
         }, "collection-benchmark-writer");
@@ -183,6 +190,14 @@ public class CollectionBenchmark {
         if (server != null) {
             server.after();
             server = null;
+        }
+        throwWriterFailure();
+    }
+
+    private void throwWriterFailure() {
+        final Throwable failure = writerFailure.getAndSet(null);
+        if (failure != null) {
+            throw new IllegalStateException("The writer failed, so the trial ran without it", failure);
         }
     }
 
