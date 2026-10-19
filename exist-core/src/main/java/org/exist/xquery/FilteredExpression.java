@@ -99,6 +99,19 @@ public class FilteredExpression extends AbstractExpression {
         }
 
         final Sequence result;
+        if (isPositionalForEachContextItem(contextSequence, contextItem)) {
+            result = processPredicateForEachContextItem(contextSequence);
+        } else {
+            result = evalPredicates(contextSequence, contextItem);
+        }
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+        return result;
+    }
+
+    private Sequence evalPredicates(@Nullable final Sequence contextSequence, @Nullable final Item contextItem) throws XPathException {
+        final Sequence result;
         final Sequence seq = expression.eval(contextSequence, contextItem);
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -135,11 +148,36 @@ public class FilteredExpression extends AbstractExpression {
                     }
                 }
             } else {
-                result = processPredicate(contextSequence, seq);
+                // unlike a step's predicate, a filter expression's predicate applies to the sequence that the
+                // expression returns, so its positions don't depend on the context nodes
+                result = processPredicate(null, seq);
             }
         }
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
+        return result;
+    }
+
+    /**
+     * Whether the expression is evaluated for several context items at once, e.g. on the right of a path, with a
+     * positional first predicate: positions must then count within each context item's sequence.
+     */
+    private boolean isPositionalForEachContextItem(@Nullable final Sequence contextSequence, @Nullable final Item contextItem) {
+        return !abbreviated
+                && contextItem == null
+                && contextSequence != null
+                && contextSequence.hasMany()
+                && predicates.getFirst().getExecutionMode() == Predicate.ExecutionMode.POSITIONAL
+                && Dependency.dependsOn(expression.getDependencies(), Dependency.CONTEXT_ITEM);
+    }
+
+    private Sequence processPredicateForEachContextItem(final Sequence contextSequence) throws XPathException {
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            final Sequence seq = expression.eval(item.toSequence(), item);
+            if (!seq.isEmpty()) {
+                context.setContextSequencePosition(0, seq);
+                result.addAll(processPredicate(null, seq));
+            }
         }
         return result;
     }
