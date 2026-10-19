@@ -1,0 +1,19 @@
+extensions/modules/sql/src/main/java/org/exist/xquery/modules/sql/SQLUtils.java
+  s_089e399b080439::t_be25670294a294 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dde3dfed88d7ce59a8f9726e77ed792674d18abb",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
