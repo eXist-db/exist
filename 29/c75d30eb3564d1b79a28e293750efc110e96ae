@@ -1,0 +1,50 @@
+extensions/modules/http-client/src/main/java/org/exist/xquery/modules/httpclient/RequestBuilder.java
+  s_089e399b080439::t_f3072336e422fd 59,301,522,572
+extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/RestXqServiceSerializerImpl.java
+  s_089e399b080439::t_2e4fb706ad088e 33,108,112,114
+exist-core/src/main/java/org/exist/xquery/functions/fn/transform/Options.java
+  s_089e399b080439::t_3f956d19b3bc07 246
+extensions/modules/http-client/src/test/java/org/exist/xquery/modules/httpclient/ContentTypeHelperTest.java
+  s_089e399b080439::t_973579e0f522c1 25-28,301-318
+extensions/modules/http-client/src/main/java/org/exist/xquery/modules/httpclient/ResponseHandler.java
+  s_089e399b080439::t_e97376fe2a0eba 54,296
+extensions/modules/http-client/src/main/java/org/exist/xquery/modules/httpclient/ContentTypeHelper.java
+  s_089e399b080439::t_a9b20a24bb6674 24-25,130,143,158
+extensions/modules/sql/src/main/java/org/exist/xquery/modules/sql/SQLUtils.java
+  s_089e399b080439::t_9d9a524aac7be8 25
+  s_089e399b080439::t_be25670294a294 39-40
+exist-core/src/main/java/org/exist/http/RESTServerParameter.java
+  s_089e399b080439::t_713971e1fb1319 24-25,393
+exist-core/src/main/java/org/exist/http/servlets/AbstractExistHttpServlet.java
+  s_089e399b080439::t_6a05d918e87f90 50,255
+exist-core/src/main/java/org/exist/http/servlets/BasicAuthenticator.java
+  s_089e399b080439::t_d0827f89fd7001 37,65
+exist-core/src/main/java/org/exist/http/servlets/HttpServletRequestWrapper.java
+  s_089e399b080439::t_e69126830ef5f0 112,289
+exist-core/src/main/java/org/exist/http/servlets/XQueryServlet.java
+  s_089e399b080439::t_7998e0f9551a6b 61,401
+exist-core/src/main/java/org/exist/http/urlrewrite/URLRewrite.java
+  s_089e399b080439::t_8f137e61c40919 37,67
+exist-core/src/main/java/org/exist/http/urlrewrite/XQueryURLRewrite.java
+  s_089e399b080439::t_29451255170ee3 179
+exist-core/src/main/java/org/exist/http/ws/EvalWebSocketEndpoint.java
+  s_089e399b080439::t_f1a378e4630176 41,121
+exist-core/src/test/java/org/exist/http/RESTServerParameterTest.java
+  s_089e399b080439::t_99d7710f0bf052 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "29c75d30eb3564d1b79a28e293750efc110e96ae",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
