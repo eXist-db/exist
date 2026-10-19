@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/util/Collations.java
+  s_089e399b080439::t_f01bbff962364a 180,773-774
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java
+  s_089e399b080439::t_c47d2fc940a0cc 283,309,314,333-342,347,611,613,1065,1093,1095,1130,1132,1600,1604,1622,1626
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunNormalizeUnicode.java
+  s_089e399b080439::t_daba297cad02c2 25-26,140
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java
+  s_089e399b080439::t_08d3b8cf116686 37,175,217,271,339,359
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunUpperOrLowerCase.java
+  s_089e399b080439::t_ace3a8145a2f03 24-25,88,90
+exist-core/src/main/java/org/exist/xquery/functions/integer/WordPicture.java
+  s_089e399b080439::t_a2968fef8ccfe6 26,77-93,241
+exist-core/src/main/java/org/exist/xquery/functions/util/LogFunction.java
+  s_089e399b080439::t_d4a3f71d229c9b 35,162,175
+exist-core/src/test/java/org/exist/xquery/functions/fn/XQueryDefaultLocaleTest.java
+  s_089e399b080439::t_f2a1e6bc2033fa 1-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d1f89b87808af8806862a32fe45f1cc7dc0fef02",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
