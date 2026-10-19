@@ -115,6 +115,15 @@
         <maven.minimum.version>3.9.16</maven.minimum.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Locale and timezone of the JVM the tests run in (surefire and failsafe). They have to be passed as
+             JVM arguments: `user.language` and `user.country` set later through `systemPropertyVariables` do
+             not change `Locale.getDefault()`. Override on the command line to find locale-dependent code,
+             e.g. `-Dtest.user.language=tr -Dtest.user.country=TR` -->
+        <test.user.language>en</test.user.language>
+        <test.user.country>GB</test.user.country>
+        <test.user.timezone>Europe/Berlin</test.user.timezone>
+        <test.locale.args>-Duser.language=${test.user.language} -Duser.country=${test.user.country} -Duser.timezone=${test.user.timezone}</test.locale.args>
+
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
 
         <contact.email>info@exist-db.org</contact.email>
@@ -1178,11 +1187,8 @@
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
-                        <argLine>@{jacocoArgLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <argLine>@{jacocoArgLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} ${test.locale.args}</argLine>
                         <systemPropertyVariables>
-                            <user.country>UK</user.country>
-                            <user.language>en</user.language>
-                            <user.timezone>Europe/Berlin</user.timezone>
                             <java.locale.providers>CLDR,SPI</java.locale.providers>
                             <log4j.configurationFile>${exist.log4j.testConfigurationFile}</log4j.configurationFile>
                             <log4j2.disableJmx>false</log4j2.disableJmx>
@@ -1199,6 +1205,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>3.6.0</version>
+                    <configuration>
+                        <argLine>@{jacocoArgLine} ${test.locale.args}</argLine>
+                        <systemPropertyVariables>
+                            <java.locale.providers>CLDR,SPI</java.locale.providers>
+                        </systemPropertyVariables>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
