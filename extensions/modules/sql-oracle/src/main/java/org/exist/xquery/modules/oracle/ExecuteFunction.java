@@ -62,6 +62,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * eXist Oracle Module Extension ExecuteFunction
@@ -130,7 +131,7 @@ public class ExecuteFunction extends BasicFunction {
      */
     public ExecuteFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
-        xmlDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        xmlDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ROOT);
     }
 
     @Override

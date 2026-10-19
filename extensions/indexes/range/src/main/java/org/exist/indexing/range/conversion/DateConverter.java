@@ -30,6 +30,7 @@ import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.TimeUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,16 +58,17 @@ public class DateConverter implements TypeConverter {
                 dv = new DateValue(calendar);
             } else {
                 // try to handle missing digits as in 1980-8-4
+                String normalized = content;
                 Matcher matcher = DATE_REGEX.matcher(content);
                 if (matcher.matches()) {
                     try {
                         int year = Integer.parseInt(matcher.group(1));
-                        content = (year < 0 ? "-" : "") + "%04d-%02d-%02d".formatted(Math.abs(year), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)));
+                        normalized = (year < 0 ? "-" : "") + String.format(Locale.ROOT, "%04d-%02d-%02d", Math.abs(year), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)));
                     } catch (NumberFormatException e) {
                         // invalid content: ignore
                     }
                 }
-                dv = new DateValue(content);
+                dv = new DateValue(normalized);
             }
             final long dl = RangeIndexConfigElement.dateToLong(dv);
             return new LongField(fieldName, dl, Field.Store.NO);

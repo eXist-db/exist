@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Locale;
 import jakarta.mail.Address;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Flags;
@@ -440,7 +441,7 @@ public class MessageListFunctions extends BasicFunction
 	{
 		String formatted = "";
 		
-		SimpleDateFormat sdf = new SimpleDateFormat( DATE_FORMAT );
+		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.ROOT);
 		
 		String temp = sdf.format( date );
 		

@@ -125,7 +125,7 @@ public class ForBoundXmlIdRegressionTest {
         final String literal = """
                 collection("%s")//*[@xml:id = "id0"]""".formatted(col);
         final String forBound = """
-                for $v in (for $i in 0 to %d return "id" || $i)
+                for $v in (for $i in 0 to %s return "id" || $i)
                 return collection("%s")//*[@xml:id = $v]""".formatted(nKeys - 1, col);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
