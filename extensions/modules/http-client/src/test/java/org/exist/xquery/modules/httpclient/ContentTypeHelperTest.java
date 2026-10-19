@@ -22,6 +22,10 @@
 package org.exist.xquery.modules.httpclient;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
+
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -293,5 +297,23 @@ class ContentTypeHelperTest {
     void extractCharsetIso8859() {
         assertEquals("iso-8859-1",
                 ContentTypeHelper.extractCharset("text/plain; charset=iso-8859-1"));
+    }
+
+    // ========================================================================
+    // Default locale independence
+    // ========================================================================
+
+    @Test
+    @ResourceLock(Resources.LOCALE)
+    void classificationDoesNotDependOnDefaultLocale() {
+        final Locale previous = Locale.getDefault();
+        try {
+            // Turkish maps "I" to a dotless i when lower-casing with the default locale
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            assertTrue(ContentTypeHelper.isXml("APPLICATION/XML"));
+            assertEquals("utf-8", ContentTypeHelper.extractCharset("text/plain; charset=UTF-8"));
+        } finally {
+            Locale.setDefault(previous);
+        }
     }
 }

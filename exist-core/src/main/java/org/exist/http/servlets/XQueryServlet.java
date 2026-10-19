@@ -58,6 +58,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -397,7 +398,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             {reportErrors = "YES".equalsIgnoreCase(errorOpt);}
         
         //allow source viewing for GET?
-        if("GET".equals(request.getMethod().toUpperCase())) {
+        if("GET".equals(request.getMethod().toUpperCase(Locale.ROOT))) {
             String option;
             boolean allowSource = false;
             if((option = request.getParameter("_source")) != null)

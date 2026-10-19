@@ -51,6 +51,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -292,7 +293,7 @@ public class ResponseHandler {
         if (contentType == null) {
             return null;
         }
-        final String lower = contentType.toLowerCase();
+        final String lower = contentType.toLowerCase(Locale.ROOT);
         final int idx = lower.indexOf("boundary=");
         if (idx < 0) {
             return null;
