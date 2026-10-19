@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -132,6 +133,8 @@ public class OrderByClause extends AbstractFLWORClause {
             stack.push(new OrderByData(orderSpecs.size()));
         }
         final OrderByData data = stack.peek();
+        data.contextSequence = contextSequence;
+        data.contextItem = contextItem;
 
         // Capture variable state for this tuple.
         //
@@ -201,7 +204,7 @@ public class OrderByClause extends AbstractFLWORClause {
         final AtomicValue[] sortKeys = new AtomicValue[orderSpecs.size()];
         for (int i = 0; i < orderSpecs.size(); i++) {
             final OrderSpec spec = orderSpecs.get(i);
-            final Sequence keySeq = spec.getSortExpression().eval(contextSequence, null);
+            final Sequence keySeq = spec.getSortExpression().eval(contextSequence, contextItem);
             if (keySeq.hasOne()) {
                 AtomicValue atomized = keySeq.itemAt(0).atomize();
                 // Cast xs:untypedAtomic to xs:string per W3C XQuery 3.1 §3.9.4
@@ -273,7 +276,7 @@ public class OrderByClause extends AbstractFLWORClause {
 
                 // Evaluate downstream clauses (CountClause, WhereClause, LetExpr, return expr)
                 // in sorted order — this is where correct post-sort counting and filtering happen.
-                result.addAll(returnExpr.eval(null, null));
+                result.addAll(returnExpr.eval(data.contextSequence, data.contextItem));
             }
         } finally {
             context.popLocalVariables(mark, result);
@@ -450,6 +453,12 @@ public class OrderByClause extends AbstractFLWORClause {
     /** Per-invocation state collected during {@link #eval} and consumed in {@link #postEval}. */
     private static class OrderByData {
         final List<OrderByTuple> tuples = new ArrayList<>();
+        /**
+         * The focus of the FLWOR expression, which the sort keys and the clauses after this one share, as an order
+         * by clause doesn't change it.
+         */
+        @Nullable Sequence contextSequence;
+        @Nullable Item contextItem;
         /** One BitSet per OrderSpec slot, tracking which primitive types appear in sort keys. */
         final List<BitSet> encounteredPrimitiveTypes;
         /**

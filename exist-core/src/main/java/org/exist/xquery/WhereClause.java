@@ -280,10 +280,11 @@ public class WhereClause extends AbstractFLWORClause {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final List<NodeSet> carriers = new ArrayList<>();
-        final boolean passesWhere = applyWhereExpression(carriers);
+        // a where clause doesn't change the focus: its expression and the return clause share the FLWOR's
+        final boolean passesWhere = applyWhereExpression(contextSequence, contextItem, carriers);
         if (passesWhere) {
             propagateMatchCarriersForCurrentTuple(carriers);
-            return returnExpr.eval(null, null);
+            return returnExpr.eval(contextSequence, contextItem);
         }
         return Sequence.EMPTY_SEQUENCE;
     }
@@ -297,31 +298,33 @@ public class WhereClause extends AbstractFLWORClause {
         return super.postEval(seq);
     }
 
-    private boolean applyWhereExpression(final List<NodeSet> carriers) throws XPathException {
+    private boolean applyWhereExpression(@Nullable final Sequence contextSequence, @Nullable final Item contextItem,
+            final List<NodeSet> carriers) throws XPathException {
         if (fastTrack) {
             return true;
         }
 
         final Expression unwrappedWhereExpr = unwrapBooleanExpression(whereExpr);
         if (unwrappedWhereExpr instanceof OpAnd opAnd) {
-            return evalExpressionWithCarriers(opAnd, carriers);
+            return evalExpressionWithCarriers(opAnd, contextSequence, contextItem, carriers);
         }
 
-        final Sequence innerSeq = whereExpr.eval(null, null);
+        final Sequence innerSeq = whereExpr.eval(contextSequence, contextItem);
         captureCarrierFromSequence(whereExpr, innerSeq, carriers);
         return innerSeq.effectiveBooleanValue();
     }
 
-    private boolean evalExpressionWithCarriers(final Expression expr, final List<NodeSet> carriers) throws XPathException {
+    private boolean evalExpressionWithCarriers(final Expression expr, @Nullable final Sequence contextSequence,
+            @Nullable final Item contextItem, final List<NodeSet> carriers) throws XPathException {
         final Expression unwrappedExpr = unwrapBooleanExpression(expr);
         if (unwrappedExpr instanceof OpAnd opAnd) {
-            if (!evalExpressionWithCarriers(opAnd.getLeft(), carriers)) {
+            if (!evalExpressionWithCarriers(opAnd.getLeft(), contextSequence, contextItem, carriers)) {
                 return false;
             }
-            return evalExpressionWithCarriers(opAnd.getRight(), carriers);
+            return evalExpressionWithCarriers(opAnd.getRight(), contextSequence, contextItem, carriers);
         }
 
-        final Sequence seq = expr.eval(null, null);
+        final Sequence seq = expr.eval(contextSequence, contextItem);
         captureCarrierFromSequence(expr, seq, carriers);
         return seq.effectiveBooleanValue();
     }

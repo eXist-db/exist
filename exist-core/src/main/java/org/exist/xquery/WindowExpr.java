@@ -211,7 +211,7 @@ public class WindowExpr extends BindingExpression {
                         window.end(windowEndConditionVariables);
 
                         // eval the return expression on the window binding
-                        returnEvalWindowBinding(in, window, resultSequence);
+                        returnEvalWindowBinding(in, window, resultSequence, contextSequence, contextItem);
 
                         // reset the window
                         if (windowEndMark != null) {
@@ -264,7 +264,7 @@ public class WindowExpr extends BindingExpression {
                         window.end(windowEndConditionVariables);
 
                         // eval the return expression on the window binding
-                        returnEvalWindowBinding(in, window, resultSequence);
+                        returnEvalWindowBinding(in, window, resultSequence, contextSequence, contextItem);
 
                         // reset the window
                         if (windowEndMark != null) {
@@ -304,7 +304,7 @@ public class WindowExpr extends BindingExpression {
             window.end(windowEndConditionVariables);
 
             // eval the return expression on the window binding
-            returnEvalWindowBinding(in, window, resultSequence);
+            returnEvalWindowBinding(in, window, resultSequence, contextSequence, contextItem);
 
             // reset the window
             if (windowEndMark != null) {
@@ -341,7 +341,12 @@ public class WindowExpr extends BindingExpression {
         return resultSequence;
     }
 
-    private void returnEvalWindowBinding(final Sequence in, final Window window, final Sequence resultSequence) throws XPathException {
+    /**
+     * @param contextSequence the context sequence of the window clause, which the clauses after it share
+     * @param contextItem the context item of the window clause, which the clauses after it share
+     */
+    private void returnEvalWindowBinding(final Sequence in, final Window window, final Sequence resultSequence,
+            @Nullable final Sequence contextSequence, @Nullable final Item contextItem) throws XPathException {
         // Save the local variable stack
         final LocalVariable mark = context.markLocalVariables(false);
 
@@ -376,7 +381,8 @@ public class WindowExpr extends BindingExpression {
             @Nullable final WindowContextVariables windowReturnEndVariables = declareWindowReturnVariableBindings(window.endVariables);
 
         // eval the return expression on the window binding
-        resultSequence.addAll(returnExpr.eval(null, null));
+        // a window clause binds variables but doesn't change the focus
+        resultSequence.addAll(returnExpr.eval(contextSequence, contextItem));
 
             // free resources
             if (windowReturnEndVariables != null) {

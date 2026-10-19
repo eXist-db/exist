@@ -62,7 +62,8 @@ function pf:for-in-predicate-in-memory() {
 declare
     %test:assertEquals("a", "b", "c")
 function pf:for-return-clause-sees-candidate() {
-    collection($pf:COLL)//article[for $i in 1 return name = name]/name/string()
+    (: the documents' order depends on the ids they were given, so the names are sorted :)
+    sort(collection($pf:COLL)//article[for $i in 1 return name = name]/name/string())
 };
 
 declare
@@ -106,4 +107,58 @@ declare
     %test:assertEquals(6, 6, 7)
 function pf:positional-predicates-unchanged() {
     (5, 6, 7)[2], (5, 6, 7)[position() = 2], (5, 6, 7)[last()]
+};
+
+declare
+    %test:assertEquals(1, 2)
+function pf:where-expression-sees-candidate() {
+    (1, 2, 3)[exists(for $x in (1, 2) where $x = . return $x)]
+};
+
+declare
+    %test:assertEquals(2)
+function pf:where-return-clause-sees-candidate() {
+    (1, 2, 3)[for $x in (1) where $x > 0 return . = 2]
+};
+
+declare
+    %test:assertEquals(2)
+function pf:group-by-key-sees-candidate() {
+    (1, 2, 3)[for $x in (1, 2) group by $k := . return $k = 2]
+};
+
+declare
+    %test:assertEquals(2)
+function pf:group-by-return-clause-sees-candidate() {
+    (1, 2, 3)[for $x in (1) group by $g := $x return . = 2]
+};
+
+declare
+    %test:assertEquals("3,2,1", "3,1,2", "1,2,3")
+function pf:order-by-key-sees-focus() {
+    (1, 2, 3) ! string-join(for $x in (3, 1, 2) order by ($x = .) return string($x), ",")
+};
+
+declare
+    %test:assertEquals(2)
+function pf:order-by-return-clause-sees-candidate() {
+    (1, 2, 3)[for $x in (1) order by $x return . = 2]
+};
+
+declare
+    %test:assertEquals(1, 2)
+function pf:for-let-where-chain-sees-candidate() {
+    (1, 2, 3)[exists(for $x in (1, 2) let $y := . where $x = $y return $x)]
+};
+
+declare
+    %test:assertEquals(2)
+function pf:count-return-clause-sees-candidate() {
+    (1, 2, 3)[for $x in (1) count $c return . = 2]
+};
+
+declare
+    %test:assertEquals(2)
+function pf:window-return-clause-sees-candidate() {
+    (1, 2, 3)[for tumbling window $w in (1) start when true() return . = 2]
 };
