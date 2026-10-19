@@ -1,0 +1,37 @@
+exist-core/src/main/java/org/exist/indexing/ReindexScope.java
+  s_089e399b080439::t_f110a682da6444 24-25,58
+exist-core/src/main/java/org/exist/storage/ValueIndexFactory.java
+  s_089e399b080439::t_8e39e08e521f54 25,140
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java
+  s_089e399b080439::t_9f54bea01d7a78 37-41,123-138
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_089e399b080439::t_a3252371f89851 510
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_089e399b080439::t_d28cc61b992b47 1962
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_089e399b080439::t_96402d1c0458aa 54,194
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_089e399b080439::t_cb9d2bb36a6159 465,469,471
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java
+  s_089e399b080439::t_45b6d11ba17e32 40,86,151,190,212
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_089e399b080439::t_80ea520a416882 913
+extensions/indexes/spatial/src/main/java/org/exist/xquery/modules/spatial/FunSpatialDistance.java
+  s_089e399b080439::t_d0588e373ae856 24-25,139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "417624e3a44ce4beca0d51ca27f3325185a96413",
+  "prompts": {},
+  "sessions": {
+    "s_089e399b080439": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6ea2dc5-7281-4dde-a1e1-656688548076",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
