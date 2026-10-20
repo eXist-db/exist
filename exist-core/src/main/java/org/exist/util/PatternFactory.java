@@ -37,7 +37,7 @@ public class PatternFactory {
 
     private static final PatternFactory instance = new PatternFactory();
 
-    private final Cache<String, Pattern> cache;
+    private final Cache<PatternKey, Pattern> cache;
 
     private PatternFactory() {
         this.cache = Caffeine.newBuilder()
@@ -50,10 +50,17 @@ public class PatternFactory {
     }
 
     public Pattern getPattern(final String pattern) {
-        return cache.get(pattern, Pattern::compile);
+        return getPattern(pattern, 0);
     }
 
     public Pattern getPattern(final String pattern, final int flags) {
-        return cache.get(pattern + flags, key -> Pattern.compile(pattern, flags));
+        return cache.get(new PatternKey(pattern, flags), key -> Pattern.compile(key.pattern(), key.flags()));
+    }
+
+    /**
+     * Identifies a compiled pattern by both its source and its flags. Concatenating the two into a
+     * string would let different pairs collide, e.g. {@code ("a1", 0)} and {@code ("a", 10)}.
+     */
+    private record PatternKey(String pattern, int flags) {
     }
 }
