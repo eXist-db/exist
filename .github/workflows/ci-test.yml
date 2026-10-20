@@ -86,13 +86,35 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution' --also-make
       - name: Maven Code Coverage (Develop branch, ubuntu unit only)
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
-        env:
-          CI_NAME: github
-          BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
-          CI_BUILD_NUMBER: ${{ github.run_id }}
-          CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report coveralls:report
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report
+      # JaCoCo names each source file by its package only (org/exist/...), but this is a
+      # multi-module build: prefix each module's source root so Coveralls can find the files.
+      - name: Prepare JaCoCo reports for Coveralls (Develop branch, ubuntu unit only)
+        id: jacoco-reports
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        run: |
+          files=""
+          for report in $(find . -path '*/target/site/jacoco/jacoco.xml'); do
+            module="${report#./}"
+            module="${module%/target/site/jacoco/jacoco.xml}"
+            [ -d "${module}/src/main/java" ] || continue
+            sed -i "s#<package name=\"#<package name=\"${module}/src/main/java/#g" "${report}"
+            files="${files} ${report}"
+          done
+          if [ -z "${files}" ]; then
+            echo "::error::No JaCoCo reports found"
+            exit 1
+          fi
+          echo "files=${files}" >> "${GITHUB_OUTPUT}"
+      - name: Upload Code Coverage to Coveralls (Develop branch, ubuntu unit only)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ steps.jacoco-reports.outputs.files }}
+          format: jacoco
+          flag-name: unit
+          fail-on-error: true
       - name: Save Maven cache
         if: github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         uses: actions/cache/save@v6
