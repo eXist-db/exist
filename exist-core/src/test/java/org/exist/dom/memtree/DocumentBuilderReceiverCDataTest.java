@@ -81,7 +81,7 @@ public class DocumentBuilderReceiverCDataTest {
 
     /** The regression: the section must be a CDATA node, not a text node. */
     @Test
-    public void cdataSectionSurvivesAsACDataNode() throws SAXException, IOException {
+    void cdataSectionSurvivesAsACDataNode() throws SAXException, IOException {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         final Document doc = parseVia(new DocumentBuilderReceiver(builder), CDATA_DOC);
@@ -118,7 +118,7 @@ public class DocumentBuilderReceiverCDataTest {
      * it fails against the unfixed receiver even though SAXAdapter alone would pass.</p>
      */
     @Test
-    public void bothAdaptersBuildTheSameNodeFromTheSameBytes() throws SAXException, IOException {
+    void bothAdaptersBuildTheSameNodeFromTheSameBytes() throws SAXException, IOException {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         final Node viaReceiver = onlyChildOfScript(
@@ -133,7 +133,7 @@ public class DocumentBuilderReceiverCDataTest {
 
     /** Ordinary text must still build as a text node. */
     @Test
-    public void ordinaryTextIsStillATextNode() throws SAXException, IOException {
+    void ordinaryTextIsStillATextNode() throws SAXException, IOException {
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         final Document doc = parseVia(new DocumentBuilderReceiver(builder), "<doc><script>plain</script></doc>");
@@ -155,7 +155,7 @@ public class DocumentBuilderReceiverCDataTest {
      * unaffected, because there is no preceding text node to coalesce with.</p>
      */
     @Test
-    public void textAroundACDataSectionIsPreservedAndBothAdaptersAgree() throws SAXException, IOException {
+    void textAroundACDataSectionIsPreservedAndBothAdaptersAgree() throws SAXException, IOException {
         final String mixed = "<doc><script>before<![CDATA[ a > b ]]>after</script></doc>";
 
         final MemTreeBuilder builder = new MemTreeBuilder();

@@ -72,7 +72,7 @@ public class HttpResponseWrapperEncodingWireTest {
             <result>ok</result>""".formatted(CYRILLIC, CYRILLIC);
 
     @BeforeAll
-    public static void setup() throws Exception {
+    static void setup() throws Exception {
         final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest storeRequest = AbstractHttpTest.authenticatedRequest(
                         URI.create(restUrl + "/test.xql"), "admin", "")
@@ -91,7 +91,7 @@ public class HttpResponseWrapperEncodingWireTest {
     }
 
     @AfterAll
-    public static void teardown() throws Exception {
+    static void teardown() throws Exception {
         final String deleteUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
         final HttpRequest deleteRequest = AbstractHttpTest.authenticatedRequest(URI.create(deleteUrl), "admin", "")
                 .DELETE()
@@ -100,7 +100,7 @@ public class HttpResponseWrapperEncodingWireTest {
     }
 
     @Test
-    public void measureWireBytesForNonAsciiHeaderAndCookie() throws IOException {
+    void measureWireBytesForNonAsciiHeaderAndCookie() throws IOException {
         final Map<String, List<byte[]>> rawHeaders = fetchRawHeaders("/exist/apps/test-header-encoding-wire/test.xql");
 
         final byte[] xTestRaw = firstValue(rawHeaders, "x-test");

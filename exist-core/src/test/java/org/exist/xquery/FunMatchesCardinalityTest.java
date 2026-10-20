@@ -73,7 +73,7 @@ public class FunMatchesCardinalityTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void loadFixture() throws XMLDBException {
+    static void loadFixture() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         final Collection coll = cms.createCollection(COLLECTION_NAME);
@@ -83,7 +83,7 @@ public class FunMatchesCardinalityTest {
     }
 
     @AfterAll
-    public static void cleanup() throws XMLDBException {
+    static void cleanup() throws XMLDBException {
         final Collection root = server.getRoot();
         final CollectionManagementService cms = root.getService(CollectionManagementService.class);
         cms.removeCollection(COLLECTION_NAME);
@@ -105,20 +105,20 @@ public class FunMatchesCardinalityTest {
 
     /** The case from the original report: a literal sequence was silently reduced to its first item. */
     @Test
-    public void aLiteralSequenceIsATypeError() throws XMLDBException {
+    void aLiteralSequenceIsATypeError() throws XMLDBException {
         assertRaisesTypeError("matches(('x','a'), 'a')");
     }
 
     /** The same holds for a multi-item node sequence evaluated as a value. */
     @Test
-    public void aMultiItemNodeSequenceIsATypeError() throws XMLDBException {
+    void aMultiItemNodeSequenceIsATypeError() throws XMLDBException {
         assertRaisesTypeError(
                 "let $v := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[2]/val return matches($v, 'a')");
     }
 
     /** A single item, the declared cardinality, still works. */
     @Test
-    public void aSingleItemIsFine() throws XMLDBException {
+    void aSingleItemIsFine() throws XMLDBException {
         final ResourceSet rs = query("matches('a', 'a')");
         assertEquals(1, rs.getSize());
         assertEquals("true", rs.getResource(0).getContent().toString());
@@ -126,7 +126,7 @@ public class FunMatchesCardinalityTest {
 
     /** The empty sequence is permitted by {@code xs:string?} and is not a match. */
     @Test
-    public void theEmptySequenceIsFine() throws XMLDBException {
+    void theEmptySequenceIsFine() throws XMLDBException {
         final ResourceSet rs = query("matches((), 'a')");
         assertEquals(1, rs.getSize());
         assertEquals("false", rs.getResource(0).getContent().toString());
@@ -134,7 +134,7 @@ public class FunMatchesCardinalityTest {
 
     /** A single node still works, and is not caught by the new check. */
     @Test
-    public void aSingleNodeIsFine() throws XMLDBException {
+    void aSingleNodeIsFine() throws XMLDBException {
         final ResourceSet rs = query(
                 "let $v := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[1]/val return matches($v, 'a')");
         assertEquals(1, rs.getSize());
@@ -146,7 +146,7 @@ public class FunMatchesCardinalityTest {
      * node filter, which tests each node separately: the existential behavior that remains.
      */
     @Test
-    public void asTheWholePredicateItIsExistential() throws XMLDBException {
+    void asTheWholePredicateItIsExistential() throws XMLDBException {
         final ResourceSet rs = query(
                 "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a')]");
         assertEquals(2, rs.getSize());
@@ -157,7 +157,7 @@ public class FunMatchesCardinalityTest {
      * as a value, so a multi-item argument is a type error like everywhere else.
      */
     @Test
-    public void insideNotInAPredicateItIsATypeError() throws XMLDBException {
+    void insideNotInAPredicateItIsATypeError() throws XMLDBException {
         assertRaisesTypeError(
                 "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[not(matches(val, 'a'))]");
     }
@@ -167,14 +167,14 @@ public class FunMatchesCardinalityTest {
      * is existential as well.
      */
     @Test
-    public void asAnOperandOfAndInAPredicateItIsExistential() throws XMLDBException {
+    void asAnOperandOfAndInAPredicateItIsExistential() throws XMLDBException {
         final ResourceSet rs = query(
                 "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a') and val]");
         assertEquals(2, rs.getSize());
     }
 
     @Test
-    public void asAnOperandOfOrInAPredicateItIsExistential() throws XMLDBException {
+    void asAnOperandOfOrInAPredicateItIsExistential() throws XMLDBException {
         final ResourceSet rs = query(
                 "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[matches(val, 'a') or val = 'zz']");
         assertEquals(2, rs.getSize());
@@ -186,7 +186,7 @@ public class FunMatchesCardinalityTest {
      * unaffected: the bound variable is a single item on each iteration.
      */
     @Test
-    public void theQuantifiedSpellingStillWorks() throws XMLDBException {
+    void theQuantifiedSpellingStillWorks() throws XMLDBException {
         final ResourceSet rs = query(
                 "doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "')//entry[some $v in val satisfies matches($v, 'a')]");
         assertEquals(2, rs.getSize());

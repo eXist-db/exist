@@ -49,14 +49,14 @@ public class PathExprDedupTest {
             new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("""
                 xmldb:store("/db", "path-dedup-test.xml", <r><a><c><d/></c></a><b><c><d/></c></b></r>)""");
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
         xqs.query("""
                 xmldb:remove("/db", "path-dedup-test.xml")""");
@@ -178,7 +178,7 @@ public class PathExprDedupTest {
      * E1 is not the result of a path operator: when E2 returns atomic values, the results follow E1's order.
      */
     @Test
-    public void atomicStepKeepsOrderOfFirstStep() throws XMLDBException {
+    void atomicStepKeepsOrderOfFirstStep() throws XMLDBException {
         final String result = query("""
                 declare variable $d := <r><a/><b/></r>;
                 string-join(($d/b, $d/a)/name(), ",")""");
@@ -189,7 +189,7 @@ public class PathExprDedupTest {
      * E1 is not the result of a path operator: when E2 returns atomic values, each item of E1 produces a result.
      */
     @Test
-    public void atomicStepKeepsDuplicatesOfFirstStep() throws XMLDBException {
+    void atomicStepKeepsDuplicatesOfFirstStep() throws XMLDBException {
         final String result = query("""
                 declare variable $d := <r><a/><b/></r>;
                 string-join(($d/a, $d/a)/name(), ",")""");
@@ -200,7 +200,7 @@ public class PathExprDedupTest {
      * When E2 returns nodes, the result of the path is still deduplicated and in document order.
      */
     @Test
-    public void nodeStepAfterUnorderedFirstStepDedup() throws XMLDBException {
+    void nodeStepAfterUnorderedFirstStepDedup() throws XMLDBException {
         final String result = query("""
                 declare variable $d := <r><a/><b/></r>;
                 string-join(($d/b, $d/a, $d/b)/self::*/name(), ",")""");
@@ -211,7 +211,7 @@ public class PathExprDedupTest {
      * Stored nodes: E1/E2 is the result of a path operator, so it is deduplicated and in document order before E3.
      */
     @Test
-    public void storedNodeStepAfterUnorderedFirstStepDedup() throws XMLDBException {
+    void storedNodeStepAfterUnorderedFirstStepDedup() throws XMLDBException {
         final String result = query("""
                 declare variable $r := doc("/db/path-dedup-test.xml")/r;
                 string-join(($r/b, $r/a, $r/b)/c/name(..), ",")""");
@@ -222,7 +222,7 @@ public class PathExprDedupTest {
      * Stored nodes: when E2 returns atomic values, the results follow E1's order and keep its duplicates.
      */
     @Test
-    public void storedAtomicStepKeepsOrderAndDuplicatesOfFirstStep() throws XMLDBException {
+    void storedAtomicStepKeepsOrderAndDuplicatesOfFirstStep() throws XMLDBException {
         final String result = query("""
                 declare variable $r := doc("/db/path-dedup-test.xml")/r;
                 string-join(($r/b, $r/a, $r/b)/name(), ",")""");
@@ -234,7 +234,7 @@ public class PathExprDedupTest {
      * order.
      */
     @Test
-    public void middleStepSeesPositionInOrderOfFirstStep() throws XMLDBException {
+    void middleStepSeesPositionInOrderOfFirstStep() throws XMLDBException {
         final String first = query("""
                 declare variable $d := <r><a><c/></a><b><c/></b></r>;
                 string-join(($d/b, $d/a)/(if (position() = 1) then . else ())/name(), ",")""");
@@ -249,7 +249,7 @@ public class PathExprDedupTest {
      * Stored nodes: a step after the first sees the focus of E1 in E1's order.
      */
     @Test
-    public void storedMiddleStepSeesPositionInOrderOfFirstStep() throws XMLDBException {
+    void storedMiddleStepSeesPositionInOrderOfFirstStep() throws XMLDBException {
         final String first = query("""
                 declare variable $r := doc("/db/path-dedup-test.xml")/r;
                 string-join(($r/b, $r/a)/(if (position() = 1) then . else ())/name(), ",")""");
@@ -265,7 +265,7 @@ public class PathExprDedupTest {
      * atomic results follow document order, not E1's order.
      */
     @Test
-    public void fourStepPathEndingInAtomicStep() throws XMLDBException {
+    void fourStepPathEndingInAtomicStep() throws XMLDBException {
         final String result = query("""
                 declare variable $d := <r><a><c><d/></c></a><b><c><d/></c></b></r>;
                 string-join(($d/b, $d/a, $d/b)/c/d/name(../..), ",")""");
@@ -277,7 +277,7 @@ public class PathExprDedupTest {
      * the path, so its order and duplicates must be kept.
      */
     @Test
-    public void atomicStepKeepsOrderOfFirstStepAfterPrologVariable() throws XMLDBException {
+    void atomicStepKeepsOrderOfFirstStepAfterPrologVariable() throws XMLDBException {
         final String result = queryAll("""
                 declare variable $d := <r><a/><b/></r>;
                 ($d/b, $d/a, $d/b)/name()""");
@@ -288,7 +288,7 @@ public class PathExprDedupTest {
      * Stored nodes: a path that is the body of a main module whose prolog declares a variable.
      */
     @Test
-    public void storedAtomicStepKeepsOrderOfFirstStepAfterPrologVariable() throws XMLDBException {
+    void storedAtomicStepKeepsOrderOfFirstStepAfterPrologVariable() throws XMLDBException {
         final String result = queryAll("""
                 declare variable $r := doc("/db/path-dedup-test.xml")/r;
                 ($r/b, $r/a, $r/b)/name()""");
@@ -299,7 +299,7 @@ public class PathExprDedupTest {
      * Stored nodes: four steps ending in an atomic step.
      */
     @Test
-    public void storedFourStepPathEndingInAtomicStep() throws XMLDBException {
+    void storedFourStepPathEndingInAtomicStep() throws XMLDBException {
         final String result = query("""
                 declare variable $r := doc("/db/path-dedup-test.xml")/r;
                 string-join(($r/b, $r/a, $r/b)/c/d/name(../..), ",")""");
@@ -310,7 +310,7 @@ public class PathExprDedupTest {
      * Evaluating a path must not reorder the sequence bound to the variable that is its first step.
      */
     @Test
-    public void pathDoesNotReorderVariableOfFirstStep() throws XMLDBException {
+    void pathDoesNotReorderVariableOfFirstStep() throws XMLDBException {
         final String result = query("""
                 let $x := <x/>
                 let $y := <y/>
@@ -325,7 +325,7 @@ public class PathExprDedupTest {
      * reordered by the paths that read it.
      */
     @Test
-    public void topologicalSortKeepsAccumulatedOrder() throws XMLDBException {
+    void topologicalSortKeepsAccumulatedOrder() throws XMLDBException {
         final String result = query("""
                 declare function local:topological-sort($unordered, $ordered) {
                     if (empty($unordered)) then

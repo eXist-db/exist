@@ -130,14 +130,14 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void aQueryThatLeftTracingOnDoesNotRecordInItsNextExecution() throws Exception {
+    void aQueryThatLeftTracingOnDoesNotRecordInItsNextExecution() throws Exception {
         assertNextExecutionRecordsNothing("""
                 let $_ := if ($enable) then system:enable-query-tracing(true()) else ()
                 """, "the execution that switched tracing on and never off");
     }
 
     @Test
-    public void aQueryThatSwitchedTracingOffLeavesNothingForItsNextExecution() throws Exception {
+    void aQueryThatSwitchedTracingOffLeavesNothingForItsNextExecution() throws Exception {
         assertNextExecutionRecordsNothing("""
                 let $_ := if ($enable) then system:enable-query-tracing(true()) else ()
                 let $first := abs(-1)
@@ -146,7 +146,7 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void aPooledQueryWithTheTraceOptionKeepsRecordingAfterItSwitchedTracingOff() throws Exception {
+    void aPooledQueryWithTheTraceOptionKeepsRecordingAfterItSwitchedTracingOff() throws Exception {
         final String query = PROLOG + """
                 declare option exist:profiling "trace=yes";
                 let $calls := for $i in 1 to 4 return abs($i)
@@ -160,7 +160,7 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void clearingTheQueryTraceLeavesTheCallsUpToThenInTheDatabaseWideTrace() throws Exception {
+    void clearingTheQueryTraceLeavesTheCallsUpToThenInTheDatabaseWideTrace() throws Exception {
         try {
             run(PROLOG + """
                     let $_ := system:enable-tracing(true())
@@ -186,7 +186,7 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void clearingTheQueryTraceAfterSwitchingTracingOffForgetsWhatWasRecorded() throws Exception {
+    void clearingTheQueryTraceAfterSwitchingTracingOffForgetsWhatWasRecorded() throws Exception {
         assertEquals("before=true after=0", run(PROLOG + """
                 let $_ := system:enable-query-tracing(true())
                 let $_ := system:clear-query-trace()
@@ -199,7 +199,7 @@ public class QueryTraceTest {
     }
 
     @Test
-    public void theOldTraceFunctionInTheMiddleOfAQueryDoesNotSwitchItsTracingOff() throws Exception {
+    void theOldTraceFunctionInTheMiddleOfAQueryDoesNotSwitchItsTracingOff() throws Exception {
         assertEquals("upper-case=3", run(PROLOG + """
                 let $_ := system:enable-query-tracing(true())
                 let $_ := system:clear-query-trace()

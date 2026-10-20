@@ -63,23 +63,23 @@ public class HtmlCdataWriterTest {
     }
 
     @Test
-    public void htmlMethodWritesScriptContentWithoutCdata() throws Exception {
+    void htmlMethodWritesScriptContentWithoutCdata() throws Exception {
         assertEquals("<script>if (a < b) f()</script>", html("html", new QName("script"), "if (a < b) f()"));
     }
 
     @Test
-    public void htmlMethodWritesStyleContentWithoutCdata() throws Exception {
+    void htmlMethodWritesStyleContentWithoutCdata() throws Exception {
         assertEquals("<style>ul > li { color: red }</style>", html("html", new QName("style"), "ul > li { color: red }"));
     }
 
     @Test
-    public void htmlMethodKeepsCdataInXmlIslands() throws Exception {
+    void htmlMethodKeepsCdataInXmlIslands() throws Exception {
         assertEquals("<text><![CDATA[a < b]]></text>",
                 html("html", new QName("text", SVG_NS), "a < b"));
     }
 
     @Test
-    public void xmlSyntaxMethodsKeepCdata() throws Exception {
+    void xmlSyntaxMethodsKeepCdata() throws Exception {
         final StringWriter target = new StringWriter();
         assertEquals("<script><![CDATA[if (a < b) f()]]></script>",
                 write(new XHTMLWriter(target), target, "xhtml", new QName("script"), "if (a < b) f()"));

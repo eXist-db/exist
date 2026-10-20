@@ -76,40 +76,40 @@ public class PreserveCdataSerializationTest {
     }
 
     @BeforeAll
-    public static void storeTestDocument() throws XMLDBException {
+    static void storeTestDocument() throws XMLDBException {
         query("let $s := " + SOURCE
                 + " return xmldb:store('/db', 'preserve-cdata-test.xml', $s, 'application/xml')");
     }
 
     @AfterAll
-    public static void removeTestDocument() throws XMLDBException {
+    static void removeTestDocument() throws XMLDBException {
         query("xmldb:remove('/db', 'preserve-cdata-test.xml')");
     }
 
     /** The parameter is on by default, so a stored section survives an unqualified serialize. */
     @Test
-    public void withoutTheParameterAStoredSectionIsPreserved() throws XMLDBException {
+    void withoutTheParameterAStoredSectionIsPreserved() throws XMLDBException {
         assertEquals("<doc><p><![CDATA[ a > b ]]></p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml' })"));
     }
 
     /** With it, a stored CDATA section comes back as a CDATA section. */
     @Test
-    public void withTheParameterAStoredSectionIsPreserved() throws XMLDBException {
+    void withTheParameterAStoredSectionIsPreserved() throws XMLDBException {
         assertEquals("<doc><p><![CDATA[ a > b ]]></p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml', " + PRESERVE + " })"));
     }
 
     /** It works for an in-memory document too, not only a stored one. */
     @Test
-    public void itAppliesToInMemoryDocumentsAsWell() throws XMLDBException {
+    void itAppliesToInMemoryDocumentsAsWell() throws XMLDBException {
         assertEquals("<doc><p><![CDATA[ a > b ]]></p></doc>",
                 query("serialize(parse-xml(" + SOURCE + "), map { 'method': 'xml', " + PRESERVE + " })"));
     }
 
     /** Explicitly false opts back in to the specified escaping. */
     @Test
-    public void explicitFalseRestoresSpecifiedEscaping() throws XMLDBException {
+    void explicitFalseRestoresSpecifiedEscaping() throws XMLDBException {
         assertEquals("<doc><p> a &gt; b </p></doc>",
                 query("serialize(doc('" + DOC + "'), map { 'method': 'xml', "
                         + "QName('http://exist.sourceforge.net/NS/exist','preserve-cdata'): false() })"));
@@ -121,14 +121,14 @@ public class PreserveCdataSerializationTest {
      * HTML5 raw-text elements, where a CDATA section would be literal text to a browser.
      */
     @Test
-    public void aConstructedSectionIsNotPreserved() throws XMLDBException {
+    void aConstructedSectionIsNotPreserved() throws XMLDBException {
         assertEquals("<elem> a &gt; b </elem>",
                 query("serialize(" + DIRECT + ", map { 'method': 'xml', " + PRESERVE + " })"));
     }
 
     /** cdata-section-elements still applies to constructed content: it selects by element name. */
     @Test
-    public void cdataSectionElementsStillAppliesToConstructedContent() throws XMLDBException {
+    void cdataSectionElementsStillAppliesToConstructedContent() throws XMLDBException {
         assertEquals("<elem><![CDATA[ a > b ]]></elem>",
                 query("serialize(" + DIRECT
                         + ", map { 'method': 'xml', 'cdata-section-elements': xs:QName('elem') })"));
@@ -136,7 +136,7 @@ public class PreserveCdataSerializationTest {
 
     /** A document with no CDATA section is unaffected either way. */
     @Test
-    public void documentsWithoutCdataAreUnaffected() throws XMLDBException {
+    void documentsWithoutCdataAreUnaffected() throws XMLDBException {
         final String plain = "parse-xml('<doc><p>a &amp;gt; b</p></doc>')";
         assertEquals(query("serialize(" + plain + ", map { 'method': 'xml' })"),
                 query("serialize(" + plain + ", map { 'method': 'xml', " + PRESERVE + " })"));
@@ -144,20 +144,20 @@ public class PreserveCdataSerializationTest {
 
     /** The html method has no CDATA sections, so preserve-cdata does not apply to HTML elements. */
     @Test
-    public void htmlMethodNeverEmitsCdataInHtmlElements() throws XMLDBException {
+    void htmlMethodNeverEmitsCdataInHtmlElements() throws XMLDBException {
         assertEquals("<!DOCTYPE html><html><body><script>if (a < b) f()</script></body></html>",
                 query("serialize(parse-xml(" + XHTML_SCRIPT + "), map { 'method': 'html', 'html-version': 5 })"));
     }
 
     @Test
-    public void xhtmlMethodStillPreservesCdata() throws XMLDBException {
+    void xhtmlMethodStillPreservesCdata() throws XMLDBException {
         assertTrue(query("serialize(parse-xml(" + XHTML_SCRIPT + "), map { 'method': 'xhtml' })")
                 .contains("<script><![CDATA[if (a < b) f()]]></script>"));
     }
 
     /** An XML island, such as SVG in an HTML page, is not an HTML element and keeps its CDATA. */
     @Test
-    public void htmlMethodStillPreservesCdataInXmlIslands() throws XMLDBException {
+    void htmlMethodStillPreservesCdataInXmlIslands() throws XMLDBException {
         assertTrue(query("serialize(parse-xml('<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>"
                 + "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>' || '<' || '![CDATA[a < b]]' || '>' || '</text></svg></body></html>'),"
                 + " map { 'method': 'html', 'html-version': 5 })").contains("<text><![CDATA[a < b]]></text>"));

@@ -1343,7 +1343,7 @@ try {
      * query that declares JSON must not send a JSON body as application/xml.
      */
     @Test
-    public void postQueryEnvelopeMethodOverridesInQueryMethod() throws IOException {
+    void postQueryEnvelopeMethodOverridesInQueryMethod() throws IOException {
         final String query = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist" method="xml">
                     <text><![CDATA[
@@ -1432,28 +1432,28 @@ try {
      * See https://github.com/eXist-db/exist/issues/6815
      */
     @Test
-    public void storedQueryInQueryJsonMethodElement() throws IOException {
+    void storedQueryInQueryJsonMethodElement() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-element.xq", "<root><a>1</a></root>", null);
         assertEquals("application/json", response.contentType());
         assertEquals("{\"a\":\"1\"}", response.body());
     }
 
     @Test
-    public void storedQueryInQueryJsonMethodMap() throws IOException {
+    void storedQueryInQueryJsonMethodMap() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map.xq", "map { \"saved\": true() }", null);
         assertEquals("application/json", response.contentType());
         assertEquals("{\"saved\":true}", response.body());
     }
 
     @Test
-    public void storedQueryInQueryJsonMethodArray() throws IOException {
+    void storedQueryInQueryJsonMethodArray() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-array.xq", "array { 1, 2 }", null);
         assertEquals("application/json", response.contentType());
         assertEquals("[1,2]", response.body());
     }
 
     @Test
-    public void storedQueryInQueryJsonMethodString() throws IOException {
+    void storedQueryInQueryJsonMethodString() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-string.xq", "\"hello\"", null);
         assertEquals("application/json", response.contentType());
         assertEquals("\"hello\"", response.body());
@@ -1463,7 +1463,7 @@ try {
      * An in-query output:media-type is honored alongside an in-query output:method.
      */
     @Test
-    public void storedQueryInQueryJsonExplicitMediaType() throws IOException {
+    void storedQueryInQueryJsonExplicitMediaType() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-mediatype.xq", "<root><a>1</a></root>", "application/vnd.api+json");
         assertEquals("application/vnd.api+json", response.contentType());
         assertEquals("{\"a\":\"1\"}", response.body());
@@ -1474,7 +1474,7 @@ try {
      * "application/json" declared as well.
      */
     @Test
-    public void storedQueryInQueryJsonMapWithJsonMediaType() throws IOException {
+    void storedQueryInQueryJsonMapWithJsonMediaType() throws IOException {
         final StoredQueryResponse response = getStoredJsonQuery("inquery-json-map-mediatype.xq", "map { \"saved\": true() }", "application/json");
         assertEquals("application/json", response.contentType());
         assertEquals("{\"saved\":true}", response.body());
@@ -1485,7 +1485,7 @@ try {
      * envelope, with each node serialized as XML text, whatever the query declares.
      */
     @Test
-    public void postQueryEnvelopeJsonMethodAnswersWithEnvelope() throws IOException {
+    void postQueryEnvelopeJsonMethodAnswersWithEnvelope() throws IOException {
         final String query = """
                 <query xmlns="http://exist.sourceforge.net/NS/exist" method="json">
                     <text><![CDATA[<root><a>1</a></root>]]></text>

@@ -125,7 +125,7 @@ public class VectorSearchEmbeddingIT {
      * onnxruntime log "Closing an already closed tensor." at WARN on every embedding call.
      */
     @Test
-    public void embedDoesNotCloseTensorsTwice() throws XPathException, PermissionDeniedException, EXistException {
+    void embedDoesNotCloseTensorsTwice() throws XPathException, PermissionDeniedException, EXistException {
         final List<String> warnings = new CopyOnWriteArrayList<>();
         // onnxruntime logs through java.util.logging; keep a strong reference so the logger
         // (and the handler attached to it) is not garbage collected mid-test.

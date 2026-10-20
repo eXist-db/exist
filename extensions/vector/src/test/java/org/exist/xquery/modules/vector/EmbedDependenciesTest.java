@@ -51,13 +51,13 @@ public class EmbedDependenciesTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void literalTextDoesNotDependOnContextItem() throws EXistException, PermissionDeniedException, XPathException {
+    void literalTextDoesNotDependOnContextItem() throws EXistException, PermissionDeniedException, XPathException {
         assertFalse(dependsOnContextItem("vector:embed('famine relief', 'all-MiniLM-L6-v2')"),
                 "an embedding of literal text must not depend on the context item");
     }
 
     @Test
-    public void textFromContextItemDependsOnContextItem() throws EXistException, PermissionDeniedException, XPathException {
+    void textFromContextItemDependsOnContextItem() throws EXistException, PermissionDeniedException, XPathException {
         assertTrue(dependsOnContextItem("vector:embed(string(.), 'all-MiniLM-L6-v2')"),
                 "an embedding of the context item's text must depend on the context item");
     }

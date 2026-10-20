@@ -55,7 +55,7 @@ public class ModuleParametersContextTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void modulesWithoutParametersEntry() throws EXistException, PermissionDeniedException, XPathException {
+    void modulesWithoutParametersEntry() throws EXistException, PermissionDeniedException, XPathException {
         final Configuration configuration = existEmbeddedServer.getBrokerPool().getConfiguration();
         final Map<String, Map<String, List<?>>> moduleParameters =
                 (Map<String, Map<String, List<?>>>) configuration.getProperty(XQueryContext.PROPERTY_MODULE_PARAMETERS);
@@ -71,7 +71,7 @@ public class ModuleParametersContextTest {
     }
 
     @Test
-    public void noModuleParametersAtAll() throws EXistException, PermissionDeniedException, XPathException {
+    void noModuleParametersAtAll() throws EXistException, PermissionDeniedException, XPathException {
         final Configuration configuration = existEmbeddedServer.getBrokerPool().getConfiguration();
         final Object moduleParameters = configuration.getProperty(XQueryContext.PROPERTY_MODULE_PARAMETERS);
         configuration.removeProperty(XQueryContext.PROPERTY_MODULE_PARAMETERS);

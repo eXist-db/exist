@@ -63,7 +63,7 @@ public class LoopVariableLookupRegressionTest {
     private static final String UNOPTIMIZED_QUERY = "declare option exist:optimize 'enable=no'; " + QUERY;
 
     @BeforeAll
-    public static void storeDocuments() throws Exception {
+    static void storeDocuments() throws Exception {
         // no collection.xconf: as in the issue, the collection is not indexed
         execute("""
                 let $_ := xmldb:create-collection('/db', 'issue-6619')
@@ -75,7 +75,7 @@ public class LoopVariableLookupRegressionTest {
     }
 
     @AfterAll
-    public static void removeDocuments() throws Exception {
+    static void removeDocuments() throws Exception {
         execute("xmldb:remove('/db/issue-6619')");
     }
 
@@ -95,13 +95,13 @@ public class LoopVariableLookupRegressionTest {
     }
 
     @Test
-    public void sameResultWithAndWithoutOptimization() throws Exception {
+    void sameResultWithAndWithoutOptimization() throws Exception {
         assertEquals(String.valueOf(N_LOOKUPS), execute(QUERY).getStringValue());
         assertEquals(String.valueOf(N_LOOKUPS), execute(UNOPTIMIZED_QUERY).getStringValue());
     }
 
     @Test
-    public void optimizedPerformanceCloseToUnoptimized() throws Exception {
+    void optimizedPerformanceCloseToUnoptimized() throws Exception {
         // Warm-up - first run pays parsing and caching costs we don't want to measure.
         execute(QUERY);
         execute(UNOPTIMIZED_QUERY);

@@ -61,7 +61,7 @@ public class GetDocumentHtmlCdataTest {
     private static XmlRpcClient xmlrpc;
 
     @BeforeAll
-    public static void storeDocument() throws MalformedURLException, XmlRpcException {
+    static void storeDocument() throws MalformedURLException, XmlRpcException {
         xmlrpc = getXmlRpcClient();
         final List<Object> params = new ArrayList<>();
         params.add(DOC);
@@ -71,7 +71,7 @@ public class GetDocumentHtmlCdataTest {
     }
 
     @AfterAll
-    public static void removeDocument() throws XmlRpcException {
+    static void removeDocument() throws XmlRpcException {
         final List<Object> params = new ArrayList<>();
         params.add(DOC_PATH);
         xmlrpc.execute("remove", params);
@@ -93,12 +93,12 @@ public class GetDocumentHtmlCdataTest {
     }
 
     @Test
-    public void htmlMethodReturnsScriptContentWithoutCdata() throws XmlRpcException {
+    void htmlMethodReturnsScriptContentWithoutCdata() throws XmlRpcException {
         assertEquals("<!DOCTYPE html><html><body><script>if (a < b) f()</script></body></html>", getDocument("html"));
     }
 
     @Test
-    public void xmlSyntaxMethodsKeepCdata() throws XmlRpcException {
+    void xmlSyntaxMethodsKeepCdata() throws XmlRpcException {
         final String cdata = "<script><![CDATA[if (a < b) f()]]></script>";
         assertTrue(getDocument(null).contains(cdata));
         assertTrue(getDocument("xml").contains(cdata));

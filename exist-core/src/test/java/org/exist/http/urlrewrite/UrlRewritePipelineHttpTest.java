@@ -377,7 +377,7 @@ public class UrlRewritePipelineHttpTest extends AbstractHttpTest {
      * JSON serialization, not the REST result envelope; see https://github.com/eXist-db/exist/issues/6815
      */
     @Test
-    public void forwardedModuleDeclaringJsonMethodAnswersWithItsOwnJson() throws IOException {
+    void forwardedModuleDeclaringJsonMethodAnswersWithItsOwnJson() throws IOException {
         final String coll = "json-forward";
         storeAppsDoc(coll, LEGACY_XQUERY_CONTROLLER_FILENAME, "application/xquery", """
                 xquery version "3.1";

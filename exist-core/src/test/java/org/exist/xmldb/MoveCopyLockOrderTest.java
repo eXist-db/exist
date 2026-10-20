@@ -88,19 +88,19 @@ public class MoveCopyLockOrderTest {
     }
 
     @Test
-    public void moveResource() throws Exception {
+    void moveResource() throws Exception {
         assertNoDeadlockProneLocks(service ->
                 service.moveResource(XmldbURI.create(DOCUMENT_NAME), XmldbURI.create(TARGET_COLLECTION_PATH), null));
     }
 
     @Test
-    public void copyResource() throws Exception {
+    void copyResource() throws Exception {
         assertNoDeadlockProneLocks(service ->
                 service.copyResource(XmldbURI.create(DOCUMENT_NAME), XmldbURI.create(TARGET_COLLECTION_PATH), null));
     }
 
     @Test
-    public void copyCollection() throws Exception {
+    void copyCollection() throws Exception {
         assertNoDeadlockProneLocks(service ->
                 service.copy(XmldbURI.create(SOURCE_COLLECTION_PATH), XmldbURI.create(TARGET_COLLECTION_PATH), null));
     }
@@ -110,13 +110,13 @@ public class MoveCopyLockOrderTest {
      * top-level Collection into /db: the source's READ_LOCK puts an INTENTION_READ on the destination.
      */
     @Test
-    public void copyCollectionIntoParentOfSource() throws Exception {
+    void copyCollectionIntoParentOfSource() throws Exception {
         assertNoDeadlockProneLocks(service ->
                 service.copy(XmldbURI.create(SOURCE_COLLECTION_PATH), XmldbURI.create(TEST_COLLECTION_PATH), XmldbURI.create("source-copy")));
     }
 
     @Test
-    public void moveCollection() throws Exception {
+    void moveCollection() throws Exception {
         assertNoDeadlockProneLocks(service ->
                 service.move(XmldbURI.create(SOURCE_COLLECTION_PATH), XmldbURI.create(TARGET_COLLECTION_PATH), null));
     }
@@ -126,7 +126,7 @@ public class MoveCopyLockOrderTest {
      * destination.
      */
     @Test
-    public void moveCollectionIntoAncestorOfSource() throws Exception {
+    void moveCollectionIntoAncestorOfSource() throws Exception {
         final EXistCollectionManagementService sourceService = sourceCollection.getService(EXistCollectionManagementService.class);
         assertNotNull(sourceService.createCollection("inner"));
         assertNoDeadlockProneLocks(service ->
@@ -138,7 +138,7 @@ public class MoveCopyLockOrderTest {
      * thread itself holds on the way there.
      */
     @Test
-    public void copyCollectionIntoItselfIsRefused() throws Exception {
+    void copyCollectionIntoItselfIsRefused() throws Exception {
         final EXistCollectionManagementService service = sourceCollection.getService(EXistCollectionManagementService.class);
         assertNotNull(service.createCollection("child"));
         assertTimeoutPreemptively(Duration.ofSeconds(30), () ->
@@ -161,7 +161,7 @@ public class MoveCopyLockOrderTest {
     }
 
     @BeforeEach
-    public void setUp() throws XMLDBException {
+    void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService rootService = root.getService(CollectionManagementService.class);
         final Collection testCollection = rootService.createCollection(TEST_COLLECTION_NAME);
@@ -177,7 +177,7 @@ public class MoveCopyLockOrderTest {
     }
 
     @AfterEach
-    public void tearDown() throws XMLDBException {
+    void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
