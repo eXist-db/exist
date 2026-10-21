@@ -1362,6 +1362,18 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
+                        <xs:attribute name="resolve-namespace-as-url" type="yes_no" default="no">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Set to "yes" to let a module import that has no location hint, no package
+                                    in the EXPath repository and no static mapping fetch the module namespace
+                                    URI itself over the network (e.g. http, https). Set to "no" (default) to
+                                    raise XQST0059 without network access. This only affects http, https and
+                                    ftp namespaces (also inside a jar URI); any other namespace is tried as a
+                                    location as before.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                         <xs:attribute name="url-connect-timeout" type="xs:nonNegativeInteger" default="10000">
                             <xs:annotation>
                                 <xs:documentation>

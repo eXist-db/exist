@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -127,6 +129,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE = "backwardCompatible";
     public static final String XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE = "raise-error-on-failed-retrieval";
     public static final String ENFORCE_INDEX_USE_ATTRIBUTE = "enforce-index-use";
+    public static final String RESOLVE_NAMESPACE_AS_URL_ATTRIBUTE = "resolve-namespace-as-url";
     public static final String URL_CONNECT_TIMEOUT_ATTRIBUTE = "url-connect-timeout";
     public static final String URL_READ_TIMEOUT_ATTRIBUTE = "url-read-timeout";
 
@@ -140,6 +143,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL = "xquery.raise-error-on-failed-retrieval";
     public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = false;
     public static final String PROPERTY_ENFORCE_INDEX_USE = "xquery.enforce-index-use";
+    public static final String PROPERTY_RESOLVE_NAMESPACE_AS_URL = "xquery.resolve-namespace-as-url";
+    public static final boolean RESOLVE_NAMESPACE_AS_URL_DEFAULT = false;
     public static final String PROPERTY_URL_CONNECT_TIMEOUT = "xquery.url-connect-timeout";
     public static final String PROPERTY_URL_READ_TIMEOUT = "xquery.url-read-timeout";
 
@@ -150,6 +155,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_MODULE_REGISTRATIONS = "xquery.modules.registrations";
 
     public static final String JAVA_URI_START = "java:";
+
+    private static final Pattern URI_SCHEME = Pattern.compile("([A-Za-z][A-Za-z0-9+.-]*):");
     //private static final String XMLDB_URI_START = "xmldb:exist://";
 
     private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
@@ -2798,6 +2805,14 @@ public class XQueryContext implements BinaryValueManager, Context {
                     }
 
                     if (isEmpty(locationHints)) {
+                        if (isNetworkLocation(namespaceURI) && !resolveNamespaceAsUrl()) {
+                            // fail locally: fetching the namespace URI would block on a remote host while holding a broker
+                            throw moduleLoadException("Cannot find module for namespace '" + namespaceURI
+                                    + "': no location hint was given, it is not in the EXPath repository and it is not"
+                                    + " statically mapped. Resolving a namespace URI over the network is disabled,"
+                                    + " set " + RESOLVE_NAMESPACE_AS_URL_ATTRIBUTE + "=\"yes\" on <xquery> in conf.xml to enable it.",
+                                    namespaceURI);
+                        }
                         locationHints = new AnyURIValue[]{new AnyURIValue(namespaceURI)};
                     }
                 }
@@ -2828,6 +2843,30 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         return modules;
+    }
+
+    private boolean resolveNamespaceAsUrl() {
+        return (Boolean) getConfiguration().getProperty(PROPERTY_RESOLVE_NAMESPACE_AS_URL, RESOLVE_NAMESPACE_AS_URL_DEFAULT);
+    }
+
+    /**
+     * Would resolving the URI as a module location need network I/O?
+     *
+     * @param uri the URI
+     *
+     * @return true for an http, https or ftp URI, also when it is wrapped in a jar URI
+     */
+    static boolean isNetworkLocation(final String uri) {
+        final Matcher matcher = URI_SCHEME.matcher(uri);
+        if (!matcher.lookingAt()) {
+            // no scheme, e.g. a relative or absolute path
+            return false;
+        }
+        return switch (matcher.group(1).toLowerCase(Locale.ROOT)) {
+            case "http", "https", "ftp" -> true;
+            case "jar" -> isNetworkLocation(uri.substring(matcher.end()));
+            default -> false;
+        };
     }
 
     protected @Nullable Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {

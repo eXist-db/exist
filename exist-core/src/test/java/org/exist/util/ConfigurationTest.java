@@ -22,6 +22,7 @@
 package org.exist.util;
 
 import org.exist.indexing.IndexManager;
+import org.exist.source.URLSource;
 import org.exist.xquery.ModuleRegistration;
 import org.exist.xquery.XQueryContext;
 import org.junit.jupiter.api.Test;
@@ -114,6 +115,25 @@ class ConfigurationTest {
         assertThat(Configuration.parseBooleanAttribute(elem("case", "y"), "case", true)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "1"), "case", false)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "0"), "case", true)).isFalse();
+    }
+
+    @Test
+    void negativeUrlTimeoutUsesDefault(@TempDir final Path existHomeDir) throws Exception {
+        final String canonical;
+        try (InputStream in = ConfigurationTest.class.getResourceAsStream("/conf.xml")) {
+            canonical = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        final String withTimeouts = canonical
+                .replace("url-connect-timeout=\"10000\"", "url-connect-timeout=\"-1\"")
+                .replace("url-read-timeout=\"30000\"", "url-read-timeout=\"2500\"");
+        assertThat(withTimeouts).contains("url-connect-timeout=\"-1\"", "url-read-timeout=\"2500\"");
+
+        final Path conf = existHomeDir.resolve("test-conf.xml");
+        Files.writeString(conf, withTimeouts, StandardCharsets.UTF_8);
+        final Configuration configuration = new Configuration(conf.toString(), Optional.of(existHomeDir));
+
+        assertThat(configuration.getProperty(XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT)).isEqualTo(URLSource.DEFAULT_CONNECT_TIMEOUT);
+        assertThat(configuration.getProperty(XQueryContext.PROPERTY_URL_READ_TIMEOUT)).isEqualTo(2500);
     }
 
     // #6563: enabled="no"-suppressed built-in modules/indexes are retained (not discarded) in a
