@@ -41,6 +41,7 @@ import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.validation.GrammarPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -192,10 +193,7 @@ public class GrammarTooling extends BasicFunction  {
             for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
                 String url = i.nextItem().getStringValue();
                 
-                // Fix database urls
-                if(url.startsWith("/")){
-                    url="xmldb:exist://"+url;
-                }
+                url = XmldbURI.embeddedServerUrl(url);
 
                 LOG.debug("Parsing {}", url);
                 
