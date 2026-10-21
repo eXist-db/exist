@@ -80,6 +80,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.source.*;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -3598,7 +3599,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         // Bare path — try as file
                         is = new java.io.FileInputStream(resolvedUri.getPath());
                     } else {
-                        is = resolvedUri.toURL().openStream();
+                        is = UrlConnections.openStream(resolvedUri.toURL(), Timeouts.from(getConfiguration()));
                     }
 
                     try (is) {
