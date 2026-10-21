@@ -33,6 +33,7 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 import org.exist.source.UrlConnections;
 import org.exist.source.UrlConnections.Timeouts;
+import org.exist.xmldb.XmldbURI;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,10 +61,7 @@ public class AnyUriResolver implements XMLEntityResolver {
      * @param path Original path of resource.
      */
     public AnyUriResolver(final String path) {
-        docPath = path;
-        if (docPath.startsWith("/")) {
-            docPath = "xmldb:exist://" + docPath;
-        }
+        docPath = XmldbURI.embeddedServerUrl(path);
         LOG.debug("Specified path={}", path);
 
         if (path.lastIndexOf('/') != -1) {

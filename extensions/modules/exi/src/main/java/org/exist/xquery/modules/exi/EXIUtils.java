@@ -34,6 +34,7 @@ import org.exist.source.UrlConnections;
 import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -53,10 +54,7 @@ public class EXIUtils {
                 // anyURI provided
                 String url = item.getStringValue();
 
-                // Fix URL
-                if (url.startsWith("/")) {
-                    url = "xmldb:exist://" + url;
-                }
+                url = XmldbURI.embeddedServerUrl(url);
 
                 return UrlConnections.openStream(URI.create(url).toURL(), Timeouts.from(context.getBroker().getConfiguration()));
             case Type.ELEMENT:

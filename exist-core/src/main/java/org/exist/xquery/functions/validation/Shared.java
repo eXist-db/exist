@@ -52,6 +52,7 @@ import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.validation.resolver.SearchResourceResolver;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -144,10 +145,7 @@ public class Shared {
             // anyURI provided
             String url = item.getStringValue();
 
-            // Fix URL
-            if (url.startsWith("/")) {
-                url = "xmldb:exist://" + url;
-            }
+            url = XmldbURI.embeddedServerUrl(url);
 
             final InputStream is = UrlConnections.openStream(new URL(url), Timeouts.from(context.getBroker().getConfiguration()));
             streamSource.setInputStream(is);
@@ -263,11 +261,7 @@ public class Shared {
             throw new XPathException(item, "Parameter should be of type xs:anyURI or document.");
         }
         
-        if (url.startsWith("/")) {
-            url = "xmldb:exist://" + url;
-        }
-
-        return url;
+        return XmldbURI.embeddedServerUrl(url);
     }
 
     /**
