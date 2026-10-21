@@ -184,3 +184,41 @@ declare
 function qvc:candidates-must-be-an-integer() {
     collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": "many" })]
 };
+
+(: A vector query keeps the k nearest of the nodes it is given, so it is not a filter: pre-selecting it over all of
+ : a step's candidates, before the predicates in front of it, or without the nodes a filter expression filters, finds
+ : the k nearest of the wrong nodes. Each form below finds the 5 nearest of a seventh of the articles. :)
+
+declare function qvc:nearest-in-sevenths() as xs:string* {
+    qvc:exact(5, (1 to $qvc:N)[. mod 7 = 0])
+};
+
+declare
+    %test:assertEquals(5)
+function qvc:after-another-predicate() {
+    let $found := qvc:found(collection($qvc:COLL)//article[@n mod 7 = 0][ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 2000 })])
+    return count($found[. = qvc:nearest-in-sevenths()])
+};
+
+declare
+    %test:assertEquals(5)
+function qvc:filtering-a-variable() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    let $found := $context[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 2000 })]
+    return count(qvc:found($found)[. = qvc:nearest-in-sevenths()])
+};
+
+declare
+    %test:assertEquals(5)
+function qvc:filtering-a-variable-as-an-argument() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    return count(qvc:found($context[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 2000 })])[. = qvc:nearest-in-sevenths()])
+};
+
+(: in the first predicate, the vector query is evaluated first, as written: the sevenths of the 5 nearest of all :)
+declare
+    %test:assertTrue
+function qvc:before-another-predicate() {
+    let $found := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5)][@n mod 7 = 0])
+    return deep-equal(sort($found), sort(qvc:exact(5)[xs:integer(.) mod 7 = 0]))
+};
