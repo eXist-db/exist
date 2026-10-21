@@ -1,0 +1,19 @@
+.github/workflows/ci-test.yml
+  s_0f67068a6cf927::t_b64410b616792e 35,47,109,112,118,134,143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f61dea10d98da69731ab466bd7c2b2ed63c4518",
+  "prompts": {},
+  "sessions": {
+    "s_0f67068a6cf927": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1fe6a4bc-607e-478a-ac13-de48c9ce9915",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
