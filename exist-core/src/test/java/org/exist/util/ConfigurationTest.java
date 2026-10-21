@@ -22,7 +22,7 @@
 package org.exist.util;
 
 import org.exist.indexing.IndexManager;
-import org.exist.source.URLSource;
+import org.exist.source.UrlConnections;
 import org.exist.xquery.ModuleRegistration;
 import org.exist.xquery.XQueryContext;
 import org.junit.jupiter.api.Test;
@@ -132,7 +132,7 @@ class ConfigurationTest {
         Files.writeString(conf, withTimeouts, StandardCharsets.UTF_8);
         final Configuration configuration = new Configuration(conf.toString(), Optional.of(existHomeDir));
 
-        assertThat(configuration.getProperty(XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT)).isEqualTo(URLSource.DEFAULT_CONNECT_TIMEOUT);
+        assertThat(configuration.getProperty(XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT)).isEqualTo(UrlConnections.DEFAULT_CONNECT_TIMEOUT);
         assertThat(configuration.getProperty(XQueryContext.PROPERTY_URL_READ_TIMEOUT)).isEqualTo(2500);
     }
 

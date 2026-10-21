@@ -42,11 +42,9 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ExecutableResource;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XQueryContext;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -187,13 +185,7 @@ public class SourceFactory {
     }
 
     private static URLSource urlSource(@Nullable final DBBroker broker, final URL url) {
-        if (broker == null) {
-            return new URLSource(url);
-        }
-        final Configuration config = broker.getConfiguration();
-        return new URLSource(url,
-                (Integer) config.getProperty(XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT, URLSource.DEFAULT_CONNECT_TIMEOUT),
-                (Integer) config.getProperty(XQueryContext.PROPERTY_URL_READ_TIMEOUT, URLSource.DEFAULT_READ_TIMEOUT));
+        return new URLSource(url, UrlConnections.Timeouts.from(broker == null ? null : broker.getConfiguration()));
     }
 
     private static String firstPathSegment(final String path) {
