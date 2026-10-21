@@ -32,7 +32,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        # Pinned: ubuntu-latest is moving to 26.04, where /tmp is a RAM-backed tmpfs with a ~7.8G quota
+        # that the exist-core unit tests exceed. Unpin once the image keeps /tmp on disk:
+        # https://github.com/actions/runner-images/issues/14777
+        os: [ubuntu-24.04, windows-latest, macOS-latest]
         test-type: [unit, integration]
         java-version: ['21']
         exclude:
@@ -82,16 +85,16 @@ jobs:
         timeout-minutes: 45
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify "-Ponnx-model,!mac-dmg-on-mac" -DskipUnitTests=true -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (ubuntu unit only)
-        if: matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        if: matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution' --also-make
       - name: Maven Code Coverage (Develop branch, ubuntu unit only)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report
       # JaCoCo names each source file by its package only (org/exist/...), but this is a
       # multi-module build: prefix each module's source root so Coveralls can find the files.
       - name: Prepare JaCoCo reports for Coveralls (Develop branch, ubuntu unit only)
         id: jacoco-reports
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         run: |
           files=""
           for report in $(find . -path '*/target/site/jacoco/jacoco.xml'); do
@@ -107,7 +110,7 @@ jobs:
           fi
           echo "files=${files}" >> "${GITHUB_OUTPUT}"
       - name: Upload Code Coverage to Coveralls (Develop branch, ubuntu unit only)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +119,7 @@ jobs:
           flag-name: unit
           fail-on-error: true
       - name: Save Maven cache
-        if: github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
+        if: github.event_name == 'push' && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         uses: actions/cache/save@v6
         with:
           path: ~/.m2
