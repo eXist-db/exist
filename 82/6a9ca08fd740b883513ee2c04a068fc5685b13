@@ -1,0 +1,22 @@
+.github/scripts/jacoco-merged-report.sh
+  s_b40b7df8b7da38::t_369e418dcf59c9 1-72
+  s_b40b7df8b7da38::t_030b5a80f96766 73-81
+.github/workflows/ci-test.yml
+  s_b40b7df8b7da38::t_d24358067b6e67 93-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "826a9ca08fd740b883513ee2c04a068fc5685b13",
+  "prompts": {},
+  "sessions": {
+    "s_b40b7df8b7da38": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfb2229d-1563-4677-8583-a5703a4c2c9d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
