@@ -36,6 +36,8 @@ import java.util.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.http.ExQueryRequestAdapterFactory;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
@@ -48,11 +50,17 @@ import org.exquery.http.HttpRequest;
  * Adapts a {@link HttpServletRequest} to an EXQuery {@link HttpRequest}.
  *
  * <p>The adapter owns the cache of the request body that {@link #getInputStream()} creates,
- * and so it must be {@link #close() closed} once the request has been serviced.
+ * and so it must be {@link #close() closed} once the request has been serviced. Closing it also
+ * consumes any of the request body left unread, so that the connection can be reused.
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class HttpServletRequestAdapter implements HttpRequest, Closeable {
+
+    private static final Logger LOG = LogManager.getLogger(HttpServletRequestAdapter.class);
+
+    /** The most of an unread request body that {@link #close()} consumes, as Tomcat's default {@code maxSwallowSize}. */
+    private static final long MAX_DRAIN_BYTES = 2 * 1024 * 1024;
 
     private final HttpServletRequest request;
     private final FilterInputStreamCacheConfiguration cacheConfiguration;
@@ -282,12 +290,40 @@ public class HttpServletRequestAdapter implements HttpRequest, Closeable {
     }
 
     /**
-     * Releases the cache of the request body, if {@link #getInputStream()} was called.
+     * Consumes what is left of the request body, and releases the cache of the request body,
+     * if {@link #getInputStream()} was called.
      */
     @Override
     public void close() throws IOException {
-        if (is != null) {
-            is.close();
+        try {
+            drainRequestBody();
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
+    /**
+     * Reads, and discards, what the Resource Function left unread of the request body.
+     *
+     * <p>If a request ends with body content unread, the server cannot keep the connection alive,
+     * and closing a socket with unread data resets it; on Windows the client then loses the response.
+     * Like Tomcat's {@code maxSwallowSize}, at most {@link #MAX_DRAIN_BYTES} are read, beyond that
+     * the server closes the connection rather than reading a body nobody wants.
+     */
+    private void drainRequestBody() {
+        try {
+            final InputStream body = request.getInputStream();
+            final byte[] buf = new byte[8192];
+            long drained = 0;
+            int read;
+            while (drained < MAX_DRAIN_BYTES && (read = body.read(buf)) != -1) {
+                drained += read;
+            }
+        } catch (final IOException | IllegalStateException e) {
+            // the client went away, or the body was read as a Reader; either way there is nothing to drain
+            LOG.debug("Unable to drain the request body: {}", e.getMessage());
         }
     }
 
