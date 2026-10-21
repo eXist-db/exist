@@ -1,0 +1,25 @@
+.github/workflows/ci-container.yml
+  s_0f67068a6cf927::t_3aee7f3a6b9285 25
+.github/workflows/ci-snapshots.yml
+  s_0f67068a6cf927::t_4046dcbf10eef9 12
+.github/workflows/ci-xqts.yml
+  s_0f67068a6cf927::t_f61246531f7868 25
+.github/workflows/sonarcloud.yml
+  s_0f67068a6cf927::t_8ce964a8464b12 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "933e13e49ab64ebfe8b946e84cdd1938f580eb59",
+  "prompts": {},
+  "sessions": {
+    "s_0f67068a6cf927": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1fe6a4bc-607e-478a-ac13-de48c9ce9915",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
