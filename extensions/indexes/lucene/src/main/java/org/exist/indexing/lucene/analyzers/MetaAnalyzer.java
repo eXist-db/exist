@@ -38,6 +38,7 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
 
     private final Analyzer defaultAnalyzer;
     private final Map<String, Analyzer> perFieldAnalyzers;
+    private volatile @Nullable Analyzer queryAnalyzer;
 
     public MetaAnalyzer(@Nonnull Analyzer defaultAnalyzer) {
         super(PER_FIELD_REUSE_STRATEGY);
@@ -48,14 +49,55 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
 
     public void addAnalyzer(@Nonnull String fieldName, @Nonnull Analyzer analyzer) {
         perFieldAnalyzers.put(fieldName, analyzer);
+        queryAnalyzer = null;
     }
 
     @Override
     protected Analyzer getWrappedAnalyzer(@Nullable String fieldName) {
+        return analyzerFor(fieldName);
+    }
+
+    /**
+     * The analyzer of a field.
+     *
+     * @param fieldName the field, or null for the default
+     * @return the field's analyzer, or the default analyzer if it has none of its own
+     */
+    public Analyzer analyzerFor(@Nullable final String fieldName) {
         if (fieldName == null) {
             return defaultAnalyzer;
         }
         return perFieldAnalyzers.getOrDefault(fieldName, defaultAnalyzer);
+    }
+
+    /**
+     * The analyzer a query uses: the same fields, each with its query chain where it has one of its own.
+     *
+     * @return this analyzer if no field has a query chain, or else one with the query chains
+     */
+    public Analyzer forQuery() {
+        Analyzer query = queryAnalyzer;
+        if (query == null) {
+            query = buildQueryAnalyzer();
+            queryAnalyzer = query;
+        }
+        return query;
+    }
+
+    private Analyzer buildQueryAnalyzer() {
+        final Analyzer queryDefault = IndexQueryAnalyzer.forQuery(defaultAnalyzer);
+        boolean changed = queryDefault != defaultAnalyzer;
+        final MetaAnalyzer query = new MetaAnalyzer(queryDefault);
+        for (final Map.Entry<String, Analyzer> entry : perFieldAnalyzers.entrySet()) {
+            final Analyzer fieldQuery = IndexQueryAnalyzer.forQuery(entry.getValue());
+            changed |= fieldQuery != entry.getValue();
+            query.perFieldAnalyzers.put(entry.getKey(), fieldQuery);
+        }
+        if (!changed) {
+            return this;
+        }
+        query.queryAnalyzer = query;
+        return query;
     }
 
     public String toString() {
