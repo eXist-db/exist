@@ -936,6 +936,11 @@
                 Set to "no" if a call to doc(), xmldb:document(), collection() or 
                 xmldb:xcollection() should return an empty sequence when an 
                 XML resource can not be retrieved. 
+            - resolve-namespace-as-url
+                Set to "yes" to let a module import without a location hint,
+                which is neither in the EXPath repository nor statically mapped,
+                fetch the module namespace URI itself over the network.
+                Set to "no" to raise XQST0059 without network access.
             - url-connect-timeout
                 Connect timeout in milliseconds when reading a module, document
                 or text from a URL. 0 means no timeout.
@@ -947,6 +952,7 @@
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="strict"
             raise-error-on-failed-retrieval="no"
+            resolve-namespace-as-url="no"
             url-connect-timeout="10000" url-read-timeout="30000">
         
         <builtin-modules>
