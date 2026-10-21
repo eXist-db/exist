@@ -41,9 +41,13 @@ import org.w3c.dom.Node;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
@@ -124,20 +128,29 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     private @Nullable FileChannel channel = null;
 
     /**
-     * the file key ({@link BasicFileAttributes#fileKey()}) of the file the channel is open on, if the file system
-     * has one
+     * the file key ({@link BasicFileAttributes#fileKey()}) of the file as eXist-db last wrote or read it, if the file
+     * system has one
      */
-    private @Nullable Object channelFileKey = null;
+    private @Nullable Object fileKey = null;
 
     /**
-     * the size the file has with the entries appended to it
+     * the size of the file as eXist-db last wrote or read it, with the entries appended to it since; -1 before the
+     * file is loaded
      */
-    private long fileSize = 0;
+    private long fileSize = -1;
 
     /**
      * true if entries were appended since the file was last forced to disk
      */
     private boolean unsynced = false;
+
+    /**
+     * true if a write to the file failed, so that it may hold part of an entry: it is written again in full
+     */
+    private boolean needsRewrite = false;
+
+    private @Nullable BrokerPool pool = null;
+    private boolean warnedReadOnly = false;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -147,13 +160,16 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     @Override
     public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
+        this.pool = pool;
         try {
             if (!Files.isReadable(file)) {
                 saveSymbols();
             } else {
                 loadSymbols();
             }
-        } catch(final EXistException e) {
+            // what the file is now, to tell later whether something else replaced or changed it
+            recordFile();
+        } catch(final EXistException | IOException e) {
             throw new BrokerPoolServiceException(e);
         }
     }
@@ -393,18 +409,36 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     /**
-     * Writes the entire symbol table to the file, replacing its content, and forces it to disk.
-     *
-     * @return the size of the file
+     * Writes the entire symbol table to a new file, forces it to disk, and moves it in place of the file, so that
+     * the file is never partly written: a crash leaves either the earlier file or the new one.
      */
-    private long writeTable() throws IOException {
+    private void writeTable() throws IOException {
+        final Path path = getFile();
+        final Path temp = path.resolveSibling(path.getFileName() + ".tmp");
         try (final VariableByteOutputStream os = new VariableByteOutputStream(8192);
-                final FileChannel out = FileChannel.open(getFile(), StandardOpenOption.CREATE,
+                final FileChannel out = FileChannel.open(temp, StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
             writeAll(os);
             writeFully(out, os.toByteArray());
             out.force(true);
-            return out.size();
+        }
+        try {
+            Files.move(temp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (final AtomicMoveNotSupportedException e) {
+            Files.move(temp, path, StandardCopyOption.REPLACE_EXISTING);
+        }
+        syncDirectory(path.getParent());
+    }
+
+    /**
+     * Forces the directory to disk, so that the file moved into it is there after a crash. Not every platform can
+     * open a directory, Windows for one; there, the move is left to the file system.
+     */
+    private static void syncDirectory(final Path dir) {
+        try (final FileChannel channel = FileChannel.open(dir, StandardOpenOption.READ)) {
+            channel.force(true);
+        } catch (final IOException e) {
+            LOG.debug("Could not force the directory {} to disk: {}", dir, e.getMessage());
         }
     }
 
@@ -471,12 +505,23 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws IOException if the entry cannot be written
      */
     private void append(final byte[] entry) throws IOException {
-        if (channel == null) {
-            openChannel();
+        if (needsRewrite) {
+            LOG.warn("Writing the symbol table {} again in full, as an earlier write to it failed",
+                    getFile().toAbsolutePath());
+            rewrite();
         } else {
-            ensureFileIsOurs();
+            checkFile();
         }
-        writeFully(channel, entry);
+        if (channel == null) {
+            channel = FileChannel.open(getFile(), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+        }
+        try {
+            writeFully(channel, entry);
+        } catch (final IOException e) {
+            // the file may now end in part of the entry
+            needsRewrite = true;
+            throw e;
+        }
         fileSize += entry.length;
         unsynced = true;
     }
@@ -484,14 +529,32 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Forces the entries appended since the last sync to disk. The journal calls this before it writes its
      * records, which may refer to the new symbols: after a crash, recovery can then always resolve them (#2220).
-     * Forcing once per journal write, rather than once per new symbol, keeps loading many new names fast.
+     * Forcing once per journal write, rather than once per new symbol, keeps loading many new names fast. The
+     * symbol table is not locked while the file is forced, so that looking up symbols doesn't wait for the disk.
      *
      * @throws IOException if the file cannot be forced to disk
      */
-    public synchronized void sync() throws IOException {
-        if (unsynced && channel != null) {
-            channel.force(false);
+    public void sync() throws IOException {
+        final FileChannel toForce;
+        synchronized (this) {
+            if (!unsynced || channel == null) {
+                return;
+            }
+            toForce = channel;
             unsynced = false;
+        }
+        try {
+            toForce.force(false);
+        } catch (final ClosedChannelException e) {
+            // the file is being written again in full, and forced, under the lock: wait for it to be done
+            synchronized (this) {
+                LOG.debug("Symbol table {} written again while it was being forced to disk", getFile());
+            }
+        } catch (final IOException e) {
+            synchronized (this) {
+                unsynced = true;
+            }
+            throw e;
         }
     }
 
@@ -502,49 +565,80 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         return unsynced;
     }
 
-    private void openChannel() throws IOException {
-        channel = FileChannel.open(getFile(), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-        channelFileKey = fileKey(getFile());
-        fileSize = channel.size();
+    /**
+     * Records the file's key and size, as eXist-db has just written or read it.
+     */
+    private void recordFile() throws IOException {
+        final BasicFileAttributes attributes = Files.readAttributes(getFile(), BasicFileAttributes.class);
+        fileKey = attributes.fileKey();
+        fileSize = attributes.size();
     }
 
     /**
-     * Checks that the file at the path is still the one entries are appended to, with all of them. If something
-     * outside eXist replaced or changed it while the database was running, as a file synchronization or an overlay
-     * file system can, the entries appended since would otherwise be lost: the table is then written again from
-     * memory, where it is complete.
+     * Checks that the file at the path is still the one eXist-db wrote or read, with all of the entries appended
+     * since. If something outside eXist-db replaced or changed it while the database was running, as a file
+     * synchronization or an overlay file system can, the entries it lacks would otherwise be lost: the table is then
+     * written again from memory, where it is complete.
      */
-    private void ensureFileIsOurs() throws IOException {
+    private void checkFile() throws IOException {
         final Path path = getFile();
-        final boolean exists = Files.exists(path);
-        final Object key = exists ? fileKey(path) : null;
-        final long size = exists ? Files.size(path) : -1;
-        if (exists && Objects.equals(key, channelFileKey) && size == fileSize) {
+        Object key = null;
+        long size = -1;
+        try {
+            final BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            key = attributes.fileKey();
+            size = attributes.size();
+        } catch (final NoSuchFileException e) {
+            // deleted: written again below
+        }
+        if (size >= 0 && Objects.equals(key, fileKey) && size == fileSize) {
             return;
         }
         LOG.error("{} was replaced or changed by something other than eXist-db while the database was running "
                 + "(file key {}, size {}; expected file key {}, size {}). Writing the symbol table again from memory. "
                 + "Do not keep the data directory in a folder that is synchronized, snapshotted or on an overlay "
-                + "file system.", path.toAbsolutePath(), key, size, channelFileKey, fileSize);
-        channel.close();
-        channel = null;
-        writeTable();
-        openChannel();
-        unsynced = false;
+                + "file system.", path.toAbsolutePath(), key, size, fileKey, fileSize);
+        rewrite();
     }
 
-    private static @Nullable Object fileKey(final Path path) throws IOException {
-        return Files.readAttributes(path, BasicFileAttributes.class).fileKey();
+    /**
+     * Writes the entire table to the file again, from memory. If that fails, the next append tries again.
+     */
+    private void rewrite() throws IOException {
+        needsRewrite = true;
+        if (channel != null) {
+            final FileChannel previous = channel;
+            channel = null;
+            previous.close();
+        }
+        writeTable();
+        recordFile();
+        unsynced = false;
+        needsRewrite = false;
+    }
+
+    /**
+     * Whether the database is read-only, in which case new symbols are kept in memory only: queries may look up
+     * names that aren't in the table, and must not fail because the file can't be written.
+     */
+    private boolean isReadOnly() {
+        return pool != null && pool.isReadOnly();
     }
 
     @Override
     public synchronized void close() throws IOException {
         outBuffer.close();
-        if (channel != null) {
-            try {
-                ensureFileIsOurs();
+        try {
+            if (fileSize >= 0 && !isReadOnly()) {
+                if (needsRewrite) {
+                    rewrite();
+                } else {
+                    checkFile();
+                }
                 sync();
-            } finally {
+            }
+        } finally {
+            if (channel != null) {
                 channel.close();
                 channel = null;
             }
@@ -637,8 +731,15 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
             // ids start at 1, not 0
             id = offset + 1;
-            // the entry is written before the id is used (#2220)
-            write(id, name);
+            if (isReadOnly()) {
+                if (!warnedReadOnly) {
+                    warnedReadOnly = true;
+                    LOG.warn("The database is read-only: new symbols, such as '{}', are kept in memory only", name);
+                }
+            } else {
+                // the entry is written before the id is used (#2220)
+                write(id, name);
+            }
             add(id, name);
             changed = true;
             return id;

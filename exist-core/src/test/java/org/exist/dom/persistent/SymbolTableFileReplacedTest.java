@@ -34,11 +34,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * The symbol table keeps every name when something other than eXist-db replaces or changes symbols.dbx while the
@@ -114,6 +117,85 @@ class SymbolTableFileReplacedTest {
     }
 
     @Test
+    void replacedByAnEarlierCopyBeforeTheFirstNameOfASession() throws Exception {
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        final Path earlier = copyOfFile();
+        final short b = first.getSymbol("b");
+        first.close();
+
+        final SymbolTable second = open();
+        replaceFileWith(earlier);
+        final short c = second.getSymbol("c");
+        second.close();
+
+        assertNames(a, "a", b, "b", c, "c");
+    }
+
+    @Test
+    void replacedByAnEarlierCopyInASessionWithoutNewNames() throws Exception {
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        final Path earlier = copyOfFile();
+        final short b = first.getSymbol("b");
+        first.close();
+
+        final SymbolTable second = open();
+        replaceFileWith(earlier);
+        second.close();
+
+        assertNames(a, "a", b, "b");
+    }
+
+    /**
+     * A crash while an entry is appended leaves part of it at the end of the file: the entries before it load.
+     */
+    @Test
+    void partOfAnEntryAtTheEnd() throws Exception {
+        final SymbolTable symbols = open();
+        final short a = symbols.getSymbol("a");
+        symbols.getSymbol("a-longer-name-of-which-only-part-is-written");
+        symbols.close();
+        final long size = Files.size(file());
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE)) {
+            channel.truncate(size - 5);
+        }
+
+        assertNames(a, "a");
+    }
+
+    /**
+     * In a read-only database, a query may look up a name that isn't in the table: it is kept in memory only, and
+     * the file is not written.
+     */
+    @Test
+    void readOnlyDatabase() throws Exception {
+        open().close();
+        final byte[] before = Files.readAllBytes(file());
+        final BrokerPool pool = createMock(BrokerPool.class);
+        expect(pool.isReadOnly()).andReturn(true).anyTimes();
+        replay(pool);
+
+        final SymbolTable symbols = open(pool);
+        final short id = symbols.getSymbol("not-in-the-table");
+        assertEquals("not-in-the-table", symbols.getName(id));
+        symbols.close();
+
+        assertArrayEquals(before, Files.readAllBytes(file()));
+    }
+
+    @Test
+    void noTemporaryFileIsLeft() throws Exception {
+        final SymbolTable symbols = open();
+        symbols.getSymbol("a");
+        replaceFileWith(copyOfFileBeforeAnyName());
+        symbols.getSymbol("b");
+        symbols.close();
+
+        assertFalse(Files.exists(dir.resolve(SymbolTable.getFileName() + ".tmp")));
+    }
+
+    @Test
     void unchangedFileIsOnlyAppendedTo() throws Exception {
         final SymbolTable symbols = open();
         final short a = symbols.getSymbol("a");
@@ -126,12 +208,16 @@ class SymbolTableFileReplacedTest {
     }
 
     private SymbolTable open() throws BrokerPoolServiceException {
+        return open(null);
+    }
+
+    private SymbolTable open(final BrokerPool pool) throws BrokerPoolServiceException {
         final SymbolTable symbols = new SymbolTable();
         final Configuration configuration = createMock(Configuration.class);
         expect(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR)).andReturn(dir);
         replay(configuration);
         symbols.configure(configuration);
-        symbols.prepare(null);
+        symbols.prepare(pool);
         return symbols;
     }
 
@@ -145,9 +231,16 @@ class SymbolTableFileReplacedTest {
         return copy;
     }
 
+    /**
+     * A copy of the file with its header only, as a new database has it.
+     */
     private Path copyOfFileBeforeAnyName() throws Exception {
-        open().close();
-        return copyOfFile();
+        if (!Files.exists(file())) {
+            open().close();
+        }
+        final Path copy = Files.createTempFile(dir, "symbols", ".header");
+        Files.write(copy, Arrays.copyOf(Files.readAllBytes(file()), 4));
+        return copy;
     }
 
     /**
