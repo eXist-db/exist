@@ -50,6 +50,7 @@ import org.exist.indexing.ReindexScope;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
+import org.exist.indexing.lucene.analyzers.IndexQueryAnalyzer;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -1301,7 +1302,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (fields.length == 0) {
             return null;
         }
-        final Analyzer a = cfg.getAnalyzer((QName) null);
+        // a filter query is a query: parsed with the query chain, as the main query is
+        final Analyzer a = IndexQueryAnalyzer.forQuery(cfg.getAnalyzer((QName) null));
         if (a == null) {
             return null;
         }
@@ -1473,7 +1475,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
-            final Analyzer searchAnalyzer = index.getDefaultAnalyzer();
+            final Analyzer searchAnalyzer = IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
@@ -1499,7 +1501,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final int nodeNr = builder.startElement("", "results", "results", null);
 
                 // Perform actual search
-                final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
+                // stored text is highlighted with the analyzer that indexed it, its index chain
+                final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, index.getDefaultAnalyzer(), highlighter);
                 searcher.searcher().search(query, collector);
 
                 // finish root element
@@ -2024,7 +2027,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (opts.getQueryAnalyzerId() != null && config != null && config.getAnalyzerById(opts.getQueryAnalyzerId()) == null) {
             final Analyzer analyzer = configs.analyzerById(opts.getQueryAnalyzerId());
             if (analyzer != null) {
-                return analyzer;
+                return IndexQueryAnalyzer.forQuery(analyzer);
             }
         }
         return getQueryAnalyzer(config, field, qname, opts);
@@ -2057,10 +2060,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 analyzer = config.getAnalyzer(field);
             }
             if (analyzer != null) {
-                return analyzer;
+                return IndexQueryAnalyzer.forQuery(analyzer);
             }
         }
-        return index.getDefaultAnalyzer();
+        return IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
     }
 
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {

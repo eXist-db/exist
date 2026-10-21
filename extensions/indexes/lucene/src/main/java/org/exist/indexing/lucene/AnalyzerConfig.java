@@ -105,13 +105,24 @@ public class AnalyzerConfig {
      * Parse {@code <analyzer/>} element from xconf and initialize an analyzer with the
      * parameters.
      *
+     * <p>The element either names an analyzer class, or configures a chain of analysis components (see
+     * {@link AnalyzerChain}).</p>
+     *
      * @param config The analyzer element
      * @return Initialized Analyzer object
+     * @throws DatabaseConfigurationException if the element configures a chain that isn't valid
      */
-    protected static Analyzer configureAnalyzer(final Element config) {
+    protected static Analyzer configureAnalyzer(final Element config) throws DatabaseConfigurationException {
 
         // Get class name from attribute
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
+        if (AnalyzerChain.isChain(config)) {
+            if (!className.isBlank()) {
+                throw new DatabaseConfigurationException("Lucene analyzer " + className
+                        + " has a class and a chain of components; it can have one or the other");
+            }
+            return AnalyzerChain.build(config);
+        }
         if (className.isBlank()) {
             // No class name is defined.
             LOG.error("Missing class attribute or attribute is empty.");
