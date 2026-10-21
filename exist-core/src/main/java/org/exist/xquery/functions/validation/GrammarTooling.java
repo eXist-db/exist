@@ -36,6 +36,8 @@ import org.exist.collections.MutableCollection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.validation.GrammarPool;
@@ -201,7 +203,7 @@ public class GrammarTooling extends BasicFunction  {
                 try {
                     if(url.endsWith(".xsd")){
                         
-                        final InputStream is = new URL(url).openStream();
+                        final InputStream is = UrlConnections.openStream(new URL(url), Timeouts.from(config));
                         final XMLInputSource xis = new XMLInputSource(null, url, url, is, null);
                         final Grammar schema = parser.preparseGrammar(TYPE_XSD, xis);
                         is.close();

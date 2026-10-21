@@ -23,6 +23,8 @@ package org.exist.vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.util.ConfigurationHelper;
 
 import javax.annotation.Nonnull;
@@ -165,7 +167,7 @@ public final class ModelPathResolver {
   private static boolean downloadFile(final String urlStr, final Path target) {
     try {
       final URL url = URI.create(urlStr).toURL();
-      try (InputStream in = new BufferedInputStream(url.openStream())) {
+      try (InputStream in = new BufferedInputStream(UrlConnections.openStream(url, Timeouts.current()))) {
         Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
       }
       return true;

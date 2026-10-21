@@ -31,6 +31,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +123,7 @@ public class AnyUriResolver implements XMLEntityResolver {
 
         } else {
 
-            is = URI.create(resourcePath).toURL().openStream();
+            is = UrlConnections.openStream(URI.create(resourcePath).toURL(), Timeouts.current());
         }
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
