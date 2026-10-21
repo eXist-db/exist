@@ -38,10 +38,15 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
 
 /**
  * Maintains a global symbol table shared by a database instance. The symbol
@@ -112,7 +117,27 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private Path file;
     private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(256);
-    private OutputStream os = null;
+
+    /**
+     * the channel new entries are appended to, opened on the first new entry
+     */
+    private @Nullable FileChannel channel = null;
+
+    /**
+     * the file key ({@link BasicFileAttributes#fileKey()}) of the file the channel is open on, if the file system
+     * has one
+     */
+    private @Nullable Object channelFileKey = null;
+
+    /**
+     * the size the file has with the entries appended to it
+     */
+    private long fileSize = 0;
+
+    /**
+     * true if entries were appended since the file was last forced to disk
+     */
+    private boolean unsynced = false;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -359,15 +384,34 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws EXistException in response to eXist-db error
      */
     private void saveSymbols() throws EXistException {
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(8192);
-                final OutputStream fos =  new BufferedOutputStream(Files.newOutputStream(getFile()))) {
-            writeAll(os);
-            fos.write(os.toByteArray());
-        } catch(final FileNotFoundException e) {
-            throw new EXistException("File not found: " + this.getFile().toAbsolutePath(), e);
+        try {
+            writeTable();
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while creating "
                 + this.getFile().toAbsolutePath(), e);
+        }
+    }
+
+    /**
+     * Writes the entire symbol table to the file, replacing its content, and forces it to disk.
+     *
+     * @return the size of the file
+     */
+    private long writeTable() throws IOException {
+        try (final VariableByteOutputStream os = new VariableByteOutputStream(8192);
+                final FileChannel out = FileChannel.open(getFile(), StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+            writeAll(os);
+            writeFully(out, os.toByteArray());
+            out.force(true);
+            return out.size();
+        }
+    }
+
+    private static void writeFully(final FileChannel out, final byte[] bytes) throws IOException {
+        final ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        while (buffer.hasRemaining()) {
+            out.write(buffer);
         }
     }
 
@@ -420,18 +464,90 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         //Noting to do ? -pb
     }
 
-    private OutputStream getOutputStream() throws IOException {
-        if(os == null) {
-            os = new BufferedOutputStream(Files.newOutputStream(getFile(), StandardOpenOption.APPEND));
+    /**
+     * Appends an entry to the file. It is forced to disk by {@link #sync()}, before the journal is written.
+     *
+     * @param entry the entry
+     * @throws IOException if the entry cannot be written
+     */
+    private void append(final byte[] entry) throws IOException {
+        if (channel == null) {
+            openChannel();
+        } else {
+            ensureFileIsOurs();
         }
-        return os;
+        writeFully(channel, entry);
+        fileSize += entry.length;
+        unsynced = true;
+    }
+
+    /**
+     * Forces the entries appended since the last sync to disk. The journal calls this before it writes its
+     * records, which may refer to the new symbols: after a crash, recovery can then always resolve them (#2220).
+     * Forcing once per journal write, rather than once per new symbol, keeps loading many new names fast.
+     *
+     * @throws IOException if the file cannot be forced to disk
+     */
+    public synchronized void sync() throws IOException {
+        if (unsynced && channel != null) {
+            channel.force(false);
+            unsynced = false;
+        }
+    }
+
+    /**
+     * @return true if entries were appended since the file was last forced to disk
+     */
+    synchronized boolean hasUnsyncedEntries() {
+        return unsynced;
+    }
+
+    private void openChannel() throws IOException {
+        channel = FileChannel.open(getFile(), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+        channelFileKey = fileKey(getFile());
+        fileSize = channel.size();
+    }
+
+    /**
+     * Checks that the file at the path is still the one entries are appended to, with all of them. If something
+     * outside eXist replaced or changed it while the database was running, as a file synchronization or an overlay
+     * file system can, the entries appended since would otherwise be lost: the table is then written again from
+     * memory, where it is complete.
+     */
+    private void ensureFileIsOurs() throws IOException {
+        final Path path = getFile();
+        final boolean exists = Files.exists(path);
+        final Object key = exists ? fileKey(path) : null;
+        final long size = exists ? Files.size(path) : -1;
+        if (exists && Objects.equals(key, channelFileKey) && size == fileSize) {
+            return;
+        }
+        LOG.error("{} was replaced or changed by something other than eXist-db while the database was running "
+                + "(file key {}, size {}; expected file key {}, size {}). Writing the symbol table again from memory. "
+                + "Do not keep the data directory in a folder that is synchronized, snapshotted or on an overlay "
+                + "file system.", path.toAbsolutePath(), key, size, channelFileKey, fileSize);
+        channel.close();
+        channel = null;
+        writeTable();
+        openChannel();
+        unsynced = false;
+    }
+
+    private static @Nullable Object fileKey(final Path path) throws IOException {
+        return Files.readAttributes(path, BasicFileAttributes.class).fileKey();
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         outBuffer.close();
-        if(os != null) {
-            os.close();
+        if (channel != null) {
+            try {
+                ensureFileIsOurs();
+                sync();
+            } finally {
+                channel.close();
+                channel = null;
+            }
         }
     }
 
@@ -519,10 +635,11 @@ public class SymbolTable implements BrokerPoolService, Closeable {
                 return -1;
             }
 
-            id = add(++offset, name);
-            //we use "++offset" here instead of "offset++", 
-            //because the system expects id's to start at 1, not 0
+            // ids start at 1, not 0
+            id = offset + 1;
+            // the entry is written before the id is used (#2220)
             write(id, name);
+            add(id, name);
             changed = true;
             return id;
         }
@@ -543,14 +660,11 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             outBuffer.clear();
             try {
                 writeEntry(id, key, outBuffer);
-                getOutputStream().write(outBuffer.toByteArray());
-                getOutputStream().flush();
-            } catch(final FileNotFoundException e) {
-                LOG.error("Symbol table: file not found!", e);
-                //TODO :throw exception -pb
+                append(outBuffer.toByteArray());
             } catch(final IOException e) {
-                LOG.error("Symbol table: caught exception while writing!", e);
-                //TODO : throw exception -pb
+                // the symbol must not be used: what refers to it could not be read again
+                throw new UncheckedIOException("Symbol table: unable to write the symbol '" + key + "' to "
+                        + getFile().toAbsolutePath() + ": " + e.getMessage(), e);
             }
         }
 
