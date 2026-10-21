@@ -21,7 +21,7 @@
  */
 package org.exist.management.impl;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -45,22 +45,22 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getProductName() {
-        return SystemProperties.getInstance().getSystemProperty("product-name", "eXist");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist");
     }
 
     @Override
     public String getProductVersion() {
-        return SystemProperties.getInstance().getSystemProperty("product-version", "unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown");
     }
 
     @Override
     public String getProductBuild() {
-        return SystemProperties.getInstance().getSystemProperty("product-build", "unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_BUILD, "unknown");
     }
 
     @Override
     public String getGitCommit() {
-        return SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown Git commit ID");
     }
 
     @Override

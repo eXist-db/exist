@@ -23,7 +23,7 @@ package org.exist.repo;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.util.io.TemporaryFileManager;
 import org.expath.pkg.repo.XarFileSource;
 import org.expath.pkg.repo.XarSource;
@@ -90,7 +90,7 @@ public final class RepoPackageLoader implements PackageLoader, AutoCloseable {
     private String packageUrl(final String name, final Version version) {
         final StringBuilder pkgURL = new StringBuilder(repoURL)
                 .append("?name=").append(URLEncoder.encode(name, StandardCharsets.UTF_8))
-                .append("&processor=").append(SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0"));
+                .append("&processor=").append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "2.2.0"));
         if (version != null) {
             if (version.getMin() != null) {
                 pkgURL.append("&semver-min=").append(version.getMin());
