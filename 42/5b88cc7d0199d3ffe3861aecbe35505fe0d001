@@ -1,0 +1,47 @@
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java
+  s_7e2af69631cddd::t_f4eaee68ebf23d 37-38,1125,1137
+exist-core/src/main/java/org/exist/validation/Xsd11SchemaDetection.java
+  s_7e2af69631cddd::t_7a13a79e4759dc 47-48,202
+exist-core/src/main/java/org/exist/validation/resolver/AnyUriResolver.java
+  s_7e2af69631cddd::t_0ca0120d6f1292 34-35,126
+exist-core/src/main/java/org/exist/validation/resolver/SearchResourceResolver.java
+  s_7e2af69631cddd::t_9318e4bb449a4b 33-34,165,204
+exist-core/src/main/java/org/exist/validation/resolver/unstable/ExistResolver.java
+  s_7e2af69631cddd::t_4cc01a89bf086b 28-29,129,152
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_7e2af69631cddd::t_c9af75f7fabb31 83,3545
+exist-core/src/main/java/org/exist/xquery/functions/util/Eval.java
+  s_7e2af69631cddd::t_02b8faf2f80839 62-63,670
+exist-core/src/main/java/org/exist/xquery/functions/validation/GrammarTooling.java
+  s_7e2af69631cddd::t_c5f6c286e5b480 39-40,206
+exist-core/src/main/java/org/exist/xquery/functions/validation/Shared.java
+  s_7e2af69631cddd::t_4dd468f288f5aa 43-44,152
+exist-core/src/main/java/org/exist/xquery/functions/xmldb/XMLDBStore.java
+  s_7e2af69631cddd::t_2449dc8b9d8be6 39-40,303
+exist-core/src/main/java/org/exist/xslt/EXistURIResolver.java
+  s_7e2af69631cddd::t_2ce8b5439a20fe 39-40,171
+exist-core/src/main/java/org/exist/xslt/StylesheetResolverAndCompiler.java
+  s_7e2af69631cddd::t_502fd859ef906a 43-44,115
+exist-core/src/test/java/org/exist/xquery/UrlReadTimeoutTest.java
+  s_7e2af69631cddd::t_37db3841c7712f 1-155
+extensions/modules/exi/src/main/java/org/exist/xquery/modules/exi/EXIUtils.java
+  s_7e2af69631cddd::t_9316dc7d38f56c 33-34,61
+extensions/vector/src/main/java/org/exist/vector/ModelPathResolver.java
+  s_7e2af69631cddd::t_bde26cac60b469 26-27,170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "425b88cc7d0199d3ffe3861aecbe35505fe0d001",
+  "prompts": {},
+  "sessions": {
+    "s_7e2af69631cddd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce96e569-ebba-4097-9f1b-98d99581a496",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
