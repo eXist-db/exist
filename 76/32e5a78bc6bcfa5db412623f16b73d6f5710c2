@@ -1,0 +1,22 @@
+.github/scripts/jacoco-merge-exec.sh
+  s_b40b7df8b7da38::t_d23a0195a9ef94 1-70
+.github/workflows/ci-test.yml
+  s_b40b7df8b7da38::t_1e15cf35995730 90-94,96-97,99-103,110
+  s_b40b7df8b7da38::t_d24358067b6e67 95,98,104-109,111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7632e5a78bc6bcfa5db412623f16b73d6f5710c2",
+  "prompts": {},
+  "sessions": {
+    "s_b40b7df8b7da38": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfb2229d-1563-4677-8583-a5703a4c2c9d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
