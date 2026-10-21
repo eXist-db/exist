@@ -27,6 +27,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.MultiTermQuery;
+import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.util.Configuration;
@@ -337,6 +338,10 @@ public class QueryOptions {
                     candidates = Integer.parseInt(value.trim());
                 } catch (final NumberFormatException e) {
                     throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES + " must be an integer");
+                }
+                if (candidates < 1 || candidates > LuceneIndexWorker.MAX_VECTOR_CANDIDATES) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES
+                            + " must be from 1 to " + LuceneIndexWorker.MAX_VECTOR_CANDIDATES + ", got " + candidates);
                 }
                 break;
             default:

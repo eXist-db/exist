@@ -58,6 +58,10 @@ function qvc:setup() {
                     <text qname="article">
                         <vector-field name="emb" expression="embedding" dimension="64" similarity="cosine" encoding="text"/>
                     </text>
+                    <!-- a second qname with the same vector field: few, so the best candidates of all are articles -->
+                    <text qname="note">
+                        <vector-field name="emb" expression="embedding" dimension="64" similarity="cosine" encoding="text"/>
+                    </text>
                 </lucene>
             </index>
         </collection>)
@@ -67,6 +71,11 @@ function qvc:setup() {
             for $i in 1 to $qvc:N
             return <article n="{$i}"><embedding>{string-join(qvc:vector($i) ! string(.), " ")}</embedding></article>
         }</articles>)
+    let $_ := xmldb:store($qvc:COLL, "notes.xml",
+        <notes>{
+            for $i in 1 to 20
+            return <note n="{$i}"><embedding>{string-join(qvc:vector($i + 0.25) ! string(.), " ")}</embedding></note>
+        }</notes>)
     (: one segment, as in a merged index: each segment is searched for its own candidates :)
     return ft:optimize()
 };
@@ -85,9 +94,14 @@ declare function qvc:cosine($a as xs:double*, $b as xs:double*) as xs:double {
 
 (: the n of the exact k nearest articles :)
 declare function qvc:exact($k as xs:integer) as xs:string* {
+    qvc:exact($k, 1 to $qvc:N)
+};
+
+(: the n of the exact k nearest of some of the articles :)
+declare function qvc:exact($k as xs:integer, $articles as xs:integer*) as xs:string* {
     let $q := $qvc:QUERY?*
     let $ranked :=
-        for $i in 1 to $qvc:N
+        for $i in $articles
         order by qvc:cosine(qvc:vector($i), $q) descending
         return string($i)
     return subsequence($ranked, 1, $k)
@@ -123,10 +137,46 @@ function qvc:k-above-the-default-candidates() {
     count(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 150)])
 };
 
+(: the option is used: with as few candidates as results, the search misses the nearest; with more, it finds them :)
+declare
+    %test:assertEquals("true", 5)
+function qvc:candidates-option() {
+    let $few := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 5 })])
+    let $default := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5)])
+    let $many := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 500 })])
+    let $exact := qvc:exact(5)
+    return (string(count($few[. = $exact]) lt count($default[. = $exact])), count($many[. = $exact]))
+};
+
+declare
+    %test:assertError("EXXQDYFT0004")
+function qvc:candidates-must-be-positive() {
+    collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 0 })]
+};
+
+declare
+    %test:assertError("EXXQDYFT0004")
+function qvc:candidates-has-a-maximum() {
+    collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 10001 })]
+};
+
+(: a context narrower than the documents: k hits in it, though the best of all the candidates are outside it, and
+ : with enough candidates the nearest in it :)
+declare
+    %test:assertEquals(5, 5)
+function qvc:context-narrower-than-the-documents() {
+    let $in-context := (1 to $qvc:N)[. mod 7 = 0]
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    let $found := qvc:found($context[ft:query-vector(., $qvc:QUERY, 5)])
+    let $more := qvc:found($context[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 2000 })])
+    return (count($found), count($more[. = qvc:exact(5, $in-context)]))
+};
+
+(: another qname with the same vector field: its own k, though the best candidates of all are articles :)
 declare
     %test:assertEquals(5)
-function qvc:candidates-option() {
-    count(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 500 })])
+function qvc:another-qname-with-the-same-field() {
+    count(collection($qvc:COLL)//note[ft:query-vector(., $qvc:QUERY, 5)])
 };
 
 declare
