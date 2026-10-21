@@ -21,7 +21,7 @@ permissions:
 jobs:
   comment:
     name: Post XQTS comparison
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Only for PR-triggered XQTS runs that finished successfully and therefore
     # uploaded the xqts-comparison artifact.
     if: >-

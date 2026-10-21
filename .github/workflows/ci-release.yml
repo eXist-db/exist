@@ -38,7 +38,7 @@ jobs:
   # ── Job 1: Build and publish to Maven Central ────────────────────────────────
   build-linux:
     name: Build and publish to Maven Central
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
       CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
@@ -353,7 +353,7 @@ jobs:
   # ── Job 4: Publish GitHub Release ───────────────────────────────────────────
   publish-github-release:
     name: Publish GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     needs: [build-linux, build-mac, build-windows]
     permissions:

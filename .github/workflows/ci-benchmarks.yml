@@ -26,7 +26,7 @@ env:
 jobs:
   benchmarks:
     name: Run JMH benchmarks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Generous margin: several benchmarks were previously failing instantly
     # (near-zero wall time) due to bugs fixed alongside this workflow change
     # (missing Lucene index config, a broken conf.xml codegen path in

@@ -11,7 +11,7 @@ permissions:
 jobs:
   prethink:
     if: github.repository == 'eXist-db/exist'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
