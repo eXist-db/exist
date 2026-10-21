@@ -127,6 +127,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE = "backwardCompatible";
     public static final String XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE = "raise-error-on-failed-retrieval";
     public static final String ENFORCE_INDEX_USE_ATTRIBUTE = "enforce-index-use";
+    public static final String URL_CONNECT_TIMEOUT_ATTRIBUTE = "url-connect-timeout";
+    public static final String URL_READ_TIMEOUT_ATTRIBUTE = "url-read-timeout";
 
     //TODO : move elsewhere ?
     public static final String BUILT_IN_MODULE_URI_ATTRIBUTE = "uri";
@@ -138,6 +140,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL = "xquery.raise-error-on-failed-retrieval";
     public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = false;
     public static final String PROPERTY_ENFORCE_INDEX_USE = "xquery.enforce-index-use";
+    public static final String PROPERTY_URL_CONNECT_TIMEOUT = "xquery.url-connect-timeout";
+    public static final String PROPERTY_URL_READ_TIMEOUT = "xquery.url-read-timeout";
 
     //TODO : move elsewhere ?
     public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
