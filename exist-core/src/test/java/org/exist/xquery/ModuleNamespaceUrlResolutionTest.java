@@ -25,12 +25,13 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.URLSource;
+import org.exist.source.UrlConnections;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.SilentServer;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
@@ -39,7 +40,6 @@ import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -48,12 +48,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,9 +81,8 @@ public class ModuleNamespaceUrlResolutionTest {
             };
             """.formatted(LOCAL_MODULE_NAMESPACE);
 
-    // a fresh server per test, so that a late connection from one test cannot show up in the next
-    private ServerSocket silentServer;
-    private final List<Socket> accepted = new CopyOnWriteArrayList<>();
+    @RegisterExtension
+    final SilentServer silentServer = new SilentServer();
 
     @BeforeAll
     static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
@@ -117,31 +111,9 @@ public class ModuleNamespaceUrlResolutionTest {
         }
     }
 
-    @BeforeEach
-    void startSilentServer() throws IOException {
-        silentServer = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
-        final ServerSocket server = silentServer;
-        final Thread acceptor = new Thread(() -> {
-            while (!server.isClosed()) {
-                try {
-                    // hold on to the connection and never answer
-                    accepted.add(server.accept());
-                } catch (final IOException e) {
-                    // server socket closed
-                }
-            }
-        }, "silent-server");
-        acceptor.setDaemon(true);
-        acceptor.start();
-    }
-
     @AfterEach
-    void stopSilentServerAndResetConfiguration() throws IOException {
-        setConfiguration(XQueryContext.RESOLVE_NAMESPACE_AS_URL_DEFAULT, URLSource.DEFAULT_READ_TIMEOUT);
-        silentServer.close();
-        for (final Socket socket : accepted) {
-            socket.close();
-        }
+    void resetConfiguration() {
+        setConfiguration(XQueryContext.RESOLVE_NAMESPACE_AS_URL_DEFAULT, UrlConnections.DEFAULT_READ_TIMEOUT);
     }
 
     @Test
@@ -150,7 +122,7 @@ public class ModuleNamespaceUrlResolutionTest {
                 inspect:inspect-module-uri(xs:anyURI("%s"))
                 """.formatted(silentNamespace())));
         assertSame(ErrorCodes.XQST0059, e.getErrorCode());
-        assertEquals(0, accepted.size(), "no connection to the namespace URI expected");
+        assertEquals(0, silentServer.connectionCount(), "no connection to the namespace URI expected");
     }
 
     @Test
@@ -160,7 +132,7 @@ public class ModuleNamespaceUrlResolutionTest {
                 1
                 """.formatted(silentNamespace())));
         assertSame(ErrorCodes.XQST0059, e.getErrorCode());
-        assertEquals(0, accepted.size(), "no connection to the namespace URI expected");
+        assertEquals(0, silentServer.connectionCount(), "no connection to the namespace URI expected");
     }
 
     @Test
@@ -169,7 +141,7 @@ public class ModuleNamespaceUrlResolutionTest {
                 load-xquery-module("%s")
                 """.formatted(silentNamespace())));
         assertSame(ErrorCodes.FOQM0002, e.getErrorCode());
-        assertEquals(0, accepted.size(), "no connection to the namespace URI expected");
+        assertEquals(0, silentServer.connectionCount(), "no connection to the namespace URI expected");
     }
 
     @Test
@@ -222,7 +194,7 @@ public class ModuleNamespaceUrlResolutionTest {
                 inspect:inspect-module-uri(xs:anyURI("%s"))
                 """.formatted(silentNamespace())));
         assertSame(ErrorCodes.XQST0059, e.getErrorCode());
-        assertTrue(accepted.size() > 0, "a connection to the namespace URI expected");
+        assertTrue(silentServer.connectionCount() > 0, "a connection to the namespace URI expected");
     }
 
     @Test
@@ -233,11 +205,11 @@ public class ModuleNamespaceUrlResolutionTest {
                 1
                 """.formatted(silentNamespace())));
         assertSame(ErrorCodes.XQST0059, e.getErrorCode());
-        assertTrue(accepted.size() > 0, "a connection to the location hint expected");
+        assertTrue(silentServer.connectionCount() > 0, "a connection to the location hint expected");
     }
 
     private String silentNamespace() {
-        return "http://127.0.0.1:" + silentServer.getLocalPort() + "/ns";
+        return silentServer.url("/ns");
     }
 
     private static void setConfiguration(final boolean resolveNamespaceAsUrl, final int readTimeout) {

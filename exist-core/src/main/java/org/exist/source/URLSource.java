@@ -51,36 +51,24 @@ public class URLSource extends AbstractSource {
 
     private static final String ACCEPT_HEADER = "application/xml,application/xhtml+xml;q=0.9,*/*;q=0.2";
 
-    /**
-     * Default connect timeout in milliseconds.
-     */
-    public static final int DEFAULT_CONNECT_TIMEOUT = 10_000;
-    /**
-     * Default read timeout in milliseconds.
-     */
-    public static final int DEFAULT_READ_TIMEOUT = 30_000;
-
     protected final URL url;
-    private final int connectTimeout;
-    private final int readTimeout;
+    private final UrlConnections.Timeouts timeouts;
     private URLConnection connection = null;
     private long lastModified = 0;
     private int responseCode = HttpURLConnection.HTTP_OK;
 
     public URLSource(final URL url) {
-        this(url, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+        this(url, UrlConnections.Timeouts.DEFAULT);
     }
 
     /**
      * @param url the URL to read from
-     * @param connectTimeout the connect timeout in milliseconds, 0 means no timeout
-     * @param readTimeout the read timeout in milliseconds, 0 means no timeout
+     * @param timeouts the connect and read timeouts
      */
-    public URLSource(final URL url, final int connectTimeout, final int readTimeout) {
+    public URLSource(final URL url, final UrlConnections.Timeouts timeouts) {
         super(hashKey(url.toString()));
         this.url = url;
-        this.connectTimeout = connectTimeout;
-        this.readTimeout = readTimeout;
+        this.timeouts = timeouts;
     }
 
     @Override
@@ -107,18 +95,8 @@ public class URLSource extends AbstractSource {
         return url;
     }
 
-    /**
-     * Open a connection to the URL with bounded connect and read timeouts, so a slow or silent
-     * remote host cannot block the calling thread (which usually holds a broker) indefinitely.
-     *
-     * @return the configured, not yet connected, connection
-     *
-     * @throws IOException if the connection cannot be opened
-     */
     private URLConnection openConnection() throws IOException {
-        final URLConnection conn = url.openConnection();
-        conn.setConnectTimeout(connectTimeout);
-        conn.setReadTimeout(readTimeout);
+        final URLConnection conn = UrlConnections.open(url, timeouts);
         if (conn instanceof HttpURLConnection httpConnection) {
             httpConnection.setRequestProperty("Accept", ACCEPT_HEADER);
         }
