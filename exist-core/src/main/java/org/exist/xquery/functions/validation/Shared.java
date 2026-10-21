@@ -40,6 +40,8 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.resolver.ResolverFactory;
 import org.exist.security.Subject;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -147,7 +149,7 @@ public class Shared {
                 url = "xmldb:exist://" + url;
             }
 
-            final InputStream is = new URL(url).openStream();
+            final InputStream is = UrlConnections.openStream(new URL(url), Timeouts.from(context.getBroker().getConfiguration()));
             streamSource.setInputStream(is);
             streamSource.setSystemId(url);
 

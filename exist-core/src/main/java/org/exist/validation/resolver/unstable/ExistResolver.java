@@ -25,6 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -124,7 +126,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                 inputsource.setSystemId(path);
 
             } else {
-                final InputStream is = URI.create(path).toURL().openStream();
+                final InputStream is = UrlConnections.openStream(URI.create(path).toURL(), Timeouts.from(bPool.getConfiguration()));
                 inputsource.setByteStream(is);
                 inputsource.setSystemId(path);
             }
@@ -147,7 +149,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                     streamsource.setSystemId(path);
 
                 } else {
-                    final InputStream is = URI.create(path).toURL().openStream();
+                    final InputStream is = UrlConnections.openStream(URI.create(path).toURL(), Timeouts.from(bPool.getConfiguration()));
                     streamsource.setInputStream(is);
                     streamsource.setSystemId(path);
                 }

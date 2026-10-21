@@ -30,6 +30,8 @@ import java.net.URL;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.Expression;
@@ -56,7 +58,7 @@ public class EXIUtils {
                     url = "xmldb:exist://" + url;
                 }
 
-                return URI.create(url).toURL().openStream();
+                return UrlConnections.openStream(URI.create(url).toURL(), Timeouts.from(context.getBroker().getConfiguration()));
             case Type.ELEMENT:
             case Type.DOCUMENT:
                 LOG.debug("Streaming element or document node");

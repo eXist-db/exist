@@ -30,6 +30,8 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.resolver.ResolverFactory;
 import org.exist.security.Subject;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
@@ -160,7 +162,7 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
             LOG.debug("resourcePath='{}'", resourcePath);
         }
 
-        final InputStream is = URI.create(resourcePath).toURL().openStream();
+        final InputStream is = UrlConnections.openStream(URI.create(resourcePath).toURL(), Timeouts.from(brokerPool.getConfiguration()));
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), xri.getExpandedSystemId(), xri.getBaseSystemId(), is, UTF_8.name());
 
@@ -199,7 +201,7 @@ public class SearchResourceResolver implements XMLEntityResolver, LSResourceReso
         }
 
         try {
-            final InputStream is = URI.create(resourcePath).toURL().openStream();
+            final InputStream is = UrlConnections.openStream(URI.create(resourcePath).toURL(), Timeouts.from(brokerPool.getConfiguration()));
             return new DatabaseLSInput(publicId, systemId, baseURI, is);
         } catch (final IOException e) {
             LOG.error("Could not open resolved schema resource '{}': {}", resourcePath, e.getMessage());
