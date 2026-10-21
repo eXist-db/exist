@@ -51,14 +51,36 @@ public class URLSource extends AbstractSource {
 
     private static final String ACCEPT_HEADER = "application/xml,application/xhtml+xml;q=0.9,*/*;q=0.2";
 
+    /**
+     * Default connect timeout in milliseconds.
+     */
+    public static final int DEFAULT_CONNECT_TIMEOUT = 10_000;
+    /**
+     * Default read timeout in milliseconds.
+     */
+    public static final int DEFAULT_READ_TIMEOUT = 30_000;
+
     protected final URL url;
+    private final int connectTimeout;
+    private final int readTimeout;
     private URLConnection connection = null;
     private long lastModified = 0;
     private int responseCode = HttpURLConnection.HTTP_OK;
 
     public URLSource(final URL url) {
+        this(url, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+    }
+
+    /**
+     * @param url the URL to read from
+     * @param connectTimeout the connect timeout in milliseconds, 0 means no timeout
+     * @param readTimeout the read timeout in milliseconds, 0 means no timeout
+     */
+    public URLSource(final URL url, final int connectTimeout, final int readTimeout) {
         super(hashKey(url.toString()));
         this.url = url;
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
     }
 
     @Override
@@ -85,14 +107,34 @@ public class URLSource extends AbstractSource {
         return url;
     }
 
+    /**
+     * Open a connection to the URL with bounded connect and read timeouts, so a slow or silent
+     * remote host cannot block the calling thread (which usually holds a broker) indefinitely.
+     *
+     * @return the configured, not yet connected, connection
+     *
+     * @throws IOException if the connection cannot be opened
+     */
+    private URLConnection openConnection() throws IOException {
+        final URLConnection conn = url.openConnection();
+        conn.setConnectTimeout(connectTimeout);
+        conn.setReadTimeout(readTimeout);
+        if (conn instanceof HttpURLConnection httpConnection) {
+            httpConnection.setRequestProperty("Accept", ACCEPT_HEADER);
+        }
+        return conn;
+    }
+
     private long getLastModification() {
         try {
             if (connection == null) {
-                connection = url.openConnection();
+                connection = openConnection();
             }
             return connection.getLastModified();
         } catch (final IOException e) {
             LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
+            // do not reuse a failed connection, e.g. one that timed out
+            connection = null;
             return 0;
         }
     }
@@ -113,7 +155,7 @@ public class URLSource extends AbstractSource {
     @Override
     public Charset getEncoding() throws IOException {
         if (connection == null) {
-            connection = url.openConnection();
+            connection = openConnection();
             lastModified = connection.getLastModified();
         }
         final String contentType = connection.getContentType();
@@ -137,10 +179,7 @@ public class URLSource extends AbstractSource {
     public Reader getReader() throws IOException {
         try {
             if (connection == null) {
-                connection = url.openConnection();
-                if (connection instanceof HttpURLConnection lConnection) {
-                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
-                }
+                connection = openConnection();
 
                 lastModified = connection.getLastModified();
 
@@ -156,6 +195,7 @@ public class URLSource extends AbstractSource {
             return reader;
         } catch (final IOException e) {
             LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
+            connection = null;
             throw e;
         }
     }
@@ -164,10 +204,7 @@ public class URLSource extends AbstractSource {
     public InputStream getInputStream() throws IOException {
         try {
             if (connection == null) {
-                connection = url.openConnection();
-                if (connection instanceof HttpURLConnection lConnection) {
-                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
-                }
+                connection = openConnection();
 
                 lastModified = connection.getLastModified();
 
@@ -184,10 +221,12 @@ public class URLSource extends AbstractSource {
 
         } catch (final ConnectException e) {
             LOG.warn("Unable to connect to URL '{}': {}", url, e.getMessage());
+            connection = null;
             throw e;
 
         } catch (final IOException e) {
             LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
+            connection = null;
             throw e;
         }
     }
@@ -196,10 +235,7 @@ public class URLSource extends AbstractSource {
     public String getContent() {
         try {
             if (connection == null) {
-                connection = url.openConnection();
-                if (connection instanceof HttpURLConnection lConnection) {
-                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
-                }
+                connection = openConnection();
 
                 lastModified = connection.getLastModified();
 
@@ -212,6 +248,7 @@ public class URLSource extends AbstractSource {
             return content;
         } catch (final IOException e) {
             LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
+            connection = null;
             return null;
         }
     }

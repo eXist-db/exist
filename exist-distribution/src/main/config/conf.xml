@@ -936,11 +936,18 @@
                 Set to "no" if a call to doc(), xmldb:document(), collection() or 
                 xmldb:xcollection() should return an empty sequence when an 
                 XML resource can not be retrieved. 
+            - url-connect-timeout
+                Connect timeout in milliseconds when reading a module, document
+                or text from a URL. 0 means no timeout.
+            - url-read-timeout
+                Read timeout in milliseconds when reading from a URL: the
+                longest wait for data between two reads. 0 means no timeout.
     -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no"
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="strict"
-            raise-error-on-failed-retrieval="no">
+            raise-error-on-failed-retrieval="no"
+            url-connect-timeout="10000" url-read-timeout="30000">
         
         <builtin-modules>
 
