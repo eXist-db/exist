@@ -1,0 +1,43 @@
+exist-core/src/main/java/org/exist/source/SourceFactory.java
+  s_7e2af69631cddd::t_575bde21bd6a56 45,49,176,189-198
+exist-core/src/main/java/org/exist/source/URLSource.java
+  s_7e2af69631cddd::t_1c2448c1c806a8 54-62,64-65,71-79,82-83,110-127,131,158,182,207,238
+  s_7e2af69631cddd::t_51f9ac2d56d5bc 136-137,198,224,229,251
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_7e2af69631cddd::t_42458eee30548e 34,226-227,232-233
+  s_7e2af69631cddd::t_03e21c016a839c 224,230-231,579
+  s_7e2af69631cddd::t_69fc6233c6928d 488-497,580-581
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_7e2af69631cddd::t_0a963c3453cb9c 133-134,148-149
+  s_7e2af69631cddd::t_689ab12f01d8eb 132,146-147,2757-2763,2796-2800,2802-2804,2806,2812,2816-2819
+  s_7e2af69631cddd::t_1f7e2572c23d5c 40-41,158-159,2756,2801,2805,2807-2811,2813-2815
+exist-core/src/test/java/org/exist/xquery/ModuleNamespaceUrlResolutionTest.java
+  s_7e2af69631cddd::t_13e172e0de784a 1-24,27-30,33,38-41,43-45,49-57,61-65,67-77,92-93,122,124,126-127,129-137,142-144,145-146,226-229,231-238,240-242,244,246-255
+  s_7e2af69631cddd::t_33005f63e39c71 25-26,31-32,34-37,48,58-59,66,78-88,95-103,108-117,140,147-182,218-227,230,243,245
+  s_7e2af69631cddd::t_ec08bb7ee7bb0d 42,46-47,60,89-91,94,107,120-137,139,141-144,183-217,239
+exist-distribution/src/main/config/conf.xml
+  s_7e2af69631cddd::t_1a8475fbc22bcc 944-949,954,956
+  s_7e2af69631cddd::t_0d037b9b8ffc1e 939-943,955
+schema/conf.xsd
+  s_7e2af69631cddd::t_fb6479f112694d 11,1377-1394
+  s_7e2af69631cddd::t_fa1afe470f88bb 1365-1370,1374-1376
+  s_7e2af69631cddd::t_3216d71badcd37 1371-1373
+exist-core/src/test/java/org/exist/util/ConfigurationTest.java
+  s_7e2af69631cddd::t_4c066b687f1530 25,120-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b0dfbe3935f9c783eb5f313d8d17557241f6699",
+  "prompts": {},
+  "sessions": {
+    "s_7e2af69631cddd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce96e569-ebba-4097-9f1b-98d99581a496",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
