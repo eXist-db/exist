@@ -27,6 +27,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.MultiTermQuery;
+import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.util.Configuration;
@@ -62,6 +63,7 @@ public class QueryOptions {
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
     public static final String OPTION_FILTER_QUERY = "filter-query";
     public static final String OPTION_FILTER = "filter";
+    public static final String OPTION_CANDIDATES = "candidates";
 
     protected enum DefaultOperator {
         OR,
@@ -78,6 +80,8 @@ public class QueryOptions {
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
     protected Set<String> fields = null;
     protected String filterQuery = null;
+    /** The candidates a vector query considers, see {@link #getCandidates()}; 0 for the default. */
+    protected int candidates = 0;
     protected String filterField = null;
     protected Object filterValue = null;
 
@@ -274,6 +278,16 @@ public class QueryOptions {
         return filterQuery;
     }
 
+    /**
+     * The nearest neighbors a vector query looks for, of which it returns the best k: more candidates find better
+     * matches, as the vector index's search explores only as many neighbors as it is asked for.
+     *
+     * @return the number of candidates, or 0 for the default
+     */
+    public int getCandidates() {
+        return candidates;
+    }
+
     public @Nullable String getFilterField() {
         return filterField;
     }
@@ -318,6 +332,17 @@ public class QueryOptions {
                 break;
             case OPTION_FILTER_QUERY:
                 filterQuery = value;
+                break;
+            case OPTION_CANDIDATES:
+                try {
+                    candidates = Integer.parseInt(value.trim());
+                } catch (final NumberFormatException e) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES + " must be an integer");
+                }
+                if (candidates < 1 || candidates > LuceneIndexWorker.MAX_VECTOR_CANDIDATES) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES
+                            + " must be from 1 to " + LuceneIndexWorker.MAX_VECTOR_CANDIDATES + ", got " + candidates);
+                }
                 break;
             default:
                 // unknown option, ignore
