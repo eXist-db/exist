@@ -43,6 +43,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -323,14 +324,41 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         namespaceSymbols.clear();
         mimeTypeSymbols.clear();
         while(is.available() > 0) {
-            readEntry(is);
+            if (!readEntry(is)) {
+                // a crash while the entry was appended: the table is complete without it, as the entry was
+                // not forced to disk, so neither was anything that uses its symbol
+                LOG.warn("{} ends in an incomplete entry, which is ignored; the table will be written again in "
+                        + "full", getFile().toAbsolutePath());
+                needsRewrite = true;
+                break;
+            }
         }
     }
 
-    private void readEntry(final VariableByteInput is) throws IOException {
-        final byte type = is.readByte();
-        final int id = is.readInt();
-        final String key = is.readUTF();
+    /**
+     * Reads an entry.
+     *
+     * @return false if the file ends before the entry does
+     */
+    private boolean readEntry(final VariableByteInput is) throws IOException {
+        final byte type;
+        final int id;
+        final String key;
+        try {
+            type = is.readByte();
+            id = is.readInt();
+            final int length = is.readInt();
+            if (length < 0 || length > is.available()) {
+                return false;
+            }
+            final byte[] data = new byte[length];
+            if (length > 0 && is.read(data) < length) {
+                return false;
+            }
+            key = new String(data, StandardCharsets.UTF_8);
+        } catch (final EOFException e) {
+            return false;
+        }
         //symbol types can be written in any order by SymbolCollection.getById()->SymbolCollection.write()
         switch(SymbolType.valueOf(type)) {
             case NAME:
@@ -344,6 +372,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
                 break;
             //Removed default clause
         }
+        return true;
     }
 
     /**
@@ -476,6 +505,9 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while reading "
                 + this.getFile().toAbsolutePath() + ": " + e.getMessage(), e);
+        } catch (final RuntimeException e) {
+            // e.g. an entry of an unknown type, in a file that is damaged other than at its end
+            throw new EXistException("Could not read " + this.getFile().toAbsolutePath() + ": " + e.getMessage(), e);
         }
     }
 
@@ -506,7 +538,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private void append(final byte[] entry) throws IOException {
         if (needsRewrite) {
-            LOG.warn("Writing the symbol table {} again in full, as an earlier write to it failed",
+            LOG.warn("Writing the symbol table {} again in full, as it may end in part of an entry",
                     getFile().toAbsolutePath());
             rewrite();
         } else {
@@ -618,8 +650,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     /**
-     * Whether the database is read-only, in which case new symbols are kept in memory only: queries may look up
-     * names that aren't in the table, and must not fail because the file can't be written.
+     * Whether the database is read-only, in which case a new symbol that can't be written is kept in memory only:
+     * queries may look up names that aren't in the table, and must not fail because the file can't be written.
      */
     private boolean isReadOnly() {
         return pool != null && pool.isReadOnly();
@@ -629,12 +661,15 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     public synchronized void close() throws IOException {
         outBuffer.close();
         try {
-            if (fileSize >= 0 && !isReadOnly()) {
-                if (needsRewrite) {
-                    rewrite();
-                } else {
-                    checkFile();
+            if (fileSize >= 0) {
+                if (!isReadOnly()) {
+                    if (needsRewrite) {
+                        rewrite();
+                    } else {
+                        checkFile();
+                    }
                 }
+                // also in a read-only database, for what was appended before it became read-only
                 sync();
             }
         } finally {
@@ -731,14 +766,19 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
             // ids start at 1, not 0
             id = offset + 1;
-            if (isReadOnly()) {
-                if (!warnedReadOnly) {
-                    warnedReadOnly = true;
-                    LOG.warn("The database is read-only: new symbols, such as '{}', are kept in memory only", name);
-                }
-            } else {
+            try {
                 // the entry is written before the id is used (#2220)
                 write(id, name);
+            } catch (final UncheckedIOException e) {
+                if (!isReadOnly()) {
+                    throw e;
+                }
+                // a read-only database stores nothing: a name a query looks up is kept in memory only
+                if (!warnedReadOnly) {
+                    warnedReadOnly = true;
+                    LOG.warn("The database is read-only: new symbols, such as '{}', are kept in memory only: {}",
+                            name, e.getMessage());
+                }
             }
             add(id, name);
             changed = true;

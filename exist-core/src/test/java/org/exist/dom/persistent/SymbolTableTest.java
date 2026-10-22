@@ -30,6 +30,7 @@ import org.easymock.Capture;
 import org.exist.storage.io.VariableByteOutputStream;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -167,11 +168,18 @@ class SymbolTableTest {
 
         verify(mockOs);
 
-        //read expectations
+        //read expectations: the name is read as its length and bytes, as writeUTF writes it
+        final byte[] utf = strCapture.getValue().getBytes(StandardCharsets.UTF_8);
         expect(mockIs.available()).andReturn(1);
         expect(mockIs.readByte()).andReturn(byteCapture.getValue());
         expect(mockIs.readInt()).andReturn(intCapture.getValue());
-        expect(mockIs.readUTF()).andReturn(strCapture.getValue());
+        expect(mockIs.readInt()).andReturn(utf.length);
+        expect(mockIs.available()).andReturn(utf.length);
+        expect(mockIs.read(isA(byte[].class))).andAnswer(() -> {
+            final byte[] data = (byte[]) getCurrentArgument(0);
+            System.arraycopy(utf, 0, data, 0, utf.length);
+            return utf.length;
+        });
         expect(mockIs.available()).andReturn(0);
 
         replay(mockIs);

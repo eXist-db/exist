@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,6 +43,9 @@ import static org.easymock.EasyMock.replay;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * The symbol table keeps every name when something other than eXist-db replaces or changes symbols.dbx while the
@@ -148,40 +152,133 @@ class SymbolTableFileReplacedTest {
     }
 
     /**
-     * A crash while an entry is appended leaves part of it at the end of the file: the entries before it load.
+     * A crash while an entry is appended leaves part of it at the end of the file: the entries before it load, and
+     * the file is written again in full before anything is appended after the part.
      */
     @Test
     void partOfAnEntryAtTheEnd() throws Exception {
-        final SymbolTable symbols = open();
-        final short a = symbols.getSymbol("a");
-        symbols.getSymbol("a-longer-name-of-which-only-part-is-written");
-        symbols.close();
-        final long size = Files.size(file());
-        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE)) {
-            channel.truncate(size - 5);
-        }
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        first.getSymbol("a-longer-name-of-which-only-part-is-written");
+        first.close();
+        truncateBy(5);
 
-        assertNames(a, "a");
+        final SymbolTable second = open();
+        assertEquals("a", second.getName(a));
+        final short b = second.getSymbol("b");
+        second.close();
+
+        assertNames(a, "a", b, "b");
     }
 
     /**
-     * In a read-only database, a query may look up a name that isn't in the table: it is kept in memory only, and
-     * the file is not written.
+     * The case from review: after part of an entry is left at the end, a session appends two names, and the session
+     * after it loads every name.
+     */
+    @Test
+    void partOfAnEntryAtTheEndThenTwoNamesThenRestart() throws Exception {
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        first.getSymbol("a-longer-name-of-which-only-part-is-written");
+        first.close();
+        truncateBy(5);
+
+        final SymbolTable second = open();
+        final short c = second.getSymbol("c");
+        final short d = second.getSymbol("d");
+        second.close();
+
+        assertNames(a, "a", c, "c", d, "d");
+    }
+
+    @Test
+    void partOfAnEntryAtTheEndInASessionWithoutNewNames() throws Exception {
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        first.getSymbol("a-longer-name-of-which-only-part-is-written");
+        first.close();
+        truncateBy(5);
+
+        open().close();
+        final SymbolTable third = open();
+        final short b = third.getSymbol("b");
+        third.close();
+
+        assertNames(a, "a", b, "b");
+    }
+
+    @Test
+    void partOfAnEntryAtTheEndCutInItsLength() throws Exception {
+        final SymbolTable first = open();
+        final short a = first.getSymbol("a");
+        first.getSymbol("x");
+        first.close();
+        // type byte and id only
+        truncateBy(2);
+
+        final SymbolTable second = open();
+        final short b = second.getSymbol("b");
+        second.close();
+
+        assertNames(a, "a", b, "b");
+    }
+
+    private void truncateBy(final int bytes) throws IOException {
+        final long size = Files.size(file());
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE)) {
+            channel.truncate(size - bytes);
+        }
+    }
+
+    /**
+     * In a read-only database, a query may look up a name that isn't in the table: if the file can't be written, the
+     * name is kept in memory only, and the query doesn't fail.
      */
     @Test
     void readOnlyDatabase() throws Exception {
         open().close();
         final byte[] before = Files.readAllBytes(file());
-        final BrokerPool pool = createMock(BrokerPool.class);
-        expect(pool.isReadOnly()).andReturn(true).anyTimes();
-        replay(pool);
-
-        final SymbolTable symbols = open(pool);
-        final short id = symbols.getSymbol("not-in-the-table");
-        assertEquals("not-in-the-table", symbols.getName(id));
-        symbols.close();
+        final SymbolTable symbols = open(pool(true));
+        assertTrue(file().toFile().setWritable(false));
+        // a superuser can write the file anyway
+        assumeFalse(Files.isWritable(file()));
+        try {
+            final short id = symbols.getSymbol("not-in-the-table");
+            assertEquals("not-in-the-table", symbols.getName(id));
+            symbols.close();
+        } finally {
+            file().toFile().setWritable(true);
+        }
 
         assertArrayEquals(before, Files.readAllBytes(file()));
+    }
+
+    /**
+     * In a database that can be written, a symbol that can't be written fails the operation, rather than being used
+     * without being on disk.
+     */
+    @Test
+    void symbolThatCannotBeWritten() throws Exception {
+        open().close();
+        final SymbolTable symbols = open(pool(false));
+        assertTrue(file().toFile().setWritable(false));
+        // a superuser can write the file anyway
+        assumeFalse(Files.isWritable(file()));
+        try {
+            assertThrows(UncheckedIOException.class, () -> symbols.getSymbol("not-in-the-table"));
+            // nor was it kept in memory, to be used without being on disk
+            assertThrows(UncheckedIOException.class, () -> symbols.getSymbol("not-in-the-table"));
+        } finally {
+            file().toFile().setWritable(true);
+            symbols.close();
+        }
+    }
+
+    private static BrokerPool pool(final boolean readOnly) {
+        final BrokerPool pool = createMock(BrokerPool.class);
+        expect(pool.isReadOnly()).andReturn(readOnly).anyTimes();
+        replay(pool);
+        return pool;
     }
 
     @Test
