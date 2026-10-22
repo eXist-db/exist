@@ -1,0 +1,14 @@
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  h_ff0005bef58c9d 197,206-208,218-219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d5672670e308c0a30cc7620edcc726b5413365a",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
