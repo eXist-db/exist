@@ -33,37 +33,39 @@ import org.exist.xquery.value.*;
  * 
  * @author wolf
  */
-public class UntypedValueCheck extends AbstractExpression {
+public class UntypedValueCheck extends AbstractRewritableExpression {
 
-	private final Expression expression;
 	private final int requiredType;
 	private final Error error;
     private final boolean atomize;
-    
+
     public UntypedValueCheck(XQueryContext context, int requiredType) {
         this(context, requiredType, (Expression) null);
     }
-    
+
     public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression) {
         this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));
     }
-    
+
 	public UntypedValueCheck(XQueryContext context, int requiredType, Error error) {
         this(context, requiredType, null, error);
     }
-    
+
 	public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression, Error error) {
-		super(context);
+		super(context, unwrapAtomize(expression, requiredType));
 		this.requiredType = requiredType;
-        if (expression instanceof Atomize atomize1 && !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
-            this.expression = atomize1.getExpression();
-            this.atomize = true;
-        } else {
-            this.expression = expression;
-            this.atomize = false;
-        }
+        this.atomize = isAtomizeUnwrapped(expression, requiredType);
         this.error = error;
 	}
+
+    private static boolean isAtomizeUnwrapped(final Expression expression, final int requiredType) {
+        return expression instanceof Atomize && !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE);
+    }
+
+    private static Expression unwrapAtomize(final Expression expression, final int requiredType) {
+        return isAtomizeUnwrapped(expression, requiredType)
+                ? ((Atomize) expression).getExpression() : expression;
+    }
 	
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
@@ -203,13 +205,4 @@ public class UntypedValueCheck extends AbstractExpression {
         return expression.getColumn();
     }
 
-    public int getSubExpressionCount() {
-    	return 1;
-    }
-    
-    public Expression getSubExpression(int index) {
-    	if (index == 0) {return expression;}
-    	
-	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
-    }
 }
