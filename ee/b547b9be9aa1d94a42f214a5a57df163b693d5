@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/unicode-supplementary-lucene.xql
+  s_15ffdc06d1db19::t_45d136fa5b7bfa 220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eeb547b9be9aa1d94a42f214a5a57df163b693d5",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

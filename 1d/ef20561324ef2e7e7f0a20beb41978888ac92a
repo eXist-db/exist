@@ -25,6 +25,8 @@ extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchSc
   s_15ffdc06d1db19::t_b0c1ebb8adc115 1-26,28-33,37-48,49-58,60-61,63-205,207-239,241,243-262,264,266-298,315-324,327-337,340,343,345-383,384-432,441-442
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
   s_15ffdc06d1db19::t_b7367d6e1fe359 68-78,80,83,87
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_15ffdc06d1db19::t_58de9061bc2f9b 302-328
 ---
 {
   "schema_version": "authorship/3.0.0",
