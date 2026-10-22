@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/NoDiacriticsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_28b0cb75cfa1d7 103-111
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/EnglishStopwordsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_15eb00b4b149e7 67-75
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-stemmed.xqm
+  s_15ffdc06d1db19::t_29ef3ac8ebfa00 1-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b49e73e9517169c2498dbcaf76426325459a2673",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
