@@ -207,6 +207,26 @@ class SymbolTableFileReplacedTest {
         assertNames(a, "a", b, "b");
     }
 
+    /**
+     * The id of an incomplete entry, if it can be read, is not given to the next new symbol.
+     */
+    @Test
+    void idOfAnIncompleteEntryIsNotReused() throws Exception {
+        final SymbolTable first = open();
+        first.getSymbol("a");
+        final short torn = first.getSymbol("a-longer-name-of-which-only-part-is-written");
+        first.close();
+        truncateBy(5);
+
+        final SymbolTable second = open();
+        // as an id the table doesn't know
+        assertEquals("", second.getName(torn));
+        final short b = second.getSymbol("b");
+        second.close();
+
+        assertEquals(torn + 1, b);
+    }
+
     @Test
     void partOfAnEntryAtTheEndCutInItsLength() throws Exception {
         final SymbolTable first = open();

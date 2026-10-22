@@ -152,6 +152,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     private @Nullable BrokerPool pool = null;
     private boolean warnedReadOnly = false;
+    private boolean warnedRewrite = false;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -336,27 +337,54 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     /**
+     * Keeps the id of an incomplete entry from being given to a new symbol, if its type and id could be read: nothing
+     * refers to it, as it never reached the disk, but nothing needs to rely on that.
+     */
+    private void reserve(final byte type, final int id) {
+        if (id <= 0 || id > Short.MAX_VALUE) {
+            return;
+        }
+        final SymbolCollection collection;
+        try {
+            collection = switch (SymbolType.valueOf(type)) {
+                case NAME -> localNameSymbols;
+                case NAMESPACE -> namespaceSymbols;
+                case MIMETYPE -> mimeTypeSymbols;
+            };
+        } catch (final IllegalArgumentException e) {
+            return;
+        }
+        if (id > collection.offset) {
+            collection.symbolsById = collection.ensureCapacity(collection.symbolsById, id);
+            collection.offset = (short) id;
+        }
+    }
+
+    /**
      * Reads an entry.
      *
      * @return false if the file ends before the entry does
      */
     private boolean readEntry(final VariableByteInput is) throws IOException {
-        final byte type;
-        final int id;
+        byte type = -1;
+        int id = -1;
         final String key;
         try {
             type = is.readByte();
             id = is.readInt();
             final int length = is.readInt();
             if (length < 0 || length > is.available()) {
+                reserve(type, id);
                 return false;
             }
             final byte[] data = new byte[length];
             if (length > 0 && is.read(data) < length) {
+                reserve(type, id);
                 return false;
             }
             key = new String(data, StandardCharsets.UTF_8);
         } catch (final EOFException e) {
+            reserve(type, id);
             return false;
         }
         //symbol types can be written in any order by SymbolCollection.getById()->SymbolCollection.write()
@@ -538,8 +566,12 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private void append(final byte[] entry) throws IOException {
         if (needsRewrite) {
-            LOG.warn("Writing the symbol table {} again in full, as it may end in part of an entry",
-                    getFile().toAbsolutePath());
+            if (!warnedRewrite) {
+                // once, until it succeeds: in a read-only database, it is tried again for each new symbol
+                warnedRewrite = true;
+                LOG.warn("Writing the symbol table {} again in full, as it may end in part of an entry",
+                        getFile().toAbsolutePath());
+            }
             rewrite();
         } else {
             checkFile();
@@ -647,6 +679,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         recordFile();
         unsynced = false;
         needsRewrite = false;
+        warnedRewrite = false;
     }
 
     /**
@@ -751,7 +784,9 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             if(id <= 0 || id > offset) {
                 return ""; //TODO : raise an exception ? -pb
             }
-            return symbolsById[id];
+            // null for the id of an incomplete entry, which is reserved
+            final String symbol = symbolsById[id];
+            return symbol != null ? symbol : "";
         }
 
         public synchronized int getId(final String name) {
