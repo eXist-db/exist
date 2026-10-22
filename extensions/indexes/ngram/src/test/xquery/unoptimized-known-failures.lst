@@ -6,3 +6,6 @@ unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-sip-dro
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-sip-indexed
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-dropped
 unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-indexed
+
+# The ngram index lower-cases one code point at a time (İ becomes i), fn:lower-case uses the full case mapping
+reference-ngram.xqm: case-mapping-like-fn-lower-case

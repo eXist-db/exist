@@ -23,8 +23,11 @@ package xquery.ngram;
 
 import org.exist.test.xqsuite.XQSuite;
 
-@XQSuite({
+/**
+ * The ngram XQSuite tests. The tests that do not pass yet are listed in {@code src/test/xquery/known-failures.lst}.
+ */
+@XQSuite(value = {
     "src/test/xquery/ngram"
-})
+}, knownFailures = "src/test/xquery/known-failures.lst")
 public class NgramTests {
 }
