@@ -6,6 +6,11 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWor
   "git_ai_version": "1.7.5",
   "base_commit_sha": "eb1ad9d102403de9aeb954a70993d14cb5f834cb",
   "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
   "sessions": {
     "s_15ffdc06d1db19": {
       "agent_id": {
