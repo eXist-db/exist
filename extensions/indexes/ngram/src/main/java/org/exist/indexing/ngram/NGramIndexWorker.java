@@ -1132,7 +1132,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         if (contextSet != null) {
                             final int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
-                                final NodeProxy parentNode = contextSet.parentWithChild(nodeProxy, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                final NodeProxy contextNode = contextSet.parentWithChild(nodeProxy, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                // the matches go on a node of their own, not on the context node: the searches for the
+                                // parts of a query each find their own matches, which are then put together in order
+                                final NodeProxy parentNode = contextNode == null ? null : ownNode(contextNode);
                                 if (parentNode != null) {
                                     readMatches(ngram, is, nodeId, freq, parentNode);
                                     resultSet.add(parentNode, sizeHint);
@@ -1156,6 +1159,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.error(e.getMessage(), e);
                 return true;
             }
+        }
+
+        private NodeProxy ownNode(final NodeProxy contextNode) {
+            final NodeProxy node = new NodeProxy(contextNode.getExpression(), contextNode.getOwnerDocument(),
+                    contextNode.getNodeId(), contextNode.getNodeType(), contextNode.getInternalAddress());
+            node.copyContext(contextNode);
+            return node;
         }
 
         private short nameTypeToNodeType(final byte nameType) {
