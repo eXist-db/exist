@@ -91,7 +91,6 @@ function t:teardown() {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(4, 4)
 function t:element-differs() {
     let $parent := $t:ROOT || "-divs-bodies"
@@ -102,7 +101,6 @@ function t:element-differs() {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(4, 4)
 function t:element-differs-other-order() {
     let $parent := $t:ROOT || "-bodies-divs"
@@ -113,7 +111,6 @@ function t:element-differs-other-order() {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(8)
 function t:name-differs() {
     count(collection($t:ROOT || "-two-names")//div[ft:query-vector(., $t:VEC, 10)])
