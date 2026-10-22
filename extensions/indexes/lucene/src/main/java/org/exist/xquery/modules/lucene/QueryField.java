@@ -63,7 +63,15 @@ public class QueryField extends Query implements Optimizable {
                                        <phrase-slop>number</phrase-slop>
                                        <leading-wildcard>yes|no</leading-wildcard>
                                        <filter-rewrite>yes|no</filter-rewrite>
-                                    </options>"""
+                                       <phrase-as-near>yes|no</phrase-as-near>
+                                    </options>
+
+                                    phrase-as-near: a sloppy phrase in the string syntax ('"a b"~n', or any phrase when phrase-slop is set)
+                                    matches as <near slop="n"> does: in order, with at most n positions between the terms; a stopword dropped
+                                    from the query doesn't count. Unlike the plain phrase, it doesn't tolerate reordering, nor match
+                                    '"fair is foul"~1' in "fair is a foul thing". Exact phrases are unchanged. It doesn't apply to filter-query
+                                    or to the XML form <phrase slop="n">. ft:score values differ, as spans and phrases score differently.
+                                    See https://github.com/eXist-db/exist/issues/833"""
                             )
                     )
             )
