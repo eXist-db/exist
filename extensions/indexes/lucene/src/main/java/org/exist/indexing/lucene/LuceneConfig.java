@@ -314,6 +314,21 @@ public class LuceneConfig {
         return paths.values();
     }
 
+    /**
+     * Returns every configured index head — qname paths, wildcard paths, and named indexes — for
+     * full introspection of the configured fields and facets (e.g. ft:fields). Each head may chain
+     * further configs via {@link LuceneIndexConfig#getNext()}.
+     *
+     * @return all configured index heads
+     */
+    public Collection<LuceneIndexConfig> getAllIndexConfigurations() {
+        // a named index is registered by its path too, so the paths hold every configuration once
+        final List<LuceneIndexConfig> all = new ArrayList<>(paths.size() + wildcardPaths.size());
+        all.addAll(paths.values());
+        all.addAll(wildcardPaths);
+        return all;
+    }
+
     public Analyzer getAnalyzer(QName qname) {
         if (qname == null) {
             return analyzers.getDefaultAnalyzer();
