@@ -56,6 +56,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.transform.OutputKeys;
@@ -297,7 +298,7 @@ public class RequestBuilder {
         final boolean isMultipart = !multipartBodies.isEmpty();
         applyHeaders(builder, isMultipart);
         applyAuthorization(builder, authorizationHeader);
-        applyBody(builder, method.toUpperCase(), isMultipart);
+        applyBody(builder, method.toUpperCase(Locale.ROOT), isMultipart);
         return builder.build();
     }
 
@@ -518,7 +519,7 @@ public class RequestBuilder {
         final String pwd = allOptions.userCredentials().password() != null ? allOptions.userCredentials().password() : "";
         final String digestUri = href;
         final String ha1 = md5(allOptions.userCredentials().username() + ":" + realm + ":" + pwd);
-        final String ha2 = md5(method.toUpperCase() + ":" + digestUri);
+        final String ha2 = md5(method.toUpperCase(Locale.ROOT) + ":" + digestUri);
 
         final StringBuilder value = new StringBuilder()
                 .append("username=\"").append(allOptions.userCredentials().username()).append("\", ")
@@ -568,7 +569,7 @@ public class RequestBuilder {
         for (final String part : params.split(",")) {
             final int eq = part.indexOf('=');
             if (eq > 0) {
-                final String key = part.substring(0, eq).trim().toLowerCase();
+                final String key = part.substring(0, eq).trim().toLowerCase(Locale.ROOT);
                 String val = part.substring(eq + 1).trim();
                 if (val.length() >= 2 && val.startsWith("\"") && val.endsWith("\"")) {
                     val = val.substring(1, val.length() - 1);

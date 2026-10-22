@@ -243,7 +243,7 @@ class Options {
     }
 
     private Delivery.Format getDeliveryFormat(final XSLTVersion xsltVersion, final MapType options) throws XPathException {
-        final String deliveryFormatString = Options.DELIVERY_FORMAT.get(xsltVersion, options).orElse(new StringValue(Delivery.Format.DOCUMENT.name())).getStringValue().toUpperCase();
+        final String deliveryFormatString = Options.DELIVERY_FORMAT.get(xsltVersion, options).orElse(new StringValue(Delivery.Format.DOCUMENT.name())).getStringValue().toUpperCase(Locale.ROOT);
         final Delivery.Format format;
         try {
             format = Delivery.Format.valueOf(deliveryFormatString);

@@ -910,7 +910,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
         final Analyzer analyzer = getAnalyzer(qname, field, docs);
-        final String content = !isCaseSensitive(qname, field, docs) ? data.toLowerCase() : data;
+        final String content = !isCaseSensitive(qname, field, docs) ? data.toLowerCase(Locale.ROOT) : data;
         if (LOG.isDebugEnabled()) {
             LOG.debug("ANALYZE field={} qname={} input={} analyzer={} caseSensitive={}",
                     field, qname, content, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));

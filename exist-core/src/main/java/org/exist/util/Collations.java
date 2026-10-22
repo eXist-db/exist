@@ -177,7 +177,7 @@ public class Collations {
 
             final String query = u.getQuery();
             if (query == null) {
-                collator = Collator.getInstance();
+                collator = Collator.getInstance(ULocale.ROOT);
 
             } else {
 
@@ -770,7 +770,8 @@ public class Collations {
      */
     private static ULocale getLocale(@Nullable final String lang, @Nullable final Expression expression) throws XPathException {
         if(lang == null) {
-            return ULocale.getDefault();
+            // not the JVM default, so that a collation URI means the same on every machine
+            return ULocale.ROOT;
         } else {
             final String[] components = lang.split("-");
             return switch (components.length) {

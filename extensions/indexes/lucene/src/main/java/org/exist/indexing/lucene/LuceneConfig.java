@@ -507,7 +507,7 @@ public class LuceneConfig {
                                 final String vs = elem.getAttribute(VECTOR_STORE).trim();
                                 if (!vs.isEmpty()) {
                                     if (VECTOR_STORE_LUCENE.equalsIgnoreCase(vs) || VECTOR_STORE_DB.equalsIgnoreCase(vs)) {
-                                        vectorStore = vs.toLowerCase();
+                                        vectorStore = vs.toLowerCase(Locale.ROOT);
                                     } else {
                                         throw new DatabaseConfigurationException("lucene vector-store must be 'lucene' or 'db', got: " + vs);
                                     }

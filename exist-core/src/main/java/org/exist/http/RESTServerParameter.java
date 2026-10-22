@@ -21,6 +21,8 @@
  */
 package org.exist.http;
 
+import java.util.Locale;
+
 /**
  * Enumeration of each Parameter
  * used by the RESTServer
@@ -388,6 +390,6 @@ enum RESTServerParameter {
      * @return The parameter key, suitable for use in an XML document
      */
     public String xmlKey() {
-        return name().toLowerCase().replace('_', '-');
+        return name().toLowerCase(Locale.ROOT).replace('_', '-');
     }
 }

@@ -44,6 +44,7 @@ import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Locale;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
@@ -139,7 +140,7 @@ public class TimePragma extends AbstractPragma {
      */
     private static String nsOrMsStr(final long nanoseconds)  {
         final Tuple2<Long, String> time = nsOrMs(nanoseconds);
-        return "%d %s".formatted(time._1, time._2);
+        return String.format(Locale.ROOT, "%d %s", time._1, time._2);
     }
 
     /**
@@ -173,7 +174,7 @@ public class TimePragma extends AbstractPragma {
      */
     private static String nsOrMsStrDbl(final double nanoseconds)  {
         final Tuple2<Double, String> time = nsOrMsDbl(nanoseconds);
-        return "%.2f %s".formatted(time._1, time._2);
+        return String.format(Locale.ROOT, "%.2f %s", time._1, time._2);
     }
 
     private void logSingleMeasurement(final Expression expression) {

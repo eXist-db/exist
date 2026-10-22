@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
@@ -656,7 +657,7 @@ public abstract class Function extends PathExpr {
             return "Function " + qname.getStringValue() + "() is not defined in module namespace: " + uri;
         }
 
-        return String.format("""
+        return String.format(Locale.ROOT, """
             Unexpectedly received %d parameter(s) in call to function '%s()'.
             Defined function signatures are:
             %s

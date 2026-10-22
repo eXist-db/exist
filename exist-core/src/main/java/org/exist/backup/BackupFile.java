@@ -26,13 +26,14 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 
 public class BackupFile {
     private final File file;
     private Date date;
 
-    private final DateFormat dateFormat = new SimpleDateFormat(BackupDirectory.DATE_FORMAT_PICTURE);
+    private final DateFormat dateFormat = new SimpleDateFormat(BackupDirectory.DATE_FORMAT_PICTURE, Locale.ROOT);
 
     public BackupFile(final File file, final String dateTime) {
         this.file = file;

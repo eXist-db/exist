@@ -47,6 +47,7 @@ import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Principal;
+import java.util.Locale;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -251,7 +252,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 
         // Secondly try basic authentication if there is no Authorization header or the Authorization header does not indicate Basic auth
         final String auth = request.getHeader("Authorization");
-        if ((auth == null || !auth.toLowerCase().startsWith("basic ")) && getDefaultUser() != null) {
+        if ((auth == null || !auth.toLowerCase(Locale.ROOT).startsWith("basic ")) && getDefaultUser() != null) {
             return getDefaultUser();
         }
         return getAuthenticator().authenticate(request, response, true);
