@@ -314,7 +314,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             return NodeSet.EMPTY_SET;
         }
 
-        if (requiresFallback(operator, keys)) {
+        if (requiresFallback(operator, keys, contextSequence)) {
             return ((Optimizable) fallback).preSelect(contextSequence, useContext);
         }
 
@@ -327,7 +327,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         }
 
         try {
-            preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT, matchFlags);
+            preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT, matchFlags, isRewrittenMatches());
         } catch (XPathException | IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
@@ -348,21 +348,36 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     }
 
     private int getMatchFlags(Sequence contextSequence) throws XPathException {
+        return getFlags(contextSequence).contains("i") ? RegExp.ASCII_CASE_INSENSITIVE : 0;
+    }
+
+    private String getFlags(final Sequence contextSequence) throws XPathException {
         if (getArgumentCount() < 3 || !isCalledAs("matches")) {
-            return 0;
+            return "";
         }
-        final String flags = getArgument(2).eval(contextSequence, null).getStringValue();
-        return flags.contains("i") ? RegExp.ASCII_CASE_INSENSITIVE : 0;
+        return getArgument(2).eval(contextSequence, null).getStringValue();
+    }
+
+    /**
+     * @return true if this lookup is an fn:matches call the optimizer rewrote, whose pattern is in XPath's syntax and
+     *     which falls back to fn:matches; a range:matches call has no fallback, and its pattern is in Lucene's syntax
+     */
+    private boolean isRewrittenMatches() {
+        return fallback != null;
     }
 
     /**
      * Decide if this lookup should delegate to the non-index fallback expression instead of using the range index.
      * Used for {@link RangeIndex.Operator#MATCH} when the fn:matches pattern cannot be translated to a Lucene regexp.
      */
-    private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys) throws XPathException {
+    private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys, final Sequence contextSequence) throws XPathException {
         if (operator == RangeIndex.Operator.MATCH && fallback != null && keys.length > 0) {
             final String pattern = keys[0].getStringValue();
-            if (!XPathToLuceneRegexTranslator.isTranslatable(pattern)) {
+            // The flags decide it too: under the i flag, XPath's and Lucene's case variants differ, and the index has
+            // no equivalent of the s, m, x and q flags
+            final String flags = getFlags(contextSequence);
+            if (!flags.chars().allMatch(c -> c == 'i')
+                    || !XPathToLuceneRegexTranslator.isServable(pattern, getMatchFlags(contextSequence))) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("fn:matches pattern '{}' not translatable to Lucene; using fallback", pattern);
                 }
@@ -415,7 +430,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                     return NodeSet.EMPTY_SET;
                 }
                 final RangeIndex.Operator operator = getOperator();
-                if (requiresFallback(operator, keys)) {
+                if (requiresFallback(operator, keys, effectiveContextSequence)) {
                     return ((Optimizable) fallback).preSelect(input.toNodeSet(), true);
                 }
                 List<QName> qnames = null;
@@ -430,11 +445,11 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                             "used with the '" + operator + "' operation.");
                 }
 
-                final int matchFlags = getMatchFlags(contextSequence);
+                final int matchFlags = getMatchFlags(effectiveContextSequence);
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
-                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR, matchFlags);
+                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR, matchFlags, isRewrittenMatches());
                 } catch (IOException e) {
                     throw new XPathException(this, e.getMessage());
                 }
