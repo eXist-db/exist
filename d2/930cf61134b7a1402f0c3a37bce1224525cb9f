@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_15ffdc06d1db19::t_e2ff9c184bad69 225-229
+extensions/indexes/range/src/test/xquery/range/wildcard-name-range-index.xqm
+  s_15ffdc06d1db19::t_70de9552bd0149 1-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d2930cf61134b7a1402f0c3a37bce1224525cb9f",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
