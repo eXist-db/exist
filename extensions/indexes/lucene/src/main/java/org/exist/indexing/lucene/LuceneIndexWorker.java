@@ -1035,14 +1035,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
-            final LuceneConfig config = getLuceneConfig(broker, docs);
-            final Query filterQuery = inContext(buildVectorFilterQuery(options, config, docs), field, docs, within);
+            // the configurations that define the field, whose fields a filter query may refer to
+            final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
+            final List<LuceneConfigs.Group> defining = getVectorFieldGroups(configs, field);
+            if (defining.isEmpty()) {
+                // no configuration defines the field: nothing to find, as ft:query-field finds nothing in an unknown field
+                return resultSet;
+            }
+            final Query filterQuery = inContext(buildVectorFilterQuery(options, defining), field, docs, within);
             final int candidates = vectorCandidates(k, options);
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)
                     : new KnnFloatVectorQuery(field, vector, candidates);
             searchVectorAndProcess(contextId, null, docs, contextSet, resultSet,
-                    searcher, baseQuery, config, k);
+                    searcher, baseQuery, configs.first(), k);
             return resultSet;
         });
     }
@@ -1078,25 +1084,58 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
-            final LuceneConfig config = getLuceneConfig(broker, docs);
+            // the documents' collections may configure different vector fields, or put them on different elements
+            final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
             for (final QName qname : definedIndexes) {
-                final LuceneIndexConfig idxConf = config != null ? config.getIndexConfigForQName(qname) : null;
-                final LuceneVectorFieldConfig vecConf = getFirstVectorField(idxConf);
-                if (vecConf == null) {
-                    continue;
-                }
-                final String field = vecConf.getName();
                 final String indexField = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                // the index type is part of the filter, so that the candidates are all of this qname's index
-                final Query filterQuery = inContext(withIndexType(buildVectorFilterQuery(options, config, docs), indexField),
-                        field, docs, within);
-                final int candidates = vectorCandidates(k, options);
-                final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
-                searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        searcher, vectorQuery, config, k);
+                for (final Map.Entry<String, List<LuceneConfigs.Group>> vectorField : getVectorFields(configs, qname).entrySet()) {
+                    final String field = vectorField.getKey();
+                    // the index type is part of the filter, so that the candidates are all of this qname's index
+                    final Query filterQuery = inContext(withIndexType(buildVectorFilterQuery(options, vectorField.getValue()), indexField),
+                            field, docs, within);
+                    final int candidates = vectorCandidates(k, options);
+                    final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
+                    searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
+                            searcher, vectorQuery, configs.first(), k);
+                }
             }
             return resultSet;
         });
+    }
+
+    /**
+     * @return the configurations that define a vector field of the given name, with their documents
+     */
+    private static List<LuceneConfigs.Group> getVectorFieldGroups(final LuceneConfigs configs, final String fieldName) {
+        final List<LuceneConfigs.Group> defining = new ArrayList<>(1);
+        for (final LuceneConfigs.Group group : configs.groups()) {
+            for (final LuceneIndexConfig idxConf : group.config().getIndexConfigurations()) {
+                if (findVectorField(idxConf, fieldName) != null) {
+                    defining.add(group);
+                    break;
+                }
+            }
+        }
+        return defining;
+    }
+
+    /**
+     * The vector fields configured for a qname, each with the configurations that define it. A field of the same
+     * name in several configurations is one Lucene field, searched once over all the documents.
+     *
+     * @param configs the Lucene configurations of the documents' collections
+     * @param qname the indexed qname
+     * @return the names of the vector fields, in the order of the configurations, with the groups defining each
+     */
+    private static Map<String, List<LuceneConfigs.Group>> getVectorFields(final LuceneConfigs configs, final QName qname) {
+        final Map<String, List<LuceneConfigs.Group>> fields = new LinkedHashMap<>();
+        for (final LuceneConfigs.Group group : configs.groups()) {
+            final LuceneVectorFieldConfig vecConf = getFirstVectorField(group.config().getIndexConfigForQName(qname));
+            if (vecConf != null) {
+                fields.computeIfAbsent(vecConf.getName(), name -> new ArrayList<>(1)).add(group);
+            }
+        }
+        return fields;
     }
 
     @Nullable
@@ -1120,10 +1159,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (fieldName == null || fieldName.isEmpty()) {
             return false;
         }
-        final LuceneConfig config = getLuceneConfig(broker, docs);
-        for (final LuceneIndexConfig idxConf : config.getIndexConfigurations()) {
-            if (findVectorField(idxConf, fieldName) != null) {
-                return true;
+        for (final LuceneConfigs.Group group : LuceneConfigs.of(broker, docs).groups()) {
+            for (final LuceneIndexConfig idxConf : group.config().getIndexConfigurations()) {
+                if (findVectorField(idxConf, fieldName) != null) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1135,11 +1175,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public boolean hasVectorIndexForQNames(final DocumentSet docs, @Nullable final List<QName> qnames)
             throws IOException {
-        final LuceneConfig config = getLuceneConfig(broker, docs);
+        final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
         final List<QName> definedIndexes = getDefinedIndexes(qnames);
         for (final QName qname : definedIndexes) {
-            final LuceneIndexConfig idxConf = config.getIndexConfigForQName(qname);
-            if (getFirstVectorField(idxConf) != null) {
+            if (!getVectorFields(configs, qname).isEmpty()) {
                 return true;
             }
         }
@@ -1184,8 +1223,29 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return IntField.newSetQuery(FIELD_DOC_ID, docIds.build().toArray());
     }
 
+    /**
+     * The filter of a vector query: with several configurations defining the field, each parses the filter query
+     * with its own fields and analyzer, for its own documents.
+     */
     @Nullable
-    private Query buildVectorFilterQuery(final QueryOptions options, @Nullable final LuceneConfig config,
+    private Query buildVectorFilterQuery(final QueryOptions options, final List<LuceneConfigs.Group> defining)
+            throws XPathException {
+        if (defining.size() == 1) {
+            return buildVectorFilterQuery(options, defining.getFirst().config(), defining.getFirst().docs());
+        }
+        final BooleanQuery.Builder any = new BooleanQuery.Builder();
+        for (final LuceneConfigs.Group group : defining) {
+            final Query filter = buildVectorFilterQuery(options, group.config(), group.docs());
+            if (filter != null) {
+                any.add(filter, BooleanClause.Occur.SHOULD);
+            }
+        }
+        final BooleanQuery filters = any.build();
+        return filters.clauses().isEmpty() ? null : filters;
+    }
+
+    @Nullable
+    private Query buildVectorFilterQuery(final QueryOptions options, final LuceneConfig config,
             final DocumentSet docs) throws XPathException {
         final List<Query> filters = new ArrayList<>(4);
         addIfNotNull(filters, buildDocsFilterQuery(docs));
@@ -1224,11 +1284,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Nullable
-    private QueryParserWrapper resolveFilterQueryParser(@Nullable final LuceneConfig config, final DocumentSet docs) {
-        final LuceneConfig cfg = config != null ? config : getLuceneConfig(broker, docs);
-        if (cfg == null) {
-            return null;
-        }
+    private QueryParserWrapper resolveFilterQueryParser(final LuceneConfig cfg, final DocumentSet docs) {
         final String[] fields = getSearchableFieldsForFilter(cfg, docs);
         if (fields.length == 0) {
             return null;
