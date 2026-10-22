@@ -1,0 +1,19 @@
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/UtilExpandHighlightingBenchmark.java
+  s_15ffdc06d1db19::t_8c0ff834dcd338 89-94,145-146,149,166-169,183-186,223-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d34b19d692f9fbac927965ddaa19ac7a80bd1cf",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
