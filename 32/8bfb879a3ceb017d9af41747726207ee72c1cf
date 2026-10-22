@@ -1,0 +1,30 @@
+.github/workflows/ci-benchmarks.yml
+  h_ff0005bef58c9d 29
+.github/workflows/ci-dependency-check.yml
+  h_ff0005bef58c9d 22
+.github/workflows/ci-release-prepare.yml
+  h_ff0005bef58c9d 23
+.github/workflows/ci-release.yml
+  h_ff0005bef58c9d 41,356
+.github/workflows/ci-schema-checks.yml
+  h_ff0005bef58c9d 31
+.github/workflows/ci-test.yml
+  h_ff0005bef58c9d 17
+.github/workflows/ci-xqts-comment.yml
+  h_ff0005bef58c9d 24
+.github/workflows/citation-cff.yml
+  h_ff0005bef58c9d 20
+.github/workflows/prethink.yml
+  h_ff0005bef58c9d 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "328bfb879a3ceb017d9af41747726207ee72c1cf",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
