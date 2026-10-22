@@ -1,0 +1,5 @@
+# Tests of the range reference suite that fail; remove a test once it passes, the suite fails while a listed test passes.
+
+# fn:matches' own index path (FunMatches pre-selection) evaluates patterns with Java's regular expressions, not
+# XPath's, with or without query rewriting; https://github.com/eXist-db/exist/pull/6747 moves it to Saxon's engine
+reference-matches.xqm: index-or-fallback-matches-like-fn-matches
