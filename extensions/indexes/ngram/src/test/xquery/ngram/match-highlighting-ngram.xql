@@ -196,3 +196,31 @@ function mhng:issue4222-match-count-non-continuous-text() {
     let $hits := util:expand($result)
     return count($hits//exist:match)
 };
+
+(: [ngram] a predicate over a variable is evaluated per item: its hits are highlighted :)
+declare
+    %test:assertEquals("tree")
+function mhng:variable-highlights-its-hits() {
+    let $els := doc($mhng:COLLECTION || "/test.xml")//el
+    return string-join(util:expand($els[ngram:contains(., 'tree')])//exist:match ! string(.), "|")
+};
+
+declare %private function mhng:contains-tree($nodes as element()*) as element()* {
+    $nodes[ngram:contains(., 'tree')]
+};
+
+(: [ngram] the same through a function argument :)
+declare
+    %test:assertEquals("tree")
+function mhng:function-argument-highlights-its-hits() {
+    let $hits := mhng:contains-tree(doc($mhng:COLLECTION || "/test.xml")//el)
+    return string-join(util:expand($hits)//exist:match ! string(.), "|")
+};
+
+(: [ngram] a wildcard whose parts are put together, over a variable :)
+declare
+    %test:assertEquals("tree")
+function mhng:variable-wildcard-highlights-its-hits() {
+    let $els := doc($mhng:COLLECTION || "/test.xml")//el
+    return string-join(util:expand($els[ngram:wildcard-contains(., 't.ee')])//exist:match ! string(.), "|")
+};
