@@ -1,0 +1,27 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/InContextQuery.java
+  s_15ffdc06d1db19::t_05828dd2386c6d 1-140
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_6b86e91eaf3942 751-769,966,1006-1007
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_15ffdc06d1db19::t_f66fe264c0e70e 82-87
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_15ffdc06d1db19::t_decd78b503f520 163-164,172,187-225
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_19018051214677 87-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "992f3ceb8c90c3f9c3bed37a1a8de85462dac0b0",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

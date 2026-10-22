@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/xquery/Optimizable.java
+  s_15ffdc06d1db19::t_92a3bdc85fc834 49-61
+exist-core/src/main/java/org/exist/xquery/Optimizer.java
+  s_15ffdc06d1db19::t_3560bb62fe9bf0 508-509,512-515,517,522-532,543
+exist-core/src/main/java/org/exist/xquery/pragmas/Optimize.java
+  s_15ffdc06d1db19::t_e395f880ebf330 147-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1ab95a6182ab4e71b0550e39ad43fd758b4f1d3a",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
