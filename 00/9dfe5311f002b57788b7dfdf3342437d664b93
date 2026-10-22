@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_f3dbe21b980fd5 46,234-276,295-296
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchScope.java
+  s_15ffdc06d1db19::t_f3483bb2c11b38 27,34-36,59,62,206,240,242,263,265,299-314,325-326,338-339,341-342,344,433-440
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-scope.xqm
+  s_15ffdc06d1db19::t_d01d9f2fbea323 48,60,268-286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "009dfe5311f002b57788b7dfdf3342437d664b93",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

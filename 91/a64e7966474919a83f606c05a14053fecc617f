@@ -1,0 +1,35 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_15ffdc06d1db19::t_bca620c7d526a7 317-331
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_15ffdc06d1db19::t_14332b00d2414f 127-136,180-184
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_15ffdc06d1db19::t_5dd1df22fb8934 230-240
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/MetaAnalyzer.java
+  s_15ffdc06d1db19::t_505fa0c85933c9 103-114
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Fields.java
+  s_15ffdc06d1db19::t_efffed4342698a 1-131,134-219
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_aa02aa52c16f61 75
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneScope.java
+  s_15ffdc06d1db19::t_63eed730ac0fb3 30,35,49,51-55,112-151,153-184
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneQueryScopeTests.java
+  s_15ffdc06d1db19::t_c29d3637a1e7de 29-30
+extensions/indexes/lucene/src/test/xquery/lucene/ft-fields.xqm
+  s_15ffdc06d1db19::t_242c91f54dbe5c 1-296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "91a64e7966474919a83f606c05a14053fecc617f",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

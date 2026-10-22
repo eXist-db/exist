@@ -1,0 +1,81 @@
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_15ffdc06d1db19::t_dc954143daf2ce 35,37
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-analyzer-configs.xqm
+  s_15ffdc06d1db19::t_51bbe02fef09f5 1-76,79-98,99-113,114-119,132-135
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-mixed-configs.xqm
+  s_15ffdc06d1db19::t_7db2ea191c7907 1-93,94-103,104-113,114-127
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.java
+  s_15ffdc06d1db19::t_ee19b5e0ff6760 1-23,26-32,35-42,44-65,68-73,78-84,99-104,107,109-112,114-122,145,147-149,160,162-184
+  s_15ffdc06d1db19::t_fc9e0af040f83f 33-34,150-159,161
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_b65bf23e133257 634,637,639-645,646-648,650,683,685-686,688-690,693,706-707,709-711,714,720-740,742-743,745-749,753-754,756-771,971-972,974-976,978,980
+  s_15ffdc06d1db19::t_be0408843ac64f 1015-1016,1059-1060,1063-1065,1073,1079-1112,1134-1138,1150,1153,1239
+  s_15ffdc06d1db19::t_55458bada428b4 53,1420,1988,1991
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/NoDiacriticsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_28b0cb75cfa1d7 103-111
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/EnglishStopwordsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_15eb00b4b149e7 67-75
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-stemmed.xqm
+  s_15ffdc06d1db19::t_29ef3ac8ebfa00 1-182
+exist-core/src/test/java/org/exist/validation/CollectionConfigSchemaAnalyzerChainTest.java
+  s_15ffdc06d1db19::t_2e26ba4735d309 1-125
+exist-distribution/src/main/config/collection.xconf.init
+  s_15ffdc06d1db19::t_2a14d2e2ea24f0 2
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerChain.java
+  s_15ffdc06d1db19::t_9131d275a1b8b1 1-217
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java
+  s_15ffdc06d1db19::t_d32abb9afe72c6 108-110,113,115,119-125
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/IndexQueryAnalyzer.java
+  s_15ffdc06d1db19::t_edeaa3fcab4a2e 1-89
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/MetaAnalyzer.java
+  s_15ffdc06d1db19::t_f80b0e99c95263 41,52,57-66,73-102
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerChainTest.java
+  s_15ffdc06d1db19::t_9caf5f8ea44d7b 1-266
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-chains.xqm
+  s_15ffdc06d1db19::t_ac281ea38716ef 1-229
+schema/collection.xconf.xsd
+  s_15ffdc06d1db19::t_3fda8fb2952b71 9,131-132,134,136-141,143-162
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_15ffdc06d1db19::t_224848067b389a 33-34,36,46,102-153
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/FieldText.java
+  s_15ffdc06d1db19::t_805ff79ea997f5 1-147,148-150,155-160,184
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_15ffdc06d1db19::t_d5f0bbd0354995 26,43-44,47,127-176
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_c1b79e2e747a3e 35,187,196,203
+  s_15ffdc06d1db19::t_ead2b930df1139 197,216-220,236,245
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-scope.xqm
+  s_15ffdc06d1db19::t_af51ed1f26a3aa 1-266
+extensions/indexes/lucene/src/test/xquery/lucene/scope-dls.xqm
+  s_15ffdc06d1db19::t_cfacbd82c8edc7 1-136
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-scope.xqm
+  s_15ffdc06d1db19::t_0372b7c32e2b50 1-229
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneScope.java
+  s_15ffdc06d1db19::t_bbe75ebfaed9f8 1-125
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneQueryScopeTests.java
+  s_15ffdc06d1db19::t_cf49510b301f82 1-32
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryScope.java
+  s_15ffdc06d1db19::t_cd0f450aaad5aa 1-112
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_1502d9e97c0c90 71-74
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchScope.java
+  s_15ffdc06d1db19::t_b0c1ebb8adc115 1-411
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_15ffdc06d1db19::t_b7367d6e1fe359 68-78,80,83,87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9713072bd811bade59293abf18898d1f51351d7a",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
