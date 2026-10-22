@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
@@ -263,7 +264,7 @@ public class NGramSearch extends Function implements Optimizable {
                     qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
-                result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
+                result = onInputNodes(processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR), inNodes);
                 if( context.getProfiler().traceFunctions() ) {
                     // report index use
                     context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
@@ -272,6 +273,32 @@ public class NGramSearch extends Function implements Optimizable {
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence, null).toNodeSet();
+        }
+        return result;
+    }
+
+    /**
+     * The parts of a query are searched and put together on nodes of their own, so that their matches are not mixed;
+     * the result is the input nodes those stand for, with their matches. A predicate evaluated per item keeps its
+     * context item, so that is where the matches have to be.
+     *
+     * @param found the nodes the query found, each a copy of an input node
+     * @param inNodes the input nodes
+     * @return the input nodes found, with the matches
+     */
+    private static NodeSet onInputNodes(final NodeSet found, final NodeSet inNodes) {
+        if (found.isEmpty()) {
+            return found;
+        }
+        final NodeSet result = new NewArrayNodeSet();
+        for (final NodeProxy node : found) {
+            final NodeProxy input = inNodes.get(node);
+            if (input == null) {
+                result.add(node);
+            } else {
+                input.addMatches(node);
+                result.add(input);
+            }
         }
         return result;
     }
