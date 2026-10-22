@@ -1,0 +1,27 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_15ffdc06d1db19::t_ae92dfd6747422 128,131-137,178,180-184,187,624,627-631,641,645
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_15ffdc06d1db19::t_aec7560cf0afdc 32,78-80,82-89,176,187-188,191-193,218-229,264-290,292-293,296,299,301,303,306,308,310,313,315,320-321,338-344,355-357,363,373-377,385,389-390,399-405
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_15ffdc06d1db19::t_687a462429077a 330,351-354,356,358-366,376-380,452
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_15ffdc06d1db19::t_e32a430c2f356b 28,254,263,282-321
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_15ffdc06d1db19::t_16c201186ea15e 836-858
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "01102a95471f85353d5f8fe52d706c04d2d2ea72",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
