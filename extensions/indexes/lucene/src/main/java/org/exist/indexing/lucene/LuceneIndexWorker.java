@@ -648,7 +648,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs, qname, config, queryStr);
                         options.configureParser(parser.getConfiguration());
                         configQuery = parser.parse(queryStr);
-                        configQuery = AnalyzingQueryRewriter.rewrite(configQuery, analyzer);
                     }
                     return withConfig(filterByIndexType(configQuery, field), config, options);
                 });
@@ -998,7 +997,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.debug("Using analyzer {} for {}", analyzer, queryString);
                 final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs);
                 options.configureParser(parser.getConfiguration());
-                return AnalyzingQueryRewriter.rewrite(parser.parse(queryString), analyzer);
+                return parser.parse(queryString);
             });
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     axis, searcher, query, configs.facetsConfig());
@@ -1468,7 +1467,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryText);
-            query = AnalyzingQueryRewriter.rewrite(query, searchAnalyzer);
 
             // extract all used fields from query
             final String[] fields;
