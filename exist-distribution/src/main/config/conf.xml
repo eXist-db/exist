@@ -295,8 +295,13 @@
                     number of copies of the same query kept in the query-pool.           
                     Value "-1" effectively disables caching. Queries cannot be shared     
                     by threads, each thread needs a private copy of a query.
+
+                - eval-cache-size:
+                    number of compiled codes evaluated by util:eval with its cache
+                    flag that each query keeps for reuse, the least recently used
+                    being discarded first. Value "0" disables keeping them.
             -->
-        <query-pool max-stack-size="64" size="128"/>
+        <query-pool max-stack-size="64" size="128" eval-cache-size="256"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
