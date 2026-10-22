@@ -1074,7 +1074,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final class SearchCallback implements BTreeCallback {
         private final int contextId;
-        @SuppressWarnings("unused")
         private final String query;
         private final String ngram;
         private final DocumentSet docs;
@@ -1169,10 +1168,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private void readMatches(final String current, final VariableByteInput is, final NodeId nodeId, final int freq,
                                  final NodeProxy parentNode) throws IOException {
-            int diff = 0;
-            if (current.length() > ngram.length()) {
-                diff = current.lastIndexOf(ngram);
-            }
+            // the ngram's position in the key: a query shorter than n is the start of the keys it finds, an ngram
+            // filled up with the characters before it is the end of its key
+            final int diff = query.equals(ngram) ? 0 : current.length() - ngram.length();
             final Match match = new NGramMatch(contextId, nodeId, ngram, freq);
             for (int n = 0; n < freq; n++) {
                 int offset = is.readInt();
