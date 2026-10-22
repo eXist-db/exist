@@ -65,6 +65,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
@@ -413,6 +414,53 @@ public class BlobStoreRecoveryTest {
             assertArrayEquals(tempBin1._1, tempBin1._1);
             if (blobDb.blobStore instanceof BlobStoreImpl impl) {
                 assertEquals(2, impl.getReferenceCount(blobId).intValue());
+            }
+        }
+    }
+
+    /**
+     * Add three different Blobs, each committed, then stop (either by shutdown or simulated crash), and recover: as
+     * for the other tests here, recovery replays the journal at the next start, so that each Blob's reference count is
+     * set again by {@code UpdateBlobRefCountLoggable#redo}, through {@code BlobStoreImpl#updateBlogRefCount}.
+     *
+     * Expect that all three Blobs are present after recovery, each with a reference count of 1: setting the count of
+     * one Blob must find its own entry in blob.dbx, after the entries of the others, and not overwrite another's.
+     */
+    @MethodSource("data") @ParameterizedTest(name = "{0}")
+    void addCommitThreeBlobs(String testTypeName, boolean cleanShutdown) throws IOException, BrokerPoolServiceException, EXistException {
+        initBlobStoreRecoveryTest(testTypeName, cleanShutdown);
+        final Path blobDbx = temporaryFolder.resolve("blob.dbx");
+        final Path blobDir = Files.createDirectories(temporaryFolder.resolve("blob"));
+
+        final Tuple2<byte[], MessageDigest> tempBin1 = generateTestFile();
+        final Tuple2<byte[], MessageDigest> tempBin2 = generateTestFile();
+        final Tuple2<byte[], MessageDigest> tempBin3 = generateTestFile();
+
+        // write the data
+        try (final BlobDb blobDb = newBlobDb(temporaryFolder, blobDbx,  blobDir)) {
+            blobDb.blobStore.open();
+
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin1._1);
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin2._1);
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin3._1);
+        }
+        // NOTE: when BlobDB is closed by the ARM expression above it simulates a crash as BrokerPool.FORCE_CORRUPTION = true was set in #newBlobDb()
+
+
+        // test the recovery
+        try (final BlobDb blobDb = newBlobDb(temporaryFolder, blobDbx,  blobDir)) {
+            blobDb.blobStore.open();
+
+            for (final Tuple2<byte[], MessageDigest> tempBin : List.of(tempBin1, tempBin2, tempBin3)) {
+                final BlobId blobId = new BlobId(tempBin._2.getValue());
+                final Tuple2<byte[], MessageDigest> actual = getCommit(blobDb.transactionManager, blobDb.blobStore, blobId);
+                assertNotNull(actual, "blob " + (List.of(tempBin1, tempBin2, tempBin3).indexOf(tempBin) + 1) + " of 3 is missing after recovery");
+                assertEquals(tempBin._2, actual._2);
+                assertArrayEquals(tempBin._1, actual._1);
+                if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                    assertNotNull(impl.getReferenceCount(blobId), "blob " + blobId + " has no reference count after recovery");
+                    assertEquals(1, impl.getReferenceCount(blobId).intValue());
+                }
             }
         }
     }
