@@ -23,7 +23,6 @@ package org.exist.xquery.modules.lucene;
 
 import io.lacuna.bifurcan.IMap;
 import org.apache.lucene.facet.FacetResult;
-import org.apache.lucene.search.Query;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
@@ -125,10 +124,12 @@ public class Facets extends BasicFunction {
             }
         }
 
-        // Find all lucene queries referenced from the input sequence and remember
-        // the first match for each. Every query will have its own facets attached,
-        // so we have to merge them below.
-        final Map<Query, LuceneMatch> luceneQueries = new IdentityHashMap<>();
+        // Find all lucene searches referenced from the input sequence and remember
+        // the first match for each. Every search has its own facets attached,
+        // so we have to merge them below. A search is told by its facets, not its
+        // query: the hits of one search over collections configured differently
+        // each carry their own configuration's query, and share the search's facets.
+        final Map<Object, LuceneMatch> luceneQueries = new IdentityHashMap<>();
         for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
             final NodeValue nv = (NodeValue) i.nextItem();
             if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
@@ -138,7 +139,8 @@ public class Facets extends BasicFunction {
                 while (match != null) {
                     if (match.getIndexId().equals(LuceneIndex.ID)) {
                         final LuceneMatch luceneMatch = (LuceneMatch) match;
-                        luceneQueries.putIfAbsent(luceneMatch.getQuery(), luceneMatch);
+                        final Object search = luceneMatch.getFacets() != null ? luceneMatch.getFacets() : luceneMatch.getQuery();
+                        luceneQueries.putIfAbsent(search, luceneMatch);
                     }
                     match = match.getNextMatch();
                 }

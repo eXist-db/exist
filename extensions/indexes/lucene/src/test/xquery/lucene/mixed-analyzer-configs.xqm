@@ -35,6 +35,7 @@ import module namespace ft="http://exist-db.org/xquery/lucene";
 
 declare variable $mac:parent := "test-mixed-analyzer-configs";
 declare variable $mac:config-parent := "/db/system/config/db/" || $mac:parent;
+declare variable $mac:parent-more := "test-mixed-analyzer-configs-more";
 
 declare variable $mac:XCONF-STANDARD :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -61,12 +62,39 @@ declare variable $mac:XCONF-ENGLISH :=
         </index>
     </collection>;
 
+declare variable $mac:XCONF-WHITESPACE :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <lucene>
+                <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                <text qname="p" analyzer="ws"/>
+            </lucene>
+        </index>
+    </collection>;
+
 declare variable $mac:DOC := <div><p>The treaties were signed.</p></div>;
+
+(: more sub-collections, apart from those of the other tests: "unconfigured" has lost its configuration, with its
+ : documents still in the index :)
+declare %private function mac:setup-more() {
+    let $conf := xmldb:create-collection("/db/system/config/db", $mac:parent-more)
+    let $col := xmldb:create-collection("/db", $mac:parent-more)
+    for $sub in ("standard", "english", "whitespace", "unconfigured")
+    let $subConf := xmldb:create-collection($conf, $sub)
+    let $_ := xmldb:store($subConf, "collection.xconf",
+        switch ($sub)
+            case "english" return $mac:XCONF-ENGLISH
+            case "whitespace" return $mac:XCONF-WHITESPACE
+            default return $mac:XCONF-STANDARD)
+    let $_ := xmldb:store(xmldb:create-collection($col, $sub), "doc.xml", $mac:DOC)
+    return if ($sub = "unconfigured") then xmldb:remove($subConf, "collection.xconf") else ()
+};
 
 declare
     %test:setUp
 function mac:setup() {
     let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
+    let $_ := mac:setup-more()
     let $confParent := xmldb:create-collection("/db/system/config/db", $mac:parent)
     let $parent := xmldb:create-collection("/db", $mac:parent)
     for $sub in ("standard", "english")
@@ -74,7 +102,8 @@ function mac:setup() {
     let $col := xmldb:create-collection($parent, $sub)
     return (
         xmldb:store($conf, "collection.xconf", if ($sub = "standard") then $mac:XCONF-STANDARD else $mac:XCONF-ENGLISH),
-        xmldb:store($col, "doc.xml", $mac:DOC)
+        xmldb:store($col, "doc.xml", $mac:DOC),
+        if ($sub = "standard") then xmldb:store($col, "run.xml", <div><p>They run, and keep running.</p></div>) else ()
     )
 };
 
@@ -82,7 +111,9 @@ declare
     %test:tearDown
 function mac:tearDown() {
     xmldb:remove("/db/" || $mac:parent),
-    xmldb:remove($mac:config-parent)
+    xmldb:remove($mac:config-parent),
+    xmldb:remove("/db/" || $mac:parent-more),
+    xmldb:remove("/db/system/config/db/" || $mac:parent-more)
 };
 
 declare
@@ -95,7 +126,6 @@ function mac:qname-one-collection($sub as xs:string) {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(2)
 function mac:qname-both-collections() {
     count(collection("/db/" || $mac:parent)//p[ft:query(., "treaties")])
@@ -111,15 +141,47 @@ function mac:field-one-collection($sub as xs:string) {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(2)
 function mac:field-both-collections() {
     count(collection("/db/" || $mac:parent)//div[ft:query(., "body:treaties")])
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
+    %test:assertEquals(2)
+function mac:xml-query-both-collections() {
+    count(collection("/db/" || $mac:parent)//p[ft:query(., <query><term>treaties</term></query>)])
+};
+
+declare
+    %test:assertEquals(2)
+function mac:xml-query-field-both-collections() {
+    count(collection("/db/" || $mac:parent)//div[ft:query-field("body", <query><term>treaties</term></query>)])
+};
+
+declare
     %test:assertEquals(2)
 function mac:query-field-both-collections() {
     count(ft:query-field("body", "treaties")[util:collection-name(.) = ("/db/" || $mac:parent || "/standard", "/db/" || $mac:parent || "/english")])
+};
+
+(: a hit's match keeps the query of its own collection's configuration: the English clause's stem "run" is not
+ : highlighted in the standard collection's text, where only "running" matched :)
+declare
+    %test:assertEquals("running")
+function mac:highlight-with-the-hits-own-configuration() {
+    let $hits := collection("/db/" || $mac:parent)//p[ft:query(., "running")]
+    return util:expand($hits)//exist:match/string()
+};
+
+declare
+    %test:assertEquals(3)
+function mac:three-configurations() {
+    count((("standard", "english", "whitespace") ! collection("/db/" || $mac:parent-more || "/" || .))//p[ft:query(., "treaties")])
+};
+
+(: a collection without a configuration is searched as well, however many other configurations the query has :)
+declare
+    %test:assertEquals(3)
+function mac:collection-without-a-configuration-over-two-others() {
+    count((("standard", "english", "unconfigured") ! collection("/db/" || $mac:parent-more || "/" || .))//p[ft:query(., "treaties")])
 };
