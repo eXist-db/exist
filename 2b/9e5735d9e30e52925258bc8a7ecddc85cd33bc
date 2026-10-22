@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_15ffdc06d1db19::t_f132bc3a0b1a37 110-114,123,130,152,177-178,203,211,218,221-222,224,227-228,232,235-236,244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b9e5735d9e30e52925258bc8a7ecddc85cd33bc",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
