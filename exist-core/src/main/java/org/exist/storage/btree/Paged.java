@@ -74,6 +74,7 @@ package org.exist.storage.btree;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
@@ -130,6 +131,7 @@ public abstract class Paged implements AutoCloseable {
     protected static int PAGE_SIZE = 4096;
 
     protected final short fileVersion;
+    private final BrokerPool pool;
     private final FileHeader fileHeader;
     private final byte[] tempPageData;
     private final byte[] tempHeaderData;
@@ -140,6 +142,7 @@ public abstract class Paged implements AutoCloseable {
     private boolean fileIsNew = false;
 	
     public Paged(final BrokerPool pool, final short fileVersion) {
+        this.pool = pool;
         this.fileVersion = fileVersion;
         this.fileHeader = createFileHeader(pool.getPageSize());
         this.tempPageData = new byte[fileHeader.pageSize];
@@ -856,6 +859,19 @@ public abstract class Paged implements AutoCloseable {
     }
 
     /**
+     * Forces the symbols added since the symbol table was last forced to disk, before a page that may refer to them is
+     * written. Nothing is done when none were added, or before the symbol table is open.
+     *
+     * @throws IOException if the symbol table cannot be forced to disk: the page is then not written, and stays dirty
+     */
+    private void syncSymbols() throws IOException {
+        final SymbolTable symbols = pool != null ? pool.getSymbols() : null;
+        if (symbols != null) {
+            symbols.sync();
+        }
+    }
+
+    /**
      * Page
      */
     public final class Page implements Comparable<Page> {
@@ -986,6 +1002,9 @@ public abstract class Paged implements AutoCloseable {
                     System.arraycopy(data, 0, tempPageData, fileHeader.pageHeaderSize, data.length);
                 }
             }
+            // the page may refer to symbols added since the symbol table was last forced: they must be on disk first,
+            // or a crash could leave the page on disk without them, journaled or not
+            syncSymbols();
             if (raf.getFilePointer() != offset) {
                 raf.seek(offset);
             }
