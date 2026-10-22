@@ -200,7 +200,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, contextSet, qnames, vector, k, options));
+                () -> index.searchVector(getContextId(), docs, contextSet, qnames, vector, k, options));
     }
 
     /**

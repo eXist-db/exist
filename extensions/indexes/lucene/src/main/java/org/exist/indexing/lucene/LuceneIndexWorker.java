@@ -1624,11 +1624,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
 
             private void processAncestorHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
-                NodeProxy parentNode = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                // the context node the hit is in, at any depth, as when the query is pre-selected
+                NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                 if (parentNode != null) {
                     parentNode.addMatch(match);
                     resultSet.add(parentNode, sizeHint);
-                    NodeProxy.propagatePredicateContextFrom(parentNode, storedNode, contextId);
+                    // a predicate keeps a result whose context is in its context set: the context node itself
+                    NodeProxy.propagatePredicateContextFrom(parentNode, parentNode, contextId);
                     chainCollect(doc);
                 }
             }
