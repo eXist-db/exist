@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/MarkableTokenFilter.java
+  s_15ffdc06d1db19::t_d91b9b86f83911 106-108,110-114
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/MarkableTokenFilterTest.java
+  s_15ffdc06d1db19::t_7e5643fb061b69 1-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f437b0e858398c5242e7a5b400cda29e9d17d904",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
