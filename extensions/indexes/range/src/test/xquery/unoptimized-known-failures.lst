@@ -63,6 +63,8 @@ optimizer.xql: optimize-lt-field-nested
 optimizer.xql: optimize-lt-string
 optimizer.xql: optimize-matches-field
 optimizer.xql: optimize-matches-string
+optimizer.xql: optimize-matches-bare-start-anchor
+optimizer.xql: optimize-matches-bare-end-anchor
 optimizer.xql: optimize-mixed-op-field
 optimizer.xql: optimize-ne-field
 optimizer.xql: optimize-ne-string
