@@ -1,0 +1,27 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_15ffdc06d1db19::t_86c293176e285e 145
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_15ffdc06d1db19::t_bd94091a9cf7d1 151,153
+extensions/indexes/lucene/src/test/xquery/lucene/field-fallback.xqm
+  s_15ffdc06d1db19::t_20b67a39b1ffdb 1-106
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_eb0d85a1d16ae5 1627-1628,1632-1633
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_15ffdc06d1db19::t_3d2d90dab0a24b 203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90fcef8889be3b1db5fbb14165e52d0408491df1",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
