@@ -31,12 +31,14 @@ declare variable $ftt:COLLECTION_CONFIG :=
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
                 <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <analyzer id="en" class="org.apache.lucene.analysis.en.EnglishAnalyzer"/>
                 <text qname="div">
                     <ignore qname="div"/>
                     <ignore qname="hi"/>
                     <field name="pub-year" expression="date" analyzer="keyword"/>
                     <field name="body" expression="p"/>
                 </text>
+                <text qname="line" analyzer="en"/>
             </lucene>
         </index>
     </collection>;
@@ -53,6 +55,8 @@ declare variable $ftt:DATA :=
             <!-- foul@0 ... fair@6: reversed relative to the query "fair foul", for #833 -->
             <p>foul deed makes it all seem fair today</p>
         </div>
+        <!-- "is" and "a" are stopwords: fair@0, foul@3 -->
+        <line>fair is a foul thing</line>
     </body>;
 
 (:~ Data for util:expand + field-query tests (PR #3467). Dates 1970–1976 in date and p; Nixon in p. :)
@@ -254,6 +258,50 @@ function ftt:slop-string-vs-xml-reordering-disagreement() {
         count(collection($ftt:COLLECTION)//div[ft:query(., '"fair foul"~7')]),
         count(collection($ftt:COLLECTION)//div[ft:query(., <query><near slop="7"><term>fair</term><term>foul</term></near></query>)])
     )
+};
+
+(:~
+ : The phrase-as-near query option makes '"a b"~n' match with <near>'s ordered, non-reordering-
+ : tolerant semantics: the reversed-order text from slop-string-vs-xml-reordering-disagreement no
+ : longer matches the string-syntax query at slop=7 once the option is set, agreeing with the XML
+ : near form (which never matches it, at any slop), also when the phrase is boosted.
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:args('"fair foul"~7')
+    %test:assertEquals(0)
+    %test:args('"fair foul"~7^3')
+    %test:assertEquals(0)
+function ftt:phrase-as-near-option-fixes-reordering-disagreement($query as xs:string) {
+    count(collection($ftt:COLLECTION)//div[ft:query(., $query, map { "phrase-as-near": "yes" })])
+};
+
+(:~
+ : With phrase-as-near, terms in order match within the slop: deed@1 ... fair@6 has 4 positions between.
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:args('"deed fair"~4')
+    %test:assertEquals(1)
+    %test:args('"deed fair"~3')
+    %test:assertEquals(0)
+function ftt:phrase-as-near-matches-in-order($query as xs:string) {
+    count(collection($ftt:COLLECTION)//div[ft:query(., $query, map { "phrase-as-near": "yes" })])
+};
+
+(:~
+ : With phrase-as-near, the positions of the stopwords the analyzer drops from the phrase stay between
+ : its terms, so the phrase matches what it matches without the option.
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ :)
+declare
+    %test:assertEquals(1, 1)
+function ftt:phrase-as-near-keeps-stopword-gaps() {
+    count(collection($ftt:COLLECTION)//line[ft:query(., '"fair is foul"~1')]),
+    count(collection($ftt:COLLECTION)//line[ft:query(., '"fair is foul"~1', map { "phrase-as-near": "yes" })])
 };
 
 (:~
