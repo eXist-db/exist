@@ -22,13 +22,7 @@
 package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -43,12 +37,11 @@ import org.exist.xquery.value.*;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
@@ -230,7 +223,6 @@ public class Field extends BasicFunction {
      */
     private Sequence highlightMatches(final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final Map<Object, Query> terms = index.getTerms(match.getQuery());
         final NodePath path = LuceneMatchListener.getPath(proxy);
         // one node: its own collection's configuration
         final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), proxy.getOwnerDocument().getCollection());
@@ -242,6 +234,9 @@ public class Field extends BasicFunction {
         }
 
         final Analyzer analyzer = idxConf.getAnalyzer();
+        // the field's matches of the query, as Lucene matches them in the field's text
+        final MatchLocator locator = new MatchLocator(List.of(match.getQuery()));
+        final Set<String> fields = Set.of(fieldName);
 
         context.pushDocumentContext();
         try {
@@ -253,61 +248,16 @@ public class Field extends BasicFunction {
                 final int nodeNr = builder.startElement(Namespaces.EXIST_NS, "field", "exist:field", null);
                 final String content = si.nextItem().getStringValue();
                 int currentPos = 0;
-                try (final Reader reader = new StringReader(content);
-                     final TokenStream tokenStream = analyzer.tokenStream(fieldName, reader);
-                     final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
-                    stream.reset();
-                    while (stream.incrementToken()) {
-                        String token = stream.getAttribute(CharTermAttribute.class).toString();
-                        final Query query = terms.get(token);
-                        if (query != null) {
-                            if (query instanceof PhraseQuery phraseQuery) {
-                                final Term phraseTerms[] = phraseQuery.getTerms();
-                                if (token.equals(phraseTerms[0].text())) {
-                                    // Scan the following text and collect tokens to see
-                                    // if they are part of the phrase.
-                                    stream.mark();
-                                    int t = 1;
-                                    OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                    final int startOffset = offset.startOffset();
-                                    int endOffset = offset.endOffset();
-                                    while (stream.incrementToken() && t < phraseTerms.length) {
-                                        token = stream.getAttribute(CharTermAttribute.class).toString();
-                                        if (token.equals(phraseTerms[t].text())) {
-                                            offset = stream.getAttribute(OffsetAttribute.class);
-                                            endOffset = offset.endOffset();
-                                            t++;
-                                            if (t == phraseTerms.length) {
-                                                break;
-                                            }
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                    if (t == phraseTerms.length) {
-                                        if (currentPos < startOffset) {
-                                            builder.characters(content.substring(currentPos, startOffset));
-                                        }
-                                        builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                        builder.characters(content.substring(startOffset, endOffset));
-                                        builder.endElement();
-                                        currentPos = endOffset;
-                                    }
-                                } // End of phrase handling
-                            } else {
-                                final OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                if (currentPos < offset.startOffset()) {
-                                    builder.characters(content.substring(currentPos, offset.startOffset()));
-                                }
-                                builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                builder.characters(content.substring(offset.startOffset(), offset.endOffset()));
-                                builder.endElement();
-                                currentPos = offset.endOffset();
-                            }
-                        }
+                for (final MatchLocator.Span span : locator.locate(fields, content, analyzer)) {
+                    if (currentPos < span.start()) {
+                        builder.characters(content.substring(currentPos, span.start()));
                     }
+                    builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
+                    builder.characters(content.substring(span.start(), span.end()));
+                    builder.endElement();
+                    currentPos = span.end();
                 }
-                if (currentPos < content.length() - 1)  {
+                if (currentPos < content.length()) {
                     builder.characters(content.substring(currentPos));
                 }
                 builder.endElement();
