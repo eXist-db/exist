@@ -1,0 +1,29 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_15ffdc06d1db19::t_059eff478a04d2 24-32,34-44,46-49,51-56,58-60,64-93,96-102,104,111-112,115-171,174-175,177-181,186-215,219-220,225-237,248,255,262-293,295-341
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_15ffdc06d1db19::t_0bfa3477be0391 46,172-179
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_15ffdc06d1db19::t_b9db9a2e38dc16 1006-1050
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/RangeQueryRewriter.java
+  s_15ffdc06d1db19::t_6af5d7e9911a72 164,174,177,179
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_15ffdc06d1db19::t_ffbf70da58fef5 317,362,365-366,419,434
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_15ffdc06d1db19::t_c4b837bfbdd541 26-29,31-32,126-272,274-279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d46f692b54a3b96e4e20b394e85825d9a05d6ace",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
