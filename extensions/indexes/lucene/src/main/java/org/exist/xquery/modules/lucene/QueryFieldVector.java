@@ -142,7 +142,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForField(index, docs, field);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
+                () -> index.searchVector(getContextId(), docs, contextSet, field, vector, k, options));
     }
 
     /**

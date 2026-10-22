@@ -1,44 +1,6 @@
 # Tests of LuceneTests that fail without the optimizer, see LuceneUnoptimizedTests.
 # Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
 
-# ft:query-field / ft:query-field-vector return nothing when not pre-selected (stack 1.3)
-analyzers-field.xqm: ascii-trunc-default
-analyzers-field.xqm: ascii-trunc-german
-analyzers-field.xqm: ascii-trunc-ws
-analyzers-field.xqm: diacritics-exact-default
-analyzers-field.xqm: diacritics-exact-german
-analyzers-field.xqm: diacritics-exact-ws
-analyzers-field.xqm: diacritics-trunc-default
-analyzers-field.xqm: diacritics-trunc-german
-analyzers-field.xqm: diacritics-trunc-ws
-analyzers-field.xqm: query-field-line-klug
-analyzers-field.xqm: query-field-line-map-de
-analyzers-field.xqm: query-field-line-xml-de
-analyzers-field.xqm: query-field-lineno-with-context
-field-expression-context.xqm: vector-baseline
-field-expression-context.xqm: vector-xself
-for-variable.xql: for-variable-in-ft-query-field
-ft-match.xql: field-highlight-field-matches-via-query
-ft-match.xql: field-retrieve
-ft-query-forms.xqm: fields-descendant-scene-count
-ft-query-forms.xqm: fields-keyword-id
-ft-query-forms.xqm: fields-keyword-no-context
-ft-query-forms.xqm: fields-keyword-xml
-ft-query-forms.xqm: query-field-lines-king
-query-vector-k.xqm: field-path-form-honors-k-large
-query-vector-k.xqm: field-path-form-honors-k-small
-query-vector-k.xqm: field-vector-for-bound
-query-vector-k.xqm: field-vector-let-bound-honors-k
-vector-search.xqm: dot-product-indexed-and-queried
-vector-search.xqm: dot-product-score-ordering
-vector-search.xqm: euclidean-indexed-and-queried
-vector-search.xqm: euclidean-score-ordering
-vector-search.xqm: order-field-vector-single-doc-default-is-document-order
-vector-search.xqm: order-field-vector-single-doc-sort-by-score-is-similarity-order
-vector-search.xqm: query-field-vector
-vector-search.xqm: query-field-vector-arity-two-default-k
-vector-search.xqm: query-field-vector-negative-k-defaults-to-ten
-
 # Checks of the optimizer itself (%test:stats, or an index pragma that needs it); these stay
 ft-query-forms.xqm: optimizer-query-on-element
 ft-query-forms.xqm: optimizer-query-on-self
@@ -48,7 +10,3 @@ ft-query-forms.xqm: optimizer-wildcard-self-descendant
 
 # x[ft:query(*, ...)] with the index on a descendant only: the test asserts the optimized answer; which is right is open
 ft-query-forms.xqm: wildcard-context-nested-no-match
-
-# util:expand loses its matches without the optimizer (#2755 tests); not investigated yet
-util-expand-highlight.xqm: issue2755-expand-has-match-ordered
-util-expand-highlight.xqm: issue2755-expand-has-match-swapped
