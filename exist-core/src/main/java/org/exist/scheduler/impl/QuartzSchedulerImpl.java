@@ -195,7 +195,9 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
      *
      * Shutdown sequence:
      * <ol>
-     *   <li>Spawn a daemon worker that calls {@code scheduler.shutdown(true)} (waits for jobs).</li>
+     *   <li>If no job is executing, call {@code scheduler.shutdown(false)} and return: Quartz needs
+     *       200-500 ms to stop its threads in {@code shutdown(true)} even when there is nothing to wait for.</li>
+     *   <li>Otherwise spawn a daemon worker that calls {@code scheduler.shutdown(true)} (waits for jobs).</li>
      *   <li>Wait up to {@code timeoutMs} for that worker to finish.</li>
      *   <li>If the deadline expires, log every currently-executing job, attempt
      *       {@code interrupt(jobKey)} on each (no-op for non-{@code InterruptableJob} bodies),
@@ -214,6 +216,20 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         final org.quartz.Scheduler quartz = getScheduler();
         if (quartz == null) {
             return;
+        }
+
+        // A job that Quartz has fired but not yet handed to a worker is not listed as executing. Quartz
+        // checks that its scheduler thread has been halted before it fires, so such a job either does not
+        // start or runs to completion unawaited; the window is the time between firing and the worker
+        // registering the job. The scheduler uses the RAMJobStore, so shutdown(false) returns promptly
+        // and does not need the watchdog.
+        try {
+            if (quartz.getCurrentlyExecutingJobs().isEmpty()) {
+                quartz.shutdown(false);
+                return;
+            }
+        } catch (final SchedulerException se) {
+            LOG.warn("Unable to inspect running jobs before shutdown: {}", se.getMessage(), se);
         }
 
         final Thread shutdownWorker = new Thread(() -> {
