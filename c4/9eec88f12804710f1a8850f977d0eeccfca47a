@@ -1,0 +1,71 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_15ffdc06d1db19::t_bca620c7d526a7 317-324,327-328,329-331
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_15ffdc06d1db19::t_14332b00d2414f 127-136,180-184
+  s_15ffdc06d1db19::t_d5f0bbd0354995 26,43-44,47,133-179
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_15ffdc06d1db19::t_5dd1df22fb8934 230-240
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/MetaAnalyzer.java
+  s_15ffdc06d1db19::t_505fa0c85933c9 103-114
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Fields.java
+  s_15ffdc06d1db19::t_efffed4342698a 1-131,134,139-185,186-215
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_aa02aa52c16f61 75
+  s_15ffdc06d1db19::t_1502d9e97c0c90 71-74
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneScope.java
+  s_15ffdc06d1db19::t_63eed730ac0fb3 30,36,50,52-56,113-137,139-151,152-164,170-185
+  s_15ffdc06d1db19::t_bbe75ebfaed9f8 1-29,32-33,35,37-49,51,57-112,186-208
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneQueryScopeTests.java
+  s_15ffdc06d1db19::t_c29d3637a1e7de 29-30
+  s_15ffdc06d1db19::t_cf49510b301f82 1-28,31-33
+extensions/indexes/lucene/src/test/xquery/lucene/ft-fields.xqm
+  s_15ffdc06d1db19::t_242c91f54dbe5c 1-53,58-133,135,137-237,239-300
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_15ffdc06d1db19::t_224848067b389a 33-34,36,46,102-153
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/FieldText.java
+  s_15ffdc06d1db19::t_805ff79ea997f5 1-147,148-150,155-160,184
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_c1b79e2e747a3e 35,188,197,204
+  s_15ffdc06d1db19::t_ead2b930df1139 198,217-221,280,289
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-scope.xqm
+  s_15ffdc06d1db19::t_af51ed1f26a3aa 1-47,49-59,61-267
+extensions/indexes/lucene/src/test/xquery/lucene/scope-dls.xqm
+  s_15ffdc06d1db19::t_cfacbd82c8edc7 1-136
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-scope.xqm
+  s_15ffdc06d1db19::t_0372b7c32e2b50 1-229
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryScope.java
+  s_15ffdc06d1db19::t_cd0f450aaad5aa 1-112
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchScope.java
+  s_15ffdc06d1db19::t_b0c1ebb8adc115 1-26,28-33,37-48,49-58,60-61,63-205,207-239,241,243-262,264,266-298,315-324,327-337,340,343,345-383,384-432,441-442
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_15ffdc06d1db19::t_b7367d6e1fe359 68-78,80,83,87
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_82ba39ff8b9e6d 224-226,230,233,236-242,244,246,253-255,259,262,265-269,271,273,275
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_15ffdc06d1db19::t_8cb848c2ac8e81 411-426
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_15ffdc06d1db19::t_bbba3ea3bd2c57 26,33,44-45,104-106,109-110,136-139,141-146,149-150,153-163,166-170,172-177,179-180,187-194,198-205
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeProxies.java
+  s_15ffdc06d1db19::t_1e3025f8c54db6 26,56-82
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeSets.java
+  s_15ffdc06d1db19::t_c03bdd315c90a2 25,72-79
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_15ffdc06d1db19::t_740bd242830fe7 243-301
+  s_15ffdc06d1db19::t_58de9061bc2f9b 302-328
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c49eec88f12804710f1a8850f977d0eeccfca47a",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

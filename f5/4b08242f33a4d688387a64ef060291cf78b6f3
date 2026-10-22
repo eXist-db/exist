@@ -1,0 +1,25 @@
+extensions/indexes/ngram/src/test/xquery/known-failures.lst
+  s_15ffdc06d1db19::t_0425e2898cce08 1-5
+extensions/indexes/ngram/src/test/xquery/ngram/reference-ngram.xqm
+  s_15ffdc06d1db19::t_ca9d0458e10148 1-173
+extensions/indexes/ngram/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_8a1398cc7a20d8 9-11
+extensions/indexes/ngram/src/test/java/xquery/ngram/NgramTests.java
+  s_15ffdc06d1db19::t_ddf7f8b2444914 26-29,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f54b08242f33a4d688387a64ef060291cf78b6f3",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
