@@ -100,4 +100,13 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         tok = new StopFilter(tok, stopwords);
         return new TokenStreamComponents(src, tok);
     }
+
+    /**
+     * Lowercases and folds a term the query parser does not analyze, such as a wildcard or prefix term, as
+     * {@link #createComponents(String)} does with indexed text.
+     */
+    @Override
+    protected TokenStream normalize(final String fieldName, final TokenStream in) {
+        return new ICUFoldingFilter(new LowerCaseFilter(in));
+    }
 }
