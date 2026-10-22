@@ -66,10 +66,17 @@ public class Rename extends Modification {
             }
         }
         
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+        final Sequence evaluationSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
+        evaluateAndModify(() -> evaluate(evaluationSequence), this::modify);
 
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+        
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Selection<QName> evaluate(final Sequence contextSequence) throws XPathException {
         final Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
@@ -90,7 +97,7 @@ public class Rename extends Modification {
 
             final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
             final Object ctxVarObj = context.getAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-            if(ctxVarObj == null) {
+            if (ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
@@ -98,68 +105,55 @@ public class Rename extends Modification {
             prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
-            if(!inSeq.isEmpty()) {
+            if (!inSeq.isEmpty()) {
                 //TODO: should we trap this instead of throwing an exception - deliriumsky?
                 throw xpe;
             }
         }
         //END trap Rename failure
-        
-        if (!inSeq.isEmpty()) {
-                
-            QName newQName;
-            final Item item = contentSeq.itemAt(0);
-            if (item.getType() == Type.QNAME) {
-                newQName = ((QNameValue) item).getQName();
-            } else {
-                try {
-                    newQName = QName.parse(context, item.getStringValue());
-                } catch (final QName.IllegalQNameException iqe) {
-                    throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + item.getStringValue());
-                }
-            }
 
-            //start a transaction
-            try (final Txn transaction = getTransaction()) {
-                final StoredNode[] ql = selectAndLock(transaction, inSeq);
-                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                for (final StoredNode node : ql) {
-                    final DocumentImpl doc = node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
-                    }
-
-                    final NodeImpl parent = (NodeImpl) getParent(node);
-
-                    //update the document
-                    final NamedNode newNode = switch (node.getNodeType()) {
-                        case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
-                        case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
-                        default -> throw new XPathException(this, "unsupported node-type");
-                    };
-                    newNode.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
-                    parent.updateChild(transaction, node, newNode);
-
-                    doc.setLastModified(System.currentTimeMillis());
-                    modifiedDocuments.add(doc);
-                    context.getBroker().storeXMLResource(transaction, doc);
-                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
-                }
-                finishTriggers(transaction);
-                
-                //commit the transaction
-                transaction.commit();
-            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException e) {
-                throw new XPathException(this, e.getMessage(), e);
-            } finally {
-                unlockDocuments();
-            }
+        if (inSeq.isEmpty()) {
+            return null;
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
-        
-        return Sequence.EMPTY_SEQUENCE;
+        QName newQName;
+        final Item item = contentSeq.itemAt(0);
+        if (item.getType() == Type.QNAME) {
+            newQName = ((QNameValue) item).getQName();
+        } else {
+            try {
+                newQName = QName.parse(context, item.getStringValue());
+            } catch (final QName.IllegalQNameException iqe) {
+                throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + item.getStringValue());
+            }
+        }
+        return new Selection<>(inSeq, newQName);
+    }
+
+    private void modify(final Txn transaction, final StoredNode[] ql, final QName newQName) throws XPathException, EXistException, PermissionDeniedException {
+        final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+        for (final StoredNode node : ql) {
+            final DocumentImpl doc = node.getOwnerDocument();
+            if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+            }
+
+            final NodeImpl parent = (NodeImpl) getParent(node);
+
+            //update the document
+            final NamedNode newNode = switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
+                case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
+                default -> throw new XPathException(this, "unsupported node-type");
+            };
+            newNode.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+            parent.updateChild(transaction, node, newNode);
+
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+            context.getBroker().storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+        }
     }
 
     /* (non-Javadoc)

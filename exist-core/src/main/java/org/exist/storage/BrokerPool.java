@@ -87,6 +87,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -118,6 +119,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private StatusReporter statusReporter = null;
 
     private final XQuery xqueryService = new XQuery();
+
+    /**
+     * The number of update expressions modifying documents, see {@link #getUpdateExpressionsModifying()}.
+     */
+    private final AtomicInteger updateExpressionsModifying = new AtomicInteger();
 
     private AtomicLazyVal<SaxonConfiguration> saxonConfiguration = new AtomicLazyVal<>(() -> SaxonConfiguration.loadConfiguration(this));
 
@@ -1120,6 +1126,17 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     //TODO : rename as getUpdateLock ?
     public Lock getGlobalUpdateLock() {
         return globalXUpdateLock;
+    }
+
+    /**
+     * Returns the number of update expressions which have locked their documents to modify them, and not yet
+     * released them. An update expression only locks its documents while it holds the {@link #getGlobalUpdateLock()},
+     * so while that is held, the number can only fall.
+     *
+     * @return the number of update expressions modifying documents
+     */
+    public AtomicInteger getUpdateExpressionsModifying() {
+        return updateExpressionsModifying;
     }
 
     /**
