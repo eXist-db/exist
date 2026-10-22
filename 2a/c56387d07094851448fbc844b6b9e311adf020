@@ -1,0 +1,27 @@
+extensions/indexes/range/src/test/java/xquery/range/RangeReferenceTests.java
+  s_15ffdc06d1db19::t_6052364e224a21 1-36
+extensions/indexes/range/src/test/java/xquery/range/RangeReferenceUnoptimizedTests.java
+  s_15ffdc06d1db19::t_c968036aa3cd0c 1-35
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_15ffdc06d1db19::t_8dc083917abca2 31
+extensions/indexes/range/src/test/xquery/reference-known-failures.lst
+  s_15ffdc06d1db19::t_dfff37f36f0c5c 1,4
+extensions/indexes/range/src/test/xquery/reference-unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_59828f3fd41316 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ac56387d07094851448fbc844b6b9e311adf020",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
