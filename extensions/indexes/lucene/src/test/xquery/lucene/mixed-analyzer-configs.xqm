@@ -74,7 +74,8 @@ function mac:setup() {
     let $col := xmldb:create-collection($parent, $sub)
     return (
         xmldb:store($conf, "collection.xconf", if ($sub = "standard") then $mac:XCONF-STANDARD else $mac:XCONF-ENGLISH),
-        xmldb:store($col, "doc.xml", $mac:DOC)
+        xmldb:store($col, "doc.xml", $mac:DOC),
+        if ($sub = "standard") then xmldb:store($col, "run.xml", <div><p>They run, and keep running.</p></div>) else ()
     )
 };
 
@@ -95,7 +96,6 @@ function mac:qname-one-collection($sub as xs:string) {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(2)
 function mac:qname-both-collections() {
     count(collection("/db/" || $mac:parent)//p[ft:query(., "treaties")])
@@ -111,15 +111,34 @@ function mac:field-one-collection($sub as xs:string) {
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
     %test:assertEquals(2)
 function mac:field-both-collections() {
     count(collection("/db/" || $mac:parent)//div[ft:query(., "body:treaties")])
 };
 
 declare
-    %test:pending("only the first collection's Lucene configuration is used for the query, fixed in a following change")
+    %test:assertEquals(2)
+function mac:xml-query-both-collections() {
+    count(collection("/db/" || $mac:parent)//p[ft:query(., <query><term>treaties</term></query>)])
+};
+
+declare
+    %test:assertEquals(2)
+function mac:xml-query-field-both-collections() {
+    count(collection("/db/" || $mac:parent)//div[ft:query-field("body", <query><term>treaties</term></query>)])
+};
+
+declare
     %test:assertEquals(2)
 function mac:query-field-both-collections() {
     count(ft:query-field("body", "treaties")[util:collection-name(.) = ("/db/" || $mac:parent || "/standard", "/db/" || $mac:parent || "/english")])
+};
+
+(: a hit's match keeps the query of its own collection's configuration: the English clause's stem "run" is not
+ : highlighted in the standard collection's text, where only "running" matched :)
+declare
+    %test:assertEquals("running")
+function mac:highlight-with-the-hits-own-configuration() {
+    let $hits := collection("/db/" || $mac:parent)//p[ft:query(., "running")]
+    return util:expand($hits)//exist:match/string()
 };

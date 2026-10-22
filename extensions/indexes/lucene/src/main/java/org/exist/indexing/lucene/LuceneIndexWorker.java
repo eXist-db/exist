@@ -636,29 +636,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
+            final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
             for (final QName qname : definedIndexes) {
                 final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                final LuceneConfig config = getLuceneConfig(broker, docs);
-                final Analyzer analyzer = getQueryAnalyzer(config,null, qname, options);
-                Query query;
-                if (queryStr == null) {
-                    query = new MatchAllDocsQuery();
-                } else {
-                    final QueryParserWrapper parser = getQueryParser(field, analyzer, docs, qname, config, queryStr);
-                    options.configureParser(parser.getConfiguration());
-                    query = parser.parse(queryStr);
-                    query = AnalyzingQueryRewriter.rewrite(query, analyzer);
-                }
-                query = filterByIndexType(query, field);
-                final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
-                if (facets.isPresent() && config != null) {
-                    query = drilldown(facets.get(), query, config);
-                }
-                if (config != null && config.hasBoostConfig()) {
-                    query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
-                }
+                final Query query = perConfig(configs, (config, configDocs) -> {
+                    final Analyzer analyzer = getQueryAnalyzer(configs, config, null, qname, options);
+                    Query configQuery;
+                    if (queryStr == null) {
+                        configQuery = new MatchAllDocsQuery();
+                    } else {
+                        final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs, qname, config, queryStr);
+                        options.configureParser(parser.getConfiguration());
+                        configQuery = parser.parse(queryStr);
+                        configQuery = AnalyzingQueryRewriter.rewrite(configQuery, analyzer);
+                    }
+                    return withConfig(filterByIndexType(configQuery, field), config, options);
+                });
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        axis, searcher, query, config);
+                        axis, searcher, query, configs.first());
             }
             return resultSet;
         });
@@ -690,22 +685,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
+            final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
             for (QName qname : definedIndexes) {
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                LuceneConfig config = getLuceneConfig(broker, docs);
-                analyzer = getQueryAnalyzer(config, null, qname, options);
-                Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
+                final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                final Query query = perConfig(configs, (config, configDocs) -> {
+                    analyzer = getQueryAnalyzer(configs, config, null, qname, options);
+                    final Query configQuery = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
+                    return configQuery == null ? null : withConfig(filterByIndexType(configQuery, field), config, options);
+                });
                 if (query != null) {
-                    query = filterByIndexType(query, field);
-                    Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
-                    if (facets.isPresent() && config != null) {
-                        query = drilldown(facets.get(), query, config);
-                    }
-                    if (config != null && config.hasBoostConfig()) {
-                        query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
-                    }
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            axis, searcher, query, config);
+                            axis, searcher, query, configs.first());
                 }
             }
             return resultSet;
@@ -717,18 +707,70 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
-            final LuceneConfig config = getLuceneConfig(broker, docs);
-            analyzer = getQueryAnalyzer(config, field, null, options);
-            Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
+            final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
+            final Query query = perConfig(configs, (config, configDocs) -> {
+                analyzer = getQueryAnalyzer(configs, config, field, null, options);
+                final Query configQuery = queryTranslator.parse(field, queryRoot, analyzer, options);
+                return configQuery == null ? null : withBoost(configQuery, config);
+            });
             if (query != null) {
-                if (config != null && config.hasBoostConfig()) {
-                    query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
-                }
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        axis, searcher, query, config);
+                        axis, searcher, query, configs.first());
             }
             return resultSet;
         });
+    }
+
+    /**
+     * Builds a query with one configuration and the documents it applies to.
+     */
+    @FunctionalInterface
+    private interface ConfigQuery {
+        @Nullable
+        Query build(LuceneConfig config, DocumentSet docs) throws IOException, XPathException;
+    }
+
+    /**
+     * Builds a query with each of the documents' Lucene configurations, so that each collection's documents are
+     * searched as its own configuration indexed them: with one configuration, the query built with it; with several,
+     * any of the queries built with one, each restricted to the documents it applies to.
+     */
+    @Nullable
+    private Query perConfig(final LuceneConfigs configs, final ConfigQuery build) throws IOException, XPathException {
+        if (configs.isUniform()) {
+            final LuceneConfigs.Group group = configs.groups().get(0);
+            return build.build(group.config(), group.docs());
+        }
+        final BooleanQuery.Builder any = new BooleanQuery.Builder();
+        final Map<Integer, Query> byDocument = new HashMap<>();
+        for (final LuceneConfigs.Group group : configs.groups()) {
+            final Query query = build.build(group.config(), group.docs());
+            final Query inDocs = configs.docsFilter(group, this::buildDocsFilterQuery);
+            if (query != null && inDocs != null) {
+                any.add(new BooleanQuery.Builder()
+                        .add(query, BooleanClause.Occur.MUST)
+                        .add(inDocs, BooleanClause.Occur.FILTER)
+                        .build(), BooleanClause.Occur.SHOULD);
+                for (final Iterator<DocumentImpl> i = group.docs().getDocumentIterator(); i.hasNext(); ) {
+                    byDocument.put(i.next().getDocId(), query);
+                }
+            }
+        }
+        return byDocument.isEmpty() ? null : new PerConfigQuery(any.build(), byDocument);
+    }
+
+    /**
+     * A query with what a configuration adds to it: the facets to drill down into, and boosting.
+     */
+    private Query withConfig(final Query query, final LuceneConfig config, final QueryOptions options) {
+        final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
+        return withBoost(facets.isPresent() ? drilldown(facets.get(), query, config) : query, config);
+    }
+
+    private static Query withBoost(final Query query, final LuceneConfig config) {
+        return config.hasBoostConfig()
+                ? FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST))
+                : query;
     }
 
     private Query drilldown(Map<String, QueryOptions.FacetQuery> facets, Query baseQuery, LuceneConfig config) {
@@ -950,15 +992,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             NodeSet resultSet = new NewArrayNodeSet();
-            LuceneConfig config = getLuceneConfig(context.getBroker(), docs);
-            Analyzer analyzer = getQueryAnalyzer(config, field, null, options);
-            LOG.debug("Using analyzer {} for {}", analyzer, queryString);
-            QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
-            options.configureParser(parser.getConfiguration());
-            Query query = parser.parse(queryString);
-            query = AnalyzingQueryRewriter.rewrite(query, analyzer);
+            final LuceneConfigs configs = LuceneConfigs.of(context.getBroker(), docs);
+            final Query query = perConfig(configs, (config, configDocs) -> {
+                final Analyzer analyzer = getQueryAnalyzer(configs, config, field, null, options);
+                LOG.debug("Using analyzer {} for {}", analyzer, queryString);
+                final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs);
+                options.configureParser(parser.getConfiguration());
+                return AnalyzingQueryRewriter.rewrite(parser.parse(queryString), analyzer);
+            });
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    axis, searcher, query, config);
+                    axis, searcher, query, configs.first());
             return resultSet;
         });
     }
@@ -1753,7 +1796,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (qname != null) {
                         storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
                     }
-                    LuceneMatch match = createMatch(doc, score, nodeId, docBase);
+                    LuceneMatch match = createMatch(doc, score, nodeId, docBase, storedDocument.getDocId());
                     processHit(doc, storedDocument, storedNode, match);
                 }
             }
@@ -1819,8 +1862,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
 
-            private LuceneMatch createMatch(final int docId, final float score, final NodeId nodeId, final int docBase) {
-                final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, query, facets);
+            private LuceneMatch createMatch(final int docId, final float score, final NodeId nodeId, final int docBase, final int existDocId) {
+                // over collections configured differently, the match keeps the query of its document's configuration
+                final Query matchQuery = query instanceof PerConfigQuery perConfig ? perConfig.forDocument(existDocId) : query;
+                final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, matchQuery, facets);
                 match.setScore(score);
                 return match;
             }
@@ -1914,6 +1959,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return the analyzer or null
      */
+    /**
+     * The analyzer of a query on one of several configurations: an analyzer id the query names may be defined in
+     * another of them.
+     */
+    @Nullable
+    private Analyzer getQueryAnalyzer(final LuceneConfigs configs, final LuceneConfig config, final String field, final QName qname,
+            final QueryOptions opts) {
+        if (opts.getQueryAnalyzerId() != null && config != null && config.getAnalyzerById(opts.getQueryAnalyzerId()) == null) {
+            final Analyzer analyzer = configs.analyzerById(opts.getQueryAnalyzerId());
+            if (analyzer != null) {
+                return analyzer;
+            }
+        }
+        return getQueryAnalyzer(config, field, qname, opts);
+    }
+
     @Nullable protected Analyzer getQueryAnalyzer(LuceneConfig config, String field, QName qname, QueryOptions opts) {
         if (config != null) {
             final Analyzer analyzer;
