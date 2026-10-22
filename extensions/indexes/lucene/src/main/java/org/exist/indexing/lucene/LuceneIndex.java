@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
@@ -78,6 +79,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected ReaderManager readerManager = null;
 
     protected boolean needsCommit = false;
+
+    /** Incremented whenever a writer is released, i.e. whenever the index may have changed. */
+    private final AtomicLong modificationCount = new AtomicLong();
 
     public String getDirName() {
         return DIR_NAME;
@@ -253,6 +257,19 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (writer == null)
             return;
         needsCommit = true;
+        modificationCount.incrementAndGet();
+    }
+
+    /**
+     * A count that changes whenever the index may have changed, without locking: anything derived
+     * from the index's content, such as a rewritten query, stays valid while the count does. A
+     * reader acquired through {@link #withReader} after the count was read shows at least the
+     * changes it counts.
+     *
+     * @return the modification count
+     */
+    public long getModificationCount() {
+        return modificationCount.get();
     }
 
     protected void commit() {
