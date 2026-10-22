@@ -22,6 +22,7 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.search.Query;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -29,6 +30,11 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
+import org.exist.xquery.Expression;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.modules.lucene.LuceneModule;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +69,7 @@ public final class LuceneConfigs {
     private final List<Group> groups;
     /** each group's document filter, built once per query however many qnames it searches */
     private final Map<Group, Query> docsFilters = new IdentityHashMap<>();
+    private @Nullable FacetsConfig facetsConfig;
 
     private LuceneConfigs(final List<Group> groups) {
         this.groups = groups;
@@ -145,14 +152,18 @@ public final class LuceneConfigs {
     }
 
     private static LuceneConfig configOf(final DBBroker broker, final Collection collection) {
+        final LuceneConfig config = configured(broker, collection);
+        return config != null ? config : LuceneConfig.DEFAULT_CONFIG;
+    }
+
+    /**
+     * @param broker the database broker
+     * @param collection a collection
+     * @return the Lucene configuration of the collection, its own or inherited, or null if it has none
+     */
+    public static @Nullable LuceneConfig configured(final DBBroker broker, final Collection collection) {
         final IndexSpec idxConf = collection.getIndexConfiguration(broker);
-        if (idxConf != null) {
-            final LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-            if (config != null) {
-                return config;
-            }
-        }
-        return LuceneConfig.DEFAULT_CONFIG;
+        return idxConf == null ? null : (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
     }
 
     /**
@@ -170,9 +181,39 @@ public final class LuceneConfigs {
     }
 
     /**
-     * @return the configuration of the first group, for what a query has only one of, such as its facets
+     * The facets configuration of a query over all the groups: each facet dimension as the groups define it. The
+     * groups share one taxonomy, so the facets of all the hits are counted once with it.
+     *
+     * @return the facets configuration
+     * @throws XPathException if two groups define a dimension differently
      */
-    public LuceneConfig first() {
-        return groups.get(0).config();
+    public FacetsConfig facetsConfig() throws XPathException {
+        if (facetsConfig == null) {
+            facetsConfig = isUniform() ? groups.get(0).config().facetsConfig : mergedFacetsConfig();
+        }
+        return facetsConfig;
+    }
+
+    private FacetsConfig mergedFacetsConfig() throws XPathException {
+        final FacetsConfig merged = new FacetsConfig();
+        final Map<String, FacetsConfig.DimConfig> defined = new HashMap<>();
+        for (final Group group : groups) {
+            for (final Map.Entry<String, FacetsConfig.DimConfig> dim : group.config().facetsConfig.getDimConfigs().entrySet()) {
+                final FacetsConfig.DimConfig config = dim.getValue();
+                final FacetsConfig.DimConfig other = defined.putIfAbsent(dim.getKey(), config);
+                if (other == null) {
+                    merged.setHierarchical(dim.getKey(), config.hierarchical);
+                    merged.setMultiValued(dim.getKey(), config.multiValued);
+                    merged.setRequireDimCount(dim.getKey(), config.requireDimCount);
+                    merged.setIndexFieldName(dim.getKey(), config.indexFieldName);
+                } else if (other.hierarchical != config.hierarchical || other.multiValued != config.multiValued
+                        || other.requireDimCount != config.requireDimCount
+                        || !other.indexFieldName.equals(config.indexFieldName)) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0005,
+                            "Facet dimension '" + dim.getKey() + "' is configured differently in the collections queried together");
+                }
+            }
+        }
+        return merged;
     }
 }
