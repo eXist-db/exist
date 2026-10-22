@@ -749,6 +749,35 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
+     * A vector query's filter, restricted to the nodes the search looks among, if they are narrower than the
+     * documents, so that the search finds the k nearest of those nodes, as in {@code $articles[ft:query-vector(., $v, 5)]}
+     * for some of a collection's articles, or {@code $sections//article[ft:query-vector(., $v, 5)]}.
+     */
+    @Nullable
+    private Query inContext(@Nullable final Query filter, final String field, final DocumentSet docs,
+            @Nullable final NodeSet within) {
+        if (within == null || onlyDocuments(within)) {
+            return filter;
+        }
+        final BooleanQuery.Builder builder = new BooleanQuery.Builder()
+                .add(new InContextQuery(field, docs, within, index.getBrokerPool().getNodeFactory()), BooleanClause.Occur.FILTER);
+        if (filter != null) {
+            builder.add(filter, BooleanClause.Occur.FILTER);
+        }
+        return builder.build();
+    }
+
+    /** Whether the nodes are all document nodes: then the documents are what the search looks among anyway. */
+    private static boolean onlyDocuments(final NodeSet nodes) {
+        for (final NodeProxy node : nodes) {
+            if (node.getNodeId() != NodeId.DOCUMENT_NODE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * A vector query's filter, restricted to the Lucene documents of one index configuration.
      */
     private static Query withIndexType(@Nullable final Query filter, final String indexField) {
@@ -779,7 +808,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Runs a vector query for its candidates, and processes the best k of them as {@link #searchAndProcess} does.
      */
     private void searchVectorAndProcess(final int contextId, @Nullable final QName qname, final DocumentSet docs,
-            @Nullable final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor,
+            @Nullable final NodeSet contextSet, final NodeSet resultSet,
             final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final KnnFloatVectorQuery query,
             final LuceneConfig config, final int k) throws IOException {
         // all the candidates the query found, best first, of which the best k are kept
@@ -788,7 +817,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Arrays.copyOf(found, Math.min(k, found.length)));
         final LuceneFacets facets = new LuceneFacets();
         final FacetsCollector facetsCollector = new FacetsCollector();
-        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector);
+        // a vector query returns the context's nodes the nearest vectors are in, or below
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, true, contextId, facets, facetsCollector);
 
         // feed the best hits to the collector in index order, one leaf at a time, as a search would
         final ScoreDoc[] hits = best.scoreDocs.clone();
@@ -940,17 +970,29 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
             final String field, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
+        return searchVector(contextId, docs, contextSet, contextSet, field, vector, k, options);
+    }
+
+    /**
+     * Vector (KNN) search by field name, among some nodes.
+     *
+     * @param contextSet the context the hits are returned in, as their ancestors in it, or null to return the hits
+     * @param within the nodes the search looks among, the hits being in them or below them, or null for the documents
+     * @see #searchVector(int, DocumentSet, NodeSet, String, float[], int, QueryOptions)
+     */
+    public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
+            @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options)
+            throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
-            final boolean returnAncestor = true;
             final LuceneConfig config = getLuceneConfig(broker, docs);
-            Query filterQuery = buildVectorFilterQuery(options, config, docs);
+            final Query filterQuery = inContext(buildVectorFilterQuery(options, config, docs), field, docs, within);
             final int candidates = vectorCandidates(k, options);
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)
                     : new KnnFloatVectorQuery(field, vector, candidates);
             searchVectorAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, baseQuery, config, k);
+                    searcher, baseQuery, config, k);
             return resultSet;
         });
     }
@@ -970,10 +1012,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
             final List<QName> qnames, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
+        return searchVector(contextId, docs, contextSet, contextSet, qnames, vector, k, options);
+    }
+
+    /**
+     * Vector (KNN) search by qnames, among some nodes.
+     *
+     * @param contextSet the context the hits are returned in, as their ancestors in it, or null to return the hits
+     * @param within the nodes the search looks among, the hits being in them or below them, or null for the documents
+     * @see #searchVector(int, DocumentSet, NodeSet, List, float[], int, QueryOptions)
+     */
+    public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
+            @Nullable final NodeSet within, final List<QName> qnames, final float[] vector, final int k, final QueryOptions options)
+            throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
-            final boolean returnAncestor = true;
             final LuceneConfig config = getLuceneConfig(broker, docs);
             for (final QName qname : definedIndexes) {
                 final LuceneIndexConfig idxConf = config != null ? config.getIndexConfigForQName(qname) : null;
@@ -984,11 +1038,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final String field = vecConf.getName();
                 final String indexField = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 // the index type is part of the filter, so that the candidates are all of this qname's index
-                final Query filterQuery = withIndexType(buildVectorFilterQuery(options, config, docs), indexField);
+                final Query filterQuery = inContext(withIndexType(buildVectorFilterQuery(options, config, docs), indexField),
+                        field, docs, within);
                 final int candidates = vectorCandidates(k, options);
                 final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
                 searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, vectorQuery, config, k);
+                        searcher, vectorQuery, config, k);
             }
             return resultSet;
         });

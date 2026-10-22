@@ -107,6 +107,11 @@ declare function qvc:exact($k as xs:integer, $articles as xs:integer*) as xs:str
     return subsequence($ranked, 1, $k)
 };
 
+(: the reference rankings, computed once: in a predicate, a function call would rank all the articles again for
+   every item :)
+declare variable $qvc:EXACT-5 := qvc:exact(5);
+declare variable $qvc:NEAREST-IN-SEVENTHS := qvc:exact(5, (1 to $qvc:N)[. mod 7 = 0]);
+
 declare function qvc:found($hits as element(article)*) as xs:string* {
     for $hit in $hits order by ft:score($hit) descending return string($hit/@n)
 };
@@ -115,14 +120,14 @@ declare
     %test:assertEquals(5)
 function qvc:query-vector-finds-the-nearest() {
     let $found := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5)])
-    return count($found[. = qvc:exact(5)])
+    return count($found[. = $qvc:EXACT-5])
 };
 
 declare
     %test:assertEquals(5)
 function qvc:query-field-vector-finds-the-nearest() {
     let $found := qvc:found(collection($qvc:COLL)//article/ft:query-field-vector("emb", $qvc:QUERY, 5))
-    return count($found[. = qvc:exact(5)])
+    return count($found[. = $qvc:EXACT-5])
 };
 
 declare
@@ -144,7 +149,7 @@ function qvc:candidates-option() {
     let $few := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 5 })])
     let $default := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5)])
     let $many := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 500 })])
-    let $exact := qvc:exact(5)
+    let $exact := $qvc:EXACT-5
     return (string(count($few[. = $exact]) lt count($default[. = $exact])), count($many[. = $exact]))
 };
 
@@ -160,17 +165,17 @@ function qvc:candidates-has-a-maximum() {
     collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 10001 })]
 };
 
-(: a context narrower than the documents: k hits in it, though the best of all the candidates are outside it, and
- : with enough candidates the nearest in it :)
+(: a context narrower than the documents: the k nearest in it, though the best of all the candidates are outside
+ : it, with the default candidates as with more :)
 declare
-    %test:pending("the context is applied after the candidates are chosen; it becomes the vector query's filter in a following change")
     %test:assertEquals(5, 5)
 function qvc:context-narrower-than-the-documents() {
     let $in-context := (1 to $qvc:N)[. mod 7 = 0]
     let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
     let $found := qvc:found($context[ft:query-vector(., $qvc:QUERY, 5)])
     let $more := qvc:found($context[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": 2000 })])
-    return (count($found), count($more[. = qvc:exact(5, $in-context)]))
+    let $exact := qvc:exact(5, $in-context)
+    return (count($found[. = $exact]), count($more[. = $exact]))
 };
 
 (: another qname with the same vector field: its own k, though the best candidates of all are articles :)
@@ -184,4 +189,57 @@ declare
     %test:assertError("EXXQDYFT0004")
 function qvc:candidates-must-be-an-integer() {
     collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5, map { "candidates": "many" })]
+};
+
+(: A vector query keeps the k nearest of the nodes it is given, so it is not a filter: pre-selecting it over all of
+ : a step's candidates, before the predicates in front of it, or without the nodes a filter expression filters, finds
+ : the k nearest of the wrong nodes. Each form below finds the 5 nearest of a seventh of the articles, with the
+ : default number of candidates: the context is part of the search's filter, so the search looks among its nodes. :)
+
+declare
+    %test:assertEquals(5)
+function qvc:after-another-predicate() {
+    let $found := qvc:found(collection($qvc:COLL)//article[@n mod 7 = 0][ft:query-vector(., $qvc:QUERY, 5)])
+    return count($found[. = $qvc:NEAREST-IN-SEVENTHS])
+};
+
+declare
+    %test:assertEquals(5)
+function qvc:filtering-a-variable() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    let $found := $context[ft:query-vector(., $qvc:QUERY, 5)]
+    return count(qvc:found($found)[. = $qvc:NEAREST-IN-SEVENTHS])
+};
+
+declare
+    %test:assertEquals(5)
+function qvc:filtering-a-variable-as-an-argument() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    return count(qvc:found($context[ft:query-vector(., $qvc:QUERY, 5)])[. = $qvc:NEAREST-IN-SEVENTHS])
+};
+
+(: a named step's first predicate, on a context narrower than the documents: the 5 nearest of that context, and
+   only those :)
+declare
+    %test:assertEquals(5, 5)
+function qvc:a-step-on-a-narrower-context() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    let $found := qvc:found($context/self::article[ft:query-vector(., $qvc:QUERY, 5)])
+    return (count($found), count($found[. = $qvc:NEAREST-IN-SEVENTHS]))
+};
+
+declare
+    %test:assertEquals(5, 5)
+function qvc:a-step-on-a-narrower-context-by-field() {
+    let $context := collection($qvc:COLL)//article[@n mod 7 = 0]
+    let $found := qvc:found($context/self::article[ft:query-field-vector("emb", $qvc:QUERY, 5)])
+    return (count($found), count($found[. = $qvc:NEAREST-IN-SEVENTHS]))
+};
+
+(: in the first predicate, the vector query is evaluated first, as written: the sevenths of the 5 nearest of all :)
+declare
+    %test:assertTrue
+function qvc:before-another-predicate() {
+    let $found := qvc:found(collection($qvc:COLL)//article[ft:query-vector(., $qvc:QUERY, 5)][@n mod 7 = 0])
+    return deep-equal(sort($found), sort($qvc:EXACT-5[xs:integer(.) mod 7 = 0]))
 };
