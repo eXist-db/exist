@@ -80,6 +80,12 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     }
 
     @Override
+    public boolean isFilter() {
+        // the k nearest of the nodes given: which nodes are kept depends on the others
+        return false;
+    }
+
+    @Override
     public int getOptimizeAxis() {
         return Constants.DESCENDANT_SELF_AXIS;
     }
