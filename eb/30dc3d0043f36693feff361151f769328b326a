@@ -1,0 +1,25 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.java
+  s_15ffdc06d1db19::t_e086a3b6afa1d1 25,33-35,72,184-188,190-217
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_720b8c3c1e2e0c 650,693,714,855,888-889,906,913-914,996,1031-1038,1044,1084,1087,1092,1100,1102-1103,1107-1108,1112,1116-1117,1121,1123-1124,1128,1219-1222,1224-1241,1280
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_494cb65762cfa1 55-56
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-facet-configs.xqm
+  s_15ffdc06d1db19::t_9ca7b3c1798ac6 1-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eb30dc3d0043f36693feff361151f769328b326a",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

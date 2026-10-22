@@ -1,0 +1,26 @@
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_b424eab1ae5e7a::t_3ae2378c9523e6 173,176
+  s_b424eab1ae5e7a::t_3e7a4b8b060cc5 186,189,199,202
+extensions/indexes/lucene/src/test/xquery/lucene/unicode-supplementary-lucene.xql
+  s_b424eab1ae5e7a::t_898bad7cbb1f70 175-176,179
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_b424eab1ae5e7a::t_25c37c8c32f3d5 31-32,36
+  s_b424eab1ae5e7a::t_4e5c33107edec1 99-108
+  s_b424eab1ae5e7a::t_546761fb07ed47 132-180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8d3a7fa942b4ae5310273c38b5689927ed27d75a",
+  "prompts": {},
+  "sessions": {
+    "s_b424eab1ae5e7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8c55ebe-eaf8-4bc4-8731-568a40b12726",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
