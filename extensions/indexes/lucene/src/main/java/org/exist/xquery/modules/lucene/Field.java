@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
@@ -30,6 +32,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.*;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -48,6 +51,8 @@ import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
 
 public class Field extends BasicFunction {
+
+    private static final Logger LOG = LogManager.getLogger(Field.class);
 
     private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
     private static final FunctionParameterSequenceType FS_PARAM_NODES_OPT = optManyParam("nodes", Type.NODE, "zero or more context nodes (empty returns empty)");
@@ -177,14 +182,25 @@ public class Field extends BasicFunction {
                 if (ownerDoc == null) {
                     continue;
                 }
-                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), ownerDoc.getCollection());
+                final LuceneConfig config = configured != null ? configured : LuceneConfig.DEFAULT_CONFIG;
+                final ValueSequence fieldValues = new ValueSequence();
+                try {
+                    for (final String value : FieldText.values(index, context.getBroker(), config, proxy, fieldName)) {
+                        fieldValues.add(new StringValue(this, value));
+                    }
+                } catch (final XPathException e) {
+                    // as when indexing, a field whose condition or expression fails for a node has no value there
+                    LOG.warn("Could not compute field '{}' of node {}: {}", fieldName, proxy.getNodeId(), e.getMessage());
+                    continue;
+                }
                 final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
                 }
             }
             return result;
-        } catch (final IOException e) {
+        } catch (final IOException | PermissionDeniedException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
     }
