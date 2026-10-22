@@ -888,25 +888,42 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
             final boolean returnAncestor = true;
-            final LuceneConfig config = getLuceneConfig(broker, docs);
+            // the documents' collections may configure different vector fields, or put them on different elements
+            final List<LuceneConfig> configs = getLuceneConfigs(broker, docs);
             for (final QName qname : definedIndexes) {
-                final LuceneIndexConfig idxConf = config != null ? config.getIndexConfigForQName(qname) : null;
-                final LuceneVectorFieldConfig vecConf = getFirstVectorField(idxConf);
-                if (vecConf == null) {
-                    continue;
-                }
-                final String field = vecConf.getName();
                 final String indexField = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                Query filterQuery = buildVectorFilterQuery(options, config, docs);
-                Query vectorQuery = filterQuery != null
-                        ? new KnnFloatVectorQuery(field, vector, k, filterQuery)
-                        : new KnnFloatVectorQuery(field, vector, k);
-                Query baseQuery = filterByIndexType(vectorQuery, indexField);
-                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, baseQuery, config);
+                for (final Map.Entry<String, LuceneConfig> vectorField : getVectorFields(configs, qname).entrySet()) {
+                    final String field = vectorField.getKey();
+                    final LuceneConfig config = vectorField.getValue();
+                    final Query filterQuery = buildVectorFilterQuery(options, config, docs);
+                    final Query vectorQuery = filterQuery != null
+                            ? new KnnFloatVectorQuery(field, vector, k, filterQuery)
+                            : new KnnFloatVectorQuery(field, vector, k);
+                    final Query baseQuery = filterByIndexType(vectorQuery, indexField);
+                    searchAndProcess(contextId, qname, docs, contextSet, resultSet,
+                            returnAncestor, searcher, baseQuery, config);
+                }
             }
             return resultSet;
         });
+    }
+
+    /**
+     * The vector fields configured for a qname, each with the first of the configurations that defines it.
+     *
+     * @param configs the Lucene configurations of the documents' collections
+     * @param qname the indexed qname
+     * @return the names of the vector fields, in the order of the configurations
+     */
+    private static Map<String, LuceneConfig> getVectorFields(final List<LuceneConfig> configs, final QName qname) {
+        final Map<String, LuceneConfig> fields = new LinkedHashMap<>();
+        for (final LuceneConfig config : configs) {
+            final LuceneVectorFieldConfig vecConf = getFirstVectorField(config.getIndexConfigForQName(qname));
+            if (vecConf != null) {
+                fields.putIfAbsent(vecConf.getName(), config);
+            }
+        }
+        return fields;
     }
 
     @Nullable
@@ -930,10 +947,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (fieldName == null || fieldName.isEmpty()) {
             return false;
         }
-        final LuceneConfig config = getLuceneConfig(broker, docs);
-        for (final LuceneIndexConfig idxConf : config.getIndexConfigurations()) {
-            if (findVectorField(idxConf, fieldName) != null) {
-                return true;
+        for (final LuceneConfig config : getLuceneConfigs(broker, docs)) {
+            for (final LuceneIndexConfig idxConf : config.getIndexConfigurations()) {
+                if (findVectorField(idxConf, fieldName) != null) {
+                    return true;
+                }
             }
         }
         return false;
@@ -945,11 +963,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public boolean hasVectorIndexForQNames(final DocumentSet docs, @Nullable final List<QName> qnames)
             throws IOException {
-        final LuceneConfig config = getLuceneConfig(broker, docs);
+        final List<LuceneConfig> configs = getLuceneConfigs(broker, docs);
         final List<QName> definedIndexes = getDefinedIndexes(qnames);
         for (final QName qname : definedIndexes) {
-            final LuceneIndexConfig idxConf = config.getIndexConfigForQName(qname);
-            if (getFirstVectorField(idxConf) != null) {
+            if (!getVectorFields(configs, qname).isEmpty()) {
                 return true;
             }
         }
@@ -1777,6 +1794,36 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return the lucene config or null
      */
+    /**
+     * The distinct Lucene configurations of the documents' collections, which, unlike
+     * {@link #getLuceneConfig(DBBroker, DocumentSet)}, may differ between collections.
+     *
+     * @param broker the database broker
+     * @param docs the document set
+     *
+     * @return the distinct configurations, in the order of the collections, or the default
+     *     configuration if none has one
+     */
+    static List<LuceneConfig> getLuceneConfigs(final DBBroker broker, final DocumentSet docs) {
+        final List<LuceneConfig> configs = new ArrayList<>();
+        final Set<LuceneConfig> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            try (final Collection collection = i.next()) {
+                final IndexSpec idxConf = collection.getIndexConfiguration(broker);
+                if (idxConf != null) {
+                    final LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
+                    if (config != null && seen.add(config)) {
+                        configs.add(config);
+                    }
+                }
+            }
+        }
+        if (configs.isEmpty()) {
+            configs.add(LuceneConfig.DEFAULT_CONFIG);
+        }
+        return configs;
+    }
+
     public static LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             try (Collection collection = i.next()) {
