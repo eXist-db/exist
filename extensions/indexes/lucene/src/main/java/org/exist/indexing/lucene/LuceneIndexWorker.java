@@ -137,6 +137,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
     public static final String FIELD_DOC_URI = "docUri";
 
+    /** The fewest candidates a vector query considers by default, see {@link #vectorCandidates}. */
+    static final int MIN_VECTOR_CANDIDATES = 100;
+    /** The most candidates a vector query considers: the largest {@code candidates} option allowed. */
+    public static final int MAX_VECTOR_CANDIDATES = 10_000;
+
     private final StreamListener listener = new LuceneStreamListener();
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
@@ -743,6 +748,127 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 .build();
     }
 
+    /**
+     * A vector query's filter, restricted to the Lucene documents of one index configuration.
+     */
+    private static Query withIndexType(@Nullable final Query filter, final String indexField) {
+        final BooleanQuery.Builder builder = new BooleanQuery.Builder()
+                .add(new TermQuery(new Term(LuceneUtil.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER);
+        if (filter != null) {
+            builder.add(filter, BooleanClause.Occur.FILTER);
+        }
+        return builder.build();
+    }
+
+    /**
+     * The candidates a vector query considers: its vector index's search explores only as many neighbors as it is
+     * asked for, so a search for a small k alone misses better matches. The query looks for this many and keeps the
+     * best k.
+     *
+     * @param k the number of results
+     * @param options the query's options, whose {@code candidates} option overrides the default
+     * @return the {@code candidates} option, from 1 to {@value #MAX_VECTOR_CANDIDATES}, or by default
+     *     {@value #MIN_VECTOR_CANDIDATES}; and at least k
+     */
+    static int vectorCandidates(final int k, @Nullable final QueryOptions options) {
+        final int requested = options != null && options.getCandidates() > 0 ? options.getCandidates() : MIN_VECTOR_CANDIDATES;
+        return Math.max(k, requested);
+    }
+
+    /**
+     * Runs a vector query for its candidates, and processes the best k of them as {@link #searchAndProcess} does.
+     */
+    private void searchVectorAndProcess(final int contextId, @Nullable final QName qname, final DocumentSet docs,
+            @Nullable final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor,
+            final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final KnnFloatVectorQuery query,
+            final LuceneConfig config, final int k) throws IOException {
+        // all the candidates the query found, best first
+        final ScoreDoc[] found = searcher.searcher().search(query, query.getK()).scoreDocs;
+        final TopDocs best = new TopDocs(new TotalHits(found.length, TotalHits.Relation.EQUAL_TO),
+                bestInContext(searcher.searcher().getIndexReader().leaves(), found, k, docs, contextSet));
+        final LuceneFacets facets = new LuceneFacets();
+        final FacetsCollector facetsCollector = new FacetsCollector();
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector);
+
+        // feed the best hits to the collector in index order, one leaf at a time, as a search would
+        final ScoreDoc[] hits = best.scoreDocs.clone();
+        Arrays.sort(hits, Comparator.comparingInt(hit -> hit.doc));
+        final List<LeafReaderContext> leaves = searcher.searcher().getIndexReader().leaves();
+        final FixedScore score = new FixedScore();
+        LeafCollector leafCollector = null;
+        LeafReaderContext leaf = null;
+        for (final ScoreDoc hit : hits) {
+            if (leaf == null || hit.doc >= leaf.docBase + leaf.reader().maxDoc()) {
+                if (leafCollector != null) {
+                    leafCollector.finish();
+                }
+                leaf = leaves.get(ReaderUtil.subIndex(hit.doc, leaves));
+                leafCollector = collector.getLeafCollector(leaf);
+                leafCollector.setScorer(score);
+            }
+            score.score = hit.score;
+            leafCollector.collect(hit.doc - leaf.docBase);
+        }
+        if (leafCollector != null) {
+            leafCollector.finish();
+        }
+
+        if (config != null && config.facetsConfig != null && searcher.taxonomyReader() != null) {
+            facets.compute(searcher.taxonomyReader(), config.facetsConfig, facetsCollector);
+        }
+    }
+
+    /**
+     * The best k of a vector query's candidates, best first, that are in the query's context: the context can be
+     * narrower than the documents the query's filter keeps, as in {@code //article[@lang = 'en'][ft:query-vector(., $v, 5)]},
+     * so the best k of all the candidates could be outside it.
+     */
+    private ScoreDoc[] bestInContext(final List<LeafReaderContext> leaves, final ScoreDoc[] found, final int k,
+            final DocumentSet docs, @Nullable final NodeSet contextSet) throws IOException {
+        if (contextSet == null) {
+            return Arrays.copyOf(found, Math.min(k, found.length));
+        }
+        // read the candidates' node ids in index order, as doc values are read
+        final ScoreDoc[] byDoc = found.clone();
+        Arrays.sort(byDoc, Comparator.comparingInt(hit -> hit.doc));
+        final Set<Integer> inContext = new HashSet<>();
+        LeafReaderContext leaf = null;
+        SortedNumericDocValues docIds = null;
+        BinaryDocValues nodeIds = null;
+        for (final ScoreDoc hit : byDoc) {
+            if (leaf == null || hit.doc >= leaf.docBase + leaf.reader().maxDoc()) {
+                leaf = leaves.get(ReaderUtil.subIndex(hit.doc, leaves));
+                docIds = leaf.reader().getSortedNumericDocValues(FIELD_DOC_ID);
+                nodeIds = leaf.reader().getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
+            }
+            final int doc = hit.doc - leaf.docBase;
+            if (docIds == null || nodeIds == null || !docIds.advanceExact(doc) || !nodeIds.advanceExact(doc)) {
+                continue;
+            }
+            final DocumentImpl document = docs.getDoc((int) docIds.nextValue());
+            if (document == null) {
+                continue;
+            }
+            final BytesRef ref = nodeIds.binaryValue();
+            final NodeId nodeId = index.getBrokerPool().getNodeFactory()
+                    .createFromData(ByteConversion.byteToShortH(ref.bytes, ref.offset), ref.bytes, ref.offset + 2);
+            if (contextSet.parentWithChild(new NodeProxy(null, document, nodeId), true, true, NodeProxy.UNKNOWN_NODE_LEVEL) != null) {
+                inContext.add(hit.doc);
+            }
+        }
+        return Arrays.stream(found).filter(hit -> inContext.contains(hit.doc)).limit(k).toArray(ScoreDoc[]::new);
+    }
+
+    /** The score of a hit fed to a collector by {@link #searchVectorAndProcess}. */
+    private static final class FixedScore extends Scorable {
+        private float score;
+
+        @Override
+        public float score() {
+            return score;
+        }
+    }
+
     private void searchAndProcess(final int contextId, final QName qname, final DocumentSet docs,
                                   @Nullable final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor,
                                   final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final Query query,
@@ -848,7 +974,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param contextSet optional context set for ancestor resolution
      * @param field vector field name (from vector-field config)
      * @param vector query vector
-     * @param k number of nearest neighbours
+     * @param k number of nearest neighbors
      * @param options filter options (filter-query, filter, filter-facets)
      * @return node set of k nearest matches
      */
@@ -860,11 +986,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final boolean returnAncestor = true;
             final LuceneConfig config = getLuceneConfig(broker, docs);
             Query filterQuery = buildVectorFilterQuery(options, config, docs);
-            Query baseQuery = filterQuery != null
-                    ? new KnnFloatVectorQuery(field, vector, k, filterQuery)
-                    : new KnnFloatVectorQuery(field, vector, k);
-            searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, baseQuery, config);
+            final int candidates = vectorCandidates(k, options);
+            final KnnFloatVectorQuery baseQuery = filterQuery != null
+                    ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)
+                    : new KnnFloatVectorQuery(field, vector, candidates);
+            searchVectorAndProcess(contextId, null, docs, contextSet, resultSet,
+                    returnAncestor, searcher, baseQuery, config, k);
             return resultSet;
         });
     }
@@ -877,7 +1004,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param contextSet optional context set for ancestor resolution
      * @param qnames index qnames (e.g. article)
      * @param vector query vector
-     * @param k number of nearest neighbours
+     * @param k number of nearest neighbors
      * @param options filter options
      * @return node set of k nearest matches
      */
@@ -897,13 +1024,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 final String field = vecConf.getName();
                 final String indexField = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                Query filterQuery = buildVectorFilterQuery(options, config, docs);
-                Query vectorQuery = filterQuery != null
-                        ? new KnnFloatVectorQuery(field, vector, k, filterQuery)
-                        : new KnnFloatVectorQuery(field, vector, k);
-                Query baseQuery = filterByIndexType(vectorQuery, indexField);
-                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, baseQuery, config);
+                // the index type is part of the filter, so that the candidates are all of this qname's index
+                final Query filterQuery = withIndexType(buildVectorFilterQuery(options, config, docs), indexField);
+                final int candidates = vectorCandidates(k, options);
+                final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
+                searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
+                        returnAncestor, searcher, vectorQuery, config, k);
             }
             return resultSet;
         });

@@ -505,18 +505,29 @@ public class Optimizer extends DefaultExpressionVisitor {
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
         boolean optimizable = false;
-        for (final Predicate pred : preds) {
-            pred.accept(findOptimizable);
+        for (int i = 0; i < preds.size(); i++) {
+            preds.get(i).accept(findOptimizable);
             @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
-            if (canOptimize(list)) {
-                optimizable = true;
-            }
             findOptimizable.reset();
-            if (optimizable) {
-                break;
+            if (i > 0 && hasNonFilter(list)) {
+                // pre-selection evaluates it before the predicates in front of it: only a filter gives the same
+                // result in either order, so the step is evaluated as written
+                return false;
             }
+            optimizable |= canOptimize(list);
         }
         return optimizable;
+    }
+
+    private static boolean hasNonFilter(@Nullable final Optimizable[] list) {
+        if (list != null) {
+            for (final Optimizable optimizable : list) {
+                if (!optimizable.isFilter()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -529,19 +540,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         if (preds == null) {
             return false;
         }
-        boolean optimizable = false;
-        for (final Predicate pred : preds) {
-            pred.accept(findOptimizable);
-            @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
-            if (canOptimize(list)) {
-                optimizable = true;
-            }
-            findOptimizable.reset();
-            if (optimizable) {
-                break;
-            }
-        }
-        return optimizable && !hasConstantFalsePredicate(preds);
+        return hasOptimizable(Arrays.asList(preds)) && !hasConstantFalsePredicate(preds);
     }
 
     /**
