@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -194,7 +195,7 @@ public class Field extends BasicFunction {
                     LOG.warn("Could not compute field '{}' of node {}: {}", fieldName, proxy.getNodeId(), e.getMessage());
                     continue;
                 }
-                final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
+                final Sequence highlighted = highlightMatches(context, fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
                 }
@@ -213,7 +214,11 @@ public class Field extends BasicFunction {
         return bytesToAtomic(fieldValue, type);
     }
 
-    private Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+    /**
+     * The values stored for a field on a node, converted to {@code type}. Shared with
+     * ft:search-scope, so the two read field values the same way.
+     */
+    static Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
         final IndexableField[] fields = index.getFieldByExistDocId(existDocId, nodeId, fieldName);
         final Sequence result = new ValueSequence(fields.length);
         for (final IndexableField field : fields) {
@@ -226,9 +231,53 @@ public class Field extends BasicFunction {
         return result;
     }
 
+    @Nullable
+    private static LuceneIndexConfig indexDefining(final Iterator<LuceneIndexConfig> configs, final String fieldName) {
+        LuceneIndexConfig first = null;
+        while (configs.hasNext()) {
+            for (LuceneIndexConfig ic = configs.next(); ic != null; ic = ic.getNext()) {
+                if (first == null) {
+                    first = ic;
+                }
+                if (fieldOf(ic, fieldName) != null) {
+                    return ic;
+                }
+            }
+        }
+        return first;
+    }
+
+    @Nullable
+    private static LuceneFieldConfig fieldOf(final LuceneIndexConfig ic, final String fieldName) {
+        for (final AbstractFieldConfig fc : ic.getFacetsAndFields()) {
+            if (fc instanceof LuceneFieldConfig field && fieldName.equals(field.getName())) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param config a collection's Lucene configuration
+     * @param fieldName a field name
+     * @return the first configuration of a field of that name, or null
+     */
+    static @Nullable LuceneFieldConfig fieldConfig(final LuceneConfig config, final String fieldName) {
+        for (final LuceneIndexConfig head : config.getAllIndexConfigurations()) {
+            for (LuceneIndexConfig ic = head; ic != null; ic = ic.getNext()) {
+                final LuceneFieldConfig field = fieldOf(ic, fieldName);
+                if (field != null) {
+                    return field;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Highlight matches in field content using the analyzer defined for the field.
      *
+     * @param context the query context (for the broker and the in-memory result builder)
      * @param fieldName the name of the field
      * @param proxy node on which the field is defined
      * @param match the lucene match attached to the node
@@ -237,13 +286,14 @@ public class Field extends BasicFunction {
      * @throws XPathException in case of error
      * @throws IOException in case of a lucene error
      */
-    private Sequence highlightMatches(final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
+    static Sequence highlightMatches(final XQueryContext context, final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final NodePath path = LuceneMatchListener.getPath(proxy);
         // one node: its own collection's configuration
         final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), proxy.getOwnerDocument().getCollection());
         final LuceneConfig config = configured != null ? configured : LuceneConfig.DEFAULT_CONFIG;
-        LuceneIndexConfig idxConf = config.getConfig(path).next();
+        // the index of the node's path that defines the field, or the first one: several can be chained for a qname
+        final LuceneIndexConfig idxConf = indexDefining(config.getConfig(path), fieldName);
         if (idxConf == null) {
             // no lucene index: no fields to highlight
             return Sequence.EMPTY_SEQUENCE;
