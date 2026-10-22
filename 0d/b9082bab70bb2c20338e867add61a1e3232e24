@@ -1,0 +1,43 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/NoDiacriticsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_28b0cb75cfa1d7 103-111
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/EnglishStopwordsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_15eb00b4b149e7 67-75
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-stemmed.xqm
+  s_15ffdc06d1db19::t_29ef3ac8ebfa00 1-182
+exist-core/src/test/java/org/exist/validation/CollectionConfigSchemaAnalyzerChainTest.java
+  s_15ffdc06d1db19::t_2e26ba4735d309 1-125
+exist-distribution/src/main/config/collection.xconf.init
+  s_15ffdc06d1db19::t_2a14d2e2ea24f0 2
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerChain.java
+  s_15ffdc06d1db19::t_9131d275a1b8b1 1-217
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java
+  s_15ffdc06d1db19::t_d32abb9afe72c6 108-110,113,115,119-125
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_55458bada428b4 53,1217,1764,1767
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/IndexQueryAnalyzer.java
+  s_15ffdc06d1db19::t_edeaa3fcab4a2e 1-89
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/MetaAnalyzer.java
+  s_15ffdc06d1db19::t_f80b0e99c95263 41,52,57-66,73-102
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerChainTest.java
+  s_15ffdc06d1db19::t_9caf5f8ea44d7b 1-266
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-chains.xqm
+  s_15ffdc06d1db19::t_ac281ea38716ef 1-229
+schema/collection.xconf.xsd
+  s_15ffdc06d1db19::t_3fda8fb2952b71 9,131-132,134,136-141,143-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0db9082bab70bb2c20338e867add61a1e3232e24",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-expand-highlight.xqm
+  s_15ffdc06d1db19::t_33e4b73e99583c 83-85,138-155
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_15ffdc06d1db19::t_cf8a7e01d55d16 38,52-55,134-150,196,212-261
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_10cca7c34856a9 1-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "69b5daf252b6c170bf7ae70cbf7ec2ba05ad562d",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
