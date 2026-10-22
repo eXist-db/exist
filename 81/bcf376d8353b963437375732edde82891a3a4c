@@ -1,0 +1,52 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_cd011f4080ecf6 645,977,1425
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/PhraseAsNearRewriterTest.java
+  s_15ffdc06d1db19::t_d7b1058d435185 1-78
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_15ffdc06d1db19::t_ec13ff5dab7196 263-279
+  s_15ffdc06d1db19::t_ab9c2530a684a1 34,41,58-59,280-306
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_15ffdc06d1db19::t_9b10bcebf1325f 84-87,89-96
+  s_15ffdc06d1db19::t_3d432baf6bc0c3 88
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Search.java
+  s_15ffdc06d1db19::t_34c62a7ca9db6b 69-75
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_15ffdc06d1db19::t_4e2fedb19a56ff 26,32,37-39,41-47,49-51,62,66-69,108,114-139
+  s_15ffdc06d1db19::t_035894c1ed4126 1-25,27-31,33-36,40,48,52-61,63-65,70-107,109-113,140-141
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_15ffdc06d1db19::t_bafc4466fb0e13 66-72
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  s_15ffdc06d1db19::t_9a7ac2dcf8f538 31,68-78,90,337-339,394-407
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_15ffdc06d1db19::t_e23a5a4760592a 25-26,28,35-37,145,166,168-201
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_15ffdc06d1db19::t_a3a3284aed41db 26,28,35-36,287-311
+extensions/indexes/ngram/pom.xml
+  s_15ffdc06d1db19::t_2d5e7e6bc977f4 67-71
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_15ffdc06d1db19::t_f132bc3a0b1a37 110-114,123,130,152,177-178,203,211,218,221-222,224,227-228,232,235-236,244
+extensions/indexes/range/src/test/xquery/range/reference-matches.xqm
+  s_15ffdc06d1db19::t_43d109b788028e 1-144
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_15ffdc06d1db19::t_63e07994c6d259 28,32
+extensions/indexes/range/src/test/xquery/known-failures.lst
+  s_15ffdc06d1db19::t_57adccf3fecf77 1-6
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_47faf22cb423f0 118-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "81bcf376d8353b963437375732edde82891a3a4c",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
