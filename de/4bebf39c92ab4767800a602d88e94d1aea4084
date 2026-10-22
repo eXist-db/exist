@@ -1,0 +1,34 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_cd011f4080ecf6 645,964,1387
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_15ffdc06d1db19::t_035894c1ed4126 1-103
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_15ffdc06d1db19::t_9b10bcebf1325f 84-96
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_15ffdc06d1db19::t_bafc4466fb0e13 66-72
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  s_15ffdc06d1db19::t_9a7ac2dcf8f538 31,68-78,90,337-339,394-407
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Search.java
+  s_15ffdc06d1db19::t_34c62a7ca9db6b 69-75
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_15ffdc06d1db19::t_ec13ff5dab7196 259-275
+extensions/indexes/ngram/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_7ed6f35ab6ee47 5
+  s_15ffdc06d1db19::t_ca2a71f1ee201d 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de4bebf39c92ab4767800a602d88e94d1aea4084",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
