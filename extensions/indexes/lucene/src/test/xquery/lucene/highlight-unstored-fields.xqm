@@ -100,7 +100,6 @@ declare
     %test:assertTrue
     %test:args("hu-stored:agreed OR hu-unstored:agreed")
     %test:assertTrue
-    %test:pending("a field that is not stored cannot be highlighted yet; added in a following change")
 function hu:unstored-as-stored($query as xs:string) {
     let $stored := hu:highlight($query, "hu-stored")
     let $unstored := hu:highlight($query, "hu-unstored")
@@ -111,7 +110,6 @@ declare
     %test:assertEquals(
         "<exist:field xmlns:exist=""http://exist.sourceforge.net/NS/exist""><exist:match>Treaty</exist:match> of Paris The <exist:match>treaty</exist:match> was signed in Paris. Both parties agreed.</exist:field>",
         "<exist:field xmlns:exist=""http://exist.sourceforge.net/NS/exist"">Peace of Paris Another <exist:match>treaty</exist:match>.</exist:field>")
-    %test:pending("a field that is not stored cannot be highlighted yet; added in a following change")
 function hu:ignored-and-inline-elements() {
     (: the note is ignored, and the inline hi is part of its word; the head's "Treaty" is a match too :)
     hu:highlight("hu-unstored:treaty", "hu-unstored")
@@ -120,7 +118,6 @@ function hu:ignored-and-inline-elements() {
 declare
     %test:args("hu-head-stored:paris OR hu-head-unstored:paris")
     %test:assertTrue
-    %test:pending("a field that is not stored cannot be highlighted yet; added in a following change")
 function hu:unstored-expression-as-stored($query as xs:string) {
     let $stored := hu:highlight($query, "hu-head-stored")
     let $unstored := hu:highlight($query, "hu-head-unstored")
@@ -131,14 +128,12 @@ declare
     %test:assertEquals(
         "<exist:field xmlns:exist=""http://exist.sourceforge.net/NS/exist"">Treaty of <exist:match>Paris</exist:match></exist:field>",
         "<exist:field xmlns:exist=""http://exist.sourceforge.net/NS/exist"">Peace of <exist:match>Paris</exist:match></exist:field>")
-    %test:pending("a field that is not stored cannot be highlighted yet; added in a following change")
 function hu:unstored-expression() {
     hu:highlight("hu-head-unstored:paris", "hu-head-unstored")
 };
 
 declare
     %test:assertEquals(1, 0)
-    %test:pending("a field that is not stored cannot be highlighted yet; added in a following change")
 function hu:unstored-condition() {
     (: the field has a value for the div with a date, as when indexed, and none for the other :)
     for $div in collection($hu:COLLECTION)//div[ft:query(., "hu-unstored:paris")]
@@ -150,4 +145,21 @@ declare
     %test:assertEmpty
 function hu:node-without-a-match() {
     ft:highlight-field-matches(collection($hu:COLLECTION)//div, "hu-unstored")
+};
+
+(: a query that doesn't name the field, with the field in its fields option :)
+declare
+    %test:assertEquals("Paris", "Paris")
+function hu:field-of-an-unprefixed-query() {
+    for $div in collection($hu:COLLECTION)//div[ft:query(., "paris", map { "fields": "hu-head-stored" })]
+    order by $div/@id
+    return ft:highlight-field-matches($div, "hu-head-stored")//exist:match/string()
+};
+
+(: "Treaty" is in the head, but the query looks for it in another field :)
+declare
+    %test:assertEquals("Paris")
+function hu:query-naming-the-field-marks-its-own-part() {
+    let $div := collection($hu:COLLECTION)//div[@id = "d1"][ft:query(., "hu-head-stored:paris OR hu-stored:treaty")]
+    return ft:highlight-field-matches($div, "hu-head-stored")//exist:match/string()
 };
