@@ -124,9 +124,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         return analyzer;
     }
 
-    /**
-     * @return true if the field's text is stored in the index
-     */
+    /** The declared XDM type of the field's values (defaults to {@link Type#STRING}). */
+    public int getType() {
+        return type;
+    }
+
+    /** Whether the field value is stored (and therefore retrievable, e.g. via ft:field). */
     public boolean isStore() {
         return store;
     }
@@ -172,6 +175,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             }
         }
         return values;
+    }
+
+    /** Whether the field is configured as a binary field. */
+    public boolean isBinary() {
+        return binary;
     }
 
     @Override
