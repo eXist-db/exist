@@ -1,0 +1,80 @@
+extensions/modules/http-client/src/test/resources-filtered/conf-fixture.xsl
+  s_9336039fde506a::t_8ae57c9af6c91f 1-37
+schema/README.md
+  s_9336039fde506a::t_5518a02f2bb6ca 130
+extensions/indexes/vector-it/pom.xml
+  s_9336039fde506a::t_e8b2c4e852b2b0 133
+  s_9336039fde506a::t_28039c0f8ff48d 132,134-138
+extensions/indexes/vector-it/src/test/resources-filtered/conf-fixture.xsl
+  s_9336039fde506a::t_8080dd80e9bf79 1-25,29-45
+  s_9336039fde506a::t_c125af5adcb62c 26-28
+exist-core/src/test/java/org/exist/xquery/functions/xmldb/DbStore2Test.java
+  s_9336039fde506a::t_8f533c9e5d43fd 73
+exist-core/pom.xml
+  s_9336039fde506a::t_8932cae34a36df 1222-1245
+exist-core/src/test/resources-filtered/org/exist/xmldb/allow-any-uri-conf-fixture.xsl
+  s_9336039fde506a::t_d1ab75b48514c6 1-44
+extensions/modules/cache/pom.xml
+  s_9336039fde506a::t_18fbe020978c06 90
+  s_9336039fde506a::t_88c047997016a4 98-100,104-109,111-131
+  s_9336039fde506a::t_96ae3c698f13a6 101-103,110
+extensions/modules/cache/src/test/resources-filtered/non-lazy-cache-conf-fixture.xsl
+  s_9336039fde506a::t_db4bc19b562f45 1-25,30-39
+  s_9336039fde506a::t_4e5464479be288 26-29
+extensions/modules/cache/src/test/java/org/exist/xquery/modules/cache/LazyCacheTest.java
+  s_9336039fde506a::t_927b2aacbfe318 47-51,53,55
+  s_7e2af69631cddd::t_9e2284cd4a6f18 33,36,40-41,44-46
+extensions/modules/cache/src/test/java/org/exist/xquery/modules/cache/NonLazyCacheTest.java
+  s_9336039fde506a::t_2ae14805a025d2 46-50
+  s_9336039fde506a::t_d3e3c1251b3825 52,54
+  s_7e2af69631cddd::t_2c27412788672b 34,37,40,43-45
+extensions/modules/http-client/pom.xml
+  s_9336039fde506a::t_b93e5f44b334a8 124-132,134-141
+  s_9336039fde506a::t_efbe842bd44fe1 133
+exist-core/src/test/java/org/exist/config/TwoDatabasesTest.java
+  s_9336039fde506a::t_8c88b7d38fc752 72-73
+schema/generate-conf-fixture.xsl
+  s_9336039fde506a::t_3319e3430699c2 106-111,119-120
+  s_16608332482e19::t_abe843e321abd9 121-122
+exist-core/src/test/java/org/exist/util/SchemaVersionFixtureAuditTest.java
+  s_9336039fde506a::t_318dac62a4168e 41-45
+  s_9336039fde506a::t_47a765fffdeb33 47-49,81-83
+exist-core/src/test/resources-filtered/org/exist/config/conf1-fixture.xsl
+  s_9336039fde506a::t_a3d48279143ecd 1-36
+extensions/modules/cache/src/test/resources-filtered/conf-fixture.xsl
+  s_9336039fde506a::t_d4536eef211d5b 25-29,38
+exist-core/src/test/resources-filtered/org/exist/config/conf2-fixture.xsl
+  s_9336039fde506a::t_73a5f80bb0f574 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90c278f35dc13772040d61ae1420cc5a35c88cee",
+  "prompts": {},
+  "sessions": {
+    "s_16608332482e19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22d85e69-6117-4797-a6b8-028b1bdc075d",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_7e2af69631cddd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce96e569-ebba-4097-9f1b-98d99581a496",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_9336039fde506a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d2eeef73-9701-4886-aa9f-47a99df7eb00",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
