@@ -161,6 +161,7 @@ public class RangeQueryRewriter extends QueryRewriter {
             if (argCount > 3) {
                 return null;
             }
+            boolean caseInsensitive = false;
             if (argCount == 3) {
                 final Expression flagsExpr = funMatches.getArgument(2);
                 if (flagsExpr instanceof LiteralValue value) {
@@ -170,10 +171,12 @@ public class RangeQueryRewriter extends QueryRewriter {
                             return null;
                         }
                     }
+                    caseInsensitive = !flags.isEmpty();
                 }
             }
+            // Non-literal patterns or flags are judged again at run time, in Lookup.requiresFallback.
             final String pattern = getConstantPattern(funMatches.getArgument(1));
-            if (pattern != null && !XPathToLuceneRegexTranslator.isTranslatable(pattern)) {
+            if (pattern != null && !XPathToLuceneRegexTranslator.isTranslatable(pattern, caseInsensitive)) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("fn:matches pattern '{}' not translatable to Lucene; skipping rewrite", pattern);
                 }
