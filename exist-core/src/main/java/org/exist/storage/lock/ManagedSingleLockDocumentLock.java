@@ -46,12 +46,21 @@ public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock
     private final Lock.LockMode lockMode;
 
     @Nullable private final LockTable lockTable;  // NOTE(AR) only null when called via private constructor from {@link #notLocked(XmldbURI)}.
+    @Nullable private final Runnable onRelease;
 
     public ManagedSingleLockDocumentLock(final XmldbURI documentUri, final long groupId, final MultiLock lock, final Lock.LockMode lockMode, final LockTable lockTable) {
+        this(documentUri, groupId, lock, lockMode, lockTable, null);
+    }
+
+    /**
+     * @param onRelease called once, after the lock is released.
+     */
+    ManagedSingleLockDocumentLock(final XmldbURI documentUri, final long groupId, final MultiLock lock, final Lock.LockMode lockMode, final LockTable lockTable, @Nullable final Runnable onRelease) {
         super(documentUri, lock, null);  // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
         this.groupId = groupId;
         this.lockMode = lockMode;
         this.lockTable = lockTable;
+        this.onRelease = onRelease;
     }
 
     private ManagedSingleLockDocumentLock(final XmldbURI documentUri) {
@@ -61,8 +70,14 @@ public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock
     @Override
     public void close() {
         if (!closed && lock != null) {  // NOTE(AR) lock is null when constructed from {@link #notLocked(XmldbURI)}.
-            LockManager.unlock(lock, lockMode);
-            lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
+            try {
+                LockManager.unlock(lock, lockMode);
+                lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
+            } finally {
+                if (onRelease != null) {
+                    onRelease.run();
+                }
+            }
         }
         this.closed = true;
     }

@@ -51,6 +51,28 @@ public interface LockTableMXBean extends PerInstanceMBean {
     Map<String, Map<Lock.LockType, List<LockModeOwner>>> getAttempting();
 
     /**
+     * Get the number of Document WRITE_LOCKs held.
+     *
+     * @return the number of Document WRITE_LOCKs held
+     */
+    long getDocumentWriteLocksHeld();
+
+    /**
+     * Get the number of optimistic reads of Documents' permissions, by fn:collection() for example, which were valid.
+     *
+     * @return the number of valid optimistic reads
+     */
+    long getOptimisticDocumentReadsValid();
+
+    /**
+     * Get the number of optimistic reads of Documents' permissions which were not possible, or were invalidated by
+     * a concurrent write, so that the Documents were read with their locks instead.
+     *
+     * @return the number of failed optimistic reads
+     */
+    long getOptimisticDocumentReadsFailed();
+
+    /**
      * Dump a summary of the current lock table state to the system console.
      */
     void dumpToConsole();
