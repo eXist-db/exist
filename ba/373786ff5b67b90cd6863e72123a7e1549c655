@@ -1,0 +1,58 @@
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_15ffdc06d1db19::t_a11a1342c1d88d 88-89,92-97
+  s_15ffdc06d1db19::t_8b76034dcb2f7e 268
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_15ffdc06d1db19::t_811817bb73e129 93,98,100,102-109
+  s_15ffdc06d1db19::t_95e85ba1632343 92
+  s_15ffdc06d1db19::t_910530ec362821 94-97
+  s_15ffdc06d1db19::t_27205a42ebb25e 99
+  s_15ffdc06d1db19::t_8b8037ec3ed591 101
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_15ffdc06d1db19::t_4b7bef6ab2a102 220-221,225-230
+  s_15ffdc06d1db19::t_ce576cd2cd93ef 256-268
+exist-core/src/test/java/org/exist/test/xqsuite/EngineTestEvents.java
+  s_15ffdc06d1db19::t_81298d4f9dae27 123-129
+  s_15ffdc06d1db19::t_48d3cc975f405d 57-58,60-64,68
+  s_15ffdc06d1db19::t_436304c626dbd1 130
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_15ffdc06d1db19::t_1d2fe06a9d23bb 233-261
+  s_15ffdc06d1db19::t_bb7ba6cbbcf193 81-92
+exist-core/src/test/java/org/exist/test/xqsuite/KnownFailures.java
+  s_15ffdc06d1db19::t_edc5869a8067fa 1-105
+exist-core/src/test/resources/org/exist/test/runner/known-failures-stale.lst
+  s_15ffdc06d1db19::t_8d084b0288edc7 1-2
+exist-core/src/test/resources/org/exist/test/runner/known-failures.lst
+  s_15ffdc06d1db19::t_e366a1e309cadf 1-2
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneUnoptimizedTests.java
+  s_15ffdc06d1db19::t_c63476115095f6 1-36
+extensions/indexes/lucene/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_e8cd03f0095293 1-54
+extensions/indexes/ngram/src/test/java/xquery/ngram/NgramUnoptimizedTests.java
+  s_15ffdc06d1db19::t_17956e829ee942 1-36
+extensions/indexes/ngram/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_a22cf4eeb807a5 1-7
+extensions/indexes/range/src/test/java/xquery/range/RangeUnoptimizedTests.java
+  s_15ffdc06d1db19::t_c6f24b403dd4d4 1-36
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_e64db64af49367 1-86,90-117
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_15ffdc06d1db19::t_e2ff9c184bad69 225-228
+extensions/indexes/range/src/test/xquery/range/wildcard-name-range-index.xqm
+  s_15ffdc06d1db19::t_70de9552bd0149 1-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba373786ff5b67b90cd6863e72123a7e1549c655",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
