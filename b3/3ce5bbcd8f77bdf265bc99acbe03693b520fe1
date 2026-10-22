@@ -1,0 +1,25 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_15ffdc06d1db19::t_4e2fedb19a56ff 26,32,37-39,41-47,49-51,62,66-74,94,100-125
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_15ffdc06d1db19::t_3d432baf6bc0c3 88
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/PhraseAsNearRewriterTest.java
+  s_15ffdc06d1db19::t_d7b1058d435185 1-78
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_15ffdc06d1db19::t_ab9c2530a684a1 34,41,58-59,280-306
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b33ce5bbcd8f77bdf265bc99acbe03693b520fe1",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
