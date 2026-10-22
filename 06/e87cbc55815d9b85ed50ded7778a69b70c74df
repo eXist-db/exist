@@ -39,6 +39,19 @@ extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchSc
   s_15ffdc06d1db19::t_b0c1ebb8adc115 1-26,28-33,37-48,49-58,60-61,63-205,207-239,241,243-262,264,266-298,315-324,327-337,340,343,345-383,384-432,441-442
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
   s_15ffdc06d1db19::t_b7367d6e1fe359 68-78,80,83,87
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_82ba39ff8b9e6d 217-219,223,226,229-235,237,239,246-248,252,255,258-262,264,266,268
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_15ffdc06d1db19::t_8cb848c2ac8e81 411-426
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_15ffdc06d1db19::t_bbba3ea3bd2c57 26,33,44-45,104-106,109-110,136-139,141-146,149-150,153-163,166-170,172-177,179-180,187-194,198-205
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeProxies.java
+  s_15ffdc06d1db19::t_1e3025f8c54db6 26,56-82
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeSets.java
+  s_15ffdc06d1db19::t_c03bdd315c90a2 25,72-79
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_15ffdc06d1db19::t_740bd242830fe7 243-301
+  s_15ffdc06d1db19::t_58de9061bc2f9b 302-328
 ---
 {
   "schema_version": "authorship/3.0.0",
