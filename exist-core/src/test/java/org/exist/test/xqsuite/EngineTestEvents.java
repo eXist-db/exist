@@ -54,10 +54,18 @@ final class EngineTestEvents implements TestEvents {
     private final Set<XQTestDescriptor> started = new HashSet<>();
     private final Set<XQTestDescriptor> done = new HashSet<>();
 
+    private final KnownFailures knownFailures;
+
     EngineTestEvents(final FileDescriptor file, final EngineExecutionListener listener, final Runnable activity) {
+        this(file, listener, activity, KnownFailures.NONE);
+    }
+
+    EngineTestEvents(final FileDescriptor file, final EngineExecutionListener listener, final Runnable activity,
+            final KnownFailures knownFailures) {
         this.file = file;
         this.listener = listener;
         this.activity = activity;
+        this.knownFailures = knownFailures;
     }
 
     /**
@@ -112,7 +120,14 @@ final class EngineTestEvents implements TestEvents {
         activity.run();
         final XQTestDescriptor test = running(testName);
         done.add(test);
-        final TestExecutionResult result = pending.remove(test);
+        TestExecutionResult result = pending.remove(test);
+        final boolean hasFailed = result != null && result.getStatus() == TestExecutionResult.Status.FAILED;
+        if (knownFailures.finished(test.getDisplayName(), hasFailed)) {
+            final Throwable reason = result.getThrowable().orElse(null);
+            final TestAbortedException known = new TestAbortedException("Known failure, listed in " + knownFailures.source()
+                    + (reason != null && reason.getMessage() != null ? ": " + reason.getMessage() : ""), reason);
+            result = TestExecutionResult.aborted(known);
+        }
         listener.executionFinished(test, result != null ? result : TestExecutionResult.successful());
     }
 
