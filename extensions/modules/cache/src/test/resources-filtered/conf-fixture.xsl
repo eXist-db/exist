@@ -22,7 +22,11 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<!-- Generates this module's test conf.xml from canonical, see schema/generate-conf-fixture.xsl. -->
+<!--
+    Default + LazyCacheTest fixture: keep canonical's cache module
+    (enableLazyCreation=true). Used as /conf.xml for XQSuite CacheTests and
+    LazyCacheTest. See schema/generate-conf-fixture.xsl.
+-->
 <xsl:stylesheet version="3.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -31,13 +35,7 @@
     <xsl:import href="urn:exist-db:codegen:generate-conf-fixture"/>
 
     <xsl:param name="keep-modules" as="xs:string*" select="(
-        'http://exist-db.org/xquery/cache',
-        'http://exist-db.org/xquery/inspection',
-        'http://exist-db.org/xquery/response',
-        'http://exist-db.org/xquery/system',
-        'http://exist-db.org/xquery/util',
-        'http://exist-db.org/xquery/xmldb',
-        'http://www.w3.org/2005/xpath-functions/map'
+        'http://exist-db.org/xquery/cache'
     )"/>
 
 </xsl:stylesheet>

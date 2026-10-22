@@ -69,11 +69,8 @@ public class TwoDatabasesTest {
         }
 
         final ClassLoader loader = TwoDatabasesTest.class.getClassLoader();
-        final char separator = System.getProperty("file.separator").charAt(0);
-        final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', separator);
-
-        config1File = Path.of(loader.getResource(packagePath + separator + "conf1.xml").toURI());
-        config2File = Path.of(loader.getResource(packagePath + separator + "conf2.xml").toURI());
+        config1File = Path.of(loader.getResource("org/exist/config/db1/conf.xml").toURI());
+        config2File = Path.of(loader.getResource("org/exist/config/db2/conf.xml").toURI());
     }
 
     @RegisterExtension
