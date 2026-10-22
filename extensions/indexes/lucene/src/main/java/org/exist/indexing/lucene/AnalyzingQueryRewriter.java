@@ -30,7 +30,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 
 import java.io.IOException;
@@ -40,6 +39,10 @@ import java.io.StringReader;
  * Rewrites PrefixQuery and WildcardQuery terms through an analyzer so they match
  * index terms produced by the same analyzer (e.g. diacritic stripping, lowercasing).
  * StandardQueryParser does not analyze multi-term query terms; this rewriter fixes that.
+ *
+ * <p>Terms the parser has analyzed, as in a TermQuery or PhraseQuery, are left as they are: analyzing them again
+ * changes them where an analysis isn't idempotent, as a stemmer's isn't (EnglishAnalyzer stems "agreed" to "agre",
+ * and "agre" to "agr").</p>
  */
 public final class AnalyzingQueryRewriter {
 
@@ -72,9 +75,6 @@ public final class AnalyzingQueryRewriter {
         if (query instanceof BoostQuery boost) {
             return new BoostQuery(rewriteQuery(boost.getQuery(), analyzer), boost.getBoost());
         }
-        if (query instanceof TermQuery tq) {
-            return rewriteTermQuery(tq, analyzer);
-        }
         if (query instanceof PrefixQuery pq) {
             return rewritePrefixQuery(pq, analyzer);
         }
@@ -82,12 +82,6 @@ public final class AnalyzingQueryRewriter {
             return rewriteWildcardQuery(wq, analyzer);
         }
         return query;
-    }
-
-    private static Query rewriteTermQuery(TermQuery tq, Analyzer analyzer) {
-        Term t = tq.getTerm();
-        String norm = normalizeTerm(t.field(), t.text(), analyzer);
-        return norm != null ? new TermQuery(new Term(t.field(), norm)) : tq;
     }
 
     private static Query rewritePrefixQuery(PrefixQuery pq, Analyzer analyzer) {
