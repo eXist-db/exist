@@ -21,21 +21,31 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.exist.TestUtils;
 import org.exist.util.io.FilterInputStreamCacheMonitor;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
@@ -136,6 +146,71 @@ class RequestBodyCacheIntegrationTest extends AbstractClassIntegrationTest {
         }
 
         assertEquals(activeCachesBefore, activeCachesAfter, "request body caches were not released");
+    }
+
+    /**
+     * A Resource Function that does not read the request body must still leave the connection reusable:
+     * if the request ends with body content unread, the server cannot keep the connection alive, and
+     * closing a socket with unread data resets it, which on Windows also discards the response.
+     */
+    @Test
+    void connectionIsReusableWhenRequestBodyIsNotRead() throws IOException, InterruptedException {
+        final URI uri = URI.create(getRestXqUri() + "/request-body-cache/error");
+        try (final Socket socket = new Socket(uri.getHost(), uri.getPort())) {
+            socket.setSoTimeout(10_000);
+            final OutputStream out = socket.getOutputStream();
+            final BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+
+            for (int i = 0; i < 2; i++) {
+                final byte[] body = "hello".getBytes(UTF_8);
+                final String head = "PUT " + uri.getRawPath() + " HTTP/1.1\r\n"
+                        + "Host: " + uri.getHost() + ":" + uri.getPort() + "\r\n"
+                        + "Authorization: Basic " + Base64.getEncoder().encodeToString((TestUtils.ADMIN_DB_USER + ":" + TestUtils.ADMIN_DB_PWD).getBytes(UTF_8)) + "\r\n"
+                        + "Content-Type: text/plain\r\n"
+                        + "Content-Length: " + body.length + "\r\n"
+                        + "\r\n";
+                out.write(head.getBytes(UTF_8));
+                out.flush();
+
+                // let the Resource Function fail before the body arrives, so that the body is still unread when the request ends
+                Thread.sleep(500);
+                out.write(body);
+                out.flush();
+
+                final List<String> headers = readResponse(in);
+                assertEquals("HTTP/1.1 500 Server Error", headers.getFirst(), "request " + (i + 1));
+                assertFalse(headers.stream().anyMatch(header -> header.equalsIgnoreCase("Connection: close")), "request " + (i + 1) + " closed the connection: " + headers);
+            }
+        }
+    }
+
+    /**
+     * Reads one HTTP response, consuming its body as given by the {@code Content-Length} header.
+     *
+     * @return the status line followed by the header lines
+     */
+    private static List<String> readResponse(final BufferedInputStream in) throws IOException {
+        final List<String> headers = new ArrayList<>();
+        final StringBuilder line = new StringBuilder();
+        int contentLength = 0;
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') {
+                final String header = line.toString().stripTrailing();
+                line.setLength(0);
+                if (header.isEmpty()) {
+                    in.readNBytes(contentLength);
+                    return headers;
+                }
+                if (header.regionMatches(true, 0, "Content-Length:", 0, 15)) {
+                    contentLength = Integer.parseInt(header.substring(15).trim());
+                }
+                headers.add(header);
+            } else {
+                line.append((char) b);
+            }
+        }
+        throw new IOException("Connection closed by the server after: " + headers);
     }
 
     private static int activeCaches() {
