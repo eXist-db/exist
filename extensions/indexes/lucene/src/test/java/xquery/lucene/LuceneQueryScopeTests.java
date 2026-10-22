@@ -26,7 +26,8 @@ import org.exist.test.xqsuite.XQSuite;
 @XQSuite({
     "src/test/xquery/lucene/ft-query-scope.xqm",
     "src/test/xquery/lucene/ft-search-scope.xqm",
-    "src/test/xquery/lucene/scope-dls.xqm"
+    "src/test/xquery/lucene/scope-dls.xqm",
+    "src/test/xquery/lucene/ft-fields.xqm"
 })
 public class LuceneQueryScopeTests {
 }
