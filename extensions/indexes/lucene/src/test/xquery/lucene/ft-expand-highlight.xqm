@@ -143,7 +143,6 @@ declare %test:assertTrue function feh:batch-expand-matches-per-hit-for-loop() {
  : wildcard query is expanded again.
  :)
 declare
-    %test:pending("the term-rewrite cache outlives the index state it was filled from; highlighting on Lucene's match positions in a following change needs no such cache")
     %test:assertEquals("1/1")
 function feh:wildcard-highlights-term-stored-after-first-expand() {
     let $coll := "/db/" || $feh:COLL

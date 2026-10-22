@@ -140,7 +140,6 @@ function ftt:field-highlight-field-matches-via-query() {
  : @see https://github.com/eXist-db/exist/issues/833
  :)
 declare
-    %test:pending("highlighting matches the query's terms by its own logic, which ignores slop and near; it uses Lucene's match positions in a following change")
     %test:assertEquals(1, 1)
 function ftt:field-highlight-field-matches-phrase-slop() {
     let $hits := collection($ftt:COLLECTION)//div[ft:query(., 'body:"deed fair"~4')],
@@ -193,7 +192,6 @@ function ftt:highlight($query as xs:string) {
  : @return xs:integer+ (match-count for string query, match-count for XML query)
  :)
 declare
-    %test:pending("highlighting matches the query's terms by its own logic, which ignores slop and near; it uses Lucene's match positions in a following change")
     %test:assertEquals(1, 1)
 function ftt:slop-string-vs-xml-equality() {
     let $queries := (
@@ -219,7 +217,6 @@ function ftt:slop-string-vs-xml-equality() {
  : @return xs:integer+ (hit-count, match-count) for the string query, then the same pair for the XML query
  :)
 declare
-    %test:pending("highlighting matches the query's terms by its own logic, which ignores slop and near; it uses Lucene's match positions in a following change")
     %test:assertEquals(1, 1, 1, 1)
 function ftt:slop-string-vs-xml-equality-nonadjacent() {
     let $queries := (

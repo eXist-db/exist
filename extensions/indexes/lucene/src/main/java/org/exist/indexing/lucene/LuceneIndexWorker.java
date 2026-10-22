@@ -971,22 +971,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    /**
-     * Calls {@link LuceneUtil#extractTerms(Query, Map, IndexReader, boolean)}  to extract
-     * the terms which would be matched by the given query.
-     *
-     * @param query to extract terms for
-     * @return the map returned by {@link LuceneUtil#extractTerms(Query, Map, IndexReader, boolean)}
-     * @throws IOException in case of Lucene IO error
-     */
-    public Map<Object, Query> getTerms(final Query query) throws IOException {
-        return index.withReader(reader -> {
-            final Map<Object, Query> termMap = new TreeMap<>();
-            LuceneUtil.extractTerms(query, termMap, reader, false);
-            return termMap;
-        });
-    }
-
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
             String field, String queryString, int axis, QueryOptions options)
             throws IOException, XPathException {
@@ -1478,7 +1462,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 fields = fieldsToGet;
             }
 
-            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.searcher().getIndexReader());
+            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query);
 
             context.pushDocumentContext();
             try {
@@ -1578,7 +1562,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             attribs.clear();
                             attribs.addAttribute("", "name", "name", "CDATA", field);
                             for (String content : fieldContent) {
-                                List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                                List<Offset> offsets = highlighter.getOffsets(field, content, searchAnalyzer);
                                 builder.startElement("", "field", "field", attribs);
                                 if (offsets != null) {
                                     highlighter.highlight(content, offsets, builder);
