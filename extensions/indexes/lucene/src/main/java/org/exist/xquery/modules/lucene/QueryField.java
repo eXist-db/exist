@@ -148,9 +148,9 @@ public class QueryField extends Query implements Optimizable {
         	final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
         	try {
         		if (Type.subTypeOf(query.getType(), Type.ELEMENT)) {
-                    result = index.queryField(getExpressionId(), docs, contextSet, field, (Element) ((NodeValue) query).getNode(), NodeSet.ANCESTOR, options);
+                    result = index.queryField(getContextId(), docs, contextSet, field, (Element) ((NodeValue) query).getNode(), NodeSet.ANCESTOR, options);
                 } else {
-                    result = index.queryField(context, getExpressionId(), docs, contextSet, field, query.getStringValue(), NodeSet.ANCESTOR, options);
+                    result = index.queryField(context, getContextId(), docs, contextSet, field, query.getStringValue(), NodeSet.ANCESTOR, options);
                 }
             } catch (final IOException e) {
         		throw new XPathException(this, e.getMessage());
