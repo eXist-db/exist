@@ -1,0 +1,20 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_1a05206c81a9f8::t_1298afc688ec26 46,51,54,91-92,126-128,130,133-158,160-170,185,189-199
+  s_1a05206c81a9f8::t_a081a07d27f71f 129,131-132,159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67c158fbb6ac0610cd91187647bae4e9d2fcc8a1",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
