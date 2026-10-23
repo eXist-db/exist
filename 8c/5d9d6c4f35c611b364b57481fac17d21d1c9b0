@@ -1,0 +1,19 @@
+extensions/indexes/range/src/test/xquery/range-reference/reference-matches.xqm
+  s_1a05206c81a9f8::t_8b45140e9b1123 82-84,101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8c5d9d6c4f35c611b364b57481fac17d21d1c9b0",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
