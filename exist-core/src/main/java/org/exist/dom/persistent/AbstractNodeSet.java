@@ -431,8 +431,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         for (final NodeProxy l : this) {
             final NodeProxy p = other.get(l);
             if (p != null) {
-                l.addMatches(p);
-                r.add(l);
+                r.add(l.withMatchesOf(p));
             }
         }
         return r;
@@ -444,10 +443,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         for (final NodeProxy l : this) {
             final NodeProxy p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
             if (p != null) {
-                if (p.getNodeId().equals(l.getNodeId())) {
-                    p.addMatches(l);
-                }
-                r.add(p);
+                // p is the other set's node: a copy of it, or of the one in r already, takes the matches
+                final NodeProxy present = r.get(p);
+                final NodeProxy q = present != null ? present : p;
+                r.put(p.getNodeId().equals(l.getNodeId()) ? q.withMatchesOf(l) : q);
             }
         }
         for (final NodeProxy l : other) {
@@ -455,7 +454,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             if (q != null) {
                 final NodeProxy p = r.get(q);
                 if (p != null) {
-                    p.addMatches(l);
+                    r.put(p.withMatchesOf(l));
                 } else {
                     r.add(l);
                 }
@@ -517,7 +516,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             for (final NodeProxy p : this) {
                 final NodeProxy c = other.get(p);
                 if (c != null) {
-                    c.addMatches(p);
+                    // c is the other set's node, in the result already: a copy with both nodes' matches goes in too,
+                    // and the result merges the two
+                    if (p.getMatches() != null) {
+                        result.add(c.withMatchesOf(p));
+                    }
                 } else {
                     result.add(p);
                 }
@@ -542,8 +545,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             ContextItem contextNode = current.getContext();
             while (contextNode != null) {
                 if (contextNode.getContextId() == contextId) {
-                    final NodeProxy context = contextNode.getNode();
-                    context.addMatches(current);
+                    final NodeProxy context = contextNode.getNode().withMatchesOf(current);
                     if (Expression.NO_CONTEXT_ID != contextId) {
                         context.addContextNode(contextId, context);
                     }
