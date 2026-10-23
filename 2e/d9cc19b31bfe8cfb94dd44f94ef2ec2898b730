@@ -1,0 +1,19 @@
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/QueryInputsBenchmark.java
+  s_1a05206c81a9f8::t_f77077f2c4eb97 1-247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ed9cc19b31bfe8cfb94dd44f94ef2ec2898b730",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

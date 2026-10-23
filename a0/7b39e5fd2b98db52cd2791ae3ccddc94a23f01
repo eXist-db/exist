@@ -1,0 +1,23 @@
+extensions/indexes/lucene/pom.xml
+  s_1a05206c81a9f8::t_f37ff723b97213 174-178
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_1a05206c81a9f8::t_3e34cb45ce08c7 1-164
+extensions/indexes/lucene/src/test/xquery/lucene/query-leaves-its-inputs.xqm
+  s_1a05206c81a9f8::t_c0779db7788763 1-43,48-50,53-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a07b39e5fd2b98db52cd2791ae3ccddc94a23f01",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
