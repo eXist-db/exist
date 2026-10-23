@@ -452,7 +452,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * with the parameter {@code _source=yes}.
      */
     private static boolean isSourceViewRequest(final HttpServletRequest request, @Nullable final Descriptor descriptor) {
-        return "GET".equals(request.getMethod().toUpperCase())
+        return "GET".equalsIgnoreCase(request.getMethod())
                 && "yes".equals(request.getParameter("_source"))
                 && descriptor != null;
     }
