@@ -475,6 +475,79 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.match = match;
     }
 
+    /**
+     * This node with a match added. The node itself does not change: it may be the caller's, a variable's or another
+     * evaluation's.
+     *
+     * @param m the match, of which only the match itself is taken, not its chain
+     * @return a copy of this node with the match
+     */
+    public NodeProxy withMatch(final Match m) {
+        final NodeProxy copy = new NodeProxy(this);
+        copy.match = Match.add(match, m);
+        return copy;
+    }
+
+    /**
+     * This node with the matches of another node added.
+     *
+     * @param other the node whose matches are added
+     * @return this node if {@code other} adds nothing, otherwise a copy with the matches of both
+     */
+    public NodeProxy withMatchesOf(final NodeProxy other) {
+        if (other == this || other.match == null || Match.matchListEquals(other.match, match)) {
+            return this;
+        }
+        final NodeProxy copy = new NodeProxy(this);
+        for (Match m = other.match; m != null; m = m.getNextMatch()) {
+            copy.match = Match.add(copy.match, m);
+        }
+        return copy;
+    }
+
+    /**
+     * This node with a context node added to its predicate context.
+     *
+     * @param contextId the predicate's context id
+     * @param node the context node
+     * @return this node if the context has the item already or {@code node} is not persistent, otherwise a copy
+     */
+    public NodeProxy withContextNode(final int contextId, final NodeValue node) {
+        if (node.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+            return this;
+        }
+        final ContextItem chain = context == null ? new ContextItem(contextId, (NodeProxy) node)
+                : context.append(contextId, (NodeProxy) node);
+        return chain == context ? this : withContext(chain);
+    }
+
+    /**
+     * This node with the predicate context of another node, in place of its own.
+     *
+     * @param other the node whose context is taken
+     * @return this node if the contexts are the same, otherwise a copy
+     */
+    public NodeProxy withContextOf(final NodeProxy other) {
+        return other.context == context ? this : withContext(other.context);
+    }
+
+    /**
+     * This node without the items of a predicate in its context.
+     *
+     * @param contextId the predicate's context id, or {@link Expression#IGNORE_CONTEXT} for all
+     * @return this node if it has no such items, otherwise a copy
+     */
+    public NodeProxy withoutContext(final int contextId) {
+        final ContextItem chain = contextId == Expression.IGNORE_CONTEXT ? null : ContextItem.without(context, contextId);
+        return chain == context ? this : withContext(chain);
+    }
+
+    private NodeProxy withContext(@Nullable final ContextItem chain) {
+        final NodeProxy copy = new NodeProxy(this);
+        copy.context = chain;
+        return copy;
+    }
+
     public void addMatch(final Match m) {
         // the chain is rebuilt, not changed: it may be shared with other nodes
         this.match = Match.add(this.match, m);
