@@ -538,31 +538,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return;
         }
         final NodeProxy contextNode = (NodeProxy) node;
-        if(context == null) {
-            context = new ContextItem(contextId, contextNode);
-            return;
-        }
-        ContextItem next = context;
-        while(next != null) {
-            if(contextId == next.getContextId() &&
-                next.getNode().getNodeId().equals(contextNode.getNodeId())) {
-                // Ignore duplicate context nodes
-                break;
-            }
-            if(next.getNextDirect() == null) {
-                if(next == context) {
-                    // context items should not be shared between proxies,
-                    // but for performance reason, if there's only a single
-                    // context item, it will be shared. we thus have to create
-                    // a copy before appending a new item.
-                    next = new ContextItem(next.getContextId(), next.getNode());
-                    context = next;
-                }
-                next.setNextContextItem(new ContextItem(contextId, contextNode));
-                break;
-            }
-            next = next.getNextDirect();
-        }
+        context = context == null ? new ContextItem(contextId, contextNode) : context.append(contextId, contextNode);
     }
 
     /**
@@ -595,27 +571,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if (node == this) {
             return;
         }
-        context = null;
-        if(node.context == null) {
-            return;
-        }
-        if(node.context.getNextDirect() == null) {
-            // if there's a single context item, we just
-            // copy a reference to it. addContextNode will take
-            // care of this and create a copy before appending
-            // a new item
-            context = node.context;
-        } else {
-            ContextItem next = node.context;
-            ContextItem newContext = new ContextItem(next.getContextId(), next.getNode());
-            context = newContext;
-            next = next.getNextDirect();
-            while(next != null) {
-                newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
-                newContext = newContext.getNextDirect();
-                next = next.getNextDirect();
-            }
-        }
+        // chains never change once built, so they are shared
+        context = node.context;
     }
 
     public void deepCopyContext(final NodeProxy node, final int addContextId) {
@@ -663,22 +620,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             context = null;
             return;
         }
-        ContextItem newContext = null;
-        ContextItem last = null;
-        ContextItem next = context;
-        while(next != null) {
-            if(next.getContextId() != contextId) {
-                if(newContext == null) {
-                    newContext = next;
-                } else {
-                    last.setNextContextItem(next);
-                }
-                last = next;
-                last.setNextContextItem(null);
-            }
-            next = next.getNextDirect();
-        }
-        this.context = newContext;
+        context = ContextItem.without(context, contextId);
     }
 
     public ContextItem getContext() {
