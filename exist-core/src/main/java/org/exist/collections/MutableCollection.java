@@ -890,13 +890,15 @@ public class MutableCollection implements Collection {
         if(path.equals(XmldbURI.ROOT_COLLECTION_URI)) {
             return null;
         }
-        // a Collection's path is absolute and normalized, so its parent is everything before the last '/'
+        // a Collection's path is absolute and normalized, so its parent is everything before the last '/', if its
+        // segments are in canonical form; otherwise it is parsed as before, so that the parent's lock key is unchanged
         final String collectionPath = path.getRawCollectionPath();
         final int lastSlash = collectionPath.lastIndexOf('/');
         if (lastSlash <= 0) {
             return path.removeLastSegment();
         }
-        return XmldbURI.createInternal(collectionPath.substring(0, lastSlash));
+        final String parentPath = collectionPath.substring(0, lastSlash);
+        return XmldbURI.isCanonicalPath(parentPath.substring(1)) ? XmldbURI.createInternal(parentPath) : path.removeLastSegment();
     }
 
     @Override

@@ -440,9 +440,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             if (collection == null) {
                 uri = (XmldbURI) fileURI.clone();
             } else {
-                // a document's name is normally a single, already encoded path segment, so it can be appended without re-parsing the path
+                // a document's name is normally a single path segment in canonical form, which can be appended without
+                // parsing the path again; any other name is parsed as before, so that its URI, the document's lock key,
+                // is the same whichever way it is made
                 final String name = fileURI.getRawCollectionPath();
-                uri = name.isEmpty() || name.indexOf('/') >= 0 ? collection.getURI().append(fileURI) : collection.getURI().appendInternal(fileURI);
+                uri = name.isEmpty() || name.indexOf('/') >= 0 || !XmldbURI.isCanonicalSegment(name)
+                        ? collection.getURI().append(fileURI) : collection.getURI().appendInternal(fileURI);
             }
         }
         return uri;
