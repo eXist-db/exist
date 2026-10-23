@@ -49,6 +49,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
@@ -64,13 +65,13 @@ import java.util.Properties;
 
 /**
  * Servlet to generate HTML output from an XQuery file.
- *
+ * <p>
  * The servlet responds to an URL pattern as specified in the
  * WEB-INF/web.xml configuration file of the application. It will
  * interpret the path with which it is called as leading to a valid
  * XQuery file. The XQuery file is loaded, compiled and executed.
  * Any output of the script is sent back to the client.
- *
+ * <p>
  * The servlet accepts the following initialization parameters in web.xml:
  *
  * <table style="border: 0">
@@ -86,7 +87,7 @@ import java.util.Properties;
  * 	from HTML for
  * ms.</td></tr>
  * </table>
- *
+ * <p>
  * User identity and password may also be specified through the HTTP session attributes
  * "user" and "password". These attributes will overwrite any other settings.
  *
@@ -112,11 +113,11 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
     public final static String DEFAULT_CONTENT_TYPE = "text/html";
-    
+
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-    
+
     private XmldbURI collectionURI = null;
-    
+
     private String encoding = null;
     private String contentType = null;
     private boolean hideErrorMessages = false;
@@ -131,26 +132,26 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         super.init(config);
 
         final String confCollectionURI = config.getInitParameter("uri");
-        if(confCollectionURI == null) {
+        if (confCollectionURI == null) {
             collectionURI = DEFAULT_URI;
-            
+
         } else {
             try {
                 collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
-                
+
             } catch (final URISyntaxException e) {
-                throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
+                throw new ServletException("Invalid XmldbURI for parameter 'uri': " + e.getMessage(), e);
             }
         }
-        
+
         encoding = config.getInitParameter("encoding");
-        if(encoding == null) {
+        if (encoding == null) {
             encoding = DEFAULT_ENCODING;
         }
         getLog().info("encoding = {}", encoding);
 
         contentType = config.getInitParameter("content-type");
-        if(contentType == null) {
+        if (contentType == null) {
             contentType = DEFAULT_CONTENT_TYPE;
         }
 
@@ -213,11 +214,10 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     /**
      * Processes incoming HTTP requests for XQuery.
      *
-     * @param request the http request
+     * @param request  the http request
      * @param response the http response
-     *
      * @throws ServletException if the servlet raises an exception
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // the request path relative to the context, e.g. "/db/apps/optimize.xql" -- kept around
@@ -229,11 +229,11 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
         final ServletOutputStream sout = response.getOutputStream();
         final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, getFormEncoding()));
-        response.addHeader( "pragma", "no-cache" );
-        response.addHeader( "Cache-Control", "no-cache" );
+        response.addHeader("pragma", "no-cache");
+        response.addHeader("Cache-Control", "no-cache");
 
         final String moduleLoadPath = moduleLoadPath(request);
-        final HttpSession session = request.getSession( false );
+        final HttpSession session = request.getSession(false);
         final Subject user = resolveUser(request, response, session);
 
         final Source source = resolveSource(request, response, output, user, moduleLoadPath, path, contextRelativePath);
@@ -368,8 +368,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * @return the source, or {@code null} if it cannot be resolved, in which case an error has been sent
      */
     private @Nullable Source resolveSource(final HttpServletRequest request, final HttpServletResponse response,
-            final PrintWriter output, final Subject user, final String moduleLoadPath, @Nullable final String path,
-            final String contextRelativePath) throws ServletException {
+                                           final PrintWriter output, final Subject user, final String moduleLoadPath, @Nullable final String path,
+                                           final String contextRelativePath) throws ServletException {
         final Object sourceAttrib = request.getAttribute(ATTR_XQUERY_SOURCE);
         final Object urlAttrib = request.getAttribute(ATTR_XQUERY_URL);
         final Source source;
@@ -399,14 +399,14 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 return new StringSource(item.getStringValue());
             } catch (final XPathException e) {
                 throw new ServletException("Failed to read XQuery source string from " +
-                    "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
+                        "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
             }
         }
         return new StringSource(sourceAttrib.toString());
     }
 
     private @Nullable Source sourceFromUrl(final HttpServletResponse response, final PrintWriter output,
-            final Subject user, final String moduleLoadPath, final String url) {
+                                           final Subject user, final String moduleLoadPath, final String url) {
         try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
             // resolved for execution: a stored query needs EXECUTE, not READ. The ?_source view
             // below still validates READ, so an unreadable query can be run but not viewed
@@ -458,7 +458,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private void showSource(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter output,
-            final Source source, final Subject user, @Nullable final String path, final Descriptor descriptor) throws IOException {
+                            final Source source, final Subject user, @Nullable final String path, final Descriptor descriptor) throws IOException {
         //check are we allowed to show the xquery source - descriptor.xml
         if (!descriptor.allowSource(path)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. Must be explicitly defined in descriptor.xml");
@@ -480,7 +480,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private void sendPermissionDenied(final HttpServletRequest request, final HttpServletResponse response,
-            final Subject user, final String message) throws IOException {
+                                      final Subject user, final String message) throws IOException {
         if (getDefaultUser().equals(user)) {
             getAuthenticator().sendChallenge(request, response);
         } else {
@@ -489,8 +489,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private void execute(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter output,
-            @Nullable final HttpSession session, final Source source, final Subject user, final String moduleLoadPath,
-            @Nullable final String path, @Nullable final String requestAttr)
+                         @Nullable final HttpSession session, final Source source, final Subject user, final String moduleLoadPath,
+                         @Nullable final String path, @Nullable final String requestAttr)
             throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException {
         try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
@@ -502,7 +502,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             final HttpRequestWrapper reqw = new HttpRequestWrapper(request, getFormEncoding(), getContainerEncoding());
             final ResponseWrapper respw = new HttpResponseWrapper(response);
-            context.setHttpContext(new XQueryContext.HttpContext(reqw, respw, session != null ? new HttpSessionWrapper( session ) : null));
+            context.setHttpContext(new XQueryContext.HttpContext(reqw, respw, session != null ? new HttpSessionWrapper(session) : null));
 
             applyWatchdogOptions(request, context);
 
@@ -512,7 +512,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             setContentType(response, outputProperties.getProperty(OutputKeys.MEDIA_TYPE), path);
 
-            if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
+            if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName()))) {
                 request.setAttribute(requestAttr, resultSequence);
             } else {
                 serialize(broker, context, outputProperties, output, resultSequence);
@@ -524,7 +524,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * Borrows the compiled query from the pool, or compiles it.
      */
     private CompiledXQuery prepareQuery(final DBBroker broker, final XQuery xquery, final Source source,
-            final Subject user, final String moduleLoadPath) throws EXistException, PermissionDeniedException, XPathException {
+                                        final Subject user, final String moduleLoadPath) throws EXistException, PermissionDeniedException, XPathException {
         final CompiledXQuery pooled = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
 
         final XQueryContext context;
@@ -552,10 +552,10 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
         } catch (final XPathException ex) {
             final XPathException disclosed = ErrorDisclosure.disclose(context, ex);
-            throw new EXistException("Cannot compile xquery: "+ disclosed.getMessage(), disclosed);
+            throw new EXistException("Cannot compile xquery: " + disclosed.getMessage(), disclosed);
 
         } catch (final IOException ex) {
-            throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage() ,ex);
+            throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage(), ex);
         }
     }
 
@@ -580,7 +580,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private Sequence executeQuery(final DBBroker broker, final XQuery xquery, final CompiledXQuery query,
-            final Source source, final Properties outputProperties) throws XPathException, PermissionDeniedException {
+                                  final Source source, final Properties outputProperties) throws XPathException, PermissionDeniedException {
         final XQueryContext context = query.getContext();
         try {
             return xquery.execute(broker, query, null, outputProperties);
@@ -627,7 +627,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private static void serialize(final DBBroker broker, final XQueryContext context, final Properties outputProperties,
-            final PrintWriter output, final Sequence resultSequence) throws XPathException, SAXException {
+                                  final PrintWriter output, final Sequence resultSequence) throws XPathException, SAXException {
         final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
         try {
             // serialization runs the tail of a lazily-evaluated query, so a runtime failure can
@@ -659,10 +659,11 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     }
 
     private String getValue(Object obj) {
-        if(obj == null)
-            {return null;}
-        
-        if(obj instanceof Sequence sequence)
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof Sequence sequence)
             try {
                 return sequence.getStringValue();
             } catch (final XPathException e) {
@@ -689,8 +690,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * description so that a user-derived value (e.g. a requested source path
      * embedded in the description) cannot inject markup into the response.
      *
-     * @param message the message to display; may be {@code null}
-     * @param description the description to display; may be {@code null}
+     * @param message         the message to display; may be {@code null}
+     * @param description     the description to display; may be {@code null}
      * @param hideDescription {@code true} to suppress the description entirely
      * @return the complete HTML error page
      */
@@ -722,9 +723,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * arbitrary user-derived value into an HTML response.
      *
      * @param str the string to escape; {@code null} is returned as the literal {@code "null"} to
-     *     match Java's string-concatenation behaviour at the call sites that don't already guard
-     *     against {@code null}.
-     *
+     *            match Java's string-concatenation behaviour at the call sites that don't already guard
+     *            against {@code null}.
      * @return the escaped string.
      */
     private static String escapeHtml(final String str) {
