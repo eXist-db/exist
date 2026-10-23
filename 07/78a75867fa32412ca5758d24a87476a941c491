@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1a05206c81a9f8::t_b908a4f5b2caa8 113-114,116-117,136-154
+exist-core/src/test/java/org/exist/xquery/SelfStepDependenciesTest.java
+  s_1a05206c81a9f8::t_c24800ebbe71aa 1-97
+exist-core/src/test/xquery/self-step-over-context.xqm
+  s_1a05206c81a9f8::t_cc8fc0303fd5d5 1-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0778a75867fa32412ca5758d24a87476a941c491",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
