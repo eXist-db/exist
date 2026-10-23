@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1a05206c81a9f8::t_09d731599b9ad9 474-480,573-579,585-591
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b0388d028682570b0f21a8a8c095d2266ca62e68",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
