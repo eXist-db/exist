@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1a05206c81a9f8::t_25280cf10f2f96 543-556
+exist-core/src/main/java/org/exist/xquery/Predicate.java
+  s_1a05206c81a9f8::t_62c266c03b4668 41-42,377-382,400-401,420-422
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_1a05206c81a9f8::t_cbfbcc8e0bc16b 1741-1742,1854-1857,1860-1861
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_1a05206c81a9f8::t_2fc0d63405a6d7 1138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3fdec5a0448ab0c6796c8eef920f793cbfb6e89",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
