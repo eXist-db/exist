@@ -1,0 +1,31 @@
+exist-core/src/main/java/org/exist/dom/persistent/AVLTreeNodeSet.java
+  s_1a05206c81a9f8::t_6a3b901c019085 106-120
+exist-core/src/main/java/org/exist/dom/persistent/AbstractNodeSet.java
+  s_1a05206c81a9f8::t_5ece26f0c7867b 434,446-449,457,519-523,548
+exist-core/src/main/java/org/exist/dom/persistent/ExtArrayNodeSet.java
+  s_1a05206c81a9f8::t_11d7f5454678bd 698,891,896,943,949,978
+exist-core/src/main/java/org/exist/dom/persistent/NewArrayNodeSet.java
+  s_1a05206c81a9f8::t_e4fa8203477695 324,328,375,379,571,916
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1a05206c81a9f8::t_296ec00df1fbf5 508-522,1060,1155-1156
+exist-core/src/main/java/org/exist/dom/persistent/NodeSetHelper.java
+  s_1a05206c81a9f8::t_fa4037fac2df37 98,312
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_1a05206c81a9f8::t_d94fb28e7ac169 333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fbc23a820fa7f1b3a6bc755f2837cb53a5258b6f",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
