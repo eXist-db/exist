@@ -561,8 +561,10 @@ public class LocationStep extends Step {
                     if (np != null) {
                         p = np;
                     }
-                } else if (np != null && np.getMatches() != null) {
-                    p.addMatch(np.getMatches());
+                } else if (np != null) {
+                    // p is the preloaded set's node, which the next context node may need as it was:
+                    // the step returns a copy of it with np's matches
+                    p = p.withMatchesOf(np);
                 }
                 p.addContextNode(contextId, p);
                 newCurrentSet.add(p);
