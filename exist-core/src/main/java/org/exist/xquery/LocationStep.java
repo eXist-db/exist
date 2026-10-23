@@ -104,17 +104,7 @@ public class LocationStep extends Step {
     @Override
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
-
-        // self axis has an obvious dependency on the context item
-        // likewise we depend on the context item if this is the initial step of
-        // the enclosing expression (outside a predicate). initialStep is captured
-        // during analyze, before the parent's child list may be rewritten (e.g. a
-        // function argument being wrapped in a cardinality/type check). See #6521.
-        // A self step whose predicates all select from the context set is evaluated
-        // once over the whole context instead, see hasOnlyNodeSetPredicates().
-        if (!this.inPredicate &&
-                (this.axis == Constants.SELF_AXIS || this.initialStep) &&
-                !(this.axis == Constants.SELF_AXIS && !this.initialStep && hasOnlyNodeSetPredicates())) {
+        if (dependsOnContextItem()) {
             deps = deps | Dependency.CONTEXT_ITEM;
         }
 
@@ -131,6 +121,28 @@ public class LocationStep extends Step {
         // consider nested predicates however...
 
         return deps;
+    }
+
+    /**
+     * Whether this step, outside a predicate, is evaluated once per context item.
+     * <ul>
+     *   <li>The initial step of the enclosing expression is. {@code initialStep} is captured during analyze, before
+     *   the parent's child list may be rewritten (e.g. a function argument being wrapped in a cardinality/type
+     *   check). See #6521.</li>
+     *   <li>A self-axis step is, unless all its predicates select from the context set, see
+     *   {@link #hasOnlyNodeSetPredicates()}.</li>
+     * </ul>
+     *
+     * @return true if this step depends on the context item
+     */
+    private boolean dependsOnContextItem() {
+        if (inPredicate) {
+            return false;
+        }
+        if (initialStep) {
+            return true;
+        }
+        return axis == Constants.SELF_AXIS && !hasOnlyNodeSetPredicates();
     }
 
     /**
