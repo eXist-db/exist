@@ -1057,8 +1057,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         final NewArrayNodeSet result = new NewArrayNodeSet();
         ContextItem contextNode = getContext();
         while(contextNode != null) {
-            final NodeProxy p = contextNode.getNode();
-            p.addMatches(this);
+            final NodeProxy p = contextNode.getNode().withMatchesOf(this);
             if(!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
                 if(contextId != Expression.NO_CONTEXT_ID) {
@@ -1153,7 +1152,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if(p == null) {
             return NodeSet.EMPTY_SET;
         } else if(!nodeId.equals(p.nodeId)) {
-            p.addMatches(this);
+            // p is the other set's node
+            return p.withMatchesOf(this);
         }
         return p;
     }
