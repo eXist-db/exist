@@ -1,0 +1,311 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_1a05206c81a9f8::t_202b0bc8a444d4 1879,1892
+  s_1a05206c81a9f8::t_ab0f69319941ce 64,1880-1883,1890-1891,1893-1896
+  s_15ffdc06d1db19::t_6b86e91eaf3942 801,805-807,810-812,814-819
+  s_15ffdc06d1db19::t_a15e5d49de2af1 861,870-871
+  s_15ffdc06d1db19::t_5dadf93547ebb9 802-804,808-809,813,820-829,1020-1032,1068-1080
+  s_15ffdc06d1db19::t_b65bf23e133257 642,645,647-652,654-656,691,693-694,696-698,714-715,717-719,728-748,750-751,753-757,761-762,764-779,991-992,994-996,998
+  s_15ffdc06d1db19::t_be0408843ac64f 1084-1085,1089,1097,1103,1105,1108-1110,1113-1115,1117-1119,1122-1124,1126,1129-1131,1133-1137,1159-1163,1175,1178
+  s_15ffdc06d1db19::t_720b8c3c1e2e0c 722,863,896-897,914,933-934,1000,1035-1042,1048,1088,1091,1096,1104,1106-1107,1111-1112,1116,1120-1121,1125,1127-1128,1132,1223-1226,1228-1245,1284
+  s_15ffdc06d1db19::t_f6863b9a85f9f7 646,695,716,749,752,758-760,763,993,1852,1920-1923,2017-2032
+  s_15ffdc06d1db19::t_55458bada428b4 53,1462,2049,2052
+  s_15ffdc06d1db19::t_81a8cd214af6b4 1289-1290,1488-1489
+  s_15ffdc06d1db19::t_cd011f4080ecf6 653,997,1467
+  s_1a05206c81a9f8::t_dfa47c63faebfd 64,1890-1896
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1a05206c81a9f8::t_bb6744e81a1d1d 478-507,523-565
+  s_1a05206c81a9f8::t_29cced6c385d89 611,644-645,693
+  s_1a05206c81a9f8::t_7755e8f6cba652 567-568,582
+  s_1a05206c81a9f8::t_88af9d17a8810a 478-507,523-565
+  s_1a05206c81a9f8::t_296ec00df1fbf5 508-522,1060,1155-1156
+exist-core/src/main/java/org/exist/xquery/Predicate.java
+  s_1a05206c81a9f8::t_0175742b6240df 28,42-45,291-312,327,380,419-421,429,431,439-520
+  s_1a05206c81a9f8::t_97182ff0e26add 291-312,327,380
+exist-core/src/test/java/org/exist/dom/persistent/NodeProxyWithTest.java
+  s_1a05206c81a9f8::t_d6016c1529642f 1-128
+  s_1a05206c81a9f8::t_24cb420b11ed89 1-128
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/InContextQuery.java
+  s_15ffdc06d1db19::t_05828dd2386c6d 1-140
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_15ffdc06d1db19::t_f66fe264c0e70e 82-87
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_15ffdc06d1db19::t_decd78b503f520 168-169,193-198,199-202,204-210,212-217,219-220,239-243,245
+  s_15ffdc06d1db19::t_237911ae7340ab 223,225-226,229-230,238
+  s_15ffdc06d1db19::t_cdfe87c59c368d 231,233-234,237
+  s_15ffdc06d1db19::t_f132bc3a0b1a37 110-114,123,130,152,177-178,203,211,218,221-222,224,227-228,232,235-236,244
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_19018051214677 89-91
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_15ffdc06d1db19::t_059eff478a04d2 24,27,29-34,39,41-51,53,59-62,66-68,72-84,88,97-109,112-118,120,127-128,131-145,147-166,168,203-215,217-221,224-225,229-230,234-235,240-257,285-296,300-301,306-318,360,362-365,368-383,391-395,397-400,404-408,410-418,424-430,432-434,437-444,452-453
+  s_15ffdc06d1db19::t_aec7560cf0afdc 38,85-87,89-96,216,227-228,231-233,273-284,319-345,347,351,355,359,361,366-367,384-390,401-403,409,419-423,431,435-436,445-451
+  s_15ffdc06d1db19::t_e23a5a4760592a 25-26,28,35-37,146,167,169-202
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_15ffdc06d1db19::t_0bfa3477be0391 46,179,185-186
+  s_15ffdc06d1db19::t_ae92dfd6747422 128,131-137,178,180-184,187,624,627-631,641,645
+extensions/indexes/range/src/test/xquery/range/optimizer.xql
+  s_15ffdc06d1db19::t_b9db9a2e38dc16 1044-1088
+  s_15ffdc06d1db19::t_16c201186ea15e 836-858
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/RangeQueryRewriter.java
+  s_15ffdc06d1db19::t_6af5d7e9911a72 164,174,177,179
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_15ffdc06d1db19::t_ffbf70da58fef5 317,373,433,448
+  s_15ffdc06d1db19::t_687a462429077a 330,351-354,356,358-366,376-380,452
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_15ffdc06d1db19::t_c4b837bfbdd541 27,29,31-32,34,37,152-278,280-287,289-298,300-305
+  s_15ffdc06d1db19::t_e32a430c2f356b 30,279,288,307,333-371
+  s_15ffdc06d1db19::t_a3a3284aed41db 26,28,35-36,308-332
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_15ffdc06d1db19::t_944de88f958be4 229,231,233,237,247-252
+  s_1a05206c81a9f8::t_d94fb28e7ac169 334
+extensions/indexes/lucene/src/test/xquery/lucene/field-fallback.xqm
+  s_15ffdc06d1db19::t_1a7051b279fe60 43-45,58-59,111-128
+exist-core/src/main/java/org/exist/xquery/Optimizer.java
+  s_15ffdc06d1db19::t_40d73ab04f6510 513-515
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_15ffdc06d1db19::t_1c3a0edeb9d149 110,132-136,142-143,148
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_15ffdc06d1db19::t_846fabf343cd59 158,189-190,192,199,205
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_15ffdc06d1db19::t_dc954143daf2ce 35,37
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-analyzer-configs.xqm
+  s_15ffdc06d1db19::t_51bbe02fef09f5 1-76,79-98,99-113,114-119,132-135
+  s_15ffdc06d1db19::t_9ec5beb0c6ad9c 77-78,119-130,136-144
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-mixed-configs.xqm
+  s_15ffdc06d1db19::t_7db2ea191c7907 1-93,94-103,104-113,114-127
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.java
+  s_15ffdc06d1db19::t_ee19b5e0ff6760 1-23,27-32,36,38-46,39-46,48-69,73-78,83-89,104-109,112,114-117,119-127,150,152-154,165,167-183,189,218-219
+  s_15ffdc06d1db19::t_e086a3b6afa1d1 25,33-35,72,184-188,190-217
+  s_15ffdc06d1db19::t_fc9e0af040f83f 37-38,155-164,166
+  s_15ffdc06d1db19::t_8fe98fe23bab18 24,26,47,70-71,79-82,90-103,110-111,113,118,128-149,151
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_494cb65762cfa1 55-56
+  s_15ffdc06d1db19::t_1502d9e97c0c90 73-76
+  s_15ffdc06d1db19::t_aa02aa52c16f61 77
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-facet-configs.xqm
+  s_15ffdc06d1db19::t_9ca7b3c1798ac6 1-98
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PerConfigQuery.java
+  s_15ffdc06d1db19::t_af89c7695ebde1 1-81
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_0dd1a02d751618 292-294
+  s_15ffdc06d1db19::t_c1b79e2e747a3e 35,188,197,204
+  s_15ffdc06d1db19::t_418bf5946c4e29 24-25,56-57,186-187,189-196
+  s_15ffdc06d1db19::t_ead2b930df1139 198,217-221,280,289
+  s_15ffdc06d1db19::t_f3dbe21b980fd5 46,234-276,295-296
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/NoDiacriticsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_28b0cb75cfa1d7 103-111
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/EnglishStopwordsStandardAnalyzer.java
+  s_15ffdc06d1db19::t_15eb00b4b149e7 67-75
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-stemmed.xqm
+  s_15ffdc06d1db19::t_29ef3ac8ebfa00 1-182
+exist-core/src/test/java/org/exist/validation/CollectionConfigSchemaAnalyzerChainTest.java
+  s_15ffdc06d1db19::t_2e26ba4735d309 1-125
+exist-distribution/src/main/config/collection.xconf.init
+  s_15ffdc06d1db19::t_2a14d2e2ea24f0 2
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerChain.java
+  s_15ffdc06d1db19::t_9131d275a1b8b1 1-217
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzerConfig.java
+  s_15ffdc06d1db19::t_d32abb9afe72c6 108-110,113,115,119-125
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/IndexQueryAnalyzer.java
+  s_15ffdc06d1db19::t_edeaa3fcab4a2e 1-89
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/analyzers/MetaAnalyzer.java
+  s_15ffdc06d1db19::t_f80b0e99c95263 41,52,57-66,73-102
+  s_15ffdc06d1db19::t_505fa0c85933c9 103-114
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerChainTest.java
+  s_15ffdc06d1db19::t_9caf5f8ea44d7b 1-266
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-chains.xqm
+  s_15ffdc06d1db19::t_ac281ea38716ef 1-229
+schema/collection.xconf.xsd
+  s_15ffdc06d1db19::t_3fda8fb2952b71 9,131-132,134,136-141,143-162
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_15ffdc06d1db19::t_224848067b389a 33-34,36,46,102-153
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/FieldText.java
+  s_15ffdc06d1db19::t_805ff79ea997f5 1-147,148-150,155-160,184
+  s_15ffdc06d1db19::t_1c3fc14c56cf17 151-154,161-183
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_15ffdc06d1db19::t_d5f0bbd0354995 26,43-44,47,133-179
+  s_15ffdc06d1db19::t_14332b00d2414f 127-136,180-184
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  s_15ffdc06d1db19::t_dbf6841848a5bc 384
+  s_15ffdc06d1db19::t_9a7ac2dcf8f538 31,68-78,90,337-339,394-407
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/MatchLocator.java
+  s_15ffdc06d1db19::t_f2ae2fc68d85ff 73-77,108,117-118,150-155,157,166-181,184-186
+extensions/indexes/lucene/src/test/xquery/lucene/reference-lucene.xqm
+  s_15ffdc06d1db19::t_b146fa644bb00f 1-187
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-scope.xqm
+  s_15ffdc06d1db19::t_af51ed1f26a3aa 1-47,49-59,61-267
+  s_15ffdc06d1db19::t_d01d9f2fbea323 48,60,268-286
+extensions/indexes/lucene/src/test/xquery/lucene/scope-dls.xqm
+  s_15ffdc06d1db19::t_cfacbd82c8edc7 1-136
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-scope.xqm
+  s_15ffdc06d1db19::t_0372b7c32e2b50 1-229
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneScope.java
+  s_15ffdc06d1db19::t_bbe75ebfaed9f8 1-29,32-33,35,37-49,51,57-112,186-208
+  s_15ffdc06d1db19::t_63eed730ac0fb3 30,36,50,52-56,113-137,139-151,152-164,170-185
+  s_15ffdc06d1db19::t_cb65b8fbf3805e 34,138,165-169
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneQueryScopeTests.java
+  s_15ffdc06d1db19::t_cf49510b301f82 1-28,31-33
+  s_15ffdc06d1db19::t_c29d3637a1e7de 29-30
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryScope.java
+  s_15ffdc06d1db19::t_cd0f450aaad5aa 1-112
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchScope.java
+  s_15ffdc06d1db19::t_b0c1ebb8adc115 1-26,28-33,37-48,49-58,60-61,63-205,207-239,241,243-262,264,266-298,315-324,327-337,340,343,345-383,384-432,441-442
+  s_15ffdc06d1db19::t_f3483bb2c11b38 27,34-36,59,62,206,240,242,263,265,299-314,325-326,338-339,341-342,344,433-440
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_15ffdc06d1db19::t_b7367d6e1fe359 68-78,80,83,87
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_15ffdc06d1db19::t_bca620c7d526a7 317-324,327-328,329-331
+  s_15ffdc06d1db19::t_4d59614629a26a 325-326
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_15ffdc06d1db19::t_5dd1df22fb8934 230-240
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Fields.java
+  s_15ffdc06d1db19::t_efffed4342698a 1-131,134,139-185,186-215
+  s_15ffdc06d1db19::t_af990569b241d5 135-138
+extensions/indexes/lucene/src/test/xquery/lucene/ft-fields.xqm
+  s_15ffdc06d1db19::t_242c91f54dbe5c 1-53,58-133,135,137-237,239-300
+  s_15ffdc06d1db19::t_af5a4f2b4626ae 54-57,134,136,238,301-307
+extensions/indexes/ngram/src/test/xquery/ngram/unicode-supplementary-ngram.xql
+  s_b424eab1ae5e7a::t_3ae2378c9523e6 177,180
+  s_b424eab1ae5e7a::t_3e7a4b8b060cc5 190,193,203,206
+  s_15ffdc06d1db19::t_740bd242830fe7 243-301
+  s_15ffdc06d1db19::t_58de9061bc2f9b 302-328
+extensions/indexes/lucene/src/test/xquery/lucene/unicode-supplementary-lucene.xql
+  s_b424eab1ae5e7a::t_898bad7cbb1f70 219,223
+  s_b424eab1ae5e7a::t_87f391d725bfa7 27-30
+  s_b424eab1ae5e7a::t_5340e0fd1b6e0a 174-177,179-199,202-204
+  s_b424eab1ae5e7a::t_64c4b408773391 41-59,63-64,70-71,76-77,84-85
+  s_b424eab1ae5e7a::t_529128f186bde7 150
+  s_15ffdc06d1db19::t_45d136fa5b7bfa 220
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_b424eab1ae5e7a::t_25c37c8c32f3d5 32,34,38
+  s_b424eab1ae5e7a::t_4e5c33107edec1 103,107-108,111
+  s_b424eab1ae5e7a::t_546761fb07ed47 135,140,147-148,151-152,158,164-165,170-171,178,181,183-185
+  s_15ffdc06d1db19::t_bbba3ea3bd2c57 26,33,44-45,104-106,109-110,136-139,141-146,149-150,153-163,166-170,172-177,187-194,198-205
+  s_1a05206c81a9f8::t_f47d595f3c031e 179-180
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_82ba39ff8b9e6d 264-266,270,273,276-282,284,286,293-295,299,302,305-309,311,313,315
+  s_1a05206c81a9f8::t_1a0a247545238d 28,108-110,130-168
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_15ffdc06d1db19::t_8cb848c2ac8e81 411-426
+  s_15ffdc06d1db19::t_1d377c5f743ffb 1181-1183
+  s_15ffdc06d1db19::t_b3d599076624f7 1135-1138,1164-1170
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeProxies.java
+  s_15ffdc06d1db19::t_1e3025f8c54db6 26,56-82
+  s_1a05206c81a9f8::t_f7fdb75b38d6b4 40,44,46-48,50,53,98-99,102,104,108,114
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeSets.java
+  s_15ffdc06d1db19::t_c03bdd315c90a2 25,72-79
+extensions/indexes/ngram/src/test/xquery/known-failures.lst
+  s_15ffdc06d1db19::t_0425e2898cce08 1-5
+extensions/indexes/ngram/src/test/xquery/ngram/reference-ngram.xqm
+  s_15ffdc06d1db19::t_ca9d0458e10148 1-173
+extensions/indexes/ngram/src/test/xquery/unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_8a1398cc7a20d8 9-11
+extensions/indexes/ngram/src/test/java/xquery/ngram/NgramTests.java
+  s_15ffdc06d1db19::t_ddf7f8b2444914 26-29,31
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/PhraseAsNearRewriterTest.java
+  s_15ffdc06d1db19::t_d7b1058d435185 1-78
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  s_15ffdc06d1db19::t_ec13ff5dab7196 263-279
+  s_15ffdc06d1db19::t_ab9c2530a684a1 34,41,58-59,280-306
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_15ffdc06d1db19::t_9b10bcebf1325f 84-87,89-96
+  s_15ffdc06d1db19::t_3d432baf6bc0c3 88
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Search.java
+  s_15ffdc06d1db19::t_34c62a7ca9db6b 69-75
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  s_15ffdc06d1db19::t_4e2fedb19a56ff 26,32,37-39,41-47,49-51,62,66-69,108,114-139
+  s_15ffdc06d1db19::t_035894c1ed4126 1-25,27-31,33-36,40,48,52-61,63-65,70-107,109-113,140-141
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_15ffdc06d1db19::t_bafc4466fb0e13 66-72
+extensions/indexes/ngram/pom.xml
+  s_15ffdc06d1db19::t_2d5e7e6bc977f4 67-71
+extensions/indexes/range/src/test/xquery/range-reference/reference-matches.xqm
+  s_15ffdc06d1db19::t_43d109b788028e 1-52,54-58,60-81,85-100,102-146
+extensions/indexes/range/src/test/java/xquery/range/RangeReferenceTests.java
+  s_15ffdc06d1db19::t_6052364e224a21 1-36
+extensions/indexes/range/src/test/java/xquery/range/RangeReferenceUnoptimizedTests.java
+  s_15ffdc06d1db19::t_c968036aa3cd0c 1-35
+extensions/indexes/range/src/test/java/xquery/range/RangeTests.java
+  s_15ffdc06d1db19::t_8dc083917abca2 31
+extensions/indexes/range/src/test/xquery/reference-known-failures.lst
+  s_15ffdc06d1db19::t_dfff37f36f0c5c 1,4
+extensions/indexes/range/src/test/xquery/reference-unoptimized-known-failures.lst
+  s_15ffdc06d1db19::t_59828f3fd41316 1-5
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Facets.java
+  s_15ffdc06d1db19::t_1d1c207f1f9895 127-132,142-143
+extensions/indexes/lucene/pom.xml
+  s_1a05206c81a9f8::t_f37ff723b97213 174-178
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_1a05206c81a9f8::t_3e34cb45ce08c7 1-45,47-50,52-53,55-90,93-125,171-184,186-188,200-220
+  s_1a05206c81a9f8::t_1298afc688ec26 46,51,54,91-92,126-128,130,133-158,160-170,185,189-199
+  s_1a05206c81a9f8::t_a081a07d27f71f 129,131-132,159
+extensions/indexes/lucene/src/test/xquery/lucene/query-leaves-its-inputs.xqm
+  s_1a05206c81a9f8::t_c0779db7788763 1-43,48-50,53-139
+  s_1a05206c81a9f8::t_ef7793d9d81ad0 44-47,51-52,140-149
+exist-core/src/main/java/org/exist/dom/persistent/ContextItem.java
+  s_1a05206c81a9f8::t_996ab470262c2d 26,28-33,35-36,44-47,50,65,69-128
+exist-core/src/test/java/org/exist/dom/persistent/ContextItemTest.java
+  s_1a05206c81a9f8::t_2119cdc382da1a 1-98
+exist-core/src/test/java/org/exist/dom/persistent/MatchChainTest.java
+  s_1a05206c81a9f8::t_e8404f14e1cebe 1-125
+exist-core/src/main/java/org/exist/xquery/WhereClause.java
+  s_1a05206c81a9f8::t_b64153281bb371 34,36,121-122,287-300,357-361,363,376,381,383,386-413,416-420,422
+exist-core/src/main/java/org/exist/dom/persistent/AVLTreeNodeSet.java
+  s_1a05206c81a9f8::t_6a3b901c019085 106-120
+exist-core/src/main/java/org/exist/dom/persistent/AbstractNodeSet.java
+  s_1a05206c81a9f8::t_5ece26f0c7867b 434,446-449,457,519-523,548
+exist-core/src/main/java/org/exist/dom/persistent/ExtArrayNodeSet.java
+  s_1a05206c81a9f8::t_11d7f5454678bd 698,891,896,943,949,978
+exist-core/src/main/java/org/exist/dom/persistent/NewArrayNodeSet.java
+  s_1a05206c81a9f8::t_e4fa8203477695 324,328,375,379,571,916
+exist-core/src/main/java/org/exist/dom/persistent/NodeSetHelper.java
+  s_1a05206c81a9f8::t_fa4037fac2df37 98,312
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1a05206c81a9f8::t_e7c4da898b4806 553-555
+exist-core/src/main/java/org/exist/xquery/value/ValueSequence.java
+  s_1a05206c81a9f8::t_33d8ff822266d1 480-481,485-486,488,491,493-494
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/AddMatch.java
+  s_1a05206c81a9f8::t_b6cb3faf5dff89 108-109
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/NGramSearch.java
+  s_1a05206c81a9f8::t_6101237a11adf0 585-586
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionTriple.java
+  s_1a05206c81a9f8::t_89f2f59a402058 106
+extensions/indexes/ngram/src/test/xquery/ngram/query-leaves-its-inputs.xqm
+  s_1a05206c81a9f8::t_080b6a3a70294c 1-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b295b06cb8b28846ebfa9701dfa2219229500778",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_b424eab1ae5e7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8c55ebe-eaf8-4bc4-8731-568a40b12726",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
