@@ -97,6 +97,15 @@ public class NgramWhereClauseBenchmark {
             return count(collection('%s')//LINE[ngram:contains(., $q)])
             """.formatted(COLLECTION_PATH);
 
+    /** Each predicate adds a match to the nodes it keeps, on copies of the nodes held in the variable. */
+    private static final String QUERY_MANY_MATCHES_PER_NODE = """
+            declare namespace ngram="http://exist-db.org/xquery/ngram";
+            let $lines := collection('%s')//LINE
+            return count($lines[ngram:contains(., 'th')][ngram:contains(., 'he')][ngram:contains(., 'an')]
+                [ngram:contains(., 'nd')][ngram:contains(., 'er')][ngram:contains(., 're')]
+                [ngram:contains(., 'ou')][ngram:contains(., 'in')])
+            """.formatted(COLLECTION_PATH);
+
     @Param({"5", "50", "100"})
     public int termCount;
 
@@ -216,5 +225,10 @@ public class NgramWhereClauseBenchmark {
     @Benchmark
     public Sequence shapeBForVarWhere() throws Exception {
         return run(queryForVarWhere);
+    }
+
+    @Benchmark
+    public Sequence manyMatchesPerNode() throws Exception {
+        return run(QUERY_MANY_MATCHES_PER_NODE);
     }
 }
