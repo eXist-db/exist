@@ -1,0 +1,35 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_1a05206c81a9f8::t_c5888eb92046a1 110-123,144-153
+  s_1a05206c81a9f8::t_5b79c25f4dea2e 124-129,154-155
+  s_1a05206c81a9f8::t_15458ff29fcc23 158-172
+exist-core/src/main/java/org/exist/xquery/Predicate.java
+  s_1a05206c81a9f8::t_88af76a13005c6 28,42-45,422,424,427-428,430
+  s_1a05206c81a9f8::t_df0c061f8ef6d9 419-421,423,425-426,429,431,439-520
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1a05206c81a9f8::t_74a09c0c506b37 505-506
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_1a05206c81a9f8::t_94b6b0b9842ed3 124,258-272,348-350,353-354,357-358
+  s_1a05206c81a9f8::t_0f74a42eae8c36 54-57,63-64
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_1a05206c81a9f8::t_a2c8c53edc38b2 83-84,89-109
+extensions/indexes/range/src/test/xquery/range-reference/reference-matches.xqm
+  s_1a05206c81a9f8::t_da70fae4cd0486 53,59
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_1a05206c81a9f8::t_a6b888a3595809 235-236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18b058c7ce3aca3efd786b59f63cb428bc677dfd",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
