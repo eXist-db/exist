@@ -609,7 +609,7 @@ public class LockManager {
      */
     public long tryOptimisticDocumentRead(final XmldbURI collectionPath) {
         if (usePathLocksForDocuments) {
-            optimisticDocumentReadsFailed.increment();
+            // no optimistic read is attempted, so none failed: path locks exclude a Document's WRITE_LOCK otherwise
             return NO_OPTIMISTIC_DOCUMENT_READ;
         }
         final int index = documentWriteLockStripe(collectionPath.getRawCollectionPath(), collectionPath.getRawCollectionPath().length());
@@ -694,6 +694,9 @@ public class LockManager {
 
     /**
      * Gets the number of Document WRITE_LOCKs held.
+     *
+     * The stripes are summed one by one, not atomically, so while locks are acquired and released the sum is
+     * approximate: it is meant for monitoring, such as the LockTable MBean, not for deciding anything.
      *
      * @return the number of Document WRITE_LOCKs held.
      */
