@@ -506,6 +506,21 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     /**
+     * This node with the given matches in place of its own.
+     *
+     * @param chain the matches, a chain that is never changed, or null for none
+     * @return this node if it has these matches already, otherwise a copy
+     */
+    public NodeProxy withMatches(@Nullable final Match chain) {
+        if (chain == match) {
+            return this;
+        }
+        final NodeProxy copy = new NodeProxy(this);
+        copy.match = chain;
+        return copy;
+    }
+
+    /**
      * This node with a context node added to its predicate context.
      *
      * @param contextId the predicate's context id
@@ -1042,8 +1057,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         final NewArrayNodeSet result = new NewArrayNodeSet();
         ContextItem contextNode = getContext();
         while(contextNode != null) {
-            final NodeProxy p = contextNode.getNode();
-            p.addMatches(this);
+            final NodeProxy p = contextNode.getNode().withMatchesOf(this);
             if(!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
                 if(contextId != Expression.NO_CONTEXT_ID) {
@@ -1138,7 +1152,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if(p == null) {
             return NodeSet.EMPTY_SET;
         } else if(!nodeId.equals(p.nodeId)) {
-            p.addMatches(this);
+            // p is the other set's node
+            return p.withMatchesOf(this);
         }
         return p;
     }
