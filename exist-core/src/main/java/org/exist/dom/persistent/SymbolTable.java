@@ -143,10 +143,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * true if entries were appended since the file was last forced to disk
      */
-    /** Whether entries were appended since the file was last forced; read without the lock by {@link #sync()}. */
-    private volatile boolean unsynced = false;
-    /** Serializes {@link #sync()}, apart from the table's own lock, which looking up symbols takes. */
-    private final Object syncLock = new Object();
+    private boolean unsynced = false;
 
     /**
      * true if a write to the file failed, so that it may hold part of an entry: it is written again in full
@@ -173,7 +170,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
                 loadSymbols();
             }
             // what the file is now, to tell later whether something else replaced or changed it
-            recordFileAttributes();
+            recordFile();
         } catch(final EXistException | IOException e) {
             throw new BrokerPoolServiceException(e);
         }
@@ -594,82 +591,50 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     /**
-     * Forces the entries appended since the last sync to disk. It is called before anything that may refer to the
-     * new symbols reaches the operating system: the journal calls it before it writes its records, so that recovery
-     * can always resolve them after a crash (#2220), and {@link org.exist.storage.btree.Paged} before it writes a
-     * page of any file, journaled or not. Forcing once per such write, rather than once per new symbol, keeps loading
-     * many new names fast, and costs an uncontended lock when no symbol was added since. The symbol table is not locked
-     * while the file is forced, so that looking up symbols doesn't wait for the disk; callers of this method do wait
-     * for a force under way, so that none goes on to write before the symbols are on disk.
+     * Forces the entries appended since the last sync to disk. The journal calls this before it writes its
+     * records, which may refer to the new symbols: after a crash, recovery can then always resolve them (#2220).
+     * Forcing once per journal write, rather than once per new symbol, keeps loading many new names fast. The
+     * symbol table is not locked while the file is forced, so that looking up symbols doesn't wait for the disk.
      *
      * @throws IOException if the file cannot be forced to disk
      */
     public void sync() throws IOException {
-        // one sync at a time, the flag checked under the same lock: a caller that finds nothing to force returns only
-        // once a force already under way is done, so that what it writes next can't reach the disk before the symbols
-        synchronized (syncLock) {
-            if (!unsynced) {
-                // nothing appended since the last sync: the common case, for every page written
+        final FileChannel toForce;
+        synchronized (this) {
+            if (!unsynced || channel == null) {
                 return;
             }
-            final FileChannel toForce;
+            toForce = channel;
+            unsynced = false;
+        }
+        try {
+            toForce.force(false);
+        } catch (final ClosedChannelException e) {
+            // the file is being written again in full, and forced, under the lock: wait for it to be done
             synchronized (this) {
-                if (!unsynced || channel == null) {
-                    return;
-                }
-                toForce = channel;
-                unsynced = false;
+                LOG.debug("Symbol table {} written again while it was being forced to disk", getFile());
             }
-            try {
-                toForce.force(false);
-            } catch (final ClosedChannelException e) {
-                // the file is being written again in full, and forced, under the lock: wait for it to be done
-                synchronized (this) {
-                    LOG.debug("Symbol table {} written again while it was being forced to disk", getFile());
-                }
-            } catch (final IOException e) {
-                synchronized (this) {
-                    unsynced = true;
-                }
-                throw e;
+        } catch (final IOException e) {
+            synchronized (this) {
+                unsynced = true;
             }
+            throw e;
         }
     }
 
     /**
      * @return true if entries were appended since the file was last forced to disk
      */
-    public synchronized boolean hasUnsyncedEntries() {
+    synchronized boolean hasUnsyncedEntries() {
         return unsynced;
-    }
-
-    /**
-     * A file's key, where the file system has one, and size; no key and a size of -1 if there is no file.
-     *
-     * @param key the file key ({@link BasicFileAttributes#fileKey()})
-     * @param size the file's size in bytes
-     */
-    private record FileAttributes(@Nullable Object key, long size) {
-    }
-
-    /**
-     * @return the key and size of the file at the path
-     */
-    private FileAttributes probeFileAttributes() throws IOException {
-        try {
-            final BasicFileAttributes attributes = Files.readAttributes(getFile(), BasicFileAttributes.class);
-            return new FileAttributes(attributes.fileKey(), attributes.size());
-        } catch (final NoSuchFileException e) {
-            return new FileAttributes(null, -1);
-        }
     }
 
     /**
      * Records the file's key and size, as eXist-db has just written or read it.
      */
-    private void recordFileAttributes() throws IOException {
-        final FileAttributes attributes = probeFileAttributes();
-        fileKey = attributes.key();
+    private void recordFile() throws IOException {
+        final BasicFileAttributes attributes = Files.readAttributes(getFile(), BasicFileAttributes.class);
+        fileKey = attributes.fileKey();
         fileSize = attributes.size();
     }
 
@@ -681,10 +646,15 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private void checkFile() throws IOException {
         final Path path = getFile();
-        // a deleted file has a size of -1, and is written again below
-        final FileAttributes attributes = probeFileAttributes();
-        final Object key = attributes.key();
-        final long size = attributes.size();
+        Object key = null;
+        long size = -1;
+        try {
+            final BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            key = attributes.fileKey();
+            size = attributes.size();
+        } catch (final NoSuchFileException e) {
+            // deleted: written again below
+        }
         if (size >= 0 && Objects.equals(key, fileKey) && size == fileSize) {
             return;
         }
@@ -706,7 +676,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             previous.close();
         }
         writeTable();
-        recordFileAttributes();
+        recordFile();
         unsynced = false;
         needsRewrite = false;
         warnedRewrite = false;
@@ -732,12 +702,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
                         checkFile();
                     }
                 }
-                // also in a read-only database, for what was appended before it became read-only; forced here, under
-                // the table's lock, not with sync(), which takes its own lock first and would deadlock with this one
-                if (unsynced && channel != null) {
-                    channel.force(false);
-                    unsynced = false;
-                }
+                // also in a read-only database, for what was appended before it became read-only
+                sync();
             }
         } finally {
             if (channel != null) {
