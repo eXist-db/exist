@@ -37,14 +37,15 @@ public enum ReindexScope {
     ALL,
 
     /**
-     * Reindex fulltext only. Skip vector computation; when {@code vector-store="db"},
-     * read vectors from vector.dbx. When {@code vector-store="lucene"}, fulltext-only
-     * is not supported and behaves as {@link #ALL} (clears vectors).
+     * Reindex, restoring computed vectors rather than computing them: when {@code vector-store="db"}, a node's
+     * vector is read from vector.dbx, and computed only if it isn't there. When {@code vector-store="lucene"}, there
+     * is nothing to restore from, and this behaves as {@link #ALL}.
      */
     FULLTEXT,
 
     /**
-     * Reindex vector fields only. Recompute vectors from source text; skip fulltext.
+     * Reindex, computing vectors again from the source text even where vector.dbx has them, for example after the
+     * model's files were replaced. The full-text fields are indexed too, as a node's Lucene document is written whole.
      */
     VECTOR;
 

@@ -376,15 +376,12 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         final NodeId nodeId = contextNode.getNodeId();
         final ReindexScope scope = broker.getIndexController().getReindexScope();
         try {
-            if (scope == ReindexScope.FULLTEXT && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc);
+            // a "fulltext" reindex restores the stored vector, and computes it only if there is none
+            if (VECTOR_STORE_DB.equals(luceneConfig.getVectorStore()) && (scope == ReindexScope.FULLTEXT || !embeddingLocal)
+                    && tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc)) {
                 return;
             }
-            if (!embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                if (tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc)) {
-                    return;
-                }
-            } else if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
+            if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
             final int vectorsBefore = luceneDoc.getFields(fieldName).length;

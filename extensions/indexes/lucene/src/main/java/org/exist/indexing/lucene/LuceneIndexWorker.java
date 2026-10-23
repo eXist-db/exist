@@ -46,7 +46,6 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
-import org.exist.indexing.ReindexScope;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
@@ -381,7 +380,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removeDocument(int docId) {
-        removeVectorStoreForDocument(currentDoc.getURI().toString());
+        if (!broker.getIndexController().isReindexing()) {
+            // a reindex rewrites the same nodes, whose stored vectors a "fulltext" reindex restores
+            removeVectorStoreForDocument(currentDoc.getURI().toString());
+        }
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -462,7 +464,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.debug("Removing collection {}", collection.getURI());
         final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
         final Txn txn = broker.getCurrentTransaction();
-        if (vectorStore != null && txn != null) {
+        // a reindex rewrites the same documents' nodes, whose stored vectors a "fulltext" reindex restores
+        if (vectorStore != null && txn != null && !reindex) {
             try {
                 for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                     DocumentImpl doc = i.next();
@@ -583,7 +586,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     protected void removeNodes() {
     	if (nodesToRemove == null)
             return;
-        removeVectorStoreForNodes(currentDoc.getURI().toString(), nodesToRemove);
+        if (!broker.getIndexController().isReindexing()) {
+            // a reindex rewrites the same nodes, whose stored vectors a "fulltext" reindex restores
+            removeVectorStoreForNodes(currentDoc.getURI().toString(), nodesToRemove);
+        }
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -2424,13 +2430,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE;
                 final NodeProxy contextNode = new NodeProxy(null, currentDoc, pending.nodeId, nodeType, pending.address);
                 List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
-                final ReindexScope scope = broker.getIndexController().getReindexScope();
-                facetConfigs.forEach(config -> {
-                    if (scope == ReindexScope.VECTOR && !(config instanceof LuceneVectorFieldConfig)) {
-                        return; // Vector-only: skip fulltext fields and facets
-                    }
-                    config.build(broker, contextNode, doc, pending.text);
-                });
+                // every field, whatever the reindex's scope: the node's Lucene document is written whole, so a field
+                // left out would be lost; the scope decides only where the vectors come from
+                facetConfigs.forEach(config -> config.build(broker, contextNode, doc, pending.text));
                 // register field analyzers so indexing uses the same analyzer as querying
                 final Map<String, Analyzer> documentAnalyzers = new HashMap<>();
                 final LuceneConfig luceneConfig = pending.idxConf.getParent();
@@ -2463,7 +2465,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(fNodeIdIdx);
 
                 String contentField = null;
-                final boolean indexFulltext = scope != ReindexScope.VECTOR && pending.idxConf.doIndex();
+                final boolean indexFulltext = pending.idxConf.doIndex();
                 if (indexFulltext) {
                     // the text content is indexed in a field using either
                     // the qname of the element or attribute or the field
