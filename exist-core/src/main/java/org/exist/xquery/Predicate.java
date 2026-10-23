@@ -25,6 +25,7 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
@@ -38,6 +39,10 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -283,6 +288,28 @@ public class Predicate extends PathExpr {
      *
      * @throws XPathException if an error occurs
      */
+    /**
+     * The item a boolean predicate keeps, with the matches its inner result found on the item's own node. The item is
+     * the caller's, so the matches go on a copy; matches on other nodes of the inner result are not the item's.
+     *
+     * @param item the context item that passed
+     * @param innerSeq the predicate expression's result for it
+     * @return the item, or a copy of it with the matches
+     */
+    private static Item withMatchesOn(final Item item, final Sequence innerSeq) throws XPathException {
+        if (!(item instanceof NodeProxy node) || !innerSeq.isPersistentSet()) {
+            return item;
+        }
+        NodeProxy result = node;
+        for (final NodeProxy inner : innerSeq.toNodeSet()) {
+            if (inner.getMatches() != null && inner.getOwnerDocument().getDocId() == node.getOwnerDocument().getDocId()
+                    && inner.getNodeId().equals(node.getNodeId())) {
+                result = result.withMatchesOf(inner);
+            }
+        }
+        return result;
+    }
+
     private Sequence evalBoolean(final Sequence contextSequence, final Expression inner, final int mode)
             throws XPathException {
         final Sequence result = new ValueSequence();
@@ -297,7 +324,7 @@ public class Predicate extends PathExpr {
                 final Item item = i.nextItem();
                 final Sequence innerSeq = inner.eval(contextSequence, item);
                 if (innerSeq.effectiveBooleanValue()) {
-                    result.add(item);
+                    result.add(withMatchesOn(item, innerSeq));
                 }
             }
         } else {
@@ -350,7 +377,7 @@ public class Predicate extends PathExpr {
                             positions.add(nv);
                         }
                     } else if (innerSeq.effectiveBooleanValue()) {
-                        result.add(item);
+                        result.add(withMatchesOn(item, innerSeq));
                     }
                 }
                 for (final NumericValue pos : positions) {
@@ -389,6 +416,9 @@ public class Predicate extends PathExpr {
             }
             return cached.getResult();
         }
+        // the context nodes are the caller's: a hit without matches selects its context node as it is, the others give it
+        // a copy with their matches
+        final ContextMatches withMatches = new ContextMatches();
         DocumentImpl lastDoc = null;
         for (final NodeProxy currentNode : nodes) {
             int sizeHint = Constants.NO_SIZE_HINT;
@@ -396,29 +426,96 @@ public class Predicate extends PathExpr {
                 lastDoc = currentNode.getOwnerDocument();
                 sizeHint = nodes.getSizeHint(lastDoc);
             }
-            ContextItem contextItem = currentNode.getContext();
-            if (contextItem == null) {
-                throw new XPathException(this,
-                        "Internal evaluation error: context is missing for node " +
-                                currentNode.getNodeId() + " !");
-            }
-            // TODO : review to consider transverse context
-            while (contextItem != null) {
-                if (contextItem.getContextId() == getExpressionId()) {
-                    final NodeProxy next = contextItem.getNode();
-                    if (contextIsVirtual || contextSet.contains(next)) {
-                        next.addMatches(currentNode);
-                        result.add(next, sizeHint);
-                    }
-                }
-                contextItem = contextItem.getNextDirect();
-            }
+            selectContextNodes(currentNode, contextSet, contextIsVirtual, sizeHint, result, withMatches);
         }
+        withMatches.addTo(result, nodes);
         if (contextSequence.isCacheable()) {
             cached = new CachedResult(contextSequence, null, result);
         }
         contextSet.setTrackMatches(true);
         return result;
+    }
+
+    /**
+     * Selects the context nodes a hit was found from: as they are when the hit has no matches, otherwise through
+     * {@code withMatches}, which gives each a copy with its hits' matches once all hits are seen.
+     *
+     * @param hit the node the predicate expression returned
+     * @param contextSet the predicate's context set
+     * @param contextIsVirtual true if the context set is a virtual node set, which contains any node it might hold
+     * @param sizeHint the size hint for the hit's document
+     * @param result the nodes selected without matches
+     * @param withMatches the context nodes selected with matches
+     *
+     * @throws XPathException if the hit carries no context
+     */
+    private void selectContextNodes(final NodeProxy hit, final NodeSet contextSet, final boolean contextIsVirtual,
+            final int sizeHint, final NewArrayNodeSet result, final ContextMatches withMatches) throws XPathException {
+        ContextItem contextItem = hit.getContext();
+        if (contextItem == null) {
+            throw new XPathException(this,
+                    "Internal evaluation error: context is missing for node " + hit.getNodeId() + " !");
+        }
+        // TODO : review to consider transverse context
+        for (; contextItem != null; contextItem = contextItem.getNextDirect()) {
+            if (contextItem.getContextId() != getExpressionId()) {
+                continue;
+            }
+            final NodeProxy next = contextItem.getNode();
+            if (!contextIsVirtual && !contextSet.contains(next)) {
+                continue;
+            }
+            if (hit.getMatches() == null) {
+                result.add(next, sizeHint);
+            } else {
+                withMatches.add(next, hit);
+            }
+        }
+    }
+
+    /**
+     * The matches of the hits found from each context node. The context nodes are the caller's, so the result gets one
+     * copy of each, with its hits' matches, made once all hits are seen. Allocates nothing until the first hit with
+     * matches.
+     */
+    private static final class ContextMatches {
+        // by identity: NodeProxy has equals but no hashCode
+        private @Nullable Map<NodeProxy, Match> matches;
+        private @Nullable List<NodeProxy> contextNodes;
+
+        void add(final NodeProxy contextNode, final NodeProxy hit) {
+            if (matches == null) {
+                matches = new IdentityHashMap<>();
+                contextNodes = new ArrayList<>();
+            }
+            Match chain = matches.get(contextNode);
+            if (chain == null && !matches.containsKey(contextNode)) {
+                contextNodes.add(contextNode);
+                chain = contextNode.getMatches();
+            }
+            if (!Match.matchListEquals(hit.getMatches(), chain)) {
+                for (Match m = hit.getMatches(); m != null; m = m.getNextMatch()) {
+                    chain = Match.add(chain, m);
+                }
+            }
+            matches.put(contextNode, chain);
+        }
+
+        void addTo(final NewArrayNodeSet result, final NodeSet hits) {
+            if (matches == null) {
+                return;
+            }
+            int lastDocId = -1;
+            for (final NodeProxy contextNode : contextNodes) {
+                int sizeHint = Constants.NO_SIZE_HINT;
+                final int docId = contextNode.getOwnerDocument().getDocId();
+                if (docId != lastDocId) {
+                    lastDocId = docId;
+                    sizeHint = hits.getSizeHint(contextNode.getOwnerDocument());
+                }
+                result.add(contextNode.withMatches(matches.get(contextNode)), sizeHint);
+            }
+        }
     }
 
     /**
