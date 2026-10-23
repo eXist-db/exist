@@ -1,0 +1,29 @@
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneUnoptimizedTests.java
+  s_1a05206c81a9f8::t_0fa86cfe25b6e1 1-36
+extensions/indexes/lucene/src/test/xquery/unoptimized-known-failures.lst
+  s_1a05206c81a9f8::t_7fcc390d187a97 1-54
+extensions/indexes/ngram/src/test/java/xquery/ngram/NgramUnoptimizedTests.java
+  s_1a05206c81a9f8::t_577252f8ce13ca 1-36
+extensions/indexes/ngram/src/test/xquery/unoptimized-known-failures.lst
+  s_1a05206c81a9f8::t_e32082b6187365 1-7
+extensions/indexes/range/src/test/java/xquery/range/RangeUnoptimizedTests.java
+  s_1a05206c81a9f8::t_b557438d996b28 1-36
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_1a05206c81a9f8::t_ed7bdf6d389ec1 1-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "45e5a27980ddc4394f0083e09766100cb522d3f7",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
