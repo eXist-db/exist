@@ -509,7 +509,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             preds.get(i).accept(findOptimizable);
             @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
             findOptimizable.reset();
-            if (hasNonFilter(list) && (i > 0 || list.length > 1)) {
+            if (list != null && (i > 0 || list.length > 1) && hasNonFilter(list)) {
                 // pre-selection evaluates it before the predicates in front of it, or after the other index
                 // expressions of its own predicate: only a filter gives the same result in either order, so the
                 // step is evaluated as written
@@ -520,12 +520,10 @@ public class Optimizer extends DefaultExpressionVisitor {
         return optimizable;
     }
 
-    private static boolean hasNonFilter(@Nullable final Optimizable[] list) {
-        if (list != null) {
-            for (final Optimizable optimizable : list) {
-                if (!optimizable.isFilter()) {
-                    return true;
-                }
+    private static boolean hasNonFilter(final Optimizable[] list) {
+        for (final Optimizable optimizable : list) {
+            if (!optimizable.isFilter()) {
+                return true;
             }
         }
         return false;
