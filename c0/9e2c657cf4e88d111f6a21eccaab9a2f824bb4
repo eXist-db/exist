@@ -1,0 +1,19 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_1a05206c81a9f8::t_0f74a42eae8c36 54-57,63-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c09e2c657cf4e88d111f6a21eccaab9a2f824bb4",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
