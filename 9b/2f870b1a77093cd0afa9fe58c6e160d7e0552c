@@ -1,0 +1,23 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/XPathToLuceneRegexTranslator.java
+  s_1a05206c81a9f8::t_94b6b0b9842ed3 123,257-271,347-349,352-353,356-357
+extensions/indexes/range/src/test/java/org/exist/indexing/range/XPathToLuceneRegexTranslatorTest.java
+  s_1a05206c81a9f8::t_a2c8c53edc38b2 83-84,89-109
+extensions/indexes/range/src/test/xquery/range-reference/reference-matches.xqm
+  s_1a05206c81a9f8::t_da70fae4cd0486 53,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b2f870b1a77093cd0afa9fe58c6e160d7e0552c",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
