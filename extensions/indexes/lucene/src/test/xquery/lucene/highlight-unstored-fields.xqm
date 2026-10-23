@@ -177,3 +177,22 @@ function hu:field-of-the-second-index-of-an-element() {
     let $node := collection($hu:COLLECTION)//hu-chained[ft:query(., "hu-chained-field:paris")]
     return ft:highlight-field-matches($node, "hu-chained-field")//exist:match/string()
 };
+
+(: the matches of the query run last go first: it is the one highlighted, as ft:highlight-field-matches says :)
+declare
+    %test:assertEquals("agreed")
+function hu:the-most-recent-query-is-highlighted() {
+    let $divs := collection($hu:COLLECTION)//div
+    let $hits := $divs[ft:query(., "hu-stored:treaty")][ft:query(., "hu-stored:agreed")]
+    return ft:highlight-field-matches($hits, "hu-stored")//exist:match/string()
+};
+
+(: a where clause's matches reach the variable the tuple's node is also bound to :)
+declare
+    %test:assertEquals("Paris")
+function hu:where-clause-on-a-variable-bound-to-the-tuple() {
+    for $a in collection($hu:COLLECTION)//div[@id = "d1"]
+    let $b := $a
+    where ft:query($b, "hu-head-stored:paris")
+    return ft:highlight-field-matches($b, "hu-head-stored")//exist:match/string()
+};

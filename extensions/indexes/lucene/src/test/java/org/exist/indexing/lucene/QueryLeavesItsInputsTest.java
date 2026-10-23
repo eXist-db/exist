@@ -73,21 +73,6 @@ public class QueryLeavesItsInputsTest {
     private static final String XML = """
             <body><div><p>alpha beta</p><p>gamma</p></div><div><p>delta</p></div></body>""";
 
-    @BeforeAll
-    public static void store() throws Exception {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-             final Txn transaction = transact.beginTransaction()) {
-            final Collection collection = broker.getOrCreateCollection(transaction, COLLECTION);
-            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(transaction, broker, collection, CONFIG);
-            broker.storeDocument(transaction, XmldbURI.create("doc.xml"), new StringInputSource(XML), MimeType.XML_TYPE,
-                    collection);
-            transact.commit(transaction);
-        }
-    }
-
     /** The query shapes, each evaluated over {@code $c} (the {@code p} elements) and {@code $d} (the {@code div}s). */
     private static final List<String> SHAPES = List.of(
             // full text
@@ -122,7 +107,26 @@ public class QueryLeavesItsInputsTest {
             "$c except $d/p[1]",
             // functions, recursion
             "declare function local:f($n, $k) { if ($k = 0) then $n[p] else local:f($n[p], $k - 1) }; local:f($d, 3)",
-            "declare function local:id($n) { $n }; local:id($c)[. = 'gamma']"
+            "declare function local:id($n) { $n }; local:id($c)[. = 'gamma']",
+            // set operations, descendant and ancestor selection, deduplication with matches
+            "$c intersect $c[ft:query(., 'alpha')]",
+            "$c[ft:query(., 'alpha')] intersect $c",
+            "$c | $c[ft:query(., 'alpha')]",
+            "$c[ft:query(., 'alpha')] | $c",
+            "$d//p[ft:query(., 'alpha')]",
+            "$d[.//p[ft:query(., 'alpha')]]",
+            "$d/descendant::p[ft:query(., 'alpha')]/ancestor::div",
+            "$c[ft:query(., 'alpha')]/ancestor::div intersect $d",
+            "$d intersect $c[ft:query(., 'alpha')]/..",
+            "($c, $c[ft:query(., 'alpha')])/self::p",
+            "($c[ft:query(., 'alpha')], $c)/.",
+            "for $n in $c where $n/self::p[ft:query(., 'alpha')] return $n",
+            "for $n in $c where $n[ft:query(., 'alpha')] return $n",
+            // boolean operators and fn:not mapping a node-set predicate's hits back to its context nodes
+            "$d[p[ft:query(., 'alpha')] or p[. = 'none']]",
+            "$d[p[ft:query(., 'alpha')] and p]",
+            "$d[not(p[ft:query(., 'beta')])]",
+            "for $n in $d where $n/p[ft:query(., 'alpha')] return $n"
     );
 
     /**
@@ -137,8 +141,34 @@ public class QueryLeavesItsInputsTest {
             "$c[ft:query(., 'alpha')]/..",
             "$c[. = 'gamma']",
             "for $n in $c return $n[. = 'gamma']",
-            "declare function local:id($n) { $n }; local:id($c)[. = 'gamma']"
+            "declare function local:id($n) { $n }; local:id($c)[. = 'gamma']",
+            "$c intersect $c[ft:query(., 'alpha')]",
+            "$c[ft:query(., 'alpha')] intersect $c",
+            "$c | $c[ft:query(., 'alpha')]",
+            "$c[ft:query(., 'alpha')] | $c",
+            "$d[.//p[ft:query(., 'alpha')]]",
+            "$c[ft:query(., 'alpha')]/ancestor::div intersect $d",
+            "$d intersect $c[ft:query(., 'alpha')]/..",
+            "($c, $c[ft:query(., 'alpha')])/self::p",
+            "($c[ft:query(., 'alpha')], $c)/.",
+            "for $n in $c where $n[ft:query(., 'alpha')] return $n",
+            "$d[p[ft:query(., 'alpha')] and p]"
     );
+
+    @BeforeAll
+    public static void store() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+            final Collection collection = broker.getOrCreateCollection(transaction, COLLECTION);
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, collection, CONFIG);
+            broker.storeDocument(transaction, XmldbURI.create("doc.xml"), new StringInputSource(XML), MimeType.XML_TYPE,
+                    collection);
+            transact.commit(transaction);
+        }
+    }
 
     static List<String> shapes() {
         return SHAPES;
