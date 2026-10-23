@@ -1,0 +1,23 @@
+extensions/indexes/ngram/src/main/java/org/exist/indexing/ngram/NGramIndexWorker.java
+  s_1a05206c81a9f8::t_44260f97d32530 1135-1138,1164-1170
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/NGramSearch.java
+  s_1a05206c81a9f8::t_d4cfe9e17c825f 32,267,280-305
+extensions/indexes/ngram/src/test/xquery/ngram/match-highlighting-ngram.xql
+  s_1a05206c81a9f8::t_1f25f7c35c4896 199-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b8c50fa329b4633c956f2f725e6b8b6390162c02",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
