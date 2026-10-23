@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/test/xquery/lucene/query-leaves-its-inputs.xqm
+  s_1a05206c81a9f8::t_ef7793d9d81ad0 44-47,51-52,140-149
+extensions/indexes/ngram/src/test/xquery/ngram/query-leaves-its-inputs.xqm
+  s_1a05206c81a9f8::t_080b6a3a70294c 1-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f751b3bbff26cc238495dae29d80c622d574f9ed",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
