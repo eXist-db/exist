@@ -171,7 +171,7 @@ public class SourceFactory {
                 ) {
             try {
                 final URL url = new URL(location);
-                source = new URLSource(url);
+                source = urlSource(broker, url);
             } catch (final MalformedURLException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Source location is not a well-formed URL, returning null: {} ({})",
@@ -182,6 +182,10 @@ public class SourceFactory {
         }
 
         return source;
+    }
+
+    private static URLSource urlSource(@Nullable final DBBroker broker, final URL url) {
+        return new URLSource(url, UrlConnections.Timeouts.from(broker == null ? null : broker.getConfiguration()));
     }
 
     private static String firstPathSegment(final String path) {

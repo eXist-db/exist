@@ -258,6 +258,18 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         return new XmldbURI(collectionPath);
     }
 
+    /**
+     * Turn an absolute database path into a URL of the embedded server, e.g. {@code /db/schema.xsd}
+     * into {@code xmldb:exist:///db/schema.xsd}, so that it can be opened as a {@link java.net.URL}.
+     *
+     * @param location an absolute database path, or any other location
+     *
+     * @return the embedded server URL for an absolute path, otherwise the location unchanged
+     */
+    public static String embeddedServerUrl(final String location) {
+        return location.startsWith("/") ? EMBEDDED_SERVER_URI_PREFIX + location : location;
+    }
+
     private static XmldbURI getXmldbURI(final URI uri) throws URISyntaxException {
         if ((uri.getScheme() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
             return new FullXmldbURI(uri);

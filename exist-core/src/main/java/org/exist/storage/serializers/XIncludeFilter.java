@@ -34,6 +34,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.XQueryPool;
 import com.evolvedbinary.j8fu.Either;
 import org.exist.util.XMLReaderPool;
@@ -1120,7 +1122,7 @@ public class XIncludeFilter implements Receiver {
                                                   final java.nio.charset.Charset charset) {
         try {
             final URI externalUri = new URI(href);
-            final URLConnection con = externalUri.toURL().openConnection();
+            final URLConnection con = UrlConnections.open(externalUri.toURL(), Timeouts.from(serializer.broker.getConfiguration()));
             try (final InputStream is = con.getInputStream()) {
                 return new String(is.readAllBytes(), charset);
             }
@@ -1132,7 +1134,7 @@ public class XIncludeFilter implements Receiver {
 
     private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws ParserConfigurationException, SAXException {
         try {
-            final URLConnection con = externalUri.toURL().openConnection();
+            final URLConnection con = UrlConnections.open(externalUri.toURL(), Timeouts.from(serializer.broker.getConfiguration()));
             if (con instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri + ", server returned response code: " + httpConnection.getResponseCode()));
             }

@@ -36,6 +36,8 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
@@ -298,7 +300,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             Path temp = null;
             try {
                 temp = temporaryFileManager.getTemporaryFile();
-                try (final InputStream is = uri.toURL().openStream()) {
+                try (final InputStream is = UrlConnections.openStream(uri.toURL(), Timeouts.from(context.getBroker().getConfiguration()))) {
                     Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
                     resourceId = loadFromFile(collection, temp, docName, mimeType);
                 } finally {
