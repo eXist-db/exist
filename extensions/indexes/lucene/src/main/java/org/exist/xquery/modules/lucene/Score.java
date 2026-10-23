@@ -65,16 +65,25 @@ public class Score extends BasicFunction {
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        NodeProxy proxy = (NodeProxy) nodeValue;
-        Match match = proxy.getMatches();
+        return new FloatValue(this, scoreOf((NodeProxy) nodeValue));
+    }
+
+    /**
+     * The Lucene score of a node: the sum of the scores of its Lucene matches. Shared with
+     * ft:search-scope, so its "score" and ft:score cannot drift apart.
+     *
+     * @param proxy the node
+     * @return the node's score, 0 if it has no Lucene matches
+     */
+    static float scoreOf(final NodeProxy proxy) {
         float score = 0.0f;
+        Match match = proxy.getMatches();
         while (match != null) {
             if (match.getIndexId().equals(LuceneIndex.ID)) {
-                float currentScore = ((LuceneMatch)match).getScore();
-                score += currentScore;
+                score += ((LuceneMatch) match).getScore();
             }
             match = match.getNextMatch();
         }
-        return new FloatValue(this, score);
+        return score;
     }
 }
