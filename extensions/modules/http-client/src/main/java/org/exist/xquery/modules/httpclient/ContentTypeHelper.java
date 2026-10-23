@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.util.Locale;
+
 /**
  * Utility for parsing Content-Type headers and classifying response body types.
  *
@@ -125,7 +127,7 @@ public final class ContentTypeHelper {
         final String mediaType = semicolon >= 0
                 ? contentType.substring(0, semicolon)
                 : contentType;
-        return mediaType.trim().toLowerCase();
+        return mediaType.trim().toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -138,7 +140,7 @@ public final class ContentTypeHelper {
         if (contentType == null) {
             return DEFAULT_CHARSET;
         }
-        final String lower = contentType.toLowerCase();
+        final String lower = contentType.toLowerCase(Locale.ROOT);
         final int charsetIdx = lower.indexOf("charset=");
         if (charsetIdx < 0) {
             return DEFAULT_CHARSET;
@@ -153,6 +155,6 @@ public final class ContentTypeHelper {
         if (semicolon >= 0) {
             charset = charset.substring(0, semicolon);
         }
-        return charset.trim().toLowerCase();
+        return charset.trim().toLowerCase(Locale.ROOT);
     }
 }

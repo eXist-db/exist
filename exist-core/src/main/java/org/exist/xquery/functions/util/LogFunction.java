@@ -32,6 +32,7 @@ import org.xml.sax.SAXException;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Locale;
 import java.util.Properties;
 
 
@@ -158,7 +159,7 @@ public class LogFunction extends BasicFunction {
         // Finally write the log
         switch (calledAs) {
             case FUNCTION_LOG:
-                final String loglevel = args[0].getStringValue().toLowerCase();
+                final String loglevel = args[0].getStringValue().toLowerCase(Locale.ROOT);
                 writeLog(buf, loglevel, logger);
                 break;
 
@@ -171,7 +172,7 @@ public class LogFunction extends BasicFunction {
                 break;
 
             case FUNCTION_LOGAPP: {
-                final String loglevelapp = args[0].getStringValue().toLowerCase();
+                final String loglevelapp = args[0].getStringValue().toLowerCase(Locale.ROOT);
                 final String logname = args[1].getStringValue();
 
                 // Use specific logger when provided

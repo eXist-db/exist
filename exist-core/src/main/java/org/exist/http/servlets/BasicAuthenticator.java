@@ -34,6 +34,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -61,7 +62,7 @@ public class BasicAuthenticator implements Authenticator {
 		String password = null;
 
 		try {
-			if (credentials != null && credentials.toLowerCase().startsWith("basic ")) {
+			if (credentials != null && credentials.toLowerCase(Locale.ROOT).startsWith("basic ")) {
 				final byte[] c = Base64.decodeBase64(credentials.substring("basic ".length()));
 				final String s = new String(c, UTF_8);
 				// LOG.debug("BASIC auth credentials: "+s);

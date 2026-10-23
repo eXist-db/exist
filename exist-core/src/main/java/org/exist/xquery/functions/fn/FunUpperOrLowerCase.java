@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
+import java.util.Locale;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -83,9 +85,9 @@ public class FunUpperOrLowerCase extends Function {
         else {
     		final String value = seq.getStringValue();
     		if(isCalledAs("upper-case"))
-                {result = new StringValue(this, value.toUpperCase());}
+                {result = new StringValue(this, value.toUpperCase(Locale.ROOT));}
     		else
-                {result = new StringValue(this, value.toLowerCase());}
+                {result = new StringValue(this, value.toLowerCase(Locale.ROOT));}
         }
 
         if (context.getProfiler().isEnabled()) 
