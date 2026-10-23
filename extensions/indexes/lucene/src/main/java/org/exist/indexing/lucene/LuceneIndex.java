@@ -38,6 +38,7 @@ import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -264,6 +265,11 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
                 LOG.debug("Committing Lucene index");
             }
         	if (cachedWriter != null) {
+                // the segments' field names hold symbol ids: the symbols must be on disk before a commit makes them durable
+                final SymbolTable symbols = getBrokerPool().getSymbols();
+                if (symbols != null) {
+                    symbols.sync();
+                }
                 cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
             }

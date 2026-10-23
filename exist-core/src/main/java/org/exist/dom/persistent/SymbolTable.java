@@ -639,7 +639,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * @return true if entries were appended since the file was last forced to disk
      */
-    synchronized boolean hasUnsyncedEntries() {
+    public synchronized boolean hasUnsyncedEntries() {
         return unsynced;
     }
 
