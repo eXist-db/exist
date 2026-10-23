@@ -72,6 +72,8 @@ optimizer.xql: optimize-starts-with-field
 optimizer.xql: optimize-starts-with-string
 prefixed-conditions.xql: optimize-ncname-attribute
 prefixed-conditions.xql: optimize-prefixed-attribute
+review-bare-anchor.xqm: caret-only-is-optimized
+review-bare-anchor.xqm: control-is-optimized
 types.xql: eq-date-field-optimize
 types.xql: eq-date-field-type-conversion-optimize
 types.xql: eq-date-optimize
