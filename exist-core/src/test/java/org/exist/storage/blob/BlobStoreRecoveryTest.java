@@ -529,9 +529,9 @@ public class BlobStoreRecoveryTest {
         replay(mockConfiguration);
 
         final BrokerPool mockBrokerPool = createNiceMock(BrokerPool.class);
-        if (!cleanShutdown) {
-            mockBrokerPool.FORCE_CORRUPTION = true;  // NOTE: needed so we don't checkpoint at clean shutdown and can simulate a crash!
-        }
+        // NOTE: set for each database, as the flag is static: a crash needs it set, so that no checkpoint is written at
+        // close, and a clean shutdown needs it cleared, or it would inherit a crash variant's flag and be replayed too
+        BrokerPool.FORCE_CORRUPTION = !cleanShutdown;
 
         final SecurityManager mockSecurityManager = createNiceMock(SecurityManager.class);
         final Subject mockSystemSubject = createNiceMock(Subject.class);
