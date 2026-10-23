@@ -122,6 +122,9 @@ public class CollectionDocumentPermissionsRaceTest {
                 : """
                 for $doc in collection("%s") return sm:clear-acl(document-uri($doc))
                 """.formatted(ACL_COLLECTION), ACL_COLLECTION, DOCUMENTS);
+
+        // whatever the last change, carol's entry never applies to alice
+        assertEquals(DOCUMENTS, asAlice("count(collection(\"" + ACL_COLLECTION + "\"))"));
     }
 
     /**
