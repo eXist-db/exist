@@ -21,14 +21,10 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -36,6 +32,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.*;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -43,18 +40,19 @@ import org.exist.xquery.value.*;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
 
 public class Field extends BasicFunction {
+
+    private static final Logger LOG = LogManager.getLogger(Field.class);
 
     private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
     private static final FunctionParameterSequenceType FS_PARAM_NODES_OPT = optManyParam("nodes", Type.NODE, "zero or more context nodes (empty returns empty)");
@@ -184,14 +182,25 @@ public class Field extends BasicFunction {
                 if (ownerDoc == null) {
                     continue;
                 }
-                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), ownerDoc.getCollection());
+                final LuceneConfig config = configured != null ? configured : LuceneConfig.DEFAULT_CONFIG;
+                final ValueSequence fieldValues = new ValueSequence();
+                try {
+                    for (final String value : FieldText.values(index, context.getBroker(), config, proxy, fieldName)) {
+                        fieldValues.add(new StringValue(this, value));
+                    }
+                } catch (final XPathException e) {
+                    // as when indexing, a field whose condition or expression fails for a node has no value there
+                    LOG.warn("Could not compute field '{}' of node {}: {}", fieldName, proxy.getNodeId(), e.getMessage());
+                    continue;
+                }
                 final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
                 }
             }
             return result;
-        } catch (final IOException e) {
+        } catch (final IOException | PermissionDeniedException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
     }
@@ -230,7 +239,6 @@ public class Field extends BasicFunction {
      */
     private Sequence highlightMatches(final String fieldName, final NodeProxy proxy, final LuceneMatch match, final Sequence text) throws XPathException, IOException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final Map<Object, Query> terms = index.getTerms(match.getQuery());
         final NodePath path = LuceneMatchListener.getPath(proxy);
         // one node: its own collection's configuration
         final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), proxy.getOwnerDocument().getCollection());
@@ -242,6 +250,9 @@ public class Field extends BasicFunction {
         }
 
         final Analyzer analyzer = idxConf.getAnalyzer();
+        // the field's matches of the query, as Lucene matches them in the field's text
+        final MatchLocator locator = new MatchLocator(List.of(match.getQuery()));
+        final Set<String> fields = Set.of(fieldName);
 
         context.pushDocumentContext();
         try {
@@ -253,61 +264,16 @@ public class Field extends BasicFunction {
                 final int nodeNr = builder.startElement(Namespaces.EXIST_NS, "field", "exist:field", null);
                 final String content = si.nextItem().getStringValue();
                 int currentPos = 0;
-                try (final Reader reader = new StringReader(content);
-                     final TokenStream tokenStream = analyzer.tokenStream(fieldName, reader);
-                     final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
-                    stream.reset();
-                    while (stream.incrementToken()) {
-                        String token = stream.getAttribute(CharTermAttribute.class).toString();
-                        final Query query = terms.get(token);
-                        if (query != null) {
-                            if (query instanceof PhraseQuery phraseQuery) {
-                                final Term phraseTerms[] = phraseQuery.getTerms();
-                                if (token.equals(phraseTerms[0].text())) {
-                                    // Scan the following text and collect tokens to see
-                                    // if they are part of the phrase.
-                                    stream.mark();
-                                    int t = 1;
-                                    OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                    final int startOffset = offset.startOffset();
-                                    int endOffset = offset.endOffset();
-                                    while (stream.incrementToken() && t < phraseTerms.length) {
-                                        token = stream.getAttribute(CharTermAttribute.class).toString();
-                                        if (token.equals(phraseTerms[t].text())) {
-                                            offset = stream.getAttribute(OffsetAttribute.class);
-                                            endOffset = offset.endOffset();
-                                            t++;
-                                            if (t == phraseTerms.length) {
-                                                break;
-                                            }
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                    if (t == phraseTerms.length) {
-                                        if (currentPos < startOffset) {
-                                            builder.characters(content.substring(currentPos, startOffset));
-                                        }
-                                        builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                        builder.characters(content.substring(startOffset, endOffset));
-                                        builder.endElement();
-                                        currentPos = endOffset;
-                                    }
-                                } // End of phrase handling
-                            } else {
-                                final OffsetAttribute offset = stream.getAttribute(OffsetAttribute.class);
-                                if (currentPos < offset.startOffset()) {
-                                    builder.characters(content.substring(currentPos, offset.startOffset()));
-                                }
-                                builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
-                                builder.characters(content.substring(offset.startOffset(), offset.endOffset()));
-                                builder.endElement();
-                                currentPos = offset.endOffset();
-                            }
-                        }
+                for (final MatchLocator.Span span : locator.locate(fields, content, analyzer)) {
+                    if (currentPos < span.start()) {
+                        builder.characters(content.substring(currentPos, span.start()));
                     }
+                    builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
+                    builder.characters(content.substring(span.start(), span.end()));
+                    builder.endElement();
+                    currentPos = span.end();
                 }
-                if (currentPos < content.length() - 1)  {
+                if (currentPos < content.length()) {
                     builder.characters(content.substring(currentPos));
                 }
                 builder.endElement();

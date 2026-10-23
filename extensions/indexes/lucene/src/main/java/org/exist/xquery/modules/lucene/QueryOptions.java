@@ -364,10 +364,12 @@ public class QueryOptions {
         if (allowLeadingWildcard)
             parser.setAllowLeadingWildcard(true);
         phraseSlop.ifPresent(parser::setPhraseSlop);
+        // Not SCORING_BOOLEAN_REWRITE: it fails a wildcard, prefix or fuzzy term that expands to more terms than a
+        // boolean query may have (1024). Lucene's default gives every match the same score, and finds them all.
         if (filterRewrite)
             parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         else
-            parser.setMultiTermRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BLENDED_REWRITE);
         if (lowercaseExpandedTerms) {
             // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }

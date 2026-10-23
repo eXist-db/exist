@@ -21,8 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeHandle;
@@ -33,10 +31,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.PhraseQuery;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -52,36 +47,24 @@ import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.*;
 
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
     private static final Logger LOG = LogManager.getLogger(LuceneMatchListener.class);
 
     private Match match;
-    private Map<Object, Query> termMap;
+    /** where the queries of the node's matches match a text */
+    private MatchLocator locator;
+    /** the fields the queries search that a node's own text is indexed in: not the configured fields */
+    private Set<String> textFields;
     private Map<NodeId, Offset> nodesWithMatch;
     private final LuceneIndex index;
     private LuceneConfig config;
     private DBBroker broker;
     /** NodeId we already scanned in reset(); avoid double-scan in startElement. */
     private NodeId scannedInResetForNodeId;
-
-    /* #5738: cache the rewritten terms per Query so that batch util:expand(...) does not
-     * re-rewrite the same wildcard/prefix queries on every input node. The cache is keyed
-     * by Query identity (Lucene Query.equals is content-based, so semantically equal
-     * queries share an entry) and is bounded to avoid unbounded growth across long-lived
-     * brokers. */
-    private static final int QUERY_TERM_CACHE_MAX = 32;
-    private final Cache<Query, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
-            .maximumSize(QUERY_TERM_CACHE_MAX)
-            .build();
 
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
@@ -111,7 +94,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             config = LuceneConfig.DEFAULT_CONFIG;
         }
 
-        getTerms();
+        getQueries();
         nodesWithMatch = new TreeMap<>();
         /* Check if an index is defined on an ancestor of the current node.
         * If yes, scan the ancestor to get the offset of the first character
@@ -132,12 +115,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         scannedInResetForNodeId = null;
-        /* #5738: scanMatches is the per-node hot path. When termMap is empty (e.g., every
-         * query term was filtered out by the configured-fields exclusion from PR #3467,
-         * the typical case for `lemma:Aachen` style field queries), no token in the entry
-         * text can match, so nodesWithMatch will stay empty and characters() will pass
-         * through unchanged. Skip the scan entirely in that case. */
-        if (termMap.isEmpty()) {
+        /* #5738: scanMatches is the per-node hot path. When no query searches the text's own
+         * fields (e.g., a query of configured fields only, excluded since PR #3467, the
+         * typical case for `lemma:Aachen` style field queries), nothing in the text can
+         * match, so nodesWithMatch will stay empty and characters() will pass through
+         * unchanged. Skip the scan entirely in that case. */
+        if (textFields.isEmpty()) {
             return;
         }
         if (ancestors != null && !ancestors.isEmpty()) {
@@ -162,9 +145,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
-        /* #5738: when termMap is empty no token can match, so deep-scanning child elements
-         * to discover match offsets is wasted work; just pass the event through. */
-        if (termMap == null || termMap.isEmpty()) {
+        /* #5738: when no query searches the text's own fields nothing can match, so
+         * deep-scanning child elements to discover match offsets is wasted work; just pass
+         * the event through. */
+        if (textFields == null || textFields.isEmpty()) {
             super.startElement(qname, attribs);
             return;
         }
@@ -297,56 +281,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         final String str = extractor.getText().toString();
-        try (final Reader reader = new StringReader(str);
-             final TokenStream tokenStream = analyzer.tokenStream(null, reader);
-             final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
-            stream.reset();
-            while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
-                final Query query = termMap.get(text);
-                if (query != null) {
-                    // Phrase queries need to be handled differently to filter
-                    // out wrong matches: only the phrase should be marked, not
-                    // single words which may also occur elsewhere in the document
-                    if (query instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan the following text and collect tokens to see
-                            // if they are part of the phrase.
-                            stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    // Don't reset the token stream since we will
-                                    // miss matches. /ljo
-                                    //stream.reset();
-                                    break;
-                                }
-                            }
-
-                            if (stateList.size() == terms.length) {
-                                // Phrase match: add one span from first to last term (may cross text nodes, #4584).
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                addMatchSpan(start, end, offsets, str.length());
-                            }
-                        } // End of phrase handling
-                    } else {
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        addMatchSpan(offsetAttr.startOffset(), offsetAttr.endOffset(), offsets, str.length());
-                    }
-                }
+        // the element's own field, if a query searches it; with a qname, the text is indexed in that field only
+        final Set<String> fields;
+        if (idxConf.getQName() != null) {
+            final String field = LuceneUtil.encodeQName(idxConf.getQName(), index.getBrokerPool().getSymbols());
+            fields = textFields.contains(field) ? Set.of(field) : textFields;
+        } else {
+            fields = textFields;
+        }
+        try {
+            for (final MatchLocator.Span span : locator.locate(fields, str, analyzer)) {
+                addMatchSpan(span.start(), span.end(), offsets, str.length());
             }
         } catch (final IOException e) {
             LOG.warn("Problem found while serializing XML: {}", e.getMessage(), e);
@@ -370,51 +315,24 @@ public class LuceneMatchListener extends AbstractMatchListener {
     }
 
     /**
-     * Get all query terms from the original queries.
-     * Excludes terms from configured Lucene fields (e.g. pub-year) so that
-     * util:expand does not produce superfluous highlights for field-only matches.
+     * Get the queries of the node's Lucene matches, and the fields they search that a node's text is indexed in.
+     * Configured Lucene fields (e.g. pub-year) are left out, so that util:expand does not produce superfluous
+     * highlights for field-only matches.
      *
-     * <p>For #5738: the per-Query cache lets batch util:expand($hits) reuse rewritten
-     * terms across hits. Without this cache every reset() reopened the IndexReader and
-     * re-enumerated terms (slow for wildcard/prefix queries on large corpora).
+     * <p>A wildcard or prefix query is expanded against the text itself when its matches are located, so no
+     * expansion against the index is kept from one node, or one query, to the next.
      *
      * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
-     * @see <a href="https://github.com/eXist-db/exist/issues/5738">Issue #5738</a>
      */
-    private void getTerms() {
-        // Collect unique queries from the proxy's match list. The cache shortcut applies
-        // when every query is already cached - the common case in batch util:expand calls.
+    private void getQueries() {
         final Set<Query> uniqueQueries = collectUniqueLuceneQueries();
-        if (uniqueQueries.isEmpty()) {
-            termMap = Collections.emptyMap();
-            return;
-        }
+        locator = new MatchLocator(uniqueQueries);
         final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
                 ? Collections.emptySet()
                 : config.getConfiguredFieldNames();
-        final List<Query> uncachedQueries = new ArrayList<>();
-        for (final Query q : uniqueQueries) {
-            if (queryTermCache.getIfPresent(q) == null) {
-                uncachedQueries.add(q);
-            }
-        }
-        if (!uncachedQueries.isEmpty()) {
-            try {
-                index.withReader(reader -> {
-                    for (final Query q : uncachedQueries) {
-                        final Map<Object, Query> rawTerms = new HashMap<>();
-                        LuceneUtil.extractTerms(q, rawTerms, reader, true);
-                        queryTermCache.put(q, rawTerms);
-                    }
-                    return null;
-                });
-            } catch (final IOException e) {
-                LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
-                termMap = Collections.emptyMap();
-                return;
-            }
-        }
-        termMap = buildTermMap(uniqueQueries, excludedFields);
+        final Set<String> fields = new HashSet<>(locator.fields());
+        fields.removeAll(excludedFields);
+        textFields = fields;
     }
 
     /**
@@ -430,29 +348,6 @@ public class LuceneMatchListener extends AbstractMatchListener {
             nextMatch = nextMatch.getNextMatch();
         }
         return uniqueQueries;
-    }
-
-    /**
-     * Combine per-query cached rawTerms into a single termText -> Query map, applying the
-     * configured-field exclusion at the end so different listener instances with different
-     * configs share the same cached rawTerms.
-     */
-    private Map<Object, Query> buildTermMap(final Set<Query> queries, final Set<String> excludedFields) {
-        final Map<Object, Query> result = new TreeMap<>();
-        for (final Query q : queries) {
-            final Map<Object, Query> rawTerms = queryTermCache.getIfPresent(q);
-            if (rawTerms == null) {
-                // Race against eviction is impossible here (single-threaded reset()), but be
-                // defensive in case the cache size becomes 0 in some future revision.
-                continue;
-            }
-            for (final Map.Entry<Object, Query> e : rawTerms.entrySet()) {
-                if (e.getKey() instanceof Term term && !excludedFields.contains(term.field())) {
-                    result.put(term.text(), e.getValue());
-                }
-            }
-        }
-        return result;
     }
 
     private static class OffsetList {

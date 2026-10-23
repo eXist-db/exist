@@ -30,7 +30,10 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -40,6 +43,7 @@ import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -93,6 +97,58 @@ public abstract class AbstractFieldConfig {
     @Nullable
     public Analyzer getAnalyzer() {
         return null;
+    }
+
+    /**
+     * @return true if the content is computed by an expression, rather than being the indexed text
+     */
+    public boolean hasExpression() {
+        return expression.isPresent();
+    }
+
+    /**
+     * What to do with the result of an expression, before its compiled query is returned to the pool.
+     */
+    @FunctionalInterface
+    protected interface ResultHandler<T> {
+        T handle(Sequence result) throws XPathException;
+    }
+
+    /**
+     * Evaluates an expression of this configuration against a node, outside indexing, with a compiled query of its
+     * own borrowed from the XQuery pool: the compiled query used for indexing is shared by everything this
+     * configuration indexes, and may be in use.
+     *
+     * @param broker the broker to evaluate with, as its user
+     * @param code the expression
+     * @param contextNode the node to evaluate it against
+     * @param handler what to do with the result
+     * @param <T> the type of what the handler returns
+     * @return what the handler returns
+     * @throws XPathException if the expression cannot be compiled or evaluated
+     * @throws PermissionDeniedException if the user may not evaluate it
+     */
+    protected static <T> T evaluate(final DBBroker broker, final String code, final NodeProxy contextNode,
+            final ResultHandler<T> handler) throws XPathException, PermissionDeniedException {
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
+        final Source source = new StringSource(code);
+        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+        if (compiled == null) {
+            try {
+                compiled = xquery.compile(new XQueryContext(broker.getBrokerPool()), source);
+            } catch (final IOException e) {
+                throw new XPathException("Cannot compile expression: " + e.getMessage(), e);
+            }
+        } else {
+            compiled.getContext().prepareForReuse();
+        }
+        try {
+            return handler.handle(xquery.execute(broker, compiled, contextNode));
+        } finally {
+            compiled.getContext().runCleanupTasks();
+            pool.returnCompiledXQuery(source, compiled);
+        }
     }
 
     protected abstract void processResult(final Sequence result, final Document luceneDoc) throws XPathException;
