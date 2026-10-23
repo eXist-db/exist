@@ -13,6 +13,7 @@ JMH micro-benchmarks for `exist-core` (and the Lucene index extension, which sev
 | `TypeSubTypeOfBenchmark` | `org.exist.xquery.value` | `Type#subTypeOf(int, int)`, the hot path behind every atomic comparison ([#6322](https://github.com/eXist-db/exist/issues/6322)) |
 | `StringJoinBenchmark` | `org.exist.xquery.utils` | Java `String` join strategies |
 | `URIUtilsBenchmark` | `org.exist.xquery.utils` | URI utility helpers |
+| `XQueryServletBenchmark` | `org.exist.http.servlets` | Per-request cost of `XQueryServlet#process` for inline, `xquery.url` and database-fallback sources (NPath refactoring guard) |
 | `LockTableBenchmark` | `org.exist.storage.lock` | Lock table contention |
 | `ReindexBenchmark` | `org.exist.storage` | End-to-end `xmldb:reindex()` fast path ([#572](https://github.com/eXist-db/exist/issues/572)) |
 | `LucenePhraseQueryBenchmark` | `org.exist.indexing.lucene` | Query-time Lucene phrase lookup over many small documents ([#2812](https://github.com/eXist-db/exist/issues/2812)) |
