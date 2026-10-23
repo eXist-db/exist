@@ -142,6 +142,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /** The most candidates a vector query considers: the largest {@code candidates} option allowed. */
     public static final int MAX_VECTOR_CANDIDATES = 10_000;
 
+    /**
+     * The axis that asks {@link #query} for the hits on the context nodes themselves: a hit counts only when its own
+     * node is one of the context nodes. This is {@code ft:query}'s filter, the nodes it is given whose own index entry
+     * matches; {@link NodeSet#ANCESTOR} also returns a context node through a match below it.
+     */
+    public static final int SELF = -1;
+
     private final StreamListener listener = new LuceneStreamListener();
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
@@ -629,7 +636,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
-            final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             for (final QName qname : definedIndexes) {
                 final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 final LuceneConfig config = getLuceneConfig(broker, docs);
@@ -652,7 +658,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
                 }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query, config);
+                        axis, searcher, query, config);
             }
             return resultSet;
         });
@@ -684,7 +690,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
             final NodeSet resultSet = new NewArrayNodeSet();
-            final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 LuceneConfig config = getLuceneConfig(broker, docs);
@@ -700,7 +705,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
                     }
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            returnAncestor, searcher, query, config);
+                            axis, searcher, query, config);
                 }
             }
             return resultSet;
@@ -712,7 +717,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
-            final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             final LuceneConfig config = getLuceneConfig(broker, docs);
             analyzer = getQueryAnalyzer(config, field, null, options);
             Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
@@ -721,7 +725,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
                 }
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query, config);
+                        axis, searcher, query, config);
             }
             return resultSet;
         });
@@ -858,13 +862,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
+    /**
+     * @param axis which node a hit gives: {@link NodeSet#ANCESTOR} for its context ancestor, {@link #SELF} for its own
+     *  node only when that is one of the context nodes, as {@code ft:query}'s filter needs; otherwise its own node
+     */
     private void searchAndProcess(final int contextId, final QName qname, final DocumentSet docs,
-                                  @Nullable final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor,
+                                  @Nullable final NodeSet contextSet, final NodeSet resultSet, final int axis,
                                   final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final Query query,
                                   final LuceneConfig config) throws IOException {
         final LuceneFacets facets = new LuceneFacets();
         final FacetsCollector facetsCollector = new FacetsCollector();
-        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector);
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, axis == NodeSet.ANCESTOR, contextId, facets, facetsCollector);
+        collector.selfOnly = axis == SELF;
         searcher.searcher().search(query, collector);
 
         // compute facets (skip if config or taxonomy missing)
@@ -941,7 +950,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             NodeSet resultSet = new NewArrayNodeSet();
-            boolean returnAncestor = axis == NodeSet.ANCESTOR;
             LuceneConfig config = getLuceneConfig(context.getBroker(), docs);
             Analyzer analyzer = getQueryAnalyzer(config, field, null, options);
             LOG.debug("Using analyzer {} for {}", analyzer, queryString);
@@ -950,7 +958,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Query query = parser.parse(queryString);
             query = AnalyzingQueryRewriter.rewrite(query, analyzer);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, query, config);
+                    axis, searcher, query, config);
             return resultSet;
         });
     }
@@ -1654,6 +1662,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private @Nullable final NodeSet contextSet;
         private final NodeSet resultSet;
         private final boolean returnAncestor;
+        // a hit counts only when its own node is one of the context nodes, see SELF
+        private boolean selfOnly = false;
         private final int contextId;
         private final Query query;
         private final LuceneFacets facets;
@@ -1751,7 +1761,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             private void processHit(int doc, DocumentImpl storedDocument, NodeProxy storedNode, LuceneMatch match) throws IOException {
                 if (contextSet != null) {
                     int sizeHint = contextSet.getSizeHint(storedDocument);
-                    if (returnAncestor) {
+                    if (selfOnly) {
+                        processSelfHit(doc, storedNode, match, sizeHint);
+                    } else if (returnAncestor) {
                         processAncestorHit(doc, storedNode, match, sizeHint);
                     } else {
                         processDirectHit(doc, storedNode, match, sizeHint);
@@ -1759,6 +1771,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     storedNode.addMatch(match);
                     resultSet.add(storedNode);
+                    chainCollect(doc);
+                }
+            }
+
+            private void processSelfHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
+                // the hit is the context node itself, or no hit of the context: a match below a context node is not
+                // that node's
+                final NodeProxy contextNode = contextSet.get(storedNode);
+                if (contextNode != null) {
+                    contextNode.addMatch(match);
+                    resultSet.add(contextNode, sizeHint);
+                    // a predicate keeps a result whose context is in its context set: the context node itself
+                    NodeProxy.propagatePredicateContextFrom(contextNode, contextNode, contextId);
                     chainCollect(doc);
                 }
             }

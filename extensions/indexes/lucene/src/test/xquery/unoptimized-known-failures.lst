@@ -7,6 +7,3 @@ ft-query-forms.xqm: optimizer-query-on-self
 ft-query-forms.xqm: optimizer-query-on-wildcard
 ft-query-forms.xqm: optimizer-wildcard-long-path
 ft-query-forms.xqm: optimizer-wildcard-self-descendant
-
-# x[ft:query(*, ...)] with the index on a descendant only: the test asserts the optimized answer; which is right is open
-ft-query-forms.xqm: wildcard-context-nested-no-match
