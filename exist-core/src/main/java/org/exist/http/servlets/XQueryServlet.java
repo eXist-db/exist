@@ -49,6 +49,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -164,30 +165,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-        HttpServletRequest request = null;
-        try {
-            //For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
-            //otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
-            final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-            if (descriptor != null) {
-                if (descriptor.allowRequestLogging()) {
-                    request = new HttpServletRequestWrapper(() -> (String) getPool().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), req, getFormEncoding());
-                } else {
-                    request = req;
-                }
-
-            } else {
-                request = req;
-            }
-
-            process(request, response);
-        } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
-                wrapper.close();
-            }
-        }
+        processWithLoggingWrapper(req, response);
     }
-    
+
     //-------------------------------
     // doPut and doDelete added by Andrzej Taramina (andrzej@chaeron.com)
     // Date: Sept/05/2007
@@ -199,33 +179,35 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
+        processWithLoggingWrapper(req, response);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        process(request, response);
+    }
+
+    /**
+     * Processes a request with a body (POST, PUT). If we are logging the requests we must wrap the
+     * HttpServletRequest in an HttpServletRequestWrapper, otherwise we cannot access the POST
+     * parameters from the content body of the request!!! - deliriumsky
+     */
+    private void processWithLoggingWrapper(final HttpServletRequest req, final HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
         try {
-            //For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
-            //otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
             final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-            if (descriptor != null) {
-                if (descriptor.allowRequestLogging()) {
-                    request = new HttpServletRequestWrapper(() -> (String) getPool().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), req, getFormEncoding());
-                } else {
-                    request = req;
-                }
-
+            if (descriptor != null && descriptor.allowRequestLogging()) {
+                request = new HttpServletRequestWrapper(() -> (String) getPool().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), req, getFormEncoding());
             } else {
                 request = req;
             }
 
             process(request, response);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+            if (request instanceof HttpServletRequestWrapper wrapper) {
                 wrapper.close();
             }
         }
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        process(request, response);
     }
 
     /**
@@ -238,250 +220,282 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //first, adjust the path
-        String path = request.getPathTranslated();
         // the request path relative to the context, e.g. "/db/apps/optimize.xql" -- kept around
         // (regardless of whether pathTranslated already gave us a disk path) so that a request
         // which cannot be resolved to a file on disk can still be tried against the database.
-        String contextRelativePath = request.getRequestURI().substring(request.getContextPath().length());
-        {
-            final int p = contextRelativePath.lastIndexOf(';');
-            if(p != Constants.STRING_NOT_FOUND)
-                {contextRelativePath = contextRelativePath.substring(0, p);}
-        }
-        if(path == null) {
-            path = getServletContext().getRealPath(contextRelativePath);
-        }
-        
-        //second, perform descriptor actions
+        final String contextRelativePath = contextRelativePath(request);
         final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if(descriptor != null && !descriptor.requestsFiltered()) {
-            //logs the request if specified in the descriptor
-            descriptor.doLogRequestInReplayLog(request);
-            
-            //map's the path if a mapping is specified in the descriptor
-            path = descriptor.mapPath(path);
-        }
-        
-        
-//        if (request.getCharacterEncoding() == null)
-//            try {
-//                request.setCharacterEncoding(formEncoding);
-//            } catch (IllegalStateException e) {
-//            }
+        final String path = translatePath(request, contextRelativePath, descriptor);
+
         final ServletOutputStream sout = response.getOutputStream();
         final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, getFormEncoding()));
-//        response.setContentType(contentType + "; charset=" + formEncoding);
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
 
+        final String moduleLoadPath = moduleLoadPath(request);
+        final HttpSession session = request.getSession( false );
+        final Subject user = resolveUser(request, response, session);
+
+        final Source source = resolveSource(request, response, output, user, moduleLoadPath, path, contextRelativePath);
+        if (source == null) {
+            return;
+        }
+
+        final boolean reportErrors = "YES".equalsIgnoreCase((String) request.getAttribute(ATTR_XQUERY_REPORT_ERRORS));
+
+        if (isSourceViewRequest(request, descriptor)) {
+            showSource(request, response, output, source, user, path, descriptor);
+            return;
+        }
+
+        final String requestAttr = (String) request.getAttribute(ATTR_XQUERY_ATTRIBUTE);
+        try {
+            execute(request, response, output, session, source, user, moduleLoadPath, path, requestAttr);
+
+        } catch (final PermissionDeniedException e) {
+            sendPermissionDenied(request, response, user, "No permission to execute XQuery for: " + escapeHtml(path) + " denied.");
+            return;
+
+        } catch (final XPathException e) {
+            final Logger logger = getLog();
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getMessage(), e);
+            }
+            reportError(response, output, reportErrors, e);
+
+        } catch (final Throwable e) {
+            getLog().error(e.getMessage(), e);
+            reportError(response, output, reportErrors, e);
+        }
+
+        output.flush();
+        output.close();
+    }
+
+    private static String contextRelativePath(final HttpServletRequest request) {
+        final String contextRelativePath = request.getRequestURI().substring(request.getContextPath().length());
+        final int p = contextRelativePath.lastIndexOf(';');
+        return p == Constants.STRING_NOT_FOUND ? contextRelativePath : contextRelativePath.substring(0, p);
+    }
+
+    /**
+     * Resolves the request to a path on disk, then performs the descriptor actions: logs the request
+     * if specified in the descriptor and maps the path if a mapping is specified in the descriptor.
+     *
+     * @return the path, or {@code null} if the request cannot be resolved to a path on disk
+     */
+    private @Nullable String translatePath(final HttpServletRequest request, final String contextRelativePath, @Nullable final Descriptor descriptor) {
+        String path = request.getPathTranslated();
+        if (path == null) {
+            path = getServletContext().getRealPath(contextRelativePath);
+        }
+
+        if (descriptor != null && !descriptor.requestsFiltered()) {
+            descriptor.doLogRequestInReplayLog(request);
+            path = descriptor.mapPath(path);
+        }
+        return path;
+    }
+
+    private String moduleLoadPath(final HttpServletRequest request) {
+        final Object loadPathAttrib = request.getAttribute(ATTR_MODULE_LOAD_PATH);
+        if (loadPathAttrib != null) {
+            return getValue(loadPathAttrib);
+        }
+
         String requestPath = request.getRequestURI();
         final int p = requestPath.lastIndexOf('/');
-        if(p != Constants.STRING_NOT_FOUND)
-            {requestPath = requestPath.substring(0, p);}
-        
-        String moduleLoadPath;
-        final Object loadPathAttrib = request.getAttribute(ATTR_MODULE_LOAD_PATH);
-        if (loadPathAttrib != null)
-        	{moduleLoadPath = getValue(loadPathAttrib);}
-        else
-        	{moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));}
+        if (p != Constants.STRING_NOT_FOUND) {
+            requestPath = requestPath.substring(0, p);
+        }
+        return getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
+    }
 
+    /**
+     * Determines the user: first the request attribute "xquery.user", then the session attributes
+     * "user" and "password", then the user of the servlet request, then the authenticator; falls
+     * back to the default user.
+     */
+    private Subject resolveUser(final HttpServletRequest request, final HttpServletResponse response, @Nullable final HttpSession session) throws IOException {
         Subject user = getDefaultUser();
 
-        // to determine the user, first check the request attribute "xquery.user", then
-        // the current session attribute "user"
         final Object userAttrib = request.getAttribute(ATTR_XQUERY_USER);
-        final HttpSession session = request.getSession( false );
-        if(userAttrib != null || (session != null && request.isRequestedSessionIdValid())) {
-            final Object passwdAttrib = request.getAttribute(ATTR_XQUERY_PASSWORD);
-            String username;
-            String password;
+        if (userAttrib != null || (session != null && request.isRequestedSessionIdValid())) {
+            final String username;
+            final String password;
             if (userAttrib != null) {
                 username = getValue(userAttrib);
-                password = getValue(passwdAttrib);
+                password = getValue(request.getAttribute(ATTR_XQUERY_PASSWORD));
             } else {
                 username = getSessionAttribute(session, "user");
                 password = getSessionAttribute(session, "password");
             }
-            
-            //TODO authentication should use super.authenticate(...) !!!
-			try {
-				if( username != null && password != null ) {
-					Subject newUser = getPool().getSecurityManager().authenticate(username, password);
-		        	if (newUser != null && newUser.isAuthenticated())
-		        		{user = newUser;}
-				}
-                
-			} catch (final AuthenticationException e) {
-                getLog().error("User can not be authenticated ({}).", username);
-			}
+            user = authenticate(username, password, user);
         }
-        
-        if (user == getDefaultUser()) {
-        	Subject requestUser = HttpAccount.getUserFromServletRequest(request);
-        	if (requestUser != null) {
-        		user = requestUser;
-        	} else {
-        		requestUser = getAuthenticator().authenticate(request, response, false);
-        		if (requestUser != null) 
-        			{user = requestUser;}
-        	}
+
+        if (user != getDefaultUser()) {
+            return user;
         }
-        
-        Source source = null;
+
+        final Subject requestUser = HttpAccount.getUserFromServletRequest(request);
+        if (requestUser != null) {
+            return requestUser;
+        }
+        final Subject authenticatedUser = getAuthenticator().authenticate(request, response, false);
+        return authenticatedUser != null ? authenticatedUser : user;
+    }
+
+    //TODO authentication should use super.authenticate(...) !!!
+    private Subject authenticate(@Nullable final String username, @Nullable final String password, final Subject defaultUser) {
+        if (username == null || password == null) {
+            return defaultUser;
+        }
+        try {
+            final Subject newUser = getPool().getSecurityManager().authenticate(username, password);
+            if (newUser != null && newUser.isAuthenticated()) {
+                return newUser;
+            }
+        } catch (final AuthenticationException e) {
+            getLog().error("User can not be authenticated ({}).", username);
+        }
+        return defaultUser;
+    }
+
+    /**
+     * Resolves the query source from the request attribute "xquery.source", the request attribute
+     * "xquery.url" or the request path, in that order.
+     *
+     * @return the source, or {@code null} if it cannot be resolved, in which case an error has been sent
+     */
+    private @Nullable Source resolveSource(final HttpServletRequest request, final HttpServletResponse response,
+            final PrintWriter output, final Subject user, final String moduleLoadPath, @Nullable final String path,
+            final String contextRelativePath) throws ServletException {
         final Object sourceAttrib = request.getAttribute(ATTR_XQUERY_SOURCE);
         final Object urlAttrib = request.getAttribute(ATTR_XQUERY_URL);
+        final Source source;
         if (sourceAttrib != null) {
-            String s;
-            if (sourceAttrib instanceof Item item)
-                try {
-                    s = item.getStringValue();
-                } catch (final XPathException e) {
-                    throw new ServletException("Failed to read XQuery source string from " +
-                        "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
-                }
-            else
-                {s = sourceAttrib.toString();}
-            
-            source = new StringSource(s);
-            
+            source = sourceFromAttribute(sourceAttrib);
         } else if (urlAttrib != null) {
-            try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
-                // resolved for execution: a stored query needs EXECUTE, not READ. The ?_source view
-                // below still validates READ, so an unreadable query can be run but not viewed
-                source = SourceFactory.getSourceForExecution(broker, moduleLoadPath, urlAttrib.toString(), true);
-                if (source == null) {
-                    final String msg = "Could not read source: context=" + moduleLoadPath + ", location=" + urlAttrib;
-                    getLog().error(msg);
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    sendError(output, "Error", msg);
-                }
-            } catch (final Exception e) {
-                getLog().error(e.getMessage(), e);
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                sendError(output, "Error", e.getMessage());
-            }
+            source = sourceFromUrl(response, output, user, moduleLoadPath, urlAttrib.toString());
         } else {
-            final Path f = path == null ? null : Path.of(path);
-            if (f != null && Files.isReadable(f)) {
-                source = new FileSource(f, Charset.forName(encoding), true);
-            } else {
-                // No readable file on disk (or no disk path at all -- the Servlet API allows both
-                // HttpServletRequest#getPathTranslated() and ServletContext#getRealPath(String) to
-                // return null, which happens e.g. for a request forwarded to a resource that only
-                // exists in the database). Fall back to resolving it there before giving up.
-                // See https://github.com/eXist-db/exist/issues/6615
-                try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
-                    source = SourceFactory.getSourceForExecution(broker, null, contextRelativePath, true);
-                } catch (final EXistException | IOException | PermissionDeniedException e) {
-                    getLog().error(e.getMessage(), e);
-                }
-                if (source == null) {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    sendError(output, "Cannot read source file", path != null ? path : contextRelativePath);
-                    return;
-                }
+            source = sourceFromPath(user, path, contextRelativePath);
+            if (source == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                sendError(output, "Cannot read source file", path != null ? path : contextRelativePath);
+                return null;
             }
         }
 
         if (source == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             sendError(output, "Source not found", path);
+        }
+        return source;
+    }
+
+    private static Source sourceFromAttribute(final Object sourceAttrib) throws ServletException {
+        if (sourceAttrib instanceof Item item) {
+            try {
+                return new StringSource(item.getStringValue());
+            } catch (final XPathException e) {
+                throw new ServletException("Failed to read XQuery source string from " +
+                    "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
+            }
+        }
+        return new StringSource(sourceAttrib.toString());
+    }
+
+    private @Nullable Source sourceFromUrl(final HttpServletResponse response, final PrintWriter output,
+            final Subject user, final String moduleLoadPath, final String url) {
+        try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
+            // resolved for execution: a stored query needs EXECUTE, not READ. The ?_source view
+            // below still validates READ, so an unreadable query can be run but not viewed
+            final Source source = SourceFactory.getSourceForExecution(broker, moduleLoadPath, url, true);
+            if (source == null) {
+                final String msg = "Could not read source: context=" + moduleLoadPath + ", location=" + url;
+                getLog().error(msg);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                sendError(output, "Error", msg);
+            }
+            return source;
+        } catch (final Exception e) {
+            getLog().error(e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            sendError(output, "Error", e.getMessage());
+            return null;
+        }
+    }
+
+    private @Nullable Source sourceFromPath(final Subject user, @Nullable final String path, final String contextRelativePath) {
+        if (path != null) {
+            final Path f = Path.of(path);
+            if (Files.isReadable(f)) {
+                return new FileSource(f, Charset.forName(encoding), true);
+            }
+        }
+
+        // No readable file on disk (or no disk path at all -- the Servlet API allows both
+        // HttpServletRequest#getPathTranslated() and ServletContext#getRealPath(String) to
+        // return null, which happens e.g. for a request forwarded to a resource that only
+        // exists in the database). Fall back to resolving it there before giving up.
+        // See https://github.com/eXist-db/exist/issues/6615
+        try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
+            return SourceFactory.getSourceForExecution(broker, null, contextRelativePath, true);
+        } catch (final EXistException | IOException | PermissionDeniedException e) {
+            getLog().error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Should we display the source of the XQuery instead of executing it? Only for a GET request
+     * with the parameter {@code _source=yes}.
+     */
+    private static boolean isSourceViewRequest(final HttpServletRequest request, @Nullable final Descriptor descriptor) {
+        return "GET".equals(request.getMethod().toUpperCase())
+                && "yes".equals(request.getParameter("_source"))
+                && descriptor != null;
+    }
+
+    private void showSource(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter output,
+            final Source source, final Subject user, @Nullable final String path, final Descriptor descriptor) throws IOException {
+        //check are we allowed to show the xquery source - descriptor.xml
+        if (!descriptor.allowSource(path)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. Must be explicitly defined in descriptor.xml");
             return;
         }
-        
-        boolean reportErrors = false;
-        final String errorOpt = (String) request.getAttribute(ATTR_XQUERY_REPORT_ERRORS);
-        if (errorOpt != null)
-            {reportErrors = "YES".equalsIgnoreCase(errorOpt);}
-        
-        //allow source viewing for GET?
-        if("GET".equals(request.getMethod().toUpperCase())) {
-            String option;
-            boolean allowSource = false;
-            if((option = request.getParameter("_source")) != null)
-                allowSource = "yes".equals(option);
-            
-            //Should we display the source of the XQuery or execute it
-            if(allowSource && descriptor != null) {
-                //show the source
-                
-                //check are we allowed to show the xquery source - descriptor.xml
-//                System.out.println("path="+path);
-                if(descriptor.allowSource(path)) {
 
-                    if (source instanceof DBSource bSource) {
-                        try {
-                            bSource.validate(user, Permission.READ);
-                        } catch (final PermissionDeniedException e) {
-                            if (getDefaultUser().equals(user)) {
-                                getAuthenticator().sendChallenge(request, response);
-                            } else {
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. (no read access)");
-                            }
-                            return;
-                        }
-                    }
-                    
-					//Show the source of the XQuery
-                    //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
-                    response.setContentType("text/plain; charset=" + getFormEncoding());
-                    output.write(source.getContent());
-                    output.flush();
-                    return;
-                } else {
-                   
-                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. Must be explicitly defined in descriptor.xml");
-                   return;
-                }
+        if (source instanceof DBSource bSource) {
+            try {
+                bSource.validate(user, Permission.READ);
+            } catch (final PermissionDeniedException e) {
+                sendPermissionDenied(request, response, user, "Permission to view XQuery source for: " + escapeHtml(path) + " denied. (no read access)");
+                return;
             }
         }
-        
-        //-------------------------------
-        
-//        URI baseUri;
-//        try {
-//            baseUri = new URI(request.getScheme(),
-//                    null/*user info?*/, request.getLocalPart(), request.getLocalPort(),
-//                    request.getRequestURI(), null, null);
-//        } catch(URISyntaxException e) {
-//            baseUri = null;
-//        }
 
-        final String requestAttr = (String) request.getAttribute(ATTR_XQUERY_ATTRIBUTE);
-        try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
+        response.setContentType("text/plain; charset=" + getFormEncoding());
+        output.write(source.getContent());
+        output.flush();
+    }
+
+    private void sendPermissionDenied(final HttpServletRequest request, final HttpServletResponse response,
+            final Subject user, final String message) throws IOException {
+        if (getDefaultUser().equals(user)) {
+            getAuthenticator().sendChallenge(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, message);
+        }
+    }
+
+    private void execute(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter output,
+            @Nullable final HttpSession session, final Source source, final Subject user, final String moduleLoadPath,
+            @Nullable final String path, @Nullable final String requestAttr)
+            throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException {
+        try (final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
-            CompiledXQuery query = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
-
-            XQueryContext context;
-            if (query == null) {
-               context = new XQueryContext(getPool());
-               context.setModuleLoadPath(moduleLoadPath);
-            } else {
-               context = query.getContext();
-               context.setModuleLoadPath(moduleLoadPath);
-               context.prepareForReuse();
-            }
-
-            // a caller which may execute but not read the query must not learn anything about its
-            // source from a failure. Recomputed per request, as the compiled query is pooled and
-            // shared between users, and set before compiling: a compile error never reaches
-            // XQuery#execute, which computes the level for a runtime failure
-            context.setErrorDisclosure(ErrorDisclosure.of(source, user));
-
-            if (query == null) {
-               try {
-            	   query = xquery.compile(context, source);
-
-               } catch (final XPathException ex) {
-                  final XPathException disclosed = ErrorDisclosure.disclose(context, ex);
-                  throw new EXistException("Cannot compile xquery: "+ disclosed.getMessage(), disclosed);
-
-               } catch (final IOException ex) {
-                  throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage() ,ex);
-               }
-            }
+            final CompiledXQuery query = prepareQuery(broker, xquery, source, user, moduleLoadPath);
+            final XQueryContext context = query.getContext();
 
             final Properties outputProperties = new Properties();
             outputProperties.put("base-uri", collectionURI.toString());
@@ -490,123 +504,153 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             final ResponseWrapper respw = new HttpResponseWrapper(response);
             context.setHttpContext(new XQueryContext.HttpContext(reqw, respw, session != null ? new HttpSessionWrapper( session ) : null));
 
-            final String timeoutOpt = (String) request.getAttribute(ATTR_TIMEOUT);
-            if (timeoutOpt != null) {
-                try {
-                    final long timeout = Long.parseLong(timeoutOpt);
-                    context.getWatchDog().setTimeout(timeout);
-                } catch (final NumberFormatException e) {
-                    throw new EXistException("Bad timeout option: " + timeoutOpt);
-                }
-            }
-
-            final String maxNodesOpt = (String) request.getAttribute(ATTR_MAX_NODES);
-            if (maxNodesOpt != null) {
-                try{
-                    final int maxNodes = Integer.parseInt(maxNodesOpt);
-                    context.getWatchDog().setMaxNodes(maxNodes);
-                } catch (final NumberFormatException e) {
-                    throw new EXistException("Bad max-nodes option: " + maxNodesOpt);
-                }
-            }
+            applyWatchdogOptions(request, context);
 
             DebuggeeFactory.checkForDebugRequest(request, context);
 
-            Sequence resultSequence;
-            try {
-                resultSequence = xquery.execute(broker, query, null, outputProperties);
+            final Sequence resultSequence = executeQuery(broker, xquery, query, source, outputProperties);
 
-            } catch (final XPathException e) {
-                // a read-blind caller learns only that the execution failed; the real error is
-                // logged server-side with a correlation id
-                throw ErrorDisclosure.disclose(context, e);
+            setContentType(response, outputProperties.getProperty(OutputKeys.MEDIA_TYPE), path);
 
-            } finally {
-                context.runCleanupTasks();
-                getPool().getXQueryPool().returnCompiledXQuery(source, query);
-            }
-
-            final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-            if (mediaType != null) {
-                if (!response.isCommitted())
-                	{if (MimeTable.getInstance().isTextContent(mediaType)) {
-                		response.setContentType(mediaType + "; charset=" + getFormEncoding());
-                        response.setCharacterEncoding(getFormEncoding());
-                    } else
-                		response.setContentType(mediaType);}
-                
-            } else {
-	            String contentType = this.contentType;
-	            try {
-	                contentType = getServletContext().getMimeType(path);
-	                if (contentType == null)
-	                    {contentType = this.contentType;}
-                    
-	            } catch (final Throwable e) {
-	                contentType = this.contentType;
-                    
-	            } finally {
-	                if (MimeTable.getInstance().isTextContent(contentType))
-	                    {contentType += "; charset=" + getFormEncoding();}
-	                response.setContentType(contentType );
-	            }
-            }
-            
             if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
                 request.setAttribute(requestAttr, resultSequence);
+            } else {
+                serialize(broker, context, outputProperties, output, resultSequence);
+            }
+        }
+    }
 
-            } else {
-                final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
-                try {
-                    // serialization runs the tail of a lazily-evaluated query, so a runtime failure can
-                    // surface here rather than in execute() above; it must be filtered just the same
-                    serializer.serialize(resultSequence);
-                } catch (final XPathException e) {
-                    throw ErrorDisclosure.disclose(context, e);
-                } catch (final SAXException e) {
-                    final XPathException generic = ErrorDisclosure.discloseGeneric(context, e);
-                    if (generic != null) {
-                        throw generic;
-                    }
-                    throw e;
-                }
-            }
-            
-		} catch (final PermissionDeniedException e) {
-			if (getDefaultUser().equals(user)) {
-				getAuthenticator().sendChallenge(request, response);
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + escapeHtml(path) + " denied.");
-			}
-			return;
-           
-        } catch (final XPathException e){
-            
-            final Logger logger = getLog();            
-            if(logger.isDebugEnabled()) {
-                logger.debug(e.getMessage(),e);
-            }          
-            
-            if (reportErrors) {
-                writeError(output, e);
-            } else {
-            	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            	sendError(output, "Error", e.getMessage());
-            }
-            
-        } catch (final Throwable e){
-            getLog().error(e.getMessage(), e);
-            if (reportErrors) {
-                writeError(output, e);
-            } else {
-            	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            	sendError(output, "Error", e.getMessage());
-            }
-            
+    /**
+     * Borrows the compiled query from the pool, or compiles it.
+     */
+    private CompiledXQuery prepareQuery(final DBBroker broker, final XQuery xquery, final Source source,
+            final Subject user, final String moduleLoadPath) throws EXistException, PermissionDeniedException, XPathException {
+        final CompiledXQuery pooled = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
+
+        final XQueryContext context;
+        if (pooled == null) {
+            context = new XQueryContext(getPool());
+            context.setModuleLoadPath(moduleLoadPath);
+        } else {
+            context = pooled.getContext();
+            context.setModuleLoadPath(moduleLoadPath);
+            context.prepareForReuse();
         }
 
-        output.flush();
-        output.close();
+        // a caller which may execute but not read the query must not learn anything about its
+        // source from a failure. Recomputed per request, as the compiled query is pooled and
+        // shared between users, and set before compiling: a compile error never reaches
+        // XQuery#execute, which computes the level for a runtime failure
+        context.setErrorDisclosure(ErrorDisclosure.of(source, user));
+
+        if (pooled != null) {
+            return pooled;
+        }
+
+        try {
+            return xquery.compile(context, source);
+
+        } catch (final XPathException ex) {
+            final XPathException disclosed = ErrorDisclosure.disclose(context, ex);
+            throw new EXistException("Cannot compile xquery: "+ disclosed.getMessage(), disclosed);
+
+        } catch (final IOException ex) {
+            throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage() ,ex);
+        }
+    }
+
+    private static void applyWatchdogOptions(final HttpServletRequest request, final XQueryContext context) throws EXistException {
+        final String timeoutOpt = (String) request.getAttribute(ATTR_TIMEOUT);
+        if (timeoutOpt != null) {
+            try {
+                context.getWatchDog().setTimeout(Long.parseLong(timeoutOpt));
+            } catch (final NumberFormatException e) {
+                throw new EXistException("Bad timeout option: " + timeoutOpt);
+            }
+        }
+
+        final String maxNodesOpt = (String) request.getAttribute(ATTR_MAX_NODES);
+        if (maxNodesOpt != null) {
+            try {
+                context.getWatchDog().setMaxNodes(Integer.parseInt(maxNodesOpt));
+            } catch (final NumberFormatException e) {
+                throw new EXistException("Bad max-nodes option: " + maxNodesOpt);
+            }
+        }
+    }
+
+    private Sequence executeQuery(final DBBroker broker, final XQuery xquery, final CompiledXQuery query,
+            final Source source, final Properties outputProperties) throws XPathException, PermissionDeniedException {
+        final XQueryContext context = query.getContext();
+        try {
+            return xquery.execute(broker, query, null, outputProperties);
+
+        } catch (final XPathException e) {
+            // a read-blind caller learns only that the execution failed; the real error is
+            // logged server-side with a correlation id
+            throw ErrorDisclosure.disclose(context, e);
+
+        } finally {
+            context.runCleanupTasks();
+            getPool().getXQueryPool().returnCompiledXQuery(source, query);
+        }
+    }
+
+    private void setContentType(final HttpServletResponse response, @Nullable final String mediaType, @Nullable final String path) {
+        if (mediaType != null) {
+            if (response.isCommitted()) {
+                return;
+            }
+            if (MimeTable.getInstance().isTextContent(mediaType)) {
+                response.setContentType(mediaType + "; charset=" + getFormEncoding());
+                response.setCharacterEncoding(getFormEncoding());
+            } else {
+                response.setContentType(mediaType);
+            }
+            return;
+        }
+
+        String contentType = this.contentType;
+        try {
+            contentType = getServletContext().getMimeType(path);
+            if (contentType == null) {
+                contentType = this.contentType;
+            }
+        } catch (final Throwable e) {
+            contentType = this.contentType;
+        } finally {
+            if (MimeTable.getInstance().isTextContent(contentType)) {
+                contentType += "; charset=" + getFormEncoding();
+            }
+            response.setContentType(contentType);
+        }
+    }
+
+    private static void serialize(final DBBroker broker, final XQueryContext context, final Properties outputProperties,
+            final PrintWriter output, final Sequence resultSequence) throws XPathException, SAXException {
+        final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
+        try {
+            // serialization runs the tail of a lazily-evaluated query, so a runtime failure can
+            // surface here rather than in execute() above; it must be filtered just the same
+            serializer.serialize(resultSequence);
+        } catch (final XPathException e) {
+            throw ErrorDisclosure.disclose(context, e);
+        } catch (final SAXException e) {
+            final XPathException generic = ErrorDisclosure.discloseGeneric(context, e);
+            if (generic != null) {
+                throw generic;
+            }
+            throw e;
+        }
+    }
+
+    private void reportError(final HttpServletResponse response, final PrintWriter output, final boolean reportErrors, final Throwable e) {
+        if (reportErrors) {
+            writeError(output, e);
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            sendError(output, "Error", e.getMessage());
+        }
     }
 
     private String getSessionAttribute(HttpSession session, String attribute) {
