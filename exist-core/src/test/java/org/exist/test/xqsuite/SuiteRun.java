@@ -85,8 +85,16 @@ final class SuiteRun {
     private final Semaphore permits;
     private final Duration hangThreshold;
 
+    private final KnownFailures knownFailures;
+
     SuiteRun(final SuiteDescriptor suite, final EngineExecutionListener listener, final BrokerPool brokerPool, final XQSuiteSettings settings,
             final CancellationToken cancellation) {
+        this(suite, listener, brokerPool, settings, cancellation, KnownFailures.NONE);
+    }
+
+    SuiteRun(final SuiteDescriptor suite, final EngineExecutionListener listener, final BrokerPool brokerPool, final XQSuiteSettings settings,
+            final CancellationToken cancellation, final KnownFailures knownFailures) {
+        this.knownFailures = knownFailures;
         this.suite = suite;
         this.listener = listener;
         this.brokerPool = brokerPool;
@@ -257,7 +265,7 @@ final class SuiteRun {
 
         FileRun(final FileDescriptor file) {
             this.file = file;
-            this.events = new EngineTestEvents(file, listener, this::touch);
+            this.events = new EngineTestEvents(file, listener, this::touch, knownFailures);
         }
 
         private void touch() {
