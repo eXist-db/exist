@@ -1,0 +1,33 @@
+exist-core/src/test/java/org/exist/test/xqsuite/EngineTestEvents.java
+  s_1a05206c81a9f8::t_7de424fbf950f9 57-58,60-64,68,123-130
+exist-core/src/test/java/org/exist/test/xqsuite/KnownFailures.java
+  s_1a05206c81a9f8::t_a2525f0bc0920b 1-105
+exist-core/src/test/java/org/exist/test/xqsuite/SuiteRun.java
+  s_1a05206c81a9f8::t_6c0ac869cc2bec 88-89,92-97,268
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuite.java
+  s_1a05206c81a9f8::t_ee42b2a8fcca23 92-109
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngine.java
+  s_1a05206c81a9f8::t_a8d93365b31b47 220-221,225-230,256-267
+exist-core/src/test/java/org/exist/test/xqsuite/XQSuiteTestEngineTest.java
+  s_1a05206c81a9f8::t_857d6a95cd525b 81-92,233-261
+exist-core/src/test/resources/org/exist/test/runner/known-failures-stale.lst
+  s_1a05206c81a9f8::t_ceede1c16e3409 1-2
+exist-core/src/test/resources/org/exist/test/runner/known-failures.lst
+  s_1a05206c81a9f8::t_491f0053268025 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7548ce61b0a31de429dd8028fee720e03b0bc4f5",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
