@@ -103,10 +103,7 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
 
         if (found) {
             // Remove own (partial) matches and add new complete match
-            NodeProxies.filterMatches(tailNode, a -> a.getContextId() != expressionId);
-
-            tailNode.addMatch(match);
-            result = tailNode;
+            result = NodeProxies.filterMatches(tailNode, a -> a.getContextId() != expressionId).withMatch(match);
         }
 
 

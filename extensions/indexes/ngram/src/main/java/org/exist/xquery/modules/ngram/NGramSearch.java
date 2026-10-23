@@ -296,8 +296,8 @@ public class NGramSearch extends Function implements Optimizable {
             if (input == null) {
                 result.add(node);
             } else {
-                input.addMatches(node);
-                result.add(input);
+                // the input node is the caller's: the result is a copy of it with the matches
+                result.add(input.withMatchesOf(node));
             }
         }
         return result;
@@ -582,10 +582,8 @@ public class NGramSearch extends Function implements Optimizable {
             headMatch = headMatch.getNextMatch();
             }
         if (continuousMatch != null) {
-            NodeProxies.filterMatches(tail, match -> match.getContextId() != getExpressionId());
-
-            tail.addMatch(continuousMatch);
-            return tail;
+            return NodeProxies.filterMatches(tail, match -> match.getContextId() != getExpressionId())
+                    .withMatch(continuousMatch);
         }
         return null;
     }

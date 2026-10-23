@@ -105,7 +105,8 @@ public class AddMatch extends BasicFunction {
 		if (nodeId != null) {
 			Match match = new NGramMatch(getContextId(), node.getNodeId(), matchStr);
 			match.addOffset(0, matchStr.length());
-			node.addMatch(match);
+			// the node is the caller's: the result is a copy of it with the match
+			return node.withMatch(match);
 		}
 		return node;
 	}
