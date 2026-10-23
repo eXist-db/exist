@@ -61,6 +61,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -1864,22 +1865,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // that node's
                 final NodeProxy contextNode = contextSet.get(storedNode);
                 if (contextNode != null) {
-                    contextNode.addMatch(match);
-                    resultSet.add(contextNode, sizeHint);
-                    // a predicate keeps a result whose context is in its context set: the context node itself
-                    NodeProxy.propagatePredicateContextFrom(contextNode, contextNode, contextId);
+                    // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
+                    // predicate is the context node, so that the predicate keeps it
+                    final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
+                            : contextNode.withContextNode(contextId, contextNode);
+                    resultSet.add(hit.withMatch(match), sizeHint);
                     chainCollect(doc);
                 }
             }
 
             private void processAncestorHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
                 // the context node the hit is in, at any depth, as when the query is pre-selected
-                NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                if (parentNode != null) {
-                    parentNode.addMatch(match);
-                    resultSet.add(parentNode, sizeHint);
-                    // a predicate keeps a result whose context is in its context set: the context node itself
-                    NodeProxy.propagatePredicateContextFrom(parentNode, parentNode, contextId);
+                final NodeProxy contextNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                if (contextNode != null) {
+                    // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
+                    // predicate is the context node, so that the predicate keeps it
+                    final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
+                            : contextNode.withContextNode(contextId, contextNode);
+                    resultSet.add(hit.withMatch(match), sizeHint);
                     chainCollect(doc);
                 }
             }

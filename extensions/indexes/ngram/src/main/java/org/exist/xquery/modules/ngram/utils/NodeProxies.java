@@ -37,20 +37,20 @@ public final class NodeProxies {
      * Filters the full-text matches on the supplied node, leaving only those for which the predicate is true.
      *
      * @param node
-     *            the node whose full-text matches are to be filtered
+     *            the node whose full-text matches are to be filtered; it does not change
      * @param predicate
      *            the predicate based on which the full-text matches are filtered: If the predicate returns true the
      *            match stays, if not the match is removed.
+     * @return a copy of the node with the matches that stay
      */
-    public static void filterMatches(final NodeProxy node, final Predicate<Match> predicate) {
-        Match m = node.getMatches();
-        node.setMatches(null);
-        while (m != null) {
+    public static NodeProxy filterMatches(final NodeProxy node, final Predicate<Match> predicate) {
+        Match kept = null;
+        for (Match m = node.getMatches(); m != null; m = m.getNextMatch()) {
             if (predicate.test(m)) {
-                node.addMatch(m);
+                kept = Match.add(kept, m);
             }
-            m = m.getNextMatch();
         }
+        return node.withMatches(kept);
     }
 
     /**
@@ -95,23 +95,22 @@ public final class NodeProxies {
      *         null otherwise
      */
     public static NodeProxy transformOwnMatches(final NodeProxy node, final Function<Match, Match> transform, int ownExpressionId) {
-        Match m = node.getMatches();
-        node.setMatches(null);
+        // the node does not change: the result is a copy with the transformed matches
+        Match matches = null;
         boolean ownMatch = false;
 
-        while (m != null) {
+        for (Match m = node.getMatches(); m != null; m = m.getNextMatch()) {
             if (m.getContextId() != ownExpressionId) {
-                node.addMatch(m);
+                matches = Match.add(matches, m);
             } else {
                 final Match nm = transform.apply(m);
                 if (nm != null) {
-                    node.addMatch(nm);
+                    matches = Match.add(matches, nm);
                     ownMatch = true;
                 }
             }
-            m = m.getNextMatch();
         }
 
-        return ownMatch ? node : null;
+        return ownMatch ? node.withMatches(matches) : null;
     }
 }

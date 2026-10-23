@@ -176,8 +176,8 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             final int endOffset = value.offsetByCodePoints(startOffset, matchLength);
             final NGramMatch match = new NGramMatch(expressionId, indexed.getNodeId(), value.substring(startOffset, endOffset));
             match.addOffset(startOffset, endOffset - startOffset);
-            target.addMatch(match);
-            result.add(target);
+            // target may be the context set's node: the result is a copy of it with the match
+            result.add(target.withMatch(match));
         }
         result.iterate(); // ensure result is ready to use
         return result;

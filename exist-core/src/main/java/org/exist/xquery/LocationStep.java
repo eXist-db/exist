@@ -550,8 +550,9 @@ public class LocationStep extends Step {
                 } else {
                     if (ns != null) {
                         @Nullable final NodeProxy np = ns.get(p);
-                        if (np != null && np.getMatches() != null) {
-                            p.addMatch(np.getMatches());
+                        if (np != null) {
+                            // p is the context set's node: the step returns a copy of it with np's matches
+                            p = p.withMatchesOf(np);
                         }
                     }
                 }
