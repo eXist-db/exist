@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -104,8 +105,9 @@ public abstract class Match implements Comparable<Match> {
         this.context = match.context;
         this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
-        this.offsets = match.offsets;
-        this.lengths = match.lengths;
+        // a copy's offsets are its own: adding to them must not write into the original's arrays
+        this.offsets = Arrays.copyOf(match.offsets, match.offsets.length);
+        this.lengths = Arrays.copyOf(match.lengths, match.lengths.length);
         this.currentOffset = match.currentOffset;
     }
 
@@ -125,8 +127,45 @@ public abstract class Match implements Comparable<Match> {
         return nextMatch;
     }
 
-    public void setNextMatch(@Nullable final Match nextMatch) {
-        this.nextMatch = nextMatch;
+    /**
+     * A chain of matches with {@code match} added; neither {@code chain} nor {@code match} changes, so chains can be
+     * shared between nodes. A match equal to one in the chain has its offsets merged into a copy of that one, which
+     * takes its place; otherwise a copy of {@code match} goes in front and the chain is shared.
+     *
+     * @param chain the chain, or null for none
+     * @param match the match to add, of which only the match itself is taken, not its chain
+     * @return the new chain
+     */
+    public static Match add(@Nullable final Match chain, final Match match) {
+        int position = 0;
+        Match equal = null;
+        for (Match m = chain; m != null; m = m.nextMatch, position++) {
+            if (m.equals(match)) {
+                equal = m;
+                break;
+            }
+        }
+        if (equal == null) {
+            final Match head = match.newCopy();
+            head.nextMatch = chain;
+            return head;
+        }
+        final Match merged = equal.newCopy();
+        merged.mergeOffsets(match);
+        merged.nextMatch = equal.nextMatch;
+        // the matches before the merged one are copied, the rest shared
+        final Match[] before = new Match[position];
+        Match m = chain;
+        for (int i = 0; i < position; i++, m = m.nextMatch) {
+            before[i] = m;
+        }
+        Match result = merged;
+        for (int i = position - 1; i >= 0; i--) {
+            final Match copy = before[i].newCopy();
+            copy.nextMatch = result;
+            result = copy;
+        }
+        return result;
     }
 
     public abstract Match createInstance(final int contextId, final NodeId nodeId, @Nullable final String matchTerm);

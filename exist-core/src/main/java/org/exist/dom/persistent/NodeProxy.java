@@ -476,26 +476,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public void addMatch(final Match m) {
-        if (this.match == null) {
-            this.match = m;
-            if (match.getNextMatch() != null) {
-                match.setNextMatch(null);
-            }
-            return;
-        }
-
-        Match next = match;
-        while (next != null) {
-            if (next.equals(m)) {
-                next.mergeOffsets(m);
-                return;
-            }
-            if (next.getNextMatch() == null) {
-                next.setNextMatch(m);
-                break;
-            }
-            next = next.getNextMatch();
-        }
+        // the chain is rebuilt, not changed: it may be shared with other nodes
+        this.match = Match.add(this.match, m);
     }
 
     public void addMatches(final NodeProxy p) {
@@ -509,7 +491,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
 
         while (m != null) {
-            addMatch(m.newCopy());
+            this.match = Match.add(this.match, m);
             m = m.getNextMatch();
         }
     }
