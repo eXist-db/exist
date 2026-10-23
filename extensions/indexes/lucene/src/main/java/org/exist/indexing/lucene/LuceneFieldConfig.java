@@ -23,6 +23,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
@@ -39,8 +40,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Configuration for a field definition nested inside a lucene index configuration element.
@@ -118,6 +122,56 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     @Override
     public Analyzer getAnalyzer() {
         return analyzer;
+    }
+
+    /**
+     * @return true if the field's text is stored in the index
+     */
+    public boolean isStore() {
+        return store;
+    }
+
+    /**
+     * The values this field has for a node, computed as indexing computes them, as strings: for a field that isn't
+     * stored, they aren't in the index. The field's condition and expression are evaluated as the broker's user, with
+     * compiled queries of their own.
+     *
+     * @param broker the broker to evaluate with
+     * @param contextNode the node the field is defined on
+     * @param text the node's indexed text, for a field without an expression
+     * @return the values, in the order indexing adds them
+     * @throws XPathException if the condition or expression cannot be evaluated
+     * @throws PermissionDeniedException if the user may not evaluate them
+     */
+    public List<String> values(final DBBroker broker, final NodeProxy contextNode, final Supplier<CharSequence> text)
+            throws XPathException, PermissionDeniedException {
+        if (!isValid) {
+            return List.of();
+        }
+        if (condition.isPresent()
+                && !evaluate(broker, condition.get(), contextNode, Sequence::effectiveBooleanValue)) {
+            return List.of();
+        }
+        final Document document = new Document();
+        if (expression.isEmpty()) {
+            processText(text.get(), document);
+        } else {
+            evaluate(broker, expression.get(), contextNode, result -> {
+                if (!result.isEmpty()) {
+                    processResult(result, document);
+                }
+                return null;
+            });
+        }
+        final List<String> values = new ArrayList<>();
+        for (final IndexableField field : document.getFields(fieldName)) {
+            if (field.stringValue() != null) {
+                values.add(field.stringValue());
+            } else if (field.numericValue() != null) {
+                values.add(field.numericValue().toString());
+            }
+        }
+        return values;
     }
 
     @Override

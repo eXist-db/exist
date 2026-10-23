@@ -36,6 +36,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.*;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -184,14 +185,18 @@ public class Field extends BasicFunction {
                 if (ownerDoc == null) {
                     continue;
                 }
-                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                final LuceneConfig config = LuceneIndexWorker.getLuceneConfig(context.getBroker(), proxy.getDocumentSet());
+                final ValueSequence fieldValues = new ValueSequence();
+                for (final String value : FieldText.values(index, context.getBroker(), config, proxy, fieldName)) {
+                    fieldValues.add(new StringValue(this, value));
+                }
                 final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
                 }
             }
             return result;
-        } catch (final IOException e) {
+        } catch (final IOException | PermissionDeniedException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
     }
@@ -305,7 +310,7 @@ public class Field extends BasicFunction {
                         }
                     }
                 }
-                if (currentPos < content.length() - 1)  {
+                if (currentPos < content.length()) {
                     builder.characters(content.substring(currentPos));
                 }
                 builder.endElement();
