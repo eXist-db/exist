@@ -144,7 +144,10 @@ public class Optimize extends AbstractPragma {
             cachedOptimize = true;
             NodeSet result = null;
             for (int current = 0; current < optimizables.length; current++) {
-                final NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
+                // the first is pre-selected without the context, unless it isn't a filter and the context is the nodes
+                // a filter expression filters: a top-k search must look for its k in those
+                final boolean useContext = current > 0 || (contextStep == null && !optimizables[current].isFilter());
+                final NodeSet selection = optimizables[current].preSelect(contextSequence, useContext);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("exist:optimize: pre-selection: {}", selection.getLength());
                 }

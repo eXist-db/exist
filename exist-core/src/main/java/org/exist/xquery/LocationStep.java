@@ -104,14 +104,7 @@ public class LocationStep extends Step {
     @Override
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
-
-        // self axis has an obvious dependency on the context item
-        // likewise we depend on the context item if this is the initial step of
-        // the enclosing expression (outside a predicate). initialStep is captured
-        // during analyze, before the parent's child list may be rewritten (e.g. a
-        // function argument being wrapped in a cardinality/type check). See #6521.
-        if (!this.inPredicate &&
-                (this.axis == Constants.SELF_AXIS || this.initialStep)) {
+        if (dependsOnContextItem()) {
             deps = deps | Dependency.CONTEXT_ITEM;
         }
 
@@ -128,6 +121,44 @@ public class LocationStep extends Step {
         // consider nested predicates however...
 
         return deps;
+    }
+
+    /**
+     * Whether this step, outside a predicate, is evaluated once per context item.
+     * <ul>
+     *   <li>The initial step of the enclosing expression is. {@code initialStep} is captured during analyze, before
+     *   the parent's child list may be rewritten (e.g. a function argument being wrapped in a cardinality/type
+     *   check). See #6521.</li>
+     *   <li>A self-axis step is, unless all its predicates select from the context set, see
+     *   {@link #hasOnlyNodeSetPredicates()}.</li>
+     * </ul>
+     *
+     * @return true if this step depends on the context item
+     */
+    private boolean dependsOnContextItem() {
+        if (inPredicate) {
+            return false;
+        }
+        return initialStep || (axis == Constants.SELF_AXIS && !hasOnlyNodeSetPredicates());
+    }
+
+    /**
+     * Whether this step has predicates and all of them select from the context set as a whole ({@link
+     * Predicate.ExecutionMode#NODE}). A self-axis step whose predicates all do then needs no context item: evaluated
+     * once over the whole context, as a step on another axis is, its predicates see all the nodes it selects, which is
+     * what a predicate such as {@code $c/self::x[ft:query-vector(., $v, 5)]} (the 5 nearest of {@code $c}) relies on.
+     * Positional and boolean predicates keep the evaluation per context item.
+     */
+    private boolean hasOnlyNodeSetPredicates() {
+        if (predicates == null || predicates.length == 0) {
+            return false;
+        }
+        for (final Predicate pred : predicates) {
+            if (pred.getExecutionMode() != Predicate.ExecutionMode.NODE) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
