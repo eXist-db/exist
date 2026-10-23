@@ -278,7 +278,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     protected final NodeSet getDescendantsInSet(final NodeSet al, final boolean childOnly,
             final boolean includeSelf, final int mode, final int contextId, final boolean copyMatches) {
         sort();
-        final NodeSet result = new NewArrayNodeSet();
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         int docIdx;
         for(final NodeProxy node : al) {
             docIdx = findDoc(node.getOwnerDocument());
@@ -287,6 +287,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     mode, contextId, copyMatches);
             }
         }
+        // a node found through several nodes of al is in the result as a copy for each: it keeps all their contexts
+        result.sort(true);
         return result;
     }
 
@@ -321,17 +323,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     switch(mode) {
                         case NodeSet.DESCENDANT:
                             NodeProxy.propagatePredicateContextFrom(nodes[i], parent, contextId);
-                            if(copyMatches) {
-                                nodes[i].addMatches(parent);
-                            }
-                            result.add(nodes[i]);
+                            result.add(copyMatches ? nodes[i].withMatchesOf(parent) : nodes[i]);
                             break;
                         case NodeSet.ANCESTOR:
                             NodeProxy.propagatePredicateContextFrom(parent, nodes[i], contextId);
-                            if(copyMatches) {
-                                parent.addMatches(nodes[i]);
-                            }
-                            result.add(parent, 1);
+                            result.add(copyMatches ? parent.withMatchesOf(nodes[i]) : parent, 1);
                             break;
                     }
                 }
@@ -378,17 +374,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                         switch(mode) {
                             case NodeSet.DESCENDANT:
                                 NodeProxy.propagatePredicateContextFrom(nodes[i], parent, contextId);
-                                if(copyMatches) {
-                                    nodes[i].addMatches(parent);
-                                }
-                                result.add(nodes[i]);
+                                result.add(copyMatches ? nodes[i].withMatchesOf(parent) : nodes[i]);
                                 break;
                             case NodeSet.ANCESTOR:
                                 NodeProxy.propagatePredicateContextFrom(parent, nodes[i], contextId);
-                                if(copyMatches) {
-                                    parent.addMatches(nodes[i]);
-                                }
-                                result.add(parent, 1);
+                                result.add(copyMatches ? parent.withMatchesOf(nodes[i]) : parent, 1);
                                 break;
                         }
                     }
@@ -577,10 +567,10 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     nodes[j] = nodes[i];
                 }
             } else {
-                if(mergeContext) {
+                if(mergeContext && nodes[j] != nodes[i]) {
                     nodes[j].addContext(nodes[i]);
                 }
-                nodes[j].addMatches(nodes[i]);
+                nodes[j] = nodes[j].withMatchesOf(nodes[i]);
             }
         }
         size = ++j;
@@ -925,8 +915,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             ContextItem contextNode = current.getContext();
             while(contextNode != null) {
                 if(contextNode.getContextId() == contextId) {
-                    final NodeProxy context = contextNode.getNode();
-                    context.addMatches(current);
+                    final NodeProxy context = contextNode.getNode().withMatchesOf(current);
                     if(Expression.NO_CONTEXT_ID != contextId) {
                         context.addContextNode(contextId, context);
                     }

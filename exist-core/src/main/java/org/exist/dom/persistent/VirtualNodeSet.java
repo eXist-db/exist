@@ -331,8 +331,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         if (useSelfAsContext && inPredicate) {
                             p.addContextNode(contextId, p);
                         }
-                        p.addMatches(proxy);
-                        result.add(p);
+                        result.add(p.withMatchesOf(proxy));
                     }
                 } else {
                     final NodeList cl = proxy.getOwnerDocument().getChildNodes();
