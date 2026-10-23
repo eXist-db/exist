@@ -28,16 +28,22 @@ import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.numbering.NodeId;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Implements a where clause inside a FLWOR expressions.
@@ -116,8 +122,8 @@ public class WhereClause extends AbstractFLWORClause {
                             if (context.getContextId() == whereExpr.getContextId()) {
                                 final NodeProxy contextNode = context.getNode();
                                 if (contextIsVirtual || contextSet.contains(contextNode)) {
-                                    contextNode.addMatches(current);
-                                    result.add(contextNode, sizeHint);
+                                    // the context node is the caller's: the result is a copy of it with the matches
+                                    result.add(contextNode.withMatchesOf(current), sizeHint);
                                 }
                             }
                             context = context.getNextDirect();
@@ -282,7 +288,20 @@ public class WhereClause extends AbstractFLWORClause {
         final List<NodeSet> carriers = new ArrayList<>();
         final boolean passesWhere = applyWhereExpression(carriers);
         if (passesWhere) {
-            propagateMatchCarriersForCurrentTuple(carriers);
+            @Nullable final LocalVariable tupleVariable = tupleVariableForCarriers(carriers);
+            if (tupleVariable != null) {
+                final Sequence value = tupleVariable.getValue();
+                final Sequence withMatches = withMatchesOfCarriers(value, carriers);
+                if (withMatches != value) {
+                    // the tuple's nodes are the caller's: the return clause sees copies of them with the matches
+                    tupleVariable.setValue(withMatches);
+                    try {
+                        return returnExpr.eval(null, null);
+                    } finally {
+                        tupleVariable.setValue(value);
+                    }
+                }
+            }
             return returnExpr.eval(null, null);
         }
         return Sequence.EMPTY_SEQUENCE;
@@ -339,9 +358,13 @@ public class WhereClause extends AbstractFLWORClause {
         carriers.add(seq.toNodeSet());
     }
 
-    private void propagateMatchCarriersForCurrentTuple(final List<NodeSet> carriers) throws XPathException {
+    /**
+     * @return the variable of the current tuple whose nodes the where expression's node results may have found matches
+     * on, or null if there is none
+     */
+    private @Nullable LocalVariable tupleVariableForCarriers(final List<NodeSet> carriers) {
         if (fastTrack || carriers.isEmpty()) {
-            return;
+            return null;
         }
 
         LocalVariable startVar = getStartVariable();
@@ -354,32 +377,75 @@ public class WhereClause extends AbstractFLWORClause {
             }
         }
         if (startVar == null) {
-            return;
+            return null;
         }
         final Sequence tupleSeq = startVar.getValue();
         if (tupleSeq == null || tupleSeq.isEmpty() || !tupleSeq.isPersistentSet() ||
                 !Type.subTypeOf(tupleSeq.getItemType(), Type.NODE)) {
-            return;
+            return null;
         }
-
-        final NodeSet contextSet = tupleSeq.toNodeSet();
-        for (final NodeSet carrier : carriers) {
-            propagateToContext(carrier, contextSet);
-        }
+        return startVar;
     }
 
-    private void propagateToContext(final NodeSet carrierNodes, final NodeSet contextSet) {
-        final boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-        for (final NodeProxy current : carrierNodes) {
-            ContextItem context = current.getContext();
-            while (context != null) {
-                final NodeProxy contextNode = context.getNode();
-                if (contextIsVirtual || contextSet.contains(contextNode)) {
-                    contextNode.addMatches(current);
+    /**
+     * The tuple's value with each node the carriers found matches on replaced by a copy of it with those matches: a
+     * carrier node's context chain names the tuple node it was found from.
+     *
+     * @param value the tuple variable's value
+     * @param carriers the where expression's node results
+     * @return {@code value} itself if no node gets matches, otherwise the new value in the same order
+     */
+    private static Sequence withMatchesOfCarriers(final Sequence value, final List<NodeSet> carriers)
+            throws XPathException {
+        final Map<Integer, Map<NodeId, List<NodeProxy>>> carriersByContextNode = carriersByContextNode(carriers);
+        if (carriersByContextNode.isEmpty()) {
+            return value;
+        }
+        final ValueSequence result = new ValueSequence(value.getItemCount());
+        boolean changed = false;
+        for (final SequenceIterator i = value.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (!(item instanceof NodeProxy node)) {
+                result.add(item);
+                continue;
+            }
+            NodeProxy withMatches = node;
+            final Map<NodeId, List<NodeProxy>> inDocument = carriersByContextNode.get(node.getOwnerDocument().getDocId());
+            final List<NodeProxy> found = inDocument == null ? null : inDocument.get(node.getNodeId());
+            if (found != null) {
+                for (final NodeProxy carrier : found) {
+                    withMatches = withMatches.withMatchesOf(carrier);
                 }
-                context = context.getNextDirect();
+                changed = true;
+            }
+            result.add(withMatches);
+        }
+        if (!changed) {
+            return value;
+        }
+        return value instanceof NodeProxy ? result.itemAt(0).toSequence() : result;
+    }
+
+    /**
+     * @param carriers the where expression's node results
+     * @return those that have matches, by document id and the id of each node of their context chains
+     */
+    private static Map<Integer, Map<NodeId, List<NodeProxy>>> carriersByContextNode(final List<NodeSet> carriers) {
+        final Map<Integer, Map<NodeId, List<NodeProxy>>> byContextNode = new HashMap<>();
+        for (final NodeSet carrier : carriers) {
+            for (final NodeProxy current : carrier) {
+                if (current.getMatches() == null) {
+                    continue;
+                }
+                for (ContextItem context = current.getContext(); context != null; context = context.getNextDirect()) {
+                    final NodeProxy contextNode = context.getNode();
+                    byContextNode.computeIfAbsent(contextNode.getOwnerDocument().getDocId(), docId -> new TreeMap<>())
+                            .computeIfAbsent(contextNode.getNodeId(), nodeId -> new ArrayList<>(1))
+                            .add(current);
+                }
             }
         }
+        return byContextNode;
     }
 
     private static Expression unwrapBooleanExpression(final Expression expr) {
