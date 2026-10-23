@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/dom/persistent/VirtualNodeSet.java
+  s_1a05206c81a9f8::t_a6b888a3595809 235-236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "603537987d88736c4a7acef1a29e4b32c6356d3d",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
