@@ -50,6 +50,7 @@ import org.exist.indexing.ReindexScope;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
+import org.exist.indexing.lucene.analyzers.IndexQueryAnalyzer;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -1215,7 +1216,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
-            final Analyzer searchAnalyzer = index.getDefaultAnalyzer();
+            final Analyzer searchAnalyzer = IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
@@ -1763,10 +1764,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 analyzer = config.getAnalyzer(field);
             }
             if (analyzer != null) {
-                return analyzer;
+                return IndexQueryAnalyzer.forQuery(analyzer);
             }
         }
-        return index.getDefaultAnalyzer();
+        return IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
     }
 
     /**

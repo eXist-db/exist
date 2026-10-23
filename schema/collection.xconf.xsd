@@ -6,7 +6,7 @@
            xmlns:dcterms="http://purl.org/dc/terms/"
            elementFormDefault="qualified"
            targetNamespace="http://exist-db.org/collection-config/1.0"
-           version="1.2.2">
+           version="1.3.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -128,12 +128,38 @@
 
     <xs:element name="analyzer" type="cc:analyzerType"/>
 
+    <!-- an analyzer class with its constructor's params, or a chain of Lucene's analysis components, or a chain to
+         index with and one to query with -->
     <xs:complexType name="analyzerType">
-        <xs:sequence minOccurs="0">
+        <xs:choice minOccurs="0">
             <xs:element ref="cc:param" maxOccurs="unbounded"/>
-        </xs:sequence>
+            <xs:group ref="cc:analyzerChain"/>
+            <xs:sequence>
+                <xs:element name="index" type="cc:analyzerChainType"/>
+                <xs:element name="query" type="cc:analyzerChainType"/>
+            </xs:sequence>
+        </xs:choice>
         <xs:attributeGroup ref="cc:idOpt"/>
-        <xs:attributeGroup ref="cc:classReq"/>
+        <xs:attribute name="class" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="analyzerChainType">
+        <xs:group ref="cc:analyzerChain"/>
+    </xs:complexType>
+
+    <!-- character filters, a tokenizer and token filters, named by their Lucene SPI names; their other attributes
+         are the factory's arguments -->
+    <xs:group name="analyzerChain">
+        <xs:sequence>
+            <xs:element name="char-filter" type="cc:analysisComponentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="tokenizer" type="cc:analysisComponentType"/>
+            <xs:element name="filter" type="cc:analysisComponentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:complexType name="analysisComponentType">
+        <xs:attributeGroup ref="cc:nameReq"/>
+        <xs:anyAttribute processContents="lax"/>
     </xs:complexType>
 
     <xs:element name="param" type="cc:paramType"/>
