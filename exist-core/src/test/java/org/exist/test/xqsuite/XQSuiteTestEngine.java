@@ -217,11 +217,17 @@ public final class XQSuiteTestEngine implements TestEngine {
         boolean started = false;
         try {
             if (failure == null) {
-                server = new ExistEmbeddedServer(true, true);
+                final KnownFailures knownFailures = KnownFailures.of(suite.suiteClass());
+                server = new ExistEmbeddedServer(configProperties(suite.suiteClass()), true, true);
                 server.startDb();
                 started = true;
                 invokeStatic(suite.suiteClass(), BeforeAll.class);
-                new SuiteRun(suite, listener, server.getBrokerPool(), settings, cancellation).run();
+                new SuiteRun(suite, listener, server.getBrokerPool(), settings, cancellation, knownFailures).run();
+                final List<String> stale = knownFailures.stale();
+                if (!stale.isEmpty() && !cancellation.isCancellationRequested()) {
+                    failure = new AssertionError("Listed in " + knownFailures.source() + " as known failures, but did not fail;"
+                            + " remove them from the file:" + System.lineSeparator() + String.join(System.lineSeparator(), stale));
+                }
             }
         } catch (final Throwable t) {
             failure = t;
@@ -245,6 +251,18 @@ public final class XQSuiteTestEngine implements TestEngine {
             }
         }
         listener.executionFinished(suite, failure == null ? TestExecutionResult.successful() : TestExecutionResult.failed(failure));
+    }
+
+    private static java.util.Properties configProperties(final Class<?> suiteClass) {
+        final java.util.Properties properties = new java.util.Properties();
+        for (final String property : suiteClass.getAnnotation(XQSuite.class).properties()) {
+            final int separator = property.indexOf('=');
+            if (separator < 1) {
+                throw new IllegalArgumentException("not a name=value pair in @XQSuite properties of " + suiteClass.getName() + ": " + property);
+            }
+            properties.setProperty(property.substring(0, separator).trim(), property.substring(separator + 1).trim());
+        }
+        return properties;
     }
 
     private static void invokeStatic(final Class<?> clazz, final Class<? extends java.lang.annotation.Annotation> annotation) {

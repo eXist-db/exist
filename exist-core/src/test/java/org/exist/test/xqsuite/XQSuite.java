@@ -89,4 +89,22 @@ public @interface XQSuite {
      * @return true for a suite that is only run by the test that sets it up
      */
     boolean fixture() default false;
+
+    /**
+     * Configuration properties of the embedded database the suite runs against, each as
+     * {@code name=value}. For example {@code "xquery.enable-query-rewriting=no"} runs the files without
+     * the optimizer, so that a second suite over the same files checks that the optimizer does not change
+     * their results.
+     *
+     * @return the configuration properties to set
+     */
+    String[] properties() default {};
+
+    /**
+     * A file, relative to the working directory, listing the tests of the suite that are known to fail, see
+     * {@link KnownFailures}. A listed test that fails does not fail the suite, a listed test that passes does.
+     *
+     * @return the path of the file, or empty for none
+     */
+    String knownFailures() default "";
 }
