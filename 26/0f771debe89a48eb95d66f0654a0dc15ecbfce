@@ -1,0 +1,28 @@
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/NGramSearch.java
+  s_1a05206c81a9f8::t_d4cfe9e17c825f 299
+  s_1a05206c81a9f8::t_017501878104d1 300,585-586
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/AddMatch.java
+  s_1a05206c81a9f8::t_a980c1429f5a8e 108-109
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionSequence.java
+  s_1a05206c81a9f8::t_9e3052a305a433 179-180
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/query/WildcardedExpressionTriple.java
+  s_1a05206c81a9f8::t_b4ea0a3ef27332 106
+extensions/indexes/ngram/src/main/java/org/exist/xquery/modules/ngram/utils/NodeProxies.java
+  s_1a05206c81a9f8::t_197800e1d7d260 40,44,46-48,50,53,98-99,102,104,108,114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "260f771debe89a48eb95d66f0654a0dc15ecbfce",
+  "prompts": {},
+  "sessions": {
+    "s_1a05206c81a9f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16ce32cc-93d9-46f8-9d7e-3b8afcbee5c5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
