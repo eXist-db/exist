@@ -60,7 +60,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -453,7 +452,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      * with the parameter {@code _source=yes}.
      */
     private static boolean isSourceViewRequest(final HttpServletRequest request, @Nullable final Descriptor descriptor) {
-        return "GET".equals(request.getMethod().toUpperCase(Locale.ROOT))
+        return "GET".equalsIgnoreCase(request.getMethod())
                 && "yes".equals(request.getParameter("_source"))
                 && descriptor != null;
     }
