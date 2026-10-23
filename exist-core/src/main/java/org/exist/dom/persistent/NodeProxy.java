@@ -471,6 +471,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return match;
     }
 
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatches(Match)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
     public void setMatches(final Match match) {
         this.match = match;
     }
@@ -495,7 +502,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return this node if {@code other} adds nothing, otherwise a copy with the matches of both
      */
     public NodeProxy withMatchesOf(final NodeProxy other) {
-        if (other == this || other.match == null || Match.matchListEquals(other.match, match)) {
+        // other == this shares this node's chain, which matchListEquals finds
+        if (other.match == null || Match.matchListEquals(other.match, match)) {
             return this;
         }
         final NodeProxy copy = new NodeProxy(this);
@@ -563,11 +571,25 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return copy;
     }
 
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatch(Match)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
     public void addMatch(final Match m) {
         // the chain is rebuilt, not changed: it may be shared with other nodes
         this.match = Match.add(this.match, m);
     }
 
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatchesOf(NodeProxy)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
     public void addMatches(final NodeProxy p) {
         if (p == this) {
             return;
