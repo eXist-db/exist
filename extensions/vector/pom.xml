@@ -48,7 +48,7 @@
     <properties>
         <onnxruntime.version>1.31.0</onnxruntime.version>
         <onnxruntime.artifact>onnxruntime</onnxruntime.artifact>
-        <djl.tokenizers.version>0.38.0</djl.tokenizers.version>
+        <djl.tokenizers.version>0.39.0</djl.tokenizers.version>
     </properties>
 
     <dependencies>
