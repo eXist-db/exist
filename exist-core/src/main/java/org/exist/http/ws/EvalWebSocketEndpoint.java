@@ -38,6 +38,7 @@ import jakarta.websocket.server.ServerEndpointConfig;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -117,7 +118,7 @@ public class EvalWebSocketEndpoint {
             Subject subject = null;
             if (authHeaders != null && !authHeaders.isEmpty()) {
                 final String credentials = authHeaders.getFirst();
-                if (credentials.toLowerCase().startsWith("basic ")) {
+                if (credentials.toLowerCase(Locale.ROOT).startsWith("basic ")) {
                     try {
                         final byte[] decoded = Base64.decodeBase64(
                                 credentials.substring("basic ".length()));

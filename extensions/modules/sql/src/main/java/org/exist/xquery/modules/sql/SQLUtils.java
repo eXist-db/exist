@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.sql;
 
 import java.sql.Types;
+import java.util.Locale;
 
 import org.exist.xquery.value.Type;
 
@@ -35,10 +36,8 @@ import org.exist.xquery.value.Type;
  */
 public final class SQLUtils {
 
-    public static int sqlTypeFromString(String sqlType) {
-        sqlType = sqlType.toUpperCase();
-
-        return switch (sqlType) {
+    public static int sqlTypeFromString(final String sqlType) {
+        return switch (sqlType.toUpperCase(Locale.ROOT)) {
             case "ARRAY" -> (Types.ARRAY);
             case "BIGINT" -> (Types.BIGINT);
             case "BINARY" -> (Types.BINARY);
