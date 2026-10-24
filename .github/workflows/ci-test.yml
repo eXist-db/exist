@@ -87,9 +87,20 @@ jobs:
       - name: Javadoc (ubuntu unit only)
         if: matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution' --also-make
-      - name: Maven Code Coverage (Develop branch, ubuntu unit only)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
+      # workflow_dispatch allows producing the coverage reports from any branch.
+      - name: Maven Code Coverage (Develop branch or manual, ubuntu unit only)
+        if: (github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch') && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report
+      # Method-level coverage for tools such as the Prethink workflow. Uploaded before the Coveralls
+      # preparation below rewrites the package names in these reports.
+      - name: Upload JaCoCo reports (Develop branch or manual, ubuntu unit only)
+        if: (github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch') && matrix.os == 'ubuntu-24.04' && matrix.test-type == 'unit'
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-reports
+          retention-days: 30
+          if-no-files-found: error
+          path: '**/target/site/jacoco/jacoco.xml'
       # JaCoCo names each source file by its package only (org/exist/...), but this is a
       # multi-module build: prefix each module's source root so Coveralls can find the files.
       - name: Prepare JaCoCo reports for Coveralls (Develop branch, ubuntu unit only)
