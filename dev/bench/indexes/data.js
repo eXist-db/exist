@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792319553687,
+  "lastUpdate": 1792926078952,
   "repoUrl": "https://github.com/eXist-db/exist",
   "entries": {
     "exist-indexes-jmh": [
@@ -3652,6 +3652,676 @@ window.BENCHMARK_DATA = {
           {
             "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
             "value": 3.991708612893312,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Juri Leino",
+            "username": "line-o",
+            "email": "github@line-o.de"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3f9b349bb2dd4fd2209bd2320c0db9407eadb031",
+          "message": "Merge pull request #6905 from duncdrum/dp-ci-jacoco-merged-artifact\n\n[ci] Publish the JaCoCo reports as a develop artifact",
+          "timestamp": "2026-10-24T17:44:30Z",
+          "url": "https://github.com/eXist-db/exist/commit/3f9b349bb2dd4fd2209bd2320c0db9407eadb031"
+        },
+        "date": 1792926078038,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"5\"} )",
+            "value": 0.7297185799457224,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"50\"} )",
+            "value": 0.7196258567782085,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"100\"} )",
+            "value": 0.7163688097389544,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"5\"} )",
+            "value": 0.6601227983557209,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"50\"} )",
+            "value": 0.6789763657048611,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"100\"} )",
+            "value": 0.6524464614554752,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"5\"} )",
+            "value": 1.1317909413620242,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"50\"} )",
+            "value": 7.624541142681169,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"100\"} )",
+            "value": 14.167686766663271,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"5\"} )",
+            "value": 1.1148817208037218,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"50\"} )",
+            "value": 7.518031114345786,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
+            "value": 14.319380063138857,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeDirect ( {\"corpusCopies\":\"1\"} )",
+            "value": 0.407405713337622,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeDirect ( {\"corpusCopies\":\"10\"} )",
+            "value": 0.6030281309480566,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeDirect ( {\"corpusCopies\":\"40\"} )",
+            "value": 1.3292230309481539,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSource ( {\"corpusCopies\":\"1\"} )",
+            "value": 0.597614217877496,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSource ( {\"corpusCopies\":\"10\"} )",
+            "value": 1.9800998368043061,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSource ( {\"corpusCopies\":\"40\"} )",
+            "value": 7.668008075371621,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceAbbreviated ( {\"corpusCopies\":\"1\"} )",
+            "value": 0.6372235309257206,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceAbbreviated ( {\"corpusCopies\":\"10\"} )",
+            "value": 2.12400263333357,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceAbbreviated ( {\"corpusCopies\":\"40\"} )",
+            "value": 7.811117729515115,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceExtraPredicate ( {\"corpusCopies\":\"1\"} )",
+            "value": 1.9746313727837346,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceExtraPredicate ( {\"corpusCopies\":\"10\"} )",
+            "value": 13.781365066967954,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LetBoundSourceLuceneBenchmark.shapeLetBoundSourceExtraPredicate ( {\"corpusCopies\":\"40\"} )",
+            "value": 68.77360278781609,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 2.3206187430606917,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 1.0966983948800677,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 51.81385667272605,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 7.148622734562762,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 217.0558708,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLiteral ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 28.05940932047813,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 2.3807791274817918,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 1.2958534136132756,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 52.01353513188842,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 6.907133535153248,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 215.1706263,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVar ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 27.02989004315587,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 2.2798999607001713,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 2.2608800017351545,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 49.9093698802439,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 49.426302648054595,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 208.24377488,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateLoopVarUnoptimized ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 213.98871184,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 2.28487744741754,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 1.1736090318400858,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 50.63519075615384,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 7.033199733143057,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 225.31745660222222,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.predicateOuterVar ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 27.256423130383602,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 0.5050639518370293,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 0.49732339517331015,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 5.498002562147993,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 5.353518912619364,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 22.40720159285518,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereNavigating ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 22.82405478498607,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"100\",\"indexed\":\"false\"} )",
+            "value": 1.756585890632524,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"100\",\"indexed\":\"true\"} )",
+            "value": 1.7549394367237372,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"1000\",\"indexed\":\"false\"} )",
+            "value": 44.92894438318841,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"1000\",\"indexed\":\"true\"} )",
+            "value": 44.50542391731665,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"4000\",\"indexed\":\"false\"} )",
+            "value": 191.30484656363637,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LoopVariablePredicateBenchmark.whereVariableAsKey ( {\"docCount\":\"4000\",\"indexed\":\"true\"} )",
+            "value": 188.2652964181818,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"5\"} )",
+            "value": 1.2065042689064742,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"50\"} )",
+            "value": 1.1846692566785255,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"100\"} )",
+            "value": 1.2081099899942853,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"5\"} )",
+            "value": 1.1521685753046635,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"50\"} )",
+            "value": 1.1495855618145978,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"100\"} )",
+            "value": 1.1597663105145355,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"5\"} )",
+            "value": 4.428119672702392,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"50\"} )",
+            "value": 39.07911917042202,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"100\"} )",
+            "value": 75.54728653778997,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"5\"} )",
+            "value": 4.652246721730602,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"50\"} )",
+            "value": 41.04114862974201,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.LuceneWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
+            "value": 79.34941871196581,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"5\"} )",
+            "value": 0.432886717289698,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"50\"} )",
+            "value": 0.4386333431675259,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"100\"} )",
+            "value": 0.4265548088244241,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"5\"} )",
+            "value": 0.3922765031011983,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"50\"} )",
+            "value": 0.38708360821515664,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"100\"} )",
+            "value": 0.37524020848994716,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"5\"} )",
+            "value": 1.227464193582437,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"50\"} )",
+            "value": 7.377386932247175,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"100\"} )",
+            "value": 13.827994431506848,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"5\"} )",
+            "value": 1.2024434557983048,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"50\"} )",
+            "value": 7.467748798737735,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.NgramWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
+            "value": 14.06881783606153,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"5\"} )",
+            "value": 0.6663946642227332,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"50\"} )",
+            "value": 0.6856872646994077,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"100\"} )",
+            "value": 0.6701285350337773,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"5\"} )",
+            "value": 0.6168184659913292,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"50\"} )",
+            "value": 0.6434277835023094,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"100\"} )",
+            "value": 0.6246413565587917,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"5\"} )",
+            "value": 1.6890825021492994,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"50\"} )",
+            "value": 12.327197621973346,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"100\"} )",
+            "value": 23.82345997090642,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"5\"} )",
+            "value": 1.6980473847752067,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"50\"} )",
+            "value": 12.80543525939577,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
+            "value": 25.485835365000003,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"5\"} )",
+            "value": 0.3980329935780756,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"50\"} )",
+            "value": 0.40102609123634886,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALetVar ( {\"termCount\":\"100\"} )",
+            "value": 0.4003560868343129,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"5\"} )",
+            "value": 0.3634416828822611,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"50\"} )",
+            "value": 0.3634531168299564,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeALiteral ( {\"termCount\":\"100\"} )",
+            "value": 0.3560225122160391,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"5\"} )",
+            "value": 0.5296708078913066,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"50\"} )",
+            "value": 2.246174276734346,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarPredicate ( {\"termCount\":\"100\"} )",
+            "value": 4.088824915506254,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"5\"} )",
+            "value": 0.5244603835297891,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"50\"} )",
+            "value": 2.2255194878638678,
+            "unit": "ms/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark.shapeBForVarWhere ( {\"termCount\":\"100\"} )",
+            "value": 3.9695242159680055,
             "unit": "ms/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }
