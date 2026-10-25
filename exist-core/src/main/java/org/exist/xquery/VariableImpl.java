@@ -75,12 +75,11 @@ public class VariableImpl implements Variable {
 	public void setValue(Sequence val) {
 		this.value = val;
         if (val instanceof NodeImpl) {
+            // wrap the in-memory node, so that once it has been made persistent
+            // (see ValueSequence#toNodeSet()) the variable keeps the persistent node
             ValueSequence newSeq = new ValueSequence(1);
             newSeq.add((Item) val);
-            newSeq.setHolderVariable(this);
             this.value = newSeq;
-        } else if (val instanceof ValueSequence) {
-            ((ValueSequence) this.value).setHolderVariable(this);
         }
     }
 

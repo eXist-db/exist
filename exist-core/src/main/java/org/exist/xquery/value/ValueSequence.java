@@ -66,8 +66,6 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private boolean keepUnOrdered = false;
 
-    private Variable holderVar = null;
-
     private int state = 0;
 
     private NodeSet cachedSet = null;
@@ -222,13 +220,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         return values[pos];
     }
 
-    public void setHolderVariable(final Variable var) {
-        this.holderVar = var;
-    }
-
     /**
      * Makes all in-memory nodes in this sequence persistent,
      * so they can be handled like other node sets.
+     *
+     * The in-memory nodes are replaced in this sequence by their
+     * persistent counterparts, so later calls do not persist them again.
+     * The order and duplicates of this sequence are left unchanged; only
+     * the returned node set is in document order without duplicates.
      *
      * @see org.exist.xquery.value.Sequence#toNodeSet()
      */
@@ -299,9 +298,6 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                 } else {
                     set.add((NodeProxy) v);
                 }
-            }
-            if (holderVar != null) {
-                holderVar.setValue(set);
             }
             return set;
         } else {
@@ -386,7 +382,6 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     @Override
     public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
-        holderVar = null;
         for (int i = 0; i <= size; i++) {
             values[i].destroy(context, contextSequence);
         }
