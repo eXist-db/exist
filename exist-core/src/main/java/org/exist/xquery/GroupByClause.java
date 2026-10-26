@@ -31,6 +31,7 @@ import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -58,6 +59,13 @@ public class GroupByClause extends AbstractFLWORClause {
 
         private boolean initialized = false;
 
+        /**
+         * The focus of the FLWOR expression, which the grouping keys and the return clause share, as a group by
+         * clause doesn't change it.
+         */
+        @Nullable private Sequence contextSequence;
+        @Nullable private Item contextItem;
+
         public GroupByData(final Strategy<Sequence> keyHashStrategy) {
             this.groupedMap = new Object2ObjectLinkedOpenCustomHashMap<>(8, Hash.FAST_LOAD_FACTOR, keyHashStrategy);
         }
@@ -81,12 +89,14 @@ public class GroupByClause extends AbstractFLWORClause {
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         final GroupByData data = stack.peek();
+        data.contextSequence = contextSequence;
+        data.contextItem = contextItem;
 
         // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
         final Sequence groupingKeys = new ArrayListValueSequence();
         for (final GroupSpec spec: groupSpecs) {
-            final Sequence groupingSeq = spec.getGroupExpression().eval(null, null);
+            final Sequence groupingSeq = spec.getGroupExpression().eval(contextSequence, contextItem);
             if (groupingSeq.getItemCount() > 1) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable " + spec.getKeyVarName() + " " +
                         "evaluates to more than one item");
@@ -168,7 +178,7 @@ public class GroupByClause extends AbstractFLWORClause {
                         final LocalVariable var = data.variables.get(entry.getKey());
                         var.setValue(entry.getValue());
                     }
-                    final Sequence r = returnExpr.eval(null, null);
+                    final Sequence r = returnExpr.eval(data.contextSequence, data.contextItem);
                     result.addAll(r);
                 }
             } finally {
@@ -394,5 +404,19 @@ public class GroupByClause extends AbstractFLWORClause {
         }
 
         return vars;
+    }
+
+    /**
+     * Also what the grouping keys depend on, e.g. {@code group by $k := .}.
+     */
+    @Override
+    public int getDependencies() {
+        int dependencies = super.getDependencies();
+        if (groupSpecs != null) {
+            for (final GroupSpec groupSpec : groupSpecs) {
+                dependencies |= groupSpec.getGroupExpression().getDependencies();
+            }
+        }
+        return dependencies;
     }
 }

@@ -211,4 +211,13 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	}
 	
 	/* END RewritableExpression API */
+
+    /**
+     * Also what the binding sequence depends on: it is evaluated with the same focus as the clause,
+     * e.g. {@code let $x := . return $x}.
+     */
+    @Override
+    public int getDependencies() {
+        return super.getDependencies() | inputSequence.getDependencies();
+    }
 }
