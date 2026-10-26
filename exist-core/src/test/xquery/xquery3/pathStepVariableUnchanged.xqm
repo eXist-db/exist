@@ -51,37 +51,37 @@ function t:tearDown() {
 };
 
 declare
-    %test:assertEquals("3 1 2")
-function t:stored-order-after-attribute-step() {
+    %test:assertEquals("3", "1", "2")
+function t:stored-order-after-attribute-step() as xs:string* {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/c, $d/a, $d/b)
     let $_ := $v/@x
     return
-        string-join($v ! string(@x), " ")
+        $v ! string(@x)
 };
 
 declare
-    %test:assertEquals("1 2 3")
-function t:stored-path-result-in-document-order() {
+    %test:assertEquals("1", "2", "3")
+function t:stored-path-result-in-document-order() as xs:string* {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/c, $d/a, $d/b)
     return
-        string-join($v/@x ! string(.), " ")
+        $v/@x ! string(.)
 };
 
 declare
-    %test:assertEquals("3 1 2")
-function t:in-memory-order-after-attribute-step() {
+    %test:assertEquals("3", "1", "2")
+function t:in-memory-order-after-attribute-step() as xs:string* {
     let $m := document { <r><a x="1"/><b x="2"/><c x="3"/></r> }/r
     let $v := ($m/c, $m/a, $m/b)
     let $_ := $v/@x
     return
-        string-join($v ! string(@x), " ")
+        $v ! string(@x)
 };
 
 declare
     %test:assertEquals(2)
-function t:stored-duplicates-after-attribute-step() {
+function t:stored-duplicates-after-attribute-step() as xs:integer {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/a, $d/a)
     let $_ := $v/@x
@@ -91,7 +91,7 @@ function t:stored-duplicates-after-attribute-step() {
 
 declare
     %test:assertEquals(2)
-function t:stored-duplicates-after-ancestor-step() {
+function t:stored-duplicates-after-ancestor-step() as xs:integer {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/a, $d/a)
     let $_ := $v/ancestor-or-self::*
@@ -101,7 +101,7 @@ function t:stored-duplicates-after-ancestor-step() {
 
 declare
     %test:assertEquals(1)
-function t:stored-path-result-without-duplicates() {
+function t:stored-path-result-without-duplicates() as xs:integer {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/a, $d/a)
     return
@@ -109,31 +109,31 @@ function t:stored-path-result-without-duplicates() {
 };
 
 declare
-    %test:assertEquals("4 1")
-function t:stored-order-across-documents-after-attribute-step() {
+    %test:assertEquals("4", "1")
+function t:stored-order-across-documents-after-attribute-step() as xs:string* {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $e := doc($t:COLLECTION || "/e.xml")/r
     let $v := ($e/a, $d/a)
     let $_ := $v/@x
     return
-        string-join($v ! string(@x), " ")
+        $v ! string(@x)
 };
 
 declare
-    %test:assertEquals("3 1 2", "3 1 2")
-function t:stored-order-after-repeated-steps() {
+    %test:assertEquals("3", "1", "2", "3", "1", "2")
+function t:stored-order-after-repeated-steps() as xs:string* {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $v := ($d/c, $d/a, $d/b)
     let $_ := $v/@x
-    let $first := string-join($v ! string(@x), " ")
+    let $first := $v ! string(@x)
     let $_ := $v/ancestor::r
     return
-        ($first, string-join($v ! string(@x), " "))
+        ($first, $v ! string(@x))
 };
 
 declare
     %test:assertTrue
-function t:in-memory-node-identity-across-steps() {
+function t:in-memory-node-identity-across-steps() as xs:boolean {
     let $m := <r><a x="1"/></r>
     return
         $m/a is $m/a
