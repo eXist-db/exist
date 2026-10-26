@@ -108,15 +108,23 @@ function t:stored-path-result-without-duplicates() as xs:integer {
         count($v/@x)
 };
 
+(:~
+ : Across documents, document order follows the internal document ids,
+ : which are not necessarily in storage order, as the ids of deleted
+ : documents are reused. Both orders are checked, so one of them is
+ : always not in document order.
+ :)
 declare
-    %test:assertEquals("4", "1")
+    %test:assertEquals("4", "1", "1", "4")
 function t:stored-order-across-documents-after-attribute-step() as xs:string* {
     let $d := doc($t:COLLECTION || "/d.xml")/r
     let $e := doc($t:COLLECTION || "/e.xml")/r
-    let $v := ($e/a, $d/a)
-    let $_ := $v/@x
+    let $v1 := ($e/a, $d/a)
+    let $v2 := ($d/a, $e/a)
+    let $_ := $v1/@x
+    let $_ := $v2/@x
     return
-        $v ! string(@x)
+        ($v1 ! string(@x), $v2 ! string(@x))
 };
 
 declare
