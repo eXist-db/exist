@@ -401,9 +401,6 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
                     set.add((NodeProxy) v);
                 }
             }
-//            if (holderVar != null) {
-//                holderVar.setValue(set);
-//            }
             return set;
         } else {
             throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
