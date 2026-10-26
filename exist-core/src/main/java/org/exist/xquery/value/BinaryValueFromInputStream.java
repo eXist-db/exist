@@ -28,9 +28,7 @@ import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -126,21 +124,6 @@ public class BinaryValueFromInputStream extends BinaryValue {
     @Override
     public void close() throws IOException {
         is.close();
-    }
-
-    @Override
-    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
-        // do not close if this object is part of the contextSequence
-        if (contextSequence != null && (contextSequence == this || contextSequence.containsReference(this))) {
-            return;
-        }
-        LOG.debug("Closing input stream");
-        try {
-            this.close();
-        } catch (final IOException e) {
-            LOG.warn("Error during cleanup of binary value: {}", e.getMessage(), e);
-        }
-        context.destroyBinaryValue(this);
     }
 
     @Override

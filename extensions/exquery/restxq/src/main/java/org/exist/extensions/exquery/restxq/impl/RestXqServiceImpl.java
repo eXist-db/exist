@@ -121,8 +121,12 @@ class RestXqServiceImpl extends AbstractRestXqService {
 
     @Override
     public void service(final HttpRequest request, final HttpResponse response, final ResourceFunctionExecuter resourceFunctionExecuter, final RestXqServiceSerializer restXqServiceSerializer) throws RestXqServiceException {
-        super.service(request, response, resourceFunctionExecuter, restXqServiceSerializer);
-        binaryValueManager.runCleanupTasks();
+        try {
+            super.service(request, response, resourceFunctionExecuter, restXqServiceSerializer);
+        } finally {
+            // release the binary request body even if the resource function failed
+            binaryValueManager.runCleanupTasks();
+        }
     }
 
     @Override
