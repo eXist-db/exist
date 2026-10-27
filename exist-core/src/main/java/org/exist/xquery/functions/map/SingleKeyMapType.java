@@ -29,6 +29,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
@@ -106,6 +107,11 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public boolean contains(final AtomicValue key) {
         return sameKey(collator, this.key, key);
+    }
+
+    @Override
+    public boolean containsReference(final Item item) {
+        return value != null && (value == item || value.containsReference(item));
     }
 
     @Override

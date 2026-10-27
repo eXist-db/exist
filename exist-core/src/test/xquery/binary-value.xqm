@@ -66,6 +66,7 @@ declare variable $bv:doc11 := "doc11.bin";
 declare variable $bv:doc12 := "doc12.bin";
 declare variable $bv:doc13 := "doc13.bin";
 declare variable $bv:doc14 := "doc14.bin";
+declare variable $bv:doc15 := "doc15.bin";
 declare variable $bv:bin := fn:current-dateTime() cast as xs:string;
 
 declare
@@ -74,7 +75,7 @@ function bv:setup() {
   let $src-collection := xmldb:create-collection($bv:db, $bv:src-collection-name)
   let $_ := xmldb:create-collection($bv:db, $bv:dst-collection-name)
   for $doc-name in ($bv:doc1, $bv:doc2, $bv:doc3, $bv:doc4, $bv:doc5, $bv:doc6, $bv:doc7, $bv:doc8, $bv:doc9, $bv:doc10,
-      $bv:doc11, $bv:doc12, $bv:doc13, $bv:doc14)
+      $bv:doc11, $bv:doc12, $bv:doc13, $bv:doc14, $bv:doc15)
   return
     xmldb:store($src-collection, $doc-name, $bv:bin, "application/octet-stream")
 };
@@ -335,4 +336,36 @@ function bv:pass-into-inline-function() {
   let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
   return
     xmldb:store($dst-collection, $bv:doc14, $b, "application/octet-stream")
+};
+
+(:~
+ : A map made by map:entry holds a single key, and is a different implementation than a map built
+ : by a map constructor. Leaving a scope asks every value it returns whether it holds a binary value
+ : the scope created, and this kind of map could not answer.
+ :
+ : @see https://github.com/eXist-db/exist/issues/6937
+ :)
+declare
+  %test:assertEquals('{"x":"a"}')
+function bv:single-key-map-returned-from-for() {
+  serialize(
+    map:merge(for $i in 1 return map:entry("x", util:binary-to-string(util:string-to-binary("a")))),
+    map { "method": "json" })
+};
+
+declare
+  %private
+function bv:internal-escape-item-in-single-key-map() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc15)
+  return
+    map:entry("content", $b)
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc15.bin")
+function bv:escape-item-in-single-key-map() {
+  let $m := bv:internal-escape-item-in-single-key-map()
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc15, $m?content, "application/octet-stream")
 };

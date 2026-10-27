@@ -93,6 +93,17 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract boolean contains(AtomicValue key);
 
+    /**
+     * A map has no function call, so {@link FunctionReference#containsReference(Item)}, which
+     * looks through the closure of one, does not apply: every implementation must look through
+     * its values instead.
+     *
+     * @param item the item to look for
+     * @return true if one of the map's values is the item, or holds it
+     */
+    @Override
+    public abstract boolean containsReference(Item item);
+
     public abstract Sequence keys();
 
     public abstract AbstractMapType remove(AtomicValue[] keysAtomicValues) throws XPathException;
