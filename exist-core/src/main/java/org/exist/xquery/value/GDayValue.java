@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import com.ibm.icu.text.Collator;
-import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -110,38 +108,6 @@ public class GDayValue extends AbstractDateTimeValue {
     public ComputableValue minus(ComputableValue other) throws XPathException {
         throw new XPathException(getExpression(), "Subtraction is not supported on values of type " +
                 Type.getTypeName(getType()));
-    }
-
-    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (other.getType() == getType()) {
-            if (!getTimezone().isEmpty()) {
-                if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
-                    if (!((DayTimeDurationValue) getTimezone().itemAt(0)).compareTo(null, Comparison.EQ, (DayTimeDurationValue) ((AbstractDateTimeValue) other).getTimezone().itemAt(0))) {
-                        return DatatypeConstants.LESSER;
-                    }
-                } else {
-                    if (!"PT0S".equals(((DayTimeDurationValue) getTimezone().itemAt(0)).getStringValue())) {
-                        return DatatypeConstants.LESSER;
-                    }
-                }
-            } else {
-                if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
-                    if (!"PT0S".equals(((DayTimeDurationValue) ((AbstractDateTimeValue) other).getTimezone().itemAt(0)).getStringValue())) {
-                        return DatatypeConstants.LESSER;
-                    }
-                }
-            }
-            // filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-            final int r = this.getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-            //getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-            if (r == DatatypeConstants.INDETERMINATE) {
-                throw new RuntimeException("indeterminate order between " + this + " and " + other);
-            }
-            return r;
-        }
-        throw new XPathException(getExpression(), 
-                "Type error: cannot compare " + Type.getTypeName(getType()) + " to "
-                        + Type.getTypeName(other.getType()));
     }
 
 }
