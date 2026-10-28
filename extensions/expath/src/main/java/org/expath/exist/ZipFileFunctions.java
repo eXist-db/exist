@@ -23,17 +23,15 @@ package org.expath.exist;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.exist.storage.lock.Lock.LockMode;
+import org.expath.exist.ZipEntryFunctions.ZipFileFromDb;
+import org.expath.exist.ZipEntryFunctions.ZipFileSource;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -129,52 +127,50 @@ public class ZipFileFunctions extends BasicFunction {
             throw new XPathException(this, "Different number of paths (" + paths.length + ") and binaries (" + binaries.length + ")");
         }
 
-        ZipFileSource zipFileSource =  new ZipFileFromDb(uri);
-        ZipInputStream zis = null;
-
-        Map<String, BinaryValue> binariesTable = new HashMap<>(paths.length);
+        final Map<String, BinaryValue> binariesTable = new HashMap<>(paths.length);
         for (int i = 0; i < paths.length; i++) {
             binariesTable.put(paths[i], binaries[i]);
         }
 
-        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get())
-        {
-            zis = zipFileSource.getStream();
-            ZipOutputStream zos = new ZipOutputStream(baos); // zos is the output - the result
-            ZipEntry ze;
-            byte[] buffer = new byte[16384];
-            int bytes_read;
+        // closing the source releases the zip document's read lock
+        try (final ZipFileSource zipFileSource = new ZipFileFromDb(uri);
+             final ZipInputStream zis = zipFileSource.getStream(context.getBroker());
+             final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+            try (final ZipOutputStream zos = new ZipOutputStream(baos)) { // zos is the output - the result
+                ZipEntry ze;
+                final byte[] buffer = new byte[16384];
+                int bytesRead;
 
-            while ((ze = zis.getNextEntry())!= null){
-                String zen = ze.getName();
+                while ((ze = zis.getNextEntry()) != null) {
+                    final String zen = ze.getName();
 
-                if (binariesTable.containsKey(zen)) { // Replace this entry
-                    ZipEntry nze = new ZipEntry(zen);
-                    zos.putNextEntry(nze);
-                    binariesTable.get(zen).streamBinaryTo(zos);
-                    binariesTable.remove(zen);
-
-                } else { // copy this entry to output
-                    if (ze.isDirectory()) { // can't add empty directory to Zip
-                        ZipEntry dirEntry = new ZipEntry(ze.getName() + System.getProperty("file.separator") + ".");
-                        zos.putNextEntry(dirEntry);
-                    } else {               // copy file across
-                        ZipEntry nze = new ZipEntry(zen);
+                    if (binariesTable.containsKey(zen)) { // Replace this entry
+                        final ZipEntry nze = new ZipEntry(zen);
                         zos.putNextEntry(nze);
-                        while((bytes_read = zis.read(buffer)) != -1)
-                            zos.write(buffer, 0, bytes_read);
-                    }
+                        binariesTable.get(zen).streamBinaryTo(zos);
+                        binariesTable.remove(zen);
 
+                    } else { // copy this entry to output
+                        if (ze.isDirectory()) { // can't add empty directory to Zip
+                            final ZipEntry dirEntry = new ZipEntry(ze.getName() + System.getProperty("file.separator") + ".");
+                            zos.putNextEntry(dirEntry);
+                        } else {               // copy file across
+                            final ZipEntry nze = new ZipEntry(zen);
+                            zos.putNextEntry(nze);
+                            while ((bytesRead = zis.read(buffer)) != -1) {
+                                zos.write(buffer, 0, bytesRead);
+                            }
+                        }
+
+                    }
+                }
+                // add any remaining items as NEW entries
+                for (final Map.Entry<String, BinaryValue> entry : binariesTable.entrySet()) {
+                    final ZipEntry nze = new ZipEntry(entry.getKey());
+                    zos.putNextEntry(nze);
+                    entry.getValue().streamBinaryTo(zos);
                 }
             }
-            // add any remaining items as NEW entries
-            for (Map.Entry<String, BinaryValue> entry : binariesTable.entrySet()) {
-                ZipEntry nze = new ZipEntry(entry.getKey());
-                zos.putNextEntry(nze);
-                entry.getValue().streamBinaryTo(zos);
-            }
-            zos.close();
-            zis.close();
 
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
 
@@ -189,9 +185,6 @@ public class ZipFileFunctions extends BasicFunction {
 
 
     private Sequence extractEntries(XmldbURI uri) throws XPathException {
-        ZipFileSource zipFileSource = new ZipFileFromDb(uri);
-        ZipInputStream zis = null;
-
         Sequence xmlResponse = null;
         context.pushDocumentContext();
         try {
@@ -201,8 +194,9 @@ public class ZipFileFunctions extends BasicFunction {
             builder.startElement(new QName("file", ZipModule.NAMESPACE_URI, ZipModule.PREFIX), null);
             builder.addAttribute(new QName("href", null, null), uri.toString());
 
-            try {
-                zis = zipFileSource.getStream();
+            // closing the source releases the zip document's read lock
+            try (final ZipFileSource zipFileSource = new ZipFileFromDb(uri);
+                 final ZipInputStream zis = zipFileSource.getStream(context.getBroker())) {
                 ZipEntry zipEntry;
                 while ((zipEntry = zis.getNextEntry()) != null) {
 
@@ -255,51 +249,6 @@ public class ZipFileFunctions extends BasicFunction {
             child = child.getNextSibling();
         }
         return( Sequence.EMPTY_SEQUENCE );
-    }
-
-    // copied from
-    public interface ZipFileSource {
-        ZipInputStream getStream() throws IOException, PermissionDeniedException;
-        void close();
-    }
-
-    private class ZipFileFromDb implements ZipFileSource {
-        private LockedDocument binaryDoc = null;
-        private final XmldbURI uri;
-
-        public ZipFileFromDb(XmldbURI uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public ZipInputStream getStream() throws IOException, PermissionDeniedException {
-            if (binaryDoc == null) {
-                binaryDoc = getBinaryDoc();
-            }
-
-            return new ZipInputStream(context.getBroker().getBinaryResource((BinaryDocument)binaryDoc.getDocument()));
-        }
-
-        @Override
-        public void close() {
-            if (binaryDoc != null) {
-                binaryDoc.close();
-            }
-        }
-
-        private LockedDocument getBinaryDoc() throws PermissionDeniedException {
-            final LockedDocument lockedDocment = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-            if (lockedDocment == null) {
-                return null;
-            }
-
-            if(lockedDocment.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
-                lockedDocment.close();
-                return null;
-            }
-
-            return lockedDocment;
-        }
     }
 
     // copied from AccountManagementFunction
