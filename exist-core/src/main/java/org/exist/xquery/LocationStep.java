@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.collections.Collection;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.StructuralIndex;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -28,7 +29,9 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.stax.*;
 import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.UpdateListener;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -40,6 +43,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -684,6 +688,8 @@ public class LocationStep extends Step {
                     default -> throw new IllegalArgumentException("Unsupported axis specified");
                 };
             }
+        } else if (canSelectAttributesDirectly(context, contextSet)) {
+            return contextSet.directSelectAttribute(context.getBroker(), test, contextId);
         } else {
             final DocumentSet docs = getDocumentSet(contextSet);
             final StructuralIndex index = context.getBroker().getStructuralIndex();
@@ -704,6 +710,39 @@ public class LocationStep extends Step {
                 return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector, this);
             }
         }
+    }
+
+    /**
+     * Whether to read each context element's own attributes instead of asking the structural index, for a
+     * named attribute step without preloaded data. The structural index runs one range query per context
+     * node over its whole subtree, so a lookup on a node high in the tree, such as a parent or ancestor
+     * step's result, costs time in proportion to the document's size. For a large context set the index
+     * is cheaper per node, so the direct read is limited to sets smaller than {@link #INDEX_SCAN_THRESHOLD}.
+     */
+    private boolean canSelectAttributesDirectly(final XQueryContext context, final NodeSet contextSet) {
+        return axis == Constants.ATTRIBUTE_AXIS
+                && !(contextSet instanceof VirtualNodeSet)
+                && contextSet.getLength() < INDEX_SCAN_THRESHOLD
+                && !hasLegacyRangeIndex(context, contextSet);
+    }
+
+    /**
+     * Whether a collection of the context nodes configures a legacy range index (by path or by QName).
+     * The structural index records such an index's type with each attribute it returns, and comparisons
+     * use that type, so these attributes can't be read directly from their elements.
+     */
+    private static boolean hasLegacyRangeIndex(final XQueryContext context, final NodeSet contextSet) {
+        for (final Iterator<Collection> i = contextSet.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            if (collection.getURI().equalsInternal(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+            final IndexSpec indexSpec = collection.getIndexConfiguration(context.getBroker());
+            if (indexSpec != null && (indexSpec.hasIndexesByPath() || indexSpec.hasIndexesByQName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Sequence getChildren(final XQueryContext context, final Sequence contextSequence) throws XPathException {
