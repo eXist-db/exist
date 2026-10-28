@@ -67,6 +67,9 @@ declare variable $bv:doc12 := "doc12.bin";
 declare variable $bv:doc13 := "doc13.bin";
 declare variable $bv:doc14 := "doc14.bin";
 declare variable $bv:doc15 := "doc15.bin";
+declare variable $bv:doc16 := "doc16.bin";
+declare variable $bv:doc17 := "doc17.bin";
+declare variable $bv:doc18 := "doc18.bin";
 declare variable $bv:bin := fn:current-dateTime() cast as xs:string;
 
 declare
@@ -75,7 +78,7 @@ function bv:setup() {
   let $src-collection := xmldb:create-collection($bv:db, $bv:src-collection-name)
   let $_ := xmldb:create-collection($bv:db, $bv:dst-collection-name)
   for $doc-name in ($bv:doc1, $bv:doc2, $bv:doc3, $bv:doc4, $bv:doc5, $bv:doc6, $bv:doc7, $bv:doc8, $bv:doc9, $bv:doc10,
-      $bv:doc11, $bv:doc12, $bv:doc13, $bv:doc14, $bv:doc15)
+      $bv:doc11, $bv:doc12, $bv:doc13, $bv:doc14, $bv:doc15, $bv:doc16, $bv:doc17, $bv:doc18)
   return
     xmldb:store($src-collection, $doc-name, $bv:bin, "application/octet-stream")
 };
@@ -368,4 +371,58 @@ function bv:escape-item-in-single-key-map() {
   let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
   return
     xmldb:store($dst-collection, $bv:doc15, $m?content, "application/octet-stream")
+};
+
+(:~
+ : A binary value is an atomic value, so it can be a map key, and a map keeps its keys.
+ :)
+declare
+  %private
+function bv:internal-escape-key-in-single-key-map() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc16)
+  return
+    map:entry($b, "value")
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc16.bin")
+function bv:escape-key-in-single-key-map() {
+  let $m := bv:internal-escape-key-in-single-key-map()
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc16, map:keys($m), "application/octet-stream")
+};
+
+declare
+  %private
+function bv:internal-escape-key-in-map() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc17)
+  return
+    map { $b: "value" }
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc17.bin")
+function bv:escape-key-in-map() {
+  let $m := bv:internal-escape-key-in-map()
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc17, map:keys($m), "application/octet-stream")
+};
+
+declare
+  %private
+function bv:internal-escape-key-put-in-map() {
+  let $b := util:binary-doc($bv:db || "/" || $bv:src-collection-name || "/" || $bv:doc18)
+  return
+    map:put(map { "a": 1, "b": 2 }, $b, "value")
+};
+
+declare
+  %test:assertEquals("/db/test-binary-value-dst/doc18.bin")
+function bv:escape-key-put-in-map() {
+  let $m := bv:internal-escape-key-put-in-map()
+  let $dst-collection := $bv:db || "/" || $bv:dst-collection-name
+  return
+    xmldb:store($dst-collection, $bv:doc18, map:keys($m)[. instance of xs:base64Binary], "application/octet-stream")
 };

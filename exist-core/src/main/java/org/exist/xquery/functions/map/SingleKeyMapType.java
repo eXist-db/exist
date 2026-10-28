@@ -111,7 +111,7 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public boolean containsReference(final Item item) {
-        return value != null && (value == item || value.containsReference(item));
+        return key == item || (value != null && (value == item || value.containsReference(item)));
     }
 
     @Override
