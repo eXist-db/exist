@@ -1242,6 +1242,10 @@ public class BlobStoreImpl implements BlobStore {
 
             // skip over the reference count
             channel.position(channel.position() + REFERENCE_COUNT_LEN);
+
+            // the BlobId was consumed: make room in the buffer for the next one
+            buffer.clear();
+            buffer.limit(digestType.getDigestLengthBytes());
         }
 
         /*
