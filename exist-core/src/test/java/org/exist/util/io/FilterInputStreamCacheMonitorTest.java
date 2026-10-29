@@ -32,6 +32,8 @@ import org.exist.xquery.value.BinaryValue;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -170,6 +172,59 @@ public class FilterInputStreamCacheMonitorTest {
             try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
                 assertFalse(resource instanceof LocalBinaryResource);
                 assertNoActiveBinaries(monitor, "after the query");
+            }
+        } finally {
+            resourceSet.clear();
+        }
+    }
+
+    /**
+     * Hashing or comparing a binary value reads it through a stream that holds a reference to the
+     * value's shared stream cache. Unless that stream is closed, the cache - and the blob it reads
+     * from - stay open after the query has released the value, until the JVM stops.
+     *
+     * <p>One case per way an expression reaches {@code BinaryValue#compareTo} or
+     * {@code BinaryValue#hashCode}. {@code $b} is read from the database, {@code $c} from a string,
+     * so both kinds of stream-backed value are covered.</p>
+     *
+     * <p>Each case asserts that its own query leaves no more caches than it found, rather than none at
+     * all, so that a leak is reported by the case that caused it and not by every case after it.</p>
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/6943">Comparing or hashing a binary value leaks its stream cache and blob reader</a>
+     */
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {
+            "$b eq $c",
+            "$b = $c",
+            "deep-equal($b, $c)",
+            "count(distinct-values(($b, $c)))",
+            "count(index-of(($b, $c), $c))",
+            "count(for $x in ($b, $c) order by $x return $x)",
+            "count(for $x in ($b, $c) group by $k := $x return $k)",
+            "count(sort(($b, $c)))",
+            "switch ($b) case $c return 1 default return 0",
+            "map:size(map { $b: 1, $c: 2 })",
+            "map:contains(map { 'k': 1 }, $b)"
+    })
+    void hashingOrComparingReleasesCaches(final String expression) throws XMLDBException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        final int activeBefore = monitor.getActive().size();
+
+        ResourceSet resourceSet = null;
+        try {
+            resourceSet = existXmldbEmbeddedServer.executeQuery("""
+                    let $b := util:binary-doc('/db/%s/icon.png')
+                    let $c := util:string-to-binary('x')
+                    return %s""".formatted(TEST_COLLECTION_NAME, expression));
+
+            assertEquals(1, resourceSet.getSize());
+            try (final EXistResource resource = (EXistResource) resourceSet.getResource(0)) {
+                assertFalse(resource instanceof LocalBinaryResource);
+                final int leaked = monitor.getActive().size() - activeBefore;
+                if (leaked != 0) {
+                    fail("The query left " + leaked + " more active binaries than it found."
+                            + System.getProperty("line.separator") + monitor.dump());
+                }
             }
         } finally {
             resourceSet.clear();
