@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -104,13 +105,13 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
             
             if(serializationProperty.getKey() == SerializationProperty.METHOD && serializationProperty.getValue().equals(SupportedMethod.html.name())) {
                 //Map HTML -> HTML5 as eXist doesn't have a html serializer that isn't html5
-                props.setProperty(serializationProperty.getKey().name().toLowerCase(), SupportedMethod.html5.name());
+                props.setProperty(serializationProperty.getKey().name().toLowerCase(Locale.ROOT), SupportedMethod.html5.name());
             } else if(serializationProperty.getKey() == SerializationProperty.OMIT_XML_DECLARATION) {
                 
                 //TODO why are not all keys transformed from '_' to '-'? I have a feeling we did something special for MEDIA_TYPE???
-                props.setProperty(serializationProperty.getKey().name().toLowerCase().replace('_', '-'), serializationProperty.getValue());
+                props.setProperty(serializationProperty.getKey().name().toLowerCase(Locale.ROOT).replace('_', '-'), serializationProperty.getValue());
             } else {
-                props.setProperty(serializationProperty.getKey().name().toLowerCase(), serializationProperty.getValue());
+                props.setProperty(serializationProperty.getKey().name().toLowerCase(Locale.ROOT), serializationProperty.getValue());
             }
         }
         

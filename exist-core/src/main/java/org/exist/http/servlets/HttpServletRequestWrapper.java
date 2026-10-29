@@ -109,7 +109,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
                 // If a form POST , and not a document POST
                 final String rawContentType = request.getContentType();
                 if (rawContentType != null) {
-                    String contentType = rawContentType.toLowerCase();
+                    String contentType = rawContentType.toLowerCase(Locale.ROOT);
                     final int semicolon = contentType.indexOf(';');
                     if (semicolon > 0) {
                         contentType = contentType.substring(0, semicolon).trim();
@@ -286,7 +286,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         // If POST request AND there is some content AND its not a file upload
         if ("POST".equalsIgnoreCase(request.getMethod())
                 && (request.getContentLength() > 0 || request.getContentLength() == -1)
-                && (contentType == null || !contentType.toUpperCase().startsWith("MULTIPART/"))) {
+                && (contentType == null || !contentType.toUpperCase(Locale.ROOT).startsWith("MULTIPART/"))) {
 
             // Also return the content parameters, these are not part
             // of the standard HttpServletRequest.toString() output

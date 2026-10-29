@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public abstract class URLRewrite {
             absolute = "yes".equals(config.getAttribute("absolute"));
         }
         if (config.hasAttribute("method")) {
-            method = config.getAttribute("method").toUpperCase();
+            method = config.getAttribute("method").toUpperCase(Locale.ROOT);
         }
         // Check for add-parameter elements etc.
         if (!config.hasChildNodes()) {
