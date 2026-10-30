@@ -36,7 +36,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.PhraseQuery;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -57,8 +56,6 @@ import java.io.StringReader;
 import java.util.*;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
@@ -302,50 +299,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
              final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
             stream.reset();
             while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
+                final String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query query = termMap.get(text);
                 if (query != null) {
-                    // Phrase queries need to be handled differently to filter
-                    // out wrong matches: only the phrase should be marked, not
-                    // single words which may also occur elsewhere in the document
-                    if (query instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan the following text and collect tokens to see
-                            // if they are part of the phrase.
-                            stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    // Don't reset the token stream since we will
-                                    // miss matches. /ljo
-                                    //stream.reset();
-                                    break;
-                                }
-                            }
-
-                            if (stateList.size() == terms.length) {
-                                // Phrase match: add one span from first to last term (may cross text nodes, #4584).
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                addMatchSpan(start, end, offsets, str.length());
-                            }
-                        } // End of phrase handling
-                    } else {
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        addMatchSpan(offsetAttr.startOffset(), offsetAttr.endOffset(), offsets, str.length());
-                    }
+                    // Phrase and near/proximity queries need to be handled differently to filter
+                    // out wrong matches: only the whole phrase/proximity match should be marked,
+                    // not single words which may also occur elsewhere in the document. Both forms
+                    // are matched the same slop-aware way so that string ('"a b"~n') and XML
+                    // (<near slop="n">) queries highlight identically (may cross text nodes, #4584),
+                    // see #833.
+                    LuceneUtil.highlightToken(stream, text, query,
+                            (start, end) -> addMatchSpan(start, end, offsets, str.length()));
                 }
             }
         } catch (final IOException e) {
