@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.spatial;
 
+import java.util.Locale;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -134,7 +136,7 @@ public class FunSpatialDistance extends BasicFunction implements IndexUseReporte
         }
 
         final String unit = args.length == 3
-                ? args[2].itemAt(0).getStringValue().trim().toLowerCase()
+                ? args[2].itemAt(0).getStringValue().trim().toLowerCase(Locale.ROOT)
                 : "degree";
         if (!isSupportedUnit(unit)) {
             throw new XPathException(this, ErrorCodes.FOER0000, """

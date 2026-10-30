@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Locale;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -81,7 +82,7 @@ public class BackupSystemTask implements SystemTask {
 
     private static final Logger LOG = LogManager.getLogger(BackupSystemTask.class);
 
-    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
+    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE, Locale.ROOT);
     private String user;
     private String password;
     private Path directory;

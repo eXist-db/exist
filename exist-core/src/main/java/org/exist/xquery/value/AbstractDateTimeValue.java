@@ -37,7 +37,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +44,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 /**
  * @author wolf
@@ -278,8 +278,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         final Matcher m = negativeDateStart.matcher(r);
         if (m.matches()) {
             final int year = Integer.parseInt(m.group(1));
-            final DecimalFormat df = new DecimalFormat("0000");
-            r = "-" + df.format(year) + "-" + m.group(2);
+            r = "-" + String.format(Locale.ROOT, "%04d", year) + "-" + m.group(2);
         }
 
         return r;

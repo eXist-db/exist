@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -152,7 +153,7 @@ public class GetScheduledJobs extends BasicFunction {
     		if( isToday( aDate ) ) {
     			formatString = TODAY_TIMESTAMP;
     		}
-    		final SimpleDateFormat format = new SimpleDateFormat( formatString );
+    		final SimpleDateFormat format = new SimpleDateFormat(formatString, Locale.ROOT);
 			
     		returnValue = format.format(aDate);
     	}
