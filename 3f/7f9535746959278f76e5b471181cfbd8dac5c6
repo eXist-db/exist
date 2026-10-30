@@ -1,0 +1,32 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/XMLToQuery.java
+  s_15ffdc06d1db19::t_c7b6c692e438ce 70-71,79-81,390-391,393-405,407,423,428
+extensions/indexes/lucene/src/test/xquery/lucene/analyzers-stemmed.xqm
+  s_15ffdc06d1db19::t_c52181489b86df 183-211
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_f4eaf863614224 2014
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-analyzer-configs.xqm
+  s_15ffdc06d1db19::t_ea63c7ae9f2a21 75-93,101,107,208-212,213,215
+  s_15ffdc06d1db19::t_7d535944624dc8 214
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_6d18e75e3b03d7 193-194,256-257
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_3aaed31b13e28a 149-165
+exist-core-jmh/README.md
+  s_15ffdc06d1db19::t_82aa0e395ca12d 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3f7f9535746959278f76e5b471181cfbd8dac5c6",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
