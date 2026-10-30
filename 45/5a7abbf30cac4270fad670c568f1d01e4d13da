@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/xquery/WhereClause.java
+  s_15ffdc06d1db19::t_170bb310963b4a 31,41,44,46,400-403,413-417,419,429-450
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "455a7abbf30cac4270fad670c568f1d01e4d13da",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
