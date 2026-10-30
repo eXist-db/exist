@@ -1602,6 +1602,18 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     void shutdown(final boolean killed, final Consumer<String> shutdownInstanceConsumer) {
 
+        // ask services to quiesce while brokers can still be obtained, so that they do not
+        // ask for one in the window between leaving the operational state and being stopped
+        if (status.getCurrentState() == State.OPERATIONAL) {
+            try {
+                servicesManager.beforeStopMultiUserServices(this);
+            } catch(final BrokerPoolServicesManagerException e) {
+                for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
+                    LOG.error(bpse.getMessage(), bpse);
+                }
+            }
+        }
+
         try {
             status.process(Event.START_SHUTDOWN_MULTI_USER_MODE);
         } catch(final IllegalStateException e) {
