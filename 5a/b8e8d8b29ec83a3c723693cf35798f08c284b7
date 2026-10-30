@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_d05c7e7e8f5065 89-90,110-112,114-115,144-158,168,195-199
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_15ffdc06d1db19::t_367caf2aa2b2d6 498-514
+exist-core/src/main/java/org/exist/xquery/Predicate.java
+  s_15ffdc06d1db19::t_18f3944cdfce04 485-487,490-504,506,508,517
+exist-core/src/main/java/org/exist/xquery/WhereClause.java
+  s_15ffdc06d1db19::t_44e859f6b4dc9b 400-402,429-451
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_63eef699d2435a 1881,1892
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5ab8e8d8b29ec83a3c723693cf35798f08c284b7",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
