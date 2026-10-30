@@ -695,7 +695,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
                array[length - 1].getNodeId().equals(nodeId)) {
             */
             if(length > 0 && array[length - 1].getNodeId().equals(p.getNodeId())) {
-                array[length - 1].addMatches(p);
+                array[length - 1] = array[length - 1].withMatchesOf(p);
                 return;
                 //} ljo's modification
             } else if(length == array.length) {
@@ -888,18 +888,12 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
                             case NodeSet.DESCENDANT:
                                 NodeProxy.propagatePredicateContextFrom(array[i], parent, contextId);
-                                if(copyMatches) {
-                                    array[i].addMatches(parent);
-                                }
-                                result.add(array[i]);
+                                result.add(copyMatches ? array[i].withMatchesOf(parent) : array[i]);
                                 break;
 
                             case NodeSet.ANCESTOR:
                                 NodeProxy.propagatePredicateContextFrom(parent, array[i], contextId);
-                                if(copyMatches) {
-                                    parent.addMatches(array[i]);
-                                }
-                                result.add(parent, 1);
+                                result.add(copyMatches ? parent.withMatchesOf(array[i]) : parent, 1);
                                 break;
                         }
                     }
@@ -946,15 +940,13 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
                                 case NodeSet.DESCENDANT:
                                     NodeProxy.propagatePredicateContextFrom(array[i], parent, contextId);
-                                    array[i].addMatches(parent);
-                                    result.add(array[i]);
+                                    result.add(array[i].withMatchesOf(parent));
                                     break;
 
                                 case NodeSet.ANCESTOR:
                                     //parent.addContextNode(contextId, array[i]);
                                     NodeProxy.propagatePredicateContextFrom(parent, array[i], contextId);
-                                    parent.addMatches(array[i]);
-                                    result.add(parent, 1);
+                                    result.add(parent.withMatchesOf(array[i]), 1);
                                     break;
                             }
                         }
@@ -983,7 +975,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
                     if(mergeContext) {
                         array[j].addContext(array[i]);
                     }
-                    array[j].addMatches(array[i]);
+                    array[j] = array[j].withMatchesOf(array[i]);
                 }
             }
             length = ++j;

@@ -471,33 +471,125 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return match;
     }
 
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatches(Match)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
     public void setMatches(final Match match) {
         this.match = match;
     }
 
-    public void addMatch(final Match m) {
-        if (this.match == null) {
-            this.match = m;
-            if (match.getNextMatch() != null) {
-                match.setNextMatch(null);
-            }
-            return;
-        }
-
-        Match next = match;
-        while (next != null) {
-            if (next.equals(m)) {
-                next.mergeOffsets(m);
-                return;
-            }
-            if (next.getNextMatch() == null) {
-                next.setNextMatch(m);
-                break;
-            }
-            next = next.getNextMatch();
-        }
+    /**
+     * This node with a match added. The node itself does not change: it may be the caller's, a variable's or another
+     * evaluation's.
+     *
+     * @param m the match, of which only the match itself is taken, not its chain
+     * @return a copy of this node with the match
+     */
+    public NodeProxy withMatch(final Match m) {
+        final NodeProxy copy = new NodeProxy(this);
+        copy.match = Match.add(match, m);
+        return copy;
     }
 
+    /**
+     * This node with the matches of another node added.
+     *
+     * @param other the node whose matches are added
+     * @return this node if {@code other} adds nothing, otherwise a copy with the matches of both
+     */
+    public NodeProxy withMatchesOf(final NodeProxy other) {
+        // other == this shares this node's chain, which matchListEquals finds
+        if (other.match == null || Match.matchListEquals(other.match, match)) {
+            return this;
+        }
+        final NodeProxy copy = new NodeProxy(this);
+        for (Match m = other.match; m != null; m = m.getNextMatch()) {
+            copy.match = Match.add(copy.match, m);
+        }
+        return copy;
+    }
+
+    /**
+     * This node with the given matches in place of its own.
+     *
+     * @param chain the matches, a chain that is never changed, or null for none
+     * @return this node if it has these matches already, otherwise a copy
+     */
+    public NodeProxy withMatches(@Nullable final Match chain) {
+        if (chain == match) {
+            return this;
+        }
+        final NodeProxy copy = new NodeProxy(this);
+        copy.match = chain;
+        return copy;
+    }
+
+    /**
+     * This node with a context node added to its predicate context.
+     *
+     * @param contextId the predicate's context id
+     * @param node the context node
+     * @return this node if the context has the item already or {@code node} is not persistent, otherwise a copy
+     */
+    public NodeProxy withContextNode(final int contextId, final NodeValue node) {
+        if (node.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+            return this;
+        }
+        final ContextItem chain = context == null ? new ContextItem(contextId, (NodeProxy) node)
+                : context.append(contextId, (NodeProxy) node);
+        return chain == context ? this : withContext(chain);
+    }
+
+    /**
+     * This node with the predicate context of another node, in place of its own.
+     *
+     * @param other the node whose context is taken
+     * @return this node if the contexts are the same, otherwise a copy
+     */
+    public NodeProxy withContextOf(final NodeProxy other) {
+        return other.context == context ? this : withContext(other.context);
+    }
+
+    /**
+     * This node without the items of a predicate in its context.
+     *
+     * @param contextId the predicate's context id, or {@link Expression#IGNORE_CONTEXT} for all
+     * @return this node if it has no such items, otherwise a copy
+     */
+    public NodeProxy withoutContext(final int contextId) {
+        final ContextItem chain = contextId == Expression.IGNORE_CONTEXT ? null : ContextItem.without(context, contextId);
+        return chain == context ? this : withContext(chain);
+    }
+
+    private NodeProxy withContext(@Nullable final ContextItem chain) {
+        final NodeProxy copy = new NodeProxy(this);
+        copy.context = chain;
+        return copy;
+    }
+
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatch(Match)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
+    public void addMatch(final Match m) {
+        // the chain is rebuilt, not changed: it may be shared with other nodes
+        this.match = Match.add(this.match, m);
+    }
+
+    /**
+     * @deprecated changes this node, which may be the caller's, a variable's or another evaluation's: a query's
+     * matches belong on the nodes it creates. Use {@link #withMatchesOf(NodeProxy)} on a node, or set them while building a node of one's
+     * own. Kept for the nodes the code building them has just created, until the predicate context gets the same
+     * treatment (https://github.com/eXist-db/exist/issues/6923) and these can go.
+     */
+    @Deprecated
     public void addMatches(final NodeProxy p) {
         if (p == this) {
             return;
@@ -509,7 +601,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
 
         while (m != null) {
-            addMatch(m.newCopy());
+            this.match = Match.add(this.match, m);
             m = m.getNextMatch();
         }
     }
@@ -538,31 +630,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return;
         }
         final NodeProxy contextNode = (NodeProxy) node;
-        if(context == null) {
-            context = new ContextItem(contextId, contextNode);
-            return;
-        }
-        ContextItem next = context;
-        while(next != null) {
-            if(contextId == next.getContextId() &&
-                next.getNode().getNodeId().equals(contextNode.getNodeId())) {
-                // Ignore duplicate context nodes
-                break;
-            }
-            if(next.getNextDirect() == null) {
-                if(next == context) {
-                    // context items should not be shared between proxies,
-                    // but for performance reason, if there's only a single
-                    // context item, it will be shared. we thus have to create
-                    // a copy before appending a new item.
-                    next = new ContextItem(next.getContextId(), next.getNode());
-                    context = next;
-                }
-                next.setNextContextItem(new ContextItem(contextId, contextNode));
-                break;
-            }
-            next = next.getNextDirect();
-        }
+        context = context == null ? new ContextItem(contextId, contextNode) : context.append(contextId, contextNode);
     }
 
     /**
@@ -595,27 +663,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if (node == this) {
             return;
         }
-        context = null;
-        if(node.context == null) {
-            return;
-        }
-        if(node.context.getNextDirect() == null) {
-            // if there's a single context item, we just
-            // copy a reference to it. addContextNode will take
-            // care of this and create a copy before appending
-            // a new item
-            context = node.context;
-        } else {
-            ContextItem next = node.context;
-            ContextItem newContext = new ContextItem(next.getContextId(), next.getNode());
-            context = newContext;
-            next = next.getNextDirect();
-            while(next != null) {
-                newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
-                newContext = newContext.getNextDirect();
-                next = next.getNextDirect();
-            }
-        }
+        // chains never change once built, so they are shared
+        context = node.context;
     }
 
     public void deepCopyContext(final NodeProxy node, final int addContextId) {
@@ -663,22 +712,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             context = null;
             return;
         }
-        ContextItem newContext = null;
-        ContextItem last = null;
-        ContextItem next = context;
-        while(next != null) {
-            if(next.getContextId() != contextId) {
-                if(newContext == null) {
-                    newContext = next;
-                } else {
-                    last.setNextContextItem(next);
-                }
-                last = next;
-                last.setNextContextItem(null);
-            }
-            next = next.getNextDirect();
-        }
-        this.context = newContext;
+        context = ContextItem.without(context, contextId);
     }
 
     public ContextItem getContext() {
@@ -1045,8 +1079,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         final NewArrayNodeSet result = new NewArrayNodeSet();
         ContextItem contextNode = getContext();
         while(contextNode != null) {
-            final NodeProxy p = contextNode.getNode();
-            p.addMatches(this);
+            final NodeProxy p = contextNode.getNode().withMatchesOf(this);
             if(!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
                 if(contextId != Expression.NO_CONTEXT_ID) {
@@ -1141,7 +1174,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if(p == null) {
             return NodeSet.EMPTY_SET;
         } else if(!nodeId.equals(p.nodeId)) {
-            p.addMatches(this);
+            // p is the other set's node
+            return p.withMatchesOf(this);
         }
         return p;
     }

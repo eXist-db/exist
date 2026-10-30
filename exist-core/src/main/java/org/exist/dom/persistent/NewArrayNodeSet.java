@@ -321,17 +321,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     switch(mode) {
                         case NodeSet.DESCENDANT:
                             NodeProxy.propagatePredicateContextFrom(nodes[i], parent, contextId);
-                            if(copyMatches) {
-                                nodes[i].addMatches(parent);
-                            }
-                            result.add(nodes[i]);
+                            result.add(copyMatches ? nodes[i].withMatchesOf(parent) : nodes[i]);
                             break;
                         case NodeSet.ANCESTOR:
                             NodeProxy.propagatePredicateContextFrom(parent, nodes[i], contextId);
-                            if(copyMatches) {
-                                parent.addMatches(nodes[i]);
-                            }
-                            result.add(parent, 1);
+                            result.add(copyMatches ? parent.withMatchesOf(nodes[i]) : parent, 1);
                             break;
                     }
                 }
@@ -378,17 +372,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                         switch(mode) {
                             case NodeSet.DESCENDANT:
                                 NodeProxy.propagatePredicateContextFrom(nodes[i], parent, contextId);
-                                if(copyMatches) {
-                                    nodes[i].addMatches(parent);
-                                }
-                                result.add(nodes[i]);
+                                result.add(copyMatches ? nodes[i].withMatchesOf(parent) : nodes[i]);
                                 break;
                             case NodeSet.ANCESTOR:
                                 NodeProxy.propagatePredicateContextFrom(parent, nodes[i], contextId);
-                                if(copyMatches) {
-                                    parent.addMatches(nodes[i]);
-                                }
-                                result.add(parent, 1);
+                                result.add(copyMatches ? parent.withMatchesOf(nodes[i]) : parent, 1);
                                 break;
                         }
                     }
@@ -580,7 +568,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 if(mergeContext) {
                     nodes[j].addContext(nodes[i]);
                 }
-                nodes[j].addMatches(nodes[i]);
+                nodes[j] = nodes[j].withMatchesOf(nodes[i]);
             }
         }
         size = ++j;
@@ -925,8 +913,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             ContextItem contextNode = current.getContext();
             while(contextNode != null) {
                 if(contextNode.getContextId() == contextId) {
-                    final NodeProxy context = contextNode.getNode();
-                    context.addMatches(current);
+                    final NodeProxy context = contextNode.getNode().withMatchesOf(current);
                     if(Expression.NO_CONTEXT_ID != contextId) {
                         context.addContextNode(contextId, context);
                     }

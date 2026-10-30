@@ -472,19 +472,21 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             if (!hasNodes) {
                 return;
             }
-            final Map<Item, Item> nodes = new TreeMap<>(new ItemComparator());
+            // the position each node is kept at
+            final Map<Item, Integer> nodes = new TreeMap<>(new ItemComparator());
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
-                    final Item found = nodes.get(values[i]);
-                    if (found == null) {
+                    final Integer kept = nodes.get(values[i]);
+                    if (kept == null) {
                         final Item item = values[i];
+                        nodes.put(item, j);
                         values[j++] = item;
-                        nodes.put(item, item);
                     } else {
-                        final NodeValue nv = (NodeValue) found;
+                        final NodeValue nv = (NodeValue) values[kept];
                         if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                            ((NodeProxy) nv).addMatches((NodeProxy) values[i]);
+                            // the node kept may be the caller's: its place takes a copy with the matches of both
+                            values[kept] = ((NodeProxy) nv).withMatchesOf((NodeProxy) values[i]);
                         }
                     }
                 } else {

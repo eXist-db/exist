@@ -103,6 +103,21 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return (NodeProxy) itemAt(pos);
     }
 
+    /**
+     * Puts a node in the set, in place of the one equal to it if there is one.
+     *
+     * @param proxy the node
+     */
+    final void put(final NodeProxy proxy) {
+        final Node n = searchData(root, proxy);
+        if (n == null) {
+            add(proxy);
+        } else {
+            n.setData(proxy);
+            setHasChanged();
+        }
+    }
+
     @Override
     public final NodeProxy get(final NodeProxy p) {
         final Node n = searchData(root, p);
