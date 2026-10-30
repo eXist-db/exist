@@ -53,7 +53,8 @@ function poon:setUp() {
     xmldb:create-collection("/db", $poon:NAME),
     (: "t" is in the attribute, "ee" in the text: past the attribute's value, and where the distance would fit :)
     xmldb:store($poon:COLLECTION, "past-the-value.xml", <doc><el att="tx">xxxxee</el></doc>),
-    xmldb:store($poon:COLLECTION, "distance-fits.xml", <doc><el att="tx">xxee</el></doc>)
+    xmldb:store($poon:COLLECTION, "distance-fits.xml", <doc><el att="tx">xxee</el></doc>),
+    xmldb:store($poon:COLLECTION, "own-query.xml", <doc><el att="ee">xxee</el></doc>)
 };
 
 declare
@@ -77,4 +78,11 @@ declare
     %test:assertEquals(0)
 function poon:wildcard-parts-on-different-nodes-path() {
     count(collection($poon:COLLECTION)//el[ngram:wildcard-contains(., "t.ee")])
+};
+
+(: the query is computed for each node, and only this node's text has its own attribute's value :)
+declare
+    %test:assertEquals(1)
+function poon:query-computed-from-the-node() {
+    count(collection($poon:COLLECTION)//el[ngram:contains(., string(@att))])
 };
