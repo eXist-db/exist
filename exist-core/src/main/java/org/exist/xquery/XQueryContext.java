@@ -326,6 +326,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected MutableDocumentSet modifiedDocuments = null;
 
     /**
+     * The collections that fn:collection() has resolved during the query, by key, with the database's write lock
+     * generation when each was resolved.
+     */
+    @Nullable private Map<String, ResolvedCollection> resolvedCollections = null;
+
+    /**
      * A general-purpose map to set attributes in the current query context.
      */
     protected Map<String, Object> attributes = new HashMap<>();
@@ -1449,6 +1455,42 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return a sequence of document nodes
      * @throws XPathException in case of dynamic error
      */
+    /**
+     * A collection that fn:collection() resolved earlier in the query, if nothing has been written to the
+     * database since, see {@link org.exist.storage.lock.LockManager#getWriteLockGeneration()}.
+     *
+     * @param key identifies the collection, its depth and the user
+     * @return the collection's items, or null if it has not been resolved, or something has been written since
+     */
+    public @Nullable Sequence getResolvedCollection(final String key) {
+        if (resolvedCollections == null) {
+            return null;
+        }
+        final ResolvedCollection resolved = resolvedCollections.get(key);
+        if (resolved == null) {
+            return null;
+        }
+        if (resolved.writeLockGeneration() != getBroker().getBrokerPool().getLockManager().getWriteLockGeneration()) {
+            resolvedCollections.remove(key);
+            return null;
+        }
+        return resolved.items();
+    }
+
+    /**
+     * Records a collection that fn:collection() has resolved, for reuse later in the query.
+     *
+     * @param key identifies the collection, its depth and the user
+     * @param writeLockGeneration the database's write lock generation from before the collection was resolved
+     * @param items the collection's items
+     */
+    public void setResolvedCollection(final String key, final long writeLockGeneration, final Sequence items) {
+        if (resolvedCollections == null) {
+            resolvedCollections = new HashMap<>();
+        }
+        resolvedCollections.put(key, new ResolvedCollection(writeLockGeneration, items));
+    }
+
     public @Nullable Sequence getDynamicallyAvailableCollection(final String uri) throws XPathException {
         if (dynamicCollections == null) {
             return null;
@@ -1547,6 +1589,8 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             modifiedDocuments = null;
         }
+
+        resolvedCollections = null;
 
         calendar = null;
         implicitTimeZone = null;
@@ -4084,5 +4128,8 @@ public class XQueryContext implements BinaryValueManager, Context {
                     "location='" + location + '\'' +
                     '}';
         }
+    }
+
+    private record ResolvedCollection(long writeLockGeneration, Sequence items) {
     }
 }
