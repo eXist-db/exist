@@ -477,10 +477,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public void addMatch(final Match m) {
         if (this.match == null) {
-            this.match = m;
-            if (match.getNextMatch() != null) {
-                match.setNextMatch(null);
-            }
+            // a copy: m may be the head of another node's chain, which must keep the rest of it
+            this.match = m.newCopy();
             return;
         }
 
@@ -491,7 +489,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 return;
             }
             if (next.getNextMatch() == null) {
-                next.setNextMatch(m);
+                next.setNextMatch(m.newCopy());
                 break;
             }
             next = next.getNextMatch();
