@@ -29,6 +29,7 @@ import antlr.collections.AST;
 public class XQueryFunctionAST extends XQueryAST {
 
     private String doc = null;
+    private boolean updating = false;
 
     public XQueryFunctionAST() {
         super();
@@ -50,5 +51,13 @@ public class XQueryFunctionAST extends XQueryAST {
     @Override
     public String getDoc() {
         return doc;
+    }
+
+    public boolean isUpdating() {
+        return updating;
+    }
+
+    public void setUpdating(boolean updating) {
+        this.updating = updating;
     }
 }
