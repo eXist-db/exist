@@ -86,6 +86,7 @@ public interface Namespaces {
 
 	//SAXfeatures / properties : move toadedicated package
 	String SAX_LEXICAL_HANDLER = "http://xml.org/sax/properties/lexical-handler";
+	String SAX_DECLARATION_HANDLER = "http://xml.org/sax/properties/declaration-handler";
 	String SAX_NAMESPACES = "http://xml.org/sax/features/namespaces";	
 	String SAX_NAMESPACES_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";	
 	String SAX_VALIDATION = "http://xml.org/sax/features/validation";	

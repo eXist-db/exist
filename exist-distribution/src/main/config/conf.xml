@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.8.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.8.1">
 
     <!-- 
         Configures the database backend.
@@ -727,6 +727,10 @@
                             the name of the feature flag
                         - value
                             the value of the feature flag
+
+                    A feature set here takes precedence over the features
+                    implied by the validation mode, including the validation
+                    mode of a collection configuration.
     -->
     <parser>
 
@@ -877,6 +881,19 @@
             
             Possible values: "yes", "no", "auto". "auto" will leave validation 
             to the parser.   
+
+            Regardless of the mode, the external DTD subset of a document is
+            read when it is found in one of the catalogs configured below, so
+            that the entities it declares are expanded. Without validation, a
+            DTD that is not in a catalog is only loaded when it is stored in
+            the database, never from the file system or the network. When
+            validating, such a DTD is resolved from its system id.
+
+            A document that refers to an entity which cannot be expanded is
+            rejected, instead of being stored without the content of the
+            entity. Entities that are declared as external, but are not
+            fetched because "external-general-entities" is disabled in the
+            parser features, are skipped with a warning.
             
      -->
     <validation mode="no">
