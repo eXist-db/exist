@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/xquery/WhereClause.java
+  s_15ffdc06d1db19::t_170bb310963b4a 31,41,44,46,400-403,413-417,419,429-450
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java
+  s_15ffdc06d1db19::t_e24a53ce41cae3 100-108,229-233
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_ecbf80c2f67f37 180-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6b54eb53d21980dadae981c25b6942ae4209610c",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
