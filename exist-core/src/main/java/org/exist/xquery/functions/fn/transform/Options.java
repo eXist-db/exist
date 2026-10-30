@@ -32,6 +32,8 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmValue;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.memtree.NamespaceNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.ErrorCodes;
@@ -119,7 +121,12 @@ class Options {
 
 
     final Optional<Long> sourceTextChecksum;
-    final String stylesheetNodeDocumentPath;
+
+    /**
+     * Identifies the stylesheet for the cache of compiled stylesheets, or empty if it can't be cached: a
+     * stylesheet-node that isn't stored in the database has no identity apart from its content.
+     */
+    final Optional<String> stylesheetCacheKey;
 
     final Optional<FunctionReference> postProcess;
 
@@ -197,7 +204,7 @@ class Options {
                             "These options cannot both be supplied.");
         }
         sourceTextChecksum = getSourceTextChecksum(options);
-        stylesheetNodeDocumentPath = getStylesheetNodeDocumentPath(options);
+        stylesheetCacheKey = getStylesheetCacheKey(options);
 
         shouldCache = Options.CACHE.get(xsltVersion, options);
 
@@ -264,9 +271,28 @@ class Options {
         return Optional.empty();
     }
 
-    private String getStylesheetNodeDocumentPath(final MapType options) throws XPathException {
-        final Optional<Node> stylesheetNode = Options.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
-        return stylesheetNode.map(node -> TreeUtils.pathTo(node).toString()).orElse("");
+    private Optional<String> getStylesheetCacheKey(final MapType options) throws XPathException {
+        final Optional<NodeValue> stylesheetNode = Options.STYLESHEET_NODE.get(options);
+        if (stylesheetNode.isPresent()) {
+            if (stylesheetNode.get().getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                return Optional.empty();
+            }
+            // a stored node: its document, as last modified, and its place in it
+            final Node node = stylesheetNode.get().getNode();
+            if (node instanceof DocumentImpl document) {
+                return Optional.of(Tuple("node", document.getURI(), document.getLastModified(), "").toString());
+            }
+            final NodeHandle handle = (NodeHandle) node;
+            final DocumentImpl document = handle.getOwnerDocument();
+            return Optional.of(Tuple("node", document.getURI(), document.getLastModified(), handle.getNodeId()).toString());
+        }
+
+        final String baseURI = resolvedStylesheetBaseURI.map(AnyURIValue::getStringValue).orElse("");
+        if (sourceTextChecksum.isPresent()) {
+            return Optional.of(Tuple("text", sourceTextChecksum.get(), baseURI).toString());
+        }
+        // a stylesheet-location, resolved to the stylesheet's base URI
+        return resolvedStylesheetBaseURI.isPresent() ? Optional.of(Tuple("location", baseURI).toString()) : Optional.empty();
     }
 
     private void validateRequestedProperties(final MapType requestedProperties) throws XPathException {
