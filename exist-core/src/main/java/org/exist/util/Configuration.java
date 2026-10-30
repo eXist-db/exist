@@ -31,6 +31,7 @@ import org.exist.repo.Deployment;
 
 import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
+import org.exist.source.UrlConnections;
 import org.exist.storage.BrokerPoolConstants;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
@@ -220,9 +221,16 @@ import static org.exist.xquery.XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING;
 import static org.exist.xquery.XQueryContext.PROPERTY_ENFORCE_INDEX_USE;
 import static org.exist.xquery.XQueryContext.PROPERTY_MODULE_PARAMETERS;
 import static org.exist.xquery.XQueryContext.PROPERTY_MODULE_REGISTRATIONS;
+import static org.exist.xquery.XQueryContext.PROPERTY_RESOLVE_NAMESPACE_AS_URL;
 import static org.exist.xquery.XQueryContext.PROPERTY_STATIC_MODULE_MAP;
+import static org.exist.xquery.XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT;
+import static org.exist.xquery.XQueryContext.PROPERTY_URL_READ_TIMEOUT;
 import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE;
 import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL;
+import static org.exist.xquery.XQueryContext.RESOLVE_NAMESPACE_AS_URL_ATTRIBUTE;
+import static org.exist.xquery.XQueryContext.RESOLVE_NAMESPACE_AS_URL_DEFAULT;
+import static org.exist.xquery.XQueryContext.URL_CONNECT_TIMEOUT_ATTRIBUTE;
+import static org.exist.xquery.XQueryContext.URL_READ_TIMEOUT_ATTRIBUTE;
 import static org.exist.xquery.XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE;
 import static org.exist.xquery.XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE;
 import static org.exist.xquery.XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
@@ -478,6 +486,16 @@ public class Configuration implements ErrorHandler {
     }
 
     @Nullable
+    private static Integer asNonNegativeInteger(@Nullable final String value) {
+        final Integer integer = asInteger(value);
+        if (integer != null && integer < 0) {
+            LOG.warn("Negative value {} is not allowed, using the default", value);
+            return null;
+        }
+        return integer;
+    }
+
+    @Nullable
     private static Long asLong(@Nullable final String value) {
         if (value != null) {
             try {
@@ -558,6 +576,9 @@ public class Configuration implements ErrorHandler {
         configureProperty(xquery, XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE, PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
         configureProperty(xquery, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE, PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration::asBoolean, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
         configureProperty(xquery, PerformanceStats.CONFIG_ATTR_TRACE, PerformanceStats.CONFIG_PROPERTY_TRACE);
+        configureProperty(xquery, RESOLVE_NAMESPACE_AS_URL_ATTRIBUTE, PROPERTY_RESOLVE_NAMESPACE_AS_URL, Configuration::asBoolean, RESOLVE_NAMESPACE_AS_URL_DEFAULT);
+        configureProperty(xquery, URL_CONNECT_TIMEOUT_ATTRIBUTE, PROPERTY_URL_CONNECT_TIMEOUT, Configuration::asNonNegativeInteger, UrlConnections.DEFAULT_CONNECT_TIMEOUT);
+        configureProperty(xquery, URL_READ_TIMEOUT_ATTRIBUTE, PROPERTY_URL_READ_TIMEOUT, Configuration::asNonNegativeInteger, UrlConnections.DEFAULT_READ_TIMEOUT);
 
         // built-in-modules
         final Map<String, Class<?>> classMap = new HashMap<>();
