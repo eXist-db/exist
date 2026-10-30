@@ -947,11 +947,52 @@
             <!--
                 Core Modules (SPI-registered; only entries with non-default parameters remain)
             -->
+            <module uri="http://www.w3.org/2005/xpath-functions" class="org.exist.xquery.functions.fn.FnModule">
+
+                <!--
+                    Access to Environment Variables via the fn:available-environment-variables#0
+                    and fn:environment-variable#1 functions can be restricted for Security Purposes.
+                    The syntax of the parameter keys is:
+                        "environmentVariableAccess.<Name of an Environment Variable>.[requiresGroup|requiresUser]"
+                    Each parameter's value is a single group or user name; it is NOT a comma- or
+                    space-separated list (e.g. value="dba,admin" is treated as one literal name
+                    that will never match, not as "dba" or "admin"). If you have multiple groups
+                    or users who wish to access the same Environment Variable, then you may add
+                    multiple parameters repeating the same key, e.g.:
+                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="dba"/>
+                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="admin"/>
+                    <parameter name="environmentVariableAccess.PATH.requiresUser" value="my-special-user"/>
+                    The special symbol "*", meaning "otherwise", may be used to indicate all Environment Variables
+                    which have not otherwise been specified in this config.
+                       If "*" is not set in this config, then it is set to the "DBA" group by default.
+                -->
+                <parameter name="environmentVariableAccess.*.requiresGroup" value="dba"/>
+
+            </module>
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
             <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq"/>
             <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
                 <parameter name="evalDisabled" value="false"/>
+
+                <!--
+                    Access to Java System Properties via the util:available-system-properties#0
+                    and util:system-property#1 functions can be restricted for Security Purposes.
+                    The syntax of the parameter keys is:
+                        "systemPropertyAccess.<Name of a Java System Property>.[requiresGroup|requiresUser]"
+                    Each parameter's value is a single group or user name; it is NOT a comma- or
+                    space-separated list (e.g. value="dba,admin" is treated as one literal name
+                    that will never match, not as "dba" or "admin"). If you have multiple groups
+                    or users who wish to access the same System Property, then you may add
+                    multiple parameters repeating the same key, e.g.:
+                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="dba"/>
+                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="admin"/>
+                    <parameter name="systemPropertyAccess.PATH.requiresUser" value="my-special-user"/>
+                    The special symbol "*", meaning "otherwise", may be used to indicate all System Properties
+                    which have not otherwise been specified in this config.
+                       If "*" is not set in this config, then it is set to the "DBA" group by default.
+                -->
+                <parameter name="systemPropertyAccess.*.requiresGroup" value="dba"/>
             </module>
             <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule">
                 <!-- set to false to disable the use of xs:anyURI as a $contents value for xmldb:store and xmldb:store-as-binary function -->
