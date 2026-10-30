@@ -17,6 +17,7 @@ JMH micro-benchmarks for `exist-core` (and the Lucene index extension, which sev
 | `ReindexBenchmark` | `org.exist.storage` | End-to-end `xmldb:reindex()` fast path ([#572](https://github.com/eXist-db/exist/issues/572)) |
 | `LucenePhraseQueryBenchmark` | `org.exist.indexing.lucene` | Query-time Lucene phrase lookup over many small documents ([#2812](https://github.com/eXist-db/exist/issues/2812)) |
 | `ReindexDeleteStrategyBenchmark` | `org.exist.indexing.lucene` | Reindex-time Lucene delete strategies for mixed document shapes |
+| `LuceneFacetsBenchmark` | `org.exist.indexing.lucene` | A Lucene search with and without reading its facets, over small and large taxonomies |
 | `UtilExpandHighlightingBenchmark` | `org.exist.indexing.lucene` | `util:expand` match-highlighting cost vs. highlighting off, single-hit and batch ([#5738](https://github.com/eXist-db/exist/issues/5738), [#6387](https://github.com/eXist-db/exist/issues/6387)) |
 
 ## Running

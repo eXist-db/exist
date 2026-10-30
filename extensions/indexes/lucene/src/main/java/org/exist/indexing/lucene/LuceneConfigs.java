@@ -22,6 +22,7 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.search.Query;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,9 +64,19 @@ public final class LuceneConfigs {
     public record Group(LuceneConfig config, DocumentSet docs) {
     }
 
+    /**
+     * The facet dimensions of a query.
+     *
+     * @param config what to count with: each dimension as the first group defining it does
+     * @param conflicting the dimensions the groups define differently, which can't be read
+     */
+    record FacetDimensions(FacetsConfig config, Set<String> conflicting) {
+    }
+
     private final List<Group> groups;
     /** each group's document filter, built once per query however many qnames it searches */
     private final Map<Group, Query> docsFilters = new IdentityHashMap<>();
+    private @Nullable FacetDimensions facetDimensions;
 
     private LuceneConfigs(final List<Group> groups) {
         this.groups = groups;
@@ -176,9 +188,40 @@ public final class LuceneConfigs {
     }
 
     /**
-     * @return the configuration of the first group, for what a query has only one of, such as its facets
+     * The facet dimensions of a query over all the groups, which share one taxonomy, so that the facets of all the hits
+     * are counted once.
+     *
+     * @return each dimension as the groups define it, and which of them they define differently
      */
-    public LuceneConfig first() {
-        return groups.get(0).config();
+    FacetDimensions facetDimensions() {
+        if (facetDimensions == null) {
+            facetDimensions = isUniform()
+                    ? new FacetDimensions(groups.get(0).config().facetsConfig, Set.of())
+                    : mergedFacetDimensions();
+        }
+        return facetDimensions;
+    }
+
+    private FacetDimensions mergedFacetDimensions() {
+        final FacetsConfig merged = new FacetsConfig();
+        final Map<String, FacetsConfig.DimConfig> defined = new HashMap<>();
+        final Set<String> conflicting = new HashSet<>();
+        for (final Group group : groups) {
+            for (final Map.Entry<String, FacetsConfig.DimConfig> dim : group.config().facetsConfig.getDimConfigs().entrySet()) {
+                final FacetsConfig.DimConfig config = dim.getValue();
+                final FacetsConfig.DimConfig other = defined.putIfAbsent(dim.getKey(), config);
+                if (other == null) {
+                    merged.setHierarchical(dim.getKey(), config.hierarchical);
+                    merged.setMultiValued(dim.getKey(), config.multiValued);
+                    merged.setRequireDimCount(dim.getKey(), config.requireDimCount);
+                    merged.setIndexFieldName(dim.getKey(), config.indexFieldName);
+                } else if (other.hierarchical != config.hierarchical || other.multiValued != config.multiValued
+                        || other.requireDimCount != config.requireDimCount
+                        || !other.indexFieldName.equals(config.indexFieldName)) {
+                    conflicting.add(dim.getKey());
+                }
+            }
+        }
+        return new FacetDimensions(merged, conflicting);
     }
 }
