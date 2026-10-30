@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_ecbf80c2f67f37 180-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b81093c7f1563a80ae03c11179b832b3d688ff06",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
