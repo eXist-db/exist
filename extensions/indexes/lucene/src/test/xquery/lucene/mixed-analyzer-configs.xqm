@@ -72,6 +72,25 @@ declare variable $mac:XCONF-WHITESPACE :=
         </index>
     </collection>;
 
+(: lowercased when indexed, not in a query :)
+declare variable $mac:XCONF-SPLIT :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <lucene>
+                <analyzer id="split">
+                    <index>
+                        <tokenizer name="standard"/>
+                        <filter name="lowercase"/>
+                    </index>
+                    <query>
+                        <tokenizer name="standard"/>
+                    </query>
+                </analyzer>
+                <text qname="p" analyzer="split"/>
+            </lucene>
+        </index>
+    </collection>;
+
 declare variable $mac:DOC := <div><p>The treaties were signed.</p></div>;
 
 (: more sub-collections, apart from those of the other tests: "unconfigured" has lost its configuration, with its
@@ -79,12 +98,13 @@ declare variable $mac:DOC := <div><p>The treaties were signed.</p></div>;
 declare %private function mac:setup-more() {
     let $conf := xmldb:create-collection("/db/system/config/db", $mac:parent-more)
     let $col := xmldb:create-collection("/db", $mac:parent-more)
-    for $sub in ("standard", "english", "whitespace", "unconfigured")
+    for $sub in ("standard", "english", "whitespace", "split", "unconfigured")
     let $subConf := xmldb:create-collection($conf, $sub)
     let $_ := xmldb:store($subConf, "collection.xconf",
         switch ($sub)
             case "english" return $mac:XCONF-ENGLISH
             case "whitespace" return $mac:XCONF-WHITESPACE
+            case "split" return $mac:XCONF-SPLIT
             default return $mac:XCONF-STANDARD)
     let $_ := xmldb:store(xmldb:create-collection($col, $sub), "doc.xml", $mac:DOC)
     return if ($sub = "unconfigured") then xmldb:remove($subConf, "collection.xconf") else ()
@@ -184,4 +204,12 @@ declare
     %test:assertEquals(3)
 function mac:collection-without-a-configuration-over-two-others() {
     count((("standard", "english", "unconfigured") ! collection("/db/" || $mac:parent-more || "/" || .))//p[ft:query(., "treaties")])
+};
+
+(: an analyzer named by the query and defined in another configuration queries with its query chain :)
+declare
+    %test:assertEquals(0, 2)
+function mac:query-analyzer-of-another-configuration() {
+    for $query in ("TREATIES", "treaties")
+    return count((("standard", "split") ! collection("/db/" || $mac:parent-more || "/" || .))//p[ft:query(., $query, map { "query-analyzer-id": "split" })])
 };

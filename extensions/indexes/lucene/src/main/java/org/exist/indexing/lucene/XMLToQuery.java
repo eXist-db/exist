@@ -67,12 +67,17 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parses the XML representation of a Lucene query and transforms
  * it into a tree of {@link org.apache.lucene.search.Query} objects.
  */
 public class XMLToQuery {
+
+    /** an escaped character, or wildcards */
+    private static final Pattern WILDCARDS = Pattern.compile("(\\\\.)|([?*]+)");
 
     private final LuceneIndex index;
 
@@ -382,21 +387,24 @@ public class XMLToQuery {
     }
     
     /**
-     * Normalizes the pattern with the analyzer so it matches index terms.
-     * For prefix patterns (ending with * and no other wildcards), analyzes the stem.
-     * For other patterns, uses raw text (analyzer may alter wildcards undesirably).
+     * Normalizes the literal parts of a pattern with the analyzer so they match index terms, as the query string
+     * parser does: a pattern isn't a word, so it is folded but not stemmed.
      */
-    private String normalizeMultiTermPattern(String field, String pattern, Analyzer analyzer) throws XPathException {
-        if (analyzer == null) return pattern;
-        int lastStar = pattern.lastIndexOf('*');
-        int lastQ = pattern.lastIndexOf('?');
-        boolean isSimplePrefix = lastStar == pattern.length() - 1 && lastQ < 0 && pattern.indexOf('*') == lastStar;
-        if (isSimplePrefix) {
-            String stem = pattern.substring(0, lastStar);
-            String term = getTerm(field, stem, analyzer);
-            return term != null ? term + "*" : pattern;
+    private static String normalizeMultiTermPattern(final String field, final String pattern, final Analyzer analyzer) {
+        final StringBuilder normalized = new StringBuilder();
+        final Matcher wildcards = WILDCARDS.matcher(pattern);
+        int last = 0;
+        while (wildcards.find()) {
+            if (wildcards.start() > last) {
+                normalized.append(analyzer.normalize(field, pattern.substring(last, wildcards.start())).utf8ToString());
+            }
+            normalized.append(wildcards.group());
+            last = wildcards.end();
         }
-        return pattern;
+        if (last < pattern.length()) {
+            normalized.append(analyzer.normalize(field, pattern.substring(last)).utf8ToString());
+        }
+        return normalized.toString();
     }
 
     private Query wildcardQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
@@ -412,13 +420,12 @@ public class XMLToQuery {
     /**
      * Prefix queries must use the analyzer to normalize the prefix so it matches
      * index terms (e.g. "rüssels" normalizes to "russels" when the index uses
-     * NoDiacriticsStandardAnalyzer).
+     * NoDiacriticsStandardAnalyzer). A prefix isn't a word, so it is not stemmed.
      */
     private Query prefixQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
         String prefix = getText(node);
         if (analyzer != null) {
-            String term = getTerm(field, prefix, analyzer);
-            if (term != null) prefix = term;
+            prefix = analyzer.normalize(field, prefix).utf8ToString();
         }
         PrefixQuery query = new PrefixQuery(new Term(field, prefix));
         setRewriteMethod(query, node, options);

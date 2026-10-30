@@ -50,6 +50,7 @@ import org.exist.indexing.ReindexScope;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
+import org.exist.indexing.lucene.analyzers.IndexQueryAnalyzer;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -649,7 +650,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs, qname, config, queryStr);
                         options.configureParser(parser.getConfiguration());
                         configQuery = parser.parse(queryStr);
-                        configQuery = AnalyzingQueryRewriter.rewrite(configQuery, analyzer);
                     }
                     return withConfig(filterByIndexType(configQuery, field), config, options);
                 });
@@ -983,22 +983,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    /**
-     * Calls {@link LuceneUtil#extractTerms(Query, Map, IndexReader, boolean)}  to extract
-     * the terms which would be matched by the given query.
-     *
-     * @param query to extract terms for
-     * @return the map returned by {@link LuceneUtil#extractTerms(Query, Map, IndexReader, boolean)}
-     * @throws IOException in case of Lucene IO error
-     */
-    public Map<Object, Query> getTerms(final Query query) throws IOException {
-        return index.withReader(reader -> {
-            final Map<Object, Query> termMap = new TreeMap<>();
-            LuceneUtil.extractTerms(query, termMap, reader, false);
-            return termMap;
-        });
-    }
-
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
             String field, String queryString, int axis, QueryOptions options)
             throws IOException, XPathException {
@@ -1010,7 +994,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.debug("Using analyzer {} for {}", analyzer, queryString);
                 final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs);
                 options.configureParser(parser.getConfiguration());
-                return AnalyzingQueryRewriter.rewrite(parser.parse(queryString), analyzer);
+                return parser.parse(queryString);
             });
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     axis, searcher, query, configs.facetDimensions());
@@ -1302,7 +1286,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (fields.length == 0) {
             return null;
         }
-        final Analyzer a = cfg.getAnalyzer((QName) null);
+        // a filter query is a query: parsed with the query chain, as the main query is
+        final Analyzer a = IndexQueryAnalyzer.forQuery(cfg.getAnalyzer((QName) null));
         if (a == null) {
             return null;
         }
@@ -1474,13 +1459,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
-            final Analyzer searchAnalyzer = index.getDefaultAnalyzer();
+            final Analyzer searchAnalyzer = IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryText);
-            query = AnalyzingQueryRewriter.rewrite(query, searchAnalyzer);
 
             // extract all used fields from query
             final String[] fields;
@@ -1490,7 +1474,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 fields = fieldsToGet;
             }
 
-            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.searcher().getIndexReader());
+            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query);
 
             context.pushDocumentContext();
             try {
@@ -1501,7 +1485,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final int nodeNr = builder.startElement("", "results", "results", null);
 
                 // Perform actual search
-                final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
+                // stored text is highlighted with the analyzer that indexed it, its index chain
+                final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, index.getDefaultAnalyzer(), highlighter);
                 searcher.searcher().search(query, collector);
 
                 // finish root element
@@ -1589,7 +1574,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             attribs.clear();
                             attribs.addAttribute("", "name", "name", "CDATA", field);
                             for (String content : fieldContent) {
-                                List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                                List<Offset> offsets = highlighter.getOffsets(field, content, searchAnalyzer);
                                 builder.startElement("", "field", "field", attribs);
                                 if (offsets != null) {
                                     highlighter.highlight(content, offsets, builder);
@@ -2026,7 +2011,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (opts.getQueryAnalyzerId() != null && config != null && config.getAnalyzerById(opts.getQueryAnalyzerId()) == null) {
             final Analyzer analyzer = configs.analyzerById(opts.getQueryAnalyzerId());
             if (analyzer != null) {
-                return analyzer;
+                return IndexQueryAnalyzer.forQuery(analyzer);
             }
         }
         return getQueryAnalyzer(config, field, qname, opts);
@@ -2059,10 +2044,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 analyzer = config.getAnalyzer(field);
             }
             if (analyzer != null) {
-                return analyzer;
+                return IndexQueryAnalyzer.forQuery(analyzer);
             }
         }
-        return index.getDefaultAnalyzer();
+        return IndexQueryAnalyzer.forQuery(index.getDefaultAnalyzer());
     }
 
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {
