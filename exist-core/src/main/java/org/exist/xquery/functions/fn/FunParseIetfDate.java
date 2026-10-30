@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Parses a string containing the date and time in IETF format,
@@ -171,7 +172,7 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void dayName() {
-            final String lower = value.substring(vidx).toLowerCase();
+            final String lower = value.substring(vidx).toLowerCase(Locale.ROOT);
             String matched = null;
             for (final String dn : lowerDayNames) {
                 if (lower.startsWith(dn)) {
@@ -213,7 +214,7 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private boolean startsWithMonthName(final String s) {
-            final String lower = s.toLowerCase();
+            final String lower = s.toLowerCase(Locale.ROOT);
             for (final String mn : lowerMonthNames) {
                 if (lower.startsWith(mn)) {
                     return true;
@@ -267,7 +268,7 @@ public class FunParseIetfDate extends BasicFunction {
             if (vidx > vlen) {
                 throw new IllegalArgumentException(value);
             }
-            final String monthName = value.substring(vstart, vidx).toLowerCase();
+            final String monthName = value.substring(vstart, vidx).toLowerCase(Locale.ROOT);
             final int idx = Arrays.asList(lowerMonthNames).indexOf(monthName);
             if (idx < 0) {
                 throw new IllegalArgumentException(value);
@@ -335,7 +336,7 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private boolean startsWithTzName() {
-            final String upper = value.substring(vidx).toUpperCase();
+            final String upper = value.substring(vidx).toUpperCase(Locale.ROOT);
             for (final String tz : tzNames) {
                 if (upper.startsWith(tz)) {
                     // Make sure the following character isn't another letter
@@ -355,7 +356,7 @@ public class FunParseIetfDate extends BasicFunction {
             while (isAsciiLetter(peek())) {
                 vidx++;
             }
-            final String tzName = value.substring(vstart, vidx).toUpperCase();
+            final String tzName = value.substring(vstart, vidx).toUpperCase(Locale.ROOT);
             if (!TZ_MAP.containsKey(tzName)) {
                 throw new IllegalArgumentException(value);
             }

@@ -23,6 +23,7 @@ package org.exist.xquery.functions.integer;
 
 import com.ibm.icu.text.MessageFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
+import com.ibm.icu.util.ULocale;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.xquery.XPathException;
 
@@ -71,6 +72,23 @@ public class WordPicture extends IntegerPicture {
     WordPicture(final CaseAndCaps capitalization, final FormatModifier formatModifier) {
         this.capitalization = capitalization;
         this.formatModifier = formatModifier;
+    }
+
+    /**
+     * ICU silently substitutes the JVM default locale for a language it has no spellout rules for,
+     * which makes the result depend on the machine. Fall back to English instead, as the
+     * F&amp;O spec asks for an unsupported language.
+     *
+     * @param locale the requested locale
+     * @return the locale if ICU has spellout rules for its language, otherwise {@link Locale#ENGLISH}
+     */
+    static Locale spelloutLocale(final Locale locale) {
+        final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT);
+        final ULocale actual = ruleBasedNumberFormat.getLocale(ULocale.ACTUAL_LOCALE);
+        if (actual != null && actual.getLanguage().equals(locale.getLanguage())) {
+            return locale;
+        }
+        return Locale.ENGLISH;
     }
 
     /**
@@ -220,6 +238,6 @@ public class WordPicture extends IntegerPicture {
         if (absInteger.compareTo(bigInteger) != 0) {
             prefix = "-";
         }
-        return prefix + capitalization.formatAndConvert(absInteger.intValue(), locale, formatModifier);
+        return prefix + capitalization.formatAndConvert(absInteger.intValue(), WordPicture.spelloutLocale(locale), formatModifier);
     }
 }

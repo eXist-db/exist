@@ -22,6 +22,8 @@
 
 package org.exist.xquery.functions.fn;
 
+import java.util.Locale;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -135,7 +137,7 @@ supported by the implementation, then an error is raised [err:FOCH0003].""";
         else {
             String newNormalizationForm = "NFC";
 			if (getArgumentCount() > 1)
-				{newNormalizationForm = getArgument(1).eval(contextSequence, null).getStringValue().toUpperCase().trim();}
+				{newNormalizationForm = getArgument(1).eval(contextSequence, null).getStringValue().toUpperCase(Locale.ROOT).trim();}
 			//TODO : handle the "FULLY-NORMALIZED" string...
 			if (newNormalizationForm.isEmpty())
 				{result =  new StringValue(this, s1.getStringValue());}
