@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -227,6 +228,32 @@ public class Field extends BasicFunction {
         return result;
     }
 
+    @Nullable
+    private static LuceneIndexConfig indexDefining(final Iterator<LuceneIndexConfig> configs, final String fieldName) {
+        LuceneIndexConfig first = null;
+        while (configs.hasNext()) {
+            for (LuceneIndexConfig ic = configs.next(); ic != null; ic = ic.getNext()) {
+                if (first == null) {
+                    first = ic;
+                }
+                if (fieldOf(ic, fieldName) != null) {
+                    return ic;
+                }
+            }
+        }
+        return first;
+    }
+
+    @Nullable
+    private static LuceneFieldConfig fieldOf(final LuceneIndexConfig ic, final String fieldName) {
+        for (final AbstractFieldConfig fc : ic.getFacetsAndFields()) {
+            if (fc instanceof LuceneFieldConfig field && fieldName.equals(field.getName())) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     /**
      * Highlight matches in field content using the analyzer defined for the field.
      *
@@ -244,7 +271,8 @@ public class Field extends BasicFunction {
         // one node: its own collection's configuration
         final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), proxy.getOwnerDocument().getCollection());
         final LuceneConfig config = configured != null ? configured : LuceneConfig.DEFAULT_CONFIG;
-        LuceneIndexConfig idxConf = config.getConfig(path).next();
+        // the index of the node's path that defines the field, or the first one: several can be chained for a qname
+        final LuceneIndexConfig idxConf = indexDefining(config.getConfig(path), fieldName);
         if (idxConf == null) {
             // no lucene index: no fields to highlight
             return Sequence.EMPTY_SEQUENCE;
