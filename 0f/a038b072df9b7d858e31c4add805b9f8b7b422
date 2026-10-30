@@ -1,0 +1,45 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_15ffdc06d1db19::t_5dc35249107f14 317-331
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_15ffdc06d1db19::t_3fc74095470cca 127-132,180-184
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Field.java
+  s_15ffdc06d1db19::t_edad4d90e71061 199,218-222,261-277,281,290
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryScope.java
+  s_15ffdc06d1db19::t_a75d9130b5ef03 1-112
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_15ffdc06d1db19::t_f0ab19f4c301c3 68-78,80,83,87
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-scope.xqm
+  s_15ffdc06d1db19::t_6c482b404cf8b6 1-229
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_c87cc867cd30be 73-76
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneScope.java
+  s_15ffdc06d1db19::t_612c64fa2b3d2b 1-29,32-33,35,37-49,51,57-112,186-208
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/SearchScope.java
+  s_15ffdc06d1db19::t_875b35bb8b4c0e 1-25,26-28,29-34,36-58,60-61,62-126,130-238,241,243-324,326,329-365,366-405,413-422,425-426,428-429
+  s_15ffdc06d1db19::t_ff5d0b4b665428 59,127-129,239-240,242,325,327-328,406-412,423-424,427
+  s_15ffdc06d1db19::t_51fdea857e7b02 35
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneQueryScopeTests.java
+  s_15ffdc06d1db19::t_20dfb6f776e5f8 1-28,31-33
+extensions/indexes/lucene/src/test/xquery/lucene/ft-search-scope.xqm
+  s_15ffdc06d1db19::t_54069148ce2536 1-58,73-102,111-303,306-309
+  s_15ffdc06d1db19::t_e1a6d6219a4577 59-72,103-110,304-305,310-327
+extensions/indexes/lucene/src/test/xquery/lucene/scope-dls.xqm
+  s_15ffdc06d1db19::t_51c6859940e5c5 1-45,47-53,56-68,73-141
+  s_15ffdc06d1db19::t_d18e7265945fb1 46,54-55,69-72,142-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0fa038b072df9b7d858e31c4add805b9f8b7b422",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
