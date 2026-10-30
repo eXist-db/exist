@@ -649,7 +649,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     } else {
                         final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs, qname, config, queryStr);
                         options.configureParser(parser.getConfiguration());
-                        configQuery = parser.parse(queryStr);
+                        configQuery = options.applyPhraseAsNear(parser.parse(queryStr));
                     }
                     return withConfig(filterByIndexType(configQuery, field), config, options);
                 });
@@ -994,7 +994,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.debug("Using analyzer {} for {}", analyzer, queryString);
                 final QueryParserWrapper parser = getQueryParser(field, analyzer, configDocs);
                 options.configureParser(parser.getConfiguration());
-                return parser.parse(queryString);
+                return options.applyPhraseAsNear(parser.parse(queryString));
             });
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     axis, searcher, query, configs.facetDimensions());
@@ -1464,7 +1464,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
             options.configureParser(parser.getConfiguration());
-            Query query = parser.parse(queryText);
+            Query query = options.applyPhraseAsNear(parser.parse(queryText));
 
             // extract all used fields from query
             final String[] fields;
