@@ -123,7 +123,7 @@ function doc-as-parameter:named-template-document() {
         "source-node": document { <dummy/> },
         "stylesheet-node": doc($doc-as-parameter:collection || "/with-named-template.xsl"),
         "initial-template": xs:QName('named-template'),
-        "global-context-item" : doc($doc-as-parameter:collection || $doc-as-parameter:source-doc-name),
+        "global-context-item" : doc($doc-as-parameter:collection || "/" || $doc-as-parameter:source-doc-name),
         "stylesheet-params": map {
             xs:QName('v'): doc($doc-as-parameter:collection || "/" || $doc-as-parameter:source-doc-name)
         },
