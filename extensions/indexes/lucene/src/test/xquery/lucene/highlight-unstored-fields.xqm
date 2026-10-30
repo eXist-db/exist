@@ -39,6 +39,11 @@ declare variable $hu:XCONF as element(collection) :=
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
                 <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer id="hu-keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <text qname="hu-chained" analyzer="hu-keyword"/>
+                <text qname="hu-chained">
+                    <field name="hu-chained-field" expression="."/>
+                </text>
                 <text qname="div">
                     <ignore qname="note"/>
                     <inline qname="hi"/>
@@ -64,6 +69,7 @@ declare variable $hu:XML as document-node() :=
                 <head>Peace of Paris</head>
                 <p>Another treaty.</p>
             </div>
+            <hu-chained>Treaty of Paris</hu-chained>
         </volume>
     };
 
@@ -162,4 +168,12 @@ declare
 function hu:query-naming-the-field-marks-its-own-part() {
     let $div := collection($hu:COLLECTION)//div[@id = "d1"][ft:query(., "hu-head-stored:paris OR hu-stored:treaty")]
     return ft:highlight-field-matches($div, "hu-head-stored")//exist:match/string()
+};
+
+(: two indexes on an element, one with a field: the field is highlighted as that index analyzes it :)
+declare
+    %test:assertEquals("Paris")
+function hu:field-of-the-second-index-of-an-element() {
+    let $node := collection($hu:COLLECTION)//hu-chained[ft:query(., "hu-chained-field:paris")]
+    return ft:highlight-field-matches($node, "hu-chained-field")//exist:match/string()
 };
