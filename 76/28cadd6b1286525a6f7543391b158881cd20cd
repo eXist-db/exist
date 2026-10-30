@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_0c571f066899fe 192,196-199
+extensions/indexes/ngram/src/test/xquery/ngram/parts-on-one-node.xqm
+  s_15ffdc06d1db19::t_9008c83a454b3e 1-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7628cadd6b1286525a6f7543391b158881cd20cd",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
