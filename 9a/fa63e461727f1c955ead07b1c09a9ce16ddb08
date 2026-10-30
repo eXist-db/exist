@@ -1,0 +1,26 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PhraseAsNearRewriter.java
+  h_ff0005bef58c9d 50-52,86,94,131,133-134
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  h_ff0005bef58c9d 87-92
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  h_ff0005bef58c9d 69-74
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  h_ff0005bef58c9d 69-74
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Search.java
+  h_ff0005bef58c9d 72-77
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/PhraseAsNearRewriterTest.java
+  h_ff0005bef58c9d 43
+extensions/indexes/lucene/src/test/xquery/lucene/ft-match.xql
+  h_ff0005bef58c9d 42-44,63-68,99-100,306-308,313-325,330-377
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9afa63e461727f1c955ead07b1c09a9ce16ddb08",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
