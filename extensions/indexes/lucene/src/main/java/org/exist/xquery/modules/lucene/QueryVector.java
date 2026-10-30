@@ -26,6 +26,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
@@ -94,6 +95,14 @@ public class QueryVector extends AbstractVectorQueryFunction {
     private boolean nodesArgIsSelf = false;
 
     /**
+     * The name of the step whose predicate holds the call, set by {@link #analyze(AnalyzeContextInfo)} when arg0 is
+     * {@code .}. {@link #preSelect(Sequence, boolean)} searches the indexes of this name: the nodes it is given are
+     * the step's input, not the nodes the step selects, so their names are the wrong ones after the first step.
+     * Mirrors {@link Query}'s {@code contextQNames}. See https://github.com/eXist-db/exist/issues/6936
+     */
+    @Nullable private QName stepQName = null;
+
+    /**
      * Creates a new QueryVector function instance.
      *
      * @param context the XQuery context
@@ -122,6 +131,23 @@ public class QueryVector extends AbstractVectorQueryFunction {
         }
         nodesArgIsSelf = steps.size() == 1 && steps.getFirst() != null
                 && steps.getFirst().getAxis() == Constants.SELF_AXIS;
+        stepQName = null;
+        if (nodesArgIsSelf) {
+            final Expression outerExpr = contextInfo.getContextStep();
+            if (outerExpr instanceof final LocationStep outerStep) {
+                stepQName = getStepQName(outerStep);
+            } else if (outerExpr instanceof final FilteredExpression filtered
+                    && filtered.getExpression() instanceof final LocationStep outerStep) {
+                stepQName = getStepQName(outerStep);
+            }
+        }
+    }
+
+    private static QName getStepQName(final LocationStep step) {
+        final byte type = step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS
+                ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
+        final NodeTest test = step.getTest();
+        return test.getName() == null ? new QName(null, null, type) : new QName(test.getName(), type);
     }
 
     /**
@@ -155,7 +181,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final QueryOptions options = parseOptionsArg(args);
 
         final NodeSet nodes = nodesSeq.toNodeSet();
-        return runSearch(nodes, nodes.getDocumentSet(), nodes, nodes, vector, k, options);
+        return runSearch(nodes, null, nodes.getDocumentSet(), nodes, nodes, vector, k, options);
     }
 
     @Override
@@ -189,16 +215,28 @@ public class QueryVector extends AbstractVectorQueryFunction {
         // the search looks among the context's nodes even when the hits are returned as they are, for the step to
         // select them: the k nearest of the context, not of the documents
         final NodeSet contextSet = useContext ? nodes : null;
-        final Sequence result = runSearch(nodes, contextSequence.getDocumentSet(), contextSet, nodes, vector, k, options);
+        final Sequence result = runSearch(nodes, stepQName, contextSequence.getDocumentSet(), contextSet, nodes, vector, k, options);
         preselectResult = result.toNodeSet();
         return preselectResult;
     }
 
-    /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index/qnames and run the KNN search. */
-    private Sequence runSearch(final NodeSet nodes, final DocumentSet docs, @Nullable final NodeSet contextSet,
-            @Nullable final NodeSet within, final float[] vector, final int k, final QueryOptions options) throws XPathException {
+    /**
+     * The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the
+     * index/qnames and run the KNN search. The qnames are those matching {@code name} if it is given, or else the
+     * names of {@code nodes}.
+     */
+    private Sequence runSearch(final NodeSet nodes, @Nullable final QName name, final DocumentSet docs,
+            @Nullable final NodeSet contextSet, @Nullable final NodeSet within, final float[] vector, final int k,
+            final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
+        final List<QName> qnames;
+        if (index == null) {
+            qnames = getQNamesFromNodes(nodes);
+        } else if (name != null) {
+            qnames = getDefinedIndexes(index, List.of(name));
+        } else {
+            qnames = resolveQNames(nodes, index);
+        }
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
@@ -234,8 +272,12 @@ public class QueryVector extends AbstractVectorQueryFunction {
         if (!qnames.isEmpty()) {
             return qnames;
         }
+        return getDefinedIndexes(index, null);
+    }
+
+    private List<QName> getDefinedIndexes(final LuceneIndexWorker index, @Nullable final List<QName> qnames) throws XPathException {
         try {
-            return index.getDefinedIndexes(null);
+            return index.getDefinedIndexes(qnames);
         } catch (IOException e) {
             throw new XPathException(this, "Failed to get index config: " + e.getMessage(), e);
         }
