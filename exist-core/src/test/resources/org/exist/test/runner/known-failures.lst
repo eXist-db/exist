@@ -1,0 +1,2 @@
+# the test of failing-assertion.xqm, which fails
+failing-assertion.xqm: assertionFails

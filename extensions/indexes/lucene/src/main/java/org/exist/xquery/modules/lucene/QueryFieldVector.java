@@ -107,7 +107,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
             contextSet = null;
         }
 
-        return runSearch(docs, contextSet, field, vector, k, options);
+        return runSearch(docs, contextSet, contextSet, field, vector, k, options);
     }
 
     @Override
@@ -129,20 +129,23 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         final int k = parseK(args);
         final QueryOptions options = parseOptionsArg(args);
 
-        final NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
-        final Sequence result = runSearch(contextSequence.getDocumentSet(), contextSet, field, vector, k, options);
+        // the search looks among the context's nodes even when the hits are returned as they are, for the step to
+        // select them: the k nearest of the context, not of the documents
+        final NodeSet nodes = contextSequence.toNodeSet();
+        final NodeSet contextSet = useContext ? nodes : null;
+        final Sequence result = runSearch(contextSequence.getDocumentSet(), contextSet, nodes, field, vector, k, options);
         preselectResult = result.toNodeSet();
         return preselectResult;
     }
 
     /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index and run the KNN search. */
-    private Sequence runSearch(final DocumentSet docs, @Nullable final NodeSet contextSet, final String field,
-            final float[] vector, final int k, final QueryOptions options) throws XPathException {
+    private Sequence runSearch(final DocumentSet docs, @Nullable final NodeSet contextSet, @Nullable final NodeSet within,
+            final String field, final float[] vector, final int k, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForField(index, docs, field);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
+                () -> index.searchVector(getContextId(), docs, contextSet, within, field, vector, k, options));
     }
 
     /**

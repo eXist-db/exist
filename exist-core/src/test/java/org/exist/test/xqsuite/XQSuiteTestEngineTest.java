@@ -78,6 +78,18 @@ class XQSuiteTestEngineTest {
     static class MissingFile {
     }
 
+    @XQSuite(value = FIXTURES + "failing-assertion.xqm", knownFailures = FIXTURES + "known-failures.lst", fixture = true)
+    static class KnownFailure {
+    }
+
+    @XQSuite(value = FIXTURES + "single-test.xqm", knownFailures = FIXTURES + "known-failures-stale.lst", fixture = true)
+    static class StaleKnownFailure {
+    }
+
+    @XQSuite(value = FIXTURES + "single-test.xqm", properties = "no-separator", fixture = true)
+    static class MalformedProperty {
+    }
+
     private static EngineExecutionResults run(final Class<?> suite) {
         return EngineTestKit.engine(XQSuiteTestEngine.ENGINE_ID).selectors(selectClass(suite))
                 .configurationParameter(XQSuiteSettings.FIXTURES, "true").execute();
@@ -216,6 +228,35 @@ class XQSuiteTestEngineTest {
         assertEquals(1, entries.size());
         final String millis = entries.get(0).getRequiredPayload(ReportEntry.class).getKeyValuePairs().get("file-time-ms");
         assertTrue(Long.parseLong(millis) >= 0);
+    }
+
+    @Test
+    void listedKnownFailureIsReportedAsAborted() {
+        final EngineExecutionResults results = run(KnownFailure.class);
+        results.testEvents().assertStatistics(stats -> stats.started(1).aborted(1).failed(0));
+        results.containerEvents().assertStatistics(stats -> stats.failed(0));
+        final String message = results.testEvents().aborted().list().get(0).getRequiredPayload(TestExecutionResult.class)
+                .getThrowable().orElseThrow().getMessage();
+        assertTrue(message.startsWith("Known failure, listed in " + FIXTURES + "known-failures.lst"), message);
+        assertTrue(message.contains("assertEquals failed"), "the original failure should stay readable: " + message);
+    }
+
+    @Test
+    void listedTestThatPassesFailsTheSuite() {
+        final EngineExecutionResults results = run(StaleKnownFailure.class);
+        results.testEvents().assertStatistics(stats -> stats.started(1).succeeded(1));
+        final List<Event> failedSuites = results.containerEvents().failed().list();
+        assertEquals(1, failedSuites.size());
+        final String message = failedSuites.get(0).getRequiredPayload(TestExecutionResult.class).getThrowable().orElseThrow().getMessage();
+        assertTrue(message.endsWith(System.lineSeparator() + "single-test.xqm: f1"), message);
+    }
+
+    @Test
+    void malformedConfigurationPropertyFailsTheSuite() {
+        final List<Event> failedSuites = run(MalformedProperty.class).containerEvents().failed().list();
+        assertEquals(1, failedSuites.size());
+        final Throwable failure = failedSuites.get(0).getRequiredPayload(TestExecutionResult.class).getThrowable().orElseThrow();
+        assertInstanceOf(IllegalArgumentException.class, failure);
     }
 
     @Test

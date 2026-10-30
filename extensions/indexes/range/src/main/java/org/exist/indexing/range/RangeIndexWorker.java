@@ -43,8 +43,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.automaton.Operations;
-import org.apache.lucene.util.automaton.RegExp;
+import org.apache.lucene.util.automaton.TooComplexToDeterminizeException;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -126,10 +125,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
-        return toQuery(field, qname, content, operator, docs, 0);
+        return toQuery(field, qname, content, operator, docs, 0, false);
     }
 
-    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs, int matchFlags) throws XPathException {
+    /**
+     * @param xpathSyntax for {@link RangeIndex.Operator#MATCH}: whether the pattern is an fn:matches pattern, in
+     *     XPath's regular-expression syntax, rewritten to the index; otherwise it is a range:matches pattern, in
+     *     Lucene's syntax
+     */
+    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs, int matchFlags,
+            boolean xpathSyntax) throws XPathException {
         final int type = content.getType();
         BytesRefBuilder bytes;
         BytesRef key = null;
@@ -170,12 +175,17 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 }
                 case MATCH -> {
-                    String pattern = content.getStringValue();
-                    pattern = XPathToLuceneRegexTranslator.translate(pattern);
-                    if (matchFlags != 0) {
-                        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+                    final String pattern = content.getStringValue();
+                    try {
+                        // for fn:matches, Lookup checks isServable first and falls back to fn:matches, so this is
+                        // the last line of defense rather than the expected path
+                        return xpathSyntax
+                                ? XPathToLuceneRegexTranslator.toQuery(field, pattern, matchFlags)
+                                : XPathToLuceneRegexTranslator.toLuceneSyntaxQuery(field, pattern, matchFlags);
+                    } catch (final IllegalArgumentException | TooComplexToDeterminizeException e) {
+                        throw new XPathException(ErrorCodes.FORX0002,
+                                "Invalid regular expression '" + pattern + "': " + e.getMessage());
                     }
-                    return new RegexpQuery(new Term(field, pattern));
                 }
                 default -> {
                 }
@@ -611,10 +621,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
-        return query(contextId, docs, contextSet, qnames, keys, operator, axis, 0);
+        return query(contextId, docs, contextSet, qnames, keys, operator, axis, 0, false);
     }
 
-    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis, int matchFlags) throws IOException, XPathException {
+    /**
+     * @param xpathSyntax see {@link #toQuery(String, QName, AtomicValue, RangeIndex.Operator, DocumentSet, int, boolean)}
+     */
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis,
+            int matchFlags, boolean xpathSyntax) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             List<QName> definedIndexes = getDefinedIndexes(qnames);
             NodeSet resultSet = new NewArrayNodeSet();
@@ -624,11 +638,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (keys.length > 1) {
                     BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     for (AtomicValue key : keys) {
-                        builder.add(toQuery(field, qname, key, operator, docs, matchFlags), BooleanClause.Occur.SHOULD);
+                        builder.add(toQuery(field, qname, key, operator, docs, matchFlags, xpathSyntax), BooleanClause.Occur.SHOULD);
                     }
                     query = builder.build();
                 } else {
-                    query = toQuery(field, qname, keys[0], operator, docs, matchFlags);
+                    query = toQuery(field, qname, keys[0], operator, docs, matchFlags, xpathSyntax);
                 }
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;

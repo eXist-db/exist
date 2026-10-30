@@ -246,22 +246,15 @@ public class Query extends Function implements Optimizable {
         if (qnames == null && useContext) {
             final NodeSet ctxSet = contextSequence.toNodeSet();
             if (ctxSet != null && !ctxSet.isEmpty()) {
-                try {
-                    final List<QName> allIndexes = index.getDefinedIndexes(null);
-                    if (allIndexes.size() > 1) {
-                        final Set<QName> seen = new LinkedHashSet<>();
-                        for (final NodeProxy proxy : ctxSet) {
-                            final QName qn = proxy.getQName();
-                            if (qn != null) {
-                                seen.add(qn);
-                            }
-                        }
-                        if (!seen.isEmpty()) {
-                            qnames = new ArrayList<>(seen);
-                        }
+                final Set<QName> seen = new LinkedHashSet<>();
+                for (final NodeProxy proxy : ctxSet) {
+                    final QName qn = proxy.getQName();
+                    if (qn != null) {
+                        seen.add(qn);
                     }
-                } catch (final IOException e) {
-                    LOG.trace("Failed to derive context qnames from defined Lucene indexes; falling back to unscoped query", e);
+                }
+                if (!seen.isEmpty()) {
+                    qnames = new ArrayList<>(seen);
                 }
             }
         }
@@ -323,32 +316,26 @@ public class Query extends Function implements Optimizable {
                 final Item key = getKey(contextSequence, contextItem);
                 @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
                 if (qnames == null && inNodes != null && !inNodes.isEmpty()) {
-                    try {
-                        final List<QName> allIndexes = index.getDefinedIndexes(null);
-                        if (allIndexes.size() > 1) {
-                            final Set<QName> seen = new LinkedHashSet<>();
-                            for (final NodeProxy proxy : inNodes) {
-                                final QName qn = proxy.getQName();
-                                if (qn != null) {
-                                    seen.add(qn);
-                                }
-                            }
-                            if (!seen.isEmpty()) {
-                                qnames = new ArrayList<>(seen);
-                            }
+                    // only the input nodes can be hits: searching their names only is the same answer, faster
+                    final Set<QName> seen = new LinkedHashSet<>();
+                    for (final NodeProxy proxy : inNodes) {
+                        final QName qn = proxy.getQName();
+                        if (qn != null) {
+                            seen.add(qn);
                         }
-                    } catch (final IOException e) {
-                        LOG.trace("Failed to derive input qnames from defined Lucene indexes; falling back to unscoped query", e);
+                    }
+                    if (!seen.isEmpty()) {
+                        qnames = new ArrayList<>(seen);
                     }
                 }
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
                         final Element queryXML = (Element) ((NodeValue) key).getNode();
-                        result = index.query(getExpressionId(), docs, inNodes, qnames, queryXML, NodeSet.ANCESTOR, options);
+                        result = index.query(getExpressionId(), docs, inNodes, qnames, queryXML, LuceneIndexWorker.SELF, options);
                     } else {
                         final String query = key == null ? null : key.getStringValue();
-                        result = index.query(getExpressionId(), docs, inNodes, qnames, query, NodeSet.ANCESTOR, options);
+                        result = index.query(getExpressionId(), docs, inNodes, qnames, query, LuceneIndexWorker.SELF, options);
                     }
                 } catch (final IOException | org.apache.lucene.queryparser.classic.ParseException e) {
                     throw new XPathException(this, e.getMessage());

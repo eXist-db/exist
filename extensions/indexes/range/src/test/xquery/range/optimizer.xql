@@ -833,6 +833,44 @@ function ot:nested-element-rewrite-bug() {
       count($dita/topic/prolog//data[@name eq 'topicType']/@value)
 };
 
+(: fn:matches with a flag the index has no equivalent of, given at run time: the XPath answer, through fn:matches
+ : (the q flag: the pattern is a literal string) :)
+declare
+    %test:args("q", "^baz$")
+    %test:assertEquals(0)
+function ot:matches-run-time-flags-the-index-cannot-serve($flags as xs:string, $pattern as xs:string) {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, $pattern, $flags)])
+};
+
+(: an alternation at the top level: the anchors apply to one branch each, so fn:matches answers :)
+declare
+    %test:assertEquals(3)
+function ot:matches-top-level-alternation() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^ba|ux$")])
+};
+
+(: range:matches takes Lucene's regular-expression syntax, its operators included: @ is any string :)
+declare
+    %test:assertEquals(2)
+function ot:range-matches-lucene-syntax() {
+    count(collection($ot:COLLECTION)//foo[range:matches(@bar, "ba@")])
+};
+
+(: a bare anchor matches every string; the range index serves it, as .* :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:optimize-matches-bare-start-anchor() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "^")]
+};
+
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:optimize-matches-bare-end-anchor() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "$")]
+};
+
 (: --- Remaining range optimizer issues --- :)
 
 (: GitHub #4881: fn:matches with simple range index on @bar :)
@@ -1002,4 +1040,49 @@ declare
     %test:assertTrue
 function ot:issue4942-test-direct-without-pragma() {
     count(collection($ot:COLLECTION)//root/a[@ID = "123"]) eq 1
+};
+
+(: Patterns Lucene's RegExp cannot serve with XPath semantics must fall back to fn:matches and
+ : still return the right answer. Fixture: foo/@bar = baz, bat, Baz, qux. :)
+
+declare
+    %test:assertEquals(1)
+function ot:matches-unicode-property-falls-back-to-the-right-answer() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^\p{Lu}")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:matches-class-subtraction-falls-back-to-the-right-answer() {
+    (: consonant-initial, lower-case: baz, bat, qux :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^[a-z-[aeiou]]")])
+};
+
+declare
+    %test:assertEquals(4)
+function ot:matches-non-digit-class-falls-back-to-the-right-answer() {
+    (: none of the values contains a digit, so \D+ anchored matches all four;
+     : Lucene would read \D as the letter D and match none :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^\D+$")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:matches-dot-stays-on-the-index-with-xpath-meaning() {
+    (: baz, bat, Baz have 'a' in the middle; qux does not :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^.a.$")])
+};
+
+declare
+    %test:stats
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function ot:matches-unicode-property-is-not-sent-to-the-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "^\p{Lu}")]
+};
+
+declare
+    %test:assertEquals(0)
+function ot:matches-too-complex-for-lucene-falls-back-to-the-right-answer() {
+    (: valid XPath that Lucene cannot determinize within its work limit :)
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^(a|b)*a(a|b){20}$")])
 };
