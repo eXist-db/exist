@@ -1,0 +1,35 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_af94f97bb1d583 63,67,111-112,657,699,719,860,893,913,920,924-928,932-935,937-950,954-955,958,960-973,978-979,981-1002,1005,1007,1044,1092,1140
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-facet-configs.xqm
+  s_15ffdc06d1db19::t_dee3941e2e6631 1-113
+exist-core-jmh/README.md
+  s_15ffdc06d1db19::t_7462c8419f795c 20
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_15ffdc06d1db19::t_940101e8d92b39 55-56
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.java
+  s_15ffdc06d1db19::t_f50562da67bf4a 25,39,67-75,79,191-194,196-225
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LuceneFacetsBenchmark.java
+  s_15ffdc06d1db19::t_4a609ac6f2fd1f 1-201
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneFacetsReaderLifecycleTest.java
+  s_15ffdc06d1db19::t_c54262dff052c6 26,42,57-58,62-63,71,139-202,209,212
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatch.java
+  s_15ffdc06d1db19::t_7eed60e6aeea3b 27,29,32-35,95-124
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Facets.java
+  s_15ffdc06d1db19::t_f6d24476ac3f0c 36,125-127,131,134,144,180-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10f371e3d201a154a6443ab414af335786f8b4a1",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
