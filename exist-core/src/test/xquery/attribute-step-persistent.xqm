@@ -125,3 +125,15 @@ function asp:fn-lang() {
     for $w in doc($asp:DOC)//w
     return string(lang("en", $w))
 };
+
+declare
+    %test:assertEquals("1", "2")
+function asp:nested-predicates() {
+    doc($asp:DOC)//item[w[../@n = ../../item/@n]]/@n ! string()
+};
+
+declare
+    %test:assertEquals("d")
+function asp:deeply-nested-predicates() {
+    doc($asp:DOC)//doc[body[item[w/../@n = "1"]]]/@n ! string()
+};
