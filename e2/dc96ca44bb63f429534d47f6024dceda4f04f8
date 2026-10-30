@@ -1,0 +1,19 @@
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java
+  s_15ffdc06d1db19::t_e24a53ce41cae3 100-108,229-233
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e2dc96ca44bb63f429534d47f6024dceda4f04f8",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
