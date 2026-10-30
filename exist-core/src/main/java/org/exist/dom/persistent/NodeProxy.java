@@ -1319,6 +1319,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                     } else {
                         child.copyContext(this);
                     }
+                    child.addMatches(this);
                     if(!test.isWildcardTest()) {
                         return child;
                     }
