@@ -22,26 +22,18 @@
 package org.exist.indexing.lucene;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.util.MimeType;
-import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.value.Sequence;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -58,7 +50,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -111,22 +102,6 @@ public class UtilExpandHighlightingBenchmark {
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/bench-util-expand-highlight");
 
-    private static final int ENTRY_COUNT = 5000;
-    private static final int PARAGRAPHS_PER_ENTRY = 20;
-
-    private static final String LUCENE_CONFIG = """
-            <collection xmlns="http://exist-db.org/collection-config/1.0">
-              <index>
-                <lucene>
-                  <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                  <text qname="entry">
-                    <field name="text" expression="normalize-space()"/>
-                    <field name="lemma" expression=".//form[@type='lemma']/orth"/>
-                  </text>
-                </lucene>
-              </index>
-            </collection>""";
-
     private static final String COLL = "collection('" + TEST_COLLECTION + "')";
     private static final String HIGHLIGHT_OFF_OPTIONS = "'highlight-matches=none expand-xincludes=no'";
 
@@ -144,37 +119,27 @@ public class UtilExpandHighlightingBenchmark {
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
             PermissionDeniedException, CollectionConfigurationException, LockException,
             SAXException, TriggerException, XPathException {
-        final Properties configProperties = new Properties();
-        // BrokerPool expects a Long for this property (see BrokerPool.PROPERTY_SHUTDOWN_DELAY).
-        configProperties.put("wait-before-shutdown", 0L);
-        server = new ExistEmbeddedServer(configProperties, true, true);
-        server.startDb();
+        server = UtilExpandHighlightingCorpus.startServer();
         pool = server.getBrokerPool();
 
-        storeCorpus();
+        UtilExpandHighlightingCorpus.storeCorpus(pool, TEST_COLLECTION);
 
         // Half the corpus (even i) gets an 'a'-prefixed headword; matches the lemma:a* wildcard.
-        expectedWildcardHitCount = (ENTRY_COUNT + 1) / 2;
+        expectedWildcardHitCount = UtilExpandHighlightingCorpus.A_WORD_ENTRY_COUNT;
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
 
-            singleHitHighlightingOffQuery = compile(xquery, broker,
+            singleHitHighlightingOffQuery = UtilExpandHighlightingCorpus.compile(xquery, broker,
                     "util:expand(subsequence(" + COLL + "//entry[ft:query(., 'aword42')], 1, 1), "
                             + HIGHLIGHT_OFF_OPTIONS + ")");
-            singleHitHighlightingOnQuery = compile(xquery, broker,
+            singleHitHighlightingOnQuery = UtilExpandHighlightingCorpus.compile(xquery, broker,
                     "util:expand(subsequence(" + COLL + "//entry[ft:query(., 'aword42')], 1, 1))");
-            batchWildcardHighlightingOffQuery = compile(xquery, broker,
+            batchWildcardHighlightingOffQuery = UtilExpandHighlightingCorpus.compile(xquery, broker,
                     "util:expand(" + COLL + "//entry[ft:query(., 'lemma:a*')], " + HIGHLIGHT_OFF_OPTIONS + ")");
-            batchWildcardHighlightingOnQuery = compile(xquery, broker,
+            batchWildcardHighlightingOnQuery = UtilExpandHighlightingCorpus.compile(xquery, broker,
                     "util:expand(" + COLL + "//entry[ft:query(., 'lemma:a*')])");
         }
-    }
-
-    private static CompiledXQuery compile(final XQuery xquery, final DBBroker broker, final String query)
-            throws XPathException, PermissionDeniedException {
-        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-        return xquery.compile(context, query);
     }
 
     @TearDown(Level.Trial)
@@ -186,87 +151,21 @@ public class UtilExpandHighlightingBenchmark {
 
     @Benchmark
     public int expandSingleHitHighlightingOff() throws EXistException, PermissionDeniedException, XPathException, IOException {
-        return execute(singleHitHighlightingOffQuery, 1);
+        return UtilExpandHighlightingCorpus.execute(pool, singleHitHighlightingOffQuery, 1);
     }
 
     @Benchmark
     public int expandSingleHitHighlightingOn() throws EXistException, PermissionDeniedException, XPathException, IOException {
-        return execute(singleHitHighlightingOnQuery, 1);
+        return UtilExpandHighlightingCorpus.execute(pool, singleHitHighlightingOnQuery, 1);
     }
 
     @Benchmark
     public int expandBatchWildcardHighlightingOff() throws EXistException, PermissionDeniedException, XPathException, IOException {
-        return execute(batchWildcardHighlightingOffQuery, expectedWildcardHitCount);
+        return UtilExpandHighlightingCorpus.execute(pool, batchWildcardHighlightingOffQuery, expectedWildcardHitCount);
     }
 
     @Benchmark
     public int expandBatchWildcardHighlightingOn() throws EXistException, PermissionDeniedException, XPathException, IOException {
-        return execute(batchWildcardHighlightingOnQuery, expectedWildcardHitCount);
-    }
-
-    /**
-     * Runs the query and returns the resulting node count, throwing if it doesn't match the
-     * expected hit count - a "fast but wrong" guard, not a performance threshold (see class
-     * Javadoc: the ratio itself is read off the JMH/dashboard series, not asserted here).
-     */
-    private int execute(final CompiledXQuery compiledQuery, final int expectedCount)
-            throws EXistException, PermissionDeniedException, XPathException, IOException {
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final XQuery xquery = pool.getXQueryService();
-            final Sequence result = xquery.execute(broker, compiledQuery, null);
-            final int count = result.getItemCount();
-            if (count != expectedCount) {
-                throw new IllegalStateException("Expected " + expectedCount + " top-level results, got " + count);
-            }
-            return count;
-        }
-    }
-
-    private void storeCorpus() throws EXistException, PermissionDeniedException, IOException,
-            CollectionConfigurationException, LockException, SAXException, TriggerException {
-        final TransactionManager transact = pool.getTransactionManager();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-             final Txn tx = transact.beginTransaction()) {
-
-            final Collection coll = broker.getOrCreateCollection(tx, TEST_COLLECTION);
-            broker.saveCollection(tx, coll);
-
-            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(tx, broker, coll, LUCENE_CONFIG);
-
-            broker.storeDocument(tx, XmldbURI.create("dict.xml"), new StringInputSource(generateCorpus()),
-                    MimeType.XML_TYPE, coll);
-
-            transact.commit(tx);
-        }
-    }
-
-    /**
-     * Dict/entry corpus: {@value #ENTRY_COUNT} entries, half with an 'a'-prefixed headword (the
-     * {@code lemma:a*} wildcard target), each padded with {@value #PARAGRAPHS_PER_ENTRY}
-     * paragraphs so per-entry tokenization cost is measurable - mirrors the corpus shape in the
-     * original (deleted) {@code UtilExpandHighlightingPerformanceTest}, minus the TEI namespace
-     * (dropped in the xqsuite migration as boilerplate without correctness value; irrelevant to
-     * the perf shape measured here).
-     */
-    private static String generateCorpus() {
-        final StringBuilder doc = new StringBuilder();
-        doc.append("<dict>\n");
-        for (int i = 0; i < ENTRY_COUNT; i++) {
-            final String letter = (i % 2 == 0) ? "a" : "b";
-            final String word = letter + "word" + i;
-            doc.append("  <entry xml:id=\"e").append(i).append("\">")
-                    .append("<form type=\"lemma\"><orth>").append(word).append("</orth></form>")
-                    .append("<sense><def>Definition for ").append(word).append(". ");
-            for (int j = 0; j < PARAGRAPHS_PER_ENTRY; j++) {
-                doc.append("This is paragraph ").append(j).append(" of the explanation for ")
-                        .append(word).append(", with additional descriptive sentences ")
-                        .append("that emulate real lexicographic content. The headword ")
-                        .append(word).append(" appears multiple times in the body. ");
-            }
-            doc.append("</def></sense></entry>\n");
-        }
-        doc.append("</dict>\n");
-        return doc.toString();
+        return UtilExpandHighlightingCorpus.execute(pool, batchWildcardHighlightingOnQuery, expectedWildcardHitCount);
     }
 }
