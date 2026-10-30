@@ -3,3 +3,6 @@
 
 # The ngram index lower-cases one code point at a time (İ becomes i), fn:lower-case uses the full case mapping
 reference-ngram.xqm: case-mapping-like-fn-lower-case
+
+# Pre-selection evaluates the query once, over the documents, before there is a node to compute it from
+parts-on-one-node.xqm: query-computed-from-the-node
