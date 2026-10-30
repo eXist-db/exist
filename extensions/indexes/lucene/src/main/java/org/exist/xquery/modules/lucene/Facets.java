@@ -24,9 +24,7 @@ package org.exist.xquery.modules.lucene;
 import io.lacuna.bifurcan.IMap;
 import org.apache.lucene.facet.FacetResult;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneMatch;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
@@ -35,7 +33,7 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -124,28 +122,16 @@ public class Facets extends BasicFunction {
             }
         }
 
-        // Find all lucene searches referenced from the input sequence and remember
-        // the first match for each. Every search has its own facets attached,
-        // so we have to merge them below. A search is told by its facets, not its
-        // query: the hits of one search over collections configured differently
-        // each carry their own configuration's query, and share the search's facets.
-        final Map<Object, LuceneMatch> luceneQueries = new IdentityHashMap<>();
+        // Find all lucene searches referenced from the input sequence. Every search
+        // has its own facets attached, so we have to merge them below.
+        final List<NodeProxy> nodes = new ArrayList<>();
         for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
             final NodeValue nv = (NodeValue) i.nextItem();
             if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                final NodeProxy proxy = (NodeProxy) nv;
-
-                Match match = proxy.getMatches();
-                while (match != null) {
-                    if (match.getIndexId().equals(LuceneIndex.ID)) {
-                        final LuceneMatch luceneMatch = (LuceneMatch) match;
-                        final Object search = luceneMatch.getFacets() != null ? luceneMatch.getFacets() : luceneMatch.getQuery();
-                        luceneQueries.putIfAbsent(search, luceneMatch);
-                    }
-                    match = match.getNextMatch();
-                }
+                nodes.add((NodeProxy) nv);
             }
         }
+        final Collection<LuceneMatch> luceneQueries = LuceneMatch.perSearch(nodes);
 
         // When multiple Lucene queries contributed to the result (e.g. variable-based path),
         // each has its own facets. We must merge all first, then apply the limit.
@@ -155,7 +141,7 @@ public class Facets extends BasicFunction {
             : count;
 
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
-        for (LuceneMatch match : luceneQueries.values()) {
+        for (LuceneMatch match : luceneQueries) {
             try {
                 addFacetsToMap(map, dimension, perQueryLimit, paths, match);
             } catch (IOException e) {
@@ -191,8 +177,11 @@ public class Facets extends BasicFunction {
         return out;
     }
 
-    private void addFacetsToMap(final IMap<AtomicValue, Sequence> map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
-        final org.apache.lucene.facet.Facets facets = match.getFacets();
+    private void addFacetsToMap(final IMap<AtomicValue, Sequence> map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException, XPathException {
+        final org.apache.lucene.facet.Facets facets = match.getFacets(dimension);
+        if (facets == null) {
+            return;
+        }
         final FacetResult result;
         if (paths == null) {
             result = facets.getTopChildren(count, dimension);

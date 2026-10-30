@@ -24,9 +24,14 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.facet.Facets;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Match class containing the score of a match and a reference to
@@ -86,8 +91,33 @@ public class LuceneMatch extends Match {
         this.score = score;
     }
 
-    public Facets getFacets() {
-        return this.facets.getFacets();
+    /**
+     * @param dimension the facet dimension to read
+     * @return the facets of the search that found this match, or null if it has none
+     *
+     * @throws XPathException if the collections searched define the dimension differently
+     */
+    public @Nullable Facets getFacets(final String dimension) throws XPathException {
+        return facets.read(dimension);
+    }
+
+    /**
+     * One search's hits share its facets, and a search can have several queries, one for each configuration of the
+     * collections it covers, so a search is told by its facets.
+     *
+     * @param nodes some nodes
+     * @return one Lucene match of each search that found the nodes
+     */
+    public static Collection<LuceneMatch> perSearch(final Iterable<NodeProxy> nodes) {
+        final Map<LuceneIndexWorker.LuceneFacets, LuceneMatch> perSearch = new IdentityHashMap<>();
+        for (final NodeProxy node : nodes) {
+            for (Match match = node.getMatches(); match != null; match = match.getNextMatch()) {
+                if (match instanceof LuceneMatch luceneMatch) {
+                    perSearch.putIfAbsent(luceneMatch.facets, luceneMatch);
+                }
+            }
+        }
+        return perSearch.values();
     }
 
     // DW: missing hashCode() ?
