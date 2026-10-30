@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/dom/persistent/Match.java
+  s_15ffdc06d1db19::t_c52d1cc18509bb 130-168
+exist-core/src/test/java/org/exist/dom/persistent/MatchChainTest.java
+  s_15ffdc06d1db19::t_56baf41cfeecac 1-125
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_15ffdc06d1db19::t_bec086c9066089 479-480,494
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0be1bc17da196433e0a456eef3a37da7fa6bd4a3",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
