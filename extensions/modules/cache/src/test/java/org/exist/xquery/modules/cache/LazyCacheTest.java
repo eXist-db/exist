@@ -30,26 +30,31 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import java.nio.file.Path;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class LazyCacheTest {
 
-    private static Path getLazyConfig() {
+    @RegisterExtension
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getConfig(), null, true, true);
+
+    /**
+     * Same generated /conf.xml as XQSuite CacheTests: canonical cache module with
+     * enableLazyCreation=true (see src/test/resources-filtered/conf-fixture.xsl).
+     */
+    private static Path getConfig() {
         try {
-            return Path.of(LazyCacheTest.class.getResource("/lazy-cache-conf.xml").toURI());
+            return Path.of(LazyCacheTest.class.getResource("/conf.xml").toURI());
         } catch (final URISyntaxException e) {
-            throw new IllegalStateException("Unable to find: lazy-cache-conf.xml");
+            throw new IllegalStateException("Unable to find: /conf.xml");
         }
     }
-
-    @RegisterExtension
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test
     void putOnLazilyCreatedCache() throws XPathException, PermissionDeniedException, EXistException {

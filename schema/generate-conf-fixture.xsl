@@ -103,11 +103,21 @@
     -->
     <xsl:param name="extra-modules" as="element()*" select="()"/>
 
+    <!--
+        Replacement <vector-models> element.  Canonical ships <vector-models enabled="no"/>;
+        fixtures that need ONNX models supply a live element here (empty = keep canonical).
+    -->
+    <xsl:param name="vector-models" as="element(vector-models)?" select="()"/>
+
     <!-- Identity transform: copy everything from canonical unless overridden below. -->
     <xsl:template match="@*|node()">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>
+    </xsl:template>
+
+    <xsl:template match="vector-models[exists($vector-models)]">
+        <xsl:copy-of select="$vector-models"/>
     </xsl:template>
 
     <xsl:template match="db-connection/@files | recovery/@journal-dir">
