@@ -232,7 +232,9 @@ public class Field extends BasicFunction {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final Map<Object, Query> terms = index.getTerms(match.getQuery());
         final NodePath path = LuceneMatchListener.getPath(proxy);
-        final LuceneConfig config = index.getLuceneConfig(context.getBroker(), proxy.getDocumentSet());
+        // one node: its own collection's configuration
+        final LuceneConfig configured = LuceneConfigs.configured(context.getBroker(), proxy.getOwnerDocument().getCollection());
+        final LuceneConfig config = configured != null ? configured : LuceneConfig.DEFAULT_CONFIG;
         LuceneIndexConfig idxConf = config.getConfig(path).next();
         if (idxConf == null) {
             // no lucene index: no fields to highlight

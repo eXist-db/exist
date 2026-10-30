@@ -2052,29 +2052,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getDefaultAnalyzer();
     }
 
-    /**
-     * Return the first configuration found for documents in the document set.
-     *
-     * @param broker the database broker
-     * @param docs the document set
-     *
-     * @return the lucene config or null
-     */
-    public static LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
-        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            try (Collection collection = i.next()) {
-                IndexSpec idxConf = collection.getIndexConfiguration(broker);
-                if (idxConf != null) {
-                    LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-                    if (config != null) {
-                        return config;
-                    }
-                }
-            }
-        }
-        return LuceneConfig.DEFAULT_CONFIG;
-    }
-
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {
         return getQueryParser(field, analyzer, docs, null, null, null);
     }

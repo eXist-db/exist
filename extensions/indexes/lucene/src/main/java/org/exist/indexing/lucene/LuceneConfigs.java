@@ -30,6 +30,8 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 
+import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -145,14 +147,18 @@ public final class LuceneConfigs {
     }
 
     private static LuceneConfig configOf(final DBBroker broker, final Collection collection) {
+        final LuceneConfig config = configured(broker, collection);
+        return config != null ? config : LuceneConfig.DEFAULT_CONFIG;
+    }
+
+    /**
+     * @param broker the database broker
+     * @param collection a collection
+     * @return the Lucene configuration of the collection, its own or inherited, or null if it has none
+     */
+    public static @Nullable LuceneConfig configured(final DBBroker broker, final Collection collection) {
         final IndexSpec idxConf = collection.getIndexConfiguration(broker);
-        if (idxConf != null) {
-            final LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-            if (config != null) {
-                return config;
-            }
-        }
-        return LuceneConfig.DEFAULT_CONFIG;
+        return idxConf == null ? null : (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
     }
 
     /**
