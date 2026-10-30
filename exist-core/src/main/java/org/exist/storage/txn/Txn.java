@@ -51,6 +51,7 @@ public class Txn implements Transaction {
     private final List<LockInfo> locksHeld;
     private final List<TxnListener> listeners;
     private State state;
+    private boolean holdDocumentLocksUntilEnd;
     // The broker that called addCurrentTransaction for this txn; used by TransactionManager.close()
     // to call removeCurrentTransaction on the correct broker regardless of try-with-resources order.
     DBBroker owningBroker;
@@ -98,6 +99,41 @@ public class Txn implements Transaction {
     public void acquireDocumentLock(final SupplierE<ManagedDocumentLock, LockException> fnLockAcquire) throws LockException {
         final ManagedDocumentLock lock = fnLockAcquire.get();
         locksHeld.add(new LockInfo(lock, lock::close));
+    }
+
+    /**
+     * Holds a Document lock that has already been acquired until this transaction commits or aborts.
+     *
+     * @param lock the Document lock
+     */
+    public void holdDocumentLock(final ManagedDocumentLock lock) {
+        locksHeld.add(new LockInfo(lock, lock::close));
+    }
+
+    /**
+     * Returns true if the WRITE_LOCK on a Document that this transaction stores or removes is held until the
+     * transaction commits or aborts, see {@link #setHoldDocumentLocksUntilEnd(boolean)}.
+     *
+     * @return true if Document locks are held until the transaction ends
+     */
+    public boolean isHoldDocumentLocksUntilEnd() {
+        return holdDocumentLocksUntilEnd;
+    }
+
+    /**
+     * Sets whether the WRITE_LOCK on a Document that this transaction stores or removes is held until the
+     * transaction commits or aborts, rather than released when the store or remove returns.
+     *
+     * Holding it means that no other transaction can write the Document before this one has ended, so recovery
+     * never has to undo a write of this transaction that another, committed, transaction wrote after. Set it
+     * only for a transaction which stores or removes one Document and then ends, and which requests no
+     * Collection lock after the store or remove: a Collection lock requested while a Document lock is held can
+     * deadlock.
+     *
+     * @param holdDocumentLocksUntilEnd true to hold Document locks until the transaction ends
+     */
+    public void setHoldDocumentLocksUntilEnd(final boolean holdDocumentLocksUntilEnd) {
+        this.holdDocumentLocksUntilEnd = holdDocumentLocksUntilEnd;
     }
 
     public void releaseAll() {
@@ -216,6 +252,16 @@ public class Txn implements Transaction {
                 LOG.debug("Resetting transaction state for next use.");
                 this.reusableState = State.STARTED; //reset state for next commit/abort
             }
+        }
+
+        @Override
+        public boolean isHoldDocumentLocksUntilEnd() {
+            return underlyingTransaction.isHoldDocumentLocksUntilEnd();
+        }
+
+        @Override
+        public void setHoldDocumentLocksUntilEnd(final boolean holdDocumentLocksUntilEnd) {
+            underlyingTransaction.setHoldDocumentLocksUntilEnd(holdDocumentLocksUntilEnd);
         }
 
         @Override
