@@ -1137,6 +1137,7 @@ public class Configuration implements ErrorHandler {
     private void configureXQueryPool(final Element queryPool) {
         configureProperty(queryPool, MAX_STACK_SIZE_ATTRIBUTE, PROPERTY_MAX_STACK_SIZE, Configuration::asInteger, null);
         configureProperty(queryPool, POOL_SIZE_ATTTRIBUTE, XQueryPool.PROPERTY_POOL_SIZE, Configuration::asInteger, null);
+        configureProperty(queryPool, XQueryPool.EVAL_CACHE_SIZE_ATTRIBUTE, XQueryPool.PROPERTY_EVAL_CACHE_SIZE, Configuration::asInteger, null);
     }
 
     private void configureStartup(final Element startup) throws DatabaseConfigurationException {
