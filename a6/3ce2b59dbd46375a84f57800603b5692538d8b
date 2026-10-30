@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/dom/persistent/AVLTreeNodeSetMatchesTest.java
+  s_15ffdc06d1db19::t_469797b6e20306 1-147
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_15ffdc06d1db19::t_d114c156e285e8 110-129,144-155,158-172
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_6d57062cd05c3a 180-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a63ce2b59dbd46375a84f57800603b5692538d8b",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
