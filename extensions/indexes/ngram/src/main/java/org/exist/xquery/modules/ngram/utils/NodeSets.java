@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.ngram.utils;
 
 import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.XPathException;
@@ -68,13 +69,14 @@ public final class NodeSets {
     }
 
     public static NodeSet getNodesMatchingAtEnd(final NodeSet nodes, final int expressionId) throws XPathException {
-        return transformNodes(nodes, proxy ->
-                NodeProxies.transformOwnMatches(
-                        proxy,
-                        match -> match.filterOffsetsEndingAt(proxy.getNodeValue().length()),
-                        expressionId
-                )
-        );
+        return transformNodes(nodes, proxy -> {
+            final Function<Match, String> values = NodeProxies.matchedValues(proxy);
+            return NodeProxies.transformOwnMatches(
+                    proxy,
+                    match -> match.filterOffsetsEndingAt(values.apply(match).length()),
+                    expressionId
+            );
+        });
     }
 
 }

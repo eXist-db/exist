@@ -23,6 +23,7 @@ package org.exist.xquery.modules.ngram.query;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,6 +84,7 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
 
         Match match = null;
         boolean found = false;
+        final Function<Match, String> values = NodeProxies.matchedValues(headNode);
 
         for (Match headMatch = headNode.getMatches(); headMatch != null && !found; headMatch = headMatch
             .getNextMatch()) {
@@ -90,7 +92,8 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
             for (Match tailMatch = tailNode.getMatches(); tailMatch != null && !found; tailMatch = tailMatch
                 .getNextMatch()) {
 
-                match = headMatch.followedBy(tailMatch, wildcard.getMinimumLength(), wildcard.getMaximumLength());
+                match = headMatch.followedBy(tailMatch, wildcard.getMinimumLength(), wildcard.getMaximumLength(),
+                        values.apply(headMatch));
                 found = (match != null);
 
             }

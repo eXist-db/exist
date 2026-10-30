@@ -67,15 +67,19 @@ declare variable $unic-smp-n:CP_TO_GROUP := map:merge(
 );
 
 (:~
- : Test document: one p per supplementary codepoint (with @group), plus two w elements for wildcard tests (one SMP, one SIP).
- : @return document-node() root with 20 p children and 2 w children; each w has @which and one supplementary character
+ : Test document: one p per supplementary codepoint (with @group), plus w elements for wildcard tests
+ : (a lone SMP character, a lone SIP character, and two with a supplementary character adjacent to
+ : literal ASCII text, one on either side).
+ : @return document-node() root with 20 p children and 4 w children; each w has @which and content
  :)
 declare variable $unic-smp-n:XML as document-node() := document {
     <root>{
         for $cp in $unic-smp-n:ALL_CODEPOINTS
         return <p group="{ $unic-smp-n:CP_TO_GROUP($cp) }">{ codepoints-to-string($cp) }</p>,
         <w which="smp">{ codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) }</w>,
-        <w which="sip">{ codepoints-to-string($unic-smp-n:CODEPOINTS("sip-dropped")[1]) }</w>
+        <w which="sip">{ codepoints-to-string($unic-smp-n:CODEPOINTS("sip-dropped")[1]) }</w>,
+        <w which="mixed">{ "ab" || codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) }</w>,
+        <w which="mixed-prefix">{ codepoints-to-string($unic-smp-n:CODEPOINTS("smp-dropped")[4]) || "ab" }</w>
     }</root>
 };
 
@@ -170,12 +174,12 @@ function unic-smp-n:ngram-contains-supplementary-sip-indexed() {
 
 (:~
  : Asserts that ngram:contains finds all supplementary characters in group sip-dropped (4 codepoints).
- : Pending until ngram fix for sip-dropped in issue #787.
+ : No longer reproduces (verified 2026-09-24).
  :
  : @return xs:string "sip-dropped: 4"
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram fails on sip-dropped characters, see #787")
     %test:assertEquals("sip-dropped: 4")
 function unic-smp-n:ngram-contains-supplementary-sip-dropped() {
     unic-smp-n:ngram-contains-count("sip-dropped")
@@ -183,12 +187,12 @@ function unic-smp-n:ngram-contains-supplementary-sip-dropped() {
 
 (:~
  : Asserts that ngram:wildcard-contains(., '.') matches the single w with SMP character (U+1F600).
- : Uses the main test document (w elements); pending until ngram wildcard fix for #787.
+ : Uses the main test document (w elements).
  :
  : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram wildcard chops supplementary characters, see #787")
     %test:assertEquals(1)
 function unic-smp-n:ngram-wildcard-one-dot-smp() {
     count(collection($unic-smp-n:COLLECTION)//w[@which eq "smp"][ngram:wildcard-contains(., '.')])
@@ -196,13 +200,129 @@ function unic-smp-n:ngram-wildcard-one-dot-smp() {
 
 (:~
  : Asserts that ngram:wildcard-contains(., '.') matches the single w with SIP character (U+2CD02).
- : Uses the main test document (w elements); pending until ngram wildcard fix for #787.
+ : Uses the main test document (w elements).
  :
  : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
  :)
 declare
-    %test:pending("Ngram wildcard chops supplementary characters, see #787")
     %test:assertEquals(1)
 function unic-smp-n:ngram-wildcard-one-dot-sip() {
     count(collection($unic-smp-n:COLLECTION)//w[@which eq "sip"][ngram:wildcard-contains(., '.')])
+};
+
+(:~
+ : Asserts that ngram:wildcard-contains(., '^ab.$') matches "ab" followed by one supplementary
+ : character. Regression test for a mixed literal+wildcard match being chopped mid-surrogate-pair:
+ : the trailing wildcard's length constraint was expanded in UTF-16 code units rather than Unicode
+ : codepoints, so a single supplementary character (2 UTF-16 units) never satisfied a single-character
+ : ('.') wildcard, and the end-anchor check then rejected the match entirely.
+ :
+ : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-literal-end-anchor() {
+    count(collection($unic-smp-n:COLLECTION)//w[@which eq "mixed"][ngram:wildcard-contains(., '^ab.$')])
+};
+
+(:~
+ : Asserts that ngram:wildcard-contains(., '^.ab$') matches one supplementary character followed by
+ : "ab". Regression test for the backward-expansion counterpart of the bug above: a leading wildcard's
+ : length constraint was expanded in UTF-16 code units rather than Unicode codepoints.
+ :
+ : @return xs:integer 1 if one match
+ : @see https://github.com/eXist-db/exist/issues/787
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-literal-start-anchor() {
+    count(collection($unic-smp-n:COLLECTION)//w[@which eq "mixed-prefix"][ngram:wildcard-contains(., '^.ab$')])
+};
+
+(:~
+ : Asserts that a wildcard-only pattern in a step's only predicate, which is pre-selected, finds the two w
+ : made up of one supplementary character.
+ :
+ : @return xs:integer 2
+ :)
+declare
+    %test:assertEquals(2)
+function unic-smp-n:ngram-wildcard-only-pre-selected() {
+    count(collection($unic-smp-n:COLLECTION)//w[ngram:wildcard-contains(., '^.$')])
+};
+
+(:~
+ : Asserts that a wildcard-only pattern outside a predicate finds the same two w.
+ :
+ : @return xs:integer 2
+ :)
+declare
+    %test:assertEquals(2)
+function unic-smp-n:ngram-wildcard-only-direct() {
+    count(ngram:wildcard-contains(collection($unic-smp-n:COLLECTION)//w, '^.$'))
+};
+
+(:~
+ : Asserts that a wildcard-only pattern on a child path measures the indexed w, not the root it is in,
+ : and does not look at the p elements, which are indexed too.
+ :
+ : @return xs:integer 1
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-only-on-a-child() {
+    count(collection($unic-smp-n:COLLECTION)/root[ngram:wildcard-contains(w, '^.$')])
+};
+
+(:~
+ : Asserts that a mixed literal and wildcard pattern on a child path expands and anchors the match
+ : within the indexed w, not the root it is in.
+ :
+ : @return xs:integer 1
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-on-a-child() {
+    count(collection($unic-smp-n:COLLECTION)/root[ngram:wildcard-contains(w, '^ab.$')])
+};
+
+(:~
+ : Asserts that the match of a wildcard-only pattern highlights the whole supplementary character.
+ :
+ : @return xs:string the character
+ :)
+declare
+    %test:assertEquals("&#x1F600;")
+function unic-smp-n:ngram-wildcard-only-highlight() {
+    let $w := collection($unic-smp-n:COLLECTION)//w[@which eq "smp"][ngram:wildcard-contains(., '^.$')]
+    return string(util:expand($w)//exist:match)
+};
+
+(:~
+ : Asserts that a wildcard-only pattern on an element that only contains indexed nodes measures those
+ : nodes, not the element: root's own value is far longer than one character. The element is passed in a
+ : variable, as for a step (even '.') the step's own qname is the one looked up in the index.
+ :
+ : @return xs:integer 1
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-only-on-an-ancestor() {
+    let $root := collection($unic-smp-n:COLLECTION)/root
+    return count(ngram:wildcard-contains($root, '^.$'))
+};
+
+(:~
+ : Asserts that a mixed literal and wildcard pattern on an element that only contains indexed nodes
+ : expands and anchors the match within the indexed w, not the element, passed in a variable as above.
+ :
+ : @return xs:integer 1
+ :)
+declare
+    %test:assertEquals(1)
+function unic-smp-n:ngram-wildcard-mixed-on-an-ancestor() {
+    let $root := collection($unic-smp-n:COLLECTION)/root
+    return count(ngram:wildcard-contains($root, '^ab.$'))
 };

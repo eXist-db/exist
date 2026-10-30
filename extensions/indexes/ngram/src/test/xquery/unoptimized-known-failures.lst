@@ -1,7 +1,5 @@
 # Tests of NgramTests that fail without the optimizer, see NgramUnoptimizedTests.
 # Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
 
-# ngram:contains raises XPTY0004 without the optimizer; not investigated yet
-unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-sip-indexed
-unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-dropped
-unicode-supplementary-ngram.xql: unic-smp-n:ngram-contains-supplementary-smp-indexed
+# The ngram index lower-cases one code point at a time (İ becomes i), fn:lower-case uses the full case mapping
+reference-ngram.xqm: case-mapping-like-fn-lower-case
