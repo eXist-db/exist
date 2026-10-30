@@ -42,9 +42,11 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ExecutableResource;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XQueryContext;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -171,7 +173,7 @@ public class SourceFactory {
                 ) {
             try {
                 final URL url = new URL(location);
-                source = new URLSource(url);
+                source = urlSource(broker, url);
             } catch (final MalformedURLException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Source location is not a well-formed URL, returning null: {} ({})",
@@ -182,6 +184,16 @@ public class SourceFactory {
         }
 
         return source;
+    }
+
+    private static URLSource urlSource(@Nullable final DBBroker broker, final URL url) {
+        if (broker == null) {
+            return new URLSource(url);
+        }
+        final Configuration config = broker.getConfiguration();
+        return new URLSource(url,
+                (Integer) config.getProperty(XQueryContext.PROPERTY_URL_CONNECT_TIMEOUT, URLSource.DEFAULT_CONNECT_TIMEOUT),
+                (Integer) config.getProperty(XQueryContext.PROPERTY_URL_READ_TIMEOUT, URLSource.DEFAULT_READ_TIMEOUT));
     }
 
     private static String firstPathSegment(final String path) {
