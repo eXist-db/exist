@@ -60,9 +60,11 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.modules.lucene.LuceneModule;
 import org.exist.xquery.modules.lucene.QueryOptions;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
@@ -652,7 +654,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return withConfig(filterByIndexType(configQuery, field), config, options);
                 });
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        axis, searcher, query, configs.first());
+                        axis, searcher, query, configs.facetDimensions());
             }
             return resultSet;
         });
@@ -694,7 +696,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 });
                 if (query != null) {
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            axis, searcher, query, configs.first());
+                            axis, searcher, query, configs.facetDimensions());
                 }
             }
             return resultSet;
@@ -714,7 +716,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             });
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        axis, searcher, query, configs.first());
+                        axis, searcher, query, configs.facetDimensions());
             }
             return resultSet;
         });
@@ -855,7 +857,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void searchVectorAndProcess(final int contextId, @Nullable final QName qname, final DocumentSet docs,
             @Nullable final NodeSet contextSet, final NodeSet resultSet,
             final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final KnnFloatVectorQuery query,
-            final LuceneConfig config, final int k) throws IOException {
+            final LuceneConfigs.FacetDimensions dimensions, final int k) throws IOException {
         // all the candidates the query found, best first, of which the best k are kept
         final ScoreDoc[] found = searcher.searcher().search(query, query.getK()).scoreDocs;
         final TopDocs best = new TopDocs(new TotalHits(found.length, TotalHits.Relation.EQUAL_TO),
@@ -888,8 +890,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             leafCollector.finish();
         }
 
-        if (config != null && config.facetsConfig != null && searcher.taxonomyReader() != null) {
-            facets.compute(searcher.taxonomyReader(), config.facetsConfig, facetsCollector);
+        if (searcher.taxonomyReader() != null) {
+            facets.compute(searcher.taxonomyReader(), dimensions, facetsCollector);
         }
     }
 
@@ -910,16 +912,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void searchAndProcess(final int contextId, final QName qname, final DocumentSet docs,
                                   @Nullable final NodeSet contextSet, final NodeSet resultSet, final int axis,
                                   final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final Query query,
-                                  final LuceneConfig config) throws IOException {
+                                  final LuceneConfigs.FacetDimensions dimensions) throws IOException {
         final LuceneFacets facets = new LuceneFacets();
         final FacetsCollector facetsCollector = new FacetsCollector();
         final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, axis == NodeSet.ANCESTOR, contextId, facets, facetsCollector);
         collector.selfOnly = axis == SELF;
         searcher.searcher().search(query, collector);
 
-        // compute facets (skip if config or taxonomy missing)
-        if (config != null && config.facetsConfig != null && searcher.taxonomyReader() != null) {
-            facets.compute(searcher.taxonomyReader(), config.facetsConfig, facetsCollector);
+        if (searcher.taxonomyReader() != null) {
+            facets.compute(searcher.taxonomyReader(), dimensions, facetsCollector);
         }
     }
 
@@ -928,9 +929,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     protected static class LuceneFacets {
 
-        private Facets facets;
+        private @Nullable Facets facets;
+        private Set<String> conflicting = Set.of();
 
-        public Facets getFacets() {
+        /**
+         * @param dimension the dimension to read
+         * @return the facets of the search, or null if it has no taxonomy
+         *
+         * @throws XPathException if the collections searched define the dimension differently
+         */
+        @Nullable Facets read(final String dimension) throws XPathException {
+            if (conflicting.contains(dimension)) {
+                throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0005,
+                        "Facet dimension '" + dimension + "' is configured differently in the collections queried together");
+            }
             return facets;
         }
 
@@ -938,20 +950,21 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          * Compute facets based on the given {@link FacetsCollector}.
          *
          * @param reader the taxonomy reader
-         * @param config the facets configuration
+         * @param dimensions the facet dimensions of the query
          * @param collector the facets collector
          *
          * @throws IOException if an I/O error occurs
          */
-        public void compute(DirectoryTaxonomyReader reader, FacetsConfig config, FacetsCollector collector)
-                throws IOException {
-            final Facets counts = new FastTaxonomyFacetCounts(reader, config, collector);
+        void compute(final DirectoryTaxonomyReader reader, final LuceneConfigs.FacetDimensions dimensions,
+                final FacetsCollector collector) throws IOException {
+            final Facets counts = new FastTaxonomyFacetCounts(reader, dimensions.config(), collector);
             // The reader is lent by the searcher manager only for the duration of the query, but the facets are
             // read later (ft:facets), and a refresh caused by another thread closes a reader nobody holds.
             // So hold the reader for as long as the facets can be read.
             reader.incRef();
             TAXONOMY_READER_RELEASER.register(counts, new TaxonomyReaderRelease(reader));
             this.facets = counts;
+            this.conflicting = dimensions.conflicting();
         }
     }
 
@@ -1000,7 +1013,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 return AnalyzingQueryRewriter.rewrite(parser.parse(queryString), analyzer);
             });
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    axis, searcher, query, configs.first());
+                    axis, searcher, query, configs.facetDimensions());
             return resultSet;
         });
     }
@@ -1048,7 +1061,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)
                     : new KnnFloatVectorQuery(field, vector, candidates);
             searchVectorAndProcess(contextId, null, docs, contextSet, resultSet,
-                    searcher, baseQuery, configs.first(), k);
+                    searcher, baseQuery, configs.facetDimensions(), k);
             return resultSet;
         });
     }
@@ -1096,7 +1109,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     final int candidates = vectorCandidates(k, options);
                     final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
                     searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            searcher, vectorQuery, configs.first(), k);
+                            searcher, vectorQuery, configs.facetDimensions(), k);
                 }
             }
             return resultSet;

@@ -23,6 +23,8 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -38,6 +40,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
@@ -52,7 +55,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * The facets of a search result must stay readable after the index was refreshed.
+ * The facets of a search result must stay readable after the index was refreshed, and let go of the reader they need
+ * when they are dropped.
  * <p>
  * The facets of a search ({@code ft:facets}) are read after the search has returned its searcher. The index is
  * shared by all collections, so a write by another thread, followed by a refresh, replaces the searcher, and the
@@ -64,6 +68,7 @@ public class LuceneFacetsReaderLifecycleTest {
     private static final XmldbURI COLLECTION = XmldbURI.create("/db/" + COLLECTION_NAME);
     private static final XmldbURI CONFIG_COLLECTION = XmldbURI.CONFIG_COLLECTION_URI.append("db").append(COLLECTION_NAME);
     private static final String DIMENSION = "kind";
+    private static final String QUERY = "collection('" + COLLECTION + "')//item[ft:query(., ())]";
 
     private static final String CONFIGURATION = """
             <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -131,16 +136,61 @@ public class LuceneFacetsReaderLifecycleTest {
         }
     }
 
+    /**
+     * The facets of a search must not keep a replaced taxonomy reader open once its hits are dropped.
+     */
+    @Test
+    void facetsLetGoOfTheTaxonomyReaderWhenTheHitsAreDropped() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transactionManager = pool.getTransactionManager();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final LuceneIndex index = storeFirstDocument(pool, broker);
+            final DirectoryTaxonomyReader searched = searchAndDropTheHits(pool, broker, index);
+
+            // new labels: the searcher manager lets go of the reader when it is replaced, which leaves the hits' hold
+            try (final Txn transaction = transactionManager.beginTransaction();
+                 final Collection collection = broker.openCollection(COLLECTION, LockMode.WRITE_LOCK)) {
+                store(broker, transaction, collection, "second.xml", "blue");
+                transactionManager.commit(transaction);
+            }
+            index.withSearcher(searcher -> null);
+
+            for (int attempt = 0; attempt < 100 && searched.getRefCount() > 0; attempt++) {
+                System.gc();
+                Thread.sleep(100);
+            }
+            assertEquals(0, searched.getRefCount(), "references to the replaced taxonomy reader");
+        }
+    }
+
+    private static DirectoryTaxonomyReader searchAndDropTheHits(final BrokerPool pool, final DBBroker broker, final LuceneIndex index) throws Exception {
+        final Sequence hits = pool.getXQueryService().execute(broker, QUERY, null);
+        assertEquals(2, hits.getItemCount());
+        return index.withSearcher(SearcherTaxonomyManager.SearcherAndTaxonomy::taxonomyReader);
+    }
+
+    private static LuceneIndex storeFirstDocument(final BrokerPool pool, final DBBroker broker) throws Exception {
+        final TransactionManager transactionManager = pool.getTransactionManager();
+        try (final Txn transaction = transactionManager.beginTransaction()) {
+            final Collection collection = broker.getOrCreateCollection(transaction, COLLECTION);
+            broker.saveCollection(transaction, collection);
+            pool.getConfigurationManager().addConfiguration(transaction, broker, collection, CONFIGURATION);
+            store(broker, transaction, collection, "first.xml", "red");
+            transactionManager.commit(transaction);
+        }
+        return ((LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID)).index;
+    }
+
     private static void store(final DBBroker broker, final Txn transaction, final Collection collection, final String name, final String kind) throws Exception {
         final String xml = """
                 <div><item kind="%s">match</item><item kind="%s">match</item></div>""".formatted(kind, kind + "s");
         broker.storeDocument(transaction, XmldbURI.create(name), new StringInputSource(xml), MimeType.XML_TYPE, collection);
     }
 
-    private static Facets facetsOf(final NodeProxy hit) {
+    private static Facets facetsOf(final NodeProxy hit) throws XPathException {
         for (Match match = hit.getMatches(); match != null; match = match.getNextMatch()) {
             if (match instanceof LuceneMatch luceneMatch) {
-                return luceneMatch.getFacets();
+                return luceneMatch.getFacets(DIMENSION);
             }
         }
         throw new AssertionError("no Lucene match on " + hit);
