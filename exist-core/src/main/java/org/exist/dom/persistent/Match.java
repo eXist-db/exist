@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -104,8 +105,9 @@ public abstract class Match implements Comparable<Match> {
         this.context = match.context;
         this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
-        this.offsets = match.offsets;
-        this.lengths = match.lengths;
+        // a copy's offsets are its own: adding to them must not write into the original's arrays
+        this.offsets = Arrays.copyOf(match.offsets, match.offsets.length);
+        this.lengths = Arrays.copyOf(match.lengths, match.lengths.length);
         this.currentOffset = match.currentOffset;
     }
 
