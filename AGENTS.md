@@ -43,58 +43,11 @@ mvn test -pl exist-core -Ddependency-check.skip=true -Ddocker=false
 mvn test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-check.skip=true -Ddocker=false
 ```
 
-### Distribution artifacts (zip, tar.bz2, DMG)
+### Release builds
 
-Produces release archives and platform-specific packages. Output lands in `exist-distribution/target/`.
-
-```bash
-JAVA_HOME=$(/usr/libexec/java_home -v 21) \
-  mvn -T1.5C clean package \
-  -pl exist-distribution -am \
-  -DskipTests \
-  -Ddependency-check.skip=true \
-  -Ddocker=false \
-  -Drevision=7.0.0-SNAPSHOT
-```
-
-**macOS**: the `mac-dmg-on-mac` profile is active by default and produces an unsigned `.app` bundle and DMG. Suppress both with `-P '!mac-dmg-on-mac'`. For the fully signed and notarized DMG used in releases, see `exist-versioning-release.md`.
-
-**Linux**: the `mac-dmg-on-unix` profile is active by default on non-CI Linux machines (suppressed when `env.CI=true`) and produces an unsigned DMG. Requires `hfsplus-tools` (`apt-get install hfsprogs hfsplus` / `yum install hfsutils hfsplus-tools`); warns and skips gracefully if missing. Suppress with `-P '!mac-dmg-on-unix'`.
-
-Both DMG profiles are suppressed automatically by `-P skip-build-dist-archives` via the `skip.mac.dist` property.
-
-### IzPack installer JAR
-
-Produces the cross-platform installer JAR in `exist-installer/target/`.
-
-```bash
-JAVA_HOME=$(/usr/libexec/java_home -v 21) \
-  mvn -T1.5C clean package \
-  -Prelease-build \
-  -pl exist-installer -am \
-  -DskipTests \
-  -Ddependency-check.skip=true \
-  -Ddocker=false \
-  -Drevision=7.0.0-SNAPSHOT
-```
-
-Run the installer: `java -jar exist-installer/target/exist-installer-7.0.0-SNAPSHOT.jar`
-
-### Docker image
-
-```bash
-# Build the Docker image
-mvn -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
-  -Pskip-build-dist-archives \
-  -pl exist-docker -am
-
-cp exist-docker/target/classes/Dockerfile exist-docker/target/exist-docker-*-docker-dir/Dockerfile
-docker build -t existdb/existdb:local exist-docker/target/exist-docker-*-docker-dir/
-
-# Run
-docker run -d --name existdb -p 8080:8080 -p 8443:8443 existdb/existdb:local
-# Access at http://localhost:8080/exist/
-```
+- Distribution archives and DMG: [`exist-distribution/AGENTS.md`](exist-distribution/AGENTS.md)
+- IzPack installer JAR: [`exist-installer/AGENTS.md`](exist-installer/AGENTS.md)
+- Docker image: [`exist-docker/AGENTS.md`](exist-docker/AGENTS.md)
 
 ### Known build issues
 
@@ -104,27 +57,7 @@ docker run -d --name existdb -p 8080:8080 -p 8443:8443 existdb/existdb:local
 
 ## Parser (ANTLR 2)
 
-eXist uses **ANTLR 2.7.7** for the XQuery parser. The grammar files are:
-
-- `exist-core/src/main/antlr/org/exist/xquery/parser/XQuery.g` — lexer + parser (~3500 lines)
-- `exist-core/src/main/antlr/org/exist/xquery/parser/XQueryTree.g` — tree walker
-- `exist-core/src/main/antlr/org/exist/xquery/parser/DeclScanner.g` — declaration pre-scanner
-
-### Key ANTLR 2 gotchas
-
-- **testLiterals trap**: NEVER use `"true"` or `"false"` as keyword strings in grammar rules — use a semantic predicate instead. ANTLR 2's `testLiterals` mechanism will intercept them.
-- **Syntactic predicates**: `(A B) => ...` cache tokens during lookahead but do NOT rollback lexer state mutations. Flag changes (like `parseStringLiterals`) during token production persist even if the predicate fails.
-- **Grammar sections**: Keep rules in labeled sections per feature area to prevent merge conflicts:
-  ```
-  // === W3C XQuery Update Facility 3.0 ===
-  // === Full Text ===
-  // === XQuery 4.0 Parser Extensions ===
-  ```
-- **Expression chain**: The expression precedence chain is: `comparisonExpr` → `ftContainsExpr` → `otherwiseExpr` → `stringConcatExpr` → `rangeExpr`. Do not reorder.
-
-### Generated sources
-
-ANTLR generates `XQueryParser.java`, `XQueryLexer.java`, `XQueryTreeParser.java` into `exist-core/target/generated-sources/antlr/`. These are ~20K lines each and should not be manually edited.
+See [`exist-core/src/main/antlr/AGENTS.md`](exist-core/src/main/antlr/AGENTS.md).
 
 ## Project Structure
 
@@ -146,47 +79,11 @@ ANTLR generates `XQueryParser.java`, `XQueryLexer.java`, `XQueryTreeParser.java`
 
 ### Native config schemas (`schema/`)
 
-eXist-db's own config-file XSDs (`conf.xsd`, `collection.xconf.xsd`, `descriptor.xsd`,
-`controller-config.xsd`, `mime-types.xsd`, plus `users.xsd`/`server.xsd`/`security-manager.xsd`/
-`expath-pkg.xsd` and its extensions) live in [`schema/`](schema/) at the repo root, and are shipped
-in every distribution layout as `$EXIST_HOME/schema/` — a sibling of `etc/`, `bin/`, `lib/` (tarball,
-zip, Docker image, and the IzPack installer all include it; see `exist-distribution`/`exist-docker`/
-`exist-installer`). External tools (eXide, IDE plugins) can resolve a config file's grammar from
-this fixed location instead of vendoring their own copy.
+See [`schema/AGENTS.md`](schema/AGENTS.md).
 
-- Each XSD's `xs:schema/@version` is an independent semver line — see [`schema/README.md`](schema/README.md)
-  for the versioning policy (CI enforces a version bump on any semantic schema edit, via
-  `mvn -N xml:transform@schema-governance`, see [`schema/governance.xsl`](schema/governance.xsl)).
-- `org.exist.util.SchemaVersion`'s version constants are generated at build time from the XSDs
-  themselves (`generate-sources` phase, see `exist-core/pom.xml`'s `schema-version-codegen`
-  execution and [`schema/generate-schema-version.xsl`](schema/generate-schema-version.xsl)) — never
-  hand-edit `SchemaVersion`'s constants; bump the XSD's `xs:schema/@version` instead and the
-  constant follows automatically on the next build.
-- The 5 canonical instances (the files `pom.xml`'s `validate-canonical-instances` execution
-  validates on every `mvn validate`) are the only ones checked for drift; the ~39 test/sample
-  fixture copies scattered across module test resources (e.g. `extensions/*/src/test/resources*/conf.xml`)
-  are intentionally hand-trimmed per-module subsets, not literal copies — don't try to regenerate
-  them from canonical.
+### Adding `fn:` functions and error codes
 
-### Adding a new `fn:` function
-
-1. Create the class in `org.exist.xquery.functions.fn` extending `BasicFunction`
-2. Define `FunctionSignature` constant(s)
-3. Register in `FnModule.java` — add `FunctionDef` to the array in a labeled block:
-   ```java
-   // --- Feature Name ---
-   new FunctionDef(MyFunction.SIGNATURE, FnModule.class),
-   // --- End Feature Name ---
-   ```
-4. Register in ALL `conf.xml` files (exist-core + extensions test resources)
-
-### Adding error codes
-
-Add to `ErrorCodes.java` in a labeled block for your feature area:
-```java
-// --- Feature Name error codes ---
-public static final ErrorCode FOXX0001 = new ErrorCode("FOXX0001", "Description");
-```
+See [`exist-core/AGENTS.md`](exist-core/AGENTS.md).
 
 ### Choosing XQSuite vs Java tests
 
