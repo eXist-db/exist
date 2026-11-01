@@ -60,7 +60,7 @@
             <!-- keep in sync with monex -->
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.19.1</version>
+            <version>2.19.2</version>
         </dependency>
 
         <!-- dependency>
@@ -146,13 +146,13 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.83</version>
+            <version>1.86</version>
         </dependency>
 
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.10.2</version>
+            <version>1.12.1</version>
         </dependency>
 
         <dependency>
@@ -192,7 +192,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.30.6</version>
+            <version>3.30.17</version>
         </dependency>
 
         <dependency>
@@ -234,7 +234,7 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.3.5</version>
+            <version>1.4.0</version>
         </dependency>
 
         <dependency>
@@ -291,6 +291,7 @@
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
@@ -433,13 +434,13 @@
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
-            <version>3.6.1</version>
+            <version>3.6.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.3.2</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
+            <version>2.4.1</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
             <!-- exclude Quartz SQL connectivity options -->
             <exclusions>
                 <exclusion>
@@ -971,6 +972,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>xml-apis:xml-apis</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
 
                             <ignoredNonTestScopedDependencies>
