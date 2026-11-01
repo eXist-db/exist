@@ -417,6 +417,43 @@ public class BlobStoreRecoveryTest {
         }
     }
 
+    @Test
+    public void threeBlobs() throws IOException, BrokerPoolServiceException, EXistException {
+        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
+        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+
+        final Tuple2<byte[], MessageDigest> tempBin1 = generateTestFile();
+        final Tuple2<byte[], MessageDigest> tempBin2 = generateTestFile();
+        final Tuple2<byte[], MessageDigest> tempBin3 = generateTestFile();
+
+        try (final BlobDb blobDb = newBlobDb(temporaryFolder.getRoot().toPath(), blobDbx, blobDir)) {
+            blobDb.blobStore.open();
+
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin1._1);
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin2._1);
+            addCommit(blobDb.transactionManager, blobDb.blobStore, tempBin3._1);
+        }
+
+        try (final BlobDb blobDb = newBlobDb(temporaryFolder.getRoot().toPath(), blobDbx, blobDir)) {
+            blobDb.blobStore.open();
+
+            assertBlobIsPresent(blobDb, tempBin1);
+            assertBlobIsPresent(blobDb, tempBin2);
+            assertBlobIsPresent(blobDb, tempBin3);
+        }
+    }
+
+    private void assertBlobIsPresent(final BlobDb blobDb, final Tuple2<byte[], MessageDigest> expected) throws IOException, TransactionException {
+        final BlobId blobId = new BlobId(expected._2.getValue());
+        final Tuple2<byte[], MessageDigest> actual = getCommit(blobDb.transactionManager, blobDb.blobStore, blobId);
+        assertNotNull(actual);
+        assertEquals(expected._2, actual._2);
+        assertArrayEquals(expected._1, actual._1);
+        if (blobDb.blobStore instanceof BlobStoreImpl) {
+            assertEquals(1, ((BlobStoreImpl) blobDb.blobStore).getReferenceCount(blobId).intValue());
+        }
+    }
+
     private void addCommit(final TransactionManager transactionManager, final BlobStore blobStore, final byte[] blob) throws IOException, TransactionException {
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob)) {
             try (final Txn transaction = transactionManager.beginTransaction()) {
@@ -481,9 +518,7 @@ public class BlobStoreRecoveryTest {
         replay(mockConfiguration);
 
         final BrokerPool mockBrokerPool = createNiceMock(BrokerPool.class);
-        if (!cleanShutdown) {
-            mockBrokerPool.FORCE_CORRUPTION = true;  // NOTE: needed so we don't checkpoint at clean shutdown and can simulate a crash!
-        }
+        BrokerPool.FORCE_CORRUPTION = !cleanShutdown;  // NOTE: needed so we don't checkpoint at clean shutdown and can simulate a crash!
 
         final SecurityManager mockSecurityManager = createNiceMock(SecurityManager.class);
         final Subject mockSystemSubject = createNiceMock(Subject.class);
