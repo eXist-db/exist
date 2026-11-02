@@ -874,6 +874,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final FacetsCollector facetsCollector = new FacetsCollector();
         final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, axis == NodeSet.ANCESTOR, contextId, facets, facetsCollector);
         collector.selfOnly = axis == SELF;
+        collector.ancestorsOfItsName = axis == NodeSet.ANCESTOR;
         searcher.searcher().search(query, collector);
 
         // compute facets (skip if config or taxonomy missing)
@@ -1668,6 +1669,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final boolean returnAncestor;
         // a hit counts only when its own node is one of the context nodes, see SELF
         private boolean selfOnly = false;
+        // a hit also gives the context nodes above the nearest that have its name
+        private boolean ancestorsOfItsName = false;
         private final int contextId;
         private final Query query;
         private final LuceneFacets facets;
@@ -1767,6 +1770,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     int sizeHint = contextSet.getSizeHint(storedDocument);
                     if (selfOnly) {
                         processSelfHit(doc, storedNode, match, sizeHint);
+                    } else if (ancestorsOfItsName) {
+                        processAncestorsOfItsNameHit(doc, storedNode, match, sizeHint);
                     } else if (returnAncestor) {
                         processAncestorHit(doc, storedNode, match, sizeHint);
                     } else {
@@ -1800,6 +1805,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     resultSet.add(parentNode, sizeHint);
                     // a predicate keeps a result whose context is in its context set: the context node itself
                     NodeProxy.propagatePredicateContextFrom(parentNode, parentNode, contextId);
+                    chainCollect(doc);
+                }
+            }
+
+            private void processAncestorsOfItsNameHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
+                // the nearest context node the hit is in, at any depth, and those above it with the hit's name, which
+                // are the ones pre-selection finds: a nested element of one name does not hide the one around it
+                boolean found = false;
+                for (NodeId id = storedNode.getNodeId(); id != null; id = id.getParentId()) {
+                    final NodeProxy contextNode = contextSet.get(storedNode.getOwnerDocument(), id);
+                    // a document node has no name: it can only be the nearest
+                    if (contextNode != null && (!found
+                            || (id != NodeId.DOCUMENT_NODE && storedNode.getQName().equals(contextNode.getQName())))) {
+                        contextNode.addMatch(match);
+                        resultSet.add(contextNode, sizeHint);
+                        // a predicate keeps a result whose context is in its context set: the context node itself
+                        NodeProxy.propagatePredicateContextFrom(contextNode, contextNode, contextId);
+                        found = true;
+                    }
+                }
+                if (found) {
                     chainCollect(doc);
                 }
             }
