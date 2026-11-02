@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_dfe2543c230ee0::t_b6e7560d0018a1 61-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e8231711b7aba0c1438b76056214e4edb32af2f1",
+  "prompts": {},
+  "sessions": {
+    "s_dfe2543c230ee0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "480b630d-79c7-4bce-a213-fa0840d97724",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
