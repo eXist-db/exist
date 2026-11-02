@@ -483,7 +483,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (contextQName == null) {
+        if (!hasContextName()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -530,10 +530,18 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         return optimizables != null ? optimizables : Sequence.EMPTY_SEQUENCE;
     }
 
+    /**
+     * A step without a name test searches all the indexes, through a {@link QName} with no local part. It has no single
+     * configuration to look up, so it is not pre-selected and its keys are not converted to an index's type.
+     */
+    private boolean hasContextName() {
+        return contextQName != null && contextQName.getLocalPart() != null && !QName.WILDCARD.equals(contextQName.getLocalPart());
+    }
+
     private RangeIndexConfigElement findConfiguration(Sequence contextSequence) {
         NodePath path = contextPath;
         if (path == null) {
-            if (contextQName == null) {
+            if (!hasContextName()) {
                 return null;
             }
             path = new NodePath(contextQName);
