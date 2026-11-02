@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_cda7b57354762d::t_cf3a0aab3ea99e 110,161,167,170-171
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_cda7b57354762d::t_4798654bf8f107 155,189,195,204-205
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/VectorSearchSupport.java
+  s_cda7b57354762d::t_2d290a0bc269bf 78-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e9f34a8472ef7dbbf5f9295f3094d9dce2fdd2fd",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
