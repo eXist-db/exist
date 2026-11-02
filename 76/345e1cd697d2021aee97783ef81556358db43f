@@ -1,0 +1,25 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_c0633c4d9ea012 149-151,1902,1904,1906-1911,1916-1923
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Query.java
+  s_cda7b57354762d::t_832dffc385dabb 217-218
+  s_cda7b57354762d::t_00cae79c1be130 326
+  s_cda7b57354762d::t_16fa121c7cb002 354-371
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-own-index.xqm
+  s_cda7b57354762d::t_93257de351e0a8 28-29,54-55,133-199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "76345e1cd697d2021aee97783ef81556358db43f",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
