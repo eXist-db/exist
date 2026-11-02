@@ -1,0 +1,27 @@
+extensions/indexes/lucene/src/test/xquery/lucene/path-shapes.xqm
+  s_cda7b57354762d::t_24112aa9d74c87 1-629
+extensions/indexes/lucene/src/test/xquery/unoptimized-known-failures.lst
+  s_cda7b57354762d::t_bfb7a20a3dcb05 10-13
+extensions/indexes/ngram/src/test/xquery/ngram/path-shapes.xqm
+  s_cda7b57354762d::t_11ecd61a40d6a6 1-258
+extensions/indexes/range/src/test/xquery/range/path-shapes-noindex.xqm
+  s_cda7b57354762d::t_c992b71d50ead6 1-415
+extensions/indexes/range/src/test/xquery/range/path-shapes.xqm
+  s_cda7b57354762d::t_c2f61eb706eb29 1-576
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "106ce1b5868a0516c143972677b3cdc9524a9970",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
