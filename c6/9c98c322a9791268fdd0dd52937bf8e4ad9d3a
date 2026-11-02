@@ -1,0 +1,19 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/OptimizeFieldPragma.java
+  s_cda7b57354762d::t_cabb898a5029e3 211-212,226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c69c98c322a9791268fdd0dd52937bf8e4ad9d3a",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
