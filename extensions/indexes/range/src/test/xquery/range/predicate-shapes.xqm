@@ -28,6 +28,7 @@ xquery version "3.1";
 module namespace rps="http://exist-db.org/xquery/range/predicate-shapes/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace stats="http://exist-db.org/xquery/profiling";
 import module namespace range="http://exist-db.org/xquery/range";
 
 declare variable $rps:COLLECTION_NAME := "test-range-predicate-shapes";
@@ -196,4 +197,20 @@ declare
     %test:assertEquals("c1", "c2")
 function rps:range-eq-of-descendants-explicitly() {
     sort(range:eq(collection($rps:COLLECTION)/root//sec, "hit")/@n/string())
+};
+
+(: a range:field function written as such is reported as evaluated as written, as the other functions are. One the optimizer
+   makes from a comparison reports OPTIMIZED: see conditions.xql :)
+declare
+    %test:stats
+    %test:assertXPath("exists($result//stats:index[@type eq 'new-range']) and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:field-function-as-a-path-step-reports-basic() {
+    collection($rps:COLLECTION)//range:field-eq("rps-field", "hit")
+};
+
+declare
+    %test:stats
+    %test:assertXPath("exists($result//stats:index[@type eq 'new-range']) and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:field-function-in-a-predicate-reports-basic() {
+    collection($rps:COLLECTION)//other[range:field-eq("rps-field", "hit")]
 };
