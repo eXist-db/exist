@@ -71,6 +71,9 @@ public class QueryField extends Query implements Optimizable {
 
     private NodeSet preselectResult = null;
 
+    /** Whether the call is in a predicate of a step with a wildcard or kind test, set by {@link #analyze(AnalyzeContextInfo)}. */
+    private boolean wildcardStep = false;
+
     public QueryField(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -79,11 +82,13 @@ public class QueryField extends Query implements Optimizable {
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
         this.contextId = contextInfo.getContextId();
+        wildcardStep = contextInfo.getContextStep() instanceof final LocationStep step && step.getTest().isWildcardTest();
     }
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return contextSequence;  // always optimizable!
+        // a wildcard step has no name to find the nodes above a hit by: it is evaluated as written
+        return wildcardStep ? Sequence.EMPTY_SEQUENCE : contextSequence;
     }
 
     @Override
