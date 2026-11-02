@@ -1,0 +1,46 @@
+exist-core/src/test/java/org/exist/dom/persistent/AVLTreeNodeSetMatchesTest.java
+  s_15ffdc06d1db19::t_469797b6e20306 1-147
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/QueryLeavesItsInputsTest.java
+  s_15ffdc06d1db19::t_d114c156e285e8 110-129,144-155,158-172
+extensions/indexes/lucene/src/test/xquery/lucene/highlight-unstored-fields.xqm
+  s_15ffdc06d1db19::t_6d57062cd05c3a 180-198
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_33372b0843f221 818
+  s_cda7b57354762d::t_682a411e39d8d5 1917-1921
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_cda7b57354762d::t_d11249de44ac9b 26,109
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-step.xqm
+  s_cda7b57354762d::t_6359516bb38ef9 29-32,60-62,89,91-98,207,220-226
+exist-core/src/main/java/org/exist/dom/persistent/ExtArrayNodeSet.java
+  s_cda7b57354762d::t_286af9b582c4b3 256,264-265,977
+exist-core/src/main/java/org/exist/dom/persistent/NewArrayNodeSet.java
+  s_cda7b57354762d::t_668776da342341 281,290-291,570
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_cda7b57354762d::t_1f6cac5b5b12db 82-84,93,98-99
+extensions/indexes/lucene/src/test/xquery/lucene/query-field-nested.xqm
+  s_cda7b57354762d::t_11a69a58bbcd81 100-114,116-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2aeca8316453ad41a2a5bed2927453d46c46ea70",
+  "prompts": {},
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
