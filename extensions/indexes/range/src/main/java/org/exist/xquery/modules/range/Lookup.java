@@ -54,6 +54,9 @@ import java.util.Optional;
 
 public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
+    /** Whether the step whose predicate holds the call selects at or below its input, see {@link #analyze}. */
+    private boolean stepSelectsDownwards = true;
+
     private static final Logger LOG = LogManager.getLogger(Lookup.class);
 
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
@@ -237,6 +240,9 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
+
+        stepSelectsDownwards = !(contextInfo.getContextStep() instanceof final LocationStep outerStep
+                && isUpwardsOrSideways(outerStep.getAxis()));
 
         List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
@@ -483,7 +489,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (!hasContextName()) {
+        if (!hasContextName() || !stepSelectsDownwards) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -528,6 +534,13 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         }
 
         return optimizables != null ? optimizables : Sequence.EMPTY_SEQUENCE;
+    }
+
+    /** Pre-selecting finds hits below the step's input, which the nodes of these axes are not. */
+    private static boolean isUpwardsOrSideways(final int axis) {
+        return axis == Constants.PARENT_AXIS || axis == Constants.ANCESTOR_AXIS || axis == Constants.ANCESTOR_SELF_AXIS
+                || axis == Constants.FOLLOWING_SIBLING_AXIS || axis == Constants.PRECEDING_SIBLING_AXIS
+                || axis == Constants.FOLLOWING_AXIS || axis == Constants.PRECEDING_AXIS;
     }
 
     /**

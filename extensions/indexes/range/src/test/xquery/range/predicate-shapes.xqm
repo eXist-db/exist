@@ -22,7 +22,8 @@
 xquery version "3.1";
 
 (:~
- : Range functions in predicates of steps of different shapes. See https://github.com/eXist-db/exist/issues/6974
+ : Range functions in predicates of steps of different shapes. See https://github.com/eXist-db/exist/issues/6974,
+ : https://github.com/eXist-db/exist/issues/6975 and https://github.com/eXist-db/exist/issues/6976
  :)
 module namespace rps="http://exist-db.org/xquery/range/predicate-shapes/test";
 
@@ -38,6 +39,7 @@ declare variable $rps:XCONF :=
         <index>
             <range>
                 <create qname="item" type="xs:string"/>
+                <create qname="t" type="xs:string"/>
                 <create qname="other"><field name="rps-field" match="t" type="xs:string"/></create>
             </range>
         </index>
@@ -66,19 +68,19 @@ function rps:tearDown() {
 
 (: a step without a name matches no configuration by name, and gives the nodes its index finds :)
 declare
-    %test:assertEquals("1", "2")
+    %test:assertEquals("1", "2", "o1", "o2")
 function rps:range-eq-on-a-wildcard-step() {
     sort(collection($rps:COLLECTION)/wrap/*[range:eq(., "hit")]/@n/string())
 };
 
 declare
-    %test:assertEquals("1", "2")
+    %test:assertEquals("1", "2", "o1", "o2")
 function rps:range-eq-on-a-node-test-step() {
     sort(collection($rps:COLLECTION)/wrap/node()[range:eq(., "hit")]/@n/string())
 };
 
 declare
-    %test:assertEquals("1", "2")
+    %test:assertEquals("1", "2", "o1", "o2")
 function rps:range-eq-on-an-element-test-step() {
     sort(collection($rps:COLLECTION)/wrap/element()[range:eq(., "hit")]/@n/string())
 };
@@ -90,7 +92,7 @@ function rps:range-eq-on-a-comment-test-step() {
 };
 
 declare
-    %test:assertEquals("1", "2")
+    %test:assertEquals("1", "2", "o1", "o2")
 function rps:range-matches-on-a-wildcard-step() {
     sort(collection($rps:COLLECTION)/wrap/*[range:matches(., "hit")]/@n/string())
 };
@@ -113,4 +115,55 @@ declare
     %test:assertEquals("o1", "o2")
 function rps:comparison-on-a-field-path() {
     sort(collection($rps:COLLECTION)//other[t = "hit"]/@n/string())
+};
+
+(: a range:field function in a predicate gives the same as the path step :)
+declare
+    %test:assertEquals("o1", "o2")
+function rps:field-function-as-a-path-step() {
+    sort(collection($rps:COLLECTION)//range:field-eq("rps-field", "hit")/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:field-function-in-a-predicate() {
+    sort(collection($rps:COLLECTION)//other[range:field-eq("rps-field", "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:field-function-in-a-predicate-of-a-child-step() {
+    sort(collection($rps:COLLECTION)/wrap/other[range:field-eq("rps-field", "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:field-function-in-a-predicate-on-a-sibling-axis() {
+    sort(collection($rps:COLLECTION)//item/following-sibling::other[range:field-eq("rps-field", "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:field-function-filtering-a-variable() {
+    let $others := collection($rps:COLLECTION)//other
+    return sort($others[range:field-eq("rps-field", "hit")]/@n/string())
+};
+
+(: pre-selecting looks for the hits below the step's input, which siblings and ancestors are not :)
+declare
+    %test:assertEquals("1", "2")
+function rps:range-eq-on-a-sibling-axis() {
+    sort(collection($rps:COLLECTION)//other/preceding-sibling::item[range:eq(., "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:range-eq-on-an-ancestor-axis() {
+    sort(collection($rps:COLLECTION)//item/text()/parent::item[range:eq(., "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:range-eq-of-a-child-on-a-sibling-axis() {
+    sort(collection($rps:COLLECTION)//item/following-sibling::other[range:eq(t, "hit")]/@n/string())
 };

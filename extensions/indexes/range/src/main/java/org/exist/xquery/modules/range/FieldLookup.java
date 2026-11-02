@@ -386,7 +386,9 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return contextSequence;  // always optimizable!
+        // a lookup the optimizer made from a comparison is pre-selected. One written in a predicate is evaluated as
+        // written, where it selects from the step's nodes
+        return fallback != null ? contextSequence : Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
