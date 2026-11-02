@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/dom/persistent/ExtArrayNodeSet.java
+  s_cda7b57354762d::t_286af9b582c4b3 256,264-265,977
+exist-core/src/main/java/org/exist/dom/persistent/NewArrayNodeSet.java
+  s_cda7b57354762d::t_668776da342341 281,290-291,570
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5e86332d8774a0b204e7abb5d12664da73ea3be",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
