@@ -1,0 +1,19 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/FieldLookup.java
+  s_cda7b57354762d::t_7cf1cfcf1e0fb9 331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0fa37e93c58d60cb697fd527a80d446b49998f04",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
