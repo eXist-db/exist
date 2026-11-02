@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_0d27e21989c25e 1818
+exist-core/src/main/java/org/exist/dom/QName.java
+  s_cda7b57354762d::t_afca893c584dc5 223-224
+exist-core/src/test/java/org/exist/dom/QNameTest.java
+  s_cda7b57354762d::t_2d54efaa2ab17b 43-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "912427a0b3b7ec62314735b0e62ab82a804cf3c1",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
