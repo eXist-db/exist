@@ -1,0 +1,19 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_cda7b57354762d::t_0e4086e3582a77 57-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e1eed7ceafeb08605a2a2da04bc23dc725b305f0",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
