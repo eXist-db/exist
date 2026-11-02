@@ -2,7 +2,7 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.
   s_15ffdc06d1db19::t_f6a330906f2fc8 1-32,35-180
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
   s_15ffdc06d1db19::t_8675f8040ecbd9 638,641-653,655,687,689-694,697,709-714,717,723-774,994-1001,1003,1858,1924-1927,2010-2025
-  s_15ffdc06d1db19::t_47bc368fd05b63 1039-1045,1055,1091-1092,1094-1095,1097-1104,1110-1144,1166-1170,1182,1185,1230-1233,1235-1252,1291
+  s_15ffdc06d1db19::t_47bc368fd05b63 1039-1045,1055,1091-1092,1094-1104,1110-1144,1166-1170,1182,1185,1230-1233,1235-1252,1291
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PerConfigQuery.java
   s_15ffdc06d1db19::t_6363994333319e 1-82
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Facets.java
