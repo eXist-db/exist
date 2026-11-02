@@ -3,3 +3,7 @@
 
 # The ngram index lower-cases one code point at a time (İ becomes i), fn:lower-case uses the full case mapping
 reference-ngram.xqm: case-mapping-like-fn-lower-case
+
+# Pre-selection itself
+path-shapes.xqm: fast--ngram-desc
+path-shapes.xqm: fast--ngram-child
