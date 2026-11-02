@@ -1815,9 +1815,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 boolean found = false;
                 for (NodeId id = storedNode.getNodeId(); id != null; id = id.getParentId()) {
                     final NodeProxy contextNode = contextSet.get(storedNode.getOwnerDocument(), id);
-                    // a document node has no name: it can only be the nearest
-                    if (contextNode != null && (!found
-                            || (id != NodeId.DOCUMENT_NODE && storedNode.getQName().equals(contextNode.getQName())))) {
+                    if (contextNode != null && (!found || storedNode.getQName().equals(contextNode.getQName()))) {
                         contextNode.addMatch(match);
                         resultSet.add(contextNode, sizeHint);
                         // a predicate keeps a result whose context is in its context set: the context node itself
