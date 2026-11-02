@@ -1,0 +1,21 @@
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_cda7b57354762d::t_68ff678de5ea3d 31,201-216
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/FieldLookup.java
+  s_cda7b57354762d::t_7bab6d268d5333 330-331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb0d4ac036790d9949d6997cd81d84bdfc962f97",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
