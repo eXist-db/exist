@@ -25,6 +25,8 @@ xquery version "3.1";
  : ft:query($nodes, $q) is a filter: the nodes of $nodes whose own index entry matches $q. A node without an index of
  : its own is not found through a match below it, in any form of the call, and the answer does not depend on what
  : else the database has indexed. Descendants are queried explicitly.
+ :
+ : A document has no index entry of its own. It is a scope: it is found if an index entry in it matches.
  :)
 module namespace oi = "http://exist-db.org/xquery/lucene/test/ft-query-own-index";
 
@@ -49,7 +51,8 @@ declare %private function oi:store($coll as xs:string, $qname as xs:string, $doc
 declare
     %test:setUp
 function oi:setup() {
-    oi:store($oi:COLLECTION, "p", <body><div><section><p>alpha</p></section><p>beta</p></div></body>)
+    oi:store($oi:COLLECTION, "p", <body><div><section><p>alpha</p></section><p>beta</p></div></body>),
+    xmldb:store($oi:COLLECTION, "other.xml", <body><p>gamma</p></body>)
 };
 
 declare
@@ -126,4 +129,71 @@ function oi:another-index-in-the-database-does-not-change-the-answer() {
     let $before := $answers()
     let $_ := oi:store($oi:UNRELATED, "title", <doc><title>beta words</title></doc>)
     return ($before, $answers())
+};
+
+declare
+    %test:assertEquals("doc.xml")
+function oi:documents-in-a-predicate() {
+    collection($oi:COLLECTION)[ft:query(., "alpha")] ! util:document-name(.)
+};
+
+declare
+    %test:assertEquals("doc.xml", "other.xml")
+function oi:documents-with-a-match-each() {
+    sort(collection($oi:COLLECTION)[ft:query(., "alpha OR gamma")] ! util:document-name(.))
+};
+
+declare
+    %test:assertEquals("doc.xml")
+function oi:documents-in-a-variable() {
+    let $docs := collection($oi:COLLECTION)
+    return $docs[ft:query(., "alpha")] ! util:document-name(.)
+};
+
+declare
+    %test:assertEquals("doc.xml")
+function oi:documents-as-an-argument() {
+    ft:query(collection($oi:COLLECTION), "alpha") ! util:document-name(.)
+};
+
+declare
+    %test:assertEquals(1, 0)
+function oi:one-document() {
+    let $doc := doc($oi:COLLECTION || "/doc.xml")
+    return (count($doc[ft:query(., "alpha")]), count($doc[ft:query(., "gamma")]))
+};
+
+declare
+    %test:assertEquals(0)
+function oi:documents-without-a-match() {
+    count(collection($oi:COLLECTION)[ft:query(., "nothing")])
+};
+
+declare
+    %test:assertEquals("doc.xml")
+function oi:documents-on-a-self-step() {
+    collection($oi:COLLECTION)/self::node()[ft:query(., "alpha")] ! util:document-name(.)
+};
+
+(: a document's score is that of its matches, as for a node and its descendants :)
+declare
+    %test:assertTrue
+function oi:a-document-has-a-score() {
+    collection($oi:COLLECTION)[ft:query(., "alpha")] ! ft:score(.) > 0
+};
+
+(: each by its own rule: the document through a match in it, the p by its entry, not the div :)
+declare
+    %test:assertEquals("#document", "p")
+function oi:documents-and-elements-together() {
+    let $doc := doc($oi:COLLECTION || "/doc.xml")
+    return ($doc, $doc//div, $doc//p)[ft:query(., "alpha")] ! (if (. instance of document-node()) then "#document" else name(.))
+};
+
+(: an element stays a filter when documents are given too, with another index in the database :)
+declare
+    %test:assertEquals("#document")
+function oi:documents-and-an-element-without-an-index() {
+    let $doc := doc($oi:COLLECTION || "/doc.xml")
+    return ($doc, $doc//div)[ft:query(., "alpha")] ! (if (. instance of document-node()) then "#document" else name(.))
 };

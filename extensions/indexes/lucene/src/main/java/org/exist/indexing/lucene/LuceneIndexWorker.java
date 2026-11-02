@@ -146,8 +146,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      * The axis that asks {@link #query} for the hits on the context nodes themselves: a hit counts only when its own
-     * node is one of the context nodes. This is {@code ft:query}'s filter, the nodes it is given whose own index entry
-     * matches; {@link NodeSet#ANCESTOR} also returns a context node through a match below it.
+     * node is one of the context nodes, or for its document if that is one. This is {@code ft:query}'s filter, the nodes
+     * it is given whose own index entry matches; a document has no entry, and is a scope for the entries in it.
+     * {@link NodeSet#ANCESTOR} also returns any other context node through a match below it.
      */
     public static final int SELF = -1;
 
@@ -1898,16 +1899,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             private void processSelfHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
                 // the hit is the context node itself, or no hit of the context: a match below a context node is not
-                // that node's
+                // that node's, unless it is a document, which has no index entry and is a scope for those in it
                 final NodeProxy contextNode = contextSet.get(storedNode);
+                final NodeProxy document = contextSet.get(storedNode.getOwnerDocument(), NodeId.DOCUMENT_NODE);
                 if (contextNode != null) {
-                    // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
-                    // predicate is the context node, so that the predicate keeps it
-                    final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
-                            : contextNode.withContextNode(contextId, contextNode);
-                    resultSet.add(hit.withMatch(match), sizeHint);
+                    addSelfHit(contextNode, match, sizeHint);
+                }
+                if (document != null) {
+                    addSelfHit(document, match, sizeHint);
+                }
+                if (contextNode != null || document != null) {
                     chainCollect(doc);
                 }
+            }
+
+            private void addSelfHit(final NodeProxy contextNode, final LuceneMatch match, final int sizeHint) {
+                // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
+                // predicate is the context node, so that the predicate keeps it
+                final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
+                        : contextNode.withContextNode(contextId, contextNode);
+                resultSet.add(hit.withMatch(match), sizeHint);
             }
 
             private void processAncestorHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
