@@ -26,6 +26,7 @@ flowchart LR
   move-resource-test$-check-thread-service["Move Resource Test$ Check Thread Service"]
   non-ascii-cookie-round-trip-test-service["Non Ascii Cookie Round Trip Test Service"]
   patch-test-service["Patch Test Service"]
+  resource-naming-conformance-test-service["Resource Naming Conformance Test Service"]
   rest-binaries-test-service["Rest Binaries Test Service"]
   send-request-function-service["Send Request Function Service"]
   stream-binary-test-service["Stream Binary Test Service"]
@@ -63,6 +64,7 @@ flowchart LR
 - **Move Resource Test$ Check Thread Service**: HTTPS service
 - **Non Ascii Cookie Round Trip Test Service**: HTTPS service
 - **Patch Test Service**: HTTPS service
+- **Resource Naming Conformance Test Service**: HTTPS service
 - **Rest Binaries Test Service**: HTTPS service
 - **Send Request Function Service**: HTTPS service
 - **Stream Binary Test Service**: HTTPS service
