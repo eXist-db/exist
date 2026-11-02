@@ -1,0 +1,44 @@
+exist-core/src/main/java/org/exist/xquery/Optimizable.java
+  s_cda7b57354762d::t_c3be922694c088 54-55
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_cda7b57354762d::t_0b2a6450a98b61 24,27,56,59-64,69-88,92-96,100-108,110-112
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_cda7b57354762d::t_aebec68e8af419 239-268
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/VectorContextBenchmark.java
+  s_cda7b57354762d::t_952de1c6eb2ef1 101-104,130-135,163-169,211-246,278-286
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_cda7b57354762d::t_ad5c040d8f1e05 115,155,189,195-196,198-203
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_cda7b57354762d::t_45ff4329b8ca46 36
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-step.xqm
+  s_cda7b57354762d::t_19c643d8c415e9 1-28,33-59,72-97,99,110-217,219-230,238-242
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_cda7b57354762d::t_a49c041f874d52 74-76,85,90-91
+extensions/indexes/lucene/src/test/xquery/lucene/query-field-nested.xqm
+  s_cda7b57354762d::t_4c56ec556bf8af 1-133
+  s_cda7b57354762d::t_5a401cee119a44 1-25,28-99
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_2c39d8f85df535 877,1686-1687,1787-1788,1826-1831,1833-1844
+  s_cda7b57354762d::t_0d27e21989c25e 1832
+  s_cda7b57354762d::t_f50c3610f5bbac 1829-1831,1833-1844
+exist-core/src/main/java/org/exist/dom/QName.java
+  s_cda7b57354762d::t_afca893c584dc5 223-224
+exist-core/src/test/java/org/exist/dom/QNameTest.java
+  s_cda7b57354762d::t_2d54efaa2ab17b 43-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd187aaaa80ed373ed54698421756f3522c21916",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
