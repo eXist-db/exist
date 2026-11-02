@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_cda7b57354762d::t_45ff4329b8ca46 36-37
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-step.xqm
+  s_cda7b57354762d::t_19c643d8c415e9 1-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b222cdb5b3cccc84500abd5c46278c7a56e7b754",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
