@@ -1,0 +1,23 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_cda7b57354762d::t_a49c041f874d52 74-76,85,90-91
+extensions/indexes/lucene/src/test/xquery/lucene/query-field-nested.xqm
+  s_cda7b57354762d::t_4c56ec556bf8af 1-133
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_2c39d8f85df535 877,1672-1673,1773-1774,1812-1832
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8c090a5205a513d339b5899bba32ffcc76bb0373",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
