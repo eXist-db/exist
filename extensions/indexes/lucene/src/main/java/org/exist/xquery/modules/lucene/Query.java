@@ -214,7 +214,8 @@ public class Query extends Function implements Optimizable {
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (contextQNames != null) {
+        // a self step without a name can select documents, which the search by names does not find: not pre-selected
+        if (contextQNames != null && !(optimizeSelf && axis == Constants.SELF_AXIS && contextQNames[0].getLocalPart() == null)) {
             return contextSequence;
         }
         return Sequence.EMPTY_SEQUENCE;
@@ -322,20 +323,7 @@ public class Query extends Function implements Optimizable {
                 final DocumentSet docs = inNodes.getDocumentSet();
                 final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 final Item key = getKey(contextSequence, contextItem);
-                @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
-                if (qnames == null && inNodes != null && !inNodes.isEmpty()) {
-                    // only the input nodes can be hits: searching their names only is the same answer, faster
-                    final Set<QName> seen = new LinkedHashSet<>();
-                    for (final NodeProxy proxy : inNodes) {
-                        final QName qn = proxy.getQName();
-                        if (qn != null) {
-                            seen.add(qn);
-                        }
-                    }
-                    if (!seen.isEmpty()) {
-                        qnames = new ArrayList<>(seen);
-                    }
-                }
+                @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : namesOf(inNodes);
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -361,6 +349,24 @@ public class Query extends Function implements Optimizable {
         }
 
         return result;
+    }
+
+    /**
+     * Only the nodes given can be hits, so searching their names only is the same answer, faster. A document has no
+     * name, and any entry in it counts for it, so with one all the names are searched.
+     *
+     * @return the names to search, or null for all
+     */
+    private static @Nullable List<QName> namesOf(final NodeSet nodes) {
+        final Set<QName> seen = new LinkedHashSet<>();
+        for (final NodeProxy proxy : nodes) {
+            final QName qn = proxy.getQName();
+            if (qn == null) {
+                return null;
+            }
+            seen.add(qn);
+        }
+        return seen.isEmpty() ? null : new ArrayList<>(seen);
     }
 
     protected Item getKey(final Sequence contextSequence, final Item contextItem) throws XPathException {
