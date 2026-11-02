@@ -772,7 +772,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /** Whether the nodes are all document nodes: then the documents are what the search looks among anyway. */
-    private static boolean onlyDocuments(final NodeSet nodes) {
+    public static boolean onlyDocuments(final NodeSet nodes) {
         for (final NodeProxy node : nodes) {
             if (node.getNodeId() != NodeId.DOCUMENT_NODE) {
                 return false;
@@ -978,23 +978,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
             final String field, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
-        return searchVector(contextId, docs, contextSet, contextSet, field, vector, k, options);
+        return searchVector(contextId, null, docs, contextSet, contextSet, field, vector, k, options);
     }
 
     /**
      * Vector (KNN) search by field name, among some nodes.
      *
+     * @param name the only element whose index entries the search looks among, or null for any that has the field
      * @param contextSet the context the hits are returned in, as their ancestors in it, or null to return the hits
      * @param within the nodes the search looks among, the hits being in them or below them, or null for the documents
      * @see #searchVector(int, DocumentSet, NodeSet, String, float[], int, QueryOptions)
      */
-    public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
-            @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options)
+    public NodeSet searchVector(final int contextId, @Nullable final QName name, final DocumentSet docs,
+            @Nullable final NodeSet contextSet, @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
             final LuceneConfig config = getLuceneConfig(broker, docs);
-            final Query filterQuery = inContext(buildVectorFilterQuery(options, config, docs), field, docs, within);
+            final Query filter = buildVectorFilterQuery(options, config, docs);
+            final Query filterQuery = inContext(
+                    name != null ? withIndexType(filter, LuceneUtil.encodeQName(name, index.getBrokerPool().getSymbols())) : filter,
+                    field, docs, within);
             final int candidates = vectorCandidates(k, options);
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)

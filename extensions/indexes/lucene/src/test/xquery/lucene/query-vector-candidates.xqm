@@ -236,6 +236,36 @@ function qvc:a-step-on-a-narrower-context-by-field() {
     return (count($found), count($found[. = $qvc:NEAREST-IN-SEVENTHS]))
 };
 
+(: a wildcard step selects among its own nodes, as a named one does: the 5 nearest of each index, and only those :)
+declare
+    %test:assertEquals(10, 5, 5)
+function qvc:a-wildcard-step() {
+    let $found := collection($qvc:COLL)//*[ft:query-vector(., $qvc:QUERY, 5)]
+    return (count($found), count(qvc:found($found[self::article])[. = $qvc:EXACT-5]), count($found[self::note]))
+};
+
+declare
+    %test:assertEquals(10, 5, 5)
+function qvc:a-node-test-step() {
+    let $found := collection($qvc:COLL)//node()[ft:query-vector(., $qvc:QUERY, 5)]
+    return (count($found), count(qvc:found($found[self::article])[. = $qvc:EXACT-5]), count($found[self::note]))
+};
+
+(: a field shared with far more articles: the 5 nearest notes, not those among the nearest of both :)
+declare
+    %test:assertEquals(5)
+function qvc:a-step-whose-field-is-shared() {
+    count(collection($qvc:COLL)//note[ft:query-field-vector("emb", $qvc:QUERY, 5)])
+};
+
+(: the path's nodes filtered as a whole, whatever its steps' tests are :)
+declare
+    %test:assertEquals(10, 5, 5)
+function qvc:filtering-a-wildcard-path() {
+    let $found := (collection($qvc:COLL)//*)[ft:query-vector(., $qvc:QUERY, 5)]
+    return (count($found), count(qvc:found($found[self::article])[. = $qvc:EXACT-5]), count($found[self::note]))
+};
+
 (: in the first predicate, the vector query is evaluated first, as written: the sevenths of the 5 nearest of all :)
 declare
     %test:assertTrue

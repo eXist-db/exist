@@ -51,8 +51,8 @@ public interface Optimizable extends Expression {
      * Whether the expression keeps or drops each node on its own, as a filter does, so that pre-selecting it over all
      * of a step's candidates, before the step's other predicates, gives the result evaluating the predicates in order
      * would. A top-k search, such as a vector query's, keeps a node only if it is among the best k of the nodes it is
-     * given, so it is not a filter: it is pre-selected only in a step's first predicate, and with the nodes a filter
-     * expression filters as its context.
+     * given, so it is not a filter: it is pre-selected only in a step's first predicate, and only if its
+     * {@link #canOptimizeSequence(Sequence)} knows that the search looks among exactly the nodes the step selects.
      *
      * @return true, unless the expression's result for a node depends on the other nodes it is given
      */
