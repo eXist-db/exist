@@ -94,3 +94,23 @@ declare
 function rps:range-matches-on-a-wildcard-step() {
     sort(collection($rps:COLLECTION)/wrap/*[range:matches(., "hit")]/@n/string())
 };
+
+(: fn:matches is not rewritten to the field: it gives the XPath answer, with its flags :)
+declare
+    %test:assertEquals("o1", "o2")
+function rps:matches-on-a-field-path() {
+    sort(collection($rps:COLLECTION)/wrap/other[matches(t, "hit")]/@n/string())
+};
+
+declare
+    %test:assertEquals("o1", "o2")
+function rps:matches-with-flags-on-a-field-path() {
+    sort(collection($rps:COLLECTION)//other[matches(t, "HIT", "i")]/@n/string())
+};
+
+(: a comparison still goes to the field :)
+declare
+    %test:assertEquals("o1", "o2")
+function rps:comparison-on-a-field-path() {
+    sort(collection($rps:COLLECTION)//other[t = "hit"]/@n/string())
+};
