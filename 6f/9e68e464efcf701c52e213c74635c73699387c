@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-step.xqm
+  s_cda7b57354762d::t_671384df30ad3b 63-71,101-102,243-280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6f9e68e464efcf701c52e213c74635c73699387c",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
