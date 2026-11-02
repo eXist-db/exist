@@ -40,6 +40,16 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 class QNameTest {
 
+    /**
+     * A document node has no name, so its name can be null: the overload a QName argument selects has to take that as
+     * {@link QName#equals(Object)} does.
+     */
+    @Test
+    void equalsNull() {
+        final QName noName = null;
+        assertFalse(new QName("name", XMLConstants.NULL_NS_URI).equals(noName));
+    }
+
     @Test
     void validLocalPart_1() {
         final QName qName = new QName("valid-name", XMLConstants.NULL_NS_URI);
