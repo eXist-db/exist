@@ -112,10 +112,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
      */
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        // Pass a clone to super, not contextInfo itself: Function.analyze() mutates it
-        // (contextInfo.setParent(this)), and corrupting the caller's shared contextInfo breaks
-        // context-id tracking for whatever reads it afterward. Mirrors Query#analyze.
-        super.analyze(new AnalyzeContextInfo(contextInfo));
+        super.analyze(contextInfo);
         List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (steps.isEmpty() && getArgument(0) instanceof LocationStep step) {
             steps = List.of(step);
@@ -155,7 +152,7 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final QueryOptions options = parseOptionsArg(args);
 
         final NodeSet nodes = nodesSeq.toNodeSet();
-        return runSearch(nodes, nodes.getDocumentSet(), nodes, nodes, vector, k, options);
+        return runSearch(nodes, null, nodes.getDocumentSet(), nodes, nodes, vector, k, options);
     }
 
     @Override
@@ -189,16 +186,21 @@ public class QueryVector extends AbstractVectorQueryFunction {
         // the search looks among the context's nodes even when the hits are returned as they are, for the step to
         // select them: the k nearest of the context, not of the documents
         final NodeSet contextSet = useContext ? nodes : null;
-        final Sequence result = runSearch(nodes, contextSequence.getDocumentSet(), contextSet, nodes, vector, k, options);
+        final Sequence result = runSearch(nodes, stepName, contextSequence.getDocumentSet(), contextSet, nodes, vector, k, options);
         preselectResult = result.toNodeSet();
         return preselectResult;
     }
 
     /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index/qnames and run the KNN search. */
-    private Sequence runSearch(final NodeSet nodes, final DocumentSet docs, @Nullable final NodeSet contextSet,
-            @Nullable final NodeSet within, final float[] vector, final int k, final QueryOptions options) throws XPathException {
+    private Sequence runSearch(final NodeSet nodes, @Nullable final QName name, final DocumentSet docs,
+            @Nullable final NodeSet contextSet, @Nullable final NodeSet within, final float[] vector, final int k, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
+        final List<QName> qnames;
+        if (name != null) {
+            qnames = List.of(name);
+        } else {
+            qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
+        }
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
                 VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,

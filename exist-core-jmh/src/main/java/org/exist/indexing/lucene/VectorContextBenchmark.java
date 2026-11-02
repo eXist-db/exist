@@ -98,6 +98,10 @@ public class VectorContextBenchmark {
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/bench-vector-context");
     private static final String COLL = "collection('" + TEST_COLLECTION + "')";
 
+    private static final XmldbURI ROOTS_COLLECTION = XmldbURI.create("/db/bench-vector-context-roots");
+    private static final String ROOTS = "collection('" + ROOTS_COLLECTION + "')";
+    private static final int ROOT_DOCUMENTS = 5000;
+
     private static final int DIMENSION = 64;
     private static final int K = 5;
 
@@ -123,6 +127,12 @@ public class VectorContextBenchmark {
     private CompiledXQuery narrowContextQuery;
     private CompiledXQuery selectAllArticlesQuery;
     private CompiledXQuery selectNarrowArticlesQuery;
+    private CompiledXQuery descendantStepQuery;
+    private CompiledXQuery childStepQuery;
+    private CompiledXQuery descendantAfterChildStepQuery;
+    private CompiledXQuery wildcardStepQuery;
+    private CompiledXQuery rootsDescendantStepQuery;
+    private CompiledXQuery rootsChildStepQuery;
 
     @Setup(Level.Trial)
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
@@ -150,6 +160,13 @@ public class VectorContextBenchmark {
                     "count(ft:query-vector(" + narrow + ", " + vector + ", " + K + "))");
             selectAllArticlesQuery = compile(xquery, broker, "count(" + all + ")");
             selectNarrowArticlesQuery = compile(xquery, broker, "count(" + narrow + ")");
+            final String predicate = "[ft:query-vector(., " + vector + ", " + K + ")])";
+            descendantStepQuery = compile(xquery, broker, "count(" + COLL + "//article" + predicate);
+            childStepQuery = compile(xquery, broker, "count(" + COLL + "/articles/article" + predicate);
+            descendantAfterChildStepQuery = compile(xquery, broker, "count(" + COLL + "/articles//article" + predicate);
+            wildcardStepQuery = compile(xquery, broker, "count(" + COLL + "/articles/*" + predicate);
+            rootsDescendantStepQuery = compile(xquery, broker, "count(" + ROOTS + "//article" + predicate);
+            rootsChildStepQuery = compile(xquery, broker, "count(" + ROOTS + "/article" + predicate);
         }
     }
 
@@ -191,6 +208,42 @@ public class VectorContextBenchmark {
         return execute(selectNarrowArticlesQuery, articles / 7);
     }
 
+    /** Pre-selected: a named descendant step from documents, the plain kNN search. */
+    @Benchmark
+    public long descendantStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(descendantStepQuery, K);
+    }
+
+    /** Evaluated as written. */
+    @Benchmark
+    public long childStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(childStepQuery, K);
+    }
+
+    /** Evaluated as written. */
+    @Benchmark
+    public long descendantAfterChildStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(descendantAfterChildStepQuery, K);
+    }
+
+    /** Evaluated as written. */
+    @Benchmark
+    public long wildcardStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(wildcardStepQuery, K);
+    }
+
+    /** Pre-selected, over one document per article. */
+    @Benchmark
+    public long rootsDescendantStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(rootsDescendantStepQuery, K);
+    }
+
+    /** Evaluated as written, over one document per article: the form of {@code collection($c)/tei:TEI[...]}. */
+    @Benchmark
+    public long rootsChildStep() throws EXistException, PermissionDeniedException, XPathException {
+        return execute(rootsChildStepQuery, K);
+    }
+
     /**
      * Runs the query and returns the count it gives, throwing if it is not the one expected - a "fast but wrong"
      * guard, not a performance threshold.
@@ -221,6 +274,15 @@ public class VectorContextBenchmark {
 
             broker.storeDocument(tx, XmldbURI.create("articles.xml"), new StringInputSource(generateCorpus()),
                     MimeType.XML_TYPE, coll);
+
+            final Collection roots = broker.getOrCreateCollection(tx, ROOTS_COLLECTION);
+            broker.saveCollection(tx, roots);
+            mgr.addConfiguration(tx, broker, roots, LUCENE_CONFIG);
+            for (int i = 1; i <= ROOT_DOCUMENTS; i++) {
+                broker.storeDocument(tx, XmldbURI.create("article" + i + ".xml"), new StringInputSource(
+                        "<article n=\"" + i + "\"><embedding>" + vectorText(i, " ") + "</embedding></article>"),
+                        MimeType.XML_TYPE, roots);
+            }
 
             transact.commit(tx);
         }
