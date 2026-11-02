@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryField.java
+  s_cda7b57354762d::t_1f6cac5b5b12db 82-84,93,98-99
+extensions/indexes/lucene/src/test/xquery/lucene/query-field-nested.xqm
+  s_cda7b57354762d::t_11a69a58bbcd81 99-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b6ad3766a33099287a770f87579a59e2accf85a7",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
