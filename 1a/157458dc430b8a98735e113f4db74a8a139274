@@ -1,0 +1,55 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfigs.java
+  s_15ffdc06d1db19::t_f6a330906f2fc8 1-32,35-150,152-171,174,176,178,180
+  s_15ffdc06d1db19::t_f0bef435b58a0a 33-34,151
+  s_cda7b57354762d::t_ffe2aff801a68e 172-173,175,177,179
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Facets.java
+  s_15ffdc06d1db19::t_f6d24476ac3f0c 128
+  s_cda7b57354762d::t_ea9e119f2b4ab6 127,129-132,142-143
+extensions/indexes/lucene/src/test/xquery/lucene/mixed-analyzer-configs.xqm
+  s_15ffdc06d1db19::t_ea63c7ae9f2a21 186
+  s_15ffdc06d1db19::t_4e32557af5d950 105,150-161,166-173
+  s_15ffdc06d1db19::t_61736a0e3e5524 38,65-74,77-92,114-115,174-185
+  s_cda7b57354762d::t_6632f0697d141e 97,106,116,187
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_15ffdc06d1db19::t_24fbd16021258e 689
+  s_cda7b57354762d::t_5de6c16cd1ccf3 997-1002
+  s_15ffdc06d1db19::t_8675f8040ecbd9 638,641-653,655,687,690-694,697,709-714,717,723-770,1004,1892,1978,1981,1983
+  s_15ffdc06d1db19::t_456940823b399a 771-773
+  s_cda7b57354762d::t_888f8a6eea6c18 995-996
+  s_15ffdc06d1db19::t_043f12b292f3ea 1893-1895
+  s_15ffdc06d1db19::t_95b50ced114bc9 1979-1980
+  s_15ffdc06d1db19::t_95f15595325ac3 1982
+  s_15ffdc06d1db19::t_d3d33616afec6f 1984-1986
+  s_15ffdc06d1db19::t_1fe2e1a9b52b67 774,1805,1987-1993
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PerConfigQuery.java
+  s_15ffdc06d1db19::t_6363994333319e 1-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1a157458dc430b8a98735e113f4db74a8a139274",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_15ffdc06d1db19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34d912b5-4808-409e-a207-2acb0e5d781f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
