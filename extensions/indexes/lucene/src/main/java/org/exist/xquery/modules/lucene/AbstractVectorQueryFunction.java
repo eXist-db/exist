@@ -54,8 +54,8 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     @Nullable protected NodeSet preselectResult = null;
 
     /**
-     * The elements a search can look among for the step whose predicate holds the call, when those are all the step
-     * selects from documents: the name of a step on the descendant axis. See {@link #canOptimizeSequence(Sequence)}.
+     * The name of the step whose predicate holds the call, when a search can look among all that step selects from
+     * documents: a step on the descendant axis with a name test. See {@link #canOptimizeSequence(Sequence)}.
      */
     @Nullable protected QName stepName = null;
 
