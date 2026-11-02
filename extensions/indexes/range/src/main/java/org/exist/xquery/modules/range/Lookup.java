@@ -455,7 +455,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
-                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR, matchFlags, isRewrittenMatches());
+                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, RangeIndexWorker.SELF, matchFlags, isRewrittenMatches());
                 } catch (IOException e) {
                     throw new XPathException(this, e.getMessage());
                 }

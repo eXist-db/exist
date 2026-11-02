@@ -80,6 +80,12 @@ import java.util.*;
  */
 public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
+    /**
+     * The axis that asks {@link #query} for the hits on the context nodes themselves: a hit counts only when its own
+     * node is one of the context nodes. {@link NodeSet#ANCESTOR} also returns a context node through a match below it.
+     */
+    public static final int SELF = -1;
+
     private static final Logger LOG = LogManager.getLogger(RangeIndexWorker.class);
 
     public static final String FIELD_NODE_ID = "nodeId";
@@ -854,12 +860,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // in the context set.
                 if (contextSet != null) {
                     int sizeHint = contextSet.getSizeHint(storedDocument);
-                    NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                    // for SELF, a match below a context node is not that node's
+                    NodeProxy parentNode = (axis == SELF) ? contextSet.get(storedDocument, nodeId)
+                            : contextSet.parentWithChild(storedDocument, nodeId, false, true);
                     if (parentNode != null) {
                         NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
                         storedNode.setNodeType(nodeType);
                         getAddress(doc, storedNode);
-                        if (axis == NodeSet.ANCESTOR) {
+                        if (axis == NodeSet.ANCESTOR || axis == SELF) {
                             resultSet.add(parentNode, sizeHint);
                             NodeProxy.propagatePredicateContextFrom(parentNode, storedNode, contextId);
                         } else {

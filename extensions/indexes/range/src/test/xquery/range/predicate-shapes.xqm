@@ -40,6 +40,7 @@ declare variable $rps:XCONF :=
             <range>
                 <create qname="item" type="xs:string"/>
                 <create qname="t" type="xs:string"/>
+                <create qname="sec" type="xs:string"/>
                 <create qname="other"><field name="rps-field" match="t" type="xs:string"/></create>
             </range>
         </index>
@@ -55,8 +56,12 @@ function rps:setUp() {
     xmldb:create-collection("/db", $rps:COLLECTION_NAME),
     for $i in 1 to 4
     let $term := if ($i <= 2) then "hit" else "miss"
-    return xmldb:store($rps:COLLECTION, "d" || $i || ".xml",
-        <wrap><!--c--><item n="{$i}">{$term}</item><other n="o{$i}"><t>{$term}</t></other></wrap>)
+    return (
+        xmldb:store($rps:COLLECTION, "d" || $i || ".xml",
+            <wrap><!--c--><item n="{$i}">{$term}</item><other n="o{$i}"><t>{$term}</t></other></wrap>),
+        xmldb:store($rps:COLLECTION, "s" || $i || ".xml",
+            <root><sec n="t{$i}">miss<sec n="c{$i}">{$term}</sec></sec></root>)
+    )
 };
 
 declare
@@ -66,21 +71,21 @@ function rps:tearDown() {
     xmldb:remove($rps:CONF)
 };
 
-(: a step without a name matches no configuration by name, and gives the nodes its index finds :)
+(: a step without a name searches all the indexes, and keeps the nodes with an entry of their own, which other has not :)
 declare
-    %test:assertEquals("1", "2", "o1", "o2")
+    %test:assertEquals("1", "2")
 function rps:range-eq-on-a-wildcard-step() {
     sort(collection($rps:COLLECTION)/wrap/*[range:eq(., "hit")]/@n/string())
 };
 
 declare
-    %test:assertEquals("1", "2", "o1", "o2")
+    %test:assertEquals("1", "2")
 function rps:range-eq-on-a-node-test-step() {
     sort(collection($rps:COLLECTION)/wrap/node()[range:eq(., "hit")]/@n/string())
 };
 
 declare
-    %test:assertEquals("1", "2", "o1", "o2")
+    %test:assertEquals("1", "2")
 function rps:range-eq-on-an-element-test-step() {
     sort(collection($rps:COLLECTION)/wrap/element()[range:eq(., "hit")]/@n/string())
 };
@@ -92,7 +97,7 @@ function rps:range-eq-on-a-comment-test-step() {
 };
 
 declare
-    %test:assertEquals("1", "2", "o1", "o2")
+    %test:assertEquals("1", "2")
 function rps:range-matches-on-a-wildcard-step() {
     sort(collection($rps:COLLECTION)/wrap/*[range:matches(., "hit")]/@n/string())
 };
@@ -166,4 +171,29 @@ declare
     %test:assertEquals("o1", "o2")
 function rps:range-eq-of-a-child-on-a-sibling-axis() {
     sort(collection($rps:COLLECTION)//item/following-sibling::other[range:eq(t, "hit")]/@n/string())
+};
+
+(: a node is found by its own entry: the outer sec's value is not the term, though the inner sec's is :)
+declare
+    %test:assertEquals(0)
+function rps:range-eq-of-an-outer-element-in-a-step() {
+    count(collection($rps:COLLECTION)/root/sec[range:eq(., "hit")])
+};
+
+declare
+    %test:assertEquals(0)
+function rps:range-eq-of-an-outer-element-as-an-argument() {
+    count(range:eq(collection($rps:COLLECTION)/root/sec, "hit"))
+};
+
+declare
+    %test:assertEquals("c1", "c2")
+function rps:range-eq-of-nested-elements() {
+    sort(range:eq(collection($rps:COLLECTION)//sec, "hit")/@n/string())
+};
+
+declare
+    %test:assertEquals("c1", "c2")
+function rps:range-eq-of-descendants-explicitly() {
+    sort(range:eq(collection($rps:COLLECTION)/root//sec, "hit")/@n/string())
 };
