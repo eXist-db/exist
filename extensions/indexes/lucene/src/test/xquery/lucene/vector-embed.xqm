@@ -58,10 +58,10 @@ function ve:vector-embed-invalid-path-errors() {
 
 (:~
  : vector:embed with valid model returns array of dimension 384.
- : Pending when model not at target/onnx-models/all-MiniLM-L6-v2.
+ : Needs the model at target/onnx-models/all-MiniLM-L6-v2, so pending here.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model available")
+    %test:pending("Needs the ONNX model; VectorSearchEmbeddingTest runs vector:embed with it under -Ponnx-model")
     %test:assertEquals(384)
 function ve:vector-embed-returns-array() {
     array:size(vector:embed("Hello world", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2"))
@@ -87,10 +87,10 @@ function ve:vector-embed-batch-invalid-path-errors() {
 
 (:~
  : vector:embed-batch with valid model returns array of arrays (one per input).
- : Pending when model not at target/onnx-models/all-MiniLM-L6-v2.
+ : Needs the model at target/onnx-models/all-MiniLM-L6-v2, so pending here.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model available")
+    %test:pending("Needs the ONNX model; VectorSearchEmbeddingTest runs vector:embed with it under -Ponnx-model")
     %test:assertEquals(2, 384, 384)
 function ve:vector-embed-batch-returns-array-of-arrays() {
     let $batch := vector:embed-batch(("Hello world", "Machine learning"), "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
