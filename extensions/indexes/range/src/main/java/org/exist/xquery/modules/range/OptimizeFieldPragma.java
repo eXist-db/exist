@@ -207,7 +207,9 @@ public class OptimizeFieldPragma extends AbstractPragma {
                     if (rice != null && rice.getNodePath().match(contextPath)) {
                         // check for a matching sub-path and retrieve field information
                         final RangeIndexConfigField field = rice.getField(path);
-                        if (field != null) {
+                        // fn:matches has no key to compare with a field, and keeps its own flags and regex syntax
+                        @Nullable final Expression keyArg = getKeyArg(innerExpr);
+                        if (field != null && keyArg != null) {
                             if (args == null) {
                                 // initialize args
                                 args = new ArrayList<>(4);
@@ -221,7 +223,7 @@ public class OptimizeFieldPragma extends AbstractPragma {
                             // operator
                             arg1.add(new LiteralValue(context, new StringValue(RangeQueryRewriter.getOperator(innerExpr).toString())));
                             // append right hand expression as additional parameter
-                            args.add(getKeyArg(innerExpr));
+                            args.add(keyArg);
 
                             // store the collected arguments with a reference to the predicate
                             // so they can be removed if a better match is found (if the predicate happens to be

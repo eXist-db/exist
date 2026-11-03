@@ -327,7 +327,8 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
             }
 
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
+                // a lookup the optimizer made from a comparison is its optimization; one written as such is evaluated as written
+                context.getProfiler().traceIndexUsage( context, "new-range", this, (fallback != null) ? PerformanceStats.IndexOptimizationLevel.OPTIMIZED : PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
@@ -386,7 +387,9 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return contextSequence;  // always optimizable!
+        // a lookup the optimizer made from a comparison is pre-selected. One written in a predicate is evaluated as
+        // written, where it selects from the step's nodes
+        return fallback != null ? contextSequence : Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
