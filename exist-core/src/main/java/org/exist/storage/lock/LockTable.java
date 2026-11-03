@@ -116,6 +116,24 @@ public class LockTable {
     }
 
     /**
+     * The group id of lock events whose group is not reported, see {@link #newGroupId()}.
+     */
+    public static final long NO_GROUP = -1;
+
+    /**
+     * Gets an id for the events of a group of locks, such as the locks on a path, which listeners can use to tell
+     * the events of one group from another.
+     *
+     * The id is only reported to listeners, so it is only made when one is registered. The clock is not read
+     * otherwise: on macOS, {@link System#nanoTime()} doesn't scale across threads.
+     *
+     * @return a new group id, or {@link #NO_GROUP} if no listener is registered.
+     */
+    long newGroupId() {
+        return listeners == null ? NO_GROUP : System.nanoTime();
+    }
+
+    /**
      * Shuts down the lock table processor.
      *
      * After calling this, no further lock
@@ -154,7 +172,6 @@ public class LockTable {
             return;
         }
 
-        final long timestamp = System.nanoTime();
         final Thread currentThread = Thread.currentThread();
 
 //        if(ignoreEvent(threadName, id)) {
@@ -187,7 +204,7 @@ public class LockTable {
                 // write count last to ensure reader-thread visibility of above fields
                 entry.count = 1;
 
-                notifyListeners(lockEventType, timestamp, groupId, entry);
+                notifyListeners(lockEventType, groupId, entry);
 
                 break;
 
@@ -202,7 +219,7 @@ public class LockTable {
                 // mark attempt as unused
                 attemptFailedEntry.count = 0;
 
-                notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
+                notifyListeners(lockEventType, groupId, attemptFailedEntry);
 
                 break;
 
@@ -224,12 +241,12 @@ public class LockTable {
                     acquiredEntries = new Entries(acquiredEntry);
                     acquired.put(currentThread, acquiredEntries);
 
-                    notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
+                    notifyListeners(lockEventType, groupId, acquiredEntry);
 
                 } else {
 
                     final Entry acquiredEntry = acquiredEntries.merge(attemptEntry);
-                    notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
+                    notifyListeners(lockEventType, groupId, acquiredEntry);
                 }
 
                 // mark attempt as unused
@@ -251,7 +268,7 @@ public class LockTable {
                     break;
                 }
 
-                notifyListeners(lockEventType, timestamp, groupId, releasedEntry);
+                notifyListeners(lockEventType, groupId, releasedEntry);
 
                 break;
         }
@@ -646,11 +663,13 @@ public class LockTable {
         }
     }
 
-    private void notifyListeners(final LockEventType lockEventType, final long timestamp, final long groupId,
-            final Entry entry) {
+    private void notifyListeners(final LockEventType lockEventType, final long groupId, final Entry entry) {
         if (listeners == null) {
             return;
         }
+
+        // NOTE: the clock is read only when there is a listener to pass the time to; on macOS, System.nanoTime() doesn't scale across threads
+        final long timestamp = System.nanoTime();
 
         final long stamp = listenersLock.readLock();
         try {
