@@ -104,6 +104,7 @@ public class LuceneIndexConfig {
 
         String name = config.getAttribute(FIELD_ATTR);
         if (!name.isEmpty()) {
+            LuceneFieldNames.checkConfiguredName(name, "the field of a text index");
             setName(name);
         }
 

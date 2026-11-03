@@ -88,7 +88,7 @@ public class ReindexDeleteStrategyBenchmark {
     private static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
     private static final String FIELD_INDEXED = "indexed";
     private static final int DELETE_BATCH_SIZE = 128;
-    private static final Query NODE_EXISTS_QUERY = new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV);
+    private static final Query NODE_EXISTS_QUERY = new FieldExistsQuery(LuceneFieldNames.FIELD_NODE_ID_DV);
 
     @State(Scope.Thread)
     public static class BenchmarkState {
@@ -234,7 +234,7 @@ public class ReindexDeleteStrategyBenchmark {
         doc.add(new IntField(FIELD_DOC_ID, docId, Field.Store.NO));
         doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(docId), Field.Store.NO));
         doc.add(new StringField(FIELD_INDEXED, "node", Field.Store.NO));
-        doc.add(new SortedDocValuesField(LuceneUtil.FIELD_NODE_ID_DV, new BytesRef("n-" + docId)));
+        doc.add(new SortedDocValuesField(LuceneFieldNames.FIELD_NODE_ID_DV, new BytesRef("n-" + docId)));
         return doc;
     }
 

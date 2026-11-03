@@ -284,7 +284,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         // the element's own field, if a query searches it; with a qname, the text is indexed in that field only
         final Set<String> fields;
         if (idxConf.getQName() != null) {
-            final String field = LuceneUtil.encodeQName(idxConf.getQName(), index.getBrokerPool().getSymbols());
+            final String field = LuceneFieldNames.encodeQName(idxConf.getQName(), index.getBrokerPool().getSymbols());
             fields = textFields.contains(field) ? Set.of(field) : textFields;
         } else {
             fields = textFields;

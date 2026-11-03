@@ -85,6 +85,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         if (fieldName.isEmpty()) {
             throw new DatabaseConfigurationException("Invalid config: attribute 'name' must be given");
         }
+        LuceneFieldNames.checkConfiguredName(fieldName, "a field");
 
         final String typeStr = configElement.getAttribute(ATTR_TYPE);
         if (!typeStr.isEmpty()) {

@@ -117,6 +117,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             throw new org.exist.util.DatabaseConfigurationException(
                     "vector-field: attribute 'name' is required");
         }
+        LuceneFieldNames.checkConfiguredName(fieldName, "a vector-field");
 
         dimension = parseDimension(configElement);
         similarity = parseSimilarity(configElement.getAttribute(ATTR_SIMILARITY));

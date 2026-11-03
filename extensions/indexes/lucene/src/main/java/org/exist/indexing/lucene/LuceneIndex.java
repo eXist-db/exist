@@ -80,9 +80,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     /**
      * The format of the index on disk. An index with entries whose last commit carries another format, or none, is
      * rebuilt from the documents at startup. Change it with any change to what the index writes that this version
-     * cannot read. 1: the first format recorded.
+     * cannot read. 2: the index's own field names have a colon, see {@link LuceneFieldNames}.
      */
-    public static final String FORMAT = "1";
+    public static final String FORMAT = "2";
 
     /**
      * The key in the user data of a commit that marks an index emptied because it was too old to open: it is rebuilt at

@@ -107,7 +107,7 @@ public class LuceneIndexScanSparseDocValuesTest {
         }
         if (index != null) {
             final IndexWriter writer = index.getWriter();
-            writer.deleteDocuments(IntField.newExactQuery(LuceneUtil.FIELD_DOC_ID, WITHOUT_NODE_ID));
+            writer.deleteDocuments(IntField.newExactQuery(LuceneFieldNames.FIELD_DOC_ID, WITHOUT_NODE_ID));
             index.releaseWriter(writer);
         }
     }
@@ -134,7 +134,7 @@ public class LuceneIndexScanSparseDocValuesTest {
             // a Lucene document without a node id, in the segment that is written next, beside the three above
             final IndexWriter writer = index.getWriter();
             final Document withoutNodeId = new Document();
-            withoutNodeId.add(new IntField(LuceneUtil.FIELD_DOC_ID, WITHOUT_NODE_ID, org.apache.lucene.document.Field.Store.NO));
+            withoutNodeId.add(new IntField(LuceneFieldNames.FIELD_DOC_ID, WITHOUT_NODE_ID, org.apache.lucene.document.Field.Store.NO));
             writer.addDocument(withoutNodeId);
             index.releaseWriter(writer);
 
@@ -156,7 +156,7 @@ public class LuceneIndexScanSparseDocValuesTest {
     /** @return true if some, but not all, documents of the segment have a node id */
     private static boolean hasNodeIdOnlyForSomeDocuments(final LeafReaderContext leaf) {
         try {
-            final BinaryDocValues nodeIds = leaf.reader().getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
+            final BinaryDocValues nodeIds = leaf.reader().getBinaryDocValues(LuceneFieldNames.FIELD_NODE_ID_DV);
             if (nodeIds == null) {
                 return false;
             }

@@ -192,7 +192,7 @@ public class LuceneBinaryFieldLookupTest {
     private static List<String> positions(final LuceneIndex index, final int existDocId) throws Exception {
         return index.withSearcher(searcher -> {
             final List<LeafReaderContext> leaves = searcher.searcher().getIndexReader().leaves();
-            final ScoreDoc[] hits = searcher.searcher().search(IntField.newExactQuery(LuceneUtil.FIELD_DOC_ID, existDocId), 1000).scoreDocs;
+            final ScoreDoc[] hits = searcher.searcher().search(IntField.newExactQuery(LuceneFieldNames.FIELD_DOC_ID, existDocId), 1000).scoreDocs;
             final List<String> positions = new ArrayList<>();
             for (final ScoreDoc hit : hits) {
                 final int segment = ReaderUtil.subIndex(hit.doc, leaves);
@@ -208,7 +208,7 @@ public class LuceneBinaryFieldLookupTest {
     private static boolean isNumberedAboveLiveDocuments(final LuceneIndex index, final int existDocId) throws Exception {
         return index.withSearcher(searcher -> {
             final List<LeafReaderContext> leaves = searcher.searcher().getIndexReader().leaves();
-            final ScoreDoc[] hits = searcher.searcher().search(IntField.newExactQuery(LuceneUtil.FIELD_DOC_ID, existDocId), 1000).scoreDocs;
+            final ScoreDoc[] hits = searcher.searcher().search(IntField.newExactQuery(LuceneFieldNames.FIELD_DOC_ID, existDocId), 1000).scoreDocs;
             for (final ScoreDoc hit : hits) {
                 final LeafReaderContext leaf = leaves.get(ReaderUtil.subIndex(hit.doc, leaves));
                 if (hit.doc - leaf.docBase >= leaf.reader().numDocs()) {
