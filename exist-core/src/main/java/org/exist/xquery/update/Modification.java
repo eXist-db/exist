@@ -21,7 +21,11 @@
  */
 package org.exist.xquery.update;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -42,12 +46,16 @@ import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.NodeHandle;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -72,10 +80,33 @@ public abstract class Modification extends AbstractExpression
 
     protected final static Logger LOG = LogManager.getLogger(Modification.class);
 
+    /**
+     * How many times an update expression is evaluated and validated before the evaluation and the modification are
+     * serialized, see {@link #evaluateAndModify(Evaluator, Modifier)}.
+     */
+    static final int OPTIMISTIC_ATTEMPTS = 3;
+
+    /**
+     * How many times a serialized update expression is evaluated and validated before it modifies the nodes
+     * without validation, see {@link #evaluateAndModify(Evaluator, Modifier)}.
+     */
+    static final int SERIALIZED_ATTEMPTS = 10;
+
+    /**
+     * How many milliseconds a serialized update expression waits, at most, for the update expressions which locked
+     * their documents before it to finish, see {@link #evaluateAndModify(Evaluator, Modifier)}.
+     */
+    static final int SERIALIZED_WAIT_MS = 10_000;
+
     protected final Expression select;
     protected final Expression value;
 
     protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks;
+
+    /**
+     * True while this expression is counted in {@link BrokerPool#getUpdateExpressionsModifying()}.
+     */
+    private boolean modifying;
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected final Int2ObjectMap<DocumentTrigger> triggers;
 
@@ -130,51 +161,311 @@ public abstract class Modification extends AbstractExpression
     }
 
     /**
-     * Acquire a lock on all documents processed by this modification.
-     * We have to avoid that node positions change during the
-     * operation.
+     * What an update expression evaluated: the nodes to modify, and what to modify them with.
      *
-     * @param nodes sequence containing nodes from documents to lock
-     * @param transaction current transaction
-     * @return array of nodes for which lock was acquired
-     *
-     * @throws LockException in case locking failed
-     * @throws TriggerException in case of error thrown by triggers
-     * @throws XPathException in case of dynamic error
+     * @param nodes the selected nodes
+     * @param with what the nodes are modified with, or null if the expression has no value
+     * @param <T> the type of what the nodes are modified with
      */
-    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException,
-            XPathException, TriggerException {
-        final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+    protected record Selection<T>(Sequence nodes, @Nullable T with) {
+    }
+
+    /**
+     * Evaluates an update expression's selection and value, without any lock held.
+     *
+     * @param <T> the type of what the selected nodes are modified with
+     */
+    @FunctionalInterface
+    protected interface Evaluator<T> {
+        /**
+         * @return the selection, or null if there is nothing to modify
+         * @throws XPathException if the evaluation fails
+         */
+        @Nullable Selection<T> evaluate() throws XPathException;
+    }
+
+    /**
+     * Modifies the selected nodes, with their documents locked.
+     *
+     * @param <T> the type of what the selected nodes are modified with
+     */
+    @FunctionalInterface
+    protected interface Modifier<T> {
+        void modify(Txn transaction, StoredNode[] nodes, @Nullable T with) throws XPathException, EXistException, PermissionDeniedException, LockException, TriggerException;
+    }
+
+    /**
+     * Evaluates the expression and modifies the nodes it selects, so that the nodes and the value that are modified
+     * are those of the documents as they are when they are modified.
+     *
+     * The selection and the value are evaluated without any lock held, as evaluation takes Collection locks, and
+     * a Collection lock requested while holding a Document lock can deadlock (see #6774). After the documents to
+     * modify are locked, the evaluation is validated against the WRITE_LOCKs acquired on them by other threads since
+     * it started (see {@link LockManager#stampDocumentWrites()}): if another thread acquired one, they may have changed
+     * after they were read, so the locks are released and the expression is evaluated again. Nothing has been written
+     * to the transaction at that point. Values read from other documents than those modified are not validated.
+     *
+     * After {@link #OPTIMISTIC_ATTEMPTS} attempts, or when Document WRITE_LOCKs are not counted because path locks
+     * are used for them, the evaluation and the modification are serialized against other update expressions by
+     * holding the {@link org.exist.storage.BrokerPool#getGlobalUpdateLock()} throughout. That lock is never taken
+     * while the thread holds a Document WRITE_LOCK, for example in a trigger fired by another modification, so it
+     * adds no lock-order edge: then the modification proceeds as before validation existed.
+     *
+     * No other update expression can lock documents while the global update lock is held, but those which locked
+     * them before may still be modifying, so a serialized evaluation first waits for them to finish (see
+     * {@link BrokerPool#getUpdateExpressionsModifying()}), for up to {@link #SERIALIZED_WAIT_MS} ms. Then only another
+     * kind of write, such as storing a document, can invalidate it: it is validated, and evaluated again if invalid,
+     * up to {@link #SERIALIZED_ATTEMPTS} times, after which, or if it can't be validated, the modification proceeds
+     * without validation, as before validation existed.
+     *
+     * @param evaluator evaluates the selection and the value
+     * @param modifier modifies the selected nodes
+     * @param <T> the type of what the selected nodes are modified with
+     *
+     * @throws XPathException if the evaluation or the modification fails
+     */
+    protected <T> void evaluateAndModify(final Evaluator<T> evaluator, final Modifier<T> modifier) throws XPathException {
+        final Attempts attempts = new Attempts(this, context.getBroker().getBrokerPool());
+        try {
+            boolean done;
+            do {
+                done = attempt(attempts, evaluator, modifier);
+            } while (!done);
+        } catch (final LockException | EXistException | PermissionDeniedException | TriggerException e) {
+            throw new XPathException(this, e.getMessage(), e);
+        } finally {
+            attempts.closeTransaction();
+            unlockDocuments();
+            attempts.releaseGlobalUpdateLock();
+        }
+    }
+
+    /**
+     * Evaluates the expression, and modifies the nodes it selects if the evaluation is valid, or can't be repeated.
+     *
+     * The evaluation is repeated if it is invalid, retryable, and wrote nothing itself, as evaluating it again would
+     * repeat its own writes. That includes an evaluation which failed, or selected nothing, as it may have read
+     * nodes that another thread was replacing.
+     *
+     * @return true if done, or false if the expression must be evaluated again
+     */
+    private <T> boolean attempt(final Attempts attempts, final Evaluator<T> evaluator, final Modifier<T> modifier) throws XPathException, LockException, EXistException, PermissionDeniedException, TriggerException {
+        final LockManager lockManager = attempts.lockManager;
+        final LockManager.DocumentWriteStamp stamp = attempts.start();
+        final long ownAtStamp = lockManager.documentWriteLocksAcquiredByCurrentThread();
+
+        final Selection<T> selection;
+        try {
+            selection = evaluator.evaluate();
+        } catch (final XPathException e) {
+            if (attempts.isRetryable() && lockManager.documentWriteLocksAcquiredByCurrentThread() == ownAtStamp
+                    && !lockManager.validateDocumentWrites(stamp)) {
+                LOG.debug("Evaluating {} again after a concurrent modification: {}", this, e.getMessage());
+                return false;
+            }
+            throw e;
+        }
+        final boolean repeatable = attempts.isRetryable() && lockManager.documentWriteLocksAcquiredByCurrentThread() == ownAtStamp;
+
+        if (selection == null) {
+            if (repeatable && !lockManager.validateDocumentWrites(stamp)) {
+                LOG.debug("Evaluating {} again after a concurrent modification: nothing was selected", this);
+                return false;
+            }
+            attempts.commitTransaction();
+            return true;
+        }
+
+        final Txn transaction = attempts.transaction(this::getTransaction);
+        final DocumentSet documents = selection.nodes().getDocumentSet();
+        lockDocuments(documents, attempts.nested);
+
+        if (!lockManager.validateDocumentWrites(stamp, documentPaths(documents))) {
+            if (repeatable) {
+                unlockDocuments();
+                LOG.debug("Evaluating {} again after a concurrent modification", this);
+                return false;
+            }
+            LOG.debug("Modifying with {} without validation: a Document was modified while it was evaluated", this);
+        }
+
+        final StoredNode[] nodes = prepareTriggers(transaction, selection.nodes());
+        modifier.modify(transaction, nodes, selection.with());
+        finishTriggers(transaction);
+        transaction.commit();
+        return true;
+    }
+
+    private static List<XmldbURI> documentPaths(final DocumentSet documents) {
+        final List<XmldbURI> paths = new ArrayList<>(documents.getDocumentCount());
+        for (final Iterator<DocumentImpl> iterator = documents.getDocumentIterator(); iterator.hasNext(); ) {
+            paths.add(iterator.next().getURI());
+        }
+        return paths;
+    }
+
+    /**
+     * The attempts of one evaluation of an update expression, see {@link #evaluateAndModify(Evaluator, Modifier)}.
+     */
+    private static final class Attempts {
+        private final Expression expression;
+        private final BrokerPool pool;
+        private final LockManager lockManager;
+        private final boolean nested;
+        private boolean serialized;
+        private int optimisticAttempts;
+        private int serializedAttempts;
+        private boolean retryable;
+        @Nullable private Txn transaction;
+
+        Attempts(final Expression expression, final BrokerPool pool) {
+            this.expression = expression;
+            this.pool = pool;
+            this.lockManager = pool.getLockManager();
+            this.nested = lockManager.currentThreadMayHoldDocumentWriteLock();
+        }
+
+        /**
+         * Starts an attempt, serializing it if needed.
+         *
+         * @return the stamp to validate the attempt with, or null if it can't be validated
+         */
+        @Nullable LockManager.DocumentWriteStamp start() throws XPathException {
+            if (nested) {
+                retryable = false;
+                return null;
+            }
+            if (!serialized && optimisticAttempts < OPTIMISTIC_ATTEMPTS) {
+                final LockManager.DocumentWriteStamp stamp = lockManager.stampDocumentWrites();
+                if (stamp != null) {
+                    optimisticAttempts++;
+                    retryable = true;
+                    return stamp;
+                }
+            }
+            if (!serialized) {
+                pool.getGlobalUpdateLock().lock();
+                serialized = true;
+                awaitUpdateExpressionsModifying();
+            }
+            final LockManager.DocumentWriteStamp stamp = lockManager.stampDocumentWrites();
+            retryable = ++serializedAttempts < SERIALIZED_ATTEMPTS && stamp != null;
+            return stamp;
+        }
+
+        /**
+         * Returns true if the current attempt may be repeated.
+         *
+         * @return true if the current attempt may be repeated
+         */
+        boolean isRetryable() {
+            return retryable;
+        }
+
+        /**
+         * Waits, for up to {@link #SERIALIZED_WAIT_MS} ms, until no update expression is modifying documents.
+         */
+        private void awaitUpdateExpressionsModifying() throws XPathException {
+            final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(SERIALIZED_WAIT_MS);
+            while (pool.getUpdateExpressionsModifying().get() > 0) {
+                if (System.nanoTime() > deadline) {
+                    LOG.warn("Evaluating {} while other update expressions are still modifying documents", expression);
+                    return;
+                }
+                try {
+                    Thread.sleep(1);
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new XPathException(expression, "Interrupted while waiting to modify", e);
+                }
+            }
+        }
+
+        /**
+         * Gets the transaction, beginning it on the first call. It is begun before the documents are locked, as
+         * a system task, which starts only when no transaction is open, may need their locks.
+         */
+        Txn transaction(final Supplier<Txn> begin) {
+            if (transaction == null) {
+                transaction = begin.get();
+            }
+            return transaction;
+        }
+
+        void commitTransaction() throws TransactionException {
+            if (transaction != null) {
+                transaction.commit();
+            }
+        }
+
+        void closeTransaction() {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
+
+        void releaseGlobalUpdateLock() {
+            if (serialized) {
+                pool.getGlobalUpdateLock().unlock();
+            }
+        }
+    }
+
+    /**
+     * Checks that the nodes can be modified, and fires the triggers before the update of their documents.
+     *
+     * @param transaction the transaction
+     * @param nodes the nodes to modify, with their documents locked
+     *
+     * @return the nodes
+     *
+     * @throws TriggerException in case of error thrown by triggers
+     * @throws XPathException if a node can't be modified
+     */
+    private StoredNode[] prepareTriggers(final Txn transaction, final Sequence nodes) throws XPathException, TriggerException {
+        final StoredNode[] ql = new StoredNode[nodes.getItemCount()];
+        for (int i = 0; i < ql.length; i++) {
+            final Item item = nodes.itemAt(i);
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
+                    item.getStringValue());
+            }
+            final NodeValue nv = (NodeValue) item;
+            if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
+            }
+            final Node n = nv.getNode();
+            if (n.getNodeType() == Node.DOCUMENT_NODE) {
+                throw new XPathException(this, "Updating the document object is not allowed.");
+            }
+            ql[i] = (StoredNode) n;
+            prepareTrigger(transaction, ql[i].getOwnerDocument());
+        }
+        return ql;
+    }
+
+    /**
+     * Acquire a WRITE_LOCK on each of the documents, so that their nodes' positions can't change during the
+     * modification.
+     *
+     * @param lockedDocuments the documents of the nodes to modify
+     * @param nested true if the thread already holds a document WRITE_LOCK
+     *
+     * @throws LockException if a lock can't be acquired
+     */
+    private void lockDocuments(final DocumentSet lockedDocuments, final boolean nested) throws LockException {
+        if (nested) {
+            // the thread already holds a Document WRITE_LOCK, so taking the global update lock now could deadlock with a thread which holds it and waits for that Document
+            lockedDocumentsLocks = lockedDocuments.lock(context.getBroker(), true);
+            return;
+        }
+        final BrokerPool pool = context.getBroker().getBrokerPool();
+        final java.util.concurrent.locks.Lock globalLock = pool.getGlobalUpdateLock();
         globalLock.lock();
         try {
-            final DocumentSet lockedDocuments = nodes.getDocumentSet();
-
-            // acquire a lock on all documents
-            // we have to avoid that node positions change
-            // during the modification
             lockedDocumentsLocks = lockedDocuments.lock(context.getBroker(), true);
-
-            final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
-            for (int i = 0; i < ql.length; i++) {
-                final Item item = nodes.itemAt(i);
-                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                    throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
-                        item.getStringValue());
-                }
-                final NodeValue nv = (NodeValue)item;
-                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-                    throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
-                }
-                final Node n = nv.getNode();
-                if (n.getNodeType() == Node.DOCUMENT_NODE) {
-                    throw new XPathException(this, "Updating the document object is not allowed.");
-                }
-                ql[i] = (StoredNode) n;
-                final DocumentImpl doc = ql[i].getOwnerDocument();
-                //prepare Trigger
-                prepareTrigger(transaction, doc);
-            }
-            return ql;
+            pool.getUpdateExpressionsModifying().incrementAndGet();
+            modifying = true;
         } finally {
             globalLock.unlock();
         }
@@ -238,8 +529,7 @@ public abstract class Modification extends AbstractExpression
     /**
      * Release all acquired document locks.
      */
-    protected void unlockDocuments()
-    {
+    protected void unlockDocuments() {
         if(lockedDocumentsLocks == null) {
             return;
         }
@@ -249,6 +539,11 @@ public abstract class Modification extends AbstractExpression
         //unlock documents
         lockedDocumentsLocks.close();
         lockedDocumentsLocks = null;
+
+        if (modifying) {
+            modifying = false;
+            context.getBroker().getBrokerPool().getUpdateExpressionsModifying().decrementAndGet();
+        }
     }
 
     public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException, LockException {

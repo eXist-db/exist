@@ -81,17 +81,30 @@ public class Insert extends Modification {
             }
         }
 
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
+        final Sequence evaluationSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
+
+        context.pushInScopeNamespaces();
+        try {
+            evaluateAndModify(() -> evaluate(evaluationSequence), this::modify);
+        } finally {
+            context.popInScopeNamespaces();
         }
 
-        Sequence contentSeq = value.eval(contextSequence, null);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
+        
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Selection<Sequence> evaluate(final Sequence contextSequence) throws XPathException {
+        final Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
-        
+
         final Sequence inSeq = select.eval(contextSequence, null);
-        
+
         //START trap Insert failure
         /* If we try and Insert a node at an invalid location,
          * trap the error in a context variable,
@@ -105,7 +118,7 @@ public class Insert extends Modification {
 
             final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
             final Object ctxVarObj = context.getAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-            if(ctxVarObj == null) {
+            if (ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
@@ -113,69 +126,52 @@ public class Insert extends Modification {
             prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
-            if(!inSeq.isEmpty()) {
+            if (!inSeq.isEmpty()) {
                 //TODO: should we trap this instead of throwing an exception - deliriumsky?
                 throw xpe;
             }
         }
         //END trap Insert failure
-        
-        if (!inSeq.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found: {} nodes", inSeq.getItemCount());
+
+        if (inSeq.isEmpty()) {
+            return null;
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found: {} nodes", inSeq.getItemCount());
+        }
+        return new Selection<>(inSeq, deepCopy(contentSeq));
+    }
+
+    private void modify(final Txn transaction, final StoredNode[] ql, final Sequence contentSeq) throws XPathException, EXistException, PermissionDeniedException {
+        final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+        final NodeList contentList = seq2nodeList(contentSeq);
+        for (final StoredNode<?> node : ql) {
+            final DocumentImpl doc = node.getOwnerDocument();
+            if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
             }
 
-            context.pushInScopeNamespaces();
-            contentSeq = deepCopy(contentSeq);
-
-            //start a transaction
-            try (final Txn transaction = getTransaction()) {
-                final StoredNode<?>[] ql = selectAndLock(transaction, inSeq);
-                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                final NodeList contentList = seq2nodeList(contentSeq);
-                for (final StoredNode<?> node : ql) {
-                    final DocumentImpl doc = node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
-                    }
-
-                    //update the document
-                    if (mode == INSERT_APPEND) {
-                        validateNonDefaultNamespaces(contentList, node);
-                        node.appendChildren(transaction, contentList, -1);
-                    } else {
-                        final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
-                        validateNonDefaultNamespaces(contentList, parent);
-                        switch (mode) {
-                            case INSERT_BEFORE:
-                                parent.insertBefore(transaction, contentList, node);
-                                break;
-                            case INSERT_AFTER:
-                                parent.insertAfter(transaction, contentList, node);
-                                break;
-                        }
-                    }
-                    doc.setLastModified(System.currentTimeMillis());
-                    modifiedDocuments.add(doc);
-                    context.getBroker().storeXMLResource(transaction, doc);
-                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+            //update the document
+            if (mode == INSERT_APPEND) {
+                validateNonDefaultNamespaces(contentList, node);
+                node.appendChildren(transaction, contentList, -1);
+            } else {
+                final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
+                validateNonDefaultNamespaces(contentList, parent);
+                switch (mode) {
+                    case INSERT_BEFORE:
+                        parent.insertBefore(transaction, contentList, node);
+                        break;
+                    case INSERT_AFTER:
+                        parent.insertAfter(transaction, contentList, node);
+                        break;
                 }
-                finishTriggers(transaction);
-                //commit the transaction
-                transaction.commit();
-            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException e) {
-                throw new XPathException(this, e.getMessage(), e);
-            } finally {
-                unlockDocuments();
-                context.popInScopeNamespaces();
             }
+            doc.setLastModified(System.currentTimeMillis());
+            modifiedDocuments.add(doc);
+            context.getBroker().storeXMLResource(transaction, doc);
+            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         }
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        }
-        
-        return Sequence.EMPTY_SEQUENCE;
     }
 
     private QName nodeQName(Node node) {

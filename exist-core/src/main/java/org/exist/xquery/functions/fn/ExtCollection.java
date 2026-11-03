@@ -30,8 +30,6 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockManager;
-import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -168,27 +166,20 @@ public class ExtCollection extends BasicFunction {
         }
     }
 
+    /**
+     * Adds a document node for each XML document in the set.
+     *
+     * The documents' permissions were checked as the set was built. No lock is taken here: creating a
+     * {@link NodeProxy} doesn't read the document, and a lock released straight afterwards wouldn't
+     * protect the node's later use either.
+     */
     private void addAll(final DocumentSet docs, final Sequence items) throws XPathException {
-        final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
 
             // filter out binary documents, fn:collection should only return XML documents
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
-
-                ManagedDocumentLock dlock = null;
-                try {
-                    if (!context.inProtectedMode()) {
-                        dlock = lockManager.acquireDocumentReadLock(doc.getURI());
-                    }
-                    items.add(new NodeProxy(this, doc));
-                } catch (final LockException e) {
-                    throw new XPathException(this, ErrorCodes.FODC0002, e);
-                } finally {
-                    if (dlock != null) {
-                        dlock.close();
-                    }
-                }
+                items.add(new NodeProxy(this, doc));
             }
         }
     }
