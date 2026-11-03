@@ -85,6 +85,21 @@ public class LockTable implements LockTableMXBean {
     }
 
     @Override
+    public long getDocumentWriteLocksHeld() {
+        return pool.getLockManager().getDocumentWriteLocksHeld();
+    }
+
+    @Override
+    public long getOptimisticDocumentReadsValid() {
+        return pool.getLockManager().getOptimisticDocumentReadsValid();
+    }
+
+    @Override
+    public long getOptimisticDocumentReadsFailed() {
+        return pool.getLockManager().getOptimisticDocumentReadsFailed();
+    }
+
+    @Override
     public void dumpToConsole() {
         System.out.println(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), false));
     }
