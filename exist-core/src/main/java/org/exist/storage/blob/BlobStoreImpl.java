@@ -751,6 +751,9 @@ public class BlobStoreImpl implements BlobStore {
                 // ...retry the blob reference until the vacuum has completed!
                 // i.e. wait for the deletion of the blob to complete, and then we can add the blob again
                 if (count == DELETING) {
+                    // the vacuum waits for the blob's readers to finish, which can take any length of time,
+                    // so sleep a small time between attempts rather than spin
+                    Thread.sleep(10);
                     blobReference = references.computeIfAbsent(blobId, k -> new BlobReference(STAGED));
                     continue;   // loop again
                 }

@@ -31,6 +31,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
+import javax.annotation.Nullable;
 import java.io.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -98,11 +99,29 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         }
     }
 
-    private int compareTo(BinaryValue otherValue) {
+    /**
+     * Compare the content of this value with that of another.
+     *
+     * <p>Both streams are closed afterwards: a stream obtained from {@link #getInputStream()} can hold
+     * a reference to the stream cache that the value shares, which keeps the cache - and the source it
+     * reads from - open until the stream is closed.</p>
+     *
+     * @param otherValue the value to compare with
+     * @return the result of the comparison
+     */
+    private int compareTo(final BinaryValue otherValue) {
+        int comparison = 0;
+        try (final InputStream is = getInputStream();
+                final InputStream otherIs = otherValue.getInputStream()) {
+            comparison = compare(is, otherIs);
+        } catch (final IOException e) {
+            // only closing can fail here, after the comparison was made
+            LOG.warn("Unable to close stream of binary value: {}", e.getMessage(), e);
+        }
+        return comparison;
+    }
 
-        final InputStream is = getInputStream();
-        final InputStream otherIs = otherValue.getInputStream();
-
+    private static int compare(@Nullable final InputStream is, @Nullable final InputStream otherIs) {
         if (is == null && otherIs == null) {
             return 0;
         } else if (is == null) {
@@ -282,21 +301,26 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     @Override
     public int hashCode() {
-        final InputStream is = getInputStream();
         int hash = 7;
 
-        if (is != null) {
-            int read;
-            do {
-                try {
-                    read = is.read();
-                    if (read != -1) {
-                        hash = 31 * hash + read;
+        // close the stream afterwards, as it can hold a reference to the value's shared stream cache
+        try (final InputStream is = getInputStream()) {
+            if (is != null) {
+                int read;
+                do {
+                    try {
+                        read = is.read();
+                        if (read != -1) {
+                            hash = 31 * hash + read;
+                        }
+                    } catch (final IOException ioe) {
+                        read = -1;
                     }
-                } catch (final IOException ioe) {
-                    read = -1;
-                }
-            } while (read != -1);
+                } while (read != -1);
+            }
+        } catch (final IOException e) {
+            // only closing can fail here, after the hash was computed
+            LOG.warn("Unable to close stream of binary value: {}", e.getMessage(), e);
         }
         return hash;
     }
