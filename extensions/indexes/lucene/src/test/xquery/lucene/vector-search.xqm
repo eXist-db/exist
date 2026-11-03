@@ -1170,6 +1170,22 @@ function vs:profiler-optimized-query-field-vector() {
     collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 2)]
 };
 
+(:~ A child step is evaluated as written, not pre-selected, so ft:query-vector reports BASIC there, as ft:query does. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'BASIC'] and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function vs:profiler-basic-when-evaluated-as-written() {
+    collection($vs:COLLECTION)/articles/article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2)]
+};
+
+(:~ ft:query-field-vector on a child step reports BASIC too. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'BASIC'] and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function vs:profiler-basic-query-field-vector-evaluated-as-written() {
+    collection($vs:COLLECTION)/articles/article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 2)]
+};
+
 (:~ Unknown vector field short-circuits to empty (no Lucene KNN on missing config). :)
 declare
     %test:assertEquals(0)
