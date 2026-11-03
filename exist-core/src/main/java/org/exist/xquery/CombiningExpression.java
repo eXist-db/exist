@@ -47,8 +47,13 @@ public abstract class CombiningExpression extends AbstractExpression {
 	@Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
-        left.analyze(contextInfo);
-        right.analyze(contextInfo);
+    	// Operands of union/intersect/except are non-updating contexts
+    	final AnalyzeContextInfo leftInfo = new AnalyzeContextInfo(contextInfo);
+    	leftInfo.addFlag(NON_UPDATING_CONTEXT);
+        left.analyze(leftInfo);
+        final AnalyzeContextInfo rightInfo = new AnalyzeContextInfo(contextInfo);
+        rightInfo.addFlag(NON_UPDATING_CONTEXT);
+        right.analyze(rightInfo);
     }
 
 	@Override

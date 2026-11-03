@@ -214,25 +214,40 @@ public class DocUtils {
         }
     }
 
+    /**
+     * Resolve the path of a document in the database as {@code fn:doc} does: against the static
+     * base URI, and then against the load path of the calling module, if any. {@code fn:put} uses
+     * it too, so that a document it stores can be read back by {@code fn:doc} with the same URI.
+     *
+     * @param context the XQuery context
+     * @param path an absolute or relative database path, or an {@code xmldb:} URI
+     * @return the path of the document in the database
+     * @throws XPathException if the static base URI cannot be read
+     * @throws URISyntaxException if the path is not a valid database path
+     */
+    public static XmldbURI resolveDatabasePath(final XQueryContext context, final String path) throws XPathException, URISyntaxException {
+        final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+        final XmldbURI pathUri;
+        if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
+            // relative collection Path: add the current base URI
+            pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, false));
+        } else {
+            pathUri = XmldbURI.xmldbUriFor(path, false);
+        }
+
+        // relative collection Path: add the current module call URI if applicable
+        return Optional.ofNullable(context.getModuleLoadPath())
+                .filter(moduleLoadPath -> !moduleLoadPath.isEmpty())
+                .flatMap(moduleLoadPath -> Try(() -> XmldbURI.xmldbUriFor(moduleLoadPath)).toOption())
+                .map(moduleLoadPath -> moduleLoadPath.resolveCollectionPath(pathUri))
+                .orElse(pathUri);
+    }
+
     private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
         // check if the loaded documents should remain locked
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         try {
-            final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
-            final XmldbURI pathUri;
-            if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
-                // relative collection Path: add the current base URI
-                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, false));
-            } else {
-                pathUri = XmldbURI.xmldbUriFor(path, false);
-            }
-
-            // relative collection Path: add the current module call URI if applicable
-            final XmldbURI resourceUri = Optional.ofNullable(context.getModuleLoadPath())
-                    .filter(moduleLoadPath -> !moduleLoadPath.isEmpty())
-                    .flatMap(moduleLoadPath -> Try(() -> XmldbURI.xmldbUriFor(moduleLoadPath)).toOption())
-                    .map(moduleLoadPath -> moduleLoadPath.resolveCollectionPath(pathUri))
-                    .orElse(pathUri);
+            final XmldbURI resourceUri = resolveDatabasePath(context, path);
 
             // try to open the document and acquire a lock
             try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(resourceUri, lockType)){

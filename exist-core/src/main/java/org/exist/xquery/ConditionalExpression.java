@@ -70,6 +70,11 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         return Cardinality.superCardinalityOf(thenExpr.getCardinality(), elseExpr.getCardinality());
     }
 
+    @Override
+    public boolean isUpdating() {
+        return thenExpr.isUpdating() || elseExpr.isUpdating();
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
@@ -77,12 +82,29 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         AnalyzeContextInfo myContextInfo = new AnalyzeContextInfo(contextInfo);
         myContextInfo.setFlags(myContextInfo.getFlags() & (~IN_PREDICATE));
         myContextInfo.setParent(this);
-        testExpr.analyze(myContextInfo);
+        // Test expression is always a non-updating context
+        final AnalyzeContextInfo testInfo = new AnalyzeContextInfo(myContextInfo);
+        testInfo.addFlag(NON_UPDATING_CONTEXT);
+        testExpr.analyze(testInfo);
         // parent may have been modified by testExpr: set it again
         myContextInfo.setParent(this);
         thenExpr.analyze(myContextInfo);
         myContextInfo.setParent(this);
         elseExpr.analyze(myContextInfo);
+
+        // XUST0001: if one branch is updating and the other is non-updating (and not vacuous)
+        final boolean thenUpdating = thenExpr.isUpdating();
+        final boolean elseUpdating = elseExpr.isUpdating();
+        if (thenUpdating != elseUpdating) {
+            if (thenUpdating && !elseExpr.isVacuous()) {
+                throw new XPathException(this, ErrorCodes.XUST0001,
+                        "then branch is updating but else branch is not updating and not vacuous");
+            }
+            if (elseUpdating && !thenExpr.isVacuous()) {
+                throw new XPathException(this, ErrorCodes.XUST0001,
+                        "else branch is updating but then branch is not updating and not vacuous");
+            }
+        }
     }
 
     /* (non-Javadoc)

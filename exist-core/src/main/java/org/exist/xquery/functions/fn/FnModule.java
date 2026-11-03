@@ -182,6 +182,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunPath.FS_PATH_SIGNATURES[0], FunPath.class),
         new FunctionDef(FunPath.FS_PATH_SIGNATURES[1], FunPath.class),
         new FunctionDef(FunPosition.signature, FunPosition.class),
+        // --- W3C XQuery Update Facility 3.0 (feature/w3c-xquery-update-3.0-v2) ---
+        new FunctionDef(org.exist.xquery.xquf.XQUFFnPut.SIGNATURE, org.exist.xquery.xquf.XQUFFnPut.class),
+        // --- End W3C XQuery Update Facility 3.0 ---
         new FunctionDef(FunQName.signature, FunQName.class),
         new FunctionDef(FunRemove.signature, FunRemove.class),
         new FunctionDef(FunReplace.FS_REPLACE[0], FunReplace.class),

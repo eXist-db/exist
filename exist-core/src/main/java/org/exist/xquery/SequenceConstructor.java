@@ -57,6 +57,24 @@ public class SequenceConstructor extends PathExpr {
             }
         }
         contextInfo.setStaticReturnType(staticType);
+
+        // XUST0001: check compatibility of items in the comma expression.
+        // All must be updating, or all must be non-updating (vacuous items are allowed either way).
+        if (steps.size() > 1) {
+            boolean hasUpdating = false;
+            boolean hasNonUpdating = false;
+            for (final Expression expr : steps) {
+                if (expr.isUpdating()) {
+                    hasUpdating = true;
+                } else if (!expr.isVacuous()) {
+                    hasNonUpdating = true;
+                }
+            }
+            if (hasUpdating && hasNonUpdating) {
+                throw new XPathException(this, ErrorCodes.XUST0001,
+                        "comma expression mixes updating and non-updating expressions");
+            }
+        }
     }
 
     @Override
@@ -142,6 +160,17 @@ public class SequenceConstructor extends PathExpr {
     }
 
     @Override
+    public boolean isUpdating() {
+        boolean anyUpdating = false;
+        for (final Expression step : steps) {
+            if (step.isUpdating()) {
+                anyUpdating = true;
+            }
+        }
+        return anyUpdating;
+    }
+
+    @Override
     public int returnsType() {
         return Type.ITEM;
     }
@@ -149,6 +178,16 @@ public class SequenceConstructor extends PathExpr {
     @Override
     public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
+    }
+
+    @Override
+    public boolean isVacuous() {
+        for (final Expression step : steps) {
+            if (!step.isVacuous()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
