@@ -1,0 +1,53 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldNames.java
+  s_cda7b57354762d::t_995b4e177fd3e4 121-122
+  s_cda7b57354762d::t_eb4c237731a30a 1-120,123-137
+  s_cda7b57354762d::t_8a68de479c0459 138-141
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneFieldNamesTest.java
+  s_cda7b57354762d::t_8088ee1be95881 1-107
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java
+  s_cda7b57354762d::t_81dfd3e205b271 91,237
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/InContextQuery.java
+  s_cda7b57354762d::t_a06ed3dca6bcf0 86-87
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_cda7b57354762d::t_c38b80925a2583 88
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_cda7b57354762d::t_9c9d3fe64e6725 83,85
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexConfig.java
+  s_cda7b57354762d::t_f9ca984bbc5a63 107
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_cb1a6474c02ffa 85-88,540,598,643,691,773,794,832,1046,1094,1403,1711,1713,1819,1990-1992,2202,2256,2424,2428,2439,2447,2449,2457
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatchListener.java
+  s_cda7b57354762d::t_4823f33c2f2c85 287
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_cda7b57354762d::t_a8e94d63b021f1 119
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneBinaryFieldLookupTest.java
+  s_cda7b57354762d::t_9929f370991e46 195,211
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexScanSparseDocValuesTest.java
+  s_cda7b57354762d::t_5a94aa349b9513 110,137,159
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java
+  s_cda7b57354762d::t_4002d8564f7161 71,73
+extensions/indexes/lucene/src/test/xquery/lucene/reserved-field-names.xqm
+  s_cda7b57354762d::t_310c4a5d3fab77 1-110
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigField.java
+  s_cda7b57354762d::t_85bdef10b572bd 24,62
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_cda7b57354762d::t_3ed580ee920b9a 51,77-81,595,644,746,922-924,1188
+extensions/indexes/range/src/test/xquery/range/reserved-field-names.xqm
+  s_cda7b57354762d::t_b048bed2c31abf 1-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1dfe6249f2d29aa2c20a5933a027a29bcd968424",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
