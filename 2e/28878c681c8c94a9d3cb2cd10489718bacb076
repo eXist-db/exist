@@ -1,0 +1,29 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_cda7b57354762d::t_93e10febdf14ef 158-160
+  s_cda7b57354762d::t_aae2db2255d924 76-88,161,167-170,232-248
+extensions/indexes/range/src/test/java/org/exist/indexing/range/IndexFormatRebuildTest.java
+  s_cda7b57354762d::t_6d15cfe9ad35ce 1-179
+  s_cda7b57354762d::t_d5608b1e8d994e 180
+exist-core/src/main/java/org/exist/indexing/Index.java
+  s_cda7b57354762d::t_2aa2d7f55028e3 120-130
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_cda7b57354762d::t_5561299cb791e7 291-299
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_cda7b57354762d::t_5152fb531ca6bd 649-662
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e28878c681c8c94a9d3cb2cd10489718bacb076",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
