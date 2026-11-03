@@ -2,6 +2,8 @@ Thank you for reporting your issue!
 
 To be able to better understand you problem or suggestion, please add as much information as possible to this ticket. When there is no or just little information, it will be too difficult to work on it (and hence we will not be able to solve it).
 
+Before filing, please search the [open and closed issues](https://github.com/eXist-db/exist/issues?q=is%3Aissue) for the same problem; if you find it, add to that issue instead.
+
 Please fill in the following sections:
 
 ### What is the problem
@@ -17,9 +19,8 @@ Please fill in the following sections:
 
 ### Context information
 Please always add the following information
-- eXist-db version + Git Revision hash e.g. eXist-db 3.0 /  acd0c14 
-- Java version (e.g. Java8u121)
-- Operating system (Windows 7, Linux, MacOs)
-- 32 or 64 bit
+- eXist-db version + Git Revision hash e.g. eXist-db 6.4.1 / acd0c14
+- Java version (e.g. 11.0.30 or 21.0.8)
+- Operating system (e.g. Windows 11, Ubuntu 24.04, macOS 26)
 - How is eXist-db installed? (JAR installer, DMG, .tar.gz/.zip distribution, clone from GitHub)
 - Any custom changes in e.g. conf.xml
