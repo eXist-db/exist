@@ -289,6 +289,18 @@ public class IndexManager implements BrokerPoolService {
     }
 
     /**
+     * The indexes that have to be rebuilt from the documents, see {@link Index#isRebuildRequired()}.
+     *
+     * @return the names of those indexes, such as {@code lucene-index}, or their class if configured without one
+     */
+    public List<String> getIndexesToRebuild() {
+        return indexers.values().stream()
+                .filter(Index::isRebuildRequired)
+                .map(index -> index.getIndexName() != null ? index.getIndexName() : index.getClass().getName())
+                .toList();
+    }
+
+    /**
      * Physically destroy the registered indexes by calling {@link org.exist.indexing.Index#remove()}
      * on them.
      *
@@ -308,6 +320,17 @@ public class IndexManager implements BrokerPoolService {
      *
      * @throws DatabaseConfigurationException in cse of an database configuration error
      */
+    /**
+     * Tells every index that the database has been reindexed, see {@link Index#markRebuilt()}.
+     *
+     * @throws DBException if an index cannot record it
+     */
+    public void markRebuilt() throws DBException {
+        for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
+            i.next().markRebuilt();
+        }
+    }
+
     public void reopenIndexes() throws DatabaseConfigurationException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index index = i.next();

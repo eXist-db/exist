@@ -73,6 +73,25 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
     protected IndexWriter cachedWriter = null;
+
+    /** The key of the index format in the user data of an index's commits. */
+    public static final String FORMAT_KEY = "exist.index-format";
+
+    /**
+     * The format of the index on disk. An index with entries whose last commit carries another format, or none, is
+     * rebuilt from the documents at startup. Change it with any change to what the index writes that this version
+     * cannot read. 1: the first format recorded.
+     */
+    public static final String FORMAT = "1";
+
+    /**
+     * The key in the user data of a commit that marks an index emptied because it was too old to open: it is rebuilt at
+     * every startup until a rebuild has run, although it has no entries.
+     */
+    static final String REBUILD_PENDING_KEY = "exist.rebuild-pending";
+
+    /** Whether the index on disk has entries in another format, see {@link #isRebuildRequired()}. */
+    private boolean rebuildRequired = false;
     protected DirectoryTaxonomyWriter cachedTaxonomyWriter = null;
 
     protected SearcherTaxonomyManager searcherManager = null;
@@ -141,12 +160,39 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
 
             directory = FSDirectory.open(dir);
+            boolean tooOld = false;
+            try {
+                rebuildRequired = isRebuildRequired(directory);
+            } catch (final IndexFormatTooOldException e) {
+                // written by an older Lucene, such as an index of eXist-db 6: its content is derived from the documents
+                LOG.warn("The index in {} was written by an older Lucene version, which this version cannot open; it is emptied and rebuilt from the documents at startup: {}",
+                        dir.toAbsolutePath(), e.getMessage());
+                directory.close();
+                try (final Stream<Path> files = Files.list(dir)) {
+                    files.forEach(FileUtils::deleteQuietly);
+                }
+                Files.createDirectories(taxoDir);
+                directory = FSDirectory.open(dir);
+                tooOld = true;
+                rebuildRequired = true;
+            }
+            if (rebuildRequired && !tooOld) {
+                LOG.warn("The index in {} was written in another format; it is rebuilt from the documents at startup", dir.toAbsolutePath());
+            }
             taxoDirectory = FSDirectory.open(taxoDir);
 
             fieldAnalyzerWrapper = new FieldAnalyzerWrapper(defaultAnalyzer);
             final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(fieldAnalyzerWrapper);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
+            if (tooOld) {
+                // the emptied index has no entries to show it needs a rebuild: record it until one has run
+                cachedWriter.setLiveCommitData(Map.of(REBUILD_PENDING_KEY, "true").entrySet());
+                cachedWriter.commit();
+            } else if (!rebuildRequired) {
+                // not on an index in another format: a commit would mark it as this format without rebuilding it
+                cachedWriter.setLiveCommitData(Map.of(FORMAT_KEY, FORMAT).entrySet());
+            }
             cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxoDirectory);
 
             searcherManager = new SearcherTaxonomyManager(cachedWriter, true, null, cachedTaxonomyWriter);
@@ -206,6 +252,43 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public IndexWorker getWorker(DBBroker broker) {
         return new LuceneIndexWorker(this, broker);
+    }
+
+    /**
+     * Whether the index must be rebuilt: it has entries and its last commit does not carry {@link #FORMAT}, so this
+     * version may neither find nor remove them, or it was emptied with a rebuild pending.
+     *
+     * @throws IndexFormatTooOldException if the index was written by a Lucene version this one cannot read
+     */
+    private static boolean isRebuildRequired(final Directory directory) throws IOException {
+        if (!DirectoryReader.indexExists(directory)) {
+            return false;
+        }
+        final SegmentInfos commit = SegmentInfos.readLatestCommit(directory);
+        final Map<String, String> userData = commit.getUserData();
+        return userData.containsKey(REBUILD_PENDING_KEY)
+                || (commit.totalMaxDoc() > 0 && !FORMAT.equals(userData.get(FORMAT_KEY)));
+    }
+
+    @Override
+    public boolean isRebuildRequired() {
+        return rebuildRequired;
+    }
+
+    @Override
+    public synchronized void markRebuilt() throws DBException {
+        if (cachedWriter == null) {
+            return;
+        }
+        // replaces a pending rebuild too
+        cachedWriter.setLiveCommitData(Map.of(FORMAT_KEY, FORMAT).entrySet());
+        try {
+            cachedTaxonomyWriter.commit();
+            cachedWriter.commit();
+        } catch (final IOException e) {
+            throw new DBException("Failed to record the format of the Lucene index: " + e.getMessage());
+        }
+        rebuildRequired = false;
     }
 
     @Override
