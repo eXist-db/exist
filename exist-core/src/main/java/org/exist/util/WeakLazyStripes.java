@@ -61,8 +61,12 @@ import java.util.function.Function;
  * Amortize Cleanup
  *     With Amortize Cleanup, each calling thread will attempt
  *     to cleanup up to {@link #DRAIN_MAX} expired weak
- *     references on each write operation, or after
- *     {@link #READ_DRAIN_THRESHOLD} since the last cleanup.
+ *     references on each write operation, or on a read
+ *     which finds an expired weak reference in the
+ *     reference queue. Reads don't count themselves on a
+ *     shared counter: on a read, the reference queue is
+ *     only polled, which doesn't lock or write anything
+ *     when the queue is empty.
  *
  * With either cleanup policy, only a single calling thread
  * performs the cleanup at any time.
@@ -86,13 +90,6 @@ public class WeakLazyStripes<K, S> {
 
     /**
      * When {@link #amortizeCleanup} is true, this is the
-     * number of reads which are performed between calls
-     * to {@link #drainClearedReferences()}.
-     */
-    private static final int READ_DRAIN_THRESHOLD = 64;
-
-    /**
-     * When {@link #amortizeCleanup} is true, this is the
      * maximum number of entries to be drained
      * by {@link #drainClearedReferences()}.
      */
@@ -108,13 +105,6 @@ public class WeakLazyStripes<K, S> {
      * expired weak references.
      */
     private final AtomicInteger expiredReferenceReadCount = new AtomicInteger();
-
-    /**
-     * The number of reads on {@link #stripes} since
-     * {@link #drainClearedReferences()} was last
-     * completed.
-     */
-    private final AtomicInteger readCount = new AtomicInteger();
 
     private final Function<K, S> creator;
     private final boolean amortizeCleanup;
@@ -192,11 +182,14 @@ public class WeakLazyStripes<K, S> {
 
             if (amortizeCleanup) {
                 if (written.value) {
-                    // TODO (AR) if we find that we are too frequently draining and it is expensive
-                    // then we could make the read and write drain paths both use the DRAIN_THRESHOLD
                     drainClearedReferences();
-                } else if (readCount.get() >= READ_DRAIN_THRESHOLD) {
-                    drainClearedReferences();
+                } else {
+                    // NOTE: poll() neither locks nor writes when the queue is empty, so concurrent reads don't contend here
+                    final Reference<? extends S> cleared = referenceQueue.poll();
+                    if (cleared != null) {
+                        removeIfCleared(cleared);
+                        drainClearedReferences();
+                    }
                 }
             } else {
                 // have we reached the threshold where we should clear
@@ -259,15 +252,9 @@ public class WeakLazyStripes<K, S> {
                 // invalid conversion to write lock... small optimisation for the fall-through to #getPessimistic(K, Holder) in #get(K)
                 stripeRef = null;
             }
-        } else {
-            if (stripesLock.validate(stamp)) {
-                if (amortizeCleanup) {
-                    readCount.incrementAndGet();
-                }
-            } else {
-                // invalid optimistic read
-                stripeRef = null;
-            }
+        } else if (!stripesLock.validate(stamp)) {
+            // invalid optimistic read
+            stripeRef = null;
         }
 
         return stripeRef;
@@ -312,11 +299,6 @@ public class WeakLazyStripes<K, S> {
             stripesLock.unlock(stamp);
         }
 
-        // else (we don't need the lock on this path)
-        if (amortizeCleanup) {
-            readCount.incrementAndGet();
-        }
-
         return stripeRef;
     }
 
@@ -351,10 +333,6 @@ public class WeakLazyStripes<K, S> {
             stripesLock.unlockWrite(writeStamp);
         }
 
-        // else (we don't need the write lock on this path)
-        if (amortizeCleanup) {
-            readCount.incrementAndGet();
-        }
         return stripeRef;
     }
 
@@ -371,35 +349,54 @@ public class WeakLazyStripes<K, S> {
             Reference<? extends S> ref;
             int i = 0;
             while ((ref = referenceQueue.poll()) != null) {
-                @SuppressWarnings("unchecked") final WeakValueReference<K, S> stripeRef = (WeakValueReference<K, S>) ref;
-
-                final long writeStamp = stripesLock.writeLock();
-                try {
-
-                    // TODO(AR) it may be more performant to call #drainClearedReferences() at the beginning of #get(K) as oposed to the end, then we could avoid the extra check here which calls stripes#get(K)
-
-                    /*
-                        NOTE: we have to check that we have not added a new reference to replace an
-                        expired reference in #get(K) before calling #drainClearedReferences()
-                     */
-                    final WeakValueReference<K, S> check = stripes.get(stripeRef.key);
-                    if (check != null && check.get() == null) {
-
-                        stripes.remove(stripeRef.key);
-
-                    }
-                } finally {
-                    stripesLock.unlockWrite(writeStamp);
-                }
+                removeIfCleared(ref);
 
                 if (amortizeCleanup && ++i == DRAIN_MAX) {
                     break;
                 }
             }
-            if (amortizeCleanup) {
-                readCount.set(0);
-            }
             draining.set(false);
+        }
+    }
+
+    /**
+     * Removes the entry of a cleared WeakReference from the stripes map,
+     * unless it has been replaced by a new stripe in the meantime.
+     *
+     * Called by the one thread which polled the reference from the {@link #referenceQueue}.
+     *
+     * @param ref a cleared reference polled from the {@link #referenceQueue}.
+     */
+    private void removeIfCleared(final Reference<? extends S> ref) {
+        @SuppressWarnings("unchecked") final WeakValueReference<K, S> stripeRef = (WeakValueReference<K, S>) ref;
+
+        final long writeStamp = stripesLock.writeLock();
+        try {
+            /*
+                NOTE: we have to check that we have not added a new reference to replace an
+                expired reference in #get(K) before calling #drainClearedReferences()
+             */
+            final WeakValueReference<K, S> check = stripes.get(stripeRef.key);
+            if (check != null && check.get() == null) {
+                stripes.remove(stripeRef.key);
+            }
+        } finally {
+            stripesLock.unlockWrite(writeStamp);
+        }
+    }
+
+    /**
+     * Gets the number of entries in the stripes map, including any whose
+     * stripes have been cleared by the GC but not yet removed.
+     *
+     * @return the number of entries.
+     */
+    int size() {
+        final long stamp = stripesLock.readLock();
+        try {
+            return stripes.size();
+        } finally {
+            stripesLock.unlockRead(stamp);
         }
     }
 
