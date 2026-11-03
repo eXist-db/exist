@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
@@ -169,7 +170,7 @@ public class XQueryTriggerChainTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xqueryTriggerChain() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final String uuid = UUID.randomUUID().toString();
         final String documentName = uuid + ".xml";

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
@@ -83,14 +84,14 @@ public class OptimizerTest {
     	"</collection>";
     private static Collection testCollection;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void nestedQuery() throws XMLDBException {
         execute("/root/a[descendant::b = 'one']", true, "Inner b node should be returned.", 2);
         execute("/root/a[b = 'one']", true, "Inner b node should not be returned.", 1);
         execute("/root/a[b = 'one']", false, "Inner b node should not be returned.", 1);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void simplePredicatesRegex() throws XMLDBException {
         long r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
         execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
@@ -102,7 +103,7 @@ public class OptimizerTest {
         execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void noOptimization() throws XMLDBException {
         long r = execute("/root//b[parent::c/b = 'two']", false);
         assertEquals(1, r);
@@ -125,14 +126,14 @@ public class OptimizerTest {
         execute("/root//b[matches(text()/parent::b, 'two')]", true, "Parent axis should not be optimized.", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void reversePaths() throws XMLDBException {
         long r = execute("/root//b/parent::c[b = 'two']", false);
         assertEquals(1, r);
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void reversePathsWithWildcard() throws XMLDBException {
         //parent with wildcard
         long r = execute("/root//b/parent::*[b = 'two']", false);
@@ -140,7 +141,7 @@ public class OptimizerTest {
         execute("/root//b/parent::*[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void booleanOperator() throws XMLDBException {
         execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
@@ -156,7 +157,7 @@ public class OptimizerTest {
      * DOM. The query below must return {@code <F id="1"/>} on both persistent
      * and in-memory DOM, with or without the optimizer.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void nestedComparisonPreservedIssue4958() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         service.query("xmldb:store('/db/test', 'issue-4958.xml', <root><F id=\"1\"/></root>)");

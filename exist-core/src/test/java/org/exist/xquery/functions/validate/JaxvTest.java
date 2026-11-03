@@ -40,6 +40,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jaxv() function with XSDs.
@@ -76,7 +77,7 @@ public class JaxvTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxv( " +
                 "doc('/db/personal/personal-valid.xml'), " +
@@ -88,7 +89,7 @@ public class JaxvTest {
                 query);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredReportValid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
@@ -101,7 +102,7 @@ public class JaxvTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
@@ -114,7 +115,7 @@ public class JaxvTest {
         assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
@@ -127,7 +128,7 @@ public class JaxvTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +

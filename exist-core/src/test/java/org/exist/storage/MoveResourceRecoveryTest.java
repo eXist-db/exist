@@ -59,12 +59,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class MoveResourceRecoveryTest {
 
     @RegisterExtension
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
@@ -75,7 +76,7 @@ public class MoveResourceRecoveryTest {
         read();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
@@ -86,7 +87,7 @@ public class MoveResourceRecoveryTest {
         readAborted();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, URISyntaxException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();

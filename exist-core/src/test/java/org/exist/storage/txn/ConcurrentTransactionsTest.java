@@ -55,6 +55,7 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.exist.test.TransactionTestDSL.ExecutionListener;
 import static org.exist.test.TransactionTestDSL.NULL_SCHEDULE_LISTENER;
@@ -84,7 +85,7 @@ public class ConcurrentTransactionsTest {
     private static final boolean DEBUG_TRACING = false;
     private static final ExecutionListener EXECUTION_LISTENER = DEBUG_TRACING ? STD_OUT_SCHEDULE_LISTENER : NULL_SCHEDULE_LISTENER;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getDocuments() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
@@ -104,7 +105,7 @@ public class ConcurrentTransactionsTest {
         assertEquals(documentUri, result._2.getURI().getCollectionPath());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getDeleteUpdate() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
@@ -120,7 +121,7 @@ public class ConcurrentTransactionsTest {
             .execute(existEmbeddedServer.getBrokerPool(), EXECUTION_LISTENER);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void delete_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
@@ -137,7 +138,7 @@ public class ConcurrentTransactionsTest {
         assertNull(result._2);  // should be null as document was deleted!
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void delete_commit_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
@@ -157,7 +158,7 @@ public class ConcurrentTransactionsTest {
      * NOTE: Aborting a transaction in eXist-db does not rollback the changes
      * made by the transaction.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void delete_abort_read() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 

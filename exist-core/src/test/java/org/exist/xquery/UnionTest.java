@@ -37,6 +37,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -90,7 +91,7 @@ public class UnionTest {
 
     private static Collection testCollection;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void unionInPredicate_withoutIndex() throws XMLDBException {
          final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
          final ResourceSet result = service.queryResource(PUBMED_DOC_NAME, XQUERY);
@@ -98,7 +99,7 @@ public class UnionTest {
          assertEquals(1, result.getSize());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void unionInPredicate_withIndex() throws XMLDBException {
         storeCollectionConfig();
         
@@ -108,7 +109,7 @@ public class UnionTest {
         assertEquals(1, result.getSize());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void unionPersistentAndConstructedNodes() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
         final String xquery = "doc('" + testCollection.getName() + "/" + PUBMED_DOC_NAME + "')//Language | <a/> | <b/>";

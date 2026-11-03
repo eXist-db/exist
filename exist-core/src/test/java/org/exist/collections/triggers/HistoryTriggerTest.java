@@ -56,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Iterator;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class HistoryTriggerTest {
 
     @RegisterExtension
@@ -117,7 +118,7 @@ public class HistoryTriggerTest {
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/139">History trigger fails #139</a>
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndOverwriteByCopy() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final XmldbURI testDoc1Name = XmldbURI.create("test_store-and-overwrite-by-copy.xml");
         final String testDoc1Content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -160,7 +161,7 @@ public class HistoryTriggerTest {
         checkHistoryOfOriginal(brokerPool, testDoc1Name, testDoc1Content);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndOverwrite() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final XmldbURI testDocName = XmldbURI.create("test_store-and-overwrite.xml");
         final String testDocContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

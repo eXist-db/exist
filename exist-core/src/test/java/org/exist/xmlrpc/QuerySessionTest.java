@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,7 +92,7 @@ public class QuerySessionTest {
 
     private Random random = new Random();
 
-    @org.junit.jupiter.api.Test
+    @Test
     void manualRelease() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final XQueryService service = test.getService(XQueryService.class);
@@ -105,7 +106,7 @@ public class QuerySessionTest {
         assertThrows(XMLDBException.class, result::getMembersAsResource);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void runTasks() {
         ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < 100; i++) {

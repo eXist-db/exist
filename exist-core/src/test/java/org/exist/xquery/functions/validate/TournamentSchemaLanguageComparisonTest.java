@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * The {@code tournament/1.5} sample fixtures ship an XSD, an RNG, and a Schematron schema side by
@@ -96,7 +97,7 @@ public class TournamentSchemaLanguageComparisonTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStructureRejectsValidDocumentOnUnrelatedIdrefDefect() throws XMLDBException, SAXException, IOException {
         // No xsi:schemaLocation hint on the instance -- resolved purely by Tournament.xsd's
         // targetNamespace via directory-search, the same mechanism JaxpXsdCatalogTest's
@@ -107,7 +108,7 @@ public class TournamentSchemaLanguageComparisonTest {
         assertThat(r, hasXPath("//message/text()", equalTo("cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStructureRejectsCoOccurrenceViolatingDocumentIdentically() throws XMLDBException, SAXException, IOException {
         // Bare XSD structural validation cannot see the Singles/nbrParticipants-vs-nbrTeams
         // co-occurrence constraint -- proven here by getting the exact same verdict and error as
@@ -119,13 +120,13 @@ public class TournamentSchemaLanguageComparisonTest {
         assertThat(r, hasXPath("//message/text()", equalTo("cvc-id.1: There is no ID/IDREF binding for IDREF 't5'.")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void rngStructureAcceptsValidDocument() throws XMLDBException, SAXException, IOException {
         assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/Tournament.rng') )"), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void rngStructureAcceptsCoOccurrenceViolatingDocument() throws XMLDBException, SAXException, IOException {
         // Same co-occurrence limitation as the XSD case above, for RELAX NG.
         assertThat(QueryResults.single(existEmbeddedServer, "validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +

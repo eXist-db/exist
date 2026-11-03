@@ -29,6 +29,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -105,35 +106,35 @@ public class FunNotBenchmark {
     // --- Benchmark queries ---
 
     /** Set-difference optimization: child axis */
-    @org.junit.jupiter.api.Test
+    @Test
     void notChild() throws XMLDBException {
         runBenchmark("not(child)",
                 DOC + "//item[not(child)]");
     }
 
     /** Set-difference optimization: attribute axis */
-    @org.junit.jupiter.api.Test
+    @Test
     void notAttribute() throws XMLDBException {
         runBenchmark("not(@attr)",
                 DOC + "//item[not(@attr)]");
     }
 
     /** Set-difference optimization: descendant axis */
-    @org.junit.jupiter.api.Test
+    @Test
     void notDescendant() throws XMLDBException {
         runBenchmark("not(descendant::x)",
                 DOC + "//item[not(descendant::x)]");
     }
 
     /** Boolean fallback: general comparison inside not() */
-    @org.junit.jupiter.api.Test
+    @Test
     void notComparison() throws XMLDBException {
         runBenchmark("not(@id > 100)",
                 DOC + "//item[not(@id > 100)]");
     }
 
     /** Boolean fallback: not(.) on in-memory nodes */
-    @org.junit.jupiter.api.Test
+    @Test
     void notDotOnNodes() throws XMLDBException {
         runBenchmark("not(.) on nodes",
                 DOC + "//item[not(.)]");

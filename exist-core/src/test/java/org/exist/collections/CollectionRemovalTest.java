@@ -64,6 +64,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
@@ -87,7 +88,7 @@ public class CollectionRemovalTest {
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void failingRemoveCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
@@ -112,7 +113,7 @@ public class CollectionRemovalTest {
         doQuery(3);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void removeCollection()
             throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);

@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -89,7 +90,7 @@ public class StartupLockingTest {
      *   1) Locks have been acquired but not released
      *   2) A bug has been introduced in {@link org.exist.storage.lock.LockManager}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void noCollectionLocksAfterStartup() throws InterruptedException {
         lockTable.deregisterListener(lockCountListener);
 
@@ -109,7 +110,7 @@ public class StartupLockingTest {
      * to {@link NativeBroker#getOrCreateCollectionExplicit(Txn, XmldbURI)} should be the same
      * as before the call was made
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void getOrCreateCollectionDoesNotGainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
         lockTable.deregisterListener(lockCountListener);
 

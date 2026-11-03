@@ -54,6 +54,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -83,7 +84,7 @@ public class SerializeAttrMatchesTest {
 
     private Collection test = null;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void expandAttr() throws CollectionConfigurationException, LockException, IOException, SAXException, PermissionDeniedException, EXistException, XPathException {
         configureAndStore(COLLECTION_CONFIG, XML, "test1.xml");
 

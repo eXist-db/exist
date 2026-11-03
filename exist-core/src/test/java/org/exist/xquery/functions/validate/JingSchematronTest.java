@@ -41,6 +41,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jing() function with SCHs.
@@ -79,7 +80,7 @@ public class JingSchematronTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void sch15StoredValid() throws XMLDBException, SAXException, IOException {
         String query = "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
@@ -88,7 +89,7 @@ public class JingSchematronTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void sch15StoredValidBoolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
@@ -101,7 +102,7 @@ public class JingSchematronTest {
         assertEquals("true", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
 
     void sch15StoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
@@ -110,7 +111,7 @@ public class JingSchematronTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void sch15AnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
@@ -118,7 +119,7 @@ public class JingSchematronTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void sch15AnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +

@@ -50,6 +50,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -159,7 +160,7 @@ public class InspectModuleTest {
             inspect:inspect-module(xs:anyURI("xmldb:exist://%s"))/function[@name eq "%s"]
             """;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void withAtSignInline() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun1";
         final String expectedDescription = "Some description.";
@@ -172,14 +173,14 @@ public class InspectModuleTest {
     }
 
     /** eXist-db/exist#1386: an '@' mid-prose must not truncate the description. */
-    @org.junit.jupiter.api.Test
+    @Test
     void atSignInDescriptionDoesNotTruncate() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun5",
                 "Selects taxonomy[@type = \"reign\"] from the source.\n THIS SENTENCE MUST SURVIVE.");
     }
 
     /** eXist-db/exist#1386: a bare '@', an email address, and a trailing '@' are all prose. */
-    @org.junit.jupiter.api.Test
+    @Test
     void bareAtSignAndEmailInDescriptionSurvive() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun6",
                 "Costs 5 @ 3 dollars each. Write to info@exist-db.org for a quote@");
@@ -190,7 +191,7 @@ public class InspectModuleTest {
      * not a tag. Previously such a line vanished from the description and reappeared as an element
      * named after the word — including names XML does not permit, such as "2024".
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void lineStartAtSignThatIsNotAnXQDocTagIsProse() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun8",
                 "A description whose later lines open with an '@'.\n @home is where the heart is."
@@ -198,20 +199,20 @@ public class InspectModuleTest {
     }
 
     /** ...while the tags xqDoc does define still open a tag at line start. */
-    @org.junit.jupiter.api.Test
+    @Test
     void lineStartXQDocTagsStillParseAsTags() throws PermissionDeniedException, XPathException, EXistException {
         assertDescription("x:fun9", "Tags xqDoc defines still open a tag.");
     }
 
     /** eXist-db/exist#1386: tags still parse, and an '@' inside a tag's value survives too. */
-    @org.junit.jupiter.api.Test
+    @Test
     void tagsStillParseWithAtSignsInTheirValues() throws PermissionDeniedException, XPathException, EXistException {
         assertInspection("x:fun7", "A description before the tags.",
                 new String[]{ "takes x/@attr as its value" }, new String[]{}, new String[]{},
                 "a result mentioning info@exist-db.org");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void withParamsAndReturn() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun2";
         final String expectedDescription = "Some other description.";
@@ -223,7 +224,7 @@ public class InspectModuleTest {
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void multilineDescription() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun3";
         final String expectedDescription = "This is a multiline description and therefore\n spans multiple\n lines.";
@@ -235,7 +236,7 @@ public class InspectModuleTest {
         assertInspection(functionName, expectedDescription, expectedParameters, expectedAnnotations, expectedAnnotationValues, expectedReturn);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onAnnotatedFunction() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun4";
         final String expectedDescription = "An annotated function.";

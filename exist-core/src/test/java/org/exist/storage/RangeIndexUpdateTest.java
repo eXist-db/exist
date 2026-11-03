@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class RangeIndexUpdateTest {
 
     private static final String COLLECTION_CONFIG =
@@ -88,7 +89,7 @@ public class RangeIndexUpdateTest {
 
     private static MutableDocumentSet docs;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void updates() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();

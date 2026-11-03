@@ -38,6 +38,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jing() function with SCHs.
@@ -75,7 +76,7 @@ public class ParseXsdNokTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
@@ -87,7 +88,7 @@ public class ParseXsdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_invalid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
@@ -99,7 +100,7 @@ public class ParseXsdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_valid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";
@@ -111,7 +112,7 @@ public class ParseXsdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/addressbook/addressbook_invalid.xml'), false(), xs:anyURI('/db/addressbook/catalog.xml') )";

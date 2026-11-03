@@ -53,6 +53,7 @@ import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class CreateCollectionsTest  {
 
     @RegisterExtension
@@ -79,13 +80,13 @@ public class CreateCollectionsTest  {
         cms.removeCollection(TEST_COLLECTION);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void rootCollectionHasNoParent() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
         assertNull(root.getParentCollection(), "root collection has no parent");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void collectionMustProvideAtLeastOneService() throws XMLDBException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final List<Class<? extends Service>> expectedServiceTypes = Arrays.asList(CollectionManagementService.class,
@@ -98,7 +99,7 @@ public class CreateCollectionsTest  {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void createCollection_hasNoSubCollections_andIsOpen() throws XMLDBException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
@@ -109,7 +110,7 @@ public class CreateCollectionsTest  {
         assertTrue(testCollection.isOpen(), "Created Collection state should be Open after creation");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeSamplesShakespeare() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
@@ -139,7 +140,7 @@ public class CreateCollectionsTest  {
         assertEquals(filenames, retrievedStoredResourceNames);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeRemoveStoreResource() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = colTest.getService(CollectionManagementService.class);
@@ -170,7 +171,7 @@ public class CreateCollectionsTest  {
         assertNotNull(resMacbeth, "getResource(" + testFile + "\")");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeBinaryResource() throws XMLDBException, IOException, URISyntaxException {
         Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService service = colTest.getService(CollectionManagementService.class);
@@ -203,7 +204,7 @@ public class CreateCollectionsTest  {
         return data;
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testMultipleCreates() throws XMLDBException {
         
         Collection testCol = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);

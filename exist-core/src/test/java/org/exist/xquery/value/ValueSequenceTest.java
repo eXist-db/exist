@@ -41,6 +41,7 @@ import javax.xml.XMLConstants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -51,7 +52,7 @@ public class ValueSequenceTest {
     @RegisterExtension
     public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void sortInDocumentOrder() throws EXistException, PermissionDeniedException, AuthenticationException {
         final ValueSequence seq = new ValueSequence(true);
         seq.keepUnOrdered(true);
@@ -87,7 +88,7 @@ public class ValueSequenceTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void iterate_loop() throws XPathException {
         final ValueSequence valueSequence = mockValueSequence(99);
 
@@ -101,7 +102,7 @@ public class ValueSequenceTest {
         assertEquals(99, count);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void iterate_skip_loop() throws XPathException {
         final ValueSequence valueSequence = mockValueSequence(99);
         final SequenceIterator it = valueSequence.iterate();
@@ -121,7 +122,7 @@ public class ValueSequenceTest {
         assertEquals(89, count);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void iterate_loop_skip_loop() throws XPathException {
         final ValueSequence valueSequence = mockValueSequence(99);
         final SequenceIterator it = valueSequence.iterate();

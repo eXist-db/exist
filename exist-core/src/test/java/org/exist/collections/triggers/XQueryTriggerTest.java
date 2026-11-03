@@ -47,6 +47,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /** class under test : {@link XQueryTrigger}
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -273,7 +274,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by storing a new Document  */
-    @org.junit.jupiter.api.Test
+    @Test
     void documentCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
@@ -309,7 +310,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Document Update */
-    @org.junit.jupiter.api.Test
+    @Test
     void documentUpdate() throws XMLDBException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -361,7 +362,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Document Delete */
-    @org.junit.jupiter.api.Test
+    @Test
     void documentDelete() throws XMLDBException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -412,7 +413,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by creating a new Binary Document  */
-    @org.junit.jupiter.api.Test
+    @Test
     void documentBinaryCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
@@ -452,7 +453,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Binary Document Delete */
-    @org.junit.jupiter.api.Test
+    @Test
     void documentBinaryDelete() throws XMLDBException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -506,7 +507,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @org.junit.jupiter.api.Test
+    @Test
     void collectionCreate() throws XMLDBException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -540,7 +541,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @org.junit.jupiter.api.Test
+    @Test
     void collectionCopy() throws XMLDBException, URISyntaxException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -604,7 +605,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @org.junit.jupiter.api.Test
+    @Test
     void collectionMove() throws XMLDBException, URISyntaxException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -668,7 +669,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @org.junit.jupiter.api.Test
+    @Test
     void collectionDelete() throws XMLDBException {
         final IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -713,7 +714,7 @@ public class XQueryTriggerTest {
         assertEquals(8, result.getSize());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeDocumentInvalidTriggerForPrepare() throws XMLDBException {
         final BinaryResource invalidModule = testCollection.createResource(MODULE_NAME, BinaryResource.class );
         ((EXistResource)invalidModule).setMimeType("application/xquery");

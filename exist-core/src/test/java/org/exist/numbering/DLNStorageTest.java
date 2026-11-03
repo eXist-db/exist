@@ -46,6 +46,7 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -62,7 +63,7 @@ public class DLNStorageTest {
             "<para>Another <b>paragraph</b>.</para>" +
             "</test>";
 
-    @org.junit.jupiter.api.Test
+    @Test
     void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Throughput benchmark for ngram:contains() comparing literal string arguments
@@ -158,7 +159,7 @@ public class NGramContainsBenchmark {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void benchmark() throws EXistException, PermissionDeniedException, XPathException {
         Assumptions.assumeTrue(
                 Boolean.getBoolean("exist.run.benchmarks"),
