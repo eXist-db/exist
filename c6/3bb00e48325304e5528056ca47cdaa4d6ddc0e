@@ -1,0 +1,39 @@
+extensions/indexes/ngram/src/test/java/xquery/ngram/PathShapesTest.java
+  s_cda7b57354762d::t_ab4df7b7ddee42 1-154
+extensions/indexes/lucene/src/test/xquery/lucene/path-shapes.xqm
+  s_cda7b57354762d::t_b5f812b1b03a35 29-31,55,73,84-87,183,262,347,426
+extensions/indexes/lucene/src/test/java/xquery/lucene/PathShapesTest.java
+  s_cda7b57354762d::t_35f07b768e8708 1-406
+exist-core/src/test/java/org/exist/test/pathshapes/PathShapes.java
+  s_cda7b57354762d::t_19dd809ae7a875 1-472
+extensions/indexes/range/src/test/xquery/range/path-shapes.xqm
+  s_cda7b57354762d::t_4181649196df55 29-31,65,69,71-72,74,76-79,175,254
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_cda7b57354762d::t_68ff0526290d13 776,797,808
+extensions/indexes/ngram/src/test/xquery/ngram/path-shapes.xqm
+  s_cda7b57354762d::t_e8f66f6b343f99 29-31,65,69,71-72,74,76-79,175
+extensions/indexes/range/src/test/xquery/range/path-shapes-noindex.xqm
+  s_cda7b57354762d::t_7f41526227b0f6 29-31,36,63,67,69-70,72,74-77,173,252
+extensions/indexes/lucene/src/test/xquery/lucene/vector-embed.xqm
+  s_cda7b57354762d::t_2a05d43af6bab4 61,64,90,93
+extensions/indexes/range/src/test/java/xquery/range/PathShapesTest.java
+  s_cda7b57354762d::t_9f5b9baacf1f4e 1-562
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-forms.xqm
+  s_cda7b57354762d::t_703ae442a8a5c9 211,221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c63bb00e48325304e5528056ca47cdaa4d6ddc0e",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
