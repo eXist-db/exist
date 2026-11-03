@@ -1,0 +1,21 @@
+extensions/indexes/range/src/test/java/xquery/range/PathShapesTest.java
+  s_cda7b57354762d::t_86bc6aa35b21da 259-261,274-276,307-309,322-324
+extensions/indexes/range/src/test/xquery/range/path-shapes.xqm
+  s_cda7b57354762d::t_21031080a2f29a 409-413,487-491
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d2d85ff644c9e3d073f18e6b0cb2969b92bf780d",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
