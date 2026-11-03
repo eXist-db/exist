@@ -131,7 +131,7 @@ public class DocTest {
     	col.storeResource(res);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testURIResolveWithEval() throws XMLDBException {
         String query = "util:eval(xs:anyURI('/db/test/test.xq'), false(), ())";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
@@ -158,7 +158,7 @@ public class DocTest {
         assertEquals("x", n.getLocalName());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void doc_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -190,7 +190,7 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void doc_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -243,7 +243,7 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void docAvailable_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -265,7 +265,7 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void docAvailable_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
