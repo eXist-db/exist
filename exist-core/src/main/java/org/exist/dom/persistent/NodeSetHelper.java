@@ -95,8 +95,7 @@ public final class NodeSetHelper {
                         NodeProxy.UNKNOWN_NODE_LEVEL);
                     if(parent != null) {
                         NodeProxy.propagatePredicateContextFrom(parent, child, contextId);
-                        parent.addMatches(child);
-                        result.add(parent, sizeHint);
+                        result.add(parent.withMatchesOf(child), sizeHint);
                     }
                 }
                 break;
@@ -310,8 +309,7 @@ public final class NodeSetHelper {
                                 NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                             }
                         }
-                        ancestor.addMatches(descendant);
-                        result.add(ancestor);
+                        result.add(ancestor.withMatchesOf(descendant));
                     } else if(Expression.NO_CONTEXT_ID != contextId) {
                         temp.addContextNode(contextId, descendant);
                     }
@@ -337,7 +335,6 @@ public final class NodeSetHelper {
                                 NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                             }
                         }
-                        ancestor.addMatches(descendant);
                         result.add(ancestor);
                         return true;
                     } else if(Expression.NO_CONTEXT_ID != contextId) {

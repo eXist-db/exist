@@ -21,7 +21,10 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.*;
@@ -50,23 +53,63 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
     /** Cached result of {@code preSelect(Sequence, boolean)}, consumed by {@link #eval(Sequence, Item)}. */
     @Nullable protected NodeSet preselectResult = null;
 
+    /**
+     * The elements a search can look among for the step whose predicate holds the call, when those are all the step
+     * selects from documents: the name of a step on the descendant axis. See {@link #canOptimizeSequence(Sequence)}.
+     */
+    @Nullable protected QName stepName = null;
+
+    /** Whether the call is in a predicate of a variable, whose value is the nodes the predicate filters. */
+    private boolean filtersVariable = false;
+
     AbstractVectorQueryFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
+    }
+
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        // Pass a clone to super, not contextInfo itself: Function.analyze() mutates it
+        // (contextInfo.setParent(this)), and corrupting the caller's shared contextInfo breaks
+        // context-id tracking for whatever reads it afterward. Mirrors Query#analyze.
+        super.analyze(new AnalyzeContextInfo(contextInfo));
+        stepName = null;
+        filtersVariable = false;
+        final Expression outerExpr = contextInfo.getContextStep();
+        if (outerExpr instanceof final LocationStep step) {
+            final NodeTest test = step.getTest();
+            if ((step.getAxis() == Constants.DESCENDANT_AXIS || step.getAxis() == Constants.DESCENDANT_SELF_AXIS)
+                    && !test.isWildcardTest() && test.getName() != null) {
+                stepName = new QName(test.getName(), ElementValue.ELEMENT);
+            }
+        } else if (outerExpr instanceof final FilteredExpression filtered) {
+            filtersVariable = filtered.getExpression() instanceof VariableReference;
+        }
     }
 
     // === Optimizable: single KNN search over the whole candidate step, see class javadoc ===
 
     /**
-     * Default: always optimizable — correct for {@link QueryFieldVector}, whose "field" argument
-     * is a plain string with nothing that could diverge from {@code contextSequence}, and whose
-     * search domain (any node in the candidate sequence is eligible) is resolved dynamically
-     * inside {@code preSelect()} rather than restricted by an AST-visible qname, unlike ft:query.
-     * {@link QueryVector} overrides this: its "nodes" argument, if it isn't provably {@code .},
-     * must not have {@code contextSequence} silently substituted for its real value.
+     * A vector query finds the k nearest of the nodes the step selects, which evaluating it as written always does.
+     * Pre-selecting it searches before the step, and keeps the k nearest of whatever that search looks among, so it
+     * gives the same answer only if the search looks among exactly the nodes the step selects. That can be known for
+     * two forms, and saves selecting the nodes: a variable's value, and a named descendant step from documents, whose
+     * nodes are that name's index entries in those documents. Any other form is evaluated as written.
      */
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return contextSequence;
+        return filtersVariable || (stepName != null && onlyDocuments(contextSequence))
+                ? contextSequence : Sequence.EMPTY_SEQUENCE;
+    }
+
+    private static boolean onlyDocuments(final Sequence sequence) {
+        if (!sequence.isPersistentSet()) {
+            return false;
+        }
+        try {
+            return LuceneIndexWorker.onlyDocuments(sequence.toNodeSet());
+        } catch (final XPathException e) {
+            return false;
+        }
     }
 
     @Override
@@ -76,6 +119,12 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
 
     @Override
     public boolean optimizeOnChild() {
+        return false;
+    }
+
+    @Override
+    public boolean isFilter() {
+        // the k nearest of the nodes given: which nodes are kept depends on the others
         return false;
     }
 

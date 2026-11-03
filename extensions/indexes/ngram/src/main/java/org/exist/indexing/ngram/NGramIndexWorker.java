@@ -409,6 +409,22 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
+     * The nodes indexed under the given qnames, for a query with no ngram to look up, such as a wildcard-only one.
+     *
+     * @param docs the documents to look in
+     * @param qnames the indexed qnames, or null or empty for all those configured for {@code docs}
+     * @return the indexed nodes
+     */
+    public NodeSet indexedNodes(final DocumentSet docs, final List<QName> qnames) {
+        final List<QName> searchQnames = qnames == null || qnames.isEmpty() ? getDefinedIndexes(broker, docs) : qnames;
+        final NodeSet result = new ExtArrayNodeSet();
+        for (final QName qname : searchQnames) {
+            result.addAll(broker.getStructuralIndex().findElementsByTagName(qname.getNameType(), docs, qname, null));
+        }
+        return result;
+    }
+
+    /**
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
      *
@@ -1058,7 +1074,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final class SearchCallback implements BTreeCallback {
         private final int contextId;
-        @SuppressWarnings("unused")
         private final String query;
         private final String ngram;
         private final DocumentSet docs;
@@ -1117,7 +1132,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         if (contextSet != null) {
                             final int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
-                                final NodeProxy parentNode = contextSet.parentWithChild(nodeProxy, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                final NodeProxy contextNode = contextSet.parentWithChild(nodeProxy, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                // the matches go on a node of their own, not on the context node: the searches for the
+                                // parts of a query each find their own matches, which are then put together in order
+                                final NodeProxy parentNode = contextNode == null ? null : ownNode(contextNode);
                                 if (parentNode != null) {
                                     readMatches(ngram, is, nodeId, freq, parentNode);
                                     resultSet.add(parentNode, sizeHint);
@@ -1143,6 +1161,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
 
+        private NodeProxy ownNode(final NodeProxy contextNode) {
+            final NodeProxy node = new NodeProxy(contextNode.getExpression(), contextNode.getOwnerDocument(),
+                    contextNode.getNodeId(), contextNode.getNodeType(), contextNode.getInternalAddress());
+            node.copyContext(contextNode);
+            return node;
+        }
+
         private short nameTypeToNodeType(final byte nameType) {
             return switch (nameType) {
                 case ElementValue.ELEMENT -> Node.ELEMENT_NODE;
@@ -1153,10 +1178,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private void readMatches(final String current, final VariableByteInput is, final NodeId nodeId, final int freq,
                                  final NodeProxy parentNode) throws IOException {
-            int diff = 0;
-            if (current.length() > ngram.length()) {
-                diff = current.lastIndexOf(ngram);
-            }
+            // the ngram's position in the key: a query shorter than n is the start of the keys it finds, an ngram
+            // filled up with the characters before it is the end of its key
+            final int diff = query.equals(ngram) ? 0 : current.length() - ngram.length();
             final Match match = new NGramMatch(contextId, nodeId, ngram, freq);
             for (int n = 0; n < freq; n++) {
                 int offset = is.readInt();

@@ -52,6 +52,8 @@ public class LuceneModule extends AbstractInternalModule {
     public final static ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
     public final static ErrorCode EXXQDYFT0003 = new LuceneErrorCode("EXXQDYFT0003", "Document not found.");
     public final static ErrorCode EXXQDYFT0004 = new LuceneErrorCode("EXXQDYFT0004", "Wrong configuration passed to ft:query");
+    public final static ErrorCode EXXQDYFT0005 = new LuceneErrorCode("EXXQDYFT0005",
+            "A facet dimension is configured differently in the collections queried together.");
     
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
@@ -68,6 +70,11 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Search.signatures[0], Search.class),
         new FunctionDef(Search.signatures[1], Search.class),
         new FunctionDef(Search.signatures[2], Search.class),
+        new FunctionDef(QueryScope.signatures[0], QueryScope.class),
+        new FunctionDef(QueryScope.signatures[1], QueryScope.class),
+        new FunctionDef(SearchScope.signatures[0], SearchScope.class),
+        new FunctionDef(SearchScope.signatures[1], SearchScope.class),
+        new FunctionDef(Fields.signatures[0], Fields.class),
         new FunctionDef(GetField.signatures[0], GetField.class),
         new FunctionDef(Facets.signatures[0], Facets.class),
         new FunctionDef(Facets.signatures[1], Facets.class),

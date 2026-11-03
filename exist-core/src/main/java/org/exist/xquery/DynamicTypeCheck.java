@@ -84,10 +84,9 @@ public class DynamicTypeCheck extends AbstractExpression {
         int type = item.getType();
         if (type == Type.NODE &&
                 ((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-            type = ((NodeProxy) item).getNodeType();
-            if (type == NodeProxy.UNKNOWN_NODE_TYPE)
-                //Retrieve the actual node
-                {type= ((NodeProxy) item).getNode().getNodeType();}
+            // the type of a node whose kind is not known yet is the generic node(): retrieve the
+            // actual node for its kind, a DOM node type, which is not an XQuery type
+            type = Type.fromDomNodeType(((NodeProxy) item).getNode().getNodeType());
         }
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb

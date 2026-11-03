@@ -27,6 +27,8 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.MultiTermQuery;
+import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.indexing.lucene.PhraseAsNearRewriter;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.util.Configuration;
@@ -62,6 +64,19 @@ public class QueryOptions {
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
     public static final String OPTION_FILTER_QUERY = "filter-query";
     public static final String OPTION_FILTER = "filter";
+    public static final String OPTION_CANDIDATES = "candidates";
+    /**
+     * {@code phrase-as-near}: a sloppy phrase in the string syntax ({@code "a b"~n}, or any phrase when
+     * {@code phrase-slop} is set) matches as {@code <near slop="n">} does: in order, with at most n positions between
+     * the terms; a stopword dropped from the query doesn't count. Unlike the plain phrase, it doesn't tolerate
+     * reordering, nor match {@code "fair is foul"~1} in "fair is a foul thing". Exact phrases are unchanged. It doesn't
+     * apply to {@code filter-query} or to the XML form {@code <phrase slop="n">}. {@code ft:score} values differ, as
+     * spans and phrases score differently.
+     *
+     * @see org.exist.indexing.lucene.PhraseAsNearRewriter
+     * @see <a href="https://github.com/eXist-db/exist/issues/833">GitHub issue #833</a>
+     */
+    public static final String OPTION_PHRASE_AS_NEAR = "phrase-as-near";
 
     protected enum DefaultOperator {
         OR,
@@ -73,11 +88,14 @@ public class QueryOptions {
     protected boolean allowLeadingWildcard = false;
     protected Optional<Integer> phraseSlop = Optional.empty();
 
+    protected boolean phraseAsNear = false;
     protected boolean filterRewrite = false;
     protected boolean lowercaseExpandedTerms = false;
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
     protected Set<String> fields = null;
     protected String filterQuery = null;
+    /** The candidates a vector query considers, see {@link #getCandidates()}; 0 for the default. */
+    protected int candidates = 0;
     protected String filterField = null;
     protected Object filterValue = null;
 
@@ -274,6 +292,16 @@ public class QueryOptions {
         return filterQuery;
     }
 
+    /**
+     * The nearest neighbors a vector query looks for, of which it returns the best k: more candidates find better
+     * matches, as the vector index's search explores only as many neighbors as it is asked for.
+     *
+     * @return the number of candidates, or 0 for the default
+     */
+    public int getCandidates() {
+        return candidates;
+    }
+
     public @Nullable String getFilterField() {
         return filterField;
     }
@@ -307,6 +335,9 @@ public class QueryOptions {
                     throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
                 }
                 break;
+            case OPTION_PHRASE_AS_NEAR:
+                phraseAsNear = Configuration.parseBoolean(value, false);
+                break;
             case OPTION_FILTER_REWRITE:
                 filterRewrite = Configuration.parseBoolean(value, false);
                 break;
@@ -318,6 +349,17 @@ public class QueryOptions {
                 break;
             case OPTION_FILTER_QUERY:
                 filterQuery = value;
+                break;
+            case OPTION_CANDIDATES:
+                try {
+                    candidates = Integer.parseInt(value.trim());
+                } catch (final NumberFormatException e) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES + " must be an integer");
+                }
+                if (candidates < 1 || candidates > LuceneIndexWorker.MAX_VECTOR_CANDIDATES) {
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_CANDIDATES
+                            + " must be from 1 to " + LuceneIndexWorker.MAX_VECTOR_CANDIDATES + ", got " + candidates);
+                }
                 break;
             default:
                 // unknown option, ignore
@@ -339,13 +381,29 @@ public class QueryOptions {
         if (allowLeadingWildcard)
             parser.setAllowLeadingWildcard(true);
         phraseSlop.ifPresent(parser::setPhraseSlop);
+        // Not SCORING_BOOLEAN_REWRITE: it fails a wildcard, prefix or fuzzy term that expands to more terms than a
+        // boolean query may have (1024). Lucene's default gives every match the same score, and finds them all.
         if (filterRewrite)
             parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         else
-            parser.setMultiTermRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BLENDED_REWRITE);
         if (lowercaseExpandedTerms) {
             // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
+    }
+
+    /**
+     * If the {@code phrase-as-near} option is set, rewrite every phrase-query clause of
+     * {@code query} into an equivalent ordered near/span query. Otherwise return {@code query}
+     * unchanged.
+     *
+     * @param query the freshly-parsed query
+     * @return the (possibly rewritten) query
+     *
+     * @see org.exist.indexing.lucene.PhraseAsNearRewriter
+     */
+    public org.apache.lucene.search.Query applyPhraseAsNear(final org.apache.lucene.search.Query query) {
+        return phraseAsNear ? PhraseAsNearRewriter.rewrite(query) : query;
     }
 
     public String  getQueryAnalyzerId() { return queryAnalyzerId; }

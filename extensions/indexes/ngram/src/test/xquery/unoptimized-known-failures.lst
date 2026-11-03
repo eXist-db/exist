@@ -1,0 +1,5 @@
+# Tests of NgramTests that fail without the optimizer, see NgramUnoptimizedTests.
+# Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
+
+# The ngram index lower-cases one code point at a time (İ becomes i), fn:lower-case uses the full case mapping
+reference-ngram.xqm: case-mapping-like-fn-lower-case

@@ -86,7 +86,12 @@ import java.util.concurrent.TimeUnit;
  *       pair mainly guards against a future regression re-introducing per-hit term rewriting.</li>
  *   <li>{@code expandBatchWildcard*} - {@code util:expand($hits)} over ~half of a 5,000-entry
  *       corpus matched by a {@code lemma:a*} wildcard. This is the path the term-rewrite cache
- *       targets: every hit shares one query identity, so the cache turns N term-rewrites into 1.</li>
+ *       targets: every hit shares one query identity, so the cache turns N term-rewrites into 1.
+ *       {@code lemma} is a configured field, which util:expand does not highlight, so this pair
+ *       measures the cost of finding there is nothing to highlight.</li>
+ *   <li>{@code expandBatchTextWildcard*} - {@code util:expand($hits)} over the entries matched by an
+ *       {@code aword4*} wildcard on the entries' own text, each with its headword about 40 times:
+ *       the matches are highlighted.</li>
  * </ul>
  *
  * <h2>Build &amp; run (from project root)</h2>
@@ -137,8 +142,11 @@ public class UtilExpandHighlightingBenchmark {
     private CompiledXQuery singleHitHighlightingOnQuery;
     private CompiledXQuery batchWildcardHighlightingOffQuery;
     private CompiledXQuery batchWildcardHighlightingOnQuery;
+    private CompiledXQuery batchTextWildcardHighlightingOffQuery;
+    private CompiledXQuery batchTextWildcardHighlightingOnQuery;
 
     private int expectedWildcardHitCount;
+    private int expectedTextWildcardHitCount;
 
     @Setup(Level.Trial)
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
@@ -155,6 +163,10 @@ public class UtilExpandHighlightingBenchmark {
 
         // Half the corpus (even i) gets an 'a'-prefixed headword; matches the lemma:a* wildcard.
         expectedWildcardHitCount = (ENTRY_COUNT + 1) / 2;
+        // The 'a'-prefixed headwords whose number starts with 4: aword4, aword40, aword400, ...
+        expectedTextWildcardHitCount = (int) java.util.stream.IntStream.range(0, ENTRY_COUNT)
+                .filter(i -> i % 2 == 0 && Integer.toString(i).startsWith("4"))
+                .count();
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
@@ -168,6 +180,10 @@ public class UtilExpandHighlightingBenchmark {
                     "util:expand(" + COLL + "//entry[ft:query(., 'lemma:a*')], " + HIGHLIGHT_OFF_OPTIONS + ")");
             batchWildcardHighlightingOnQuery = compile(xquery, broker,
                     "util:expand(" + COLL + "//entry[ft:query(., 'lemma:a*')])");
+            batchTextWildcardHighlightingOffQuery = compile(xquery, broker,
+                    "util:expand(" + COLL + "//entry[ft:query(., 'aword4*')], " + HIGHLIGHT_OFF_OPTIONS + ")");
+            batchTextWildcardHighlightingOnQuery = compile(xquery, broker,
+                    "util:expand(" + COLL + "//entry[ft:query(., 'aword4*')])");
         }
     }
 
@@ -202,6 +218,16 @@ public class UtilExpandHighlightingBenchmark {
     @Benchmark
     public int expandBatchWildcardHighlightingOn() throws EXistException, PermissionDeniedException, XPathException, IOException {
         return execute(batchWildcardHighlightingOnQuery, expectedWildcardHitCount);
+    }
+
+    @Benchmark
+    public int expandBatchTextWildcardHighlightingOff() throws EXistException, PermissionDeniedException, XPathException, IOException {
+        return execute(batchTextWildcardHighlightingOffQuery, expectedTextWildcardHitCount);
+    }
+
+    @Benchmark
+    public int expandBatchTextWildcardHighlightingOn() throws EXistException, PermissionDeniedException, XPathException, IOException {
+        return execute(batchTextWildcardHighlightingOnQuery, expectedTextWildcardHitCount);
     }
 
     /**

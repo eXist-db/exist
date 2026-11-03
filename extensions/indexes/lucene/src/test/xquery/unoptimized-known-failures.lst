@@ -1,0 +1,9 @@
+# Tests of LuceneTests that fail without the optimizer, see LuceneUnoptimizedTests.
+# Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
+
+# Checks of the optimizer itself (%test:stats, or an index pragma that needs it); these stay
+ft-query-forms.xqm: optimizer-query-on-element
+ft-query-forms.xqm: optimizer-query-on-self
+ft-query-forms.xqm: optimizer-query-on-wildcard
+ft-query-forms.xqm: optimizer-wildcard-long-path
+ft-query-forms.xqm: optimizer-wildcard-self-descendant

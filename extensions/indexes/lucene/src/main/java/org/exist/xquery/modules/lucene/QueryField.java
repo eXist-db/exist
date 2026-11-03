@@ -63,13 +63,24 @@ public class QueryField extends Query implements Optimizable {
                                        <phrase-slop>number</phrase-slop>
                                        <leading-wildcard>yes|no</leading-wildcard>
                                        <filter-rewrite>yes|no</filter-rewrite>
-                                    </options>"""
+                                       <phrase-as-near>yes|no</phrase-as-near>
+                                    </options>
+
+                                    phrase-as-near: a sloppy phrase in the string syntax ('"a b"~n', or any phrase when phrase-slop is set)
+                                    matches as <near slop="n"> does: in order, with at most n positions between the terms; a stopword dropped
+                                    from the query doesn't count. Unlike the plain phrase, it doesn't tolerate reordering, nor match
+                                    '"fair is foul"~1' in "fair is a foul thing". Exact phrases are unchanged. It doesn't apply to filter-query
+                                    or to the XML form <phrase slop="n">. ft:score values differ, as spans and phrases score differently.
+                                    See https://github.com/eXist-db/exist/issues/833"""
                             )
                     )
             )
     );
 
     private NodeSet preselectResult = null;
+
+    /** Whether the call is in a predicate of a step with a wildcard or kind test, set by {@link #analyze(AnalyzeContextInfo)}. */
+    private boolean wildcardStep = false;
 
     public QueryField(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -79,11 +90,13 @@ public class QueryField extends Query implements Optimizable {
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
         this.contextId = contextInfo.getContextId();
+        wildcardStep = contextInfo.getContextStep() instanceof final LocationStep step && step.getTest().isWildcardTest();
     }
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return contextSequence;  // always optimizable!
+        // a wildcard step has no name to find the nodes above a hit by: it is evaluated as written
+        return wildcardStep ? Sequence.EMPTY_SEQUENCE : contextSequence;
     }
 
     @Override
@@ -148,9 +161,9 @@ public class QueryField extends Query implements Optimizable {
         	final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
         	try {
         		if (Type.subTypeOf(query.getType(), Type.ELEMENT)) {
-                    result = index.queryField(getExpressionId(), docs, contextSet, field, (Element) ((NodeValue) query).getNode(), NodeSet.ANCESTOR, options);
+                    result = index.queryField(getContextId(), docs, contextSet, field, (Element) ((NodeValue) query).getNode(), NodeSet.ANCESTOR, options);
                 } else {
-                    result = index.queryField(context, getExpressionId(), docs, contextSet, field, query.getStringValue(), NodeSet.ANCESTOR, options);
+                    result = index.queryField(context, getContextId(), docs, contextSet, field, query.getStringValue(), NodeSet.ANCESTOR, options);
                 }
             } catch (final IOException e) {
         		throw new XPathException(this, e.getMessage());

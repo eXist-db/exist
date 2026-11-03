@@ -22,38 +22,32 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.MemTreeBuilder;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 
+/**
+ * Highlights the matches of a query in a stored field's text, as {@link MatchLocator} locates them.
+ */
 public class PlainTextHighlighter {
 
-    private final Map<Object, Query> termMap = new TreeMap<>();
+    private final MatchLocator locator;
 
-    public PlainTextHighlighter(Query query, IndexReader reader) throws IOException {
-        LuceneUtil.extractTerms(query, termMap, reader, false);
+    public PlainTextHighlighter(final Query query) {
+        this.locator = new MatchLocator(List.of(query));
     }
 
-    public void highlight(String content, List<Offset> offsets, MemTreeBuilder builder) {
+    public void highlight(final String content, final List<Offset> offsets, final MemTreeBuilder builder) {
         if (offsets == null || offsets.isEmpty()) {
             builder.characters(content);
         } else {
             int lastOffset = 0;
-            for (Offset offset : offsets) {
+            for (final Offset offset : offsets) {
                 if (offset.startOffset() > lastOffset) {
                     builder.characters(content.substring(lastOffset, offset.startOffset()));
                 }
@@ -68,75 +62,29 @@ public class PlainTextHighlighter {
         }
     }
 
-    public List<Offset> getOffsets(String content, Analyzer analyzer) throws IOException {
-        List<Offset> offsets = null;
-        try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(content));
-             MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
-            stream.reset();
-            while (stream.incrementToken()) {
-                String text = stream.getAttribute(CharTermAttribute.class).toString();
-                final Query termQuery = termMap.get(text);
-                if (termQuery != null) {
-                    // Phrase queries need special handling to avoid marking partial matches.
-                    if (termQuery instanceof PhraseQuery phraseQuery) {
-                        final Term[] terms = phraseQuery.getTerms();
-                        if (text.equals(terms[0].text())) {
-                            // Scan ahead to verify a complete phrase match.
-                            stream.mark();
-                            int t = 1;
-                            final List<State> stateList = new ArrayList<>(terms.length);
-                            stateList.add(stream.captureState());
-                            // Consume tokens to confirm the full phrase; rewind to mark on first mismatch.
-                            while (stream.incrementToken() && t < terms.length) {
-                                text = stream.getAttribute(CharTermAttribute.class).toString();
-                                if (text.equals(terms[t].text())) {
-                                    stateList.add(stream.captureState());
-                                    if (++t == terms.length) {
-                                        break;
-                                    }
-                                } else {
-                                    stream.rewindToMark();
-                                    break;
-                                }
-                            }
-                            if (stateList.size() == terms.length) {
-                                if (offsets == null) {
-                                    offsets = new ArrayList<>();
-                                }
-                                stream.restoreState(stateList.getFirst());
-                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
-                                stream.restoreState(stateList.get(terms.length - 1));
-                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                                offsets.add(new Offset(start, end));
-
-                                // Restore to the end of the confirmed phrase for continued scanning.
-                                stream.restoreState(stateList.getLast());
-                            }
-                        }
-                    } else {
-                        if (offsets == null) {
-                            offsets = new ArrayList<>();
-                        }
-                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
-                    }
-                }
-            }
-        }
-        return offsets;
+    /**
+     * @param field the field the content is stored in
+     * @param content the field's content
+     * @param analyzer the analyzer the field was indexed with
+     * @return the matches of the query in the content, in its order, or null if there are none
+     * @throws IOException if the content cannot be analyzed
+     */
+    public @Nullable List<Offset> getOffsets(final String field, final String content, final Analyzer analyzer) throws IOException {
+        final List<MatchLocator.Span> spans = locator.locate(Set.of(field), content, analyzer);
+        return spans.isEmpty() ? null : spans.stream().map(span -> new Offset(span.start(), span.end())).toList();
     }
 
     public static class Offset {
-
         protected int startOffset;
         protected int endOffset;
 
-        Offset(int start, int end) {
+        Offset(final int start, final int end) {
             this.startOffset = start;
             this.endOffset = end;
         }
 
         public int startOffset() { return startOffset; }
+
         public int endOffset() { return endOffset; }
     }
 }

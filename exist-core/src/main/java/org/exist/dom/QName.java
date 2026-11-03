@@ -220,7 +220,8 @@ public class QName implements Comparable<QName> {
 
     public boolean equals(final QName other) {
         return other == this
-                || (this.namespaceURI.equals(other.namespaceURI) && this.localPart.equals(other.localPart));
+                || (other != null && this.namespaceURI.equals(other.namespaceURI)
+                        && this.localPart.equals(other.localPart));
     }
 
     /**

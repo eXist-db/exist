@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -104,8 +105,9 @@ public abstract class Match implements Comparable<Match> {
         this.context = match.context;
         this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
-        this.offsets = match.offsets;
-        this.lengths = match.lengths;
+        // a copy's offsets are its own: adding to them must not write into the original's arrays
+        this.offsets = Arrays.copyOf(match.offsets, match.offsets.length);
+        this.lengths = Arrays.copyOf(match.lengths, match.lengths.length);
         this.currentOffset = match.currentOffset;
     }
 
@@ -125,8 +127,45 @@ public abstract class Match implements Comparable<Match> {
         return nextMatch;
     }
 
-    public void setNextMatch(@Nullable final Match nextMatch) {
-        this.nextMatch = nextMatch;
+    /**
+     * A chain of matches with {@code match} added; neither {@code chain} nor {@code match} changes, so chains can be
+     * shared between nodes. A match equal to one in the chain has its offsets merged into a copy of that one, which
+     * takes its place; otherwise a copy of {@code match} goes in front and the chain is shared.
+     *
+     * @param chain the chain, or null for none
+     * @param match the match to add, of which only the match itself is taken, not its chain
+     * @return the new chain
+     */
+    public static Match add(@Nullable final Match chain, final Match match) {
+        int position = 0;
+        Match equal = null;
+        for (Match m = chain; m != null; m = m.nextMatch, position++) {
+            if (m.equals(match)) {
+                equal = m;
+                break;
+            }
+        }
+        if (equal == null) {
+            final Match head = match.newCopy();
+            head.nextMatch = chain;
+            return head;
+        }
+        final Match merged = equal.newCopy();
+        merged.mergeOffsets(match);
+        merged.nextMatch = equal.nextMatch;
+        // the matches before the merged one are copied, the rest shared
+        final Match[] before = new Match[position];
+        Match m = chain;
+        for (int i = 0; i < position; i++, m = m.nextMatch) {
+            before[i] = m;
+        }
+        Match result = merged;
+        for (int i = position - 1; i >= 0; i--) {
+            final Match copy = before[i].newCopy();
+            copy.nextMatch = result;
+            result = copy;
+        }
+        return result;
     }
 
     public abstract Match createInstance(final int contextId, final NodeId nodeId, @Nullable final String matchTerm);
@@ -174,26 +213,43 @@ public abstract class Match implements Comparable<Match> {
      * if such a match exists or null if no continuous match found
      */
     public Match continuedBy(final Match other) {
-        return followedBy(other, 0, 0);
+        // directly followed: no characters between, which needs no text to count them in
+        return followedBy(other, 0, 0, null);
     }
 
     /**
      * Constructs a match starting with this match and followed by the other match if possible
      *
      * @param other       a match following this match
-     * @param minDistance the minimum distance between this and the other match
-     * @param maxDistance the maximum distance between this and the other match
+     * @param minDistance the minimum distance between this and the other match, in characters
+     * @param maxDistance the maximum distance between this and the other match, in characters
+     * @param data        the string value of the node the matches are on, to count the characters between them in
+     *                    code points, so that a supplementary character (a surrogate pair) is one character; or null
+     *                    to count UTF-16 code units, which is exact for a distance of 0
      * @return a match starting with this match and followed by
      * the other match in the specified distance range if such
-     * a match exists or null if no such match found
+     * a match exists or null if no such match found, as for matches on different nodes
      */
-    public @Nullable Match followedBy(final Match other, final int minDistance, final int maxDistance) {
+    public @Nullable Match followedBy(final Match other, final int minDistance, final int maxDistance,
+            @Nullable final String data) {
+        if (!nodeId.equals(other.nodeId)) {
+            // offsets are within a node's value: those of two nodes say nothing about the distance between them
+            return null;
+        }
         final List<Offset> newMatchOffsets = new LinkedList<>();
+        int firstDistance = 0;
         for (int i = 0; i < currentOffset; i++) {
+            final int end = offsets[i] + lengths[i];
             for (int j = 0; j < other.currentOffset; j++) {
-                final int distance = other.offsets[j] - (offsets[i] + lengths[i]);
+                if (other.offsets[j] < end) {
+                    continue;
+                }
+                final int distance = data == null ? other.offsets[j] - end : data.codePointCount(end, other.offsets[j]);
                 if (distance >= minDistance && distance <= maxDistance) {
-                    newMatchOffsets.add(new Offset(offsets[i], lengths[i] + distance + other.lengths[j]));
+                    if (newMatchOffsets.isEmpty()) {
+                        firstDistance = distance;
+                    }
+                    newMatchOffsets.add(new Offset(offsets[i], other.offsets[j] + other.lengths[j] - offsets[i]));
                 }
             }
         }
@@ -202,66 +258,65 @@ public abstract class Match implements Comparable<Match> {
             return null;
         }
 
-        final int wildCardSize = newMatchOffsets.getFirst().length - matchTerm.length() - other.matchTerm.length();
-        final StringBuilder matched = new StringBuilder(matchTerm);
-        for (int ii = 0; ii < wildCardSize; ii++) {
-            matched.append('?');
-        }
-        matched.append(other.matchTerm);
-        final Match result = createInstance(context, nodeId, matched.toString());
+        // the characters between the first pair, one '?' each
+        final Match result = createInstance(context, nodeId, matchTerm + "?".repeat(firstDistance) + other.matchTerm);
         result.addOffsets(newMatchOffsets);
         return result;
     }
 
     /**
-     * Expand the match backwards by at least minExpand up to maxExpand characters.
-     * The match is expanded as much as possible.
+     * Expand the match backwards by at least minExpand up to maxExpand characters, counted in code points,
+     * so that a supplementary character (a surrogate pair) is one character. The match is expanded as much
+     * as possible.
      *
      * @param minExpand The minimum number of characters to expand this match by
      * @param maxExpand The maximum number of characters to expand this match by
+     * @param data The string value of the node the match is on
      * @return The expanded match if possible, or null if no offset is far enough from the start.
      */
-    public @Nullable Match expandBackward(final int minExpand, final int maxExpand) {
+    public @Nullable Match expandBackward(final int minExpand, final int maxExpand, final String data) {
         @Nullable Match result = null;
         for (int i = 0; i < currentOffset; i++) {
-            if (offsets[i] - minExpand >= 0) {
+            int start = offsets[i];
+            int expand = 0;
+            while (expand < maxExpand && start > 0) {
+                start = data.offsetByCodePoints(start, -1);
+                expand++;
+            }
+            if (expand >= minExpand) {
                 if (result == null) {
-                    final StringBuilder matched = new StringBuilder();
-                    for (int ii = 0; ii < minExpand; ii++) {
-                        matched.append('?');
-                    }
-                    matched.append(matchTerm);
-                    result = createInstance(context, nodeId, matched.toString());
+                    result = createInstance(context, nodeId, "?".repeat(expand) + matchTerm);
                 }
-                final int expand = Math.min(offsets[i], maxExpand);
-                result.addOffset(offsets[i] - expand, lengths[i] + expand);
+                result.addOffset(start, offsets[i] - start + lengths[i]);
             }
         }
         return result;
     }
 
     /**
-     * Expand the match forward by at least minExpand up to maxExpand characters.
-     * The match is expanded as much as possible.
+     * Expand the match forward by at least minExpand up to maxExpand characters, counted in code points,
+     * so that a supplementary character (a surrogate pair) is one character. The match is expanded as much
+     * as possible.
      *
      * @param minExpand  The minimum number of characters to expand this match by
      * @param maxExpand  The maximum number of characters to expand this match by
-     * @param dataLength The length of the valued of the node, limiting the expansion
+     * @param data The string value of the node the match is on
      * @return The expanded match if possible, or null if no offset is far enough from the end.
      */
-    public @Nullable Match expandForward(final int minExpand, final int maxExpand, final int dataLength) {
+    public @Nullable Match expandForward(final int minExpand, final int maxExpand, final String data) {
         @Nullable Match result = null;
         for (int i = 0; i < currentOffset; i++) {
-            if (offsets[i] + lengths[i] + minExpand <= dataLength) {
-                final int expand = Math.min(dataLength - offsets[i] - lengths[i], maxExpand);
+            int end = offsets[i] + lengths[i];
+            int expand = 0;
+            while (expand < maxExpand && end < data.length()) {
+                end = data.offsetByCodePoints(end, 1);
+                expand++;
+            }
+            if (expand >= minExpand) {
                 if (result == null) {
-                    final StringBuilder matched = new StringBuilder(matchTerm);
-                    for(int ii = 0; ii < expand; ii++) {
-                        matched.append('?');
-                    }
-                    result = createInstance(context, nodeId, matched.toString());
+                    result = createInstance(context, nodeId, matchTerm + "?".repeat(expand));
                 }
-                result.addOffset(offsets[i], lengths[i] + expand);
+                result.addOffset(offsets[i], end - offsets[i]);
             }
         }
         return result;
