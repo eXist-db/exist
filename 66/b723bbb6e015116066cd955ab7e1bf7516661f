@@ -1,0 +1,24 @@
+.github/PULL_REQUEST_TEMPLATE.md
+  s_cda7b57354762d::t_e428eb3055ad0b 18-19
+  s_cda7b57354762d::t_429ceef0ff9bc1 6
+AGENTS.md
+  s_cda7b57354762d::t_4772e6cdd83076 129-142
+  s_cda7b57354762d::t_0531b459ebce57 144-150
+  s_cda7b57354762d::t_6bd8a700f81d2b 143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "66b723bbb6e015116066cd955ab7e1bf7516661f",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
