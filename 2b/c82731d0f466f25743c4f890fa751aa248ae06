@@ -1,0 +1,23 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/RangeQueryRewriter.java
+  s_cda7b57354762d::t_3b9d142ce8657f 90-96
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_cda7b57354762d::t_5cb8b019357aa0 217-251
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_cda7b57354762d::t_de805748a840a9 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2bc82731d0f466f25743c4f890fa751aa248ae06",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
