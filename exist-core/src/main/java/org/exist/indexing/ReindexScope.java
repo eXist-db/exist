@@ -21,6 +21,8 @@
  */
 package org.exist.indexing;
 
+import java.util.Locale;
+
 /**
  * Scope of reindex operations for {@code xmldb:reindex($collection, $document?, $mode?)}.
  * Decouples fulltext reindex from vector recalculation.
@@ -53,7 +55,7 @@ public enum ReindexScope {
         if (mode == null || mode.isEmpty()) {
             return ALL;
         }
-        return switch (mode.toLowerCase()) {
+        return switch (mode.toLowerCase(Locale.ROOT)) {
             case "all" -> ALL;
             case "fulltext" -> FULLTEXT;
             case "vector" -> VECTOR;

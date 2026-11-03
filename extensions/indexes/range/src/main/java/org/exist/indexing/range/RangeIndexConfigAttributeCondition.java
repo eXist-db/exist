@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
@@ -82,7 +83,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         // parse operator (default to 'eq' if missing)
         if (elem.hasAttribute("operator")) {
             final String operatorName = elem.getAttribute("operator");
-            operator = Operator.getByName(operatorName.toLowerCase());
+            operator = Operator.getByName(operatorName.toLowerCase(Locale.ROOT));
             if (operator == null) {
                 throw new DatabaseConfigurationException(
                         "Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
@@ -147,7 +148,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     // lazily evaluate lowercase value to convert once when needed
     private String getLowercaseValue() {
         if (lowercaseValue == null && value != null) {
-            lowercaseValue = value.toLowerCase();
+            lowercaseValue = value.toLowerCase(Locale.ROOT);
         }
         return lowercaseValue;
     }
@@ -186,7 +187,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private boolean stringMatch (final BiPredicate<String, String> predicate, final String testValue) {
         return caseSensitive
                 ? predicate.test(testValue, value)
-                : predicate.test(testValue.toLowerCase(), getLowercaseValue());
+                : predicate.test(testValue.toLowerCase(Locale.ROOT), getLowercaseValue());
     }
 
     private boolean booleanMatch(final String testValue) {
@@ -208,7 +209,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         } else if (caseSensitive) {
             result = testValue.compareTo(value);
         } else {
-            result = testValue.toLowerCase().compareTo(getLowercaseValue());
+            result = testValue.toLowerCase(Locale.ROOT).compareTo(getLowercaseValue());
         }
 
         return switch (operator) {

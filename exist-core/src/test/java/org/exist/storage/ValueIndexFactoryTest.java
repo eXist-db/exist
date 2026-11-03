@@ -34,6 +34,11 @@ import org.exist.storage.btree.Value;
 import org.exist.xquery.value.DecimalValue;
 import org.exist.xquery.value.DoubleValue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
+import org.exist.xquery.value.StringValue;
+
+import java.util.Locale;
 
 
 class ValueIndexFactoryTest {
@@ -112,6 +117,22 @@ class ValueIndexFactoryTest {
                 assertTrue(new Value(encoded[i]).compareTo(new Value(encoded[j])) < 0,
                         ordered[i] + " < " + ordered[j]);
             }
+        }
+    }
+
+    @Test
+    @ResourceLock(Resources.LOCALE)
+    void caseInsensitiveStringKeyDoesNotDependOnDefaultLocale() throws EXistException {
+        final byte[] expected = ValueIndexFactory.serialize(new StringValue("title"), 0, false);
+
+        final Locale previous = Locale.getDefault();
+        try {
+            // Turkish lower-cases "I" to a dotless i with the default locale
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            final byte[] actual = ValueIndexFactory.serialize(new StringValue("TITLE"), 0, false);
+            assertEquals(new Value(expected).toString(), new Value(actual).toString());
+        } finally {
+            Locale.setDefault(previous);
         }
     }
 

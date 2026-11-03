@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -136,7 +137,7 @@ public class ValueIndexFactory {
         if (Type.subTypeOf(value.getType(), Type.STRING)) {
             final String val = caseSensitive ?
                     ((StringValue) value).getStringValue() :
-                    ((StringValue) value).getStringValue().toLowerCase();
+                    ((StringValue) value).getStringValue().toLowerCase(Locale.ROOT);
             final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
             data[offset] = (byte) value.getType();  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
             UTF8.encode(val, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
