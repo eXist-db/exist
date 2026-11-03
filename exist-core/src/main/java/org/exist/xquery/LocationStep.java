@@ -1381,7 +1381,9 @@ public class LocationStep extends Step {
                         currentDocs = null;
                         currentSet = null;
                     } else {
-                        if (currentDocs != null && currentDocs.contains(document.getDocId())) {
+                        // resetState may clear currentDocs at any time: work on one snapshot of it
+                        final DocumentSet docs = currentDocs;
+                        if (docs != null && docs.contains(document.getDocId())) {
                             currentDocs = null;
                             currentSet = null;
                         }
