@@ -720,7 +720,6 @@
                                 <exclude>src/test/resources/**/*.xar</exclude>
                                 <exclude>src/test/resources/**/*.bin</exclude>
                                 <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
-                                <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
                                 <!-- W3C XInclude test suite — third-party test content, not eXist-db code -->
                                 <exclude>src/test/resources/xinclude-test-suite/**</exclude>
 
@@ -1219,6 +1218,30 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                     </includes>
                                     <stylesheet>${project.basedir}/../schema/generate-conf-fixture.xsl</stylesheet>
                                     <outputDir>${project.build.directory}/generated-test-resources</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/xmldb/allow-any-uri-conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/xmldb/allow-any-uri</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/config/conf1-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/config/db1</outputDir>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${project.basedir}/../exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/org/exist/config/conf2-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/org/exist/config/db2</outputDir>
                                 </transformationSet>
                             </transformationSets>
                         </configuration>

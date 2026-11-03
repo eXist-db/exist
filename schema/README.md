@@ -127,6 +127,7 @@ is listed as a filtered `testResource` so Maven's `${...}` token substitution st
 | `extra-triggers` | `element()*` | `()` | Appended to `db-connection/startup/triggers` |
 | `extra-index-modules` | `element()*` | `()` | Appended to `indexer/modules` |
 | `extra-modules` | `element()*` | `()` | Appended to `xquery/builtin-modules` |
+| `vector-models` | `element(vector-models)?` | `()` | Replaces canonical's `<vector-models>`; empty = keep canonical |
 
 The base stylesheet also strips `RestXqStartupTrigger` and `AutoDeploymentTrigger` from
 canonical (they assume a full webapp deployment); restore them per-fixture via

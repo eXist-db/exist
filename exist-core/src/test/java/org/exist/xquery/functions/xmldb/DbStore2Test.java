@@ -70,7 +70,7 @@ public class DbStore2Test {
 
     private final static Path getConfig() {
         try {
-            final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/allowAnyUri.xml");
+            final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/allow-any-uri/conf.xml");
             return Path.of(path.toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException("unable to parse URI for resource", e);

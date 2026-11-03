@@ -35,23 +35,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Visibility check for test/sample fixture copies of the canonical config templates (the ones
- * named e.g. {@code conf.xml} scattered across module test resources, each a hand-trimmed,
- * per-module subset of the real {@code exist-distribution/.../conf.xml} -- never literal copies,
- * so they can't be mechanically regenerated from canonical without destroying intentional
- * per-module customization).
+ * Visibility check for any remaining source-tree fixture copies of the canonical config templates
+ * (files named {@code conf.xml} / {@code controller-config.xml} / {@code collection.xconf.init}
+ * under module test resources). Most test fixtures are now generated from canonical at build time
+ * via {@code schema/generate-conf-fixture.xsl}; this test only scans committed source files (not
+ * {@code target/}).
  * <p>
- * Originally none of these ~39 fixtures carried {@link SchemaVersion#ATTRIBUTE}. Several have
- * since been normalized -- the attribute was added as part of stripping an accidentally-added
- * LGPL header and other boilerplate drift from a subset of them. {@link #REMAINING_WITHOUT_VERSION}
- * is the known, explicit list of what's still missing it. This test fails if that set changes --
- * either grows (a new undocumented fixture appeared) or shrinks without updating the list (a
- * fixture got fixed but this tracker wasn't updated) -- so it stays an honest, current map of
- * what's left, not a one-time snapshot.
+ * Fails if any source fixture is missing {@link SchemaVersion#ATTRIBUTE} — either give the new
+ * fixture a {@code schemaVersion}, or prefer generating it from canonical so the attribute
+ * comes along automatically.
  */
 class SchemaVersionFixtureAuditTest {
 
@@ -62,18 +57,6 @@ class SchemaVersionFixtureAuditTest {
             "exist-distribution/src/main/config/conf.xml",
             "exist-distribution/src/main/config/collection.xconf.init",
             "exist-jetty-config/src/main/resources/webapp/WEB-INF/controller-config.xml");
-
-    /**
-     * Fixtures not yet normalized -- update this list (not the assertion) as more are fixed.
-     * {@code vector-it} and {@code http-client}'s {@code conf.xml} are deliberate, modern,
-     * hand-written-from-scratch minimal configs, not drift victims, left alone on purpose.
-     * {@code exist-core-jmh}'s hand-maintained {@code conf.xml} was replaced by one generated
-     * from canonical (see {@code exist-core-jmh/src/main/resources-filtered/conf-fixture.xsl}),
-     * so it carries schemaVersion like canonical and dropped off this list.
-     */
-    private static final Set<String> REMAINING_WITHOUT_VERSION = Set.of(
-            "extensions/indexes/vector-it/src/test/resources-filtered/conf.xml",
-            "extensions/modules/http-client/src/test/resources/conf.xml");
 
     @Test
     void reportFixturesMissingSchemaVersion() throws Exception {
@@ -95,10 +78,9 @@ class SchemaVersionFixtureAuditTest {
             }
         }
 
-        assertEquals(REMAINING_WITHOUT_VERSION, Set.copyOf(missing),
-                "set of fixtures missing " + SchemaVersion.ATTRIBUTE + " changed -- if you fixed one, "
-                        + "remove it from REMAINING_WITHOUT_VERSION; if a new undocumented fixture appeared, "
-                        + "add it there (or better, give it schemaVersion to begin with): " + missing);
+        assertTrue(missing.isEmpty(),
+                "source fixtures missing " + SchemaVersion.ATTRIBUTE + " — give them schemaVersion "
+                        + "or generate from canonical via conf-fixture.xsl: " + missing);
     }
 
     private static List<Path> findFixtures(final Path repoRoot) throws IOException {

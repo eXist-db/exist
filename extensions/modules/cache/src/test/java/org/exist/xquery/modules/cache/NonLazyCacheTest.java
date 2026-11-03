@@ -31,24 +31,29 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
-import java.nio.file.Path;
-import org.junit.jupiter.api.extension.RegisterExtension;
+
 public class NonLazyCacheTest {
 
-    private static Path getLazyConfig() {
+    @RegisterExtension
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getConfig(), null, true, true);
+
+    /**
+     * Generated conf with no cache {@code <module>} entry — SPI registers CacheModule
+     * without parameters, so enableLazyCreation defaults to false.
+     */
+    private static Path getConfig() {
         try {
-            return Path.of(NonLazyCacheTest.class.getResource("/non-lazy-cache-conf.xml").toURI());
+            return Path.of(NonLazyCacheTest.class.getResource("/non-lazy-cache/conf.xml").toURI());
         } catch (final URISyntaxException e) {
-            throw new IllegalStateException("Unable to find: non-lazy-cache-conf.xml");
+            throw new IllegalStateException("Unable to find: /non-lazy-cache/conf.xml");
         }
     }
-
-    @RegisterExtension
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, getLazyConfig(), null, true, true);
 
     @Test
     void putOnNonLazilyCreatedCacheWithoutExplicitCreation() throws XPathException, PermissionDeniedException, EXistException {

@@ -87,7 +87,7 @@
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
                 <excludes>
-                    <exclude>*.xsl</exclude>
+                    <exclude>**/*.xsl</exclude>
                 </excludes>
             </testResource>
             <testResource>
@@ -95,6 +95,40 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
+
+        <plugins>
+            <!--
+                Root /conf.xml (lazy=true via conf-fixture.xsl) is produced by the
+                parent conf-fixture-codegen profile. This execution adds the
+                non-lazy variant only (SPI default — no cache module in conf).
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>non-lazy-cache-conf-fixture-codegen</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${maven.multiModuleProjectDirectory}/exist-distribution/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>${project.basedir}/src/test/resources-filtered/non-lazy-cache-conf-fixture.xsl</stylesheet>
+                                    <outputDir>${project.build.directory}/generated-test-resources/non-lazy-cache</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
