@@ -1,9 +1,12 @@
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
   s_cda7b57354762d::t_232bf1eef0e06a 110,161,167,170-171
+  s_cda7b57354762d::t_cf3a0aab3ea99e 110,161,167,170-171
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
   s_cda7b57354762d::t_80b63e4e1ff87a 155,189,195,204-205
+  s_cda7b57354762d::t_4798654bf8f107 155,189,195,204-205
 extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/VectorSearchSupport.java
   s_cda7b57354762d::t_256f126af55146 78-85
+  s_cda7b57354762d::t_2d290a0bc269bf 78-85
 extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
   s_cda7b57354762d::t_1bde0d7376d83f 1173-1188
 extensions/indexes/lucene/src/test/xquery/unoptimized-known-failures.lst
