@@ -1,0 +1,38 @@
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_cda7b57354762d::t_5561299cb791e7 291-299,320,322,324,329
+  s_cda7b57354762d::t_53bcd7b06e78f5 321,323,325-328,330
+extensions/indexes/range/src/test/java/org/exist/indexing/range/IndexFormatRebuildTest.java
+  s_cda7b57354762d::t_d5608b1e8d994e 291
+  s_cda7b57354762d::t_6d15cfe9ad35ce 1-290
+  s_cda7b57354762d::t_161c0b5515a00f 292-293
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_cda7b57354762d::t_5152fb531ca6bd 650-657,2020-2043
+  s_cda7b57354762d::t_bf23ad2be41b66 83,2044-2064
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_cda7b57354762d::t_93e10febdf14ef 171-180
+  s_cda7b57354762d::t_aae2db2255d924 76-94,181,188-195,257-293
+  s_cda7b57354762d::t_096e49e0aa7d5a 163-170
+exist-core/src/main/java/org/exist/indexing/Index.java
+  s_cda7b57354762d::t_2aa2d7f55028e3 120-131,135,137,139
+  s_cda7b57354762d::t_973b80c657a2e8 132-134,136,138,140
+exist-core/src/main/java/org/exist/storage/BrokerPoolConstants.java
+  s_cda7b57354762d::t_a8d0dd61ac4fed 85-90
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cda7b57354762d::t_e40d6995b88804 4025-4029
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82480551dea9a7da0e404e070cca775323183c2a",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
