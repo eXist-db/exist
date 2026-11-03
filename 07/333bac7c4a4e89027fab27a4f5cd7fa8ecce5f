@@ -1,0 +1,21 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/OptimizeFieldPragma.java
+  s_cda7b57354762d::t_e9282687c26a16 210
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_cda7b57354762d::t_e173c188a00cd1 99-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07333bac7c4a4e89027fab27a4f5cd7fa8ecce5f",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

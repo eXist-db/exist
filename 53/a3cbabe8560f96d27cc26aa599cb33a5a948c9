@@ -1,0 +1,28 @@
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_cda7b57354762d::t_68ff678de5ea3d 31,201-216
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/FieldLookup.java
+  s_cda7b57354762d::t_7bab6d268d5333 330
+  s_cda7b57354762d::t_7cf1cfcf1e0fb9 331
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/OptimizeFieldPragma.java
+  s_cda7b57354762d::t_cabb898a5029e3 211-212,226
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_cda7b57354762d::t_80994c8c9d15d8 244-245
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_cda7b57354762d::t_bb4b5854ecef58 864
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "53a3cbabe8560f96d27cc26aa599cb33a5a948c9",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
