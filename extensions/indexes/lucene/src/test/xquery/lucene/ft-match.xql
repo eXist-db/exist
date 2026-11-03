@@ -186,12 +186,9 @@ function ftt:field-highlight() {
  :
  : It should be highlighted though if we look at the second result, which is the inner div.
  : The nested <hi> should never be highlighted.
- :
- : Pending: returns (2, 2) instead of (1, 1); ignore logic during util:expand scan differs.
  :)
 declare
     %test:args("text")
-    %test:pending("Returns (2,2); ignore/expand scan behaviour TBD, see #3467")
     %test:assertEquals(1, 1)
 function ftt:highlight($query as xs:string) {
     count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., $query)][1])//exist:match),
