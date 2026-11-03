@@ -110,23 +110,13 @@ Concrete precedent: PR eXist-db/exist#6477 (request-module content negotiation) 
 - Contributors push to their fork and open PRs against `eXist-db/exist`
 - Base branch for PRs is `develop`, not `main`
 
-### Commit labels
+### Commits, issues and pull requests
 
-Per [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md#commit-labels), all commits must be prefixed with one of:
-- `[bugfix]` — addresses a bug or issue
-- `[feature]` — adds a new feature
-- `[refactor]` — refactoring existing code
-- `[optimize]` — performance/memory optimization
-- `[test]` — solely test changes
-- `[doc]` — documentation
-- `[ci]` — CI configuration changes
-- `[ignore]` — automated cleanup (e.g., reformatting)
+Follow [CONTRIBUTING.md](CONTRIBUTING.md); it is the one place for these rules:
 
-### PR quality standard
-
-- Commit message: imperative subject line, body explains why
-- Include `Closes https://github.com/eXist-db/exist/issues/<number>` for issue fixes
-- PR description should include: Summary, What Changed (per file/category), Spec References (W3C links if applicable), XQTS before/after table (for conformance work), Test Plan checklist
+- [Commit labels](CONTRIBUTING.md#commit-labels) and [commit messages](CONTRIBUTING.md#commit-messages): short, why the change is needed, issues referenced in the footer as `Closes #<number>` or `See #<number>`
+- [Issues](CONTRIBUTING.md#issues): search open and closed issues and open PRs first, and build on what exists
+- [Pull request description](CONTRIBUTING.md#pull-request-description): summary, a "Why, and what users notice" section, what changed per area, test plan
 
 ## W3C Test Suites (XQTS)
 
