@@ -78,7 +78,6 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- needed for starting up a jetty server -->
