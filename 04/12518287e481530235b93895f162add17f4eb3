@@ -1,0 +1,21 @@
+extensions/indexes/range/src/main/java/org/exist/indexing/range/conversion/DateConverter.java
+  s_c0b5ee22aea9de::t_1de6f0f1bb74f1 51-52
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_c0b5ee22aea9de::t_069056b36f0569 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0412518287e481530235b93895f162add17f4eb3",
+  "prompts": {},
+  "sessions": {
+    "s_c0b5ee22aea9de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66464b24-fb74-414b-af2f-36fc31af21cf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
