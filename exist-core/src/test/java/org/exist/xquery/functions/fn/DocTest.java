@@ -36,12 +36,14 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -129,7 +131,7 @@ public class DocTest {
     	col.storeResource(res);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testURIResolveWithEval() throws XMLDBException {
         String query = "util:eval(xs:anyURI('/db/test/test.xq'), false(), ())";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
@@ -156,7 +158,7 @@ public class DocTest {
         assertEquals("x", n.getLocalName());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void doc_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -188,7 +190,7 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void doc_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -222,7 +224,26 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    /**
+     * W3C XQTS K2-BaseURIProlog-3: an unusable static base URI must raise a fn:doc error code.
+     */
+    @Test
+    void docInvalidStaticBaseUri() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        final String query = "declare base-uri \"c:\\windows\"; fn:doc(\"example.com.xml\")";
+
+        try (final DBBroker broker = pool.getBroker()) {
+            final XQueryContext context = new XQueryContext(pool);
+            final XQuery xqueryService = pool.getXQueryService();
+            final XPathException e = assertThrows(XPathException.class, () -> {
+                final CompiledXQuery compiled = xqueryService.compile(context, query);
+                xqueryService.execute(broker, compiled, null);
+            });
+            assertEquals(ErrorCodes.FODC0005, e.getErrorCode(), e.getMessage());
+        }
+    }
+
+    @Test
     void docAvailable_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {
         final BrokerPool pool = BrokerPool.getInstance();
 
@@ -244,7 +265,7 @@ public class DocTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void docAvailable_dynamicallyAvailableDocument_relativeUri() throws XPathException, EXistException, PermissionDeniedException, URISyntaxException {
         final BrokerPool pool = BrokerPool.getInstance();
 
