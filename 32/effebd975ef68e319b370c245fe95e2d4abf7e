@@ -1,0 +1,31 @@
+exist-core/src/main/java/org/exist/source/SourceFactory.java
+  s_c0b5ee22aea9de::t_f6fce7d0785337 45,49,176,189-198
+exist-core/src/main/java/org/exist/source/URLSource.java
+  s_c0b5ee22aea9de::t_8b5bbb065cd75b 54-62,64-65,71-79,82-83,110-127,131,136-137,158,182,198,207,224,229,238,251
+exist-core/src/main/java/org/exist/util/Configuration.java
+  s_c0b5ee22aea9de::t_e055173a26d695 34,225-226,229-230,566-567
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_c0b5ee22aea9de::t_957e5e15b14148 130-131,143-144
+exist-core/src/test/java/org/exist/xquery/ModuleNamespaceUrlResolutionTest.java
+  s_c0b5ee22aea9de::t_fc558c3b180c08 1-123
+exist-distribution/src/main/config/conf.xml
+  s_c0b5ee22aea9de::t_a838ef6e9f42b5 61,941-946,951-952
+schema/conf.xsd
+  s_c0b5ee22aea9de::t_6ceae59e0249e0 11,1368-1385
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "32effebd975ef68e319b370c245fe95e2d4abf7e",
+  "prompts": {},
+  "sessions": {
+    "s_c0b5ee22aea9de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66464b24-fb74-414b-af2f-36fc31af21cf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
