@@ -276,6 +276,11 @@ public class MapType extends AbstractMapType {
 
     @Override
     public boolean containsReference(final Item item) {
+        for (final AtomicValue key : map.keys()) {
+            if (key == item) {
+                return true;
+            }
+        }
         for (final Sequence value : map.values()) {
             if (value == item || value.containsReference(item)) {
                 return true;
