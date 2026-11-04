@@ -1,0 +1,22 @@
+extensions/indexes/range/src/test/java/org/exist/indexing/range/RangeIndexFieldAnalyzerTest.java
+  s_c0b5ee22aea9de::t_51511cb774cd16 1-155
+  s_c0b5ee22aea9de::t_6196a4a059b4e7 156
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_c0b5ee22aea9de::t_dcc191ac5fad83 567,602,620
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7fe2cb24483e1f109b0c35fb85f84223c1d9ba2",
+  "prompts": {},
+  "sessions": {
+    "s_c0b5ee22aea9de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66464b24-fb74-414b-af2f-36fc31af21cf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
